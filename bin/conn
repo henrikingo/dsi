@@ -1,0 +1,23 @@
+#!/bin/bash
+
+source ./setting.sh
+
+echo "Connecting to ${!1}"
+
+BINARY=ssh
+if [[ $# -eq 2 ]]; then
+   echo "dfadsfadsfadsf"
+   BINARY=$2 
+fi
+set -x
+
+if [ ! -z $SSHUSER ]; then
+    SSHUSER="$SSHUSER@"
+fi
+
+
+if [ ! -z $PEMFILE ]; then
+    $BINARY -i $PEMFILE $SSHUSER${!1}
+else
+    $BINARY $SSHUSER${!1}
+fi

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+
+source ./setting.sh
+
+echo "${ALL[@]}"
+
+# set -x
+for s in "${ALL[@]}"
+do
+    echo ">>> Host $s"
+    ssh -t -t -i $PEMFILE $SSHUSER@${!s} <<ENDSSH
+    $*
+    exit
+ENDSSH
+    echo ""
+done
