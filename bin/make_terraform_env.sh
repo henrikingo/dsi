@@ -17,3 +17,6 @@ variable \"key_name\" {
 variable \"key_path\" { 
     default = \"../../keys/aws.pem\"
 }" > security.tf
+
+# replace the mongodb url with the proper build URL
+sed -i -- "s/%%MONGO_URL%%/${3}/g" cluster.json
