@@ -118,7 +118,8 @@ resource "aws_instance" "member" {
     provisioner "remote-exec" {
         inline = [
             "sudo yum -y install git wget sysstat dstat perf xfsprogs",
-            "mkdir mongodb; curl https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${var.mongoversion}.tgz | tar zxv -C mongodb; cd mongodb; mv */bin . ",
+            "mkdir mongodb; curl %%MONGO_URL%% | tar zxv -C mongodb; cd mongodb; mv */bin . ",
+            "echo %%MONGO_URL%%",
             "mkdir -p ~/bin",
             "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
             "dev=/dev/xvdc; sudo umount $dev; sudo mkfs.xfs -f $dev; sudo mount $dev",
@@ -179,7 +180,8 @@ resource "aws_instance" "master" {
         inline = [
             "sudo yum -y install tmux git wget sysstat dstat perf",
             # "wget --no-check-certificate https://raw.githubusercontent.com/rzh/dotfiles/no_ycm/bootstrap.sh -O - | sh",
-            "curl https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${var.mongoversion}.tgz | tar zxv; mv mongodb-linux-x86_64-${var.mongoversion} mongodb",
+            "mkdir mongodb; curl %%MONGO_URL%% | tar zxv -C mongodb; cd mongodb; mv */bin . ",
+            "echo %%MONGO_URL%%",
             "mkdir bin",
             "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
             "wget --quiet --no-check-certificate --no-cookies --header 'Cookie: oraclelicense=accept-securebackup-cookie' http://download.oracle.com/otn-pub/java/jdk/7u71-b14/jdk-7u71-linux-x64.rpm; sudo rpm -i jdk-7u71-linux-x64.rpm;",
