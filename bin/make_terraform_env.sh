@@ -20,4 +20,4 @@ variable \"key_path\" {
 
 # replace the mongodb url with the proper build URL
 
-sed -i -- "s#%%MONGO_URL%%#${3}#g" cluster.json
+sed -i -- "s#%%MONGO_URL%%#${3}#g" cluster.tf
