@@ -9,8 +9,8 @@ mongoversion = "3.1.5"
 user = "rui"
 owner = "rui.zhang"
 
-# primary_type = "c3.8xlarge"
-# secondary_type = "c3.8xlarge"
+primary_type = "c3.8xlarge"
+secondary_type = "c3.8xlarge"
 
-primary_type = "m3.2xlarge"
+# primary_type = "m3.2xlarge"
 secondary_type = "m3.2xlarge"

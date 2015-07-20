@@ -91,8 +91,8 @@ resource "aws_instance" "shardmember" {
 
     security_groups = ["${aws_security_group.shard-default.id}"]
     availability_zone = "us-west-2b"
-    # placement_group = "${var.user}-shard-perf"
-    # tenancy = "dedicated"
+    placement_group = "${var.user}-shard-perf"
+    tenancy = "dedicated"
 
     key_name = "${var.key_name}"
     tags = {
@@ -165,8 +165,8 @@ resource "aws_instance" "master" {
 
     security_groups = ["${aws_security_group.shard-default.id}"]
     availability_zone = "us-west-2b"
-    # placement_group = "${var.user}-shard-perf"
-    # tenancy = "dedicated"
+    placement_group = "${var.user}-shard-perf"
+    tenancy = "dedicated"
 
     key_name = "${var.key_name}"
     tags = {
