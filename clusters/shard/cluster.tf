@@ -120,8 +120,8 @@ resource "aws_instance" "shardmember" {
             timeoout = "10m"
         }
         inline = [
-            "sudo yum -y install git wget sysstat dstat perf xfsprogs",
-            "mkdir mongodb; curl https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${var.mongoversion}.tgz | tar zxv -C mongodb; cd mongodb; mv */bin . ",
+            "sudo yum -y install git fio wget sysstat dstat perf xfsprogs",
+            "mkdir mongodb; curl %%MONGO_URL%% | tar zxv -C mongodb; cd mongodb; mv */bin .; cd ~ ",
             "mkdir -p ~/bin",
             "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
             "dev=/dev/xvdc; sudo umount $dev; sudo mkfs.xfs -f $dev; sudo mount $dev",
@@ -138,6 +138,8 @@ resource "aws_instance" "shardmember" {
             "echo f | sudo tee /sys/class/net/eth0/queues/rx-0/rps_cpus",
             "echo f0 | sudo tee /sys/class/net/eth0/queues/tx-0/xps_cpus",
             "echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCmHUZLsuGvNUlCiaZ83jS9f49S0plAtCH19Z2iATOYPH1XE2T8ULcHdFX2GkYiaEqI+fCf1J1opif45sW/5yeDtIp4BfRAdOu2tOvkKvzlnGZndnLzFKuFfBPcysKyrGxkqBvdupOdUROiSIMwPcFgEzyLHk3pQ8lzURiJNtplQ82g3aDi4wneLDK+zuIVCl+QdP/jCc0kpYyrsWKSbxi0YrdpG3E25Q4Rn9uom58c66/3h6MVlk22w7/lMYXWc5fXmyMLwyv4KndH2u3lV45UAb6cuJ6vn6wowiD9N9J1GS57m8jAKaQC1ZVgcZBbDXMR8fbGdc9AH044JVtXe3lT shardtest@test.mongo' | tee -a ~/.ssh/authorized_keys",
+            "fio --directory=/media/ephemeral0 --name fio_test_file --direct=1 --rw=randwrite --bs=16k --size=1G --numjobs=16 --time_based --runtime=60 --group_reporting --norandommap",
+            "fio --directory=/media/ephemeral1 --name fio_test_file --direct=1 --rw=randwrite --bs=16k --size=1G --numjobs=16 --time_based --runtime=60 --group_reporting --norandommap",
             "rm *.tgz",
             "rm *.rpm",
             "ls"
@@ -184,7 +186,7 @@ resource "aws_instance" "master" {
         }
         inline = [
             "sudo yum -y install tmux git wget sysstat dstat perf",
-            "mkdir mongodb; curl https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${var.mongoversion}.tgz | tar zxv -C mongodb; cd mongodb; mv */bin . ",
+            "mkdir mongodb; curl %%MONGO_URL%% | tar zxv -C mongodb; cd mongodb; mv */bin .; cd ~ ",
             "mkdir -p ~/bin",
             "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
             "wget --no-check-certificate --no-cookies --header 'Cookie: oraclelicense=accept-securebackup-cookie' http://download.oracle.com/otn-pub/java/jdk/7u71-b14/jdk-7u71-linux-x64.rpm; sudo rpm -i jdk-7u71-linux-x64.rpm;",
@@ -247,7 +249,7 @@ resource "aws_instance" "configserver" {
         }
         inline = [
             "sudo yum -y install tmux git wget sysstat dstat perf",
-            "mkdir mongodb; curl https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${var.mongoversion}.tgz | tar zxv -C mongodb; cd mongodb; mv */bin . ",
+            "mkdir mongodb; curl %%MONGO_URL%% | tar zxv -C mongodb; cd mongodb; mv */bin .; cd ~ ",
             "mkdir -p ~/bin",
             "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
             "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled", 
