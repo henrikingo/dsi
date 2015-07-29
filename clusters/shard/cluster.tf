@@ -5,6 +5,8 @@ resource "aws_vpc" "main" {
 
     tags {
         Name = "${var.user}-shard-vpc"
+        TestSetup = "dsi"
+        TestTopology = "shard"
     }
 }
 
@@ -19,6 +21,8 @@ resource "aws_subnet" "main" {
 
     tags {
         Name = "${var.user}-shard-subnet"
+        TestSetup = "dsi"
+        TestTopology = "shard"
     }
 }
 
@@ -31,6 +35,8 @@ resource "aws_route_table" "r" {
 
     tags {
         Name = "${var.user}-shard-routing"
+        TestSetup = "dsi"
+        TestTopology = "shard"
     }
 }
 
@@ -98,7 +104,7 @@ resource "aws_instance" "shardmember" {
     tags = {
         Name = "${var.user}-shard-member-${count.index}"
         owner = "${var.owner}"
-        expire-on = "2015-07-15"
+        expire-on = "2016-07-15"
     }
 
     ephemeral_block_device {
@@ -173,8 +179,10 @@ resource "aws_instance" "master" {
     key_name = "${var.key_name}"
     tags = {
         Name = "${var.user}-shard-master-${count.index}"
+        TestSetup = "dsi"
+        TestTopology = "shard"
         owner = "${var.owner}"
-        expire-on = "2015-07-15"
+        expire-on = "2016-07-15"
     }
 
     associate_public_ip_address = 1
@@ -237,8 +245,10 @@ resource "aws_instance" "configserver" {
     key_name = "${var.key_name}"
     tags = {
         Name = "${var.user}-shard-config-${count.index}"
+        TestSetup = "dsi"
+        TestTopology = "shard"
         owner = "${var.owner}"
-        expire-on = "2015-07-15"
+        expire-on = "2016-07-15"
     }
 
     associate_public_ip_address = 1

@@ -5,6 +5,8 @@ resource "aws_vpc" "main" {
 
     tags {
         Name = "${var.user}-longevity-vpc"
+        TestSetup = "longevity"
+        TestTopology = "shard"
     }
 }
 
@@ -19,6 +21,8 @@ resource "aws_subnet" "main" {
 
     tags {
         Name = "${var.user}-longevity-subnet"
+        TestSetup = "longevity"
+        TestTopology = "shard"
     }
 }
 
@@ -31,6 +35,8 @@ resource "aws_route_table" "r" {
 
     tags {
         Name = "${var.user}-longevity-routing"
+        TestSetup = "longevity"
+        TestTopology = "shard"
     }
 }
 
@@ -97,8 +103,10 @@ resource "aws_instance" "shardmember" {
     key_name = "${var.key_name}"
     tags = {
         Name = "${var.user}-longevity-member-${count.index}"
+        TestSetup = "longevity"
+        TestTopology = "shard"
         owner = "${var.owner}"
-        expire-on = "2015-07-15"
+        expire-on = "2016-07-15"
     }
 
     ephemeral_block_device {
@@ -169,8 +177,10 @@ resource "aws_instance" "master" {
     key_name = "${var.key_name}"
     tags = {
         Name = "${var.user}-longevity-master-${count.index}"
+        TestSetup = "longevity"
+        TestTopology = "shard"
         owner = "${var.owner}"
-        expire-on = "2015-07-15"
+        expire-on = "2016-07-15"
     }
 
     associate_public_ip_address = 1
@@ -233,8 +243,10 @@ resource "aws_instance" "configserver" {
     key_name = "${var.key_name}"
     tags = {
         Name = "${var.user}-longevity-config-${count.index}"
+        TestSetup = "longevity"
+        TestTopology = "shard"
         owner = "${var.owner}"
-        expire-on = "2015-07-15"
+        expire-on = "2016-07-15"
     }
 
     associate_public_ip_address = 1
