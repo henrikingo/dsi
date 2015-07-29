@@ -3,7 +3,8 @@
 cp ../../terraform/* .
 
 # create all resources and instances
-./terraform apply  > t
+./terraform apply  > terraform.log
+cat terraform.log | grep bw
 
 # check performance and re-done the mongod instance if necessary
 
