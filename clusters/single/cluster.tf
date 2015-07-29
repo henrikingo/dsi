@@ -187,6 +187,7 @@ resource "aws_instance" "master" {
             "echo %%MONGO_URL%%",
             "mkdir bin",
             "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
+            "cd ~",
             "wget --quiet --no-check-certificate --no-cookies --header 'Cookie: oraclelicense=accept-securebackup-cookie' http://download.oracle.com/otn-pub/java/jdk/7u71-b14/jdk-7u71-linux-x64.rpm; sudo rpm -i jdk-7u71-linux-x64.rpm;",
             "sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.7.0_71/bin/java 20000",
             "wget --quiet --no-check-certificate http://central.maven.org/maven2/org/mongodb/mongo-java-driver/2.13.0/mongo-java-driver-2.13.0.jar",
