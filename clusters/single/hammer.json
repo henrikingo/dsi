@@ -8,34 +8,7 @@
                         "servers": [ %%P1%%],
                         "server_logs": [],
                         "type"  : "hammer",
-                        "cmd": "cd hammer; ./evergreen-insert.sh %%I1%%; sleep 1"
-                    },
-            {
-                        "run_id": "hammer_read",
-                        "clients": [ %%CLIENT%% ],
-                        "client_logs": [],
-                        "servers": [ %%P1%%],
-                        "server_logs": [],
-                        "type"  : "hammer",
-                        "cmd": "cd hammer; ./evergreen-read.sh %%I1%%; sleep 1"
-                    },
-            {
-                        "run_id": "hammer_read_ssl",
-                        "clients": [ %%CLIENT%% ],
-                        "client_logs": [],
-                        "servers": [ %%P1%%],
-                        "server_logs": [],
-                        "type"  : "hammer",
-                        "cmd": "cd hammer; ./evergreen-read-ssl.sh %%I1%%; sleep 1"
-                    },
-            {
-                        "run_id": "hammer_ttl",
-                        "clients": [ %%CLIENT%% ],
-                        "client_logs": [],
-                        "servers": [ %%P1%%],
-                        "server_logs": [],
-                        "type"  : "hammer",
-                        "cmd": "cd hammer; ./evergreen-ttl.sh %%I1%%; sleep 1"
+                        "cmd": "cd hammer; ./evergreen_insert.sh %%I1%%; sleep 1"
                     }
         ]}
 
