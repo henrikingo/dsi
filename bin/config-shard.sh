@@ -143,13 +143,11 @@ startMongos() {
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/dbs"
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/logs"
 
-    runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongos --fork --configdb $IPconfig1:27019,$IPconfig2:27019,$IPconfig3:27019 --logpath=$MY_ROOT/data/logs/mongos.log $DEBUG $ChunkSize" 
-    # runSSHCommand $ssh_url "~/$ver/bin/mongos --configdb $IPconfig1:27019,$IPconfig2:27019,$IPconfig3:27019 --fork --logpath /data/logs/mongos.log --setParameter internalShardingMaxSplitPointsPerOperation=2" --chunkSize=$ChunkSize
-    # runSSHCommand $ssh_url "/sbin/pidof mongos"
+    runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongos --fork --configdb $IPconfig1:27017,$IPconfig2:27017,$IPconfig3:27017 --logpath=$MY_ROOT/data/logs/mongos.log $DEBUG $ChunkSize" 
 }
 
 startConfigServer() {
-    # to start mongos
+    # to start mongo config server
     local ver=$1; shift
     local ssh_url=$1; shift
     local storageEngine=$1; shift
@@ -161,10 +159,13 @@ startConfigServer() {
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/dbs"
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/logs"
 
-	# runSSHCommand $ssh_url "$MY_ROOT/$ver/bin/mongod --dbpath $MY_ROOT/data/dbs --configsvr --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG $storageEngine" 
-	runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod --dbpath $MY_ROOT/data/dbs --configsvr --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG $storageEngine" 
-
-    # runSSHCommand $ssh_url "/sbin/pidof mongod"
+    if [ "$USE_CSRS" = true ]; then 
+        echo "Using CSRS"
+        runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod --port 27017 --replSet configSvrRS --dbpath $MY_ROOT/data/dbs --configsvr --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG $storageEngine" 
+    else 
+        echo "Using Legacy ConfigSvr mode"
+        runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod --port 27017 --dbpath $MY_ROOT/data/dbs --configsvr --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG $storageEngine" 
+    fi
 }
 
 startShard() {
@@ -182,8 +183,6 @@ startShard() {
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/logs"
 
 	runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod $storageEngine --dbpath $MY_ROOT/data/dbs --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG"
-
-    # runSSHCommand $ssh_url "/sbin/pidof mongod"
 }
 
 startReplicaMember() {
@@ -205,8 +204,6 @@ startReplicaMember() {
     runSSHCommand $ssh_url "cd $MY_ROOT/data/dbs; ln -s /media/ephemeral1/journal journal"
 
 	runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod $storageEngine --dbpath $MY_ROOT/data/dbs --fork --logpath $MY_ROOT/data/logs/mongod.log --replSet $rs $DEBUG"
-
-    # runSSHCommand $ssh_url "/sbin/pidof mongod"
 }
 
 ## config repolica
@@ -390,8 +387,6 @@ do
 done
 
 ## all configs
-# TODO
-
 
 sleep 2
 
@@ -399,7 +394,26 @@ startConfigServer $version $config1 ${_storageEngine}
 startConfigServer $version $config2 ${_storageEngine}
 startConfigServer $version $config3 ${_storageEngine}
 
-
+if [ "$USE_CSRS" = true ]; then 
+    echo "Config CSRS"
+    HOST_CONFIG_RS_1=ip-`echo ${IPconfig1} | tr . -`
+    runSSHCommand ${config1} "$MY_ROOT/$ver/bin/mongo --port 27017 --verbose \
+		--eval \"rs.initiate({_id: \\\"configSvrRS\\\", configsvr:true, members:[{_id: 0, host:\\\"${HOST_CONFIG_RS_1}:27017\\\"}]});\
+		sleep(2000);\
+		cfg = rs.conf();\
+		rs.reconfig(cfg);\
+		while ( ! rs.isMaster().ismaster ) { sleep(1000); print(\\\"wait\\n\\\");} \
+		rs.slaveOk();\
+		t = rs.add(\\\"${IPconfig2}:27017\\\");\
+		t = rs.add(\\\"${IPconfig3}:27017\\\");\
+		printjson(t); \
+		cfg = rs.conf();\
+		printjson(cfg);\
+		rs.reconfig(cfg);\
+		sleep(5000);\
+		printjson(rs.status())\""
+	echo "CSRS configuration done!"
+fi 
 
 if [ "$4" == "noreplica" ]; then
     for i in `seq 1 $numShard`;
