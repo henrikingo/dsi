@@ -1,0 +1,32 @@
+{
+    "PemFile": "../../keys/aws.pem",
+    "runs": [
+            {
+                        "run_id": "ycsb_load-CSRS",
+                        "clients": [ %%CLIENT%% ],
+                        "client_logs": [],
+                        "servers": [ %%ALLMEMBERS%%, %%MS%% ],
+                        "server_logs": [],
+                        "type"  : "ycsb",
+                        "cmd": "cd YCSB/ycsb-mongodb; ./evergreen-load.sh %%MS_PRIVATE_IP%%; sleep 1"
+                    },
+            {
+                        "run_id": "ycsb_100read-CSRS",
+                        "clients": [ %%CLIENT%% ],
+                        "client_logs": [],
+                        "servers": [ %%ALLMEMBERS%%, %%MS%% ],
+                        "server_logs": [],
+                        "type"  : "ycsb",
+                        "cmd": "cd YCSB/ycsb-mongodb; ./evergreen-100read.sh %%MS_PRIVATE_IP%%; sleep 1"
+                    },
+            {
+                        "run_id": "ycsb_50read50update-CSRS",
+                        "clients": [ %%CLIENT%% ],
+                        "client_logs": [],
+                        "servers": [ %%ALLMEMBERS%%, %%MS%% ],
+                        "server_logs": [],
+                        "type"  : "ycsb",
+                        "cmd": "cd YCSB/ycsb-mongodb; ./evergreen-50read50update.sh %%MS_PRIVATE_IP%%; sleep 1"
+                    }
+        ]}
+
