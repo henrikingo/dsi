@@ -8,5 +8,9 @@ cp ../../terraform/* .
 # workaround for failure to bring up all at the same time
 ./terraform apply -var="count=9" >> terraform.log
 
+# show fio stats to log
+cat terraform.log | grep bw
+
 # this will extract all public and private IP address information
 ./env.sh
+
