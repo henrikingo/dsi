@@ -140,7 +140,7 @@ startReplicaMember() {
     # runSSHCommand $ssh_url "mkdir -p $MY_ROOT/journal"
     # runSSHCommand $ssh_url "ln -s /home/ec2-user/journal /home/ec2-user/data/dbs/journal"
 
-	runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod $storageEngine --dbpath $MY_ROOT/data/dbs --fork --logpath $MY_ROOT/data/logs/mongod.log --replSet $rs $DEBUG"
+	runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited; $MY_ROOT/$ver/bin/mongod $storageEngine --dbpath $MY_ROOT/data/dbs --fork --logpath $MY_ROOT/data/logs/mongod.log --replSet $rs $DEBUG"
 
     # runSSHCommand $ssh_url "/sbin/pidof mongod"
 }

@@ -143,7 +143,7 @@ startMongos() {
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/dbs"
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/logs"
 
-    runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongos --fork --configdb $IPconfig1:27017,$IPconfig2:27017,$IPconfig3:27017 --logpath=$MY_ROOT/data/logs/mongos.log $DEBUG $ChunkSize" 
+    runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited ; $MY_ROOT/$ver/bin/mongos --fork --configdb $IPconfig1:27017,$IPconfig2:27017,$IPconfig3:27017 --logpath=$MY_ROOT/data/logs/mongos.log $DEBUG $ChunkSize" 
 }
 
 startConfigServer() {
