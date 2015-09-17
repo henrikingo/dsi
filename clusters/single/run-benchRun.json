@@ -1,0 +1,14 @@
+{
+    "PemFile": "../../keys/aws.pem",
+    "runs": [
+            {
+                        "run_id": "benchRun",
+                        "clients": [ %%CLIENT%% ],
+                        "client_logs": [],
+                        "servers": [ %%P1%%],
+                        "server_logs": [],
+                        "type"  : "shell",
+                        "cmd": "cd workloads/; ./run-workloads.sh %%I1%% false wiredTiger; sleep 1"
+                    }
+        ]}
+
