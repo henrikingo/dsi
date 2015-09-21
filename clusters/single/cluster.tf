@@ -195,7 +195,7 @@ resource "aws_instance" "master" {
             # "wget --no-check-certificate https://raw.githubusercontent.com/rzh/dotfiles/no_ycm/bootstrap.sh -O - | sh",
             "mkdir mongodb; curl ${var.mongourl} | tar zxv -C mongodb; cd mongodb; mv */bin . ",
             "echo ${var.mongourl}",
-            "mkdir bin",
+            "mkdir -p bin",
             "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
             "cd ~",
             "wget --quiet --no-check-certificate --no-cookies --header 'Cookie: oraclelicense=accept-securebackup-cookie' http://download.oracle.com/otn-pub/java/jdk/7u71-b14/jdk-7u71-linux-x64.rpm; sudo rpm -i jdk-7u71-linux-x64.rpm;",
