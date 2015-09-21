@@ -134,7 +134,6 @@ resource "aws_instance" "member" {
             "dev=/dev/xvdc; sudo umount $dev; sudo mkfs.xfs -f $dev; sudo mount $dev",
             "sudo chmod 777 /media/ephemeral0",
             "sudo chown ec2-user /media/ephemeral0",
-#            "sudo umount /dev/xvdd; sudo mkswap /dev/xvdd; sudo swapon /dev/xvdd",
             "dev=/dev/xvdd; dpath=/media/ephemeral1; sudo mkdir -p $dpath; sudo umount $dev; sudo mkfs.xfs -f $dev; sudo mount $dev $dpath; ",
             "sudo chmod 777 /media/ephemeral1",
             "sudo chown ec2-user /media/ephemeral1",
@@ -192,10 +191,9 @@ resource "aws_instance" "master" {
     provisioner "remote-exec" {
         inline = [
             "sudo yum -y install tmux git wget sysstat dstat perf",
-            # "wget --no-check-certificate https://raw.githubusercontent.com/rzh/dotfiles/no_ycm/bootstrap.sh -O - | sh",
             "mkdir mongodb; curl ${var.mongourl} | tar zxv -C mongodb; cd mongodb; mv */bin . ",
             "echo ${var.mongourl}",
-            "mkdir -p bin",
+            "mkdir -p ~/bin",
             "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
             "cd ~",
             "wget --quiet --no-check-certificate --no-cookies --header 'Cookie: oraclelicense=accept-securebackup-cookie' http://download.oracle.com/otn-pub/java/jdk/7u71-b14/jdk-7u71-linux-x64.rpm; sudo rpm -i jdk-7u71-linux-x64.rpm;",
@@ -212,7 +210,6 @@ resource "aws_instance" "master" {
             "echo f0 | sudo tee /sys/class/net/eth0/queues/tx-0/xps_cpus",
             "echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCmHUZLsuGvNUlCiaZ83jS9f49S0plAtCH19Z2iATOYPH1XE2T8ULcHdFX2GkYiaEqI+fCf1J1opif45sW/5yeDtIp4BfRAdOu2tOvkKvzlnGZndnLzFKuFfBPcysKyrGxkqBvdupOdUROiSIMwPcFgEzyLHk3pQ8lzURiJNtplQ82g3aDi4wneLDK+zuIVCl+QdP/jCc0kpYyrsWKSbxi0YrdpG3E25Q4Rn9uom58c66/3h6MVlk22w7/lMYXWc5fXmyMLwyv4KndH2u3lV45UAb6cuJ6vn6wowiD9N9J1GS57m8jAKaQC1ZVgcZBbDXMR8fbGdc9AH044JVtXe3lT shardtest@test.mongo' | tee -a ~/.ssh/authorized_keys",
             "chmod 400 ~/.ssh/id_rsa",
-            # "rm -rf ~/.vim/bundle/YouCompleteMe/",
             "rm *.tgz",
             "rm *.rpm",
             "ls"
