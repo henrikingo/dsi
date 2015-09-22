@@ -5,7 +5,7 @@ source setting.sh
 # need make sure we checked out 10gen/workloads repo first
 rm -rf ./workloads
 rm -f workloads.tar.gz
-git clone -b dev git@github.com:10gen/workloads.git
+git clone git@github.com:10gen/workloads.git
 tar cvf workloads.tar ./workloads 
 gzip workloads.tar
 
