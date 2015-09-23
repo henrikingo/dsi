@@ -1,0 +1,14 @@
+{
+    "PemFile": "../../keys/aws.pem",
+    "runs": [
+            {
+                        "run_id": "benchRun",
+                        "clients": [ %%CLIENT%% ],
+                        "client_logs": [],
+                        "servers": [ %%ALLMEMBERS%%, %%MS%% ],
+                        "server_logs": [],
+                        "type"  : "shell",
+                        "cmd": "cd workloads/; ./run-workloads.sh -t %%MS_PRIVATE_IP%% -s -e mmapv1; sleep 1"
+                    }
+        ]}
+
