@@ -9,11 +9,11 @@ git clone git@github.com:10gen/workloads.git
 tar cvf workloads.tar ./workloads 
 gzip workloads.tar
 
-ssh -T -A -i $PEMFILE $SSHUSER@$mc rm -rf workloads*
+ssh -oStrictHostKeyChecking=no -T -A -i $PEMFILE $SSHUSER@$mc rm -rf workloads*
 
-scp -i $PEMFILE  ./workloads.tar.gz $SSHUSER@$mc:.
+scp -oStrictHostKeyChecking=no -i $PEMFILE  ./workloads.tar.gz $SSHUSER@$mc:.
 
-ssh -T -i $PEMFILE $SSHUSER@$mc "tar zxvf workloads.tar.gz; pwd; ls workloads/*"
+ssh -oStrictHostKeyChecking=no -T -i $PEMFILE $SSHUSER@$mc "tar zxvf workloads.tar.gz; pwd; ls workloads/*"
 
 # also need get the proper mongo shell to run the test
 # see comment in run-benchrun.sh

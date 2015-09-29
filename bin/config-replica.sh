@@ -40,22 +40,10 @@ readonly DEBUG=""
 
 # parameters
 readonly MY_ROOT="/home/ec2-user"
-readonly PEMFILE="-i /Users/rui/bin/rui-cap-east.pem"
 readonly USER="ec2-user"
-readonly mongos=$ms
-
-# configShardKey="sh.shardCollection( \\\"sbtest.sbtest\\\"+i, { _id: 1} );"
-readonly configShardKey="sh.shardCollection( \\\"sbtest.sbtest\\\"+i, { _id: \\\"hashed\\\" } );"
-readonly balanerState="sh.stopBalancer();"
-# readonly balanerState=""
-
-               #sh.shardCollection( \\\"sbtest.sbtest\\\"+i, { _id: 1} );}\
+readonly SSHKEY="-i ${PEMFILE}"
 
 # Public address
-readonly MONGOS=$ms
-readonly PRIVATE_MONGOS=$ms_private_ip
-
-echo  -e "------>  \033[4m\033[34msetup global variables\033[0m\033[24m"
 export N=0
 export I=1
 for i in "${ALL_HOST[@]}"
@@ -73,8 +61,6 @@ do
 
 done
 echo ""
-
-# >>>>
 
 # to kill a process with name
 # input:
@@ -103,7 +89,7 @@ runSSHCommand() {
 
     # ssh command here
     # /usr/bin/ssh -i /Users/rui/bin/rui-aws-cap.pem $ssh_url $cmd
-    /usr/bin/ssh $PEMFILE $USER@$ssh_url $cmd
+    /usr/bin/ssh -oStrictHostKeyChecking=no $SSHKEY $USER@$ssh_url $cmd
 }
 
 # input
@@ -222,7 +208,8 @@ fi
 
 ## all shards
 for i in "${ALL_HOST[@]}"
-do
+do    
+    ssh-keygen -R ${!i}
     killAllProcess ${!i} "mongod"
 done
 

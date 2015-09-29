@@ -4,9 +4,9 @@ resource "aws_vpc" "main" {
     enable_dns_hostnames = true
 
     tags {
-        Name = "${var.user}-shard-vpc"
+        Name = "${var.user}-replica-vpc"
         TestSetup = "dsi"
-        TestTopology = "shard"
+        TestTopology = "replica"
     }
 }
 
@@ -16,13 +16,13 @@ resource "aws_internet_gateway" "gw" {
 
 resource "aws_subnet" "main" {
     vpc_id = "${aws_vpc.main.id}"
-    cidr_block = "10.2.1.0/24"
+    cidr_block = "10.2.0.0/24"
     availability_zone = "us-west-2b"
 
     tags {
-        Name = "${var.user}-shard-subnet"
+        Name = "${var.user}-replica-subnet"
         TestSetup = "dsi"
-        TestTopology = "shard"
+        TestTopology = "replica"
     }
 }
 
@@ -34,9 +34,9 @@ resource "aws_route_table" "r" {
     }
 
     tags {
-        Name = "${var.user}-shard-routing"
+        Name = "${var.user}-dsi-routing"
         TestSetup = "dsi"
-        TestTopology = "shard"
+        TestTopology = "replica"
     }
 }
 
@@ -45,9 +45,9 @@ resource "aws_route_table_association" "a" {
     route_table_id = "${aws_route_table.r.id}"
 }
 
-resource "aws_security_group" "shard-default" {
-    name = "${var.user}-shard-default"
-    description = "${var.user} config for shard"
+resource "aws_security_group" "default" {
+    name = "${var.user}-replica-default"
+    description = "${var.user} config for replica cluster"
     vpc_id = "${aws_vpc.main.id}"
     
     # SSH access from anywhere
@@ -76,7 +76,7 @@ resource "aws_security_group" "shard-default" {
 }
 
 
-resource "aws_instance" "shardmember" {
+resource "aws_instance" "member" {
     # Amazon Linux AMI 2015.03 (HVM), SSD Volume Type
     ami = "ami-e7527ed7"
 
@@ -95,14 +95,16 @@ resource "aws_instance" "shardmember" {
         key_file = "${var.key_path}"
     }
 
-    security_groups = ["${aws_security_group.shard-default.id}"]
+    security_groups = ["${aws_security_group.default.id}"]
     availability_zone = "us-west-2b"
-    placement_group = "${var.user}-shard-perf"
+    placement_group = "${var.user}-replica-perf"
     tenancy = "dedicated"
 
     key_name = "${var.key_name}"
     tags = {
-        Name = "${var.user}-shard-member-${count.index}"
+        Name = "${var.user}-replica-member-${count.index}"
+        TestSetup = "dsi"
+        TestTopology = "replica"
         owner = "${var.owner}"
         expire-on = "2016-07-15"
     }
@@ -122,18 +124,14 @@ resource "aws_instance" "shardmember" {
 
     # We run a remote provisioner on the instance after creating it.
     provisioner "remote-exec" {
-        connection {
-            timeoout = "10m"
-        }
         inline = [
             "sudo yum -y -q install git fio wget sysstat dstat perf xfsprogs",
-            "mkdir mongodb; curl %%MONGO_URL%% | tar zxv -C mongodb; cd mongodb; mv */bin .; cd ~ ",
+            "mkdir mongodb; curl ${var.mongourl} | tar zxv -C mongodb; cd mongodb; mv */bin .; cd ~ ",
             "mkdir -p ~/bin",
             "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
             "dev=/dev/xvdc; sudo umount $dev; sudo mkfs.xfs -f $dev; sudo mount $dev",
             "sudo chmod 777 /media/ephemeral0",
             "sudo chown ec2-user /media/ephemeral0",
-            # "sudo umount /dev/xvdd; sudo mkswap /dev/xvdd; sudo swapon /dev/xvdd",
             "dev=/dev/xvdd; dpath=/media/ephemeral1; sudo mkdir -p $dpath; sudo umount $dev; sudo mkfs.xfs -f $dev; sudo mount $dev $dpath; ",
             "sudo chmod 777 /media/ephemeral1",
             "sudo chown ec2-user /media/ephemeral1",
@@ -171,16 +169,16 @@ resource "aws_instance" "master" {
         key_file = "${var.key_path}"
     }
 
-    security_groups = ["${aws_security_group.shard-default.id}"]
+    security_groups = ["${aws_security_group.default.id}"]
     availability_zone = "us-west-2b"
-    placement_group = "${var.user}-shard-perf"
+    placement_group = "${var.user}-replica-perf"
     tenancy = "dedicated"
 
     key_name = "${var.key_name}"
     tags = {
-        Name = "${var.user}-shard-master-${count.index}"
+        Name = "${var.user}-replica-master-${count.index}"
         TestSetup = "dsi"
-        TestTopology = "shard"
+        TestTopology = "replica"
         owner = "${var.owner}"
         expire-on = "2016-07-15"
     }
@@ -189,85 +187,27 @@ resource "aws_instance" "master" {
 
     # We run a remote provisioner on the instance after creating it.
     provisioner "remote-exec" {
-        connection {
-            timeoout = "10m"
-        }
         inline = [
             "sudo yum -y -q install tmux git wget sysstat dstat perf",
-            "mkdir mongodb; curl %%MONGO_URL%% | tar zxv -C mongodb; cd mongodb; mv */bin .; cd ~ ",
+            "mkdir mongodb; curl ${var.mongourl} | tar zxv -C mongodb; cd mongodb; mv */bin . ",
+            "echo ${var.mongourl}",
             "mkdir -p ~/bin",
             "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
             "cd ~",
-            "wget --no-check-certificate --no-cookies --header 'Cookie: oraclelicense=accept-securebackup-cookie' http://download.oracle.com/otn-pub/java/jdk/7u71-b14/jdk-7u71-linux-x64.rpm; sudo rpm -i jdk-7u71-linux-x64.rpm;",
+            "wget --quiet --no-check-certificate --no-cookies --header 'Cookie: oraclelicense=accept-securebackup-cookie' http://download.oracle.com/otn-pub/java/jdk/7u71-b14/jdk-7u71-linux-x64.rpm; sudo rpm -i jdk-7u71-linux-x64.rpm;",
             "sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.7.0_71/bin/java 20000",
-            "wget --no-check-certificate http://central.maven.org/maven2/org/mongodb/mongo-java-driver/2.13.0/mongo-java-driver-2.13.0.jar",
+            "wget --quiet --no-check-certificate http://central.maven.org/maven2/org/mongodb/mongo-java-driver/2.13.0/mongo-java-driver-2.13.0.jar",
             "echo 'export CLASSPATH=~/mongo-java-driver-2.13.0.jar:$CLASSPATH' >> ~/.bashrc",
-            "cd ~; git clone https://github.com/rzh/sysbench-mongodb.git",
-            "cd ~; git clone -b shard-test https://github.com/rzh/YCSB.git",
+            "git clone -b shard-test https://github.com/rzh/YCSB.git",
             "curl https://raw.githubusercontent.com/rzh/utils/master/mongodb/scripts/install_maven.sh | sudo bash > /dev/null",
             "source /etc/profile.d/maven.sh; cd /home/ec2-user/YCSB/ycsb-mongodb; ./setup.sh > /dev/null",
+            "mkdir -p ~/hammer; cd ~/hammer; wget --no-check-certificate https://raw.githubusercontent.com/rzh/hammer.mongo/master/scripts/bootstrap.sh -O - | bash",
             "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled", 
             "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag", 
             "echo f | sudo tee /sys/class/net/eth0/queues/rx-0/rps_cpus",
             "echo f0 | sudo tee /sys/class/net/eth0/queues/tx-0/xps_cpus",
             "echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCmHUZLsuGvNUlCiaZ83jS9f49S0plAtCH19Z2iATOYPH1XE2T8ULcHdFX2GkYiaEqI+fCf1J1opif45sW/5yeDtIp4BfRAdOu2tOvkKvzlnGZndnLzFKuFfBPcysKyrGxkqBvdupOdUROiSIMwPcFgEzyLHk3pQ8lzURiJNtplQ82g3aDi4wneLDK+zuIVCl+QdP/jCc0kpYyrsWKSbxi0YrdpG3E25Q4Rn9uom58c66/3h6MVlk22w7/lMYXWc5fXmyMLwyv4KndH2u3lV45UAb6cuJ6vn6wowiD9N9J1GS57m8jAKaQC1ZVgcZBbDXMR8fbGdc9AH044JVtXe3lT shardtest@test.mongo' | tee -a ~/.ssh/authorized_keys",
             "chmod 400 ~/.ssh/id_rsa",
-            "rm *.tgz",
-            "rm *.rpm",
-            "ls"
-        ]
-    }
-}
-
-resource "aws_instance" "configserver" {
-    # Amazon Linux AMI 2015.03 (HVM), SSD Volume Type
-    ami = "ami-e7527ed7"
-
-    instance_type = "${var.configserver_type}"
-
-    # config server fixed at 3
-    count = "${var.configcount}"
-
-    subnet_id = "${aws_subnet.main.id}"
-    private_ip = "${lookup(var.instance_ips, concat("config", count.index))}"
-
-    connection {
-        # The default username for our AMI
-        user = "ec2-user"
-
-        # The path to your keyfile
-        key_file = "${var.key_path}"
-    }
-
-    security_groups = ["${aws_security_group.shard-default.id}"]
-    availability_zone = "us-west-2b"
-
-    key_name = "${var.key_name}"
-    tags = {
-        Name = "${var.user}-shard-config-${count.index}"
-        TestSetup = "dsi"
-        TestTopology = "shard"
-        owner = "${var.owner}"
-        expire-on = "2016-07-15"
-    }
-
-    associate_public_ip_address = 1
-
-    # We run a remote provisioner on the instance after creating it.
-    provisioner "remote-exec" {
-        connection {
-            timeoout = "10m"
-        }
-        inline = [
-            "sudo yum -y -q install tmux git wget sysstat dstat perf",
-            "mkdir mongodb; curl %%MONGO_URL%% | tar zxv -C mongodb; cd mongodb; mv */bin .; cd ~ ",
-            "mkdir -p ~/bin",
-            "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
-            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled", 
-            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag",
-            "echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCmHUZLsuGvNUlCiaZ83jS9f49S0plAtCH19Z2iATOYPH1XE2T8ULcHdFX2GkYiaEqI+fCf1J1opif45sW/5yeDtIp4BfRAdOu2tOvkKvzlnGZndnLzFKuFfBPcysKyrGxkqBvdupOdUROiSIMwPcFgEzyLHk3pQ8lzURiJNtplQ82g3aDi4wneLDK+zuIVCl+QdP/jCc0kpYyrsWKSbxi0YrdpG3E25Q4Rn9uom58c66/3h6MVlk22w7/lMYXWc5fXmyMLwyv4KndH2u3lV45UAb6cuJ6vn6wowiD9N9J1GS57m8jAKaQC1ZVgcZBbDXMR8fbGdc9AH044JVtXe3lT shardtest@test.mongo' | tee -a ~/.ssh/authorized_keys",
-            "echo f | sudo tee /sys/class/net/eth0/queues/rx-0/rps_cpus",
-            "echo f0 | sudo tee /sys/class/net/eth0/queues/tx-0/xps_cpus",
             "rm *.tgz",
             "rm *.rpm",
             "ls"

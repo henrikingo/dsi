@@ -125,7 +125,7 @@ resource "aws_instance" "member" {
     # We run a remote provisioner on the instance after creating it.
     provisioner "remote-exec" {
         inline = [
-            "sudo yum -y install git fio wget sysstat dstat perf xfsprogs",
+            "sudo yum -y -q install git fio wget sysstat dstat perf xfsprogs",
             # "VER=3.1.6 mkdir $VER; curl https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-$VER.tgz | tar zxv -C $VER; cd $VER; mv */bin .; cd ~ ",
             # "VER=3.1.4 mkdir $VER; curl https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-$VER.tgz | tar zxv -C $VER; cd $VER; mv */bin .; cd ~ ",
             "mkdir mongodb; curl ${var.mongourl} | tar zxv -C mongodb; cd mongodb; mv */bin .; cd ~ ",
@@ -190,7 +190,7 @@ resource "aws_instance" "master" {
     # We run a remote provisioner on the instance after creating it.
     provisioner "remote-exec" {
         inline = [
-            "sudo yum -y install tmux git wget sysstat dstat perf",
+            "sudo yum -y -q install tmux git wget sysstat dstat perf",
             "mkdir mongodb; curl ${var.mongourl} | tar zxv -C mongodb; cd mongodb; mv */bin . ",
             "echo ${var.mongourl}",
             "mkdir -p ~/bin",
