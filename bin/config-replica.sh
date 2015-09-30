@@ -123,7 +123,7 @@ startReplicaMember() {
     runSSHCommand $ssh_url "mkdir -p /media/ephemeral1/journal"
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/logs"
     runSSHCommand $ssh_url "cd $MY_ROOT/data/dbs; ln -s /media/ephemeral1/journal journal"
-    runSSHCommand $ssh_url "ls -la; cd $MY_ROOT/data/dbs; ln -la"
+    runSSHCommand $ssh_url "ls -la; cd $MY_ROOT/data/dbs; ls -la"
 
 	runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod $storageEngine --dbpath $MY_ROOT/data/dbs --fork --logpath $MY_ROOT/data/logs/mongod.log --replSet $rs $DEBUG"
 
