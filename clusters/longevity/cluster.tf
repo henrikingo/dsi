@@ -202,9 +202,8 @@ resource "aws_instance" "master" {
             "sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.7.0_71/bin/java 20000",
             "wget --no-check-certificate http://central.maven.org/maven2/org/mongodb/mongo-java-driver/2.13.0/mongo-java-driver-2.13.0.jar",
             "echo 'export CLASSPATH=~/mongo-java-driver-2.13.0.jar:$CLASSPATH' >> ~/.bashrc",
-            "cd ~; git clone https://github.com/rzh/sysbench-mongodb.git",
-            "cd ~; git clone -b shard-test https://github.com/rzh/YCSB.git",
-            "curl https://raw.githubusercontent.com/rzh/utils/master/mongodb/scripts/install_maven.sh | sudo bash",
+            "cd ~; wget --quiet --no-check-certificate https://s3-us-west-2.amazonaws.com/dsi-donot-remove/ycsb/YCSB.tar.gz; tar zxvf YCSB.tar.gz"
+            "curl https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash",
             "source /etc/profile.d/maven.sh; cd /home/ec2-user/YCSB/ycsb-mongodb; ./setup.sh",
             "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled", 
             "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag", 
