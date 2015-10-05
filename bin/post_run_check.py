@@ -252,7 +252,7 @@ def compare_throughputs(this_one, reference, label, threshold=0.07, thread_thres
     return 'fail'
 
 
-def set_up_histories(hfile, tfile=None, ofile=None):
+def set_up_histories(variant, hfile, tfile, ofile):
     # Set up result histories from various files:
     # history - this series include the run to be checked, and previous or NDays
     # tag_history - this is the series that holds the tag build as comparison target
@@ -272,10 +272,10 @@ def set_up_histories(hfile, tfile=None, ofile=None):
     overrides = {'ndays' : {}, 'reference' : {}}
     if ofile:
         # Read the overrides file
-        foverrides = get_json(args.overrideFile)
+        foverrides = get_json(ofile)
         # Is this variant in the overrides file?
-        if args.variant in foverrides : 
-            overrides = foverrides[args.variant]
+        if variant in foverrides : 
+            overrides = foverrides[variant]
 
                     
 
@@ -301,10 +301,7 @@ def main(args):
     parser.add_argument("--variant", dest="variant", help="Variant to lookup in the override file")
 
     args = parser.parse_args()
-    hfile = (args.hfile if args.hfile else None)
-    tfile = (args.tfile if args.tfile else None)
-    ofile = (args.ofile if args.ofile else None)
-    set_up_histories(hfile, tfile, ofile)
+    set_up_histories(args.variant, args.hfile, args.tfile, args.ofile)
 
     failed = 0
     results = []
