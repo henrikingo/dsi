@@ -7,9 +7,9 @@ from datetime import timedelta, datetime
 
 # Example usage:
 # post_run_check.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f
-#         --project_id $pr_id --task_id $t_id
+#         --project_id $pr_id --task_name $t_name
 # Loads the history json file, and looks for regressions at the revision 18808cd...
-# Evergreen project_id and task_id are used to uniquely identify the rule set to use
+# Evergreen project_id and task_name are used to uniquely identify the rule set to use
 # Will exit with status code 1 if any regression is found, 0 otherwise.
 
 
@@ -87,14 +87,19 @@ def sys_shard(test):
 
 def longevity_shard(test):
     to_return = {}
-    to_return.update(compare_to_previous(test, threshold=0.07, thread_threshold=0.07))
+    to_return.update(compare_to_previous(test, threshold=0.2, thread_threshold=0.2))
     # longevity tests are run once a week; 7-day check is not very useful
-    to_return.update(compare_to_tag(test, threshold=0.07, thread_threshold=0.07))
+    to_return.update(compare_to_tag(test, threshold=0.2, thread_threshold=0.2))
     # max_lag check
     # possibly some check on whether load is balanced across shard
     return to_return
 
-# project_id and task_id uniquely identify the set of rules to check
+def unsupported(test):
+    print "The (project_id, task_name) combination is not supported " \
+      "for post_run_check.py"
+    sys.exit(1)
+
+# project_id and task_name uniquely identify the set of rules to check
 # using a dictionary to help us choose the function with the right rules
 check_rules = {
     'sys-perf': {
@@ -103,8 +108,8 @@ check_rules = {
         'shard_cluster_test': sys_shard
         },
     'mongo-longevity': {
-        'single_cluster_test': sys_single,
-        'replica_cluster': sys_replica,
+        'single_cluster_test': unsupported,
+        'replica_cluster': unsupported,
         'shard_cluster_test': longevity_shard
         }
     }
@@ -289,7 +294,7 @@ for every tests, which gets dumped into a report file at the end.
 def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument("--project_id", dest="project_id", help="project_id for the test in Evergreen")
-    parser.add_argument("--task_id", dest="task_id", help="task_id for the test in Evergreen")    
+    parser.add_argument("--task_name", dest="task_name", help="task_name for the test in Evergreen")    
     parser.add_argument("-f", "--file", dest="hfile", help="path to json file containing"
                         "history data")
     parser.add_argument("-t", "--tagFile", dest="tfile", help="path to json file containing"
@@ -302,7 +307,7 @@ def main(args):
 
     args = parser.parse_args()
     set_up_histories(args.variant, args.hfile, args.tfile, args.ofile)
-
+            
     failed = 0
     results = []
 
@@ -318,7 +323,7 @@ def main(args):
             if len(to_test) == 1:
                 print "\tno data at this revision, skipping"
                 continue
-            result.update(check_rules[args.project_id][args.task_id](to_test))
+            result.update(check_rules[args.project_id][args.task_name](to_test))
             if any(v == 'fail' for v in result.itervalues()):
                 failed += 1
                 result['status'] = 'fail'
