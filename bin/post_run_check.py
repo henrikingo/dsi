@@ -104,12 +104,12 @@ def unsupported(test):
 check_rules = {
     'sys-perf': {
         'single_cluster_test': sys_single,
-        'replica_cluster': sys_replica,
+        'replica_cluster_test': sys_replica,
         'shard_cluster_test': sys_shard
         },
     'mongo-longevity': {
         'single_cluster_test': unsupported,
-        'replica_cluster': unsupported,
+        'replica_cluster_test': unsupported,
         'shard_cluster_test': longevity_shard
         }
     }
