@@ -5,7 +5,7 @@
                         "run_id": "benchRun",
                         "clients": [ %%CLIENT%% ],
                         "client_logs": [],
-                        "servers": [ %%P1%%],
+                        "servers": [ %%ALLMEMBERS%%],
                         "server_logs": [],
                         "type"  : "shell",
                         "cmd": "cd workloads/; ./run-workloads.sh -t %%I1%%  -e wiredTiger; sleep 1"
