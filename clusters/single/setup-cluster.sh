@@ -10,6 +10,7 @@ cat terraform.log
 cat terraform.log | grep "  clat ("
 
 # check performance and re-done the mongod instance if necessary
+../../bin/pre-qualify-cluster.sh
 
 
 # this will extract all public and private IP address information

@@ -10,5 +10,7 @@ cp ../../terraform/* .
 
 cat terraform.log | grep "  clat ("
 
+../../bin/pre-qualify-cluster.sh
+
 # this will extract all public and private IP address information
 ./env.sh
