@@ -26,7 +26,7 @@
                         "servers": [ %%ALLMEMBERS%%, %%MS%% ],
                         "server_logs": [],
                         "type"  : "ycsb",
-                        "cmd": "cd YCSB/ycsb-mongodb; ./evergreen-95read5update.sh %%I1%%; sleep 1"
+                        "cmd": "cd YCSB/ycsb-mongodb; ./evergreen-95read5update.sh %%MS_PRIVATE_IP%%; sleep 1"
                     },
             {
                         "run_id": "ycsb_50read50update",
