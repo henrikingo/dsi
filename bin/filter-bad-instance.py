@@ -7,7 +7,6 @@ import sys,re
 # print to stdout
 # no output if no "bad" instance found
 
-clat_threshold=7000
 p = re.compile(' avg=[0-9\.]+,')
 
 '''
