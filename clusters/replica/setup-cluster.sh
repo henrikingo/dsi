@@ -3,8 +3,7 @@
 cp ../../terraform/* .
 
 # create all resources and instances
-./terraform apply  > terraform.log
-cat terraform.log
+./terraform apply  | tee terraform.log
 
 # just to print out disk i/o information
 cat terraform.log | grep "  clat ("
