@@ -32,10 +32,8 @@ def compare_to_previous(test, threshold, thread_threshold):
         return {'PreviousCompare': compare_throughputs(test, previous, "Previous", threshold, thread_threshold)}
     
 def compare_to_NDays(test, threshold, thread_threshold):
-#    sys-perf data currently does not have the 'end' field so we cannot use the
-#    actual seriesAtNDayBefore method. Also, the 'end' field is incorrect because
-#    it is the end of the run time, not the commit time.
-    daysprevious = history.seriesAtNBefore(test['name'], test['revision'], 14)
+    # check if there is a regression in the last week
+    daysprevious = history.seriesAtNDaysBefore(test['name'], test['revision'], 7)
     if test['name'] in overrides['ndays']:
         print "Override in ndays for test %s" % test
         daysprevious = overrides['ndays'][test['name']]
@@ -178,11 +176,11 @@ class History(object):
         s = self.seriesAtRevision(testname, revision)
         if s==[]:
             return []
-        refdate = parser.parse(s["end"]) - timedelta(days=n)
+        refdate = parser.parse(s["create_time"]) - timedelta(days=n)
 
         s = self.series(testname)
         for result in s:
-            if parser.parse(result["end"]) < refdate:
+            if parser.parse(result["create_time"]) < refdate:
                 results = result
         return results
 
@@ -195,6 +193,7 @@ class History(object):
                 result["revision"] = commit["revision"]
                 result["tag"] = commit["tag"]
                 result["order"] = commit["order"]
+                result["create_time"] = commit["create_time"]
                 result["max"] = max(f["ops_per_sec"] for f in result["results"].values()
                                     if type(f) == type({}))
                 result["threads"] = [f for f in result["results"] if type(result["results"][f])
@@ -220,7 +219,7 @@ def compare_one_throughput(this_one, reference, label, thread_level="max", thres
             return False
         ref = reference["results"][thread_level]['ops_per_sec']
         current = this_one["results"][thread_level]['ops_per_sec']
-
+        
     delta = threshold * ref
     if ref - current >= delta:
         print ("\tregression found on %s: drop from %.2f ops/sec (commit %s) to %.2f ops/sec for comparison %s. Diff is"
