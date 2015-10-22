@@ -7,16 +7,19 @@ import sys,re
 # print to stdout
 # no output if no "bad" instance found
 
-p = re.compile(' avg=[0-9\.]+,')
-
 '''
 format of input:
      aws_instance.member (remote-exec):     clat (usec): min=104, max=93265, avg=19980.03, stdev=20666.44
      aws_instance.member (remote-exec):     clat (usec): min=105, max=97675, avg=20374.75, stdev=20305.26
+
+how to find "bad" instance:
+    we will check avg for fio clat (completion latency), 
+    if clat_avg <= 7000 usec, we will consider it good for test run
+    there are two SSDs for each instance, it will check both disks
+    any disk fio test failure will cause the instance to be recreated
 '''
 
 for line in sys.stdin:
-
     m = re.search('clat \(msec\):', line)
     
     if m:

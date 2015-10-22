@@ -25,5 +25,6 @@ done
 
 if $REDO_INSTANCE; then
     >&2 echo "Error: still have tainted instance after 5 tries, exit tests" 
+    exit 1
 fi
 
