@@ -146,6 +146,7 @@ fi
 ## all shards
 for i in "${ALL_HOST[@]}"
 do
+    ssh-keygen -R ${!i}
     killAllProcess ${!i} "mongod"
 done
 
