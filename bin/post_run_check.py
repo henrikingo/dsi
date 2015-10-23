@@ -5,6 +5,7 @@ import itertools
 from dateutil import parser
 from datetime import timedelta, datetime
 
+
 # Example usage:
 # post_run_check.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f
 #         --project_id $pr_id --task_name $t_name
@@ -34,8 +35,10 @@ def compare_to_previous(test, threshold, thread_threshold):
 def compare_to_NDays(test, threshold, thread_threshold):
     # check if there is a regression in the last week
     daysprevious = history.seriesAtNDaysBefore(test['name'], test['revision'], 7)
+    if not daysprevious:
+        print "        no reference data for test %s with NDays" % (test['name'])
     if test['name'] in overrides['ndays']:
-        print "Override in ndays for test %s" % test
+        print "        using override in ndays for test %s" % test
         daysprevious = overrides['ndays'][test['name']]
     return {'NDayCompare': compare_throughputs(test, daysprevious, "NDays", threshold, thread_threshold)}
         
@@ -43,10 +46,10 @@ def compare_to_tag(test, threshold, thread_threshold):
     # if tag_history is undefined, skip this check completely
     if tag_history:
         reference = tag_history.seriesAtTag(test['name'], test['ref_tag'])
-        if not reference : 
-            print "Didn't get any data for test %s with baseline" % (test['name'])
+        if not reference: 
+            print "        no reference data for test %s with baseline" % (test['name'])
         if test['name'] in overrides['reference']:
-            print "Override in references for test %s" % test
+            print "        using override in references for test %s" % test
             reference = overrides['reference'][test['name']]
         return {'BaselineCompare': compare_throughputs(test, reference, "Baseline Comparison",
                                                        threshold, thread_threshold)}
@@ -205,7 +208,6 @@ def compare_one_throughput(this_one, reference, label, thread_level="max", thres
     # comapre one data point from result series this_one to reference at thread_level
     # if this_one is lower by threshold*reference return True
 
-    print "checking %s" % (thread_level)
     # Don't do a comparison if the reference data is missing 
     if not reference:
         return False
@@ -222,10 +224,16 @@ def compare_one_throughput(this_one, reference, label, thread_level="max", thres
         
     delta = threshold * ref
     if ref - current >= delta:
-        print ("\tregression found on %s: drop from %.2f ops/sec (commit %s) to %.2f ops/sec for comparison %s. Diff is"
-               " %.2f ops/sec (%.2f%%)" %
-               (thread_level, ref, reference["revision"][:5], current, label, ref - current,
-                100*(ref-current)/ref))
+        if label == "Baseline Comparison":
+            print >> sys.stderr, ("  --->  regression found on %s: drop from %.2f ops/sec (%s) to %.2f "
+                   "ops/sec for comparison %s. Diff is %.2f ops/sec (%.2f%%)"
+                   %(thread_level, ref, reference["tag"], current, label, ref - current,
+                     100*(ref-current)/ref))
+        else:
+            print >> sys.stderr, ("  --->  regression found on %s: drop from %.2f ops/sec (%s) to %.2f "
+                   "ops/sec for comparison %s. Diff is %.2f ops/sec (%.2f%%)"
+                   %(thread_level, ref, reference["revision"][:5], current, label, ref - current,
+                     100*(ref-current)/ref))
         return True
     else:
         return False
@@ -251,7 +259,10 @@ def compare_throughputs(this_one, reference, label, threshold=0.07, thread_thres
         if compare_one_throughput(this_one, reference, label, level,thread_threshold):
             failed = True
     if not failed:
-        print "\tno regression against %s and githash %s" %(label, reference["revision"][:5])
+        if label == "Baseline Comparison":
+            print "        no regression against %s (%s)" %(label, reference["tag"])
+        else:
+            print "        no regression against %s (%s)" %(label, reference["revision"][:5])
         return 'pass'
     return 'fail'
 
@@ -318,6 +329,7 @@ def main(args):
         t = history.seriesAtRevision(test, args.rev)
         if t:
             to_test.update(t)
+            print "=============================="
             print "checking %s.." % (test)
             if len(to_test) == 1:
                 print "\tno data at this revision, skipping"
