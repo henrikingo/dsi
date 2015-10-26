@@ -14,28 +14,36 @@
 
 """Module for interacting with Evergreen."""
 
-import json
-import re
-import requests
+# TODO: Replace print statements with the logging module. In PyCharm, it doesn't seem to work with the console
+# TODO: Code cleanup
+
+from __future__ import print_function
+import logging
+
+import helpers
+
+DEFAULT_EVERGREEN_URL = 'https://evergreen.mongodb.com'
+"""The default Evergreen URL."""
 
 
-DEFAULT_EVERGREEN_ENDPOINT = 'https://evergreen.mongodb.com/rest/v1'
-"""The default Evergreen endpoint."""
+class EvergreenError(Exception):
+    """Generic class for Evergreen errors."""
+    pass
 
 
 class EvergreenClient(object):
     """Allows for interaction with an Evergreen server."""
-    def __init__(self, endpoint_url=None):
+
+    def __init__(self, base_url=None, verbose=True):
         """Create a new handle to an Evergreen server.
 
-        :param endpoint_url: (optional) The URL to the Evergreen endpoint. If not specified, uses a reasonable default.
+        :param base_url: (optional) The URL to the Evergreen server. If not specified, uses a reasonable default.
         """
-        if endpoint_url:
-            self.endpoint = endpoint_url
-        else:
-            self.endpoint = DEFAULT_EVERGREEN_ENDPOINT
+        self.logger = logging.getLogger('evergreen')
+        self.logger.level = logging.INFO if verbose else logging.WARNING
+        self.base_url = base_url if base_url is not None else DEFAULT_EVERGREEN_URL
 
-    def get_recent_versions(self, project_name, max_results=10):
+    def get_recent_revisions(self, project_name, max_results=10):
         """Get the most recent revisions for an Evergreen project.
 
         Valid project names include "performance" for the MongoDB Perf Project, "sys_perf" for System Performance, and
@@ -56,99 +64,83 @@ class EvergreenClient(object):
         :return: A list containing build information on the most recent commits
         :rtype: list[dict]
         """
-        response = requests.get('{0}/projects/{1}/versions'.format(self.endpoint, project_name))
-        if not response.ok:
-            response.raise_for_status()
-        else:
-            return response.json()['versions'][:max_results]
+        response = helpers.get_as_json('{0}/rest/v1/projects/{1}/versions'.format(self.base_url, project_name))
+        return response['versions'][:max_results]
 
-    def get_variants_from_revision(self, project, revision):
-        """Get the build variants associated with the given project and Git revision.
+    def get_build_variants_from_git_commit(self, project, commit_sha):
+        """Get the build variants associated with the given project and Git commit SHA1.
 
         :param project: The Evergreen project ID
-        :param revision: The SHA1 of the desired Git commit
+        :param commit_sha: The SHA1 of the desired Git commit
         :return: A list of build variant IDs
         :rtype: list[str]
         """
-        response = requests.get('{0}/projects/{1}/revisions/{2}'.format(self.endpoint, project, revision))
-        if not response.ok:
-            response.raise_for_status()
-        else:
-            return response.json()['builds']
+        response = helpers.get_as_json('{0}/rest/v1/projects/{1}/revisions/{2}'.format(self.base_url,
+                                                                                       project,
+                                                                                       commit_sha))
+        return response['builds']
 
-    def get_variants_from_version(self, version_id):
-        """Get the build variants associated with with this project version.
+    def get_build_variants_from_revision_id(self, revision_id):
+        """Get the build variants associated with with this project revision.
 
         This returns a list of build variant IDs from Evergreen. With this ID, you can find the specific tasks
         associated with that particular variant.
 
-        :param version_id: The version ID in Evergreen
+        :param revision_id: The revision ID in Evergreen
         :return: A list of build variant IDs
         :rtype: list[str]
         """
-        response = requests.get('{0}/versions/{1}'.format(self.endpoint, version_id))
-        if not response.ok:
-            response.raise_for_status()
-        else:
-            return response.json()['builds']
+        response = helpers.get_as_json('{0}/rest/v1/versions/{1}'.format(self.base_url, revision_id))
+        return response['builds']
 
-    def get_variant_names_from_revision(self, project, revision):
-        """Get the variant names associated with this project and Git revision.
+    def get_build_variant_names_from_git_commit(self, project, commit):
+        """Get the build variant names associated with this project and Git revision.
 
-        This returns a list of variant names in human-readable format. Hyphens received from the server are
-        automatically replaced with underscores, to aid in querying for other Evergreen information.
+        This returns a list of variant names in human-readable format. Underscores received from the server are
+        automatically replaced with hyphens, to aid in querying for other Evergreen information.
 
         :param project: The Evergreen project ID
-        :param revision: The SHA1 of the desired Git commit
+        :param commit: The SHA1 of the desired Git commit
         :return: A list of build variant names
         :rtype: list[str]
         """
-        response = requests.get('{0}/projects/{1}/revisions/{2}'.format(self.endpoint, project, revision))
-        if not response.ok:
-            response.raise_for_status()
-        else:
-            return [variant.replace('-', '_') for variant in response.json()['build_variants']]
+        response = helpers.get_as_json('{0}/rest/v1/projects/{1}/revisions/{2}'.format(self.base_url, project, commit))
+        return [variant.replace('_', '-') for variant in response['build_variants']]
 
-    def get_variant_names_from_version(self, version_id):
-        """Get the variant names associated with this project version.
+    def get_build_variant_names_from_revision_id(self, revision_id):
+        """Get the build variant names associated with this project version.
 
-        This returns a list of variant names in human-readable format. Hyphens received from the server are
-        automatically replaced with underscores, to aid in querying for other Evergreen information.
+        This returns a list of variant names in human-readable format. Underscores received from the server are
+        automatically replaced with hyphens, to aid in querying for other Evergreen information.
 
-        :param version_id: The version ID in Evergreen
+        :param str revision_id: The version ID in Evergreen
         :return: A list of build variant names
         :rtype: list[str]
         """
-        response = requests.get('{0}/versions/{1}'.format(self.endpoint, version_id))
-        if not response.ok:
-            response.raise_for_status()
-        else:
-            return [variant.replace('-', '_') for variant in response.json()['build_variants']]
+        response = helpers.get_as_json('{0}/rest/v1/versions/{1}'.format(self.base_url, revision_id))
+        return [variant.replace('_', '-') for variant in response['build_variants']]
 
-    def get_tasks_from_variant(self, build_id):
+    def get_tasks_from_build_variant(self, build_variant_id):
         """Get the tasks associated with this build ID.
 
         This returns a JSON-compatible dict describing the status of the tasks. The keynames are the names of each task;
         the values are subdocuments with more information. For example, to extract all of the task names:
 
             >>> evg = EvergreenClient()
-            >>> tasks = evg.get_tasks_from_variant('performance_linux_mmap_standalone_9664b4bd7d19144b801767ff8b014520b24a56bc_15_10_21_20_49_17')
-            >>> tasks.keys()
-            ['geo', 'insert', 'misc', 'query', 'singleThreaded', 'update', 'where']
+            >>> tasks = evg.get_tasks_from_build_variant('performance_linux_mmap_standalone_9664b4bd7d19144b801767ff8b014520b24a56bc_15_10_21_20_49_17')
+            >>> sorted(tasks.keys())
+            [u'geo', u'insert', u'misc', u'query', u'singleThreaded', u'update', u'where']
             >>> tasks['geo']['task_id']
-            'performance_linux_mmap_standalone_geo_9664b4bd7d19144b801767ff8b014520b24a56bc_15_10_21_20_49_17'
+            u'performance_linux_mmap_standalone_geo_9664b4bd7d19144b801767ff8b014520b24a56bc_15_10_21_20_49_17'
 
-        :param build_id: The build ID of a build variant in Evergreen
+        :param build_variant_id: The build ID of a build variant in Evergreen
         :return: A JSON-compatible dictionary of task information
-        :rtype: dict
+        :rtype: dict[str, dict]
         """
-        response = requests.get('{0}/builds/{1}'.format(self.endpoint, build_id))
-        if not response.ok:
-            response.raise_for_status()
-        else:
-            return response.json()['tasks']
+        response = helpers.get_as_json('{0}/rest/v1/builds/{1}'.format(self.base_url, build_variant_id))
+        return response['tasks']
 
-    def get_testnames_from_task(self, task_id):
+    def get_test_names_from_task(self, task_id):
         """Get the tests associated with this task ID.
 
         Only the test names are returned; other information is stripped away.
@@ -157,115 +149,21 @@ class EvergreenClient(object):
         :return: A list of test names
         :rtype: list
         """
-        response = requests.get('{0}/tasks/{1}'.format(self.endpoint, task_id))
-        if not response.ok:
-            response.raise_for_status()
-        else:
-            return response.json()['test_results'].keys()
+        response = helpers.get_as_json('{0}/rest/v1/tasks/{1}'.format(self.base_url, task_id))
+        return response['test_results'].keys()
 
+    def get_failed_tests(self, task_id):
+        """Get the tests that have failed for this task.
 
-class Project(object):
-    """Represents a project in Evergreen."""
-
-    def __init__(self, initializer):
-        """Initialize a new project.
-
-        Create a new configuration, in JSON format, that represents the configuration of the project in Evergreen.
-        The initializer can be one of several types:
-
-            - str: Treated as a file path to a file to open
-            - file: File descriptor from which to open the file. Must be readable
-            - dict: A JSON-compatible dict used directly as the configuration
-
-        :param initializer: A file, filename, or JSON-compatible dictionary from which to create the configuration
+        :param task_id:
+        :return:
         """
-        if isinstance(initializer, str):
-            with open(initializer, 'r') as fd:
-                self.config = json.load(fd)
-        elif isinstance(initializer, file):
-            self.config = json.load(initializer)
-        elif isinstance(initializer, dict):
-            self.config = initializer
-        else:
-            raise TypeError('Initializer is not a valid type')
+        response = helpers.get_as_json('{0}/rest/v1/tasks/{1}'.format(self.base_url, task_id))
+        if response['aborted']:
+            self.logger.warning('Searching for failed tests in a task that has been aborted')
 
-    def get_name(self):
-        """Get the Evergreen project ID name for this project.
-
-        :return: The ID in Evergreen for this project
-        :rtype: str
-        """
-        return self.config['name']
-
-    def get_variants(self, filter=None):
-        """Get the variants used in this project.
-
-        If `filter` is None, this retrieves all variants in this project. Otherwise, `filter` is treated as a regular
-        expression and it returns all variants that match the pattern.
-
-        :param filter: (optional) Select only variants matching the filter
-        :return: The variants for this Evergreen project.
-        :rtype: list[str]
-        """
-        result = []
-        for variant in self.config['variants']:
-            if filter is None or re.match(filter, variant['name']):
-                result.append(variant['name'])
-        return result
-
-    def get_tasks(self, variant, filter=None):
-        """Get the tasks for this variant.
-
-        If no variant with this name exists, an empty list is returned.
-
-        :param variant: The name of the variant
-        :return: The tasks associated with this variant
-        :rtype: list[str]
-        """
-        result = []
-        for v in self.config['variants']:
-            if v['name'] != variant:
-                continue
-
-            for task in v['tasks']:
-                result.append(task['name'])
-
-        return result
-
-    def get_tests(self, variant, task, filter=None):
-        """Get the tests associated with the given variant and task.
-
-        :param variant:
-        :param task:
-        :param filter: (optional)
-        :return: A list of test names
-        :rtype: list[str]
-        """
-        pass
-
-    def save_to_file(self, destination):
-        """Save this configuration to a new file.
-
-        :param destination: A filename or file object to save to. Must be writable
-        :return: None
-        """
-        if isinstance(destination, str):
-            fd = open(destination, 'w')
-        elif isinstance(destination, file):
-            fd = destination
-        else:
-            raise TypeError('destination must be a file or file name')
-
-        json.dump(self.config, fd)
-        fd.close()
-
-    @staticmethod
-    def new_from_evergreen(evg_client, project_name):
-        """Look up a project's configuration directly from Evergreen.
-
-        :param evg_client: An EvergreenClient
-        :param project_name: The identifier of the project in Evergreen
-        :return: A new Project object.
-        """
-        # TODO
-        return None
+        failed_tests = []
+        for test, result in response['test_results'].iteritems():
+            if result['status'] != 'pass':
+                failed_tests.append(test)
+        return failed_tests
