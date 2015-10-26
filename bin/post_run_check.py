@@ -27,7 +27,7 @@ Rules section - types of rules are:
 def compare_to_previous(test, threshold, thread_threshold):
     previous = history.seriesAtNBefore(test['name'], test['revision'], 1)
     if not previous:
-        print "\tno previous data, skipping"
+        print "        no previous data, skipping"
         return {'PreviousCompare': 'pass'}
     else:
         return {'PreviousCompare': compare_throughputs(test, previous, "Previous", threshold, thread_threshold)}
@@ -51,7 +51,7 @@ def compare_to_tag(test, threshold, thread_threshold):
         if test['name'] in overrides['reference']:
             print "        using override in references for test %s" % test
             reference = overrides['reference'][test['name']]
-        return {'BaselineCompare': compare_throughputs(test, reference, "Baseline Comparison",
+        return {'BaselineCompare': compare_throughputs(test, reference, "Baseline",
                                                        threshold, thread_threshold)}
     else:
         return {}
@@ -224,16 +224,20 @@ def compare_one_throughput(this_one, reference, label, thread_level="max", thres
         
     delta = threshold * ref
     if ref - current >= delta:
-        if label == "Baseline Comparison":
-            print >> sys.stderr, ("  --->  regression found on %s: drop from %.2f ops/sec (%s) to %.2f "
+        diff_percent = 100*(current-ref)/ref
+        if label == "Baseline":
+            print ("   ---> regression found on %s: drop from %.2f ops/sec (%s) to %.2f "
                    "ops/sec for comparison %s. Diff is %.2f ops/sec (%.2f%%)"
-                   %(thread_level, ref, reference["tag"], current, label, ref - current,
-                     100*(ref-current)/ref))
+                   %(thread_level, ref, reference["tag"], current, label, ref - current, diff_percent))
+            regression_line.append((this_one["name"], label, reference["tag"],
+                                    thread_level, ref, current, diff_percent)) 
         else:
-            print >> sys.stderr, ("  --->  regression found on %s: drop from %.2f ops/sec (%s) to %.2f "
+            print ("   ---> regression found on %s: drop from %.2f ops/sec (%s) to %.2f "
                    "ops/sec for comparison %s. Diff is %.2f ops/sec (%.2f%%)"
-                   %(thread_level, ref, reference["revision"][:5], current, label, ref - current,
-                     100*(ref-current)/ref))
+                   %(thread_level, ref, reference["tag"], current, label,
+                     ref - current, diff_percent))
+            regression_line.append((this_one["name"], label, reference["revision"][:5],
+                                    thread_level, ref, current, diff_percent)) 
         return True
     else:
         return False
@@ -259,7 +263,7 @@ def compare_throughputs(this_one, reference, label, threshold=0.07, thread_thres
         if compare_one_throughput(this_one, reference, label, level,thread_threshold):
             failed = True
     if not failed:
-        if label == "Baseline Comparison":
+        if label == "Baseline":
             print "        no regression against %s (%s)" %(label, reference["tag"])
         else:
             print "        no regression against %s (%s)" %(label, reference["revision"][:5])
@@ -320,6 +324,8 @@ def main(args):
             
     failed = 0
     results = []
+    global regression_line
+    regression_line = []
 
     # iterate through tests and check for regressions and other violations
     testnames = history.testnames()
@@ -346,6 +352,26 @@ def main(args):
     report['failures'] = failed
     report['results'] = results
 
+    # flush stdout to the log file
+    sys.stdout.flush()
+
+    # use the stderr to print regression summary table
+    # a similar error summary table can be added for error conditions
+    if len(regression_line) > 0:
+        print >> sys.stderr, "\n=============================="
+        print >> sys.stderr, "Regression Summary:"
+        printing_test = ""
+        for line in regression_line:
+            if line[0] != printing_test:
+                printing_test = line[0]
+                print >> sys.stderr, "\n%s" % printing_test
+                print >> sys.stderr, ("%10s|%16s|%7s|%11s|%11s|%11s" %
+                                      ("Violation", "Compared_to", "Thread",
+                                       "Target", "Achieved", "delta(%)") )
+                print >> sys.stderr, "-"*10 + "+" + "-"*16 + "+" + "-"*7 + "+" + "-"*11 + "+" + "-"*11 + "+" + "-"*11
+            print >> sys.stderr, ("%10s|%16s|%7s|%11.2f|%11.2f|%11.2f" % line[1:])
+    sys.stderr.flush()
+    
     reportFile = open('report.json', 'w')
     json.dump(report, reportFile, indent=4, separators=(',', ': '))
     if failed > 0 :
