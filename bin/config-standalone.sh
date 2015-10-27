@@ -103,7 +103,7 @@ runSSHCommand() {
 
     # ssh command here
     # /usr/bin/ssh -i /Users/rui/bin/rui-aws-cap.pem $ssh_url $cmd
-    /usr/bin/ssh $SSHKEY $USER@$ssh_url $cmd
+    /usr/bin/ssh -oStrictHostKeyChecking=no $SSHKEY $USER@$ssh_url $cmd
 }
 
 startStandalone() {
@@ -144,8 +144,12 @@ fi
 
 
 ## all shards
+ssh-keygen -R $mc
+killAllProcess $mc "mongod"
+killAllProcess $mc "java"
 for i in "${ALL_HOST[@]}"
 do
+    echo "Regenerate key for $i:${!i}"
     ssh-keygen -R ${!i}
     killAllProcess ${!i} "mongod"
 done
