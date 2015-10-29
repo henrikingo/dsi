@@ -13,6 +13,9 @@ cat terraform.log | grep "  clat ("
 ../../bin/pre-qualify-cluster.sh
 rc=$?
 
+# disable system failure for shard cluster 
+rc=0 
+
 # this will extract all public and private IP address information
 ./env.sh
 
