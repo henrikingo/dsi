@@ -11,24 +11,6 @@
                         "cmd": "cd YCSB/ycsb-mongodb; ./evergreen-load.sh %%I1%%; sleep 1"
                     },
             {
-                        "run_id": "ycsb-mmapv1_100read",
-                        "clients": [ %%CLIENT%% ],
-                        "client_logs": [],
-                        "servers": [ %%ALLMEMBERS%%],
-                        "server_logs": [],
-                        "type"  : "ycsb",
-                        "cmd": "cd YCSB/ycsb-mongodb; ./evergreen-100read.sh %%I1%%; sleep 1"
-                    },
-            {
-                        "run_id": "ycsb_95read5update-mmapv1",
-                        "clients": [ %%CLIENT%% ],
-                        "client_logs": [],
-                        "servers": [ %%ALLMEMBERS%%],
-                        "server_logs": [],
-                        "type"  : "ycsb",
-                        "cmd": "cd YCSB/ycsb-mongodb; ./evergreen-95read5update.sh %%I1%%; sleep 1"
-                    },
-            {
                         "run_id": "ycsb-mmapv1_50read50update",
                         "clients": [ %%CLIENT%% ],
                         "client_logs": [],
@@ -36,6 +18,15 @@
                         "server_logs": [],
                         "type"  : "ycsb",
                         "cmd": "cd YCSB/ycsb-mongodb; ./evergreen-50read50update.sh %%I1%%; sleep 1"
+                    },
+            {
+                        "run_id": "ycsb-mmapv1_50read50update_w_majority-wiredTiger",
+                        "clients": [ %%CLIENT%% ],
+                        "client_logs": [],
+                        "servers": [ %%ALLMEMBERS%%],
+                        "server_logs": [],
+                        "type"  : "ycsb",
+                        "cmd": "cd YCSB/ycsb-mongodb; ./evergreen-50read50update_w_majority.sh %%I1%%; sleep 1"
                     }
         ]}
 

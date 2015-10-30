@@ -36,6 +36,15 @@
                         "server_logs": [],
                         "type"  : "ycsb",
                         "cmd": "cd YCSB/ycsb-mongodb; ./evergreen-50read50update.sh %%MS_PRIVATE_IP%%; sleep 1"
-                    }
+                    },
+                    {
+                        "run_id": "ycsb_50read50update_w_majority-wiredTiger",
+                        "clients": [ %%CLIENT%% ],
+                        "client_logs": [],
+                        "servers": [ %%ALLMEMBERS%%, %%MS%% ],
+                        "server_logs": [],
+                        "type"  : "ycsb",
+                        "cmd": "cd YCSB/ycsb-mongodb; ./evergreen-50read50update_w_majority.sh %%MS_PRIVATE_IP%%; sleep 1"
+            }
         ]}
 
