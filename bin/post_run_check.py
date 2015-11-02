@@ -4,7 +4,8 @@ import sys
 import itertools
 from dateutil import parser
 from datetime import timedelta, datetime
-
+import os
+import re
 
 # Example usage:
 # post_run_check.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f
@@ -58,8 +59,49 @@ def compare_to_tag(test, threshold, thread_threshold):
     
 
 # Failure and other condition checks
+def replica_lag_check(test, threshold):
+    # Iterate through all thread levels and flag a test if its
+    # max replication lag
+    # is higher than the threshold
+    status = 'pass'
+    total_lag_entry = 0
+    for level in test['results']:
+        lag_entry = 0
+        if 'replica_avg_lag' in test['results'][level]:
+            avg_lag = test['results'][level]['replica_avg_lag']
+            lag_entry += 1
+        else:
+            avg_lag = "NA"
+        if 'replica_max_lag' in test['results'][level]:
+            max_lag = test['results'][level]['replica_max_lag']
+            lag_entry += 1
+        else:
+            max_lag = "NA"
+        if 'replica_end_of_test_lag' in test['results'][level]:
+            end_of_test_lag = test['results'][level]['replica_end_of_test_lag']
+            lag_entry += 1
+        else:
+            end_of_test_lag = "NA"
+        total_lag_entry += 1
+        # mark the test failed if max_lag is higher than threshold
+        if max_lag != "NA":
+            if float(max_lag) > threshold:
+                status = 'fail'
+                print("        replica_max_lag (%s) > threshold(%s) seconds at %s" %
+                      (max_lag, threshold, level))
+        # print an etry in the replica_lag summary table, regardless of pass/fail
+        if lag_entry > 0:
+            replica_lag_line.append((test['name'], level, avg_lag, max_lag, end_of_test_lag))
 
+    if total_lag_entry == 0:
+        # no lag information
+        return {}
+    if status == 'pass':
+        print("        replica_lag under threshold (%s) seconds" % threshold)
+    return {'Replica_lag_check': status}
 
+        
+        
 # project-specific rules
 
 def sys_single(test):
@@ -75,6 +117,7 @@ def sys_replica(test):
     to_return.update(compare_to_NDays(test, threshold=0.07, thread_threshold=0.07))
     to_return.update(compare_to_tag(test, threshold=0.07, thread_threshold=0.07))
     # max_lag check
+    to_return.update(replica_lag_check(test, threshold=10))
     return to_return
 
 def sys_shard(test):
@@ -83,6 +126,7 @@ def sys_shard(test):
     to_return.update(compare_to_NDays(test, threshold=0.07, thread_threshold=0.07))
     to_return.update(compare_to_tag(test, threshold=0.07, thread_threshold=0.07))
     # max_lag check
+    to_return.update(replica_lag_check(test, threshold=10))
     # possibly some check on whether load is balanced across shard
     return to_return
 
@@ -92,6 +136,7 @@ def longevity_shard(test):
     # longevity tests are run once a week; 7-day check is not very useful
     to_return.update(compare_to_tag(test, threshold=0.2, thread_threshold=0.2))
     # max_lag check
+    to_return.update(replica_lag_check(test, threshold=10))
     # possibly some check on whether load is balanced across shard
     return to_return
 
@@ -324,8 +369,12 @@ def main(args):
             
     failed = 0
     results = []
+    # regression summary table lines
     global regression_line
     regression_line = []
+    # replication lag table lines
+    global replica_lag_line
+    replica_lag_line = []
 
     # iterate through tests and check for regressions and other violations
     testnames = history.testnames()
@@ -352,8 +401,9 @@ def main(args):
     report['failures'] = failed
     report['results'] = results
 
-    # flush stdout to the log file
+    # flush and fsync stdout to the log file
     sys.stdout.flush()
+    os.fsync(sys.stdout)
 
     # use the stderr to print regression summary table
     # a similar error summary table can be added for error conditions
@@ -370,7 +420,28 @@ def main(args):
                                        "Target", "Achieved", "delta(%)") )
                 print >> sys.stderr, "-"*10 + "+" + "-"*16 + "+" + "-"*7 + "+" + "-"*11 + "+" + "-"*11 + "+" + "-"*11
             print >> sys.stderr, ("%10s|%16s|%7s|%11.2f|%11.2f|%11.2f" % line[1:])
+
+    # use the stderr to print replac_lag table
+    if len(replica_lag_line) > 0:
+        print >> sys.stderr, "\n=============================="
+        print >> sys.stderr, "Replication Lag Summary:"
+        printing_test = ""
+        for line in replica_lag_line:
+            if line[0] != printing_test:
+                printing_test = line[0]
+                print >> sys.stderr, "\n%s" % printing_test
+                print >> sys.stderr, ("%10s|%16s|%16s|%16s" %
+                                      ("Thread", "Avg_lag", "Max_lag", "End_of_test_lag"))
+                print >> sys.stderr, "-"*10 + "+" + "-"*16 + "+" + "-"*16 + "+" + "-"*16
+            print_line = '{:>10}'.format(line[1])
+            for x in line[2:]:
+                p = '|{:16.2f}'.format(x) if isinstance(x, float) else '|{:>16}'.format(x)
+                print_line = print_line + p
+            print >> sys.stderr, print_line
+
+    # flush and fsync stderr to the log file
     sys.stderr.flush()
+    os.fsync(sys.stderr)
     
     reportFile = open('report.json', 'w')
     json.dump(report, reportFile, indent=4, separators=(',', ': '))
@@ -379,7 +450,6 @@ def main(args):
     else:
         sys.exit(0)
 
-    
 
 if __name__ == '__main__':
     main(sys.argv[1:])
