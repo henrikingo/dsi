@@ -17,7 +17,7 @@ resource "aws_internet_gateway" "gw" {
 resource "aws_subnet" "main" {
     vpc_id = "${aws_vpc.main.id}"
     cidr_block = "10.2.1.0/24"
-    availability_zone = "us-west-2b"
+    availability_zone = "us-west-2a"
 
     tags {
         Name = "${var.user}-shard-subnet"
@@ -96,8 +96,8 @@ resource "aws_instance" "shardmember" {
     }
 
     security_groups = ["${aws_security_group.shard-default.id}"]
-    availability_zone = "us-west-2b"
-    placement_group = "${var.user}-shard-perf"
+    availability_zone = "us-west-2a"
+    placement_group = "dsi-shard-perf-us-west-2a"
     tenancy = "dedicated"
 
     key_name = "${var.key_name}"
@@ -172,8 +172,8 @@ resource "aws_instance" "master" {
     }
 
     security_groups = ["${aws_security_group.shard-default.id}"]
-    availability_zone = "us-west-2b"
-    placement_group = "${var.user}-shard-perf"
+    availability_zone = "us-west-2a"
+    placement_group = "dsi-shard-perf-us-west-2a"
     tenancy = "dedicated"
 
     key_name = "${var.key_name}"
@@ -239,7 +239,7 @@ resource "aws_instance" "configserver" {
     }
 
     security_groups = ["${aws_security_group.shard-default.id}"]
-    availability_zone = "us-west-2b"
+    availability_zone = "us-west-2a"
 
     key_name = "${var.key_name}"
     tags = {
