@@ -18,16 +18,18 @@ import json
 import re
 
 import requests
+import yaml
 
 
-def get_as_json(url):
+def get_as_json(url, **kwargs):
     """Issue a GET request and return the response as JSON.
 
     :type url: str
+    :param kwargs: Keyword arguments passed to `request.get()`
     :rtype: dict
     :raises: HTTPError if the response is not OK
     """
-    response = requests.get(url)
+    response = requests.get(url, **kwargs)
     if not response.ok:
         response.raise_for_status()
     else:
@@ -38,15 +40,28 @@ def file_as_json(file_or_filename):
     """Open a file as JSON.
 
     :type file_or_filename: str|file
-    :return: dict
+    :rtype: dict
     """
-    if isinstance(file_or_filename, dict):
-        return file_or_filename
-    elif isinstance(file_or_filename, file):
+    if isinstance(file_or_filename, file):
         return json.load(file_or_filename)
     elif isinstance(file_or_filename, str):
         with open(file_or_filename) as fd:
             return json.load(fd)
+    else:
+        raise TypeError('Argument must be a string or file pointer')
+
+
+def file_as_yaml(file_or_filename):
+    """Open a file as YAML.
+
+    :type file_or_filename: str|file
+    :rtype: dict
+    """
+    if isinstance(file_or_filename, file):
+        return yaml.load(file_or_filename)
+    elif isinstance(file_or_filename, str):
+        with open(file_or_filename) as fd:
+            return yaml.load(fd)
     else:
         raise TypeError('Argument must be a string or file pointer')
 
