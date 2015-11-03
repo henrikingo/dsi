@@ -25,6 +25,11 @@ import regression
 # TODO: have update() accept a symbolic integer
 
 
+class NotYetImplemented(RuntimeError):
+    """Indicates that this function has yet to be implemented."""
+    pass
+
+
 ALL = 0
 """Indicates that all tests should be overridden."""
 
@@ -60,7 +65,7 @@ class Override(object):
         :rtype: list[dict]
         """
         # TODO implement this
-        pass
+        raise NotYetImplemented()
 
     def delete_overrides_by_ticket(self, ticket):
         """Remove the overrides created by a given ticket.
@@ -68,7 +73,7 @@ class Override(object):
         :param str ticket: The ID of a JIRA ticket (e.g. SERVER-20123)
         """
         # TODO implement this
-        pass
+        raise NotYetImplemented()
 
     def save_to_file(self, file_or_filename):
         """Saves this override to a JSON file.
@@ -83,90 +88,69 @@ class Override(object):
         else:
             raise TypeError('Argument must be a file or filename')
 
-    def update(self, revision_id, tag, ticket=None, evg_url=None, variants=None, tasks=None, tests=None, **kwargs):
-        """Update this override with additional test information.
+    def update_performance_reference(self, revision, tag, ticket, evg=None, variants=None, tasks=None, tests=None):
+        """Update a performance reference override.
 
-        :param str revision_id: The Evergreen ID of the revision
+        :param str revision: The Git SHA1 of the desired revision
         :param str tag: The tag to compare against (e.g. '3.1.9-Baseline')
         :param str ticket: The JIRA ticket associated with this override
-        :param str evg_url: (optional) The base URL to an Evergreen instance
-        :param list[str] variants: (optional) Override only these build variants. Must be the display name
-        :param list[str] tasks: (optional) Override only these tasks. Must be a display name
-        :param list[str] tests: (optional) Override only these tests. Must be a display name
-        :return:
+        :param evergreen.Client evg: (optional) A handle to an Evergreen server
+        :param str|list[str] variants: (optional) The build variant or variants to override
+        :param str|list[str] tasks: (optional) The task or tasks to override
+        :param str|list[str] tests: (optional) The test or tests to override
         """
-        if not evg_url:
-            evg_url = evergreen.DEFAULT_EVERGREEN_URL
-        evg = evergreen.EvergreenClient(evg_url)
+        if not evg:
+            evg = evergreen.Client()
 
-        # Begin examining the project structure on Evergreen
-        all_variants = sorted(evg.get_build_variant_names_from_revision_id(revision_id))
-        all_variant_ids = sorted(evg.get_build_variants_from_revision_id(revision_id))
-        if not all_variant_ids or not all_variants:
-            raise evergreen.EvergreenError('Could not find buildvariant information for this revision')
-
-        for variant, variant_id in zip(all_variants, all_variant_ids):
-            # TODO: special cases
-            if 'compare' in variant:
+        for build_variant_name, build_variant_id in evg.build_variants_from_git_commit('performance', revision):
+            if not helpers.matches_any(build_variant_name, variants):
+                print('Skipping build variant {}'.format(build_variant_name))
                 continue
 
-            if not helpers.matches_any(variant, variants):
-                # This is not one of the build variants we want.
-                print('Skipping {variant}'.format(variant=variant))
+            # TODO: special case
+            if 'compare' in build_variant_name:
                 continue
-            else:
-                print('Processing buildvariant: {variant}'.format(variant=variant))
 
-            # Find the tasks associated with this build variant
-            task_info = evg.get_tasks_from_build_variant(variant_id)
-            all_tasks = sorted(task_info.keys())
+            print('Processing build variant: {}'.format(build_variant_name))
             variant_data = []
 
-            # Obtain all of the performance data for each task (which includes all sub-tests)
-            for task in all_tasks:
-                # TODO: special cases
-                if 'compile' in task:
+            for task_name, task_id in evg.tasks_from_build_variant(build_variant_id):
+                if not helpers.matches_any(task_name, tasks):
+                    print('Skipping task {}'.format(task_name))
                     continue
 
-                if not helpers.matches_any(task, tasks):
-                    # This is not one of the tasks specified.
-                    print('Skipping task: {task}'.format(task=task))
-                    continue
-                else:
-                    print('Processing task: {task}'.format(task=task))
-
-                # Find the Evergreen ID for this task
-                # TODO This must be pulled out as a method of EvergreenClient()
-                task_id = task_info[task]['task_id']
-                data = helpers.get_as_json('{base_url}/api/2/task/{task_id}/json/tags/{task_name}/perf'.format(
-                    base_url=evg_url, task_id=task_id, task_name=task))
+                # Get the performance data for this task
+                data = evg.query_task_perf_tags(task_name, task_id)
                 variant_data.extend(data)
 
-                # Get the history data
+                # Examine the history data
                 tag_history = regression.History(variant_data)
 
-                # Get the list of all test names
-                all_tests = evg.get_test_names_from_task(task_id)
-
-                for test in all_tests:
-                    if not helpers.matches_any(test, tests):
-                        # This is not one of the tests we want.
-                        # TODO emit a log at the debug level that this is skipped. Otherwise, it's too verbose
+                for test_name, _ in evg.tests_from_task(task_id):
+                    if not helpers.matches_any(test_name, tests):
                         continue
-                    else:
-                        print('Overriding test: {test}'.format(test=test))
 
-                    test_reference = tag_history.seriesAtTag(test, tag)
+                    print('Processing test: {}'.format(test_name))
+                    test_reference = tag_history.seriesAtTag(test_name, tag)
                     if not test_reference:
-                        raise evergreen.EvergreenError(
-                            'There is no tag history for {bv}.{task}.{test} at tag {tag}'.format(bv=variant,
-                                                                                                 task=task,
-                                                                                                 test=test,
-                                                                                                 tag=tag))
-                    # Perform the actual override and attach a ticket number
-                    self.overrides[variant]['reference'][test] = test_reference
-                    if ticket:
-                        self.overrides[variant]['reference'][test]['ticket'] = ticket
+                        raise evergreen.Empty(
+                            'No tag history for {bv}.{task}.{test} at tag {tag}'.format(bv=build_variant_name,
+                                                                                        task=task_name,
+                                                                                        test=test_name,
+                                                                                        tag=tag))
+                    # Perform the actual override, attaching a ticket number
+                    reference = self.overrides[build_variant_name]['reference']
+                    reference[test_name] = test_reference
+                    try:
+                        reference[test_name]['ticket'].append(ticket)
+                    except KeyError:
+                        reference[test_name]['ticket'] = [ticket]
+                if not test_name:
+                    raise evergreen.Empty('No tests found for task {}'.format(task_name))
+            if not task_id:
+                raise evergreen.Empty('No tasks found for build variant {}'.format(build_variant_name))
+        if not build_variant_id:
+            raise evergreen.Empty('No builds for commit {} in performance'.format(revision))
 
         print('Override update complete.')
 
