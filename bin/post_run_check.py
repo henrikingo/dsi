@@ -87,7 +87,7 @@ def replica_lag_check(test, threshold):
         if max_lag != "NA":
             if float(max_lag) > threshold:
                 status = 'fail'
-                print("        replica_max_lag (%s) > threshold(%s) seconds at %s" %
+                print("   ---> replica_max_lag (%s) > threshold(%s) seconds at %s" %
                       (max_lag, threshold, level))
         # print an etry in the replica_lag summary table, regardless of pass/fail
         if lag_entry > 0:
@@ -401,9 +401,8 @@ def main(args):
     report['failures'] = failed
     report['results'] = results
 
-    # flush and fsync stdout to the log file
+    # flush stdout to the log file
     sys.stdout.flush()
-    os.fsync(sys.stdout)
 
     # use the stderr to print regression summary table
     # a similar error summary table can be added for error conditions
@@ -439,9 +438,8 @@ def main(args):
                 print_line = print_line + p
             print >> sys.stderr, print_line
 
-    # flush and fsync stderr to the log file
+    # flush stderr to the log file
     sys.stderr.flush()
-    os.fsync(sys.stderr)
     
     reportFile = open('report.json', 'w')
     json.dump(report, reportFile, indent=4, separators=(',', ': '))
