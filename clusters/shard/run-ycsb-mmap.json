@@ -38,7 +38,7 @@
                         "cmd": "cd YCSB/ycsb-mongodb; ./evergreen-50read50update.sh %%MS_PRIVATE_IP%%; sleep 1"
                     },
                     {
-                        "run_id": "ycsb-mmap_50read50update_w_majority-wiredTiger",
+                        "run_id": "ycsb-mmap_50read50update_w_majority",
                         "clients": [ %%CLIENT%% ],
                         "client_logs": [],
                         "servers": [ %%ALLMEMBERS%%, %%MS%% ],
