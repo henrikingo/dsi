@@ -17,7 +17,7 @@ resource "aws_internet_gateway" "gw" {
 resource "aws_subnet" "main" {
     vpc_id = "${aws_vpc.main.id}"
     cidr_block = "10.2.0.0/24"
-    availability_zone = "us-west-2b"
+    availability_zone = "us-west-2c"
 
     tags {
         Name = "${var.user}-replica-subnet"
@@ -96,8 +96,8 @@ resource "aws_instance" "member" {
     }
 
     security_groups = ["${aws_security_group.default.id}"]
-    availability_zone = "us-west-2b"
-    placement_group = "${var.user}-replica-perf"
+    availability_zone = "us-west-2c"
+    placement_group = "${var.user}-replica-perf-2c"
     tenancy = "dedicated"
 
     key_name = "${var.key_name}"
@@ -170,8 +170,8 @@ resource "aws_instance" "master" {
     }
 
     security_groups = ["${aws_security_group.default.id}"]
-    availability_zone = "us-west-2b"
-    placement_group = "${var.user}-replica-perf"
+    availability_zone = "us-west-2c"
+    placement_group = "${var.user}-replica-perf-2c"
     tenancy = "dedicated"
 
     key_name = "${var.key_name}"
