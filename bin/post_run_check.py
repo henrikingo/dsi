@@ -432,9 +432,9 @@ def main(args):
                 print >> sys.stderr, ("%10s|%16s|%16s|%16s" %
                                       ("Thread", "Avg_lag", "Max_lag", "End_of_test_lag"))
                 print >> sys.stderr, "-"*10 + "+" + "-"*16 + "+" + "-"*16 + "+" + "-"*16
-            print_line = '{:>10}'.format(line[1])
+            print_line = '{0:>10}'.format(line[1])
             for x in line[2:]:
-                p = '|{:16.2f}'.format(x) if isinstance(x, float) else '|{:>16}'.format(x)
+                p = '|{0:16.2f}'.format(x) if isinstance(x, float) else '|{0:>16}'.format(x)
                 print_line = print_line + p
             print >> sys.stderr, print_line
 
