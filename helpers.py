@@ -69,19 +69,14 @@ def file_as_yaml(file_or_filename):
 def matches_any(obj, patterns):
     """Determines if the object matches any of the patterns.
 
-    The specified filters may be empty or None, in which case True is returned.
-
     :type obj: str
     :type patterns: str|list[str]
-    :returns: A truthy value if any pattern matches the object; otherwise, False
+    :returns: The pattern in `patterns` that matches `obj`, or None if none of them matched
     """
-    if not patterns:
-        return True
-
     if isinstance(patterns, str):
         return re.match(patterns, obj)
 
     for pattern in patterns:
         if re.match(pattern, obj):
-            return True
-    return False
+            return pattern
+    return None
