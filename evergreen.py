@@ -246,6 +246,11 @@ class Client(object):
                                        headers=self.headers)
         names = sorted([x.replace('_', '-') for x in response['build_variants']])
         ids = sorted(response['builds'])
+
+        if not names or not ids:
+            raise Empty('No builds found at commit {commit} in project {project}'.format(commit=commit_sha,
+                                                                                         project=project))
+
         for item in zip(names, ids):
             yield item
 
@@ -260,6 +265,10 @@ class Client(object):
                                        headers=self.headers)
         names = sorted([x.replace('_', '-') for x in response['build_variants']])
         ids = sorted(response['builds'])
+
+        if not names or not ids:
+            raise Empty('No builds found for Evergreen revision {rev}'.format(revision_id))
+
         for item in zip(names, ids):
             yield item
 
@@ -272,6 +281,10 @@ class Client(object):
         """
         build_info = self.query_build_variant(build_variant_id)
         tasks = build_info['tasks']
+
+        if not tasks:
+            raise Empty('No tasks found for build variant {variant}'.format(variant=build_variant_id))
+
         for task_name in tasks.keys():
             yield (task_name, tasks[task_name]['task_id'])
 
@@ -289,6 +302,10 @@ class Client(object):
         :rtype: tuple(str, dict)
         """
         task_info = self.query_task(task_id)
+
+        if not task_info['test_results']:
+            raise Empty('No test results found for task {task}'.format(task=task_id))
+
         for test_name in task_info['test_results'].keys():
             yield (test_name, task_info['test_results'][test_name])
 
@@ -301,6 +318,9 @@ class Client(object):
         response = self.query_task(task_id)
         if response['aborted']:
             self.logger.warning('Searching for failed tests in a task that has been aborted')
+
+        if not response['test_results']:
+            raise Empty('No test results found for task {task}'.format(task=task_id))
 
         for test, result in response['test_results'].iteritems():
             if result['status'] != 'pass':
