@@ -90,9 +90,9 @@ def update_performance_reference(reference, ticket, ovr=None, evg=None, variants
 
             # Get the performance data for this task
             if compare_to_tag:
-                task_data = evg.query_task_perf_tags(task_name, task_id)
+                task_data = evg.query_mongo_perf_task_tags(task_name, task_id)
             else:
-                task_data = evg.query_task_perf_history(task_id)
+                task_data = evg.query_mongo_perf_task_history(task_name, task_id)
 
             # Examine the history data
             history = regression.History(task_data)

@@ -211,7 +211,7 @@ class Client(object):
         """
         return self.query_project_history(project_name)['versions'][:max_results]
 
-    def query_task_perf_tags(self, task_name, task_id):
+    def query_mongo_perf_task_tags(self, task_name, task_id):
         """Get the tag data of a particular task in the Performance project.
 
         This works for the performance project. The sys-perf and longevity projects may return empty responses; use
@@ -227,6 +227,25 @@ class Client(object):
             '{url}/api/2/task/{task_id}/json/tags/{task_name}/perf'.format(url=self.base_url,
                                                                            task_id=task_id,
                                                                            task_name=task_name),
+            headers=self.headers
+        )
+
+    def query_mongo_perf_task_history(self, task_name, task_id):
+        """Get the historical data of a particular task in the Performance project.
+
+        This works for mongo-perf. The sys-perf and longevity projects may return empty responses; use a different
+        method instead.
+
+        Evergreen endpoint: /api/2/task/{task_id}/json/history/{task_name}/perf
+
+        :param str task_name: The common name of the task
+        :param str task_id: The Evergreen ID of a particular task
+        :rtype: list
+        """
+        return helpers.get_as_json(
+            '{url}/api/2/task/{task_id}/json/history/{task_name}/perf'.format(url=self.base_url,
+                                                                              task_id=task_id,
+                                                                              task_name=task_name),
             headers=self.headers
         )
 
