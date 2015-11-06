@@ -26,11 +26,10 @@ import override
 import regression
 
 
-def update_performance_reference(revision, tag, ticket, ovr=None, evg=None, variants=None, tasks=None, tests=None):
+def update_performance_reference(reference, ticket, ovr=None, evg=None, variants=None, tasks=None, tests=None):
     """Update a performance reference override.
 
-    :param str revision: The Git SHA1 of the desired revision
-    :param str tag: The tag to compare against (e.g. '3.1.9-Baseline')
+    :param str reference: The Git SHA1 or tag to use as a reference
     :param str ticket: The JIRA ticket associated with this override
     :param dict|Override.override ovr: (optional) The base override to update
     :param evergreen.Client evg: (optional) A handle to an Evergreen server
@@ -40,22 +39,29 @@ def update_performance_reference(revision, tag, ticket, ovr=None, evg=None, vari
     """
     global logger, warner
     if not evg:
-        logger.debug('Using default Evergreen client with no authentication information')
         evg = evergreen.Client()
     if not ovr:
-        logger.debug('Using default empty override structure')
         ovr = override.Override()
+
+    # Are we comparing against a tag or a commit?
+    # TODO: is there a better way to do this?
+    if '-' in reference:
+        compare_to_tag = True
+        logger.debug('Treating reference point "{tag}" as a tagged baseline'.format(tag=reference))
+    else:
+        compare_to_tag = False
+        logger.debug('Treating reference point "{commit}" as a Git commit'.format(commit=reference))
 
     build_variants_applied = set()
     tasks_applied = set()
     tests_applied = set()
     summary = {}
 
-    # Cycle through each build variant, task, and test. Update overrides as we find matching items
-    for build_variant_name, build_variant_id in evg.build_variants_from_git_commit('performance', revision):
+    # Find the build variants for the mongo-perf project at this Git commit
+    for build_variant_name, build_variant_id in evg.build_variants_from_git_commit('performance', reference):
         # TODO: special case
         if 'compare' in build_variant_name:
-            logger.debug('Skipping compilation stage')
+            logger.debug('Skipping comparison build variant: {}'.format(build_variant_name))
             continue
 
         match = helpers.matches_any(build_variant_name, variants)
@@ -67,7 +73,12 @@ def update_performance_reference(revision, tag, ticket, ovr=None, evg=None, vari
         summary[build_variant_name] = {}
         logger.debug('Processing build variant: {}'.format(build_variant_name))
 
+        # Find the tasks in this build variant that we're interested in
         for task_name, task_id in evg.tasks_from_build_variant(build_variant_id):
+            if 'compile' in task_name:
+                logger.debug('\tSkipping compilation stage')
+                continue
+
             match = helpers.matches_any(task_name, tasks)
             if not match:
                 logger.debug('\tSkipping task: {}'.format(task_name))
@@ -78,11 +89,15 @@ def update_performance_reference(revision, tag, ticket, ovr=None, evg=None, vari
             logger.debug('\tProcessing task: {}'.format(task_name))
 
             # Get the performance data for this task
-            task_data = evg.query_task_perf_tags(task_name, task_id)
+            if compare_to_tag:
+                task_data = evg.query_task_perf_tags(task_name, task_id)
+            else:
+                task_data = evg.query_task_perf_history(task_id)
 
             # Examine the history data
-            tag_history = regression.History(task_data)
+            history = regression.History(task_data)
 
+            # Cycle through the names of the tests in this task
             for test_name, _ in evg.tests_from_task(task_id):
                 match = helpers.matches_any(test_name, tests)
                 if not match:
@@ -93,21 +108,42 @@ def update_performance_reference(revision, tag, ticket, ovr=None, evg=None, vari
                 summary[build_variant_name][task_name].append(test_name)
                 logger.debug('\t\tProcessing test: {}'.format(test_name))
 
-                # Find the reference data for this test
-                test_reference = tag_history.seriesAtTag(test_name, tag)
+                # Get the reference data we want to use as the override value
+                if compare_to_tag:
+                    test_reference = history.seriesAtTag(test_name, reference)
+                else:
+                    test_reference = history.seriesAtRevision(test_name, reference)
+
                 if not test_reference:
                     raise evergreen.Empty(
-                        'No tag history for {bv}.{task}.{test} at tag {tag}'.format(bv=build_variant_name,
-                                                                                    task=task_name,
-                                                                                    test=test_name,
-                                                                                    tag=tag))
-                # Perform the actual override, attaching a ticket number
-                reference = ovr.overrides[build_variant_name]['reference']
-                reference[test_name] = test_reference
+                        'No data for {bv}.{task}.{test} at reference {ref}'.format(bv=build_variant_name,
+                                                                                   task=task_name,
+                                                                                   test=test_name,
+                                                                                   ref=reference))
+
+                # Find the old overrides for this test. If there are none, start fresh
+                # The overrides are organized, in nested levels, of build variant, rule, test name, and data
                 try:
-                    reference[test_name]['ticket'].append(ticket)
+                    previous_overrides = ovr.overrides[build_variant_name]
                 except KeyError:
-                    reference[test_name]['ticket'] = [ticket]
+                    ovr.overrides[build_variant_name] = {
+                        'reference': {},
+                        'ndays': {}
+                    }
+                    previous_overrides = ovr.overrides[build_variant_name]
+
+                # Perform the actual override, attaching a ticket number
+                try:
+                    reference_overrides = previous_overrides['reference']
+                except KeyError:
+                    previous_overrides['reference'] = {}
+                    reference_overrides = previous_overrides['reference']
+
+                reference_overrides[test_name] = test_reference
+                try:
+                    reference_overrides[test_name]['ticket'].append(ticket)
+                except KeyError:
+                    reference_overrides[test_name]['ticket'] = [ticket]
 
     # Sanity checks!
     for unused_test in [test for test in tests if test not in tests_applied]:
@@ -131,7 +167,7 @@ def update_performance_reference(revision, tag, ticket, ovr=None, evg=None, vari
                     warner.warn('No tests under the task {}.{} were overridden'.format(variant, task))
 
         logger.info('The following tests have been overridden:')
-        logger.info(json.dumps(summary, indent=2, separators=[',', ': ']))
+        logger.info(json.dumps(summary, indent=2, separators=[',', ': '], sort_keys=True))
 
     logger.debug('Override update complete.')
     return ovr
