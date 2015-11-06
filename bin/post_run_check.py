@@ -9,9 +9,9 @@ import re
 
 # Example usage:
 # post_run_check.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f
-#         --project_id $pr_id --task_name $t_name
+#         --project_id $pr_id --variant $variant
 # Loads the history json file, and looks for regressions at the revision 18808cd...
-# Evergreen project_id and task_name are used to uniquely identify the rule set to use
+# Evergreen project_id and variant are used to uniquely identify the rule set to use
 # Will exit with status code 1 if any regression is found, 0 otherwise.
 
 
@@ -104,23 +104,21 @@ def replica_lag_check(test, threshold):
         
 # project-specific rules
 
-def sys_single(test):
+def sys_linux_1_node_replSet(test):
     to_return = {}
     to_return.update(compare_to_previous(test, threshold=0.07, thread_threshold=0.07))
     to_return.update(compare_to_NDays(test, threshold=0.07, thread_threshold=0.07))
     to_return.update(compare_to_tag(test, threshold=0.07, thread_threshold=0.07))
     return to_return
 
-def sys_replica(test):
+def sys_linux_standalone(test):
     to_return = {}
     to_return.update(compare_to_previous(test, threshold=0.07, thread_threshold=0.07))
     to_return.update(compare_to_NDays(test, threshold=0.07, thread_threshold=0.07))
     to_return.update(compare_to_tag(test, threshold=0.07, thread_threshold=0.07))
-    # max_lag check
-    to_return.update(replica_lag_check(test, threshold=10))
     return to_return
 
-def sys_shard(test):
+def sys_linux_3_shard(test):
     to_return = {}
     to_return.update(compare_to_previous(test, threshold=0.07, thread_threshold=0.07))
     to_return.update(compare_to_NDays(test, threshold=0.07, thread_threshold=0.07))
@@ -130,33 +128,37 @@ def sys_shard(test):
     # possibly some check on whether load is balanced across shard
     return to_return
 
-def longevity_shard(test):
+def sys_linux_3_node_replSet(test):
+    to_return = {}
+    to_return.update(compare_to_previous(test, threshold=0.07, thread_threshold=0.07))
+    to_return.update(compare_to_NDays(test, threshold=0.07, thread_threshold=0.07))
+    to_return.update(compare_to_tag(test, threshold=0.07, thread_threshold=0.07))
+    # max_lag check
+    to_return.update(replica_lag_check(test, threshold=10))
+    return to_return
+
+def longevity_linux_wt_shard(test):
     to_return = {}
     to_return.update(compare_to_previous(test, threshold=0.2, thread_threshold=0.2))
     # longevity tests are run once a week; 7-day check is not very useful
     to_return.update(compare_to_tag(test, threshold=0.2, thread_threshold=0.2))
     # max_lag check
     to_return.update(replica_lag_check(test, threshold=10))
-    # possibly some check on whether load is balanced across shard
+    # possibly check on 
     return to_return
 
-def unsupported(test):
-    print "The (project_id, task_name) combination is not supported " \
-      "for post_run_check.py"
-    sys.exit(1)
 
-# project_id and task_name uniquely identify the set of rules to check
+# project_id and variant uniquely identify the set of rules to check
 # using a dictionary to help us choose the function with the right rules
 check_rules = {
     'sys-perf': {
-        'single_cluster_test': sys_single,
-        'replica_cluster_test': sys_replica,
-        'shard_cluster_test': sys_shard
+        'linux-1-node-replSet': sys_linux_1_node_replSet,
+        'linux-standalone': sys_linux_standalone,
+        'linux-3-shard': sys_linux_3_shard,
+        'linux-3-node-replSet': sys_linux_3_node_replSet
         },
     'mongo-longevity': {
-        'single_cluster_test': unsupported,
-        'replica_cluster_test': unsupported,
-        'shard_cluster_test': longevity_shard
+        'linux-wt-shard': longevity_linux_wt_shard,
         }
     }
 
@@ -389,7 +391,14 @@ def main(args):
             if len(to_test) == 1:
                 print "\tno data at this revision, skipping"
                 continue
-            result.update(check_rules[args.project_id][args.task_name](to_test))
+            # Use project_id and variant to identify the rule set
+            # May want to use task_name for further differentiation
+            try:
+                result.update(check_rules[args.project_id][args.variant](to_test))
+            except:
+                print "The (project_id, variant) combination is not supported " \
+                    "for post_run_check.py"
+                sys.exit(1)
             if any(v == 'fail' for v in result.itervalues()):
                 failed += 1
                 result['status'] = 'fail'
@@ -420,7 +429,7 @@ def main(args):
                 print >> sys.stderr, "-"*10 + "+" + "-"*16 + "+" + "-"*7 + "+" + "-"*11 + "+" + "-"*11 + "+" + "-"*11
             print >> sys.stderr, ("%10s|%16s|%7s|%11.2f|%11.2f|%11.2f" % line[1:])
 
-    # use the stderr to print replac_lag table
+    # use the stderr to print replica_lag table
     if len(replica_lag_line) > 0:
         print >> sys.stderr, "\n=============================="
         print >> sys.stderr, "Replication Lag Summary:"
