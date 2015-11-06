@@ -1,0 +1,23 @@
+{
+    "PemFile": "../../keys/aws.pem",
+    "runs": [
+            {
+                        "run_id": "ycsb_load_CSRS-wiredTiger",
+                        "clients": [ %%CLIENT%% ],
+                        "client_logs": [],
+                        "servers": [ %%ALLMEMBERS%%, %%MS%% ],
+                        "server_logs": [],
+                        "type"  : "ycsb",
+                        "cmd": "cd YCSB/ycsb-mongodb; ./longevity-load.sh %%MS_PRIVATE_IP%%; sleep 1"
+                    },
+            {
+                        "run_id": "ycsb_50read50update_CSRS-wiredTiger",
+                        "clients": [ %%CLIENT%% ],
+                        "client_logs": [],
+                        "servers": [ %%ALLMEMBERS%%, %%MS%% ],
+                        "server_logs": [],
+                        "type"  : "ycsb",
+                        "cmd": "cd YCSB/ycsb-mongodb; ./longevity-50read50update-6hr.sh %%MS_PRIVATE_IP%%; sleep 1"
+                    }
+        ]}
+
