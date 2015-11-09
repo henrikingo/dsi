@@ -28,7 +28,27 @@ class NotYetImplemented(RuntimeError):
 
 
 class Override(object):
-    """Represents an override for a performance test."""
+    """Represents an override for a performance test.
+
+    The override data is structured in a hierarchy:
+
+        {
+            "build_variant": {
+                "rule": {
+                    "test_name": {
+                        <data>
+                    },
+                    ...
+                },
+                ...
+            },
+            ...
+        }
+
+    The analysis scripts traverse this hierarchy, selecting the appropriate build variant, rule and test name. If an
+    override exists, it uses that data as the reference point against which to find regressions, rather than the usual
+    data.
+    """
     def __init__(self, initializer):
         """Create a new override.
 
@@ -44,6 +64,54 @@ class Override(object):
         else:
             raise TypeError('initializer must be a file, filename or dictionary')
 
+    def update_test(self, build_variant, test, rule, new_data, ticket):
+        """Update the override reference data for the given test.
+
+        :param str build_variant: The Evergreen name of the build variant
+        :param str test: The Evergreen name of the test within that build variant
+        :param str rule: The regression analysis rule (e.g. "reference", "ndays")
+        :param dict new_data: The raw data for this test to use as a new reference point
+        :param str ticket: The JIRA ticket to attach to this override reference point
+        :return: The old value of the data for this particular build variant, test and rule, if one existed
+        :rtype: dict
+        """
+        # Find the overrides for this build variant...
+        try:
+            variant_ovr = self.overrides[build_variant]
+        except KeyError:
+            self.overrides[build_variant] = {
+                'reference': {},
+                'ndays': {}
+            }
+            variant_ovr = self.overrides[build_variant]
+
+        # ...then, for this regression rule (e.g. 'reference', 'ndays')...
+        try:
+            rule_ovr = variant_ovr[rule]
+        except KeyError:
+            variant_ovr[rule] = {}
+            rule_ovr = variant_ovr[rule]
+
+        # ...and lastly, the raw data for the test
+        try:
+            previous_data = rule_ovr[test]
+        except KeyError:
+            previous_data = {}
+        finally:
+            rule_ovr[test] = new_data
+
+        # Attach a ticket number
+        try:
+            rule_ovr[test]['ticket'].append(ticket)
+        except AttributeError:
+            # There's something else there but it's not a list, so convert it to one
+            rule_ovr[test]['ticket'] = [rule_ovr[test]['ticket'], ticket]
+        except KeyError:
+            # There is no previous ticket associated with this override
+            rule_ovr[test]['ticket'] = [ticket]
+
+        return previous_data
+
     def get_overrides_by_ticket(self, ticket):
         """Get the overrides created by a given ticket.
 
@@ -58,8 +126,14 @@ class Override(object):
 
         :param str ticket: The ID of a JIRA ticket (e.g. SERVER-20123)
         """
-        # TODO implement this
-        raise NotYetImplemented()
+        for build_variant in self.overrides:
+            for rule in self.overrides[build_variant]:
+                for test in self.overrides[build_variant][rule]:
+                    try:
+                        if self.overrides[build_variant][rule][test]['ticket'].contains(ticket):
+                            del self.overrides[build_variant][rule][test]
+                    except KeyError:
+                        pass
 
     def save_to_file(self, file_or_filename):
         """Saves this override to a JSON file.

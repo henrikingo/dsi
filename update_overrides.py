@@ -31,7 +31,7 @@ def update_performance_reference(reference, ticket, ovr=None, evg=None, variants
 
     :param str reference: The Git SHA1 or tag to use as a reference
     :param str ticket: The JIRA ticket associated with this override
-    :param dict|Override.override ovr: (optional) The base override to update
+    :param Override.override ovr: (optional) The base override to update
     :param evergreen.Client evg: (optional) A handle to an Evergreen server
     :param list[str] variants: (optional) The build variant or variants to override
     :param list[str] tasks: (optional) The task or tasks to override
@@ -41,7 +41,7 @@ def update_performance_reference(reference, ticket, ovr=None, evg=None, variants
     if not evg:
         evg = evergreen.Client()
     if not ovr:
-        ovr = override.Override()
+        ovr = override.Override(None)
 
     # Are we comparing against a tag or a commit?
     # TODO: is there a better way to do this?
@@ -121,29 +121,8 @@ def update_performance_reference(reference, ticket, ovr=None, evg=None, variants
                                                                                    test=test_name,
                                                                                    ref=reference))
 
-                # Find the old overrides for this test. If there are none, start fresh
-                # The overrides are organized, in nested levels, of build variant, rule, test name, and data
-                try:
-                    previous_overrides = ovr.overrides[build_variant_name]
-                except KeyError:
-                    ovr.overrides[build_variant_name] = {
-                        'reference': {},
-                        'ndays': {}
-                    }
-                    previous_overrides = ovr.overrides[build_variant_name]
-
-                # Perform the actual override, attaching a ticket number
-                try:
-                    reference_overrides = previous_overrides['reference']
-                except KeyError:
-                    previous_overrides['reference'] = {}
-                    reference_overrides = previous_overrides['reference']
-
-                reference_overrides[test_name] = test_reference
-                try:
-                    reference_overrides[test_name]['ticket'].append(ticket)
-                except KeyError:
-                    reference_overrides[test_name]['ticket'] = [ticket]
+                # Finally, update the old override rule
+                ovr.update_test(build_variant_name, test_name, 'reference', test_reference, ticket)
 
     # Sanity checks!
     for unused_test in [test for test in tests if test not in tests_applied]:
