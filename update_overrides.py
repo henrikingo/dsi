@@ -194,10 +194,14 @@ if __name__ == '__main__':
                         help='The Git commit or tag from which to pull data from as an override reference')
     parser.add_argument('ticket',
                         help='The JIRA ticket associated with this override update')
+    parser.add_argument('-p',
+                        '--project',
+                        default='performance',
+                        help='The Evergreen project for which to generate overrides')
     parser.add_argument('-v',
                         '--variants',
                         default='.*',
-                        help='The build variant or variants to update')
+                        help='The build variant or variants to update; defaults to all')
     parser.add_argument('-k',
                         '--tasks',
                         default='.*',
@@ -215,7 +219,7 @@ if __name__ == '__main__':
                         help='The path to write the updated override')
     parser.add_argument('-c',
                         '--config',
-                        default=os.path.join(os.path.expanduser('~'), '.evergreen.yml'),
+                        default=os.path.expanduser('~/.evergreen.yml'),
                         help='The path to your .evergreen.yml configuration')
     parser.add_argument('--verbose',
                         action='store_true',
@@ -245,5 +249,5 @@ if __name__ == '__main__':
                                                    tests=args.tests.split('|'))
 
     # Dump the new file as JSON
-    logger.debug('Saving output to {destination}'.format(destination=args.destination_file))
+    logger.info('Saving output to {destination}'.format(destination=args.destination_file))
     output_override.save_to_file(args.destination_file)
