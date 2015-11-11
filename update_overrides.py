@@ -20,15 +20,18 @@ import logging
 import os
 import sys
 
+import requests
+
 import evergreen
 import helpers
 import override
 import regression
 
 
-def update_performance_reference(reference, ticket, ovr=None, evg=None, variants=None, tasks=None, tests=None):
+def update_reference(project, reference, ticket, ovr=None, evg=None, variants=None, tasks=None, tests=None):
     """Update a performance reference override.
 
+    :param str project: The project name in Evergreen
     :param str reference: The Git SHA1 or tag to use as a reference
     :param str ticket: The JIRA ticket associated with this override
     :param Override.override ovr: (optional) The base override to update
@@ -44,13 +47,19 @@ def update_performance_reference(reference, ticket, ovr=None, evg=None, variants
         ovr = override.Override(None)
 
     # Are we comparing against a tag or a commit?
-    # TODO: is there a better way to do this?
-    if '-' in reference:
-        compare_to_tag = True
-        logger.debug('Treating reference point "{tag}" as a tagged baseline'.format(tag=reference))
-    else:
-        compare_to_tag = False
+    try:
+        # Attempt to query Evergreen by treating this reference as a Git commit
+        evg.build_variants_from_git_commit(project, reference).next()
+        commit = reference
+        compare_to_commit = True
         logger.debug('Treating reference point "{commit}" as a Git commit'.format(commit=reference))
+    except requests.HTTPError:
+        # Evergreen could not find a commit, so fall back to using a tag
+        # Find the latest builds in Evergreen, get the oldest result in the history, then pull out the Git commit
+        commit = evg.get_recent_revisions(project, max_results=30)[-1]['revision']
+        compare_to_commit = False
+        logger.debug('Treating reference point "{tag}" as a tagged baseline'.format(tag=reference))
+        logger.debug('Getting {proj} project information from commit {commit}'.format(proj=project, commit=commit))
 
     build_variants_applied = set()
     tasks_applied = set()
@@ -58,9 +67,9 @@ def update_performance_reference(reference, ticket, ovr=None, evg=None, variants
     summary = {}
 
     # Find the build variants for the mongo-perf project at this Git commit
-    for build_variant_name, build_variant_id in evg.build_variants_from_git_commit('performance', reference):
+    for build_variant_name, build_variant_id in evg.build_variants_from_git_commit(project, commit):
         # TODO: special case
-        if 'compare' in build_variant_name:
+        if 'comp' in build_variant_name:
             logger.debug('Skipping comparison build variant: {}'.format(build_variant_name))
             continue
 
@@ -89,10 +98,10 @@ def update_performance_reference(reference, ticket, ovr=None, evg=None, variants
             logger.debug('\tProcessing task: {}'.format(task_name))
 
             # Get the performance data for this task
-            if compare_to_tag:
-                task_data = evg.query_mongo_perf_task_tags(task_name, task_id)
-            else:
+            if compare_to_commit:
                 task_data = evg.query_mongo_perf_task_history(task_name, task_id)
+            else:
+                task_data = evg.query_mongo_perf_task_tags(task_name, task_id)
 
             # Examine the history data
             history = regression.History(task_data)
@@ -109,10 +118,10 @@ def update_performance_reference(reference, ticket, ovr=None, evg=None, variants
                 logger.debug('\t\tProcessing test: {}'.format(test_name))
 
                 # Get the reference data we want to use as the override value
-                if compare_to_tag:
-                    test_reference = history.seriesAtTag(test_name, reference)
-                else:
+                if compare_to_commit:
                     test_reference = history.seriesAtRevision(test_name, reference)
+                else:
+                    test_reference = history.seriesAtTag(test_name, reference)
 
                 if not test_reference:
                     raise evergreen.Empty(
@@ -240,13 +249,14 @@ if __name__ == '__main__':
         logger.setLevel(logging.INFO)
 
     # Pass the rest of the command-line arguments
-    output_override = update_performance_reference(args.reference,
-                                                   args.ticket,
-                                                   ovr=override.Override(args.override_file),
-                                                   evg=evergreen.Client(args.config),
-                                                   variants=args.variants.split('|'),
-                                                   tasks=args.tasks.split('|'),
-                                                   tests=args.tests.split('|'))
+    output_override = update_reference(args.project,
+                                       args.reference,
+                                       args.ticket,
+                                       ovr=override.Override(args.override_file),
+                                       evg=evergreen.Client(args.config),
+                                       variants=args.variants.split('|'),
+                                       tasks=args.tasks.split('|'),
+                                       tests=args.tests.split('|'))
 
     # Dump the new file as JSON
     logger.info('Saving output to {destination}'.format(destination=args.destination_file))
