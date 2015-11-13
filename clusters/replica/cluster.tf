@@ -97,7 +97,7 @@ resource "aws_instance" "member" {
 
     security_groups = ["${aws_security_group.default.id}"]
     availability_zone = "us-east-1a"
-    placement_group = "${var.user}-replica-perf-2c"
+    placement_group = "dsi-replica-perf-us-east-1a"
     tenancy = "dedicated"
 
     key_name = "${var.key_name}"
@@ -171,7 +171,7 @@ resource "aws_instance" "master" {
 
     security_groups = ["${aws_security_group.default.id}"]
     availability_zone = "us-east-1a"
-    placement_group = "${var.user}-replica-perf-2c"
+    placement_group = "dsi-replica-perf-us-east-1a"
     tenancy = "dedicated"
 
     key_name = "${var.key_name}"
