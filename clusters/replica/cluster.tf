@@ -77,8 +77,8 @@ resource "aws_security_group" "default" {
 
 
 resource "aws_instance" "member" {
-    # Amazon Linux AMI 2015.03 (HVM), SSD Volume Type
-    ami = "ami-e7527ed7"
+    # Amazon Linux AMI 2015.09.1 (HVM), SSD Volume Type - ami-60b6c60a
+    ami = "ami-60b6c60a"
 
     instance_type = "${var.secondary_type}"
 
@@ -152,8 +152,8 @@ resource "aws_instance" "member" {
 }
 
 resource "aws_instance" "master" {
-    # Amazon Linux AMI 2015.03 (HVM), SSD Volume Type
-    ami = "ami-e7527ed7"
+    # Amazon Linux AMI 2015.09.1 (HVM), SSD Volume Type - ami-60b6c60a
+    ami = "ami-60b6c60a"
 
     instance_type = "${var.primary_type}"
 

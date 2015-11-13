@@ -2,11 +2,18 @@
 
 echo "Create terraform config file"
 
+REGION="us-west-2"
+
+if [ -f aws-region ]
+then
+    REGION=$(cat aws-region)
+fi
+
 echo "
 provider \"aws\" {
     access_key = \"${1}\"
     secret_key = \"${2}\"
-    region = \"us-west-2\"
+    region = \"$REGION\"
 }
 
 

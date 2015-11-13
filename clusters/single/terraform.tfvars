@@ -1,4 +1,3 @@
-
 key_name = "rui-aws-cap"
 count = "1"
 mastercount = "1"
