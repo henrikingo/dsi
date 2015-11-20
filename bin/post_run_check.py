@@ -139,9 +139,29 @@ def sys_linux_3_node_replSet(test):
 
 def longevity_linux_wt_shard(test):
     to_return = {}
-    to_return.update(compare_to_previous(test, threshold=0.2, thread_threshold=0.2))
+    to_return.update(compare_to_previous(test, threshold=0.25, thread_threshold=0.25))
     # longevity tests are run once a week; 7-day check is not very useful
-    to_return.update(compare_to_tag(test, threshold=0.2, thread_threshold=0.2))
+    to_return.update(compare_to_tag(test, threshold=0.25, thread_threshold=0.25))
+    # max_lag check
+    to_return.update(replica_lag_check(test, threshold=10))
+    # possibly check on 
+    return to_return
+
+def longevity_linux_wt_shard_csrs(test):
+    to_return = {}
+    to_return.update(compare_to_previous(test, threshold=0.25, thread_threshold=0.25))
+    # longevity tests are run once a week; 7-day check is not very useful
+    to_return.update(compare_to_tag(test, threshold=0.25, thread_threshold=0.25))
+    # max_lag check
+    to_return.update(replica_lag_check(test, threshold=10))
+    # possibly check on 
+    return to_return
+
+def longevity_linux_mmapv1_shard(test):
+    to_return = {}
+    to_return.update(compare_to_previous(test, threshold=0.25, thread_threshold=0.25))
+    # longevity tests are run once a week; 7-day check is not very useful
+    to_return.update(compare_to_tag(test, threshold=0.25, thread_threshold=0.25))
     # max_lag check
     to_return.update(replica_lag_check(test, threshold=10))
     # possibly check on 
@@ -159,6 +179,8 @@ check_rules = {
         },
     'mongo-longevity': {
         'linux-wt-shard': longevity_linux_wt_shard,
+        'linux-wt-shard-csrs': longevity_linux_wt_shard_csrs,
+        'linux-mmapv1-shard': longevity_linux_mmapv1_shard,
         }
     }
 
