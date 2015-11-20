@@ -4,7 +4,7 @@ source $(dirname $0)/utils.bash
 
 # retrieve FTDC and organize them based on name
 
-readonly FILES=( "data/dbs/diagnostic.data" )
+readonly FILES=( "data/dbs/diagnostic.data" "data/logs/mongo*.log")
 
 mkdir -p reports
 
