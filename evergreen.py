@@ -263,8 +263,11 @@ class Client(object):
                                                                                        project,
                                                                                        commit_sha),
                                        headers=self.headers)
-        names = sorted([x.replace('_', '-') for x in response['build_variants']])
-        ids = sorted(response['builds'])
+        # Removed the sorts from the lines below because there was a
+        # chance of sorting differently. The names and ids need to be
+        # sorted together if they are going to be sorted.
+        names = [x.replace('_', '-') for x in response['build_variants']]
+        ids = response['builds']
 
         if not names or not ids:
             raise Empty('No builds found at commit {commit} in project {project}'.format(commit=commit_sha,

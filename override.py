@@ -102,10 +102,11 @@ class Override(object):
 
         # Attach a ticket number
         try:
+            rule_ovr[test]['ticket'] = previous_data['ticket']
             rule_ovr[test]['ticket'].append(ticket)
         except AttributeError:
             # There's something else there but it's not a list, so convert it to one
-            rule_ovr[test]['ticket'] = [rule_ovr[test]['ticket'], ticket]
+            rule_ovr[test]['ticket'] = [previous_data['ticket'], ticket]
         except KeyError:
             # There is no previous ticket associated with this override
             rule_ovr[test]['ticket'] = [ticket]
