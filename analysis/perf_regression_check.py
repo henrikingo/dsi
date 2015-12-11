@@ -275,7 +275,7 @@ class History(object):
             # Determine levels from last commit? Probably a better way to do this.
             for thread in threads:
                 s = self.series(test)
-                self._noise[test][thread] = sum((computeRange(x["results"][thread]["ops_per_sec_values"])[2]
+                self._noise[test][thread] = sum((computeRange(x["results"][thread].get("ops_per_sec_values", [0]))[2]
                                                  for x in s))
                 s = self.series(test)
                 self._noise[test][thread] /= sum(1 for x in s)
