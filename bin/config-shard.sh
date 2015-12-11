@@ -394,10 +394,10 @@ startConfigServer $version $config1 ${_storageEngine}
 startConfigServer $version $config2 ${_storageEngine}
 startConfigServer $version $config3 ${_storageEngine}
 
-if [ "$USE_CSRS" = true ]; then 
+if [ "$USE_CSRS" ]; then 
     echo "Config CSRS"
     HOST_CONFIG_RS_1=ip-`echo ${IPconfig1} | tr . -`
-    runSSHCommand ${config1} "$MY_ROOT/$ver/bin/mongo --port 27017 --verbose \
+    runSSHCommand ${config1} "$MY_ROOT/$version/bin/mongo --port 27017 --verbose \
 		--eval \"rs.initiate({_id: \\\"configSvrRS\\\", configsvr:true, members:[{_id: 0, host:\\\"${HOST_CONFIG_RS_1}:27017\\\"}]});\
 		sleep(2000);\
 		cfg = rs.conf();\
