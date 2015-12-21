@@ -32,7 +32,7 @@ def compare_to_previous(test, threshold, thread_threshold):
         return {'PreviousCompare': 'pass'}
     else:
         return {'PreviousCompare': compare_throughputs(test, previous, "Previous", threshold, thread_threshold)}
-    
+
 def compare_to_NDays(test, threshold, thread_threshold):
     # check if there is a regression in the last week
     daysprevious = history.seriesAtNDaysBefore(test['name'], test['revision'], 7)
@@ -42,12 +42,12 @@ def compare_to_NDays(test, threshold, thread_threshold):
         print "        using override in ndays for test %s" % test
         daysprevious = overrides['ndays'][test['name']]
     return {'NDayCompare': compare_throughputs(test, daysprevious, "NDays", threshold, thread_threshold)}
-        
+
 def compare_to_tag(test, threshold, thread_threshold):
     # if tag_history is undefined, skip this check completely
     if tag_history:
         reference = tag_history.seriesAtTag(test['name'], test['ref_tag'])
-        if not reference: 
+        if not reference:
             print "        no reference data for test %s with baseline" % (test['name'])
         if test['name'] in overrides['reference']:
             print "        using override in references for test %s" % test
@@ -56,7 +56,7 @@ def compare_to_tag(test, threshold, thread_threshold):
                                                        threshold, thread_threshold)}
     else:
         return {}
-    
+
 
 # Failure and other condition checks
 def replica_lag_check(test, threshold):
@@ -100,8 +100,8 @@ def replica_lag_check(test, threshold):
         print("        replica_lag under threshold (%s) seconds" % threshold)
     return {'Replica_lag_check': status}
 
-        
-        
+
+
 # project-specific rules
 
 def sys_linux_1_node_replSet(test):
@@ -144,7 +144,7 @@ def longevity_linux_wt_shard(test):
     to_return.update(compare_to_tag(test, threshold=0.25, thread_threshold=0.25))
     # max_lag check
     to_return.update(replica_lag_check(test, threshold=10))
-    # possibly check on 
+    # possibly check on
     return to_return
 
 def longevity_linux_wt_shard_csrs(test):
@@ -154,7 +154,7 @@ def longevity_linux_wt_shard_csrs(test):
     to_return.update(compare_to_tag(test, threshold=0.25, thread_threshold=0.25))
     # max_lag check
     to_return.update(replica_lag_check(test, threshold=10))
-    # possibly check on 
+    # possibly check on
     return to_return
 
 def longevity_linux_mmapv1_shard(test):
@@ -164,7 +164,7 @@ def longevity_linux_mmapv1_shard(test):
     to_return.update(compare_to_tag(test, threshold=0.25, thread_threshold=0.25))
     # max_lag check
     to_return.update(replica_lag_check(test, threshold=10))
-    # possibly check on 
+    # possibly check on
     return to_return
 
 
@@ -185,7 +185,7 @@ check_rules = {
     }
 
 
-        
+
 '''
 Utility functions and classes - these are functions and classes that load and manipulates
 test results for various checks
@@ -277,7 +277,7 @@ def compare_one_throughput(this_one, reference, label, thread_level="max", thres
     # comapre one data point from result series this_one to reference at thread_level
     # if this_one is lower by threshold*reference return True
 
-    # Don't do a comparison if the reference data is missing 
+    # Don't do a comparison if the reference data is missing
     if not reference:
         return False
 
@@ -290,7 +290,7 @@ def compare_one_throughput(this_one, reference, label, thread_level="max", thres
             return False
         ref = reference["results"][thread_level]['ops_per_sec']
         current = this_one["results"][thread_level]['ops_per_sec']
-        
+
     delta = threshold * ref
     if ref - current >= delta:
         diff_percent = 100*(current-ref)/ref
@@ -299,19 +299,19 @@ def compare_one_throughput(this_one, reference, label, thread_level="max", thres
                    "ops/sec for comparison %s. Diff is %.2f ops/sec (%.2f%%)"
                    %(thread_level, ref, reference["tag"], current, label, ref - current, diff_percent))
             regression_line.append((this_one["name"], label, reference["tag"],
-                                    thread_level, ref, current, diff_percent)) 
+                                    thread_level, ref, current, diff_percent))
         else:
             print ("   ---> regression found on %s: drop from %.2f ops/sec (%s) to %.2f "
                    "ops/sec for comparison %s. Diff is %.2f ops/sec (%.2f%%)"
                    %(thread_level, ref, reference["tag"], current, label,
                      ref - current, diff_percent))
             regression_line.append((this_one["name"], label, reference["revision"][:5],
-                                    thread_level, ref, current, diff_percent)) 
+                                    thread_level, ref, current, diff_percent))
         return True
     else:
         return False
 
-       
+
 def compare_throughputs(this_one, reference, label, threshold=0.07, thread_threshold=0.1):
     # comapre all points in result series this_one to reference
     # Use different thresholds for max throughput, and per-thread comparisons
@@ -319,7 +319,7 @@ def compare_throughputs(this_one, reference, label, threshold=0.07, thread_thres
     # otherwise return 'pass'
     failed = False
 
-    # Don't do a comparison if the reference data is missing 
+    # Don't do a comparison if the reference data is missing
     if not reference:
         return 'pass'
 
@@ -351,7 +351,7 @@ def set_up_histories(variant, hfile, tfile, ofile):
     global history, tag_history, overrides
     j = get_json(hfile)
     history = History(j)
-    if tfile: 
+    if tfile:
         t = get_json(tfile)
         tag_history = History(t)
     else:
@@ -362,10 +362,10 @@ def set_up_histories(variant, hfile, tfile, ofile):
         # Read the overrides file
         foverrides = get_json(ofile)
         # Is this variant in the overrides file?
-        if variant in foverrides : 
+        if variant in foverrides :
             overrides = foverrides[variant]
 
-                    
+
 
 
 """
@@ -377,7 +377,7 @@ for every tests, which gets dumped into a report file at the end.
 def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument("--project_id", dest="project_id", help="project_id for the test in Evergreen")
-    parser.add_argument("--task_name", dest="task_name", help="task_name for the test in Evergreen")    
+    parser.add_argument("--task_name", dest="task_name", help="task_name for the test in Evergreen")
     parser.add_argument("-f", "--file", dest="hfile", help="path to json file containing"
                         "history data")
     parser.add_argument("-t", "--tagFile", dest="tfile", help="path to json file containing"
@@ -390,7 +390,7 @@ def main(args):
 
     args = parser.parse_args()
     set_up_histories(args.variant, args.hfile, args.tfile, args.ofile)
-            
+
     failed = 0
     results = []
     # regression summary table lines
@@ -403,11 +403,13 @@ def main(args):
     # iterate through tests and check for regressions and other violations
     testnames = history.testnames()
     for test in testnames:
-        result = {'test_file': test, 'exit_code': 0, 'elapsed' : 1, 'start': 1441227291.962453, 'end': 1441227293.428761}
+        result = {'test_file': test, 'exit_code': 0}
         to_test = {'ref_tag': args.reference}
         t = history.seriesAtRevision(test, args.rev)
         if t:
             to_test.update(t)
+            result["start"] = t.get("start", 0)
+            result["end"] = t.get("end", 1)
             print "=============================="
             print "checking %s.." % (test)
             if len(to_test) == 1:
@@ -471,7 +473,8 @@ def main(args):
 
     # flush stderr to the log file
     sys.stderr.flush()
-    
+
+    print json.dumps(report, indent=4, separators=(',', ':'))
     reportFile = open('report.json', 'w')
     json.dump(report, reportFile, indent=4, separators=(',', ': '))
     if failed > 0 :
