@@ -106,23 +106,23 @@ def replica_lag_check(test, threshold):
 
 def sys_linux_1_node_replSet(test):
     to_return = {}
-    to_return.update(compare_to_previous(test, threshold=0.07, thread_threshold=0.07))
-    to_return.update(compare_to_NDays(test, threshold=0.07, thread_threshold=0.07))
-    to_return.update(compare_to_tag(test, threshold=0.07, thread_threshold=0.07))
+    to_return.update(compare_to_previous(test, threshold=0.08, thread_threshold=0.12))
+    to_return.update(compare_to_NDays(test, threshold=0.08, thread_threshold=0.12))
+    to_return.update(compare_to_tag(test, threshold=0.08, thread_threshold=0.12))
     return to_return
 
 def sys_linux_standalone(test):
     to_return = {}
-    to_return.update(compare_to_previous(test, threshold=0.07, thread_threshold=0.07))
-    to_return.update(compare_to_NDays(test, threshold=0.07, thread_threshold=0.07))
-    to_return.update(compare_to_tag(test, threshold=0.07, thread_threshold=0.07))
+    to_return.update(compare_to_previous(test, threshold=0.08, thread_threshold=0.12))
+    to_return.update(compare_to_NDays(test, threshold=0.08, thread_threshold=0.12))
+    to_return.update(compare_to_tag(test, threshold=0.08, thread_threshold=0.12))
     return to_return
 
 def sys_linux_3_shard(test):
     to_return = {}
-    to_return.update(compare_to_previous(test, threshold=0.07, thread_threshold=0.07))
-    to_return.update(compare_to_NDays(test, threshold=0.07, thread_threshold=0.07))
-    to_return.update(compare_to_tag(test, threshold=0.07, thread_threshold=0.07))
+    to_return.update(compare_to_previous(test, threshold=0.08, thread_threshold=0.12))
+    to_return.update(compare_to_NDays(test, threshold=0.08, thread_threshold=0.12))
+    to_return.update(compare_to_tag(test, threshold=0.08, thread_threshold=0.12))
     # max_lag check
     to_return.update(replica_lag_check(test, threshold=10))
     # possibly some check on whether load is balanced across shard
@@ -130,9 +130,9 @@ def sys_linux_3_shard(test):
 
 def sys_linux_3_node_replSet(test):
     to_return = {}
-    to_return.update(compare_to_previous(test, threshold=0.07, thread_threshold=0.07))
-    to_return.update(compare_to_NDays(test, threshold=0.07, thread_threshold=0.07))
-    to_return.update(compare_to_tag(test, threshold=0.07, thread_threshold=0.07))
+    to_return.update(compare_to_previous(test, threshold=0.08, thread_threshold=0.12))
+    to_return.update(compare_to_NDays(test, threshold=0.08, thread_threshold=0.12))
+    to_return.update(compare_to_tag(test, threshold=0.08, thread_threshold=0.12))
     # max_lag check
     to_return.update(replica_lag_check(test, threshold=10))
     return to_return
