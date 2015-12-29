@@ -137,6 +137,13 @@ def sys_linux_3_node_replSet(test):
     to_return.update(replica_lag_check(test, threshold=10))
     return to_return
 
+def sys_linux_oplog_compare(test):
+    to_return = {}
+    to_return.update(compare_to_previous(test, threshold=0.1, thread_threshold=0.2))
+    to_return.update(compare_to_NDays(test, threshold=0.1, thread_threshold=0.2))
+    to_return.update(compare_to_tag(test, threshold=0.1, thread_threshold=0.2))
+    return to_return
+
 def longevity_linux_wt_shard(test):
     to_return = {}
     to_return.update(compare_to_previous(test, threshold=0.25, thread_threshold=0.25))
@@ -175,7 +182,8 @@ check_rules = {
         'linux-1-node-replSet': sys_linux_1_node_replSet,
         'linux-standalone': sys_linux_standalone,
         'linux-3-shard': sys_linux_3_shard,
-        'linux-3-node-replSet': sys_linux_3_node_replSet
+        'linux-3-node-replSet': sys_linux_3_node_replSet,
+        'linux-oplog-compare': sys_linux_oplog_compare,
         },
     'mongo-longevity': {
         'linux-wt-shard': longevity_linux_wt_shard,
