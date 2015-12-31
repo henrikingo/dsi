@@ -326,7 +326,8 @@ class History(object):
                 result = matching[0]
                 result["revision"] = commit["revision"]
                 result["tag"] = commit["tag"]
-                result["end"] = commit["data"]["end"]
+                if "end" in commit["data"]:
+                    result["end"] = commit["data"]["end"]
                 result["order"] = commit["order"]
                 result["max"] = max(f["ops_per_sec"] for f in result["results"].values()
                                     if type(f) == type({}))
