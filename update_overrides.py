@@ -28,12 +28,13 @@ import override
 import regression
 
 
-def update_reference(project, reference, ticket, ovr=None, evg=None, variants=None, tasks=None, tests=None):
+def update_override(project, reference, ticket, rule="reference", ovr=None, evg=None, variants=None, tasks=None, tests=None):
     """Update a performance reference override.
 
     :param str project: The project name in Evergreen
     :param str reference: The Git SHA1 or tag to use as a reference
     :param str ticket: The JIRA ticket associated with this override
+    :param str rule: (default="reference") The rule to override (reference or ndays)
     :param Override.override ovr: (optional) The base override to update
     :param evergreen.Client evg: (optional) A handle to an Evergreen server
     :param list[str] variants: (optional) The build variant or variants to override
@@ -131,7 +132,7 @@ def update_reference(project, reference, ticket, ovr=None, evg=None, variants=No
                                                                                    ref=reference))
 
                 # Finally, update the old override rule
-                ovr.update_test(build_variant_name, test_name, 'reference', test_reference, ticket)
+                ovr.update_test(build_variant_name, test_name, rule, test_reference, ticket)
 
     # Sanity checks!
     for unused_test in [test for test in tests if test not in tests_applied]:
@@ -233,6 +234,10 @@ if __name__ == '__main__':
     parser.add_argument('--verbose',
                         action='store_true',
                         help='Enable verbose output')
+    parser.add_argument('-n',
+                        '--ndays',
+                        action='store_true',
+                        help='Override ndays instead of baseline/reference')
 
     # Parse the arguments and initialize the logging output
     args = parser.parse_args()
@@ -248,10 +253,16 @@ if __name__ == '__main__':
     else:
         logger.setLevel(logging.INFO)
 
+    if args.ndays :
+        rule = 'ndays'
+    else :
+        rule = 'reference'
+
     # Pass the rest of the command-line arguments
-    output_override = update_reference(args.project,
+    output_override = update_override(args.project,
                                        args.reference,
                                        args.ticket,
+                                       rule=rule,
                                        ovr=override.Override(args.override_file),
                                        evg=evergreen.Client(args.config),
                                        variants=args.variants.split('|'),

@@ -324,6 +324,7 @@ class History(object):
             matching = filter( lambda x: x["name"]==testname, commit["data"]["results"])
             if matching:
                 result = matching[0]
+                result["create_time"] = commit["create_time"]
                 result["revision"] = commit["revision"]
                 result["tag"] = commit["tag"]
                 if "end" in commit["data"]:
