@@ -38,9 +38,20 @@ def compare_to_NDays(test, threshold, thread_threshold):
     daysprevious = history.seriesAtNDaysBefore(test['name'], test['revision'], 7)
     if not daysprevious:
         print "        no reference data for test %s with NDays" % (test['name'])
+        return {}
     if test['name'] in overrides['ndays']:
-        print "        using override in ndays for test %s" % test
-        daysprevious = overrides['ndays'][test['name']]
+        try:
+            overrideTime = parser.parse(overrides['ndays'][test['name']]['create_time'])
+            thisTime = parser.parse(test['create_time'])
+            # I hate that this 7 is a constant. Copying constant from first line in function
+            if (overrideTime < thisTime) and ((overrideTime + timedelta(days=7)) >= thisTime) :
+                daysprevious = overrides['ndays'][test['name']]
+                print "        using override in ndays for test %s" % test['name']
+            else :
+                print "Out of date override found for ndays. Not using"
+        except KeyError as e: 
+            print "Key error accessing overrides for ndays. Key {0} doesn't exist for test {1}".format(str(e), test['name'])
+
     return {'NDayCompare': compare_throughputs(test, daysprevious, "NDays", threshold, thread_threshold)}
 
 def compare_to_tag(test, threshold, thread_threshold):
@@ -427,9 +438,10 @@ def main(args):
             # May want to use task_name for further differentiation
             try:
                 result.update(check_rules[args.project_id][args.variant](to_test))
-            except:
+            except Exception as e:
                 print "The (project_id, variant) combination is not supported " \
                     "for post_run_check.py"
+                print sys.exc_info()[0]
                 sys.exit(1)
             if any(v == 'fail' for v in result.itervalues()):
                 failed += 1
