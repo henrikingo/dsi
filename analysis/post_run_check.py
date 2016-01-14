@@ -49,8 +49,8 @@ def compare_to_NDays(test, threshold, thread_threshold):
                 print "        using override in ndays for test %s" % test['name']
             else :
                 print "Out of date override found for ndays. Not using"
-        except KeyError as e: 
-            print "Key error accessing overrides for ndays. Key {0} doesn't exist for test {1}".format(str(e), test['name'])
+        except KeyError as e:
+            print >> sys.stderr, "Key error accessing overrides for ndays. Key {0} doesn't exist for test {1}".format(str(e), test['name'])
 
     return {'NDayCompare': compare_throughputs(test, daysprevious, "NDays", threshold, thread_threshold)}
 
@@ -291,7 +291,6 @@ class History(object):
                                      == type({})]
                 yield result
 
-
 def compare_one_throughput(this_one, reference, label, thread_level="max", threshold=0.07):
     # comapre one data point from result series this_one to reference at thread_level
     # if this_one is lower by threshold*reference return True
@@ -342,6 +341,16 @@ def compare_throughputs(this_one, reference, label, threshold=0.07, thread_thres
     if not reference:
         return 'pass'
 
+    # some tests may have higher noise margin and need different thresholds
+    # this info is kept as part of the override file
+    if 'threshold' in overrides:
+        if this_one['name'] in overrides['threshold']:
+            try:
+                threshold = overrides['threshold'][this_one['name']]['threshold']
+                thread_threshold = overrides['threshold'][this_one['name']]['thread_threshold']
+            except KeyError as e:
+                print >> sys.stderr, "Threshold overrides not properly defined. Key {0} doesn't exist for test {1}".format(str(e), test['name'])
+
     # Check max throughput first
     if compare_one_throughput(this_one, reference, label, "max", threshold):
         failed = True
@@ -352,9 +361,9 @@ def compare_throughputs(this_one, reference, label, threshold=0.07, thread_thres
             failed = True
     if not failed:
         if label == "Baseline":
-            print "        no regression against %s (%s)" %(label, reference["tag"])
+            print "        no regression against %s (%s) above thresholds(%s, %s)" %(label, reference["tag"], threshold, thread_threshold)
         else:
-            print "        no regression against %s (%s)" %(label, reference["revision"][:5])
+            print "        no regression against %s (%s) above thresholds(%s, %s)" %(label, reference["revision"][:5], threshold, thread_threshold)
         return 'pass'
     return 'fail'
 
@@ -376,7 +385,7 @@ def set_up_histories(variant, hfile, tfile, ofile):
     else:
         tag_history = ""
     # Default empty override structure
-    overrides = {'ndays' : {}, 'reference' : {}}
+    overrides = {'ndays' : {}, 'reference' : {}, 'threshold': {}}
     if ofile:
         # Read the overrides file
         foverrides = get_json(ofile)
@@ -440,7 +449,7 @@ def main(args):
                 result.update(check_rules[args.project_id][args.variant](to_test))
             except Exception as e:
                 print "The (project_id, variant) combination is not supported " \
-                    "for post_run_check.py"
+                    "in post_run_check.py: {0}".format(str(e))
                 print sys.exc_info()[0]
                 sys.exit(1)
             if any(v == 'fail' for v in result.itervalues()):
@@ -494,7 +503,6 @@ def main(args):
     # flush stderr to the log file
     sys.stderr.flush()
 
-    print json.dumps(report, indent=4, separators=(',', ':'))
     reportFile = open('report.json', 'w')
     json.dump(report, reportFile, indent=4, separators=(',', ': '))
     if failed > 0 :
