@@ -25,6 +25,7 @@ def compareOneResultNoise(this_one, reference, label, threadlevel="max", noiseLe
     ref = ""
     current = ""
     noise = 0
+    log = ""
 
     if threadlevel == "max":
         ref = reference["max"]
@@ -42,12 +43,13 @@ def compareOneResultNoise(this_one, reference, label, threadlevel="max", noiseLe
         delta = noise
     # Do the check
     if ref - current >= delta:
-        print ("\tregression found on %s: drop from %.2f ops/sec (commit %s) to %.2f ops/sec for comparison %s. Diff is"
-               " %.2f ops/sec (%.2f%%), noise level is %.2f ops/sec and multiple is %.2f" %
+        log = "regression found on %s: drop from %.2f ops/sec (commit %s) to %.2f ops/sec for comparison %s. Diff is" \
+               " %.2f ops/sec (%.2f%%), noise level is %.2f ops/sec and multiple is %.2f" % \
                (threadlevel, ref, reference["revision"][:5], current, label, ref - current,
-                100*(ref-current)/ref, noiseLevel, noiseMultiple))
+                100*(ref-current)/ref, noiseLevel, noiseMultiple)
+        print ('\t' + log)
         failed = True
-    return failed
+    return (failed, log)
 
 
 def compareResults(this_one, reference, threshold, label, noiseLevels={}, noiseMultiple=1, threadThreshold=None, threadNoiseMultiple=None):
@@ -56,7 +58,8 @@ def compareResults(this_one, reference, threshold, label, noiseLevels={}, noiseM
     Return true if failed, and false if pass
     '''
 
-    failed = False;
+    failed = False
+    log = ""
     if not reference:
         return failed
     # Default threadThreshold to the same as the max threshold
@@ -70,21 +73,27 @@ def compareResults(this_one, reference, threshold, label, noiseLevels={}, noiseM
     # For the max throughput, use the max noise across the thread levels as the noise parameter
     if len(noiseLevels.values()) > 0:
         noise = max(noiseLevels.values())
-    if compareOneResultNoise(this_one, reference, label, "max", noiseLevel=noise,
-                             noiseMultiple=noiseMultiple, minThreshold=threshold):
+    result = compareOneResultNoise(this_one, reference, label, "max", noiseLevel=noise,
+                             noiseMultiple=noiseMultiple, minThreshold=threshold)
+    if result[0]: # Comparison failed
         failed = True;
+        log += result[1] + '\n';
     # Check for regression on threading levels
     for (level, ops_per_sec) in (((r, this_one["results"][r]['ops_per_sec']) for r in
                                   this_one["results"] if type(this_one["results"][r]) == type({}))):
         noise = 0
         if level in noiseLevels:
             noise = noiseLevels[level]
-        if compareOneResultNoise(this_one, reference, label, level, noiseLevel=noise,
-                                 noiseMultiple=threadNoiseMultiple, minThreshold=threadThreshold):
-            failed = True
+        result =  compareOneResultNoise(this_one, reference, label, level, noiseLevel=noise,
+                                 noiseMultiple=threadNoiseMultiple, minThreshold=threadThreshold)
+        if result[0]: # Comparison failed
+            failed = True;
+            log += result[1] + '\n';
+
     if not failed:
-        print "\tno regression against %s and githash %s" %(label, reference["revision"][:5])
-    return failed
+        log += "no regression against %s and githash %s" %(label, reference["revision"][:5])
+        print "\t" + log
+    return (failed, log)
 
 
 
@@ -134,7 +143,7 @@ def main(args):
 
     for test in testnames:
         # The first entry is valid. The rest is dummy data to match the existing format
-        result = {'test_file' : test, 'exit_code' : 0, 'elapsed' : 5, 'start': 1441227291.962453, 'end': 1441227293.428761}
+        result = {'test_file' : test, 'exit_code' : 0, 'elapsed' : 5, 'start': 1441227291.962453, 'end': 1441227293.428761, 'log' : ''}
         this_one = history.seriesAtRevision(test, args.rev)
         testFailed = False
         print "checking %s.." % (test)
@@ -149,12 +158,12 @@ def main(args):
         if not previous:
             print "\tno previous data, skipping"
             continue
-        if compareResults(this_one, previous[0], args.threshold, "Previous", history.noiseLevels(test),
-                          args.noise, args.threadThreshold, args.threadNoise):
+        cresult = compareResults(this_one, previous[0], args.threshold, "Previous", history.noiseLevels(test),
+                          args.noise, args.threadThreshold, args.threadNoise)
+        result['PreviousCompare'] = cresult[0]
+        result['log'] += cresult[1] + '\n'
+        if cresult[0] : 
             testFailed = True
-            result['PreviousCompare'] = 'fail'
-        else :
-            result['PreviousCompare'] = 'pass'
 
         daysprevious = history.seriesItemsNDaysBefore(test, args.rev,args.ndays)
         try : 
@@ -169,12 +178,12 @@ def main(args):
         except KeyError as e: 
             print "Key error accessing overrides for ndays. Key {0} doesn't exist for test {1}".format(str(e), test)
 
-        if compareResults(this_one, daysprevious, args.threshold, "NDays", history.noiseLevels(test),
-                          args.noise, args.threadThreshold, args.threadNoise):
+        cresult =  compareResults(this_one, daysprevious, args.threshold, "NDays", history.noiseLevels(test),
+                          args.noise, args.threadThreshold, args.threadNoise)
+        result['NDayCompare'] = cresult[0]
+        result['log'] += cresult[1] + '\n'
+        if cresult[0] : 
             testFailed = True
-            result['NDayCompare'] = 'fail'
-        else :
-            result['NDayCompare'] = 'pass'
         if tagHistory :
             reference = tagHistory.seriesAtTag(test, args.reference)
             if not reference :
@@ -182,12 +191,13 @@ def main(args):
             if test in overrides['reference']:
                 print "Override in references for test %s" % test
                 reference = overrides['reference'][test]
-            if compareResults(this_one, reference, args.threshold, "Baseline Comparison " + args.reference, history.noiseLevels(test),
-                              args.noise, args.threadThreshold, args.threadNoise):
+            cresult = compareResults(this_one, reference, args.threshold, "Baseline Comparison " + args.reference, history.noiseLevels(test),
+                              args.noise, args.threadThreshold, args.threadNoise)
+            result['BaselineCompare'] = cresult[0]
+            result['log'] += cresult[1] + '\n'
+            if cresult[0] : 
                 testFailed = True
-                result['BaselineCompare'] = 'fail'
-            else :
-                result['BaselineCompare'] = 'pass'
+        print result['log']
         if testFailed :
             result['status'] = 'fail'
             failed += 1
