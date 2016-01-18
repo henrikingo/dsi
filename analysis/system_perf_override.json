@@ -70,6 +70,13 @@
                 "ticket":[
                     "PERF-335"
                   ],
+            },
+            "ycsb_50read50update_w_majority-wiredTiger": {
+                "threshold": 40,
+                "thread_threshold": 65,
+                "ticket":[
+                    "PERF-287"
+                  ],
             }
         },
         "ndays":{},
