@@ -1,5 +1,28 @@
 {
     "linux-1-node-replSet":{
+        "threshold": {
+            "insert_jtrue-wiredTiger": {
+                "threshold": 30,
+                "thread_threshold": 45,
+                "ticket":[
+                    "PERF-335"
+                ],
+            },
+            "updatemulti_jtrue-wiredTiger": {
+                "threshold": 30,
+                "thread_threshold": 45,
+                "ticket":[
+                    "PERF-335"
+                ],
+            },
+            "removemulti_jtrue-wiredTiger": {
+                "threshold": 30,
+                "thread_threshold": 45,
+                "ticket":[
+                    "PERF-335"
+                ],
+            }
+        },
         "ndays":{},
         "reference":{
             "ycsb-mmapv1_50read50update":{
@@ -26,6 +49,29 @@
         }
     },
     "linux-3-node-replSet":{
+        "threshold": {
+            "insert_jtrue-wiredTiger": {
+                "threshold": 60,
+                "thread_threshold": 75,
+                "ticket":[
+                    "PERF-335"
+                ],
+            },
+            "updatemulti_jtrue-wiredTiger": {
+                "threshold": 60,
+                "thread_threshold": 75,
+                "ticket":[
+                    "PERF-335"
+                ],
+            },
+            "removemulti_jtrue-wiredTiger": {
+                "threshold": 60,
+                "thread_threshold": 75,
+                "ticket":[
+                    "PERF-335"
+                  ],
+            }
+        },
         "ndays":{},
         "reference":{
             "contended_update-wiredTiger":{
@@ -196,6 +242,29 @@
         }
     },
     "linux-standalone":{
+        "threshold": {
+            "insert_jtrue-wiredTiger": {
+                "threshold": 30,
+                "thread_threshold": 45,
+                "ticket":[
+                    "PERF-335"
+                ],
+            },
+            "updatemulti_jtrue-wiredTiger": {
+                "threshold": 30,
+                "thread_threshold": 45,
+                "ticket":[
+                    "PERF-335"
+                ],
+            },
+            "removemulti_jtrue-wiredTiger": {
+                "threshold": 30,
+                "thread_threshold": 45,
+                "ticket":[
+                    "PERF-335"
+                ],
+            }
+        },
         "ndays":{},
         "reference":{
             "ycsb-mmapv1_50read50update":{
