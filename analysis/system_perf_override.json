@@ -1,51 +1,7 @@
 {
     "linux-1-node-replSet":{
-        "threshold": {
-            "insert_jtrue-wiredTiger": {
-                "threshold": 0.3,
-                "thread_threshold": 0.45,
-                "ticket":[
-                    "PERF-335"
-                ]
-            },
-            "updatemulti_jtrue-wiredTiger": {
-                "threshold": 0.3,
-                "thread_threshold": 0.45,
-                "ticket":[
-                    "PERF-335"
-                ]
-            },
-            "removemulti_jtrue-wiredTiger": {
-                "threshold": 0.3,
-                "thread_threshold": 0.45,
-                "ticket":[
-                    "PERF-335"
-                ]
-            }
-        },
         "ndays":{},
         "reference":{
-            "ycsb-mmapv1_50read50update":{
-                "end":1450809316.0,
-                "max":17260.038006603692,
-                "name":"ycsb-mmapv1_50read50update",
-                "order":1763,
-                "results":{
-                    "64":{
-                        "ops_per_sec":17260.038006603692
-                    }
-                },
-                "revision":"3663e004dfc2f73b82b3d88b5fa1ac6b7dcd1d33",
-                "start":1450808155.0,
-                "tag":"",
-                "threads":[
-                    "64"
-                ],
-                "ticket":[
-                    "BF-1418"
-                ],
-                "workload":"ycsb"
-            },
             "contended_update-wiredTiger":{
                 "max":19640.926724152225,
                 "name":"contended_update-wiredTiger",
@@ -68,40 +24,54 @@
                     "SERVER-21092"
                 ],
                 "workload":""
+            },
+            "ycsb-mmapv1_50read50update":{
+                "end":1450809316.0,
+                "max":17260.038006603692,
+                "name":"ycsb-mmapv1_50read50update",
+                "order":1763,
+                "results":{
+                    "64":{
+                        "ops_per_sec":17260.038006603692
+                    }
+                },
+                "revision":"3663e004dfc2f73b82b3d88b5fa1ac6b7dcd1d33",
+                "start":1450808155.0,
+                "tag":"",
+                "threads":[
+                    "64"
+                ],
+                "ticket":[
+                    "BF-1418"
+                ],
+                "workload":"ycsb"
+            }
+        },
+        "threshold":{
+            "insert_jtrue-wiredTiger":{
+                "thread_threshold":0.45,
+                "threshold":0.3,
+                "ticket":[
+                    "PERF-335"
+                ]
+            },
+            "removemulti_jtrue-wiredTiger":{
+                "thread_threshold":0.45,
+                "threshold":0.3,
+                "ticket":[
+                    "PERF-335"
+                ]
+            },
+            "updatemulti_jtrue-wiredTiger":{
+                "thread_threshold":0.45,
+                "threshold":0.3,
+                "ticket":[
+                    "PERF-335"
+                ]
             }
         }
     },
     "linux-3-node-replSet":{
-        "threshold": {
-            "insert_jtrue-wiredTiger": {
-                "threshold": 0.6,
-                "thread_threshold": 0.75,
-                "ticket":[
-                    "PERF-335"
-                ]
-            },
-            "updatemulti_jtrue-wiredTiger": {
-                "threshold": 0.6,
-                "thread_threshold": 0.75,
-                "ticket":[
-                    "PERF-335"
-                ]
-            },
-            "removemulti_jtrue-wiredTiger": {
-                "threshold": 0.6,
-                "thread_threshold": 0.75,
-                "ticket":[
-                    "PERF-335"
-                ]
-            },
-            "ycsb_50read50update_w_majority-wiredTiger": {
-                "threshold": 0.4,
-                "thread_threshold": 0.65,
-                "ticket":[
-                    "PERF-287"
-                ]
-            }
-        },
         "ndays":{},
         "reference":{
             "contended_update-wiredTiger":{
@@ -174,6 +144,36 @@
                     "BF-1418"
                 ],
                 "workload":"ycsb"
+            }
+        },
+        "threshold":{
+            "insert_jtrue-wiredTiger":{
+                "thread_threshold":0.75,
+                "threshold":0.6,
+                "ticket":[
+                    "PERF-335"
+                ]
+            },
+            "removemulti_jtrue-wiredTiger":{
+                "thread_threshold":0.75,
+                "threshold":0.6,
+                "ticket":[
+                    "PERF-335"
+                ]
+            },
+            "updatemulti_jtrue-wiredTiger":{
+                "thread_threshold":0.75,
+                "threshold":0.6,
+                "ticket":[
+                    "PERF-335"
+                ]
+            },
+            "ycsb_50read50update_w_majority-wiredTiger":{
+                "thread_threshold":0.65,
+                "threshold":0.4,
+                "ticket":[
+                    "PERF-287"
+                ]
             }
         }
     },
@@ -268,33 +268,35 @@
                     "SERVER-20596"
                 ],
                 "workload":"ycsb"
+            },
+            "ycsb_50read50update":{
+                "create_time":"2015-12-22T14:44:07.968Z",
+                "end":1450801854.0,
+                "max":70670.6289332622,
+                "name":"ycsb_50read50update",
+                "order":1763,
+                "results":{
+                    "64":{
+                        "ops_per_sec":70670.6289332622,
+                        "replica_avg_lag":1.1960326721120187,
+                        "replica_end_of_test_lag":1,
+                        "replica_max_lag":2
+                    }
+                },
+                "revision":"3663e004dfc2f73b82b3d88b5fa1ac6b7dcd1d33",
+                "start":1450801568.0,
+                "tag":"",
+                "threads":[
+                    "64"
+                ],
+                "ticket":[
+                    "SERVER-20596"
+                ],
+                "workload":"ycsb"
             }
         }
     },
     "linux-standalone":{
-        "threshold": {
-            "insert_jtrue-wiredTiger": {
-                "threshold": 0.3,
-                "thread_threshold": 0.45,
-                "ticket":[
-                    "PERF-335"
-                ]
-            },
-            "updatemulti_jtrue-wiredTiger": {
-                "threshold": 0.3,
-                "thread_threshold": 0.45,
-                "ticket":[
-                    "PERF-335"
-                ]
-            },
-            "removemulti_jtrue-wiredTiger": {
-                "threshold": 0.3,
-                "thread_threshold": 0.45,
-                "ticket":[
-                    "PERF-335"
-                ]
-            }
-        },
         "ndays":{},
         "reference":{
             "ycsb-mmapv1_50read50update":{
@@ -317,6 +319,29 @@
                     "BF-1418"
                 ],
                 "workload":"ycsb"
+            }
+        },
+        "threshold":{
+            "insert_jtrue-wiredTiger":{
+                "thread_threshold":0.45,
+                "threshold":0.3,
+                "ticket":[
+                    "PERF-335"
+                ]
+            },
+            "removemulti_jtrue-wiredTiger":{
+                "thread_threshold":0.45,
+                "threshold":0.3,
+                "ticket":[
+                    "PERF-335"
+                ]
+            },
+            "updatemulti_jtrue-wiredTiger":{
+                "thread_threshold":0.45,
+                "threshold":0.3,
+                "ticket":[
+                    "PERF-335"
+                ]
             }
         }
     }
