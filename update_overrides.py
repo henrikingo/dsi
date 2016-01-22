@@ -198,8 +198,9 @@ def update_sysperf_ndays(self, revision, ticket, evg=None, variants=None, tasks=
 
 if __name__ == '__main__':
     global logger, warner
-    parser = argparse.ArgumentParser(prog='update-overrides',
-                                     description='Update performance test overrides')
+    parser = argparse.ArgumentParser(description='Update performance test overrides. The parameters used \
+        for specifying project/variants/tasks/tests are considered regular expression patterns. \
+        To express exact match, enclose the terms in ^ and $')
     parser.add_argument('reference',
                         help='The Git commit or tag from which to pull data from as an override reference')
     parser.add_argument('ticket',
