@@ -49,7 +49,7 @@ resource "aws_security_group" "longevity-default" {
     name = "${var.user}-longevity-default"
     description = "${var.user} config for longevity"
     vpc_id = "${aws_vpc.main.id}"
-    
+
     # SSH access from anywhere
     ingress {
         from_port = 22
@@ -129,7 +129,7 @@ resource "aws_instance" "shardmember" {
         }
         inline = [
             "sudo yum -y install git wget sysstat dstat fio perf xfsprogs",
-            "mkdir mongodb; curl %%MONGO_URL%% | tar zxv -C mongodb; cd mongodb; mv */bin . ",
+            "mkdir mongodb; curl --retry 10 %%MONGO_URL%% | tar zxv -C mongodb; cd mongodb; mv */bin . ",
             "echo %%MONGO_URL%%",
             "mkdir -p ~/bin",
             "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
@@ -141,7 +141,7 @@ resource "aws_instance" "shardmember" {
             "sudo chown ec2-user /media/ephemeral1",
             "ln -s /media/ephemeral0 ~/data",
             "ln -s /media/ephemeral1 ~/journal",
-            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled", 
+            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled",
             "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag",
             "echo f | sudo tee /sys/class/net/eth0/queues/rx-0/rps_cpus",
             "echo f0 | sudo tee /sys/class/net/eth0/queues/tx-0/xps_cpus",
@@ -194,19 +194,19 @@ resource "aws_instance" "master" {
         }
         inline = [
             "sudo yum -y install tmux git wget sysstat dstat perf",
-            "mkdir mongodb; curl %%MONGO_URL%% | tar zxv -C mongodb; cd mongodb; mv */bin . ",
+            "mkdir mongodb; curl --retry 10 %%MONGO_URL%% | tar zxv -C mongodb; cd mongodb; mv */bin . ",
             "echo %%MONGO_URL%%",
             "mkdir -p ~/bin",
             "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
-            "curl -O https://s3-us-west-2.amazonaws.com/dsi-donot-remove/java/jdk-7u71-linux-x64.rpm; sudo rpm -i jdk-7u71-linux-x64.rpm;",
+            "curl -O --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/java/jdk-7u71-linux-x64.rpm; sudo rpm -i jdk-7u71-linux-x64.rpm;",
             "sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.7.0_71/bin/java 20000",
-            "curl -O http://central.maven.org/maven2/org/mongodb/mongo-java-driver/2.13.0/mongo-java-driver-2.13.0.jar",
+            "curl -O --retry 10 http://central.maven.org/maven2/org/mongodb/mongo-java-driver/2.13.0/mongo-java-driver-2.13.0.jar",
             "echo 'export CLASSPATH=~/mongo-java-driver-2.13.0.jar:$CLASSPATH' >> ~/.bashrc",
             "cd ~; git clone -b evergreen https://github.com/mongodb-labs/YCSB.git",
-            "curl https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash",
+            "curl --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash",
             "source /etc/profile.d/maven.sh; cd /home/ec2-user/YCSB/ycsb-mongodb; ./setup.sh",
-            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled", 
-            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag", 
+            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled",
+            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag",
             "echo f | sudo tee /sys/class/net/eth0/queues/rx-0/rps_cpus",
             "echo f0 | sudo tee /sys/class/net/eth0/queues/tx-0/xps_cpus",
             "echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCmHUZLsuGvNUlCiaZ83jS9f49S0plAtCH19Z2iATOYPH1XE2T8ULcHdFX2GkYiaEqI+fCf1J1opif45sW/5yeDtIp4BfRAdOu2tOvkKvzlnGZndnLzFKuFfBPcysKyrGxkqBvdupOdUROiSIMwPcFgEzyLHk3pQ8lzURiJNtplQ82g3aDi4wneLDK+zuIVCl+QdP/jCc0kpYyrsWKSbxi0YrdpG3E25Q4Rn9uom58c66/3h6MVlk22w7/lMYXWc5fXmyMLwyv4KndH2u3lV45UAb6cuJ6vn6wowiD9N9J1GS57m8jAKaQC1ZVgcZBbDXMR8fbGdc9AH044JVtXe3lT shardtest@test.mongo' | tee -a ~/.ssh/authorized_keys",
@@ -259,15 +259,15 @@ resource "aws_instance" "configserver" {
         }
         inline = [
             "sudo yum -y install tmux git wget sysstat dstat perf",
-            "mkdir mongodb; curl %%MONGO_URL%% | tar zxv -C mongodb; cd mongodb; mv */bin . ",
+            "mkdir mongodb; curl --retry 10 %%MONGO_URL%% | tar zxv -C mongodb; cd mongodb; mv */bin . ",
             "echo %%MONGO_URL%%",
             "mkdir -p ~/bin",
             "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
-            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled", 
+            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled",
             "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag",
             "echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCmHUZLsuGvNUlCiaZ83jS9f49S0plAtCH19Z2iATOYPH1XE2T8ULcHdFX2GkYiaEqI+fCf1J1opif45sW/5yeDtIp4BfRAdOu2tOvkKvzlnGZndnLzFKuFfBPcysKyrGxkqBvdupOdUROiSIMwPcFgEzyLHk3pQ8lzURiJNtplQ82g3aDi4wneLDK+zuIVCl+QdP/jCc0kpYyrsWKSbxi0YrdpG3E25Q4Rn9uom58c66/3h6MVlk22w7/lMYXWc5fXmyMLwyv4KndH2u3lV45UAb6cuJ6vn6wowiD9N9J1GS57m8jAKaQC1ZVgcZBbDXMR8fbGdc9AH044JVtXe3lT shardtest@test.mongo' | tee -a ~/.ssh/authorized_keys",
-            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled", 
-            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag", 
+            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled",
+            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag",
             "echo f | sudo tee /sys/class/net/eth0/queues/rx-0/rps_cpus",
             "echo f0 | sudo tee /sys/class/net/eth0/queues/tx-0/xps_cpus",
             "rm *.tgz",
@@ -276,4 +276,3 @@ resource "aws_instance" "configserver" {
         ]
     }
 }
-
