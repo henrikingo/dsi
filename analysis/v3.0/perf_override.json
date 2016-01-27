@@ -1,0 +1,18 @@
+y{
+    "linux-mmap-repl":{
+        "ndays":{},
+        "reference":{}
+    },
+    "linux-mmap-standalone":{
+        "ndays":{},
+        "reference":{}
+    },
+    "linux-wt-repl":{
+        "ndays":{},
+        "reference":{}
+    },
+    "linux-wt-standalone":{
+        "ndays":{},
+        "reference":{}
+    }
+}
