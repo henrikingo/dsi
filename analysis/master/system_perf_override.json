@@ -293,6 +293,55 @@
                     "SERVER-20596"
                 ],
                 "workload":"ycsb"
+            },
+            "ycsb_95read5update-mmapv1":{
+                "create_time":"2015-12-22T14:44:07.968Z",
+                "end":1450808499.0,
+                "max":67266.23302368444,
+                "name":"ycsb_95read5update-mmapv1",
+                "order":1763,
+                "results":{
+                    "64":{
+                        "ops_per_sec":67266.23302368444,
+                        "replica_avg_lag":0.7508361204013378,
+                        "replica_max_lag":2
+                    }
+                },
+                "revision":"3663e004dfc2f73b82b3d88b5fa1ac6b7dcd1d33",
+                "start":1450808199.0,
+                "tag":"",
+                "threads":[
+                    "64"
+                ],
+                "ticket":[
+                    "SERVER-20596"
+                ],
+                "workload":"ycsb"
+            },
+            "ycsb_95read5update-wiredTiger":{
+                "create_time":"2015-12-22T14:44:07.968Z",
+                "end":1450801490.0,
+                "max":67268.94798092253,
+                "name":"ycsb_95read5update-wiredTiger",
+                "order":1763,
+                "results":{
+                    "64":{
+                        "ops_per_sec":67268.94798092253,
+                        "replica_avg_lag":1.064659977703456,
+                        "replica_end_of_test_lag":2,
+                        "replica_max_lag":2
+                    }
+                },
+                "revision":"3663e004dfc2f73b82b3d88b5fa1ac6b7dcd1d33",
+                "start":1450801190.0,
+                "tag":"",
+                "threads":[
+                    "64"
+                ],
+                "ticket":[
+                    "SERVER-20596"
+                ],
+                "workload":"ycsb"
             }
         }
     },
