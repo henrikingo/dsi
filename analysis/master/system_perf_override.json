@@ -141,7 +141,7 @@
                     "64"
                 ],
                 "ticket":[
-                    "BF-1418"
+                    "SERVER-21581"
                 ],
                 "workload":"ycsb"
             }
@@ -244,7 +244,7 @@
                     "64"
                 ],
                 "ticket":[
-                    "BF-1418"
+                    "SERVER-21581"
                 ],
                 "workload":"ycsb"
             },
@@ -342,6 +342,15 @@
                     "SERVER-20596"
                 ],
                 "workload":"ycsb"
+            }
+        },
+        "threshold":{
+            "ycsb_50read50update_w_majority-wiredTiger":{
+                "thread_threshold":0.65,
+                "threshold":0.4,
+                "ticket":[
+                    "PERF-287"
+                ]
             }
         }
     },
