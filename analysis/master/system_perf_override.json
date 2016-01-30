@@ -391,6 +391,13 @@
                 "ticket":[
                     "PERF-335"
                 ]
+            },
+            "moveChunk_secondaryThrottle_true_waitForDelete_false-wiredTiger":{
+                "thread_threshold":0.45,
+                "threshold":0.3,
+                "ticket":[
+                    "PERF-335"
+                ]
             }
         }
     },
