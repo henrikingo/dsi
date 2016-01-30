@@ -172,7 +172,7 @@
                 "thread_threshold":0.65,
                 "threshold":0.4,
                 "ticket":[
-                    "PERF-287"
+                    "PERF-335"
                 ]
             }
         }
@@ -180,6 +180,46 @@
     "linux-3-shard":{
         "ndays":{},
         "reference":{
+            "moveChunk_secondaryThrottle_true_waitForDelete_false-mmapv1":{
+                "create_time":"2016-01-27T22:58:09.409Z",
+                "max":89.17345128008489,
+                "name":"moveChunk_secondaryThrottle_true_waitForDelete_false-mmapv1",
+                "order":1974,
+                "results":{
+                    "1":{
+                        "ops_per_sec":89.17345128008489
+                    }
+                },
+                "revision":"e1a38c10c8e38f15af891ed330a31636f9e3857f",
+                "tag":"",
+                "threads":[
+                    "1"
+                ],
+                "ticket":[
+                    "SERVER-21581"
+                ],
+                "workload":""
+            },
+            "moveChunk_secondaryThrottle_true_waitForDelete_false-wiredTiger":{
+                "create_time":"2016-01-27T22:58:09.409Z",
+                "max":507.4313318550167,
+                "name":"moveChunk_secondaryThrottle_true_waitForDelete_false-wiredTiger",
+                "order":1974,
+                "results":{
+                    "1":{
+                        "ops_per_sec":507.4313318550167
+                    }
+                },
+                "revision":"e1a38c10c8e38f15af891ed330a31636f9e3857f",
+                "tag":"",
+                "threads":[
+                    "1"
+                ],
+                "ticket":[
+                    "SERVER-21581"
+                ],
+                "workload":""
+            },
             "ycsb-mmap_100read":{
                 "end":1450808124.0,
                 "max":67690.14160777624,
@@ -349,7 +389,7 @@
                 "thread_threshold":0.65,
                 "threshold":0.4,
                 "ticket":[
-                    "PERF-287"
+                    "PERF-335"
                 ]
             }
         }
