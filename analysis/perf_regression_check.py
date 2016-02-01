@@ -18,9 +18,9 @@ def compareOneResultNoise(this_one, reference, label, threadlevel="max", noiseLe
     Uses historical noise data for the comparison.
 
     '''
-    failed = False;
+    failed = False
     if not reference:
-        return failed
+        return (failed, "No reference data for " + label)
 
     ref = ""
     current = ""
@@ -33,7 +33,7 @@ def compareOneResultNoise(this_one, reference, label, threadlevel="max", noiseLe
     else:
         # Don't do a comparison if the thread data is missing
         if not threadlevel in reference["results"].keys():
-            return failed
+            return (failed, "Thread data is missing")
         ref = reference["results"][threadlevel]['ops_per_sec']
         current = this_one["results"][threadlevel]['ops_per_sec']
 
@@ -61,7 +61,7 @@ def compareResults(this_one, reference, threshold, label, noiseLevels={}, noiseM
     failed = False
     log = ""
     if not reference:
-        return failed
+        return (failed, "No reference data for " + label)
     # Default threadThreshold to the same as the max threshold
     if  not threadThreshold:
         threadThreshold = threshold
@@ -162,28 +162,32 @@ def main(args):
                           args.noise, args.threadThreshold, args.threadNoise)
         result['PreviousCompare'] = cresult[0]
         result['log'] += cresult[1] + '\n'
-        if cresult[0] : 
+        if cresult[0] :
             testFailed = True
 
         daysprevious = history.seriesItemsNDaysBefore(test, args.rev,args.ndays)
-        try : 
-            if test in overrides['ndays']:
-                overrideTime = parser.parse(overrides['ndays'][test]['create_time'])
-                thisTime = parser.parse(this_one['create_time'])
-                if (overrideTime < thisTime) and ((overrideTime + timedelta(days=args.ndays)) >= thisTime) :
-                    daysprevious = overrides['ndays'][test]
-                    print "Override in ndays for test %s" % test
-                else :
-                    print "Out of date override found for ndays. Not using"
-        except KeyError as e: 
-            print "Key error accessing overrides for ndays. Key {0} doesn't exist for test {1}".format(str(e), test)
+        if daysprevious:
+            try:
+                if test in overrides['ndays']:
+                    overrideTime = parser.parse(overrides['ndays'][test]['create_time'])
+                    thisTime = parser.parse(this_one['create_time'])
+                    if (overrideTime < thisTime) and ((overrideTime + timedelta(days=args.ndays)) >= thisTime):
+                        daysprevious = overrides['ndays'][test]
+                        print "Override in ndays for test %s" % test
+                    else:
+                        print "Out of date override found for ndays. Not using"
+            except KeyError as e:
+                print "Key error accessing overrides for ndays. Key {0} doesn't exist for test {1}".format(str(e), test)
 
-        cresult =  compareResults(this_one, daysprevious, args.threshold, "NDays", history.noiseLevels(test),
-                          args.noise, args.threadThreshold, args.threadNoise)
-        result['NDayCompare'] = cresult[0]
-        result['log'] += cresult[1] + '\n'
-        if cresult[0] : 
-            testFailed = True
+            cresult =  compareResults(this_one, daysprevious, args.threshold, "NDays", history.noiseLevels(test),
+                                      args.noise, args.threadThreshold, args.threadNoise)
+            result['NDayCompare'] = cresult[0]
+            result['log'] += cresult[1] + '\n'
+            if cresult[0]:
+                testFailed = True
+        else:
+            print "\tWARNING: no nday data, skipping"
+
         if tagHistory :
             reference = tagHistory.seriesAtTag(test, args.reference)
             if not reference :
@@ -195,8 +199,11 @@ def main(args):
                               args.noise, args.threadThreshold, args.threadNoise)
             result['BaselineCompare'] = cresult[0]
             result['log'] += cresult[1] + '\n'
-            if cresult[0] : 
+            if cresult[0] :
                 testFailed = True
+        else:
+            print "\tWARNING: no reference data, skipping"
+
         print result['log']
         if testFailed :
             result['status'] = 'fail'
