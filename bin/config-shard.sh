@@ -159,6 +159,7 @@ startConfigServer() {
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/dbs"
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/logs"
 
+    USE_CSRS=${USE_CSRS:-true}
     if [ "$USE_CSRS" = true ]; then 
         echo "Using CSRS"
         runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod --port 27017 --replSet configSvrRS --dbpath $MY_ROOT/data/dbs --configsvr --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG $storageEngine" 
