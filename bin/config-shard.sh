@@ -162,10 +162,13 @@ startConfigServer() {
     USE_CSRS=${USE_CSRS:-true}
     if [ "$USE_CSRS" = true ]; then 
         echo "Using CSRS"
-        runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod --port 27017 --replSet configSvrRS --dbpath $MY_ROOT/data/dbs --configsvr --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG $storageEngine" 
-    else 
+        runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod --port 27017 --replSet configSvrRS --dbpath $MY_ROOT/data/dbs --configsvr --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG --storageEngine=wiredTiger"
+    elif [ "$USE_CSRS" = false ]; then
         echo "Using Legacy ConfigSvr mode"
-        runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod --port 27017 --dbpath $MY_ROOT/data/dbs --configsvr --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG $storageEngine" 
+        runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod --port 27017 --dbpath $MY_ROOT/data/dbs --configsvr --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG $storageEngine"
+    else
+        echo "USE_CSRS must be either true or false, got $USE_CSRS"
+        exit 1
     fi
 }
 
