@@ -155,6 +155,20 @@ def sys_linux_oplog_compare(test):
     to_return.update(compare_to_tag(test, threshold=0.1, thread_threshold=0.2))
     return to_return
 
+def sys_linux_standlone_c3_2xlarge(test):
+    to_return = {}
+    to_return.update(compare_to_previous(test, threshold=0.08, thread_threshold=0.12))
+    to_return.update(compare_to_NDays(test, threshold=0.08, thread_threshold=0.12))
+    to_return.update(compare_to_tag(test, threshold=0.08, thread_threshold=0.12))
+    return to_return
+
+def sys_linux_standlone_c3_4xlarge(test):
+    to_return = {}
+    to_return.update(compare_to_previous(test, threshold=0.08, thread_threshold=0.12))
+    to_return.update(compare_to_NDays(test, threshold=0.08, thread_threshold=0.12))
+    to_return.update(compare_to_tag(test, threshold=0.08, thread_threshold=0.12))
+    return to_return
+
 def longevity_linux_wt_shard(test):
     to_return = {}
     to_return.update(compare_to_previous(test, threshold=0.25, thread_threshold=0.25))
@@ -195,6 +209,8 @@ check_rules = {
         'linux-3-shard': sys_linux_3_shard,
         'linux-3-node-replSet': sys_linux_3_node_replSet,
         'linux-oplog-compare': sys_linux_oplog_compare,
+        'linux-standalone-c3-2xlarge': sys_linux_standlone_c3_2xlarge,
+        'linux-standalone-c3-4xlarge': sys_linux_standlone_c3_4xlarge,
         },
     'mongo-longevity': {
         'linux-wt-shard': longevity_linux_wt_shard,
