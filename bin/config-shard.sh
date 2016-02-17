@@ -394,6 +394,11 @@ done
 
 sleep 2
 
+
+killAllProcess $config1 "mongod"
+killAllProcess $config2 "mongod"
+killAllProcess $config3 "mongod"
+
 startConfigServer $version $config1 ${_storageEngine}
 startConfigServer $version $config2 ${_storageEngine}
 startConfigServer $version $config3 ${_storageEngine}
