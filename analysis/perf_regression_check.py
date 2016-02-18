@@ -143,7 +143,7 @@ def main(args):
 
     for test in testnames:
         # The first entry is valid. The rest is dummy data to match the existing format
-        result = {'test_file' : test, 'exit_code' : 0, 'elapsed' : 5, 'start': 1441227291.962453, 'end': 1441227293.428761, 'log' : ''}
+        result = {'test_file' : test, 'exit_code' : 0, 'elapsed' : 5, 'start': 1441227291.962453, 'end': 1441227293.428761, 'log_raw' : ''}
         this_one = history.seriesAtRevision(test, args.rev)
         testFailed = False
         print "checking %s.." % (test)
@@ -161,7 +161,7 @@ def main(args):
         cresult = compareResults(this_one, previous[0], args.threshold, "Previous", history.noiseLevels(test),
                           args.noise, args.threadThreshold, args.threadNoise)
         result['PreviousCompare'] = cresult[0]
-        result['log'] += cresult[1] + '\n'
+        result['log_raw'] += cresult[1] + '\n'
         if cresult[0] :
             testFailed = True
 
@@ -182,7 +182,7 @@ def main(args):
             cresult =  compareResults(this_one, daysprevious, args.threshold, "NDays", history.noiseLevels(test),
                                       args.noise, args.threadThreshold, args.threadNoise)
             result['NDayCompare'] = cresult[0]
-            result['log'] += cresult[1] + '\n'
+            result['log_raw'] += cresult[1] + '\n'
             if cresult[0]:
                 testFailed = True
         else:
@@ -198,13 +198,13 @@ def main(args):
             cresult = compareResults(this_one, reference, args.threshold, "Baseline Comparison " + args.reference, history.noiseLevels(test),
                               args.noise, args.threadThreshold, args.threadNoise)
             result['BaselineCompare'] = cresult[0]
-            result['log'] += cresult[1] + '\n'
+            result['log_raw'] += cresult[1] + '\n'
             if cresult[0] :
                 testFailed = True
         else:
             print "\tWARNING: no reference data, skipping"
 
-        print result['log']
+        print result['log_raw']
         if testFailed :
             result['status'] = 'fail'
             failed += 1
