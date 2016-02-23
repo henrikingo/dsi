@@ -6,6 +6,7 @@ from dateutil import parser
 from datetime import timedelta, datetime
 import os
 import re
+import StringIO
 
 # Example usage:
 # post_run_check.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f
@@ -447,7 +448,7 @@ def main(args):
     # iterate through tests and check for regressions and other violations
     testnames = history.testnames()
     for test in testnames:
-        result = {'test_file': test, 'exit_code': 0}
+        result = {'test_file': test, 'exit_code': 0, 'log_raw': ''}
         to_test = {'ref_tag': args.reference}
         t = history.seriesAtRevision(test, args.rev)
         if t:
@@ -462,7 +463,17 @@ def main(args):
             # Use project_id and variant to identify the rule set
             # May want to use task_name for further differentiation
             try:
+                # Redirect stdout to log_stdout so we can capture per test logs
+                real_stdout = sys.stdout
+                log_stdout = StringIO.StringIO()
+                sys.stdout = log_stdout
                 result.update(check_rules[args.project_id][args.variant](to_test))
+                # Store log_stdout in log_raw
+                test_log = log_stdout.getvalue()
+                result['log_raw'] = test_log
+                # Restore stdout (important) and print the test_log to it
+                sys.stdout = real_stdout
+                print test_log
             except Exception as e:
                 print "The (project_id, variant) combination is not supported " \
                     "in post_run_check.py: {0}".format(str(e))
