@@ -46,6 +46,7 @@ readonly MY_ROOT="/home/ec2-user"
 readonly SSHKEY="-i ${PEMFILE}"
 readonly USER="ec2-user"
 readonly mongos=$ms
+readonly CSRS_REPL_NAME="configSvrRS"
 
 # configShardKey="sh.shardCollection( \\\"sbtest.sbtest\\\"+i, { _id: 1} );"
 readonly configShardKey="sh.shardCollection( \\\"sbtest.sbtest\\\"+i, { _id: \\\"hashed\\\" } );"
@@ -138,12 +139,23 @@ startMongos() {
 
     # now start mongos
     
-    runSSHCommand $ssh_url "rm -rf $MY_ROOT/data/logs/mongos.log"
+    runSSHCommand $ssh_url "rm -rf $MY_ROOT/data/logs/*.log"
     runSSHCommand $ssh_url "rm -rf $MY_ROOT/data/dbs"
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/dbs"
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/logs"
 
-    runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited ; $MY_ROOT/$ver/bin/mongos --fork --configdb $IPconfig1:27017,$IPconfig2:27017,$IPconfig3:27017 --logpath=$MY_ROOT/data/logs/mongos.log $DEBUG $ChunkSize" 
+
+    USE_CSRS=${USE_CSRS:-true}
+    if [ "$USE_CSRS" = true ]; then 
+        echo "Using CSRS to start mongos"
+        runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited ; $MY_ROOT/$ver/bin/mongos --fork --configdb $CSRS_REPL_NAME/$IPconfig1:27017,$IPconfig2:27017,$IPconfig3:27017 --logpath=$MY_ROOT/data/logs/mongos.log $DEBUG $ChunkSize" 
+    elif [ "$USE_CSRS" = false ]; then
+        echo "Using Legacy ConfigSvr mode to start mongos"
+        runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited ; $MY_ROOT/$ver/bin/mongos --fork --configdb $IPconfig1:27017,$IPconfig2:27017,$IPconfig3:27017 --logpath=$MY_ROOT/data/logs/mongos.log $DEBUG $ChunkSize" 
+    else
+        echo "USE_CSRS must be either true or false, got $USE_CSRS"
+        exit 1
+    fi
 }
 
 startConfigServer() {
@@ -154,7 +166,7 @@ startConfigServer() {
 
     killAllProcess $ssh_url "mongod"
 
-    runSSHCommand $ssh_url "rm -rf $MY_ROOT/data/logs/mongos.log"
+    runSSHCommand $ssh_url "rm -rf $MY_ROOT/data/logs/*.log"
     runSSHCommand $ssh_url "rm -rf $MY_ROOT/data/dbs"
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/dbs"
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/logs"
@@ -162,7 +174,7 @@ startConfigServer() {
     USE_CSRS=${USE_CSRS:-true}
     if [ "$USE_CSRS" = true ]; then 
         echo "Using CSRS"
-        runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod --port 27017 --replSet configSvrRS --dbpath $MY_ROOT/data/dbs --configsvr --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG --storageEngine=wiredTiger"
+        runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod --port 27017 --replSet $CSRS_REPL_NAME --dbpath $MY_ROOT/data/dbs --configsvr --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG --storageEngine=wiredTiger"
     elif [ "$USE_CSRS" = false ]; then
         echo "Using Legacy ConfigSvr mode"
         runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod --port 27017 --dbpath $MY_ROOT/data/dbs --configsvr --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG $storageEngine"
@@ -407,7 +419,7 @@ if [ "$USE_CSRS" ]; then
     echo "Config CSRS"
     HOST_CONFIG_RS_1=ip-`echo ${IPconfig1} | tr . -`
     runSSHCommand ${config1} "$MY_ROOT/$version/bin/mongo --port 27017 --verbose \
-		--eval \"rs.initiate({_id: \\\"configSvrRS\\\", configsvr:true, members:[{_id: 0, host:\\\"${HOST_CONFIG_RS_1}:27017\\\"}]});\
+		--eval \"rs.initiate({_id: \\\"${CSRS_REPL_NAME}\\\", configsvr:true, members:[{_id: 0, host:\\\"${HOST_CONFIG_RS_1}:27017\\\"}]});\
 		sleep(2000);\
 		cfg = rs.conf();\
 		rs.reconfig(cfg);\
