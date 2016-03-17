@@ -1,0 +1,268 @@
+checking Queries.UniqueIdx.MultipleUniqueIndices..
+Computing noise levels
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.Empty..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.Text.FindThreeWords..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+Override in references for test Queries.Text.FindThreeWords
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 7d7f4
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 7d7f4
+
+checking Queries.RegexPrefixFindOne..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.Text.FindPhraseCaseSensitive..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+Override in references for test Queries.Text.FindPhraseCaseSensitive
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 7d7f4
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 7d7f4
+
+checking Queries.FindProjectionThreeFieldsCovered..
+	no regression against Previous and githash d67ed
+Out of date override found for ndays. Not using
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.FindProjectionDottedField..
+	no regression against Previous and githash d67ed
+Out of date override found for ndays. Not using
+	no regression against NDays and githash 1d751
+	regression found on max: drop from 39946.81 ops/sec (commit 45d94) to 35114.94 ops/sec for comparison Baseline Comparison 3.2.1-Baseline. Diff is 4831.87 ops/sec (12.10%), noise level is 656.63 ops/sec and multiple is 1.00
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+regression found on max: drop from 39946.81 ops/sec (commit 45d94) to 35114.94 ops/sec for comparison Baseline Comparison 3.2.1-Baseline. Diff is 4831.87 ops/sec (12.10%), noise level is 656.63 ops/sec and multiple is 1.00
+
+
+checking Queries.Text.FindSingleLargeDocuments..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.IntNonIdFindOneProjectionCovered..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.IntIdFindOne..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.Text.FindSingle..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+Override in references for test Queries.Text.FindSingle
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 7d7f4
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 7d7f4
+
+checking Queries.Text.FindPhrase..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+Override in references for test Queries.Text.FindPhrase
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 7d7f4
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 7d7f4
+
+checking Queries.IntNonIdFindOne..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.UniqueIdx.ManyIdxIsectRangePredicates..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.IntNonIdFindProjectionCovered..
+	no regression against Previous and githash d67ed
+Out of date override found for ndays. Not using
+	no regression against NDays and githash 1d751
+Override in references for test Queries.IntNonIdFindProjectionCovered
+	no regression against Baseline Comparison 3.2.1-Baseline and githash fbb84
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash fbb84
+
+checking Queries.IntNonIdFindOneProjection..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.IntIDRange..
+	no regression against Previous and githash d67ed
+Out of date override found for ndays. Not using
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.FindProjection..
+	no regression against Previous and githash d67ed
+Out of date override found for ndays. Not using
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.PartialIndex.AllInFilter.FilteredRange..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+Override in references for test Queries.PartialIndex.AllInFilter.FilteredRange
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 774e7
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 774e7
+
+checking Queries.TwoInts..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.UniqueIdx.MultikeyWithUniqueIdx..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.UniqueIdx.HaveNonUniqueIndices..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.FindProjectionDottedField.Indexed..
+	no regression against Previous and githash d67ed
+Out of date override found for ndays. Not using
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.NoMatch..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.PartialIndex.FilteredRange..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+Override in references for test Queries.PartialIndex.FilteredRange
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 774e7
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 774e7
+
+checking Queries.PartialIndex.AllInFilter.FullRange..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+Override in references for test Queries.PartialIndex.AllInFilter.FullRange
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 774e7
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 774e7
+
+checking Queries.Text.FindThreeWordsCaseSensitive..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+Override in references for test Queries.Text.FindThreeWordsCaseSensitive
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 7d7f4
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 7d7f4
+
+checking Queries.FindWideDocProjection..
+	no regression against Previous and githash d67ed
+Out of date override found for ndays. Not using
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.Text.FindSingleCaseSensitive..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+Override in references for test Queries.Text.FindSingleCaseSensitive
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 7d7f4
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 7d7f4
+
+checking Queries.UniqueIdx.ManyIdxIsect..
+	no regression against Previous and githash d67ed
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+
+checking Queries.FindProjectionThreeFields..
+	no regression against Previous and githash d67ed
+Out of date override found for ndays. Not using
+	no regression against NDays and githash 1d751
+	no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+no regression against Previous and githash d67ed
+no regression against NDays and githash 1d751
+no regression against Baseline Comparison 3.2.1-Baseline and githash 45d94
+

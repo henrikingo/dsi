@@ -16,4 +16,4 @@
 
 VERSION_TUPLE = (0, 1, 0)
 
-__all__ = ['evergreen', 'regression', 'override']
+__all__ = ['evergreen', 'regression', 'override', 'history', 'utils']

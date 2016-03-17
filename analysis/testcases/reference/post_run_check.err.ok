@@ -1,0 +1,39 @@
+
+==============================
+Regression Summary:
+
+insert_ttl-wiredTiger
+ Violation|     Compared_to| Thread|     Target|   Achieved|   delta(%)
+----------+----------------+-------+-----------+-----------+-----------
+     NDays|           94730|    max|  402595.61|  351025.71|     -12.81
+     NDays|           94730|     32|  402595.61|  351025.71|     -12.81
+  Baseline|  3.2.1-Baseline|    max|  391998.10|  351025.71|     -10.45
+
+word_count_1M_doc-wiredTiger
+ Violation|     Compared_to| Thread|     Target|   Achieved|   delta(%)
+----------+----------------+-------+-----------+-----------+-----------
+  Baseline|  3.2.1-Baseline|    max|   94688.00|   86896.07|      -8.23
+
+insert_vector_secondary_overall-wiredTiger
+ Violation|     Compared_to| Thread|     Target|   Achieved|   delta(%)
+----------+----------------+-------+-----------+-----------+-----------
+     NDays|           94730|    max|  516069.23|  447932.70|     -13.20
+     NDays|           94730|     32|  516069.23|  447932.70|     -13.20
+  Baseline|  3.2.1-Baseline|    max|  517010.89|  447932.70|     -13.36
+  Baseline|  3.2.1-Baseline|     32|  517010.89|  447932.70|     -13.36
+
+insert_vector_secondary_load_phase-wiredTiger
+ Violation|     Compared_to| Thread|     Target|   Achieved|   delta(%)
+----------+----------------+-------+-----------+-----------+-----------
+     NDays|           94730|    max|  516072.09|  447935.18|     -13.20
+     NDays|           94730|     32|  516072.09|  447935.18|     -13.20
+  Baseline|  3.2.1-Baseline|    max|  517010.89|  447935.18|     -13.36
+  Baseline|  3.2.1-Baseline|     32|  517010.89|  447935.18|     -13.36
+
+insert_vector_primary-wiredTiger
+ Violation|     Compared_to| Thread|     Target|   Achieved|   delta(%)
+----------+----------------+-------+-----------+-----------+-----------
+     NDays|           94730|    max|  516072.09|  447935.18|     -13.20
+     NDays|           94730|     32|  516072.09|  447935.18|     -13.20
+  Baseline|  3.2.1-Baseline|    max|  517010.89|  447935.18|     -13.36
+  Baseline|  3.2.1-Baseline|     32|  517010.89|  447935.18|     -13.36

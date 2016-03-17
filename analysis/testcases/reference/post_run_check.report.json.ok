@@ -1,0 +1,148 @@
+{
+    "failures": 5,
+    "results": [
+        {
+            "status": "fail",
+            "PreviousCompare": "pass",
+            "end": 1,
+            "NDayCompare": "fail",
+            "log_raw": "\n        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)\n   ---> regression found on max: drop from 402595.61 ops/sec () to 351025.71 ops/sec for comparison NDays. Diff is 51569.90 ops/sec (-12.81%)\n   ---> regression found on 32: drop from 402595.61 ops/sec () to 351025.71 ops/sec for comparison NDays. Diff is 51569.90 ops/sec (-12.81%)\n   ---> regression found on max: drop from 391998.10 ops/sec (3.2.1-Baseline) to 351025.71 ops/sec for comparison Baseline. Diff is 40972.39 ops/sec (-10.45%)\n",
+            "exit_code": 0,
+            "BaselineCompare": "fail",
+            "start": 0,
+            "test_file": "insert_ttl-wiredTiger"
+        },
+        {
+            "status": "pass",
+            "PreviousCompare": "pass",
+            "end": 1,
+            "NDayCompare": "pass",
+            "log_raw": "\n        no regression against Previous (ee5fb) above thresholds(0.3, 0.45)\n        no regression against NDays (94730) above thresholds(0.3, 0.45)\n        no regression against Baseline (3.2.1-Baseline) above thresholds(0.3, 0.45)\n",
+            "exit_code": 0,
+            "BaselineCompare": "pass",
+            "start": 0,
+            "test_file": "insert_jtrue-wiredTiger"
+        },
+        {
+            "status": "pass",
+            "PreviousCompare": "pass",
+            "end": 1,
+            "NDayCompare": "pass",
+            "log_raw": "\n        no regression against Previous (ee5fb) above thresholds(0.3, 0.45)\n        no regression against NDays (94730) above thresholds(0.3, 0.45)\n        no regression against Baseline (3.2.1-Baseline) above thresholds(0.3, 0.45)\n",
+            "exit_code": 0,
+            "BaselineCompare": "pass",
+            "start": 0,
+            "test_file": "removemulti_jtrue-wiredTiger"
+        },
+        {
+            "status": "pass",
+            "PreviousCompare": "pass",
+            "end": 1,
+            "NDayCompare": "pass",
+            "log_raw": "\n        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)\n        no regression against NDays (94730) above thresholds(0.08, 0.12)\n        no regression against Baseline (3.2.1-Baseline) above thresholds(0.08, 0.12)\n",
+            "exit_code": 0,
+            "BaselineCompare": "pass",
+            "start": 0,
+            "test_file": "insert_capped_indexes-wiredTiger"
+        },
+        {
+            "status": "pass",
+            "PreviousCompare": "pass",
+            "end": 1,
+            "NDayCompare": "pass",
+            "log_raw": "\n        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)\n        no regression against NDays (94730) above thresholds(0.08, 0.12)\n        no regression against Baseline (3.2.1-Baseline) above thresholds(0.08, 0.12)\n",
+            "exit_code": 0,
+            "BaselineCompare": "pass",
+            "start": 0,
+            "test_file": "insert_capped-wiredTiger"
+        },
+        {
+            "status": "pass",
+            "PreviousCompare": "pass",
+            "end": 1,
+            "NDayCompare": "pass",
+            "log_raw": "\n        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)\n        no regression against NDays (94730) above thresholds(0.08, 0.12)\n        no regression against Baseline (3.2.1-Baseline) above thresholds(0.08, 0.12)\n",
+            "exit_code": 0,
+            "BaselineCompare": "pass",
+            "start": 0,
+            "test_file": "initial_load_capped-wiredTiger"
+        },
+        {
+            "status": "fail",
+            "PreviousCompare": "pass",
+            "end": 1,
+            "NDayCompare": "pass",
+            "log_raw": "\n        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)\n        no regression against NDays (94730) above thresholds(0.08, 0.12)\n   ---> regression found on max: drop from 94688.00 ops/sec (3.2.1-Baseline) to 86896.07 ops/sec for comparison Baseline. Diff is 7791.93 ops/sec (-8.23%)\n",
+            "exit_code": 0,
+            "BaselineCompare": "fail",
+            "start": 0,
+            "test_file": "word_count_1M_doc-wiredTiger"
+        },
+        {
+            "status": "pass",
+            "PreviousCompare": "pass",
+            "end": 1,
+            "NDayCompare": "pass",
+            "log_raw": "\n        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)\n        no regression against NDays (94730) above thresholds(0.08, 0.12)\n        no regression against Baseline (3.2.1-Baseline) above thresholds(0.08, 0.12)\n",
+            "exit_code": 0,
+            "BaselineCompare": "pass",
+            "start": 0,
+            "test_file": "map_reduce_1M_doc-wiredTiger"
+        },
+        {
+            "status": "fail",
+            "PreviousCompare": "pass",
+            "end": 1,
+            "NDayCompare": "fail",
+            "log_raw": "\n        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)\n   ---> regression found on max: drop from 516069.23 ops/sec () to 447932.70 ops/sec for comparison NDays. Diff is 68136.53 ops/sec (-13.20%)\n   ---> regression found on 32: drop from 516069.23 ops/sec () to 447932.70 ops/sec for comparison NDays. Diff is 68136.53 ops/sec (-13.20%)\n   ---> regression found on max: drop from 517010.89 ops/sec (3.2.1-Baseline) to 447932.70 ops/sec for comparison Baseline. Diff is 69078.20 ops/sec (-13.36%)\n   ---> regression found on 32: drop from 517010.89 ops/sec (3.2.1-Baseline) to 447932.70 ops/sec for comparison Baseline. Diff is 69078.20 ops/sec (-13.36%)\n",
+            "exit_code": 0,
+            "BaselineCompare": "fail",
+            "start": 0,
+            "test_file": "insert_vector_secondary_overall-wiredTiger"
+        },
+        {
+            "status": "pass",
+            "PreviousCompare": "pass",
+            "end": 1,
+            "NDayCompare": "pass",
+            "log_raw": "\n        no regression against Previous (ee5fb) above thresholds(0.3, 0.45)\n        no regression against NDays (94730) above thresholds(0.3, 0.45)\n        no regression against Baseline (3.2.1-Baseline) above thresholds(0.3, 0.45)\n",
+            "exit_code": 0,
+            "BaselineCompare": "pass",
+            "start": 0,
+            "test_file": "updatemulti_jtrue-wiredTiger"
+        },
+        {
+            "status": "fail",
+            "PreviousCompare": "pass",
+            "end": 1,
+            "NDayCompare": "fail",
+            "log_raw": "\n        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)\n   ---> regression found on max: drop from 516072.09 ops/sec () to 447935.18 ops/sec for comparison NDays. Diff is 68136.91 ops/sec (-13.20%)\n   ---> regression found on 32: drop from 516072.09 ops/sec () to 447935.18 ops/sec for comparison NDays. Diff is 68136.91 ops/sec (-13.20%)\n   ---> regression found on max: drop from 517010.89 ops/sec (3.2.1-Baseline) to 447935.18 ops/sec for comparison Baseline. Diff is 69075.71 ops/sec (-13.36%)\n   ---> regression found on 32: drop from 517010.89 ops/sec (3.2.1-Baseline) to 447935.18 ops/sec for comparison Baseline. Diff is 69075.71 ops/sec (-13.36%)\n",
+            "exit_code": 0,
+            "BaselineCompare": "fail",
+            "start": 0,
+            "test_file": "insert_vector_secondary_load_phase-wiredTiger"
+        },
+        {
+            "status": "pass",
+            "PreviousCompare": "pass",
+            "end": 1,
+            "NDayCompare": "pass",
+            "log_raw": "\n        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)\n        no regression against NDays (94730) above thresholds(0.08, 0.12)\n        no regression against Baseline (3.2.1-Baseline) above thresholds(0.08, 0.12)\n",
+            "exit_code": 0,
+            "BaselineCompare": "pass",
+            "start": 0,
+            "test_file": "contended_update-wiredTiger"
+        },
+        {
+            "status": "fail",
+            "PreviousCompare": "pass",
+            "end": 1,
+            "NDayCompare": "fail",
+            "log_raw": "\n        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)\n   ---> regression found on max: drop from 516072.09 ops/sec () to 447935.18 ops/sec for comparison NDays. Diff is 68136.91 ops/sec (-13.20%)\n   ---> regression found on 32: drop from 516072.09 ops/sec () to 447935.18 ops/sec for comparison NDays. Diff is 68136.91 ops/sec (-13.20%)\n   ---> regression found on max: drop from 517010.89 ops/sec (3.2.1-Baseline) to 447935.18 ops/sec for comparison Baseline. Diff is 69075.71 ops/sec (-13.36%)\n   ---> regression found on 32: drop from 517010.89 ops/sec (3.2.1-Baseline) to 447935.18 ops/sec for comparison Baseline. Diff is 69075.71 ops/sec (-13.36%)\n",
+            "exit_code": 0,
+            "BaselineCompare": "fail",
+            "start": 0,
+            "test_file": "insert_vector_primary-wiredTiger"
+        }
+    ]
+}

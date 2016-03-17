@@ -1,9 +1,12 @@
 import argparse
-import json
-import sys
-import itertools
 from dateutil import parser
 from datetime import timedelta, datetime
+import itertools
+import json
+import sys
+
+from evergreen.history import History
+from evergreen.util import read_histories
 
 # Example usage:
 # perf_regression_check.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f
@@ -121,30 +124,18 @@ def main(args):
     argParser.add_argument("--variant", dest="variant", help="Variant to lookup in the override file")
 
     args = argParser.parse_args()
-    tagHistory = ""
-    j = get_json(args.file)
-    if args.tfile :
-        t = get_json(args.tfile)
-        tagHistory = History(t)
-    history = History(j)
+    (history, tag_history, overrides) = read_histories(args.variant, args.file, args.tfile,
+                                                       args.overrideFile)
     testnames = history.testnames()
     failed = False
     failed = 0
 
     results = []
-    # Default empty override structure
-    overrides = {'ndays' : {}, 'reference' : {}}
-    if args.overrideFile :
-        # Read the overrides file
-        foverrides = get_json(args.overrideFile)
-        # Is this variant in the overrides file?
-        if args.variant in foverrides :
-            overrides = foverrides[args.variant]
 
     for test in testnames:
         # The first entry is valid. The rest is dummy data to match the existing format
         result = {'test_file' : test, 'exit_code' : 0, 'elapsed' : 5, 'start': 1441227291.962453, 'end': 1441227293.428761, 'log_raw' : ''}
-        this_one = history.seriesAtRevision(test, args.rev)
+        this_one = history.series_at_revision(test, args.rev)
         testFailed = False
         print "checking %s.." % (test)
         if not this_one:
@@ -154,18 +145,21 @@ def main(args):
         #If the new build is 10% lower than the target (3.0 will be
         #used as the baseline for 3.2 for instance), consider it
         #regressed.
-        previous = history.seriesItemsNBefore(test, args.rev, 1)
+        previous = history.series_at_n_before(test, args.rev, 1)
         if not previous:
             print "\tno previous data, skipping"
             continue
-        cresult = compareResults(this_one, previous[0], args.threshold, "Previous", history.noiseLevels(test),
-                          args.noise, args.threadThreshold, args.threadNoise)
+        cresult = compareResults(this_one, previous, args.threshold,
+                                 "Previous",
+                                 history.noise_levels(test),
+                                 args.noise, args.threadThreshold,
+                                 args.threadNoise)
         result['PreviousCompare'] = cresult[0]
         result['log_raw'] += cresult[1] + '\n'
         if cresult[0] :
             testFailed = True
 
-        daysprevious = history.seriesItemsNDaysBefore(test, args.rev,args.ndays)
+        daysprevious = history.series_at_n_days_before(test, args.rev,args.ndays)
         if daysprevious:
             try:
                 if test in overrides['ndays']:
@@ -179,8 +173,12 @@ def main(args):
             except KeyError as e:
                 print "Key error accessing overrides for ndays. Key {0} doesn't exist for test {1}".format(str(e), test)
 
-            cresult =  compareResults(this_one, daysprevious, args.threshold, "NDays", history.noiseLevels(test),
-                                      args.noise, args.threadThreshold, args.threadNoise)
+            cresult = compareResults(this_one, daysprevious,
+                                     args.threshold, "NDays",
+                                     history.noise_levels(test),
+                                     args.noise,
+                                     args.threadThreshold,
+                                     args.threadNoise)
             result['NDayCompare'] = cresult[0]
             result['log_raw'] += cresult[1] + '\n'
             if cresult[0]:
@@ -188,15 +186,18 @@ def main(args):
         else:
             print "\tWARNING: no nday data, skipping"
 
-        if tagHistory :
-            reference = tagHistory.seriesAtTag(test, args.reference)
+        if tag_history :
+            reference = tag_history.series_at_tag(test, args.reference)
             if not reference :
                 print "Didn't get any data for test %s with baseline %s" % (test, args.reference)
             if test in overrides['reference']:
                 print "Override in references for test %s" % test
                 reference = overrides['reference'][test]
-            cresult = compareResults(this_one, reference, args.threshold, "Baseline Comparison " + args.reference, history.noiseLevels(test),
-                              args.noise, args.threadThreshold, args.threadNoise)
+            cresult = compareResults(this_one, reference,
+                                     args.threshold, "Baseline Comparison " +
+                                     args.reference,
+                                     history.noise_levels(test), args.noise,
+                                     args.threadThreshold, args.threadNoise)
             result['BaselineCompare'] = cresult[0]
             result['log_raw'] += cresult[1] + '\n'
             if cresult[0] :
@@ -222,142 +223,6 @@ def main(args):
         sys.exit(1)
     else:
         sys.exit(0)
-
-# We wouldn't need this function if we had numpy installed on the system
-def computeRange(result_list):
-    '''
-       Compute the max, min, and range (max - min) for the result list
-    '''
-    min = max = result_list[0]
-    for result in result_list:
-        if result < min:
-            min = result
-        if result > max:
-            max = result
-    return (max,min,max-min)
-
-def get_json(filename):
-    jf = open(filename, 'r')
-    json_obj = json.load(jf)
-    return json_obj
-
-class History(object):
-    def __init__(self, jsonobj):
-        self._raw = sorted(jsonobj, key=lambda d: d["order"])
-        self._noise = None
-
-    def testnames(self):
-        return set(list(itertools.chain.from_iterable([[z["name"] for z in c["data"]["results"]]
-                                                       for c in self._raw])))
-
-    def seriesAtRevision(self, testname, revision):
-        s = self.series(testname)
-        for result in s:
-            if result["revision"] == revision:
-                return result
-        return None
-
-    def seriesAtTag(self, testname, tagName):
-        s = self.series(testname)
-        for result in s:
-            if result["tag"] == tagName:
-                return result
-        return None
-
-    def seriesItemsNBefore(self, testname, revision, n):
-        """
-            Returns the 'n' items in the series under the given test name that
-            appear prior to the specified revision.
-        """
-        results = []
-        found = False
-        s = self.series(testname)
-        for result in s:
-            if result["revision"] == revision:
-                found = True
-                break
-            results.append(result)
-
-        if found:
-            return results[-1*n:]
-        return []
-
-    def computeNoiseLevels(self):
-        """
-        For each test, go through all results, and compute the average
-        noise (max - min) for the series
-
-        """
-        self._noise = {}
-        testnames = self.testnames()
-        for test in testnames:
-            self._noise[test] = {}
-            s = self.series(test)
-            threads = []
-            for result in s:
-                threads = result["threads"]
-                break
-
-            # Determine levels from last commit? Probably a better way to do this.
-            for thread in threads:
-                s = self.series(test)
-                self._noise[test][thread] = sum((computeRange(x["results"][thread].get("ops_per_sec_values", [0]))[2]
-                                                 for x in s))
-                s = self.series(test)
-                self._noise[test][thread] /= sum(1 for x in s)
-
-
-    def noiseLevels(self, testname):
-        """
-        Returns the average noise level of the given test. Noise levels
-        are thread specific. Returns an array
-
-        """
-        # check if noise has been computed. Compute if it hasn't
-        if not self._noise:
-            print "Computing noise levels"
-            self.computeNoiseLevels()
-        # Look up noise value for test
-        if not testname in self._noise:
-            print "Test %s not in self._noise" % (testname)
-        return self._noise[testname]
-
-
-    def seriesItemsNDaysBefore(self, testname, revision, n):
-        """
-            Returns the items in the series under the given test name that
-            appear 'n' days prior to the specified revision.
-        """
-        results = {}
-        # Date for this revision
-        s = self.seriesAtRevision(testname, revision)
-        if s==[]:
-            return []
-        refdate = parser.parse(s["create_time"]) - timedelta(days=n)
-
-        s = self.series(testname)
-        for result in s:
-            if parser.parse(result["create_time"]) < refdate:
-                results = result
-        return results
-
-
-
-    def series(self, testname):
-        for commit in self._raw:
-            # get a copy of the samples for those whose name matches the given testname
-            matching = filter( lambda x: x["name"]==testname, commit["data"]["results"])
-            if matching:
-                result = matching[0]
-                result["revision"] = commit["revision"]
-                result["tag"] = commit["tag"]
-                result["create_time"] = commit["create_time"]
-                result["order"] = commit["order"]
-                result["max"] = max(f["ops_per_sec"] for f in result["results"].values()
-                                    if type(f) == type({}))
-                result["threads"] = [f for f in result["results"] if type(result["results"][f])
-                                     == type({})]
-                yield result
 
 
 class TestResult:

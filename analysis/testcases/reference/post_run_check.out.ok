@@ -1,0 +1,85 @@
+==============================
+checking insert_ttl-wiredTiger..
+        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)
+   ---> regression found on max: drop from 402595.61 ops/sec () to 351025.71 ops/sec for comparison NDays. Diff is 51569.90 ops/sec (-12.81%)
+   ---> regression found on 32: drop from 402595.61 ops/sec () to 351025.71 ops/sec for comparison NDays. Diff is 51569.90 ops/sec (-12.81%)
+   ---> regression found on max: drop from 391998.10 ops/sec (3.2.1-Baseline) to 351025.71 ops/sec for comparison Baseline. Diff is 40972.39 ops/sec (-10.45%)
+
+==============================
+checking insert_jtrue-wiredTiger..
+        no regression against Previous (ee5fb) above thresholds(0.3, 0.45)
+        no regression against NDays (94730) above thresholds(0.3, 0.45)
+        no regression against Baseline (3.2.1-Baseline) above thresholds(0.3, 0.45)
+
+==============================
+checking removemulti_jtrue-wiredTiger..
+        no regression against Previous (ee5fb) above thresholds(0.3, 0.45)
+        no regression against NDays (94730) above thresholds(0.3, 0.45)
+        no regression against Baseline (3.2.1-Baseline) above thresholds(0.3, 0.45)
+
+==============================
+checking insert_capped_indexes-wiredTiger..
+        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)
+        no regression against NDays (94730) above thresholds(0.08, 0.12)
+        no regression against Baseline (3.2.1-Baseline) above thresholds(0.08, 0.12)
+
+==============================
+checking insert_capped-wiredTiger..
+        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)
+        no regression against NDays (94730) above thresholds(0.08, 0.12)
+        no regression against Baseline (3.2.1-Baseline) above thresholds(0.08, 0.12)
+
+==============================
+checking initial_load_capped-wiredTiger..
+        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)
+        no regression against NDays (94730) above thresholds(0.08, 0.12)
+        no regression against Baseline (3.2.1-Baseline) above thresholds(0.08, 0.12)
+
+==============================
+checking word_count_1M_doc-wiredTiger..
+        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)
+        no regression against NDays (94730) above thresholds(0.08, 0.12)
+   ---> regression found on max: drop from 94688.00 ops/sec (3.2.1-Baseline) to 86896.07 ops/sec for comparison Baseline. Diff is 7791.93 ops/sec (-8.23%)
+
+==============================
+checking map_reduce_1M_doc-wiredTiger..
+        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)
+        no regression against NDays (94730) above thresholds(0.08, 0.12)
+        no regression against Baseline (3.2.1-Baseline) above thresholds(0.08, 0.12)
+
+==============================
+checking insert_vector_secondary_overall-wiredTiger..
+        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)
+   ---> regression found on max: drop from 516069.23 ops/sec () to 447932.70 ops/sec for comparison NDays. Diff is 68136.53 ops/sec (-13.20%)
+   ---> regression found on 32: drop from 516069.23 ops/sec () to 447932.70 ops/sec for comparison NDays. Diff is 68136.53 ops/sec (-13.20%)
+   ---> regression found on max: drop from 517010.89 ops/sec (3.2.1-Baseline) to 447932.70 ops/sec for comparison Baseline. Diff is 69078.20 ops/sec (-13.36%)
+   ---> regression found on 32: drop from 517010.89 ops/sec (3.2.1-Baseline) to 447932.70 ops/sec for comparison Baseline. Diff is 69078.20 ops/sec (-13.36%)
+
+==============================
+checking updatemulti_jtrue-wiredTiger..
+        no regression against Previous (ee5fb) above thresholds(0.3, 0.45)
+        no regression against NDays (94730) above thresholds(0.3, 0.45)
+        no regression against Baseline (3.2.1-Baseline) above thresholds(0.3, 0.45)
+
+==============================
+checking insert_vector_secondary_load_phase-wiredTiger..
+        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)
+   ---> regression found on max: drop from 516072.09 ops/sec () to 447935.18 ops/sec for comparison NDays. Diff is 68136.91 ops/sec (-13.20%)
+   ---> regression found on 32: drop from 516072.09 ops/sec () to 447935.18 ops/sec for comparison NDays. Diff is 68136.91 ops/sec (-13.20%)
+   ---> regression found on max: drop from 517010.89 ops/sec (3.2.1-Baseline) to 447935.18 ops/sec for comparison Baseline. Diff is 69075.71 ops/sec (-13.36%)
+   ---> regression found on 32: drop from 517010.89 ops/sec (3.2.1-Baseline) to 447935.18 ops/sec for comparison Baseline. Diff is 69075.71 ops/sec (-13.36%)
+
+==============================
+checking contended_update-wiredTiger..
+        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)
+        no regression against NDays (94730) above thresholds(0.08, 0.12)
+        no regression against Baseline (3.2.1-Baseline) above thresholds(0.08, 0.12)
+
+==============================
+checking insert_vector_primary-wiredTiger..
+        no regression against Previous (ee5fb) above thresholds(0.08, 0.12)
+   ---> regression found on max: drop from 516072.09 ops/sec () to 447935.18 ops/sec for comparison NDays. Diff is 68136.91 ops/sec (-13.20%)
+   ---> regression found on 32: drop from 516072.09 ops/sec () to 447935.18 ops/sec for comparison NDays. Diff is 68136.91 ops/sec (-13.20%)
+   ---> regression found on max: drop from 517010.89 ops/sec (3.2.1-Baseline) to 447935.18 ops/sec for comparison Baseline. Diff is 69075.71 ops/sec (-13.36%)
+   ---> regression found on 32: drop from 517010.89 ops/sec (3.2.1-Baseline) to 447935.18 ops/sec for comparison Baseline. Diff is 69075.71 ops/sec (-13.36%)
+

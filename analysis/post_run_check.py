@@ -1,12 +1,15 @@
 import argparse
-import json
-import sys
-import itertools
-from dateutil import parser
 from datetime import timedelta, datetime
+from dateutil import parser
+import json
+import itertools
 import os
 import re
 import StringIO
+import sys
+
+from evergreen.history import History
+from evergreen.util import read_histories
 
 # Example usage:
 # post_run_check.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f
@@ -27,7 +30,7 @@ Rules section - types of rules are:
 # Common regression rules
 
 def compare_to_previous(test, threshold, thread_threshold):
-    previous = history.seriesAtNBefore(test['name'], test['revision'], 1)
+    previous = history.series_at_n_before(test['name'], test['revision'], 1)
     if not previous:
         print "        no previous data, skipping"
         return {'PreviousCompare': 'pass'}
@@ -36,7 +39,7 @@ def compare_to_previous(test, threshold, thread_threshold):
 
 def compare_to_NDays(test, threshold, thread_threshold):
     # check if there is a regression in the last week
-    daysprevious = history.seriesAtNDaysBefore(test['name'], test['revision'], 7)
+    daysprevious = history.series_at_n_days_before(test['name'], test['revision'], 7)
     if not daysprevious:
         print "        no reference data for test %s with NDays" % (test['name'])
         return {}
@@ -58,7 +61,7 @@ def compare_to_NDays(test, threshold, thread_threshold):
 def compare_to_tag(test, threshold, thread_threshold):
     # if tag_history is undefined, skip this check completely
     if tag_history:
-        reference = tag_history.seriesAtTag(test['name'], test['ref_tag'])
+        reference = tag_history.series_at_tag(test['name'], test['ref_tag'])
         if not reference:
             print "        no reference data for test %s with baseline" % (test['name'])
         if test['name'] in overrides['reference']:
@@ -227,87 +230,6 @@ Utility functions and classes - these are functions and classes that load and ma
 test results for various checks
 '''
 
-def get_json(filename):
-    jf = open(filename, 'r')
-    json_obj = json.load(jf)
-    return json_obj
-
-
-class History(object):
-    def __init__(self, jsonobj):
-        self._raw = sorted(jsonobj, key=lambda d: d["order"])
-        self._noise = None
-
-    def testnames(self):
-        return set(list(itertools.chain.from_iterable([[z["name"] for z in c["data"]["results"]]
-                                                       for c in self._raw])))
-
-    def seriesAtRevision(self, testname, revision):
-        s = self.series(testname)
-        for result in s:
-            if result["revision"] == revision:
-                return result
-        return None
-
-    def seriesAtTag(self, testname, tagName):
-        s = self.series(testname)
-        for result in s:
-            if result["tag"] == tagName:
-                return result
-        return None
-
-    def seriesAtNBefore(self, testname, revision, n):
-        """
-            Returns the 'n' items in the series under the given test name that
-            appear prior to the specified revision.
-        """
-        results = []
-        older_build = 0
-        s = self.series(testname)
-        for result in s:
-            if result["revision"] == revision:
-                break
-            older_build += 1
-            results.append(result)
-
-        if older_build > n:
-            return results[-1*n:][0]
-        return None
-
-    def seriesAtNDaysBefore(self, testname, revision, n):
-        """
-            Returns the items in the series under the given test name that
-            appear 'n' days prior to the specified revision.
-        """
-        results = {}
-        # Date for this revision
-        s = self.seriesAtRevision(testname, revision)
-        if s==[]:
-            return []
-        refdate = parser.parse(s["create_time"]) - timedelta(days=n)
-
-        s = self.series(testname)
-        for result in s:
-            if parser.parse(result["create_time"]) < refdate:
-                results = result
-        return results
-
-    def series(self, testname):
-        for commit in self._raw:
-            # get a copy of the samples for those whose name matches the given testname
-            matching = filter( lambda x: x["name"]==testname, commit["data"]["results"])
-            if matching:
-                result = matching[0]
-                result["revision"] = commit["revision"]
-                result["tag"] = commit["tag"]
-                result["order"] = commit["order"]
-                result["create_time"] = commit["create_time"]
-                result["max"] = max(f["ops_per_sec"] for f in result["results"].values()
-                                    if type(f) == type({}))
-                result["threads"] = [f for f in result["results"] if type(result["results"][f])
-                                     == type({})]
-                yield result
-
 def compare_one_throughput(this_one, reference, label, thread_level="max", threshold=0.07):
     # comapre one data point from result series this_one to reference at thread_level
     # if this_one is lower by threshold*reference return True
@@ -384,35 +306,6 @@ def compare_throughputs(this_one, reference, label, threshold=0.07, thread_thres
         return 'pass'
     return 'fail'
 
-
-def set_up_histories(variant, hfile, tfile, ofile):
-    # Set up result histories from various files:
-    # history - this series include the run to be checked, and previous or NDays
-    # tag_history - this is the series that holds the tag build as comparison target
-    # overrides - this series has the override data to avoid false alarm or fatigues
-    # The result histories are stored in global variables within this module as they
-    # are accessed across many rules. This funciton has to be called before running
-    # the regression checks.
-    global history, tag_history, overrides
-    j = get_json(hfile)
-    history = History(j)
-    if tfile:
-        t = get_json(tfile)
-        tag_history = History(t)
-    else:
-        tag_history = ""
-    # Default empty override structure
-    overrides = {'ndays' : {}, 'reference' : {}, 'threshold': {}}
-    if ofile:
-        # Read the overrides file
-        foverrides = get_json(ofile)
-        # Is this variant in the overrides file?
-        if variant in foverrides :
-            overrides = foverrides[variant]
-
-
-
-
 """
 For each test in the result, we call the variant-specific functions to check for
 regressions and other conditions. We keep a count of failed tests in 'failed'.
@@ -434,7 +327,15 @@ def main(args):
     parser.add_argument("--variant", dest="variant", help="Variant to lookup in the override file")
 
     args = parser.parse_args()
-    set_up_histories(args.variant, args.hfile, args.tfile, args.ofile)
+
+    # Set up result histories from various files:
+    # history - this series include the run to be checked, and previous or NDays
+    # tag_history - this is the series that holds the tag build as comparison target
+    # overrides - this series has the override data to avoid false alarm or fatigues
+    # The result histories are stored in global variables within this module as they
+    # are accessed across many rules.
+    global history, tag_history, overrides
+    (history, tag_history, overrides) = read_histories(args.variant, args.hfile, args.tfile, args.ofile)
 
     failed = 0
     results = []
@@ -450,7 +351,7 @@ def main(args):
     for test in testnames:
         result = {'test_file': test, 'exit_code': 0, 'log_raw': '\n'}
         to_test = {'ref_tag': args.reference}
-        t = history.seriesAtRevision(test, args.rev)
+        t = history.series_at_revision(test, args.rev)
         if t:
             to_test.update(t)
             result["start"] = t.get("start", 0)
