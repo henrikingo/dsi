@@ -1,6 +1,8 @@
 #!/bin/bash 
 
-source setting.sh
+# Note that work directory will be dsi/clusters/shard/
+BINDIR=$(dirname $0)
+source ${BINDIR}/setting.sh
 
 
 ## make stderr red

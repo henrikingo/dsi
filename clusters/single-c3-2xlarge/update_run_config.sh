@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source setting.sh
+source ../../bin/setting.sh
 
 sed -i -- "s/%%P1%%/\"$SSHUSER@$p1\"/g" *.json
 sed -i -- "s/%%I1%%/$i1/g" *.json

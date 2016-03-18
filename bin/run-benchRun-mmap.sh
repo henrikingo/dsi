@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source setting.sh
+source ../../bin/setting.sh
 
 # need make sure we checked out 10gen/workloads repo first
 rm -rf ./workloads
