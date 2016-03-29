@@ -1,15 +1,12 @@
+import itertools
+from datetime import timedelta
+import sys
 import argparse
-from datetime import timedelta, datetime
 from dateutil import parser
 import json
-import itertools
-import os
-import re
 import StringIO
-import sys
 
-from evergreen.history import History
-from evergreen.util import read_histories
+from evergreen.util import read_histories, compare_one_result, log_header
 
 # Example usage:
 # post_run_check.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f
@@ -43,6 +40,7 @@ def compare_to_NDays(test, threshold, thread_threshold):
     if not daysprevious:
         print "        no reference data for test %s with NDays" % (test['name'])
         return {}
+    using_override = []
     if test['name'] in overrides['ndays']:
         try:
             overrideTime = parser.parse(overrides['ndays'][test['name']]['create_time'])
@@ -50,25 +48,33 @@ def compare_to_NDays(test, threshold, thread_threshold):
             # I hate that this 7 is a constant. Copying constant from first line in function
             if (overrideTime < thisTime) and ((overrideTime + timedelta(days=7)) >= thisTime) :
                 daysprevious = overrides['ndays'][test['name']]
-                print "        using override in ndays for test %s" % test['name']
+                using_override.append("reference")
             else :
                 print "Out of date override found for ndays. Not using"
         except KeyError as e:
             print >> sys.stderr, "Key error accessing overrides for ndays. Key {0} doesn't exist for test {1}".format(str(e), test['name'])
 
-    return {'NDayCompare': compare_throughputs(test, daysprevious, "NDays", threshold, thread_threshold)}
+    return {'NDayCompare': compare_throughputs(test, daysprevious,
+                                               "NDays", threshold,
+                                               thread_threshold,
+                                               using_override)}
 
 def compare_to_tag(test, threshold, thread_threshold):
     # if tag_history is undefined, skip this check completely
     if tag_history:
+        using_override = []
         reference = tag_history.series_at_tag(test['name'], test['ref_tag'])
         if not reference:
             print "        no reference data for test %s with baseline" % (test['name'])
         if test['name'] in overrides['reference']:
-            print "        using override in references for test %s" % test
+            using_override.append("reference")
             reference = overrides['reference'][test['name']]
-        return {'BaselineCompare': compare_throughputs(test, reference, "Baseline",
-                                                       threshold, thread_threshold)}
+        return {'BaselineCompare': compare_throughputs(test,
+                                                       reference,
+                                                       "Baseline",
+                                                       threshold,
+                                                       thread_threshold,
+                                                       using_override)}
     else:
         return {}
 
@@ -230,50 +236,27 @@ Utility functions and classes - these are functions and classes that load and ma
 test results for various checks
 '''
 
-def compare_one_throughput(this_one, reference, label, thread_level="max", threshold=0.07):
+def compare_one_throughput(this_one, reference, label, thread_level="max", threshold=0.07, using_override=None):
     # comapre one data point from result series this_one to reference at thread_level
     # if this_one is lower by threshold*reference return True
 
-    # Don't do a comparison if the reference data is missing
-    if not reference:
-        return False
+    (passed, log) = compare_one_result(this_one, reference, label,
+                                       thread_level, default_threshold=threshold,
+                                       using_override=using_override)
+    print log
+    return passed
 
-    if thread_level == "max":
-        ref = reference["max"]
-        current = this_one["max"]
-    else:
-        # Don't do a comparison if the thread data is missing
-        if not thread_level in reference["results"].keys():
-            return False
-        ref = reference["results"][thread_level]['ops_per_sec']
-        current = this_one["results"][thread_level]['ops_per_sec']
+def compare_throughputs(this_one, reference, label, threshold=0.07,
+                        thread_threshold=0.1, using_override=None):
+    ''' compare all points in result series this_one to reference
 
-    delta = threshold * ref
-    if ref - current >= delta:
-        diff_percent = 100*(current-ref)/ref
-        if label == "Baseline":
-            print ("   ---> regression found on %s: drop from %.2f ops/sec (%s) to %.2f "
-                   "ops/sec for comparison %s. Diff is %.2f ops/sec (%.2f%%)"
-                   %(thread_level, ref, reference["tag"], current, label, ref - current, diff_percent))
-            regression_line.append((this_one["name"], label, reference["tag"],
-                                    thread_level, ref, current, diff_percent))
-        else:
-            print ("   ---> regression found on %s: drop from %.2f ops/sec (%s) to %.2f "
-                   "ops/sec for comparison %s. Diff is %.2f ops/sec (%.2f%%)"
-                   %(thread_level, ref, reference["tag"], current, label,
-                     ref - current, diff_percent))
-            regression_line.append((this_one["name"], label, reference["revision"][:5],
-                                    thread_level, ref, current, diff_percent))
-        return True
-    else:
-        return False
+     Use different thresholds for max throughput, and per-thread comparisons
+     return 'fail' if any of this_one is lower in any of the comparison
+     otherwise return 'pass'
+    '''
 
-
-def compare_throughputs(this_one, reference, label, threshold=0.07, thread_threshold=0.1):
-    # comapre all points in result series this_one to reference
-    # Use different thresholds for max throughput, and per-thread comparisons
-    # return 'fail' if any of this_one is lower in any of the comparison
-    # otherwise return 'pass'
+    if using_override is None:
+        using_override = []
     failed = False
 
     # Don't do a comparison if the reference data is missing
@@ -287,22 +270,21 @@ def compare_throughputs(this_one, reference, label, threshold=0.07, thread_thres
             try:
                 threshold = overrides['threshold'][this_one['name']]['threshold']
                 thread_threshold = overrides['threshold'][this_one['name']]['thread_threshold']
+                using_override.append("threshold")
             except KeyError as e:
-                print >> sys.stderr, "Threshold overrides not properly defined. Key {0} doesn't exist for test {1}".format(str(e), test['name'])
+                print >> sys.stderr, "Threshold overrides not properly"\
+                    "defined. Key {0} doesn't exist for test"\
+                    "{1}".format(str(e), this_one['name'])
 
     # Check max throughput first
-    if compare_one_throughput(this_one, reference, label, "max", threshold):
+    if compare_one_throughput(this_one, reference, label, "max", threshold, using_override):
         failed = True
     # Check for regression on threading levels
-    for (level, ops_per_sec) in (((r, this_one["results"][r]['ops_per_sec']) for r in
-                                  this_one["results"] if type(this_one["results"][r]) == type({}))):
-        if compare_one_throughput(this_one, reference, label, level,thread_threshold):
+    for level in (r for r in this_one["results"] if isinstance(this_one["results"][r], dict)):
+        if compare_one_throughput(this_one, reference, label,
+                                  level, thread_threshold, using_override):
             failed = True
     if not failed:
-        if label == "Baseline":
-            print "        no regression against %s (%s) above thresholds(%s, %s)" %(label, reference["tag"], threshold, thread_threshold)
-        else:
-            print "        no regression against %s (%s) above thresholds(%s, %s)" %(label, reference["revision"][:5], threshold, thread_threshold)
         return 'pass'
     return 'fail'
 
@@ -335,7 +317,8 @@ def main(args):
     # The result histories are stored in global variables within this module as they
     # are accessed across many rules.
     global history, tag_history, overrides
-    (history, tag_history, overrides) = read_histories(args.variant, args.hfile, args.tfile, args.ofile)
+    (history, tag_history, overrides) = read_histories(args.variant,
+                                                       args.hfile, args.tfile, args.ofile)
 
     failed = 0
     results = []
@@ -356,8 +339,6 @@ def main(args):
             to_test.update(t)
             result["start"] = t.get("start", 0)
             result["end"] = t.get("end", 1)
-            print "=============================="
-            print "checking %s.." % (test)
             if len(to_test) == 1:
                 print "\tno data at this revision, skipping"
                 continue
@@ -371,10 +352,11 @@ def main(args):
                 result.update(check_rules[args.project_id][args.variant](to_test))
                 # Store log_stdout in log_raw
                 test_log = log_stdout.getvalue()
+                result['log_raw'] += log_header(test)
                 result['log_raw'] += test_log
                 # Restore stdout (important) and print test_log to it
                 sys.stdout = real_stdout
-                print test_log
+                print result['log_raw']
             except Exception as e:
                 # Need to restore and print stdout in case of Exception
                 test_log = log_stdout.getvalue()
@@ -397,22 +379,6 @@ def main(args):
 
     # flush stdout to the log file
     sys.stdout.flush()
-
-    # use the stderr to print regression summary table
-    # a similar error summary table can be added for error conditions
-    if len(regression_line) > 0:
-        print >> sys.stderr, "\n=============================="
-        print >> sys.stderr, "Regression Summary:"
-        printing_test = ""
-        for line in regression_line:
-            if line[0] != printing_test:
-                printing_test = line[0]
-                print >> sys.stderr, "\n%s" % printing_test
-                print >> sys.stderr, ("%10s|%16s|%7s|%11s|%11s|%11s" %
-                                      ("Violation", "Compared_to", "Thread",
-                                       "Target", "Achieved", "delta(%)") )
-                print >> sys.stderr, "-"*10 + "+" + "-"*16 + "+" + "-"*7 + "+" + "-"*11 + "+" + "-"*11 + "+" + "-"*11
-            print >> sys.stderr, ("%10s|%16s|%7s|%11.2f|%11.2f|%11.2f" % line[1:])
 
     # use the stderr to print replica_lag table
     if len(replica_lag_line) > 0:

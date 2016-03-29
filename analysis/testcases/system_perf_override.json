@@ -424,6 +424,29 @@
                     "BF-1418"
                 ],
                 "workload":"ycsb"
+            },
+            "contended_update-wiredTiger":{
+                "max":19640.926724152225,
+                "name":"contended_update-wiredTiger",
+                "order":1103,
+                "results":{
+                    "32":{
+                        "ops_per_sec":19640.926724152225
+                    },
+                    "64":{
+                        "ops_per_sec":13171.791059199277
+                    }
+                },
+                "revision":"fb06c1447621f410f9cbcd9947f3fa5bfa898b37",
+                "tag":"",
+                "threads":[
+                    "32",
+                    "64"
+                ],
+                "ticket":[
+                    "SERVER-21092"
+                ],
+                "workload":""
             }
         },
         "threshold":{
