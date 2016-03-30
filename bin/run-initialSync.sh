@@ -17,7 +17,3 @@ scp -oStrictHostKeyChecking=no -i $PEMFILE  ./workloads.tar.gz $SSHUSER@$mc:.
 ssh -oStrictHostKeyChecking=no -T -i $PEMFILE $SSHUSER@$mc "tar zxvf workloads.tar.gz; pwd; ls workloads/*"
 
 MC_MONITOR_INTERVAL=1 ../../bin/mc -config run-initialSync.json -run initialSync-run -o perf.json
-
-rm -f ../perf.json
-chmod 766 perf.json
-cp ./perf.json ..
