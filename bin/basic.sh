@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source setting.sh
+source ../../bin/setting.sh
 
 ## make stderr red
 exec 9>&2
