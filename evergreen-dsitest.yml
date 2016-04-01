@@ -1,0 +1,43 @@
+stepback: false
+command_type: system
+
+pre:
+  - command: shell.track
+
+post:
+  - command: shell.cleanup
+
+functions:
+  run_tests:
+    - command: git.get_project
+      params:
+        directory: src
+    - command: git.apply_patch
+      params:
+        directory: src
+    - command: shell.exec
+      type : test
+      params:
+        working_dir: src
+        script: |
+          bash testscripts/runtests.sh
+
+#######################################
+#               Tasks                 #
+#######################################
+
+- name: tests
+  commands:
+    - func: run_tests
+
+
+#######################################
+#            Buildvariants            #
+#######################################
+
+- name: linux-runner
+  display_name: Linux
+  run_on:
+      - "linux-64-amzn-perf-standalone"
+  tasks:
+    - name: tests
