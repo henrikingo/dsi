@@ -29,7 +29,7 @@ fi
 # just to print out disk i/o information
 cat terraform.log | grep "  clat ("
 
-if [ $CLUSTER != "longevity" ]
+if [ $CLUSTER != "longevity" -o $CLUSTER != "windows-single" ]
 then
 # check performance and re-done the mongod instance if necessary
 ../../bin/pre-qualify-cluster.sh
