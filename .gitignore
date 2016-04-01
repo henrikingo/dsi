@@ -1,4 +1,6 @@
 # files should never be checked in
 security*
 *tfstate*
-
+terraform-prov*
+ips.sh
+perf.json

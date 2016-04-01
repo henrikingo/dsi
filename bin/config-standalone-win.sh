@@ -1,0 +1,226 @@
+#!/bin/bash
+
+source setting.sh
+
+
+## make stderr red
+exec 9>&2
+exec 8> >(
+    while IFS='' read -r line || [ -n "$line" ]; do
+       echo -e "\033[31m${line}\033[0m"
+    done
+)
+function undirect(){ exec 2>&9; }
+STDERR_COLOR_EXCEPTIONS="echo:bash:set:wget:scp:gnuplot:let:for:export:readonly:[:[[:printDescription:+"
+function redirect(){
+        local IFS=":"; local cmd;
+        local PRG="${BASH_COMMAND%% *}"
+        PRG=$(basename "$PRG")
+        for cmd in $STDERR_COLOR_EXCEPTIONS; do
+            [[ "$cmd" == "$PRG" ]] && return 1;
+        done
+        echo ""
+        echo  -e "------>  \033[4m\033[34m${PRG}\033[0m\033[24m"
+        exec 2>&8
+}
+
+trap "redirect;" DEBUG
+readonly PROMPT_COMMAND='undirect;'
+
+function printDescription() {
+    echo  -e "    \033[32m${*}\033[0m"
+}
+
+## end of make stderr red
+
+# set -x
+
+# set debug flag, empty for no debug
+readonly DEBUG=""
+
+# parameters
+readonly MY_ROOT_LINUX="/home/ec2-user"
+readonly MY_ROOT_WIN="/home/Administrator"
+
+readonly SSHKEY="-i $PEMFILE"
+readonly USER_LINUX="ec2-user"
+readonly USER_WIN="Administrator"
+readonly mongos=$ms
+
+readonly JOURNAL_PATH_WIN="/cygdrive/z"
+readonly JOURNAL_PATH_LINUX="/media/ephemeral1"
+
+# default to Linux
+JOURNAL_PATH=$JOURNAL_PATH_LINUX
+MY_ROOT=$MY_ROOT_LINUX
+USER=$USER_LINUX
+
+echo  -e "------>  \033[4m\033[34msetup global variables\033[0m\033[24m"
+export N=0
+export I=1
+for i in "${ALL_HOST[@]}"
+do
+    let "SHARD=$N / 3"
+    let "MEMBER=$N % 3"
+    export private_ip=i$I
+    # echo "    DEBUG -> private_ip: $private_ip"
+    export PUB_${SHARD}_$MEMBER=${!i}
+    export PRIVATE_${SHARD}_$MEMBER=${!private_ip}
+    printDescription "define PUB_${SHARD}_${MEMBER}=${!i}   & PRIVATE_${SHARD}_$MEMBER=${!private_ip}"
+    export HOST_$SHARD\_$MEMBER=ip-`echo ${!private_ip} | tr . -`
+    let "N=$N + 1"
+    let "I=$N + 1"
+
+done
+echo ""
+
+# >>>>
+
+# to kill a process with name
+# input:
+#    ssh_url
+#    name
+#
+#    this is Linux only function.
+killAllProcess() {
+    local ssh_url=$1; shift
+    local name=$1;
+
+    printDescription "kill all $name processes on $ssh_url"
+    echo ""
+
+    # kill if the process is running
+    if [[ -n $(runSSHCommand $ssh_url "/sbin/pidof $name" ) ]]; then
+        T=$USER
+        USER=$USER_LINUX
+
+        runSSHCommand $ssh_url "killall -9 $name"
+
+        USER=$T
+    fi
+}
+
+# to run a remote command
+# input:
+#    ssh_url
+#    $@ : command
+runSSHCommand() {
+    local ssh_url=$1; shift
+    local cmd=$@
+
+    # ssh command here
+    # /usr/bin/ssh -i /Users/rui/bin/rui-aws-cap.pem $ssh_url $cmd
+    /usr/bin/ssh -oStrictHostKeyChecking=no $SSHKEY $USER@$ssh_url $cmd
+}
+
+# to stop a Windows service
+# input:
+#   ssh_url
+#   service_name
+#
+#   for Windows only
+stopWindowsService() {
+    local ssh_url=$1; shift
+    local service_name=$1; shift
+
+    /usr/bin/ssh -oStrictHostKeyChecking=no $SSHKEY $USER@$ssh_url "sc stop $service_name"
+    /usr/bin/ssh -oStrictHostKeyChecking=no $SSHKEY $USER@$ssh_url "sc delete $service_name"
+}
+
+stopWindowsFirewall() {
+    local ssh_url=$1; shift
+
+    /usr/bin/ssh -oStrictHostKeyChecking=no $SSHKEY $USER@$ssh_url "NetSh Advfirewall set allprofiles state off"
+}
+
+startStandalone() {
+    # to start mongod
+    local ver=$1; shift
+    local ssh_url=$1; shift
+    local storageEngine=$1
+
+    local T=$USER
+
+    if [ $PLATFORM = "WIN" ]; then
+        USER=$USER_WIN
+        stopWindowsFirewall $ssh_url
+        stopWindowsService $ssh_url "MongoDB"
+        sleep 1
+    else
+        USER=$USER_LINUX
+        killAllProcess $ssh_url "mongod"
+        sleep 1
+    fi
+
+    runSSHCommand $ssh_url "rm -rf $MY_ROOT/data/logs/*.log"
+    runSSHCommand $ssh_url "rm -rf $MY_ROOT/data/dbs"
+    runSSHCommand $ssh_url "rm -rf $JOURNAL_PATH/journal"
+    runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/dbs"
+    runSSHCommand $ssh_url "mkdir -p $JOURNAL_PATH/journal"
+    runSSHCommand $ssh_url "cd $MY_ROOT/data/dbs; CYGWIN=winsymlinks:native ln -s $JOURNAL_PATH/journal journal"
+    runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/logs"
+
+    if [ $PLATFORM = "WIN" ]; then
+        # install windows service
+        runSSHCommand $ssh_url "sc.exe create MongoDB binPath= \"C:\\Cygwin64\\\\home\\Administrator\\\\mongodb\\\\bin\\mongod.exe --dbpath=\"Y:\\\\dbs\" --logpath=\"Y:\\\\logs\\\mongod.log\" $storageEngine --service \" DisplayName= \"MongoDB\" start= \"auto\" "
+        sleep 5
+        runSSHCommand $ssh_url "sc.exe start MongoDB"
+    else
+        # this is Linux
+        runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited; $MY_ROOT/$ver/bin/mongod $storageEngine --dbpath $MY_ROOT/data/dbs --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG"
+    fi
+    USER=$T
+}
+
+if [[ $# -lt 2 ]]; then
+	echo "Must provide version and storageEngine"
+	exit 1
+fi
+
+readonly version=$1
+
+if [ "$2" != "mmapv0" ]; then
+	export _storageEngine="--storageEngine=$2"
+	printDescription "set storageEngine to $2"
+else
+	export _storageEngine=""
+fi
+
+
+# reset workload client instance
+ssh-keygen -R $mc
+killAllProcess $mc "mongod"
+killAllProcess $mc "mongo"
+killAllProcess $mc "java"
+
+# FIXME: this will be removed when we merge Windows and Linux scripts together, hardcoded for now.
+PLATFORM="WIN"
+
+# if Windows, we reset some parameter
+if [ $PLATFORM = "WIN" ]; then
+    JOURNAL_PATH=$JOURNAL_PATH_WIN
+    MY_ROOT=$MY_ROOT_WIN
+    USER=$USER_WIN
+fi
+
+for i in "${ALL_HOST[@]}"
+do
+    echo "Regenerate key for $i:${!i}"
+    ssh-keygen -R ${!i}
+    T=$USER
+    if [ $PLATFORM = "WIN" ]; then
+        USER=$USER_WIN
+        stopWindowsService ${!i} "MongoDB"
+        sleep 1
+    else
+        USER=$USER_LINUX
+        killAllProcess ${!i} "mongod"
+        sleep 1
+    fi
+    USER=$T
+done
+
+sleep 2
+
+startStandalone $version $p1 $_storageEngine
+
