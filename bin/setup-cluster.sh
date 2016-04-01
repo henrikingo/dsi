@@ -30,7 +30,7 @@ cat terraform.log | grep "  clat ("
 if [ $CLUSTER != "longevity" -o $CLUSTER != "windows-single" ]
 then
     # check performance and re-done the mongod instance if necessary
-    ${BINDIR}/bin/pre-qualify-cluster.sh
+    ${BINDIR}/pre-qualify-cluster.sh
     rc=$?
 fi
 
@@ -41,7 +41,7 @@ then
 fi
 
 # this will extract all public and private IP address information into a file ips.sh
-${BINDIR}/bin/env.sh
+${BINDIR}/env.sh
 
 # Use the return code from pre-qualify-cluster.sh if there was one
 if [[ $rc != 0 ]]; then exit $rc; fi
