@@ -125,6 +125,20 @@ def replica_lag_check(test, threshold):
 
 # project-specific rules
 
+def sys_windows_1_node_replSet(test):
+    to_return = {}
+    to_return.update(compare_to_previous(test, threshold=0.08, thread_threshold=0.12))
+    to_return.update(compare_to_NDays(test, threshold=0.08, thread_threshold=0.12))
+    to_return.update(compare_to_tag(test, threshold=0.08, thread_threshold=0.12))
+    return to_return
+
+def sys_windows_standalone(test):
+    to_return = {}
+    to_return.update(compare_to_previous(test, threshold=0.08, thread_threshold=0.12))
+    to_return.update(compare_to_NDays(test, threshold=0.08, thread_threshold=0.12))
+    to_return.update(compare_to_tag(test, threshold=0.08, thread_threshold=0.12))
+    return to_return
+
 def sys_linux_1_node_replSet(test):
     to_return = {}
     to_return.update(compare_to_previous(test, threshold=0.08, thread_threshold=0.12))
@@ -214,6 +228,8 @@ def longevity_linux_mmapv1_shard(test):
 # using a dictionary to help us choose the function with the right rules
 check_rules = {
     'sys-perf': {
+        'windows-1-node-replSet': sys_windows_1_node_replSet,
+        'windows-standalone': sys_windows_standalone,
         'linux-1-node-replSet': sys_linux_1_node_replSet,
         'linux-standalone': sys_linux_standalone,
         'linux-3-shard': sys_linux_3_shard,
