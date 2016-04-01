@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source ../../bin/setting.sh
+BINDIR=$(dirname $0)
+source setting.sh
 
 ## make stderr red
 exec 9>&2

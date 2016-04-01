@@ -1,5 +1,8 @@
 #!/bin/bash
 
+BINDIR=$(dirname $0)
+source setting.sh
+
 echo "Create terraform config file"
 
 REGION="us-west-2"
@@ -13,7 +16,7 @@ echo "
 provider \"aws\" {
     access_key = \"${1}\"
     secret_key = \"${2}\"
-    region = \"$REGION\"
+    region = \"${REGION}\"
 }
 
 
@@ -22,7 +25,7 @@ variable \"key_name\" {
 }
 
 variable \"key_path\" { 
-    default = \"../../keys/aws.pem\"
+    default = \"${PEMFILE}\"
 }" > security.tf
 
 # replace the mongodb url with the proper build URL

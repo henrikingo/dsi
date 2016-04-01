@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BINDIR=$(dirname $0)
-source ${BINDIR}/setting.sh
+source setting.sh
 
 # need make sure we checked out 10gen/workloads repo first
 rm -rf ./workloads
@@ -16,4 +16,4 @@ scp -oStrictHostKeyChecking=no -i $PEMFILE  ./workloads.tar.gz $SSHUSER@$mc:.
 
 ssh -oStrictHostKeyChecking=no -T -i $PEMFILE $SSHUSER@$mc "tar zxvf workloads.tar.gz; pwd; ls workloads/*"
 
-MC_MONITOR_INTERVAL=1 ../../bin/mc -config run-initialSync.json -run initialSync-run -o perf.json
+MC_MONITOR_INTERVAL=1 ${BINDIR}/bin/mc -config run-initialSync.json -run initialSync-run -o perf.json

@@ -1,5 +1,6 @@
 #!/bin/bash 
 
+BINDIR=$(dirname $0)
 source setting.sh
 
 ## make stderr red

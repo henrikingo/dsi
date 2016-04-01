@@ -1,7 +1,7 @@
 #!/bin/bash 
 
 BINDIR=$(dirname $0)
-source ${BINDIR}/setting.sh
+source setting.sh
 
 
 ## make stderr red
