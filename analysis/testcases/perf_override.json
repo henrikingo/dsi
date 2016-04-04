@@ -13763,6 +13763,15 @@
         }
     },
     "linux-wt-standalone":{
+        "threshold": {
+            "Queries.UniqueIdx.MultipleUniqueIndices" :  {
+                "threshold": 0.5,
+                "thread_threshold": 0.7
+            },
+            "ticket": [
+                "PERF-443"
+                ]
+        },
         "ndays":{
             "Commands.CountsFullCollection":{
                 "create_time":"2016-01-08T13:17:27.45Z",

@@ -8391,6 +8391,22 @@
                     "8"
                 ]
             }
+        },
+        "threshold":{
+            "Queries.FindProjectionDottedField":{
+                "thread_threshold":0.77,
+                "threshold":0.66,
+                "ticket":[
+                    "test_threshold"
+                ]
+            },
+            "Queries.FindProjectionThreeFields":{
+                "thread_threshold":0.77,
+                "threshold":0.66,
+                "ticket":[
+                    "test_threshold"
+                ]
+            }
         }
     },
     "linux-wt-mmap-repl-compare":{
@@ -8585,6 +8601,22 @@
                 ],
                 "ticket":[
                     "mmapspedup"
+                ]
+            }
+        },
+        "threshold":{
+            "Queries.FindProjectionDottedField":{
+                "thread_threshold":0.77,
+                "threshold":0.66,
+                "ticket":[
+                    "test_threshold"
+                ]
+            },
+            "Queries.FindProjectionThreeFields":{
+                "thread_threshold":0.77,
+                "threshold":0.66,
+                "ticket":[
+                    "test_threshold"
                 ]
             }
         }
@@ -20535,6 +20567,29 @@
                     "SERVER-19901"
                 ]
             }
+        },
+        "threshold":{
+            "Queries.FindProjectionDottedField":{
+                "thread_threshold":0.77,
+                "threshold":0.66,
+                "ticket":[
+                    "test_threshold"
+                ]
+            },
+            "Queries.FindProjectionThreeFields":{
+                "thread_threshold":0.77,
+                "threshold":0.66,
+                "ticket":[
+                    "test_threshold"
+                ]
+            },
+            "Queries.UniqueIdx.MultipleUniqueIndices":{
+                "thread_threshold":0.7,
+                "threshold":0.5
+            },
+            "ticket":[
+                "PERF-443"
+            ]
         }
     }
 }

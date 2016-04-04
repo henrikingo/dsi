@@ -2,23 +2,23 @@ Computing noise levels
 Test: Queries.UniqueIdx.MultipleUniqueIndices
    Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)
 ----------+----------+---------------+-------+-----------+-----------+-----------+------------
- Previous |  Passed  |    d67ed57    |  max  |  106605.13|  108350.78|     -1.64%|     10.00%|
- Previous |  Passed  |    d67ed57    |   1   |   23753.85|   23832.84|     -0.33%|     15.00%|
- Previous |  Passed  |    d67ed57    |   2   |   46479.34|   47068.59|     -1.27%|     15.00%|
- Previous |  Passed  |    d67ed57    |   4   |   91848.10|   92880.43|     -1.12%|     15.00%|
- Previous |  Passed  |    d67ed57    |   8   |  106605.13|  108350.78|     -1.64%|     15.00%|
+ Previous |  Passed  |    d67ed57    |  max  |  106605.13|  108350.78|     -1.64%|t    50.00%|
+ Previous |  Passed  |    d67ed57    |   1   |   23753.85|   23832.84|     -0.33%|t    70.00%|
+ Previous |  Passed  |    d67ed57    |   2   |   46479.34|   47068.59|     -1.27%|t    70.00%|
+ Previous |  Passed  |    d67ed57    |   4   |   91848.10|   92880.43|     -1.12%|t    70.00%|
+ Previous |  Passed  |    d67ed57    |   8   |  106605.13|  108350.78|     -1.64%|t    70.00%|
 
-  NDays   |  Passed  |    1d7516e    |  max  |  106351.43|  108350.78|     -1.88%|     10.00%|
-  NDays   |  Passed  |    1d7516e    |   1   |   23524.01|   23832.84|     -1.31%|     15.00%|
-  NDays   |  Passed  |    1d7516e    |   2   |   46147.48|   47068.59|     -2.00%|     15.00%|
-  NDays   |  Passed  |    1d7516e    |   4   |   91397.95|   92880.43|     -1.62%|     15.00%|
-  NDays   |  Passed  |    1d7516e    |   8   |  106351.43|  108350.78|     -1.88%|     15.00%|
+  NDays   |  Passed  |    1d7516e    |  max  |  106351.43|  108350.78|     -1.88%|t    50.00%|
+  NDays   |  Passed  |    1d7516e    |   1   |   23524.01|   23832.84|     -1.31%|t    70.00%|
+  NDays   |  Passed  |    1d7516e    |   2   |   46147.48|   47068.59|     -2.00%|t    70.00%|
+  NDays   |  Passed  |    1d7516e    |   4   |   91397.95|   92880.43|     -1.62%|t    70.00%|
+  NDays   |  Passed  |    1d7516e    |   8   |  106351.43|  108350.78|     -1.88%|t    70.00%|
 
- Baseline |  Passed  | 3.2.1-Baseline|  max  |  110596.21|  108350.78|      2.03%|     10.00%|
- Baseline |  Passed  | 3.2.1-Baseline|   1   |   24509.73|   23832.84|      2.76%|     15.00%|
- Baseline |  Passed  | 3.2.1-Baseline|   2   |   48015.47|   47068.59|      1.97%|     15.00%|
- Baseline |  Passed  | 3.2.1-Baseline|   4   |   95265.01|   92880.43|      2.50%|     15.00%|
- Baseline |  Passed  | 3.2.1-Baseline|   8   |  110596.21|  108350.78|      2.03%|     15.00%|
+ Baseline |  Passed  | 3.2.1-Baseline|  max  |  110596.21|  108350.78|      2.03%|t    50.00%|
+ Baseline |  Passed  | 3.2.1-Baseline|   1   |   24509.73|   23832.84|      2.76%|t    70.00%|
+ Baseline |  Passed  | 3.2.1-Baseline|   2   |   48015.47|   47068.59|      1.97%|t    70.00%|
+ Baseline |  Passed  | 3.2.1-Baseline|   4   |   95265.01|   92880.43|      2.50%|t    70.00%|
+ Baseline |  Passed  | 3.2.1-Baseline|   8   |  110596.21|  108350.78|      2.03%|t    70.00%|
 
 
 Test: Queries.Empty

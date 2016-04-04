@@ -1,19 +1,23 @@
+''' Check for performance regressions in mongo-perf project.
+
+Example usage:
+ perf_regression_check.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f
+ Loads the history json file, and looks for regressions at the revision 18808cd...
+ Will exit with status code 1 if any regression is found, 0 otherwise.
+'''
+
 from datetime import timedelta
 import sys
 import argparse
 from dateutil import parser
 import json
 
-from evergreen.util import read_histories, compare_one_result, log_header
+from util import read_histories, compare_one_result, log_header, read_threshold_overrides
 
-# Example usage:
-# perf_regression_check.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f
-# Loads the history json file, and looks for regressions at the revision 18808cd...
-# Will exit with status code 1 if any regression is found, 0 otherwise.
-
-def compareResults(this_one, reference, threshold, label,
-                   noise_levels={}, noise_multiple=1, thread_threshold=None,
-                   thread_noise_multiple=None, using_override=None):
+def compare_results(this_one, reference, threshold, label,
+                    noise_levels=None, noise_multiple=1,
+                    thread_threshold=None, thread_noise_multiple=None,
+                    using_override=None):
     '''
     Take two result series and compare them to see if they are acceptable.
     Return true if failed, and false if pass
@@ -21,6 +25,9 @@ def compareResults(this_one, reference, threshold, label,
 
     failed = False
     log = ""
+    if not noise_levels:
+        noise_levels = {}
+
     if not reference:
         return (failed, "No reference data for " + label)
     # Default thread_threshold to the same as the max threshold
@@ -97,84 +104,98 @@ def main(args):
         result = {'test_file' : test, 'exit_code' : 0, 'elapsed' : 5, 'start': 1441227291.962453,
                   'end': 1441227293.428761, 'log_raw' : ''}
         this_one = history.series_at_revision(test, args.rev)
-        testFailed = False
+        test_failed = False
         result['log_raw'] = log_header(test)
 
         if not this_one:
             print "\tno data at this revision, skipping"
             continue
 
-        #If the new build is 10% lower than the target (3.0 will be
-        #used as the baseline for 3.2 for instance), consider it
-        #regressed.
+        # Handle threshold overrides
+        (threshold, thread_threshold, threshold_override) = read_threshold_overrides(
+            test, args.threshold,
+            args.thread_threshold, overrides)
+
+
         previous = history.series_at_n_before(test, args.rev, 1)
         if not previous:
             print "\tno previous data, skipping"
             continue
-        cresult = compareResults(this_one, previous, args.threshold,
-                                 "Previous",
-                                 history.noise_levels(test),
-                                 args.noise, args.thread_threshold,
-                                 args.threadNoise, False)
+
+        using_override = []
+        if threshold_override:
+            using_override.append("threshold")
+        cresult = compare_results(this_one, previous, threshold,
+                                  "Previous",
+                                  history.noise_levels(test),
+                                  args.noise, thread_threshold,
+                                  args.threadNoise, using_override)
         result['PreviousCompare'] = cresult[0]
         result['log_raw'] += cresult[1] + '\n'
         if cresult[0]:
-            testFailed = True
+            test_failed = True
 
         daysprevious = history.series_at_n_days_before(test, args.rev, args.ndays)
         if daysprevious:
             using_override = []
+            if threshold_override:
+                using_override.append("threshold")
             try:
                 if test in overrides['ndays']:
-                    overrideTime = parser.parse(overrides['ndays'][test]['create_time'])
-                    thisTime = parser.parse(this_one['create_time'])
-                    if (overrideTime < thisTime) and ((overrideTime + timedelta(days=args.ndays)) >= thisTime):
+                    override_time = parser.parse(overrides['ndays'][test]['create_time'])
+                    this_time = parser.parse(this_one['create_time'])
+                    if (override_time < this_time) and ((override_time
+                                                         +
+                                                         timedelta(days=args.ndays))
+                                                        >= this_time):
                         daysprevious = overrides['ndays'][test]
                         using_override.append("reference")
                         print "Override in ndays for test %s" % test
                     else:
                         print "Out of date override found for ndays. Not using"
-            except KeyError as e:
-                print "Key error accessing overrides for ndays. Key {0} doesn't exist for test {1}".format(str(e), test)
+            except KeyError as exception:
+                print "Key error accessing overrides for ndays."\
+                    " Key {0} doesn't exist for test {1}".format(str(exception), test)
 
-            cresult = compareResults(this_one, daysprevious,
-                                     args.threshold, "NDays",
-                                     history.noise_levels(test),
-                                     args.noise,
-                                     args.thread_threshold,
-                                     args.threadNoise, using_override=using_override)
+            cresult = compare_results(this_one, daysprevious,
+                                      threshold, "NDays",
+                                      history.noise_levels(test),
+                                      args.noise, thread_threshold,
+                                      args.threadNoise,
+                                      using_override=using_override)
             result['NDayCompare'] = cresult[0]
             result['log_raw'] += cresult[1] + '\n'
             if cresult[0]:
-                testFailed = True
+                test_failed = True
         else:
             print "\tWARNING: no nday data, skipping"
 
         if tag_history:
             reference = tag_history.series_at_tag(test, args.reference)
             using_override = []
+            if threshold_override:
+                using_override.append("threshold")
             if not reference:
                 print "Didn't get any data for test %s with baseline %s" % (test, args.reference)
             if test in overrides['reference']:
                 print "Override in references for test %s" % test
                 using_override.append("reference")
                 reference = overrides['reference'][test]
-            cresult = compareResults(this_one, reference,
-                                     args.threshold, "Baseline",
-                                     history.noise_levels(test),
-                                     args.noise,
-                                     args.thread_threshold,
-                                     args.threadNoise,
-                                     using_override=using_override)
+            cresult = compare_results(this_one, reference, threshold,
+                                      "Baseline",
+                                      history.noise_levels(test),
+                                      args.noise, thread_threshold,
+                                      args.threadNoise,
+                                      using_override=using_override)
             result['BaselineCompare'] = cresult[0]
             result['log_raw'] += cresult[1] + '\n'
-            if cresult[0] :
-                testFailed = True
+            if cresult[0]:
+                test_failed = True
         else:
             print "\tWARNING: no reference data, skipping"
 
         print result['log_raw']
-        if testFailed:
+        if test_failed:
             result['status'] = 'fail'
             failed += 1
         else:
@@ -185,8 +206,8 @@ def main(args):
     report['failures'] = failed
     report['results'] = results
 
-    reportFile = open('report.json', 'w')
-    json.dump(report, reportFile, indent=4, separators=(',', ': '))
+    report_file = open('report.json', 'w')
+    json.dump(report, report_file, indent=4, separators=(',', ': '))
     if failed > 0:
         sys.exit(1)
     else:

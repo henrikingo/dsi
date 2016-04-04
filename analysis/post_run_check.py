@@ -6,7 +6,7 @@ from dateutil import parser
 import json
 import StringIO
 
-from evergreen.util import read_histories, compare_one_result, log_header
+from util import read_histories, compare_one_result, log_header, read_threshold_overrides
 
 # Example usage:
 # post_run_check.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f
@@ -281,16 +281,11 @@ def compare_throughputs(this_one, reference, label, threshold=0.07,
 
     # some tests may have higher noise margin and need different thresholds
     # this info is kept as part of the override file
-    if 'threshold' in overrides:
-        if this_one['name'] in overrides['threshold']:
-            try:
-                threshold = overrides['threshold'][this_one['name']]['threshold']
-                thread_threshold = overrides['threshold'][this_one['name']]['thread_threshold']
-                using_override.append("threshold")
-            except KeyError as e:
-                print >> sys.stderr, "Threshold overrides not properly"\
-                    "defined. Key {0} doesn't exist for test"\
-                    "{1}".format(str(e), this_one['name'])
+    (threshold, thread_threshold, threshold_override) = read_threshold_overrides(
+        this_one['name'], threshold, thread_threshold, overrides)
+
+    if threshold_override:
+        using_override.append("threshold")
 
     # Check max throughput first
     if compare_one_throughput(this_one, reference, label, "max", threshold, using_override):

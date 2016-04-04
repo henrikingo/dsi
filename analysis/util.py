@@ -16,9 +16,9 @@
 
 from __future__ import absolute_import
 from __future__ import division
-
 import doctest
 import json
+import sys #pylint: disable=wrong-import-order
 
 from evergreen.history import History
 
@@ -235,6 +235,40 @@ def compare_one_result(this_one, reference, label, thread_level="max",
                                      thread_level, noise_level,
                                      noise_multiple, default_threshold,
                                      using_override, compared_to))
+
+
+def read_threshold_overrides(test_name, base_threshold, base_thread_threshold, overrides):
+    '''
+    Read in the overrides file and return thresholds to use for a given test.
+
+    :param str test_name: The name of the current test
+    :param float base_threshold: The threshold to use if there is no override
+    :param float base_thread_threshold: The per thread threshold to use if there is no override
+    :param dict overides: The overrides data structure
+
+    >>> read_threshold_overrides("test", 0.1, 0.15, {})
+    (0.1, 0.15, False)
+    >>> read_threshold_overrides("test", 0.1, 0.15, {'threshold': {"test" : {"threshold": 0.5,
+    ... "thread_threshold": 0.7}}})
+    (0.5, 0.7, True)
+    '''
+
+    threshold = base_threshold
+    thread_threshold = base_thread_threshold
+    threshold_override = False
+
+    if 'threshold' in overrides and test_name in overrides['threshold']:
+        try:
+            threshold = overrides['threshold'][test_name]['threshold']
+            thread_threshold = overrides['threshold'][test_name]['thread_threshold']
+            threshold_override = True
+        except KeyError as exception:
+            print >> sys.stderr, "Threshold overrides not properly"\
+                "defined. Key {0} doesn't exist for test"\
+                "{1}".format(str(exception), test_name)
+
+    return(threshold, thread_threshold, threshold_override)
+
 
 if __name__ == "__main__":
     doctest.testmod()

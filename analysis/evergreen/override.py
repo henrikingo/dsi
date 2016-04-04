@@ -81,7 +81,8 @@ class Override(object):
         except KeyError:
             self.overrides[build_variant] = {
                 'reference': {},
-                'ndays': {}
+                'ndays': {},
+                'threshold': {}
             }
             variant_ovr = self.overrides[build_variant]
 
