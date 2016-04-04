@@ -8,4 +8,4 @@ user = "rui"
 owner = "rui.zhang"
 
 primary_type = "c3.8xlarge"
-secondary_type = "c3.8xlarge"
+mongo_instance_type = "c3.8xlarge"
