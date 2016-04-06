@@ -33,7 +33,7 @@ chmod 777 perf.json
 if [ $CLUSTER == "replica" ] 
 then
     ${BINDIR}/config-replica-2node.sh mongodb ${STORAGE_ENGINE} 0 initial_sync
-    ${BINDIR}/run-initialSync.sh ${STORAGE_ENGINE} replica_2node ${CLUSTER}
+    ${BINDIR}/run-initialSync-mmap.sh ${STORAGE_ENGINE} replica_2node ${CLUSTER}
 fi
 
 rm -f ../perf.json

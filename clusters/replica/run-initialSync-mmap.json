@@ -1,0 +1,14 @@
+{
+    "PemFile": "../../keys/aws.pem",
+    "runs": [
+            {
+                        "run_id": "benchRun",
+                        "clients": [ %%CLIENT%% ],
+                        "client_logs": [],
+                        "servers": [ %%ALLMEMBERS%%],
+                        "server_logs": [],
+                        "type"  : "shell",
+                        "cmd": "cd workloads/; ./run-initialsync.sh -t %%I1%%  -e mmapv1 -r; sleep 1"
+                    }
+        ]}
+
