@@ -62,10 +62,11 @@ def compare_to_NDays(test, threshold, thread_threshold):
 def compare_to_tag(test, threshold, thread_threshold):
     # if tag_history is undefined, skip this check completely
     if tag_history:
-        using_override = []
         reference = tag_history.series_at_tag(test['name'], test['ref_tag'])
         if not reference:
             print "        no reference data for test %s with baseline" % (test['name'])
+            return {}
+        using_override = []
         if test['name'] in overrides['reference']:
             using_override.append("reference")
             reference = overrides['reference'][test['name']]

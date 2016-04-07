@@ -87,11 +87,14 @@ def compare_one_result_base(current, reference, noise_level=0,
     if delta < noise:
         delta = noise
     # Do the check
-    if reference - current >= delta:
+    if reference - current > delta:
         failed = True
 
-    percent_delta = (reference - current)/reference
-    percent_threshold = delta/reference
+    if reference == 0:
+        percent_delta = percent_threshold = 0
+    else:
+        percent_delta = (current - reference)/reference
+        percent_threshold = delta/reference
     return (failed, percent_delta, percent_threshold)
 
 def log_header(testname):
