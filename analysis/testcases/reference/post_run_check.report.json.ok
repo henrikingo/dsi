@@ -61,7 +61,7 @@
             "PreviousCompare": "pass",
             "end": 1,
             "NDayCompare": "pass",
-            "log_raw": "\nTest: initial_load_capped-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |   29733.84|   29442.53|     -0.98%|      8.00%|\n Previous |  Passed  |    ee5fbdd    |   1   |   29733.84|   29442.53|     -0.98%|     12.00%|\n  NDays   |  Passed  |    947307d    |  max  |   29543.53|   29442.53|     -0.34%|      8.00%|\n  NDays   |  Passed  |    947307d    |   1   |   29543.53|   29442.53|     -0.34%|     12.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  max  |   30075.58|   29442.53|     -2.10%|      8.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   1   |   30075.58|   29442.53|     -2.10%|     12.00%|\n",
+            "log_raw": "\nTest: initial_load_capped-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |   29733.84|   29442.53|     -0.98%|      8.00%|\n Previous |  Passed  |    ee5fbdd    |   1   |   29733.84|   29442.53|     -0.98%|     12.00%|\n  NDays   |  Passed  |    947307d    |  max  |   29543.53|   29442.53|     -0.34%|      8.00%|\n  NDays   |  Passed  |    947307d    |   1   |   29543.53|   29442.53|     -0.34%|     12.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  max  |       0.00|   29442.53|      0.00%|      0.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   1   |       0.00|   29442.53|      0.00%|      0.00%|\n",
             "exit_code": 0,
             "BaselineCompare": "pass",
             "start": 0,
@@ -80,14 +80,13 @@
         },
         {
             "status": "pass",
+            "start": 0,
             "PreviousCompare": "pass",
             "end": 1,
             "NDayCompare": "pass",
-            "log_raw": "\nTest: map_reduce_1M_doc-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |   94580.54|   98551.30|      4.20%|      8.00%|\n Previous |  Passed  |    ee5fbdd    |   1   |   94580.54|   98551.30|      4.20%|     12.00%|\n  NDays   |  Passed  |    947307d    |  max  |   94126.51|   98551.30|      4.70%|      8.00%|\n  NDays   |  Passed  |    947307d    |   1   |   94126.51|   98551.30|      4.70%|     12.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  max  |   95831.34|   98551.30|      2.84%|      8.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   1   |   95831.34|   98551.30|      2.84%|     12.00%|\n",
-            "exit_code": 0,
-            "BaselineCompare": "pass",
-            "start": 0,
-            "test_file": "map_reduce_1M_doc-wiredTiger"
+            "test_file": "map_reduce_1M_doc-wiredTiger",
+            "log_raw": "\nTest: map_reduce_1M_doc-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |   94580.54|   98551.30|      4.20%|      8.00%|\n Previous |  Passed  |    ee5fbdd    |   1   |   94580.54|   98551.30|      4.20%|     12.00%|\n  NDays   |  Passed  |    947307d    |  max  |   94126.51|   98551.30|      4.70%|      8.00%|\n  NDays   |  Passed  |    947307d    |   1   |   94126.51|   98551.30|      4.70%|     12.00%|\n        no reference data for test map_reduce_1M_doc-wiredTiger with baseline\n",
+            "exit_code": 0
         },
         {
             "status": "fail",

@@ -91,8 +91,8 @@ Test: initial_load_capped-wiredTiger
  Previous |  Passed  |    ee5fbdd    |   1   |   29733.84|   29442.53|     -0.98%|     12.00%|
   NDays   |  Passed  |    947307d    |  max  |   29543.53|   29442.53|     -0.34%|      8.00%|
   NDays   |  Passed  |    947307d    |   1   |   29543.53|   29442.53|     -0.34%|     12.00%|
- Baseline |  Passed  | 3.2.1-Baseline|  max  |   30075.58|   29442.53|     -2.10%|      8.00%|
- Baseline |  Passed  | 3.2.1-Baseline|   1   |   30075.58|   29442.53|     -2.10%|     12.00%|
+ Baseline |  Passed  | 3.2.1-Baseline|  max  |       0.00|   29442.53|      0.00%|      0.00%|
+ Baseline |  Passed  | 3.2.1-Baseline|   1   |       0.00|   29442.53|      0.00%|      0.00%|
 
 
 Test: word_count_1M_doc-wiredTiger
@@ -113,8 +113,7 @@ Test: map_reduce_1M_doc-wiredTiger
  Previous |  Passed  |    ee5fbdd    |   1   |   94580.54|   98551.30|      4.20%|     12.00%|
   NDays   |  Passed  |    947307d    |  max  |   94126.51|   98551.30|      4.70%|      8.00%|
   NDays   |  Passed  |    947307d    |   1   |   94126.51|   98551.30|      4.70%|     12.00%|
- Baseline |  Passed  | 3.2.1-Baseline|  max  |   95831.34|   98551.30|      2.84%|      8.00%|
- Baseline |  Passed  | 3.2.1-Baseline|   1   |   95831.34|   98551.30|      2.84%|     12.00%|
+        no reference data for test map_reduce_1M_doc-wiredTiger with baseline
 
 
 Test: insert_vector_secondary_overall-wiredTiger

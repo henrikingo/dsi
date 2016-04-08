@@ -63,22 +63,24 @@ def compare_one_result_base(current, reference, noise_level=0,
     noise_multiple -- The multiplier to use with the noise data
     default_threshold -- The minimum percentage allowed regression
 
+    >>> compare_one_result_base(1, 0)
+    (False, 0, 0)
     >>> compare_one_result_base(1, 1)
     (False, 0.0, 0.05)
     >>> compare_one_result_base(1, 2)
-    (True, 0.5, 0.05)
+    (True, -0.5, 0.05)
     >>> compare_one_result_base(1, 3)
-    (True, 0.6666666666666666, 0.05000000000000001)
+    (True, -0.6666666666666666, 0.05000000000000001)
 
     >>> compare_one_result_base(10, 11, default_threshold=0.08)
-    (True, 0.09090909090909091, 0.08)
+    (True, -0.09090909090909091, 0.08)
     >>> compare_one_result_base(10, 11, default_threshold=0.10)
-    (False, 0.09090909090909091, 0.1)
+    (False, -0.09090909090909091, 0.1)
 
     >>> compare_one_result_base(10, 11, noise_level=1.2)
-    (False, 0.09090909090909091, 0.10909090909090909)
+    (False, -0.09090909090909091, 0.10909090909090909)
     >>> compare_one_result_base(10, 11, noise_level=0.9)
-    (True, 0.09090909090909091, 0.08181818181818182)
+    (True, -0.09090909090909091, 0.08181818181818182)
 
     '''
     failed = False
@@ -149,15 +151,15 @@ def compare_one_result_values(current, reference, label="Baseline",
     >>> compare_one_result_values(1,1)
     (False, ' Baseline |  Passed  |    Missing    |  max  |       1.00|       1.00|      0.00%|      5.00%|')
     >>> compare_one_result_values(1,2)
-    (True, ' Baseline |  Failed  |    Missing    |  max  |       2.00|       1.00|     50.00%|      5.00%|')
+    (True, ' Baseline |  Failed  |    Missing    |  max  |       2.00|       1.00|    -50.00%|      5.00%|')
     >>> compare_one_result_values(1,2,"Previous", 3, 1.2, 1)
-    (False, ' Previous |  Passed  |    Missing    |   3   |       2.00|       1.00|     50.00%|n    60.00%|')
+    (False, ' Previous |  Passed  |    Missing    |   3   |       2.00|       1.00|    -50.00%|n    60.00%|')
     >>> compare_one_result_values(1,2,"Previous", 3, 1.2, 1, using_override=["reference"], compared_to="Githash")
-    (False, ' Previous |  Passed  |*   Githash    |   3   |       2.00|       1.00|     50.00%|n    60.00%|')
+    (False, ' Previous |  Passed  |*   Githash    |   3   |       2.00|       1.00|    -50.00%|n    60.00%|')
     >>> compare_one_result_values(1,2,"Previous", 3, 1.2, 1, using_override=["reference"], compared_to="Githash")
-    (False, ' Previous |  Passed  |*   Githash    |   3   |       2.00|       1.00|     50.00%|n    60.00%|')
+    (False, ' Previous |  Passed  |*   Githash    |   3   |       2.00|       1.00|    -50.00%|n    60.00%|')
     >>> compare_one_result_values(1,2,"Previous", 3, 0.1, using_override=["threshold", "reference"])
-    (True, ' Previous |  Failed  |*   Missing    |   3   |       2.00|       1.00|     50.00%|t     5.00%|')
+    (True, ' Previous |  Failed  |*   Missing    |   3   |       2.00|       1.00|    -50.00%|t     5.00%|')
 
     '''
     #pylint: enable=line-too-long

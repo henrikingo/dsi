@@ -1328,19 +1328,10 @@
                     "workload":""
                 },
                 {
-                    "name":"map_reduce_1M_doc-wiredTiger",
-                    "results":{
-                        "1":{
-                            "ops_per_sec":95831.33684714902
-                        }
-                    },
-                    "workload":""
-                },
-                {
                     "name":"initial_load_capped-wiredTiger",
                     "results":{
                         "1":{
-                            "ops_per_sec":30075.579880114674
+                            "ops_per_sec":0
                         }
                     },
                     "workload":""
