@@ -65,22 +65,22 @@ def compare_one_result_base(current, reference, noise_level=0,
 
     >>> compare_one_result_base(1, 0)
     (False, 0, 0)
-    >>> compare_one_result_base(1, 1)
-    (False, 0.0, 0.05)
-    >>> compare_one_result_base(1, 2)
-    (True, -0.5, 0.05)
-    >>> compare_one_result_base(1, 3)
-    (True, -0.6666666666666666, 0.05000000000000001)
+    >>> "({0}, {1:.4f}, {2:.4f})".format(*compare_one_result_base(1, 1))
+    '(False, 0.0000, 0.0500)'
+    >>> "({0}, {1:.4f}, {2:.4f})".format(*compare_one_result_base(1, 2))
+    '(True, -0.5000, 0.0500)'
+    >>> "({0}, {1:.10f}, {2:.10f})".format(*compare_one_result_base(1, 3))
+    '(True, -0.6666666667, 0.0500000000)'
 
-    >>> compare_one_result_base(10, 11, default_threshold=0.08)
-    (True, -0.09090909090909091, 0.08)
-    >>> compare_one_result_base(10, 11, default_threshold=0.10)
-    (False, -0.09090909090909091, 0.1)
+    >>> "({0}, {1:.10f}, {2:.10f})".format(*compare_one_result_base(10, 11, default_threshold=0.08))
+    '(True, -0.0909090909, 0.0800000000)'
+    >>> "({0}, {1:.10f}, {2:.10f})".format(*compare_one_result_base(10, 11, default_threshold=0.10))
+    '(False, -0.0909090909, 0.1000000000)'
 
-    >>> compare_one_result_base(10, 11, noise_level=1.2)
-    (False, -0.09090909090909091, 0.10909090909090909)
-    >>> compare_one_result_base(10, 11, noise_level=0.9)
-    (True, -0.09090909090909091, 0.08181818181818182)
+    >>> "({0}, {1:.10f}, {2:.10f})".format(*compare_one_result_base(10, 11, noise_level=1.2))
+    '(False, -0.0909090909, 0.1090909091)'
+    >>> "({0}, {1:.10f}, {2:.10f})".format(*compare_one_result_base(10, 11, noise_level=0.9))
+    '(True, -0.0909090909, 0.0818181818)'
 
     '''
     failed = False
@@ -251,11 +251,11 @@ def read_threshold_overrides(test_name, base_threshold, base_thread_threshold, o
     :param float base_thread_threshold: The per thread threshold to use if there is no override
     :param dict overides: The overrides data structure
 
-    >>> read_threshold_overrides("test", 0.1, 0.15, {})
-    (0.1, 0.15, False)
-    >>> read_threshold_overrides("test", 0.1, 0.15, {'threshold': {"test" : {"threshold": 0.5,
-    ... "thread_threshold": 0.7}}})
-    (0.5, 0.7, True)
+    >>> "({0:.4f}, {1:.4f}, {2})".format(*read_threshold_overrides("test", 0.1, 0.15, {}))
+    '(0.1000, 0.1500, False)'
+    >>> "({0:.4f}, {1:.4f}, {2})".format(*read_threshold_overrides("test", 0.1, 0.15, {'threshold': {"test" : {"threshold": 0.5,
+    ... "thread_threshold": 0.7}}}))
+    '(0.5000, 0.7000, True)'
     '''
 
     threshold = base_threshold

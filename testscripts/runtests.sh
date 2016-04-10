@@ -22,10 +22,10 @@ bash test_post_run_check.sh
 if [ $? -ne 0 ]; then
     failed+=1
 fi
-bash test_update_overrides.sh
-if [ $? -ne 0 ]; then
-    failed+=1
-fi
+# bash test_update_overrides.sh
+# if [ $? -ne 0 ]; then
+#     failed+=1
+# fi
 
 if [ $failed -eq 0 ]; then
     echo "All tests passed"

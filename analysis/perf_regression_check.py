@@ -101,8 +101,8 @@ def main(args):
 
     for test in testnames:
         # The first entry is valid. The rest is dummy data to match the existing format
-        result = {'test_file' : test, 'exit_code' : 0, 'elapsed' : 5, 'start': 1441227291.962453,
-                  'end': 1441227293.428761, 'log_raw' : ''}
+        result = {'test_file' : test, 'exit_code' : 0, 'elapsed' : 5, 'start': 1441227291.9624,
+                  'end': 1441227293.4287, 'log_raw' : ''}
         this_one = history.series_at_revision(test, args.rev)
         test_failed = False
         result['log_raw'] = log_header(test)

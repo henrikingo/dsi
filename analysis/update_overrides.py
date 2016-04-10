@@ -87,12 +87,12 @@ def update_override_thresholds(project, reference, ticket, threshold,
 
         match = helpers.matches_any(build_variant_name, variants)
         if not match:
-            logger.debug('Skipping build variant: {}'.format(build_variant_name))
+            logger.debug('Skipping build variant: {0}'.format(build_variant_name))
             continue
 
         build_variants_applied.add(match)
         summary[build_variant_name] = {}
-        logger.debug('Processing build variant: {}'.format(build_variant_name))
+        logger.debug('Processing build variant: {0}'.format(build_variant_name))
 
         # Find the tasks in this build variant that we're interested in
         for task_name, task_id in evg.tasks_from_build_variant(build_variant_id):
@@ -102,36 +102,36 @@ def update_override_thresholds(project, reference, ticket, threshold,
 
             match = helpers.matches_any(task_name, tasks)
             if not match:
-                logger.debug('\tSkipping task: {}'.format(task_name))
+                logger.debug('\tSkipping task: {0}'.format(task_name))
                 continue
 
             tasks_applied.add(match)
             summary[build_variant_name][task_name] = []
-            logger.debug('\tProcessing task: {}'.format(task_name))
+            logger.debug('\tProcessing task: {0}'.format(task_name))
 
             # Cycle through the names of the tests in this task
             for test_name, _ in evg.tests_from_task(task_id):
                 match = helpers.matches_any(test_name, tests)
                 if not match:
-                    logger.debug('\t\tSkipping test: {}'.format(test_name))
+                    logger.debug('\t\tSkipping test: {0}'.format(test_name))
                     continue
 
                 tests_applied.add(match)
                 summary[build_variant_name][task_name].append(test_name)
-                logger.debug('\t\tProcessing test: {}'.format(test_name))
+                logger.debug('\t\tProcessing test: {0}'.format(test_name))
 
                 # Finally, update the old override rule
                 ovr.update_test(build_variant_name, test_name, 'threshold', new_override, ticket)
 
     # Sanity checks!
     for unused_test in [test for test in tests if test not in tests_applied]:
-        warner.warn('Pattern not applied for tests: {}'.format(unused_test))
+        warner.warn('Pattern not applied for tests: {0}'.format(unused_test))
 
     for unused_task in [task for task in tasks if task not in tasks_applied]:
-        warner.warn('Pattern not applied for tasks: {}'.format(unused_task))
+        warner.warn('Pattern not applied for tasks: {0}'.format(unused_task))
 
     for unused_variant in [variant for variant in variants if variant not in build_variants_applied]:
-        warner.warn('Pattern not applied for build variants: {}'.format(unused_variant))
+        warner.warn('Pattern not applied for build variants: {0}'.format(unused_variant))
 
     # Review and print a summary of what's been accomplished
     if not summary:
@@ -139,10 +139,10 @@ def update_override_thresholds(project, reference, ticket, threshold,
     else:
         for variant in summary.keys():
             if not summary[variant]:
-                warner.warn('No tasks under the build variant {} were overridden'.format(variant))
+                warner.warn('No tasks under the build variant {0} were overridden'.format(variant))
             for task in summary[variant].keys():
                 if not summary[variant][task]:
-                    warner.warn('No tests under the task {}.{} were overridden'.format(variant, task))
+                    warner.warn('No tests under the task {0}.{1} were overridden'.format(variant, task))
 
         logger.info('The following tests have been overridden:')
         logger.info(json.dumps(summary, indent=2, separators=[',', ': '], sort_keys=True))
@@ -195,17 +195,17 @@ def update_override(project, reference, ticket, rule="reference", ovr=None, evg=
     for build_variant_name, build_variant_id in evg.build_variants_from_git_commit(project, commit):
         # TODO: special case
         if 'comp' in build_variant_name:
-            logger.debug('Skipping comparison build variant: {}'.format(build_variant_name))
+            logger.debug('Skipping comparison build variant: {0}'.format(build_variant_name))
             continue
 
         match = helpers.matches_any(build_variant_name, variants)
         if not match:
-            logger.debug('Skipping build variant: {}'.format(build_variant_name))
+            logger.debug('Skipping build variant: {0}'.format(build_variant_name))
             continue
 
         build_variants_applied.add(match)
         summary[build_variant_name] = {}
-        logger.debug('Processing build variant: {}'.format(build_variant_name))
+        logger.debug('Processing build variant: {0}'.format(build_variant_name))
 
         # Find the tasks in this build variant that we're interested in
         for task_name, task_id in evg.tasks_from_build_variant(build_variant_id):
@@ -215,12 +215,12 @@ def update_override(project, reference, ticket, rule="reference", ovr=None, evg=
 
             match = helpers.matches_any(task_name, tasks)
             if not match:
-                logger.debug('\tSkipping task: {}'.format(task_name))
+                logger.debug('\tSkipping task: {0}'.format(task_name))
                 continue
 
             tasks_applied.add(match)
             summary[build_variant_name][task_name] = []
-            logger.debug('\tProcessing task: {}'.format(task_name))
+            logger.debug('\tProcessing task: {0}'.format(task_name))
 
             # Get the performance data for this task
             if compare_to_commit:
@@ -235,12 +235,12 @@ def update_override(project, reference, ticket, rule="reference", ovr=None, evg=
             for test_name, _ in evg.tests_from_task(task_id):
                 match = helpers.matches_any(test_name, tests)
                 if not match:
-                    logger.debug('\t\tSkipping test: {}'.format(test_name))
+                    logger.debug('\t\tSkipping test: {0}'.format(test_name))
                     continue
 
                 tests_applied.add(match)
                 summary[build_variant_name][task_name].append(test_name)
-                logger.debug('\t\tProcessing test: {}'.format(test_name))
+                logger.debug('\t\tProcessing test: {0}'.format(test_name))
 
                 # Get the reference data we want to use as the override value
                 if compare_to_commit:
@@ -260,13 +260,13 @@ def update_override(project, reference, ticket, rule="reference", ovr=None, evg=
 
     # Sanity checks!
     for unused_test in [test for test in tests if test not in tests_applied]:
-        warner.warn('Pattern not applied for tests: {}'.format(unused_test))
+        warner.warn('Pattern not applied for tests: {0}'.format(unused_test))
 
     for unused_task in [task for task in tasks if task not in tasks_applied]:
-        warner.warn('Pattern not applied for tasks: {}'.format(unused_task))
+        warner.warn('Pattern not applied for tasks: {0}'.format(unused_task))
 
     for unused_variant in [variant for variant in variants if variant not in build_variants_applied]:
-        warner.warn('Pattern not applied for build variants: {}'.format(unused_variant))
+        warner.warn('Pattern not applied for build variants: {0}'.format(unused_variant))
 
     # Review and print a summary of what's been accomplished
     if not summary:
@@ -274,10 +274,10 @@ def update_override(project, reference, ticket, rule="reference", ovr=None, evg=
     else:
         for variant in summary.keys():
             if not summary[variant]:
-                warner.warn('No tasks under the build variant {} were overridden'.format(variant))
+                warner.warn('No tasks under the build variant {0} were overridden'.format(variant))
             for task in summary[variant].keys():
                 if not summary[variant][task]:
-                    warner.warn('No tests under the task {}.{} were overridden'.format(variant, task))
+                    warner.warn('No tests under the task {0}.{1} were overridden'.format(variant, task))
 
         logger.info('The following tests have been overridden:')
         logger.info(json.dumps(summary, indent=2, separators=[',', ': '], sort_keys=True))
