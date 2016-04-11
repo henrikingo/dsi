@@ -3,7 +3,7 @@
 export CLUSTER=$1
 BINDIR=$(dirname $0)
 
-if [ ! $CLUSTER ]
+if [ ! "$CLUSTER" ]
 then
     echo "Usage: $0 single|replica|shard|longevity|<cluster type>"
     exit -1
@@ -34,12 +34,12 @@ else
     # check performance and re-done the mongod instance if necessary
     ${BINDIR}/pre-qualify-cluster.sh
     rc=$?
-fi
 
-if [ $CLUSTER == "shard" -o $CLUSTER == "replica" -o $CLUSTER == "replica-correctness" -o $CLUSTER == "single-c3-4xlarge" -o $CLUSTER == "single-c3-2xlarge" ]
-then
-    # disable system failure for these clusters
-    rc=0
+    if [ $CLUSTER != "single" -a $CLUSTER != "single-correctness" ]
+    then
+        # disable system failure for the larger cluster types, as well as low end instance types
+        rc=0
+    fi
 fi
 
 # this will extract all public and private IP address information into a file ips.sh
