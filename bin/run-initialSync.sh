@@ -1,19 +1,24 @@
 #!/bin/bash
 
+STORAGE_ENGINE=$1
+CLUSTER=$3
+
 BINDIR=$(dirname $0)
 source setting.sh
 
-# need make sure we checked out 10gen/workloads repo first
-rm -rf ./workloads
-rm -f workloads.tar.gz
-git clone git@github.com:10gen/workloads.git
-tar cvf workloads.tar ./workloads
-gzip workloads.tar
+# Bridging a historical inconsistency: prior to refactoring, the test name for
+# MMAPv1 engine was "benchRun-mmap". However, the parameter ${storageEngine}
+# has the value "mmapv1" (which is the name of the engine in mongod config).
+if [ $STORAGE_ENGINE == "mmapv1" ]
+then
+    STORAGE_ENGINE="mmap"
+fi
 
-ssh -oStrictHostKeyChecking=no -T -A -i $PEMFILE $SSHUSER@$mc rm -rf workloads*
+if [ $STORAGE_ENGINE != "wiredTiger" ]
+then
+    TEST="initialSync-$STORAGE_ENGINE"
+else
+    TEST="initialSync"
+fi
 
-scp -oStrictHostKeyChecking=no -i $PEMFILE  ./workloads.tar.gz $SSHUSER@$mc:.
-
-ssh -oStrictHostKeyChecking=no -T -i $PEMFILE $SSHUSER@$mc "tar zxvf workloads.tar.gz; pwd; ls workloads/*"
-
-MC_MONITOR_INTERVAL=1 ${BINDIR}/mc -config run-initialSync.json -run initialSync-run -o perf.json
+MC_MONITOR_INTERVAL=1 ${BINDIR}/mc -config run-$TEST.json -run $TEST-run -o perf.json
