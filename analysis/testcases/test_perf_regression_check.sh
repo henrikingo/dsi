@@ -6,20 +6,27 @@ python ../perf_regression_check.py -f queries.history.json --rev 0ff97139df609ae
 
 failed=0
 
+echo "Testing perf_regression_check.py"
 diff perf_regression.out reference/perf_regression.out.ok
 if [ $? -ne 0 ]; then
     echo "Error in perf_regression_check.py stdout output."
-    failed+=1
+    ((failed++))
 fi
 diff perf_regression.err reference/perf_regression.err.ok
 if [ $? -ne 0 ]; then
     echo "Error in perf_regression_check.py stderr output."
-    failed+=1
+    ((failed++))
 fi
 diff report.json reference/perf_regression.report.json.ok
 if [ $? -ne 0 ]; then
     echo "Error in perf_regression_check.py report.json output."
-    failed+=1
+    ((failed++))
+fi
+
+if [ $failed -eq 0 ]; then
+    echo "test_perf_regression_check.sh completed without errors. Pass"
+else
+    echo "$failed tests failed in test_perf_regression_check.sh"
 fi
 
 exit $failed

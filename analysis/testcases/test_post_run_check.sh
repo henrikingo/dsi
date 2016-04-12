@@ -6,20 +6,27 @@ python ../post_run_check.py --rev 0ff97139df609ae1847da9bfb25c35d209e0936e -f co
 
 failed=0
 
+echo "Testing post_run_check.py"
 diff post_run_check.out reference/post_run_check.out.ok
 if [ $? -ne 0 ]; then
     echo "Error in post_run_check.py stdout output."
-    failed+=1
+    ((failed++))
 fi
 diff post_run_check.err reference/post_run_check.err.ok
 if [ $? -ne 0 ]; then
     echo "Error in post_run_check.py stderr output."
-    failed+=1
+    ((failed++))
 fi
 diff report.json reference/post_run_check.report.json.ok
 if [ $? -ne 0 ]; then
     echo "Error in post_run_check.py report.json output."
-    failed+=1
+    ((failed++))
+fi
+
+if [ $failed -eq 0 ]; then
+    echo "test_post_run_check.sh completed without errors. Pass"
+else
+    echo "$failed tests failed in test_post_run_check.sh"
 fi
 
 exit $failed

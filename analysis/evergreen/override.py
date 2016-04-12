@@ -15,9 +15,10 @@
 """Module for manipulating override files."""
 
 from __future__ import print_function
+import doctest
+import itertools
 import json
-import sys
-
+import os.path
 
 # TODO: It would be nice if the override class handled adding new overrides transparently
 
@@ -114,6 +115,33 @@ class Override(object):
 
         return previous_data
 
+    def get_tickets(self, rule='reference'):
+        """ Return a list of all tickets mentioned in overrides
+
+        :param str rule: Which rule to check for tickets. (Default reference)
+        :return: A set of strings of the tickets referenced in the overrides
+
+        >>> Override(None).get_tickets()
+        set([])
+        >>> over = Override(os.path.join(os.path.dirname(__file__),\
+                                         "../testcases/perf_override.json"))
+        >>> over.get_tickets()
+        set([u'BF-1262', u'BF-1449', u'BF-1461', u'SERVER-19901', u'SERVER-20623', u'SERVER-21263',\
+ u'BF-1169', u'SERVER-20018', u'mmapspedup', u'geo', u'SERVER-21080'])
+        >>> over.get_tickets('threshold')
+        set([u'PERF-443'])
+        """
+
+        tickets = set()
+        for variant_value in self.overrides.values():
+            if rule in variant_value:
+                ref = variant_value[rule]
+                tickets = tickets.union(set(itertools.chain(*[test['ticket'] for test in
+                                                              ref.values() if 'ticket' in
+                                                              test.keys() and isinstance(
+                                                                  test['ticket'], list)])))
+        return tickets
+
     def get_overrides_by_ticket(self, ticket):
         """Get the overrides created by a given ticket.
 
@@ -149,3 +177,6 @@ class Override(object):
             json.dump(self.overrides, file_or_filename, indent=4, separators=[',', ':'], sort_keys=True)
         else:
             raise TypeError('Argument must be a file or filename')
+
+if __name__ == "__main__":
+    doctest.testmod()
