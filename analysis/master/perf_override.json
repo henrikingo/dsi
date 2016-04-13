@@ -598,6 +598,13 @@
                     "PERF-444"
                 ]
             },
+            "Queries.Text.FindSingleLargeDocuments":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
             "Remove.IntNonIdNoIndex":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
@@ -1267,6 +1274,13 @@
             "Queries.NoMatch":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
+            "Queries.Text.FindSingleLargeDocuments":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -2505,6 +2519,13 @@
             "Queries.NoMatch":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
+            "Queries.Text.FindSingleLargeDocuments":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
                 "ticket":[
                     "PERF-444"
                 ]
