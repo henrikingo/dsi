@@ -3,6 +3,13 @@
         "ndays":{},
         "reference":{},
         "threshold":{
+            "Commands.CountsFullCollection":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
             "Commands.DistinctWithoutIndex":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
@@ -48,6 +55,13 @@
             "Commands.FindAndModifySortedUpdateIndexed":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
+            "Insert.IntVector":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -166,6 +180,13 @@
             }
         },
         "threshold":{
+            "Commands.CountsFullCollection":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
             "Commands.DistinctWithoutIndex":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
@@ -211,6 +232,13 @@
             "Commands.FindAndModifySortedUpdateIndexed":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
+            "Insert.IntVector":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -416,6 +444,13 @@
             }
         },
         "threshold":{
+            "Commands.CountsFullCollection":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
             "Commands.DistinctWithoutIndex":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
@@ -489,6 +524,13 @@
             "Geo.within.2d.find":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
+            "Insert.IntVector":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -765,6 +807,13 @@
             }
         },
         "threshold":{
+            "Commands.CountsFullCollection":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
             "Commands.DistinctWithoutIndex":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
@@ -810,6 +859,13 @@
             "Commands.FindAndModifySortedUpdateIndexed":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
+            "Insert.IntVector":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -1054,6 +1110,13 @@
             }
         },
         "threshold":{
+            "Commands.CountsFullCollection":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
             "Commands.DistinctWithoutIndex":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
@@ -1127,6 +1190,13 @@
             "Geo.within.2d.find":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
+            "Insert.IntVector":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -1572,6 +1642,13 @@
             }
         },
         "threshold":{
+            "Commands.CountsFullCollection":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
             "Commands.DistinctWithoutIndex":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
@@ -1617,6 +1694,13 @@
             "Commands.FindAndModifySortedUpdateIndexed":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
+            "Insert.IntVector":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -1823,6 +1907,13 @@
             }
         },
         "threshold":{
+            "Commands.CountsFullCollection":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
             "Commands.DistinctWithoutIndex":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
@@ -1868,6 +1959,13 @@
             "Commands.FindAndModifySortedUpdateIndexed":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
+            "Insert.IntVector":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -2243,6 +2341,13 @@
             }
         },
         "threshold":{
+            "Commands.CountsFullCollection":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
             "Commands.DistinctWithoutIndex":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
@@ -2316,6 +2421,13 @@
             "Geo.within.2d.find":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
+                "ticket":[
+                    "PERF-444"
+                ]
+            },
+            "Insert.IntVector":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
                 "ticket":[
                     "PERF-444"
                 ]
