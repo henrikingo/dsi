@@ -92,7 +92,7 @@ resource "aws_instance" "member" {
 
     connection {
         # The default username for our AMI
-        user = "Administrator"
+        user = "ec2-user"
 
         # The path to your keyfile
         key_file = "${var.key_path}"

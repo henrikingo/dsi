@@ -1,7 +1,5 @@
 export PEMFILE=../../keys/aws.pem
-export SSHUSER_WIN=Administrator
-export SSHUSER_LINUX=ec2-user
-export SSHUSER=$SSHUSER_LINUX
+export SSHUSER=ec2-user
 
 source ips.sh
 

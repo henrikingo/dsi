@@ -39,21 +39,22 @@ function printDescription() {
 readonly DEBUG=""
 
 # parameters
-readonly MY_ROOT_LINUX="/home/ec2-user"
-readonly MY_ROOT_WIN="/home/Administrator"
+readonly MY_ROOT="/home/ec2-user"
 
 readonly SSHKEY="-i $PEMFILE"
-readonly USER_LINUX="ec2-user"
-readonly USER_WIN="Administrator"
+readonly USER="ec2-user"
 readonly mongos=$ms
 
+readonly DB_PATH_WIN="/cygdrive/y"
+readonly DB_PATH_LINUX="/media/ephemeral0"
 readonly JOURNAL_PATH_WIN="/cygdrive/z"
 readonly JOURNAL_PATH_LINUX="/media/ephemeral1"
 
+readonly WINDOWS_PLATFORM_STRING="WINDOWS"
+
 # default to Linux
 JOURNAL_PATH=$JOURNAL_PATH_LINUX
-MY_ROOT=$MY_ROOT_LINUX
-USER=$USER_LINUX
+DB_PATH=$DB_PATH_LINUX
 
 echo  -e "------>  \033[4m\033[34msetup global variables\033[0m\033[24m"
 export N=0
@@ -139,15 +140,11 @@ startStandalone() {
     local ssh_url=$1; shift
     local storageEngine=$1
 
-    local T=$USER
-
-    if [ $PLATFORM = "WIN" ]; then
-        USER=$USER_WIN
+    if [ $PLATFORM = $WINDOWS_PLATFORM_STRING ]; then
         stopWindowsFirewall $ssh_url
         stopWindowsService $ssh_url "MongoDB"
         sleep 1
     else
-        USER=$USER_LINUX
         killAllProcess $ssh_url "mongod"
         sleep 1
     fi
@@ -155,21 +152,20 @@ startStandalone() {
     runSSHCommand $ssh_url "rm -rf $MY_ROOT/data/logs/*.log"
     runSSHCommand $ssh_url "rm -rf $MY_ROOT/data/dbs"
     runSSHCommand $ssh_url "rm -rf $JOURNAL_PATH/journal"
-    runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/dbs"
+    runSSHCommand $ssh_url "mkdir -p $DB_PATH/dbs"
     runSSHCommand $ssh_url "mkdir -p $JOURNAL_PATH/journal"
+    runSSHCommand $ssh_url "cd $MY_ROOT/data; CYGWIN=winsymlinks:native ln -s $DB_PATH/dbs dbs"
     runSSHCommand $ssh_url "cd $MY_ROOT/data/dbs; CYGWIN=winsymlinks:native ln -s $JOURNAL_PATH/journal journal"
-    runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/logs"
+    runSSHCommand $ssh_url "mkdir -p $JOURNAL_PATH/logs"
 
-    if [ $PLATFORM = "WIN" ]; then
+    if [ $PLATFORM = $WINDOWS_PLATFORM_STRING ]; then
         # install windows service
-        runSSHCommand $ssh_url "sc.exe create MongoDB binPath= \"C:\\Cygwin64\\\\home\\Administrator\\\\mongodb\\\\bin\\mongod.exe --dbpath=\"Y:\\\\dbs\" --logpath=\"Y:\\\\logs\\\mongod.log\" $storageEngine --service \" DisplayName= \"MongoDB\" start= \"auto\" "
-        sleep 5
+        runSSHCommand $ssh_url 'sc.exe create MongoDB binPath= "C:\\Cygwin64\\home\\ec2-user\\mongodb\\bin\\mongod.exe --dbpath="Y:\\dbs" --logpath="Z:\\logs\\mongod.log" '$storageEngine' --service " DisplayName= "MongoDB" start= "auto" '
         runSSHCommand $ssh_url "sc.exe start MongoDB"
     else
         # this is Linux
-        runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited; $MY_ROOT/$ver/bin/mongod $storageEngine --dbpath $MY_ROOT/data/dbs --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG"
+        runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited; $MY_ROOT/$ver/bin/mongod $storageEngine --dbpath $MY_ROOT/data/dbs --fork --logpath $JOURNAL_PATH/logs/mongod.log $DEBUG"
     fi
-    USER=$T
 }
 
 if [[ $# -lt 2 ]]; then
@@ -194,30 +190,25 @@ killAllProcess $mc "mongo"
 killAllProcess $mc "java"
 
 # FIXME: this will be removed when we merge Windows and Linux scripts together, hardcoded for now.
-PLATFORM="WIN"
+PLATFORM=$WINDOWS_PLATFORM_STRING
 
 # if Windows, we reset some parameter
-if [ $PLATFORM = "WIN" ]; then
+if [ $PLATFORM = $WINDOWS_PLATFORM_STRING ]; then
     JOURNAL_PATH=$JOURNAL_PATH_WIN
-    MY_ROOT=$MY_ROOT_WIN
-    USER=$USER_WIN
+    DB_PATH=$DB_PATH_WIN
 fi
 
 for i in "${ALL_HOST[@]}"
 do
     echo "Regenerate key for $i:${!i}"
     ssh-keygen -R ${!i}
-    T=$USER
-    if [ $PLATFORM = "WIN" ]; then
-        USER=$USER_WIN
+    if [ $PLATFORM = $WINDOWS_PLATFORM_STRING ]; then
         stopWindowsService ${!i} "MongoDB"
         sleep 1
     else
-        USER=$USER_LINUX
         killAllProcess ${!i} "mongod"
         sleep 1
     fi
-    USER=$T
 done
 
 sleep 2

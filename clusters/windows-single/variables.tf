@@ -11,7 +11,7 @@ variable "mongoversion" {
 }
 
 variable "mongourl" {
-    default = "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.2.3.tgz"
+    default = "https://s3.amazonaws.com/mciuploads/dsi/sys_perf_285571b356e1019cdd49f2d5fbe7fcd3f35d8fcd/285571b356e1019cdd49f2d5fbe7fcd3f35d8fcd/windows/mongod-sys_perf_285571b356e1019cdd49f2d5fbe7fcd3f35d8fcd.tar.gz"
 }
 
 variable "user" {
@@ -106,7 +106,7 @@ variable "instance_ips" {
 
 variable "win-amis" {
     default = {
-        us-west-2 = "ami-4859b628"
+        us-west-2 = "ami-2d1fe84d"
     }
 }
 
