@@ -18,7 +18,11 @@ from __future__ import print_function
 import doctest
 import itertools
 import json
-import os.path
+import sys
+
+# os.path is used for pydoc. It won't need to be commented out when we move that test into a
+#  proper test function.
+import os.path # pylint: disable=unused-import
 
 # TODO: It would be nice if the override class handled adding new overrides transparently
 
@@ -151,19 +155,62 @@ class Override(object):
         # TODO implement this
         raise NotYetImplemented()
 
-    def delete_overrides_by_ticket(self, ticket):
+    def delete_overrides_by_ticket(self, ticket, rule='reference'):
         """Remove the overrides created by a given ticket.
 
+        The override is completely removed if the ticket is the only
+        one in the list. If there are other tickets in the list, the
+        ticket is just removed from the list
+
         :param str ticket: The ID of a JIRA ticket (e.g. SERVER-20123)
+        :param str rule: Which rule to delete from. (Default reference)
+
+        In the example below, the first override should be removed
+        because SERVER-21080 is the only ticket in the list, even if
+        it shows up twice. The second test has two distinct tickets,
+        so when we delete SERVER-21080 it is just removed from the
+        list.
+        >>> over =  Override({"linux-mmap-repl":{\
+        "reference":{\
+            "Commands.CountsIntIDRange":{\
+                "ticket":[\
+                    "SERVER-21080",\
+                    "SERVER-21080"\
+                ]\
+            },\
+            "Commands.CountsIntIDRange":{\
+                "ticket":[\
+                    "SERVER-21080",\
+                    "SERVER-21081"\
+                ]\
+            }}}})
+        >>> over.delete_overrides_by_ticket("SERVER-21080", "reference")
+        Deleting test Commands.CountsIntIDRange from variant linux-mmap-repl and rule reference,\
+ but override remains
+        Remaining tickets are ['SERVER-21081']
+        >>> over.overrides
+        {'linux-mmap-repl': {'reference': {'Commands.CountsIntIDRange': {'ticket':\
+ ['SERVER-21081']}}}}
+
         """
         for build_variant in self.overrides:
-            for rule in self.overrides[build_variant]:
+            if rule in self.overrides[build_variant]:
+                # Remove anything that can be blanket removed. Can't otherwise remove from something
+                # we're iterating over
+                self.overrides[build_variant][rule] = {name: test for (name, test) in
+                                                       self.overrides[build_variant][rule].items()
+                                                       if 'ticket' in test and
+                                                       test['ticket'].count(ticket) !=
+                                                       len(test['ticket'])}
                 for test in self.overrides[build_variant][rule]:
-                    try:
-                        if self.overrides[build_variant][rule][test]['ticket'].contains(ticket):
-                            del self.overrides[build_variant][rule][test]
-                    except KeyError:
-                        pass
+                    #Look to see if it should be pulled from the ticket list
+                    if 'ticket' in self.overrides[build_variant][rule][test]:
+                        if ticket in self.overrides[build_variant][rule][test]['ticket']:
+                            self.overrides[build_variant][rule][test]['ticket'].remove(ticket)
+                            print("Deleting test {} from variant {} and rule {}, but "
+                                  "override remains".format(test, build_variant, rule))
+                            print("Remaining tickets are {}".format(str(
+                                self.overrides[build_variant][rule][test]['ticket'])))
 
     def save_to_file(self, file_or_filename):
         """Saves this override to a JSON file.

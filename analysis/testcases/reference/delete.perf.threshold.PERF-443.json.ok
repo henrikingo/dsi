@@ -20176,14 +20176,6 @@
                 ]
             }
         },
-        "threshold":{
-            "Queries.UniqueIdx.MultipleUniqueIndices":{
-                "thread_threshold":0.7,
-                "threshold":0.5,
-                "ticket":[
-                    "PERF-443"
-                ]
-            }
-        }
+        "threshold":{}
     }
 }

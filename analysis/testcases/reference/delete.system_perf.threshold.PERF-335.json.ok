@@ -47,29 +47,7 @@
                 "workload":"ycsb"
             }
         },
-        "threshold":{
-            "insert_jtrue-wiredTiger":{
-                "thread_threshold":0.45,
-                "threshold":0.3,
-                "ticket":[
-                    "PERF-335"
-                ]
-            },
-            "removemulti_jtrue-wiredTiger":{
-                "thread_threshold":0.45,
-                "threshold":0.3,
-                "ticket":[
-                    "PERF-335"
-                ]
-            },
-            "updatemulti_jtrue-wiredTiger":{
-                "thread_threshold":0.45,
-                "threshold":0.3,
-                "ticket":[
-                    "PERF-335"
-                ]
-            }
-        }
+        "threshold":{}
     },
     "linux-3-node-replSet":{
         "ndays":{},
@@ -146,36 +124,7 @@
                 "workload":"ycsb"
             }
         },
-        "threshold":{
-            "insert_jtrue-wiredTiger":{
-                "thread_threshold":0.75,
-                "threshold":0.6,
-                "ticket":[
-                    "PERF-335"
-                ]
-            },
-            "removemulti_jtrue-wiredTiger":{
-                "thread_threshold":0.75,
-                "threshold":0.6,
-                "ticket":[
-                    "PERF-335"
-                ]
-            },
-            "updatemulti_jtrue-wiredTiger":{
-                "thread_threshold":0.75,
-                "threshold":0.6,
-                "ticket":[
-                    "PERF-335"
-                ]
-            },
-            "ycsb_50read50update_w_majority-wiredTiger":{
-                "thread_threshold":0.65,
-                "threshold":0.4,
-                "ticket":[
-                    "PERF-335"
-                ]
-            }
-        }
+        "threshold":{}
     },
     "linux-3-shard":{
         "ndays":{},
@@ -384,22 +333,7 @@
                 "workload":"ycsb"
             }
         },
-        "threshold":{
-            "moveChunk_secondaryThrottle_true_waitForDelete_false-wiredTiger":{
-                "thread_threshold":0.45,
-                "threshold":0.3,
-                "ticket":[
-                    "PERF-335"
-                ]
-            },
-            "ycsb_50read50update_w_majority-wiredTiger":{
-                "thread_threshold":0.65,
-                "threshold":0.4,
-                "ticket":[
-                    "PERF-335"
-                ]
-            }
-        }
+        "threshold":{}
     },
     "linux-standalone":{
         "ndays":{},
@@ -449,28 +383,6 @@
                 "workload":"ycsb"
             }
         },
-        "threshold":{
-            "insert_jtrue-wiredTiger":{
-                "thread_threshold":0.45,
-                "threshold":0.3,
-                "ticket":[
-                    "PERF-335"
-                ]
-            },
-            "removemulti_jtrue-wiredTiger":{
-                "thread_threshold":0.45,
-                "threshold":0.3,
-                "ticket":[
-                    "PERF-335"
-                ]
-            },
-            "updatemulti_jtrue-wiredTiger":{
-                "thread_threshold":0.45,
-                "threshold":0.3,
-                "ticket":[
-                    "PERF-335"
-                ]
-            }
-        }
+        "threshold":{}
     }
 }
