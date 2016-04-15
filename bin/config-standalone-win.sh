@@ -150,6 +150,7 @@ startStandalone() {
     fi
 
     runSSHCommand $ssh_url "rm -rf $MY_ROOT/data/logs/*.log"
+    runSSHCommand $ssh_url "rm -rf $MY_ROOT/data/dbs/*"
     runSSHCommand $ssh_url "rm -rf $MY_ROOT/data/dbs"
     runSSHCommand $ssh_url "rm -rf $JOURNAL_PATH/journal"
     runSSHCommand $ssh_url "mkdir -p $DB_PATH/dbs"
