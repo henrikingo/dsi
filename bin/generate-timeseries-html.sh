@@ -16,9 +16,18 @@ echo Generate one html file for each host in cluster.
 mkdir -p reports/graphs
 for i in "${ALL_HOST[@]}"
 do
+    # iostat logs are not available on Windows
+    lslines=$(ls reports/*/*/iostat.log--ec2-user@${!i} 2>/dev/null |wc -l)
+    if [ $lslines == 0 ]
+    then
+        iostat_log=""
+    else
+        iostat_log=$(ls reports/*/*/iostat.log--ec2-user@${!i})
+    fi
+    
     python $(dirname $0)/timeseries.py --itz 0 --overview all \
                                        reports/diag-$i-${!i}/diagnostic.data \
-                                       reports/diag-$i-${!i}/mongod.log \
+                                       reports/diag-$i-${!i}/mongod.log $iostat_log \
                                        --html reports/graphs/timeseries-$i.html
 done
 

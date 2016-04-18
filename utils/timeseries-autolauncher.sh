@@ -29,9 +29,18 @@ pip install argparse python-dateutil pytz
 
 for i in "${ALL_HOST[@]}"
 do
+    # iostat logs are not available on Windows
+    lslines=$(ls */*/iostat.log--ec2-user@${!i} 2>/dev/null |wc -l)
+    if [ $lslines == 0 ]
+    then
+        iostat_log=""
+    else
+        iostat_log=$(ls */*/iostat.log--ec2-user@${!i})
+    fi
+    
     python $(dirname $0)/timeseries.py --itz 0 --port $PORT \
                                        diag-$i-${!i}/diagnostic.data \
-                                       diag-$i-${!i}/mongod.log
+                                       diag-$i-${!i}/mongod.log $iostat_log
     PORT=$(($PORT+1))
 done
 
