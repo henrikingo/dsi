@@ -193,10 +193,6 @@ def update_override(project, reference, ticket, rule="reference", ovr=None, evg=
 
     # Find the build variants for the mongo-perf project at this Git commit
     for build_variant_name, build_variant_id in evg.build_variants_from_git_commit(project, commit):
-        # TODO: special case
-        if 'comp' in build_variant_name:
-            logger.debug('Skipping comparison build variant: {0}'.format(build_variant_name))
-            continue
 
         match = helpers.matches_any(build_variant_name, variants)
         if not match:

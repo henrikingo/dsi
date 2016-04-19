@@ -8600,6 +8600,68 @@
                 "ticket":[
                     "mmapspedup"
                 ]
+            },
+            "Queries.FindProjectionDottedField":{
+                "create_time":"2016-03-18T22:00:50.43Z",
+                "max":87.90682573692828,
+                "name":"Queries.FindProjectionDottedField",
+                "order":3360,
+                "results":{
+                    "1":{
+                        "ops_per_sec":85.65691388574425
+                    },
+                    "2":{
+                        "ops_per_sec":85.19099218972671
+                    },
+                    "4":{
+                        "ops_per_sec":87.90682573692828
+                    },
+                    "8":{
+                        "ops_per_sec":86.2051273010926
+                    }
+                },
+                "revision":"c2af7abae8d09d290d7457ab77f5a7529806b75a",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "noise"
+                ]
+            },
+            "Queries.FindProjectionThreeFields":{
+                "create_time":"2016-03-18T22:00:50.43Z",
+                "max":91.4626082980232,
+                "name":"Queries.FindProjectionThreeFields",
+                "order":3360,
+                "results":{
+                    "1":{
+                        "ops_per_sec":91.4626082980232
+                    },
+                    "2":{
+                        "ops_per_sec":90.24644256900274
+                    },
+                    "4":{
+                        "ops_per_sec":90.99947552297
+                    },
+                    "8":{
+                        "ops_per_sec":90.67011538158702
+                    }
+                },
+                "revision":"c2af7abae8d09d290d7457ab77f5a7529806b75a",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "noise"
+                ]
             }
         },
         "threshold":{

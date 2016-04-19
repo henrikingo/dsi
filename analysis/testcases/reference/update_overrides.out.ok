@@ -88,20 +88,79 @@ Processing build variant: linux-mmap-repl
 	Skipping task: misc
 	Skipping task: update
 	Skipping task: singleThreaded
-Skipping comparison build variant: linux-wt-repl-compare
-Skipping comparison build variant: linux-mmap-repl-compare
-Skipping comparison build variant: linux-wt-mmap-standalone-compare
-Skipping comparison build variant: linux-wt-mmap-repl-compare
+Processing build variant: linux-wt-repl-compare
+	Skipping task: insert-wt-repl-comp
+	Skipping task: singleThreaded-wt-repl-comp
+	Skipping task: misc-wt-repl-comp
+	Skipping task: update-wt-repl-comp
+Processing build variant: linux-mmap-repl-compare
+	Skipping task: singleThreaded-mmap-repl-comp
+	Skipping task: insert-mmap-repl-comp
+	Skipping task: misc-mmap-repl-comp
+	Skipping task: update-mmap-repl-comp
+Processing build variant: linux-wt-mmap-standalone-compare
+	Processing task: query-wt-mmap-standalone-comp
+		Skipping test: Queries.UniqueIdx.MultipleUniqueIndices
+		Skipping test: Queries.Empty
+		Skipping test: Queries.Text.FindThreeWords
+		Skipping test: Queries.RegexPrefixFindOne
+		Skipping test: Queries.Text.FindPhraseCaseSensitive
+		Skipping test: Queries.FindProjectionThreeFieldsCovered
+		Processing test: Queries.FindProjectionDottedField
+		Skipping test: Queries.Text.FindSingleLargeDocuments
+		Skipping test: Queries.IntNonIdFindOneProjectionCovered
+		Skipping test: Queries.IntIdFindOne
+		Skipping test: Queries.Text.FindSingle
+		Skipping test: Queries.Text.FindPhrase
+		Skipping test: Queries.IntNonIdFindOne
+		Skipping test: Queries.UniqueIdx.ManyIdxIsectRangePredicates
+		Skipping test: Queries.IntNonIdFindProjectionCovered
+		Skipping test: Queries.IntNonIdFindOneProjection
+		Skipping test: Queries.IntIDRange
+		Skipping test: Queries.FindProjection
+		Skipping test: Queries.PartialIndex.AllInFilter.FilteredRange
+		Skipping test: Queries.TwoInts
+		Skipping test: Queries.UniqueIdx.MultikeyWithUniqueIdx
+		Skipping test: Queries.UniqueIdx.HaveNonUniqueIndices
+		Skipping test: Queries.FindProjectionDottedField.Indexed
+		Skipping test: Queries.NoMatch
+		Skipping test: Queries.PartialIndex.FilteredRange
+		Skipping test: Queries.PartialIndex.AllInFilter.FullRange
+		Skipping test: Queries.Text.FindThreeWordsCaseSensitive
+		Skipping test: Queries.FindWideDocProjection
+		Skipping test: Queries.Text.FindSingleCaseSensitive
+		Skipping test: Queries.UniqueIdx.ManyIdxIsect
+		Processing test: Queries.FindProjectionThreeFields
+	Skipping task: insert-wt-mmap-standalone-comp
+	Skipping task: geo-wt-mmap-standalone-comp
+	Skipping task: update-wt-mmap-standalone-comp
+	Skipping task: misc-wt-mmap-standalone-comp
+	Skipping task: singleThreaded-wt-mmap-standalone-comp
+	Skipping task: where-wt-mmap-standalone-comp
+Processing build variant: linux-wt-mmap-repl-compare
+	Skipping task: insert-wt-mmap-repl-comp
+	Skipping task: misc-wt-mmap-repl-comp
+	Skipping task: update-wt-mmap-repl-comp
+	Skipping task: singleThreaded-wt-mmap-repl-comp
 The following tests have been overridden:
 {
   "linux-mmap-repl": {},
+  "linux-mmap-repl-compare": {},
   "linux-mmap-standalone": {
     "query": [
       "Queries.FindProjectionDottedField",
       "Queries.FindProjectionThreeFields"
     ]
   },
+  "linux-wt-mmap-repl-compare": {},
+  "linux-wt-mmap-standalone-compare": {
+    "query-wt-mmap-standalone-comp": [
+      "Queries.FindProjectionDottedField",
+      "Queries.FindProjectionThreeFields"
+    ]
+  },
   "linux-wt-repl": {},
+  "linux-wt-repl-compare": {},
   "linux-wt-standalone": {
     "query": [
       "Queries.FindProjectionDottedField",
