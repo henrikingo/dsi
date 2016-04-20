@@ -158,6 +158,8 @@ startReplicaMember() {
     runSSHCommand "$ssh_url" "cd $MY_ROOT/data/dbs; CYGWIN=winsymlinks:native ln -s $JOURNAL_PATH/journal journal"
     runSSHCommand "$ssh_url" "mkdir -p $JOURNAL_PATH/logs"
 
+    runSSHCommand "$ssh_url" "ls -la $MY_ROOT/data"
+
     if [ "$PLATFORM" = "$WINDOWS_PLATFORM_STRING" ]; then
         # install windows service
         runSSHCommand "$ssh_url" 'sc.exe create MongoDB binPath= "C:\\Cygwin64\\home\\ec2-user\\mongodb\\bin\\mongod.exe --dbpath="Y:\\dbs" --logpath="Z:\\logs\\mongod.log" --replSet='"$rs $storageEngine"' --service " DisplayName= "MongoDB" start= "auto" '
@@ -191,6 +193,13 @@ configReplica() {
 		rs.reconfig(cfg);\
 		sleep(5000);\
 		printjson(rs.status())\""
+
+	if [ $? != 0 ]; then
+        # something wrong, check log file here
+        runSSHCommand ${!S0} "cat $MY_ROOT/data/logs/mongod.log"
+        runSSHCommand ${!S0} "ls -la $MY_ROOT/data"
+        runSSHCommand ${!S0} "ls -la $MY_ROOT/data/dbs"
+    fi
 }
 
 ## start a new replica set
