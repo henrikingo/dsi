@@ -48,6 +48,8 @@ readonly DB_PATH_WIN="/cygdrive/y"
 readonly DB_PATH_LINUX="/media/ephemeral0"
 readonly JOURNAL_PATH_WIN="/cygdrive/z"
 readonly JOURNAL_PATH_LINUX="/media/ephemeral1"
+readonly LOG_PATH_WIN="/cygdrive/z/logs/mongod.log"
+readonly LOG_PATH_LINUX="$MY_ROOT/data/logs/mongod.log"
 
 readonly WINDOWS_PLATFORM_STRING="WINDOWS"
 
@@ -159,6 +161,7 @@ startReplicaMember() {
     runSSHCommand "$ssh_url" "mkdir -p $JOURNAL_PATH/logs"
 
     runSSHCommand "$ssh_url" "ls -la $MY_ROOT/data"
+    runSSHCommand "$ssh_url" "ls -la $MY_ROOT/data/dbs
 
     if [ "$PLATFORM" = "$WINDOWS_PLATFORM_STRING" ]; then
         # install windows service
@@ -196,9 +199,9 @@ configReplica() {
 
 	if [ $? != 0 ]; then
         # something wrong, check log file here
-        runSSHCommand ${!S0} "cat $MY_ROOT/data/logs/mongod.log"
+        runSSHCommand ${!S0} "cat $LOG_PATH"
         runSSHCommand ${!S0} "ls -la $MY_ROOT/data"
-        runSSHCommand ${!S0} "ls -la $MY_ROOT/data/dbs"
+        runSSHCommand ${!S0} "ls -la $MY_ROOT/data/dbs/*"
     fi
 }
 
@@ -249,6 +252,7 @@ PLATFORM=$WINDOWS_PLATFORM_STRING
 if [ $PLATFORM = $WINDOWS_PLATFORM_STRING ]; then
     JOURNAL_PATH=$JOURNAL_PATH_WIN
     DB_PATH=$DB_PATH_WIN
+    LOG_PATH=$LOG_PATH_WIN
 fi
 
 for i in "${ALL_HOST[@]}"
