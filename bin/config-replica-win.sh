@@ -161,7 +161,7 @@ startReplicaMember() {
     runSSHCommand "$ssh_url" "mkdir -p $JOURNAL_PATH/logs"
 
     runSSHCommand "$ssh_url" "ls -la $MY_ROOT/data"
-    runSSHCommand "$ssh_url" "ls -la $MY_ROOT/data/dbs
+    runSSHCommand "$ssh_url" "ls -la $MY_ROOT/data/dbs"
 
     if [ "$PLATFORM" = "$WINDOWS_PLATFORM_STRING" ]; then
         # install windows service
