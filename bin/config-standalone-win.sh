@@ -156,9 +156,10 @@ startStandalone() {
     runSSHCommand $ssh_url "mkdir -p $DB_PATH/dbs"
     runSSHCommand $ssh_url "mkdir -p $JOURNAL_PATH/journal"
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data"
+    runSSHCommand $ssh_url "mkdir -p $JOURNAL_PATH/logs"
     runSSHCommand $ssh_url "cd $MY_ROOT/data; CYGWIN=winsymlinks:native ln -s $DB_PATH/dbs dbs"
     runSSHCommand $ssh_url "cd $MY_ROOT/data/dbs; CYGWIN=winsymlinks:native ln -s $JOURNAL_PATH/journal journal"
-    runSSHCommand $ssh_url "mkdir -p $JOURNAL_PATH/logs"
+    runSSHCommand $ssh_url "cd $MY_ROOT/data/logs; CYGWIN=winsymlinks:native ln -s $JOURNAL_PATH/logs journal"
 
     if [ $PLATFORM = $WINDOWS_PLATFORM_STRING ]; then
         # install windows service
