@@ -81,7 +81,9 @@ class History(object):
         test_series = self.series(testname)
         for result in test_series:
             if parser.parse(result["create_time"]) < refdate:
-                results = result
+                # Make sure the result is the newest one older than the threshold
+                if not results or results["create_time"] < result["create_time"]:
+                    results = result
         return results
 
     def series(self, testname):
