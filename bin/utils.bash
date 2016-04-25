@@ -82,17 +82,3 @@ scpFile() {
     /usr/bin/scp -r -oStrictHostKeyChecking=no $SSHKEY $USER@$ssh_url:$remote_file $local_file
 }
 
-# input
-#    ssh_url
-configUlimit() {
-    local ssh_url=$1; shift
-	runSSHCommand $ssh_url "ulimit -f unlimited"
-	runSSHCommand $ssh_url "ulimit -t unlimited"
-	runSSHCommand $ssh_url "ulimit -v unlimited"
-	runSSHCommand $ssh_url "ulimit -m unlimited"
-	runSSHCommand $ssh_url "ulimit -n 64000"
-	runSSHCommand $ssh_url "ulimit -u 64000"
-	runSSHCommand $ssh_url "ulimit -a"
-
-}
-

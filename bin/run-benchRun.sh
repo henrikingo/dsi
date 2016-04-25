@@ -55,7 +55,7 @@ chmod 777 perf.json
 # Run the initial sync tests if we are in a replica set
 if [ $CLUSTER == "replica" ] 
 then
-    ${BINDIR}/config-replica-2node.sh mongodb ${STORAGE_ENGINE} 0 initial_sync
+    ${BINDIR}/configure-mongodb-cluster.sh replica-2node ${STORAGE_ENGINE}
     ${BINDIR}/run-initialSync.sh ${STORAGE_ENGINE} replica_2node ${CLUSTER}
 fi
 
