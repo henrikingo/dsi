@@ -16,7 +16,7 @@ storageEngine=$2
 isWindows=$(echo $(basename $(pwd)) | cut -c 1-7)
 if [ "$isWindows" == "windows" ]
 then
-    $BINDIR/config-${setup}.sh "mongod" $storageEngine
+    $BINDIR/config-${setup}.sh "mongodb" $storageEngine
     exit $? # Return whatever that script returned
 fi
 
