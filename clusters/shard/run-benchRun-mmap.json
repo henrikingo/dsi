@@ -8,7 +8,7 @@
                         "servers": [ %%ALLMEMBERS%%, %%MS%% ],
                         "server_logs": [],
                         "type"  : "shell",
-                        "cmd": "cd workloads/; ./run-workloads.sh -t %%MS_PRIVATE_IP%% -s -e mmapv1; sleep 1"
+                        "cmd": "cd workloads/; ./run_workloads.py --config workloads.yml --test-list default --target %%MS_PRIVATE_IP%% --sharded --storageEngine mmapv1; sleep 1"
                     }
         ]}
 

@@ -9,7 +9,7 @@
                         "server_logs": [],
                         "target_platform": "windows",
                         "type"  : "shell",
-                        "cmd": "cd workloads/; ./run-workloads.sh -t %%I1%%  -e wiredTiger; sleep 1"
+                        "cmd": "cd workloads/; ./run_workloads.py -c workloads.yml -l default -t %%I1%%; sleep 1"
                     }
         ]}
 

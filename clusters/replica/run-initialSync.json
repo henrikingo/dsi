@@ -8,7 +8,7 @@
                         "servers": [ %%ALLMEMBERS%%],
                         "server_logs": [],
                         "type"  : "shell",
-                        "cmd": "cd workloads/; ./run-initialsync.sh -t %%I1%%  -e wiredTiger -r; sleep 1"
+                        "cmd": "cd workloads/; ./run_workloads.py -c workloads.yml -l initialsync -t %%I1%% -r; sleep 1"
                     }
         ]}
 
