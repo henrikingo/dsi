@@ -14,11 +14,7 @@ sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.7.0_71/b
 curl -O --retry 10 https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongo-java-driver/3.2.2/mongo-java-driver-3.2.2.jar
 echo 'export CLASSPATH=~/mongo-java-driver-3.2.2.jar:$CLASSPATH' >> ~/.bashrc
 
-git clone -b evergreen https://github.com/mongodb-labs/YCSB.git
 curl --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash
-source /etc/profile.d/maven.sh
-cd /home/ec2-user/YCSB/ycsb-mongodb || exit 1
-./setup.sh
 
 echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled
 echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag

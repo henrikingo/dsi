@@ -3,19 +3,7 @@
 BINDIR=$(dirname $0)
 source setting.sh
 
-
-# need make sure we checked out 10gen/workloads repo first
-rm -rf ./workloads
-rm -f workloads.tar.gz
-git clone git@github.com:10gen/workloads.git
-tar cvf workloads.tar ./workloads 
-gzip workloads.tar
-
-ssh -oStrictHostKeyChecking=no -T -A -i $PEMFILE $SSHUSER@$mc rm -rf workloads*
-
-scp -oStrictHostKeyChecking=no -i $PEMFILE  ./workloads.tar.gz $SSHUSER@$mc:.
-
-ssh -oStrictHostKeyChecking=no -T -i $PEMFILE $SSHUSER@$mc "tar zxvf workloads.tar.gz; pwd; ls workloads/*"
+source ${BINDIR}/setup-workloads.sh
 
 # the current test using bundled shell, if need, we can use following line
 # to speficy a particular version of shell
