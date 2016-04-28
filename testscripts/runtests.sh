@@ -6,17 +6,18 @@ failed=0
 
 BUILDDIR=$(dirname $0)
 BASEDIR=$(dirname $(dirname $0))
-
-pushd .
-
-cd ${BASEDIR}/analysis
-
 function run_test {
     "$@"
     if [ $? -ne 0 ]; then
         ((failed++))
     fi
 }
+
+
+cd ${BASEDIR}/bin
+run_test python -m doctest -v setup_work_env.py  # Doc test util.py
+cd ..
+cd ${BASEDIR}/analysis
 
 run_test python -m doctest -v util.py # Doc test util.py
 run_test python -m doctest -v evergreen/override.py # Doc test util.py

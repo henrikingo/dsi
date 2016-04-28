@@ -2,6 +2,7 @@
 
 export CLUSTER=$1
 BINDIR=$(dirname $0)
+export TERRAFORM_DIR=${2:-${BINDIR}/../terraform}
 
 if [ ! "$CLUSTER" ]
 then
@@ -9,7 +10,7 @@ then
     exit -1
 fi
 
-cp ${BINDIR}/../terraform/* .
+cp ${TERRAFORM_DIR}/* .
 
 # create all resources and instances
 if [ $CLUSTER == "shard" -o $CLUSTER == "longevity" ]
