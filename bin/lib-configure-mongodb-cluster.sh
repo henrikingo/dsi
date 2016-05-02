@@ -36,9 +36,11 @@ killAllProcess() {
     echo ""
 
     # kill if the process is running
-    if [[ -n $(runSSHCommand $ssh_url "/sbin/pidof $name" ) ]]; then
+    until [[ -z $(runSSHCommand $ssh_url "/sbin/pidof $name" ) ]]; do
+        printDescription "Calling killall -9 $name on $ssh_url"
         runSSHCommand $ssh_url "killall -9 $name"
-    fi
+        sleep 1
+    done
 }
 
 # to run a remote command
@@ -173,9 +175,14 @@ startReplicaSet() {
     printDescription "config replica set $rs for shard $shard"
     echo ""
 
+    # For replica-2node, we must kill the whole replica set before initializing any new nodes
+    killAllProcess ${!H0} "mongod"
+    killAllProcess ${!H1} "mongod"
+    killAllProcess ${!H2} "mongod"
+
     startReplicaMember $ver ${!H0} $storageEngine $rs
     startReplicaMember $ver ${!H1} $storageEngine $rs
-    startReplicaMember $ver ${!H2} $storageEngine $rs 
+    startReplicaMember $ver ${!H2} $storageEngine $rs
 
     # config
     configReplica $ver $shard $nodes
@@ -206,7 +213,7 @@ startMongos() {
     killAllProcess $ssh_url "mongos"
 
     # now start mongos
-    
+
     runSSHCommand $ssh_url "rm -rf $MY_ROOT/data/logs/*.log"
     runSSHCommand $ssh_url "rm -rf $MY_ROOT/data/dbs"
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/dbs"
@@ -214,12 +221,12 @@ startMongos() {
 
 
     USE_CSRS=${USE_CSRS:-true}
-    if [ "$USE_CSRS" = true ]; then 
+    if [ "$USE_CSRS" = true ]; then
         echo "Using CSRS to start mongos"
-        runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited ; $MY_ROOT/$ver/bin/mongos --fork --configdb $CSRS_REPL_NAME/$IPconfig1:27017,$IPconfig2:27017,$IPconfig3:27017 --logpath=$MY_ROOT/data/logs/mongos.log $DEBUG $ChunkSize" 
+        runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited ; $MY_ROOT/$ver/bin/mongos --fork --configdb $CSRS_REPL_NAME/$IPconfig1:27017,$IPconfig2:27017,$IPconfig3:27017 --logpath=$MY_ROOT/data/logs/mongos.log $DEBUG $ChunkSize"
     elif [ "$USE_CSRS" = false ]; then
         echo "Using Legacy ConfigSvr mode to start mongos"
-        runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited ; $MY_ROOT/$ver/bin/mongos --fork --configdb $IPconfig1:27017,$IPconfig2:27017,$IPconfig3:27017 --logpath=$MY_ROOT/data/logs/mongos.log $DEBUG $ChunkSize" 
+        runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited ; $MY_ROOT/$ver/bin/mongos --fork --configdb $IPconfig1:27017,$IPconfig2:27017,$IPconfig3:27017 --logpath=$MY_ROOT/data/logs/mongos.log $DEBUG $ChunkSize"
     else
         echo "USE_CSRS must be either true or false, got $USE_CSRS"
         exit 1
@@ -240,7 +247,7 @@ startConfigServer() {
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/logs"
 
     USE_CSRS=${USE_CSRS:-true}
-    if [ "$USE_CSRS" = true ]; then 
+    if [ "$USE_CSRS" = true ]; then
         echo "Using CSRS"
         runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod --port 27017 --replSet $CSRS_REPL_NAME --dbpath $MY_ROOT/data/dbs --configsvr --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG --storageEngine=wiredTiger"
     elif [ "$USE_CSRS" = false ]; then
@@ -270,7 +277,7 @@ startShard() {
 }
 
 ## config shard
-# 
+#
 configShard() {
     local ver=$1; shift
     local ssh_url=$1;
@@ -296,7 +303,7 @@ configShard() {
 }
 
 ## add a shard
-# 
+#
 addShard() {
     local ver=$1; shift
     local _mongos=$1; shift
@@ -311,7 +318,7 @@ addShard() {
 }
 
 ## config shard with replcia
-# 
+#
 configShardWithReplica() {
     local ver=$1; shift
     local _mongos=$1; shift
@@ -328,7 +335,7 @@ configShardWithReplica() {
         local IP2=PRIVATE_$ii\_2
 
         addShard $ver $_mongos "rs$ii/${!Host}:27017,${!IP1}:27017,${!IP2}:27017"
-    done   
+    done
 
     # Shard the ycsb collection, because ycsb doesn't know how to do it
     runSSHCommand $_mongos "$MY_ROOT/$ver/bin/mongo --port 27017 \
@@ -376,22 +383,22 @@ startShardedCluster() {
     local storageEngine=$1; shift
     local nodes=$1; shift
     local numShard=$1;
-    
+
     # Create the config server replica set
     configCSRS $version
-    
+
     # Create the shards as replica sets
     for i in `seq 1 $numShard`;
     do
         let "ii=$i - 1"
         startReplicaSet $version $ii $storageEngine 3
-    done   
+    done
 
     sleep 3
     # Start one mongos
     startMongos $version $mongos
-    
-    # 
+
+    #
     sleep 3
     configShardWithReplica $version $mongos $numShard
 }
