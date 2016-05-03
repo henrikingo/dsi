@@ -126,19 +126,16 @@ resource "aws_instance" "member" {
 
     associate_public_ip_address = 1
 
+    provisioner "file" {
+        source = "../remote-scripts/windows-setup.sh"
+        destination = "/tmp/provision.sh"
+    }
+
     # We run a remote provisioner on the instance after creating it.
     provisioner "remote-exec" {
         inline = [
-            "rm -rf mongodb",
-            "mkdir mongodb; curl --retry 10 ${var.mongourl} | tar zxv -C mongodb; cd mongodb; mv */bin .; cd ~ ",
-            "chmod +x ~/mongodb/bin/*",
-            "mkdir -p ~/bin",
-            "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
-            "DRIVE='/cygdrive/y'; until [ -d $DRIVE ]; do echo 'wait for '$DRIVE; sleep 1; done",
-            "DRIVE='/cygdrive/z'; until [ -d $DRIVE ]; do echo 'wait for '$DRIVE; sleep 1; done",
-            "echo 'provision done!'",
-            # "cd /cygdrive/y ; fio --directory=. --name fio_test_file --direct=1 --rw=randwrite --bs=16k --size=1G --numjobs=16 --time_based --runtime=60 --group_reporting --norandommap --thread",
-            # "cd /cygdrive/z ; fio --directory=. --name fio_test_file --direct=1 --rw=randwrite --bs=16k --size=1G --numjobs=16 --time_based --runtime=60 --group_reporting --norandommap --thread",
+            "chmod +x /tmp/provision.sh",
+            "/tmp/provision.sh ${var.mongourl}"
         ]
     }
 }

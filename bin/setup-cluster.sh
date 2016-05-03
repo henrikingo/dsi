@@ -27,7 +27,7 @@ fi
 # just to print out disk i/o information
 cat terraform.log | grep "  clat ("
 
-if [ $CLUSTER == "longevity" -o $CLUSTER == "windows-single" ]
+if [ $CLUSTER == "longevity" ] || [ $CLUSTER == "single-correctness" ]
 then
     echo "Skipping pre-qualify-cluster.sh for $CLUSTER"
 else
@@ -35,7 +35,7 @@ else
     ${BINDIR}/pre-qualify-cluster.sh
     rc=$?
 
-    if [ $CLUSTER != "single" -a $CLUSTER != "single-correctness" ]
+    if [ $CLUSTER != "single" ] && [ $CLUSTER != "windows-single" ]
     then
         # disable system failure for the larger cluster types, as well as low end instance types
         rc=0
