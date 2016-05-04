@@ -6,7 +6,6 @@ ips.sh
 perf.json
 .DS_Store
 *.rpm
-*.pyc
 iostat.log*
 mongod-ss.log*
 pidstat.log*
@@ -19,3 +18,9 @@ mongod-replica.log*
 .vscode
 bin/mc
 *.pem
+
+# Python
+*.pyc
+
+# PyCharm
+.idea

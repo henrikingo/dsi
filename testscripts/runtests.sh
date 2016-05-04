@@ -6,12 +6,15 @@ failed=0
 
 BUILDDIR=$(dirname $0)
 BASEDIR=$(dirname $(dirname $0))
+
 function run_test {
     "$@"
     if [ $? -ne 0 ]; then
         ((failed++))
     fi
 }
+
+run_test ${BASEDIR}/testscripts/test_mongodb_setup.py
 
 pushd .
 cd ${BASEDIR}/bin

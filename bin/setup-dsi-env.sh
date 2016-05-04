@@ -23,3 +23,8 @@ rm mc.tar.gz
 popd
 
 ls
+
+# Install pip modules with virtualenv
+virtualenv ./venv
+source ./venv/bin/activate
+pip install argparse mock paramiko
