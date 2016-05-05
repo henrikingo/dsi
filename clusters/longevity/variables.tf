@@ -14,6 +14,10 @@ variable "mongoversion" {
     default = "3.0.1"
 }
 
+variable "mongourl" {
+    default = "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.2.6.tgz"
+}
+
 variable "user" {
     default = "CHANGEME"
 }

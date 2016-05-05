@@ -245,8 +245,7 @@ resource "aws_instance" "configserver" {
         }
         inline = [
             "sudo yum -y install tmux git wget sysstat dstat perf",
-            "mkdir mongodb; curl --retry 10 %%MONGO_URL%% | tar zxv -C mongodb; cd mongodb; mv */bin . ",
-            "echo %%MONGO_URL%%",
+            "mkdir mongodb; curl --retry 10 ${var.mongourl} | tar zxv -C mongodb; cd mongodb; mv */bin .; cd ~ ",
             "mkdir -p ~/bin",
             "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
             "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled",
