@@ -127,7 +127,7 @@ resource "aws_instance" "shardmember" {
         }
         inline = [
             "sudo yum -y -q install git fio wget sysstat dstat perf xfsprogs",
-            "mkdir mongodb; curl --retry 10 %%MONGO_URL%% | tar zxv -C mongodb; cd mongodb; mv */bin .; cd ~ ",
+            "mkdir mongodb; curl --retry 10 ${var.mongourl} | tar zxv -C mongodb; cd mongodb; mv */bin .; cd ~ ",
             "mkdir -p ~/bin",
             "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
             "dev=/dev/xvdc; sudo umount $dev; sudo mkfs.xfs -f $dev; sudo mount $dev",
