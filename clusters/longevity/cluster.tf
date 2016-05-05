@@ -188,8 +188,8 @@ resource "aws_instance" "master" {
 
     # We run a remote provisioner on the instance after creating it.
     provisioner "file" {
-        source = "../remote-scripts/workload-client-provision.bash"
-        destination = "/tmp/provision.bash"
+        source = "../remote-scripts/workload-client-setup.sh"
+        destination = "/tmp/provision.sh"
     }
 
     provisioner "remote-exec" {
@@ -197,8 +197,8 @@ resource "aws_instance" "master" {
             timeoout = "10m"
         }
         inline = [
-            "chmod +x /tmp/provision.bash",
-            "/tmp/provision.bash ${var.mongourl}"
+            "chmod +x /tmp/provision.sh",
+            "/tmp/provision.sh ${var.mongourl}"
         ]
     }
 }
