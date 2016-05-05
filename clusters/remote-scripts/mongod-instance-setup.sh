@@ -42,3 +42,5 @@ fio --directory=/media/ephemeral1 --name fio_test_file --direct=1 --rw=randwrite
 
 rm ./*.tgz || true
 rm ./*.rpm || true
+ls
+exit 0

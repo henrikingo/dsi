@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 sudo yum -y -q install tmux git wget sysstat dstat perf
 mkdir mongodb; curl --retry 10 "$1" | tar zxv -C mongodb
@@ -30,3 +30,4 @@ chmod 400 ~/.ssh/id_rsa
 rm ~/*.tgz || true
 rm ~/*.rpm || true
 ls
+exit 0
