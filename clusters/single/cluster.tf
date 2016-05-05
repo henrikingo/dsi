@@ -193,7 +193,7 @@ resource "aws_instance" "master" {
 
     # We run a remote provisioner on the instance after creating it.
     provisioner "file" {
-        source = "../scripts/workload-client-provision.bash"
+        source = "../remote-scripts/workload-client-provision.bash"
         destination = "/tmp/provision.bash"
     }
 
