@@ -352,6 +352,12 @@ configCSRS() {
     local ver=$1
 
     # Note: $config1,2,3 vars come directly from ips.sh settings file
+    # You must kill all the server before re-config it, otherwise, it will fail 
+    # due to inconsistent state of the replica set
+    killAllProcess $config1 "mongod"
+    killAllProcess $config2 "mongod"
+    killAllProcess $config3 "mongod"
+
     startConfigServer $ver $config1 "wiredTiger"
     startConfigServer $ver $config2 "wiredTiger"
     startConfigServer $ver $config3 "wiredTiger"
