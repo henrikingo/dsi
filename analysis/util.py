@@ -275,5 +275,11 @@ def read_threshold_overrides(test_name, base_threshold, base_thread_threshold, o
     return(threshold, thread_threshold, threshold_override)
 
 
+def get_override(test_name, override_type, overrides):
+    if test_name in overrides[override_type]:
+        return overrides[override_type][test_name]
+    return None
+
+
 if __name__ == "__main__":
     doctest.testmod()
