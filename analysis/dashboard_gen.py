@@ -9,11 +9,9 @@ import StringIO
 from util import read_histories, compare_one_result, log_header, get_override
 
 # Example usage:
-# post_run_check.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f
+# dashboard_gen.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f
 #         --project_id $pr_id --variant $variant
-# Loads the history json file, and looks for regressions at the revision 18808cd...
-# Evergreen project_id and variant are used to uniquely identify the rule set to use
-# Will exit with status code 1 if any regression is found, 0 otherwise.
+# always exit with zero status so that it does not cause Evergreen to skip other analysis
 
 # Output is written to dashboard.json
 # Each test is classified into one of the following states
@@ -79,7 +77,7 @@ def throughput_check(test, ref_tag, project_id, variant):
     if tag_history:
         reference = tag_history.series_at_tag(test['name'], ref_tag)
         if not reference:
-            print "        no reference data for test %s with baseline" % (test['name'])
+            notes += "No reference data for test in baseline\n"
             return (state, notes, tickets, perf_ratio)
         tempdict = get_override(test['name'], 'reference', overrides)
         if tempdict:
@@ -87,7 +85,7 @@ def throughput_check(test, ref_tag, project_id, variant):
             tickets.extend(reference['ticket'])
     # Don't do a comparison if the reference data is missing
     if not reference:
-        print "        no reference data for test %s with baseline" % (test['name'])
+        notes += "No reference data for test in baseline\n"
         return (state, notes, tickets, perf_ratio)
 
     print reference
@@ -98,7 +96,7 @@ def throughput_check(test, ref_tag, project_id, variant):
     #    except Exception as e:
     except Exception as e:
         print "{0} is not a supported project".format(e)
-        sys.exit(1)
+        sys.exit(0)
 
     # some tests may have higher noise margin and need different thresholds
     # this info is kept as part of the override file
@@ -201,7 +199,6 @@ def main(args):
     (history, tag_history, overrides) = read_histories(args.variant,
         args.hfile, args.tfile, args.ofile)
 
-    failed = 0
     results = []
     # replication lag table lines
     global replica_lag_line
@@ -235,7 +232,7 @@ def main(args):
             except Exception as e:
                 print "an exception has occured..."
                 print e
-                sys.exit(1)
+                sys.exit(0)
             results.append(result)
     report_for_baseline['data'] = results
     # should create an outerloop to go through all baselines we care
@@ -243,10 +240,6 @@ def main(args):
 
     reportFile = open('dashboard.json', 'w')
     json.dump(report, reportFile, indent=4, separators=(',', ': '))
-    if failed > 0 :
-        sys.exit(1)
-    else:
-        sys.exit(0)
 
 
 if __name__ == '__main__':
