@@ -2,7 +2,7 @@
 
 cp terraform.log post-check.log
 REDO_INSTANCE=false
-DIR=`dirname $0`
+DIR=$(dirname "$0")
 
 # This will check for all "bad" intance, mark them as tainted
 # and then re-create them, total will try 5 times. If there
@@ -12,15 +12,17 @@ do
     REDO_INSTANCE=false
 
     # print into log
-    cat post-check.log | grep " clat ("
-    for i in $(cat post-check.log | grep " clat (" | $DIR/filter-bad-instance.py)
+    grep " clat (" post-check.log
+    for i in $(grep " clat (" post-check.log | $DIR/filter_bad_instance.py )
     do
-        ./terraform taint $i
+        ./terraform taint "$i"
         echo "Recreate instance $i"
         REDO_INSTANCE=true
     done
 
-    ./terraform apply | tee post-check.log
+    if $REDO_INSTANCE; then
+        ./terraform apply | tee post-check.log
+    fi
 done
 
 if $REDO_INSTANCE; then
