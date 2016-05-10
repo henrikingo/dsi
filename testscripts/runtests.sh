@@ -6,6 +6,9 @@ failed=0
 
 BUILDDIR=$(dirname $0)
 BASEDIR=$(dirname $(dirname $0))
+
+pushd .
+
 cd ${BASEDIR}/analysis
 
 function run_test {
@@ -24,6 +27,12 @@ run_test bash test_post_run_check.sh
 #run_test bash test_update_overrides.sh
 run_test bash test_get_override_tickets.sh
 run_test bash test_delete_overrides.sh
+
+# run test under ./bin
+popd 
+pwd 
+cd ${BASEDIR}/bin
+run_test python -m doctest -v  filter_bad_instance.py
 
 if [ $failed -eq 0 ]; then
     echo "All tests passed"
