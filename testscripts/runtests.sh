@@ -13,7 +13,7 @@ function run_test {
     fi
 }
 
-
+pushd .
 cd ${BASEDIR}/bin
 run_test python -m doctest -v setup_work_env.py  # Doc test util.py
 cd ..
