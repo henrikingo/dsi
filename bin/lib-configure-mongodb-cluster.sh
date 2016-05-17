@@ -60,6 +60,8 @@ runSSHCommand() {
 ### Start and configure replica set
 #############################################################################
 
+readonly ENABLE_TEST_CMDS="--setParameter enableTestCommands=1"
+
 startReplicaMember() {
     local ver=$1; shift
     local ssh_url=$1; shift
@@ -90,7 +92,7 @@ startReplicaMember() {
     runSSHCommand $ssh_url "ls -la; cd $MY_ROOT/data/dbs; ls -la"
 
     # Launch mongod
-    runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited; $MY_ROOT/$ver/bin/mongod --storageEngine $storageEngine --dbpath $MY_ROOT/data/dbs --fork --logpath $MY_ROOT/data/logs/mongod.log $replSetOpt $DEBUG"
+    runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited; $MY_ROOT/$ver/bin/mongod --storageEngine $storageEngine --dbpath $MY_ROOT/data/dbs --fork --logpath $MY_ROOT/data/logs/mongod.log $replSetOpt $DEBUG $ENABLE_TEST_CMDS"
 }
 
 startStandalone() {
@@ -223,10 +225,10 @@ startMongos() {
     USE_CSRS=${USE_CSRS:-true}
     if [ "$USE_CSRS" = true ]; then
         echo "Using CSRS to start mongos"
-        runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited ; $MY_ROOT/$ver/bin/mongos --fork --configdb $CSRS_REPL_NAME/$IPconfig1:27017,$IPconfig2:27017,$IPconfig3:27017 --logpath=$MY_ROOT/data/logs/mongos.log $DEBUG $ChunkSize"
+        runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited ; $MY_ROOT/$ver/bin/mongos --fork --configdb $CSRS_REPL_NAME/$IPconfig1:27017,$IPconfig2:27017,$IPconfig3:27017 --logpath=$MY_ROOT/data/logs/mongos.log $DEBUG $ChunkSize $ENABLE_TEST_CMDS"
     elif [ "$USE_CSRS" = false ]; then
         echo "Using Legacy ConfigSvr mode to start mongos"
-        runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited ; $MY_ROOT/$ver/bin/mongos --fork --configdb $IPconfig1:27017,$IPconfig2:27017,$IPconfig3:27017 --logpath=$MY_ROOT/data/logs/mongos.log $DEBUG $ChunkSize"
+        runSSHCommand $ssh_url "ulimit -n 3000 -c unlimited ; $MY_ROOT/$ver/bin/mongos --fork --configdb $IPconfig1:27017,$IPconfig2:27017,$IPconfig3:27017 --logpath=$MY_ROOT/data/logs/mongos.log $DEBUG $ChunkSize $ENABLE_TEST_CMDS"
     else
         echo "USE_CSRS must be either true or false, got $USE_CSRS"
         exit 1
@@ -249,10 +251,10 @@ startConfigServer() {
     USE_CSRS=${USE_CSRS:-true}
     if [ "$USE_CSRS" = true ]; then
         echo "Using CSRS"
-        runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod --port 27017 --replSet $CSRS_REPL_NAME --dbpath $MY_ROOT/data/dbs --configsvr --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG --storageEngine=wiredTiger"
+        runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod --port 27017 --replSet $CSRS_REPL_NAME --dbpath $MY_ROOT/data/dbs --configsvr --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG --storageEngine=wiredTiger $ENABLE_TEST_CMDS"
     elif [ "$USE_CSRS" = false ]; then
         echo "Using Legacy ConfigSvr mode"
-        runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod --port 27017 --dbpath $MY_ROOT/data/dbs --configsvr --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG $storageEngine"
+        runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod --port 27017 --dbpath $MY_ROOT/data/dbs --configsvr --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG $storageEngine $ENABLE_TEST_CMDS"
     else
         echo "USE_CSRS must be either true or false, got $USE_CSRS"
         exit 1
@@ -273,7 +275,7 @@ startShard() {
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/dbs"
     runSSHCommand $ssh_url "mkdir -p $MY_ROOT/data/logs"
 
-	runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod $storageEngine --dbpath $MY_ROOT/data/dbs --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG"
+	runSSHCommand $ssh_url "ulimit -n 3000; $MY_ROOT/$ver/bin/mongod $storageEngine --dbpath $MY_ROOT/data/dbs --fork --logpath $MY_ROOT/data/logs/mongod.log $DEBUG $ENABLE_TEST_CMDS"
 }
 
 ## config shard
