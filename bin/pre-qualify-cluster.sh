@@ -13,9 +13,10 @@ do
 
     # print into log
     grep " clat (" post-check.log
+    IFS=$'\n'
     for i in $(grep " clat (" post-check.log | $DIR/filter_bad_instance.py )
     do
-        ./terraform taint "$i"
+        eval ./terraform taint $i
         echo "Recreate instance $i"
         REDO_INSTANCE=true
     done
@@ -26,7 +27,7 @@ do
 done
 
 if $REDO_INSTANCE; then
-    >&2 echo "Error: still have tainted instance after 5 tries, exit tests" 
+    >&2 echo "Error: still have tainted instance after 5 tries, exit tests"
     exit 1
 fi
 

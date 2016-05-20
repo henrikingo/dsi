@@ -49,10 +49,10 @@ def check_bad_instance(line):
             module.mongod_instance_with_placement_group.aws_instance.member
         ->
             terraform taint -module=mongod_instance_with_placement_group aws_instance.member
-    >>> check_bad_instance("module.mongod_instance_with_placement_group.aws_instance.member \
-        (remote-exec):     clat (usec): min=104, max=610269, avg=13316.92, stdev=9050.75")
-    '-module mongod_instance_with_placement_group aws_instance.member'
-    >>> check_bad_instance("module.mongod_instance_with_placement_group.aws_instance.member \
+    >>> check_bad_instance("module.cluster.mongod_instance.aws_instance.member (remote-exec):\
+        clat (usec): min=104, max=610269, avg=13316.92, stdev=9050.75")
+    '-module=cluster.mongod_instance aws_instance.member'
+    >>> check_bad_instance("module.cluster.mongod_instance.aws_instance.member \
         (remote-exec):     clat (usec): min=104, max=610269, avg=3316.92, stdev=9050.75") == None
     True
 
@@ -71,9 +71,9 @@ def check_bad_instance(line):
         t_usec = re.search(r' avg=([0-9\.]+),', line)
         if t_usec != None and float(t_usec.group(1)) > 7000.00:
             # search for instance belongs to a module
-            i = re.search(r'^module\.([a-zA-Z0-9_]+)\.(aws_instance.[a-zA-Z0-9_\.]+) ', line)
-            if i != None:
-                return "-module " + i.group(1) + " " + i.group(2)
+            i = re.search(r'module\.([a-zA-Z0-9_\.]+)\.(aws_instance.[a-zA-Z0-9_\.]+) ', line)
+            if i:
+                return "-module=" + i.group(1) + " " + i.group(2)
 
             i = re.search(r'(aws_instance.[a-zA-Z0-9_\.]+) ', line)
             if i:
