@@ -175,6 +175,11 @@ def main():
     for filename in glob.glob(os.path.join(remote_scripts_path, '*')):
         shutil.copy(filename, remote_scripts_target)
 
+    # copy modules
+    modules_path = os.path.join(dsipath, 'clusters', 'modules')
+    modules_target = os.path.join(os.path.dirname(directory), 'modules')
+    shutil.copytree(modules_path, modules_target)
+
     # Set the region file
     if config['region']:
         LOGGER.info("Setting up region file with region %s", config['region'])

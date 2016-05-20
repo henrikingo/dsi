@@ -12,6 +12,10 @@ fi
 
 cp ${TERRAFORM_DIR}/* .
 
+./terraform get --update
+
+print "Create AWS cluster for $CLUSTER"
+
 # create all resources and instances
 if [ $CLUSTER == "shard" -o $CLUSTER == "longevity" ]
 then

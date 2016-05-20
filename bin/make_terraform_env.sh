@@ -24,7 +24,7 @@ variable \"key_name\" {
     default = \"rui-aws-cap\"
 }
 
-variable \"key_path\" { 
+variable \"key_path\" {
     default = \"${PEMFILE}\"
 }" > security.tf
 
@@ -32,3 +32,6 @@ variable \"key_path\" {
 
 sed -i -- "s#%%MONGO_URL%%#${3}#g" cluster.tf
 sed -i -- "s#%%MONGO_URL%%#${3}#g" terraform.tfvars
+
+# update terraform module
+./terraform get --update

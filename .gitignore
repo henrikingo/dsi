@@ -18,3 +18,4 @@ clusters/test_*
 mongod-replica.log*
 .vscode
 bin/mc
+*.pem
