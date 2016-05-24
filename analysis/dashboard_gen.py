@@ -135,24 +135,24 @@ def throughput_check(test, ref_tag, project_id, variant):
     if num_level != 1:
         if ratio_at_max < 1 - undesired:
             if ratio_at_max < 1 - unacceptable:
-                to_return['notes'] += 'Max throughput unacceptable (<{0:1.2f}'\
-                    ' of baseline)\n'.format(1-unacceptable)
+                to_return['notes'] += 'Max throughput unacceptable '\
+                    + '(<{0:1.2f} of baseline)\n'.format(1-unacceptable)
                 if test_state[to_return['state']] < test_state['unacceptable']:
                     to_return['state'] = 'unacceptable'
             else:
-                to_return['notes'] += 'Max throughput undesired (<{0:1.2f}'\
-                    ' of baseline)\n'.format(1-undesired)
+                to_return['notes'] += 'Max throughput undesired '\
+                    + '(<{0:1.2f} of baseline)\n'.format(1-undesired)
                 if test_state[to_return['state']] < test_state['undesired']:
                     to_return['state'] = 'undesired'
     if worst_ratio < 1 - thread_undesired:
         if worst_ratio < 1 - thread_unacceptable:
-            to_return['notes'] += "Throughput at {0:} unacceptable (<{1:1.2f}'\
-                ' of baseline)\n".format(worst_thread, 1-thread_unacceptable)
+            to_return['notes'] += 'Throughput at {0} '.format(worst_thread)\
+                + 'unacceptable (<{0:1.2f}  of baseline)\n'.format(1-thread_unacceptable)
             if test_state[to_return['state']] < test_state['unacceptable']:
                 to_return['state'] = 'unacceptable'
         else:
-            to_return['notes'] += "Throughput at {0:} undesired (<{1:1.2f}'\
-                ' of baseline)\n".format(worst_thread, 1-thread_undesired)
+            to_return['notes'] += 'Throughput at {0} '.format(worst_thread)\
+                + 'undesired (<{0:1.2f} of baseline)\n'.format(1-thread_undesired)
             if test_state[to_return['state']] < test_state['undesired']:
                 to_return['state'] = 'undesired'
 
@@ -168,9 +168,8 @@ def repl_lag_check(test, threshold):
         if max_lag != "NA":
             if float(max_lag) > threshold:
                 to_return['state'] = 'unacceptable'
-                to_return['notes'] += "replica_max_lag ({0:%s}) >'\
-                    ' threshold({1:%s}) seconds at {2:%s} thread\n"\
-                    .format(max_lag, threshold, level)
+                to_return['notes'] += 'replica_max_lag ({0}) '.format(max_lag)\
+                    + '> threshold({0}) seconds at {1} thread\n'.format(threshold, level)
     return to_return
 
 def update_state(current, new_data):
