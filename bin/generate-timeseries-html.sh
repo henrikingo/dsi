@@ -17,17 +17,23 @@ mkdir -p reports/graphs
 for i in "${ALL_HOST[@]}"
 do
     # iostat logs are not available on Windows
-    lslines=$(ls reports/*/*/iostat.log--ec2-user@${!i} 2>/dev/null |wc -l)
-    if [ $lslines == 0 ]
+    iostat_log=""
+    if [ -e reports/*/*/iostat.log--ec2-user@${!i} ]
     then
-        iostat_log=""
-    else
-        iostat_log=$(ls reports/*/*/iostat.log--ec2-user@${!i})
+       iostat_log=$(ls reports/*/*/iostat.log--ec2-user@${!i})
     fi
-    
+
+    # Include timestamp information from workloads if it exists
+    timestamps=""
+    if [ -e reports/workload_timestamps.csv ]
+    then
+        timestamps="reports/workload_timestamps.csv"
+    fi
+
     python $(dirname $0)/timeseries.py --itz 0 --overview all \
                                        reports/diag-$i-${!i}/diagnostic.data \
                                        reports/diag-$i-${!i}/mongod.log $iostat_log \
+                                       $timestamps \
                                        --html reports/graphs/timeseries-$i.html
 done
 
@@ -40,4 +46,3 @@ echo
 
 cp $(dirname $0)/timeseries.py reports/
 cp $(dirname $0)/../utils/timeseries-autolauncher.sh reports/
-

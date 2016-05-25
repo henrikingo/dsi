@@ -47,6 +47,9 @@ then
     ${BINDIR}/run-initialSync.sh ${STORAGE_ENGINE} replica_2node ${CLUSTER}
 fi
 
+# Copy back over timestamp csv file
+scp -oStrictHostKeyChecking=no -i $PEMFILE  $SSHUSER@$mc:./workloads/workload_timestamps.csv reports
+
 rm -f ../perf.json
 chmod 766 perf.json
 cp ./perf.json ..

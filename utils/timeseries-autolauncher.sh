@@ -30,17 +30,23 @@ pip install argparse python-dateutil pytz
 for i in "${ALL_HOST[@]}"
 do
     # iostat logs are not available on Windows
-    lslines=$(ls */*/iostat.log--ec2-user@${!i} 2>/dev/null |wc -l)
-    if [ $lslines == 0 ]
+    iostat_log=""
+    if [ -e */*/iostat.log--ec2-user@${!i} ]
     then
-        iostat_log=""
-    else
-        iostat_log=$(ls */*/iostat.log--ec2-user@${!i})
+       iostat_log=$(ls */*/iostat.log--ec2-user@${!i})
     fi
-    
+
+    # Include timestamp information from workloads if it exists
+    timestamps=""
+    if [ -e workload_timestamps.csv ]
+    then
+        timestamps="workload_timestamps.csv"
+    fi
+
     python $(dirname $0)/timeseries.py --itz 0 --port $PORT \
                                        diag-$i-${!i}/diagnostic.data \
-                                       diag-$i-${!i}/mongod.log $iostat_log
+                                       diag-$i-${!i}/mongod.log $iostat_log \
+                                       $timestamps
     PORT=$(($PORT+1))
 done
 
