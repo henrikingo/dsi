@@ -12,5 +12,4 @@ This repo is the core for the DSI Evergreen integration.
 - **bin**: supporting shell script
 
 # MongoDB Setup Dependencies
-pip install argparse mock paramiko
-
+See requirements.txt

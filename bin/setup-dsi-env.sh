@@ -27,4 +27,4 @@ ls
 # Install pip modules with virtualenv
 virtualenv ./venv
 source ./venv/bin/activate
-pip install argparse mock paramiko
+pip install -r requirements.txt
