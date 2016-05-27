@@ -14,6 +14,7 @@ variable configserver_instance_type {}
 variable topology                   {}
 variable availability_zone          {}
 variable region                     {}
+variable expire_on                  { default = "2016-12-31" }
 
 module "cluster" {
     source = "../modules/cluster"
@@ -38,6 +39,7 @@ module "cluster" {
     # AWS details
     availability_zone   = "${var.availability_zone}"
     region              = "${var.region}"
+    expire_on           = "${var.expire_on}"
 
     owner               = "${var.owner}"
 

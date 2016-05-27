@@ -47,7 +47,7 @@ module "mongod_instance" {
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     mongourl            = "${var.mongourl}"
-    expire-on           = "${var.expire_on}"
+    expire_on           = "${var.expire_on}"
     provisioner_file    = "mongod-instance-setup.sh"
     type                = ""
 }
@@ -67,7 +67,7 @@ module "mongos_instance" {
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     mongourl            = "${var.mongourl}"
-    expire-on           = "${var.expire_on}"
+    expire_on           = "${var.expire_on}"
     provisioner_file    = "generic-mongo-instance-setup.sh"
     type                = "mongos"
 }
@@ -87,7 +87,7 @@ module "configserver_instance" {
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     mongourl            = "${var.mongourl}"
-    expire-on           = "${var.expire_on}"
+    expire_on           = "${var.expire_on}"
     provisioner_file    = "generic-mongo-instance-setup.sh"
     type                = "config"
 }
@@ -107,7 +107,7 @@ module "workload_instance" {
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     mongourl            = "${var.mongourl}"
-    expire-on           = "${var.expire_on}"
+    expire_on           = "${var.expire_on}"
     provisioner_file    = "workload-client-setup.sh"
     type                = "master"
 }

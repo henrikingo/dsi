@@ -1,4 +1,4 @@
-#!/bin/env python2.7
+#!/usr/bin/env python2.7
 #pylint: disable=relative-import
 
 '''Read configureation and generate terraform configuration JSON file'''
@@ -8,7 +8,7 @@ import logging
 import argparse
 
 from common.terraform_config import TerraformConfiguration
-from common.logging import setup_logging
+from common.log import setup_logging
 
 LOG = logging.getLogger(__name__)
 

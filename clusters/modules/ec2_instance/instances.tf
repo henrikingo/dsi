@@ -8,7 +8,7 @@ variable "security_groups"      {}
 variable "availability_zone"    {}
 variable "placement_group"      {}
 variable "mongourl"             {}
-variable "expire-on"            {}
+variable "expire_on"            {}
 variable "provisioner_file"     {}
 variable "type"                 { default="" }
 
@@ -39,7 +39,7 @@ resource "aws_instance" "member" {
         TestSetup       = "dsi"
         TestTopology    = "single"
         owner           = "${var.owner}"
-        expire-on       = "${var.expire-on}"
+        expire-on       = "${var.expire_on}"
     }
 
     ephemeral_block_device {

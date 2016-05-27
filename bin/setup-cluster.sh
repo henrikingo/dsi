@@ -14,19 +14,25 @@ cp ${TERRAFORM_DIR}/* .
 
 ./terraform get --update
 
+VAR_FILE=""
+if [ -e "cluster.json" ]; then
+    VAR_FILE="-var-file=cluster.json"
+    echo "Using var_file ${VAR_FILE}"
+fi
+
 echo "Create AWS cluster for $CLUSTER"
 
 # create all resources and instances
 if [ $CLUSTER == "shard" -o $CLUSTER == "longevity" ]
 then
     # Shard cluster
-    ./terraform apply -var="count=3"  | tee terraform.log
+    ./terraform apply $VAR_FILE -var="count=3"  | tee terraform.log
 
     # workaround for failure to bring up all at the same time
-    ./terraform apply -var="count=9" | tee -a terraform.log
+    ./terraform apply $VAR_FILE -var="count=9" | tee -a terraform.log
 else
     # Most cluster types
-    ./terraform apply  | tee terraform.log
+    ./terraform apply $VAR_FILE | tee terraform.log
 fi
 
 # just to print out disk i/o information
