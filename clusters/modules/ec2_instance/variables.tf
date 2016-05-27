@@ -8,6 +8,8 @@ variable "amis" {
         "us-west-2b" = "ami-e7527ed7"
         "us-west-2c" = "ami-e7527ed7"
         "us-west-2d" = "ami-e7527ed7"
+
+        "us-east-1a" = "ami-60b6c60a"   # Amazon Linux AMI 2015.09.1 (HVM), SSD Volume Type - ami-60b6c60a
     }
 }
 
@@ -74,7 +76,7 @@ variable "private_ips" {
         "58" = "10.2.0.158"
         "59" = "10.2.0.159"
         "master0" = "10.2.0.98"
-        "master1" = "10.2.0.99"
+        "mongos0" = "10.2.0.99"
         "config0" = "10.2.0.81"
         "config1" = "10.2.0.82"
         "config2" = "10.2.0.83"

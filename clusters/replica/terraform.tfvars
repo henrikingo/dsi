@@ -1,12 +1,13 @@
+key_name                = "rui-aws-cap"
+key_file                = "../../../keys/aws.pem"
+mongod_instance_count   = "3"
+workload_instance_count = "1"
 
-key_name = "rui-aws-cap"
-count = "3"
-mastercount = "1"
+mongourl    = "%%MONGO_URL%%"
+owner       = "rui.zhang"
 
-mongoversion = "3.1.4"
-mongourl = "%%MONGO_URL%%"
-user = "rui"
-owner = "rui.zhang"
-
-primary_type = "c3.8xlarge"
-secondary_type = "c3.8xlarge"
+workload_instance_type  = "c3.8xlarge"
+mongod_instance_type    = "c3.8xlarge"
+topology                = "replica"
+availability_zone       = "us-east-1a"
+region                  = "us-east-1"

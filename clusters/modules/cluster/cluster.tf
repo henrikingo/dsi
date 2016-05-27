@@ -4,11 +4,13 @@ variable topology                       {}
 
 # define instance types
 variable mongod_instance_type           {}
+variable mongos_instance_type           { default = "c3.4xlarge" }
 variable workload_instance_type         {}
 variable configserver_instance_type     { default = "m3.2xlarge" }
 
 # define instance count
 variable mongod_instance_count          { default = 0 }
+variable mongos_instance_count          { default = 0 }
 variable workload_instance_count        { default = 0 }
 variable configserver_instance_count    { default = 0 }
 
@@ -18,7 +20,7 @@ variable availability_zone              {}
 variable key_path                       {}
 variable key_name                       {}
 
-variable expired_on                     { default = "2016-12-31" }
+variable expire_on                      { default = "2016-12-31" }
 
 # define VPC and related network resources
 module "VPC" {
@@ -45,9 +47,49 @@ module "mongod_instance" {
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     mongourl            = "${var.mongourl}"
-    expire-on           = "${var.expired_on}"
+    expire-on           = "${var.expire_on}"
     provisioner_file    = "mongod-instance-setup.sh"
     type                = ""
+}
+
+# AWS instance with placement group for mongos
+module "mongos_instance" {
+    source = "../ec2_instance"
+
+    # parameters for module
+    instance_type       = "${var.mongos_instance_type}"
+    count               = "${var.mongos_instance_count}"
+    subnet_id           = "${module.VPC.aws_subnet_id}"
+    key_file            = "${var.key_path}"
+    security_groups     = "${module.VPC.aws_security_group_id}"
+    availability_zone   = "${var.availability_zone}"
+    placement_group     = "${concat("dsi-perf-",var.availability_zone)}"
+    key_name            = "${var.key_name}"
+    owner               = "${var.owner}"
+    mongourl            = "${var.mongourl}"
+    expire-on           = "${var.expire_on}"
+    provisioner_file    = "generic-mongo-instance-setup.sh"
+    type                = "mongos"
+}
+
+# AWS instance with placement group for config server
+module "configserver_instance" {
+    source = "../ec2_instance"
+
+    # parameters for module
+    instance_type       = "${var.configserver_instance_type}"
+    count               = "${var.configserver_instance_count}"
+    subnet_id           = "${module.VPC.aws_subnet_id}"
+    key_file            = "${var.key_path}"
+    security_groups     = "${module.VPC.aws_security_group_id}"
+    availability_zone   = "${var.availability_zone}"
+    placement_group     = "${concat("dsi-perf-",var.availability_zone)}"
+    key_name            = "${var.key_name}"
+    owner               = "${var.owner}"
+    mongourl            = "${var.mongourl}"
+    expire-on           = "${var.expire_on}"
+    provisioner_file    = "generic-mongo-instance-setup.sh"
+    type                = "config"
 }
 
 # AWS instance for workload generator
@@ -65,7 +107,7 @@ module "workload_instance" {
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     mongourl            = "${var.mongourl}"
-    expire-on           = "${var.expired_on}"
+    expire-on           = "${var.expire_on}"
     provisioner_file    = "workload-client-setup.sh"
     type                = "master"
 }
