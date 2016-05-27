@@ -33,5 +33,13 @@ variable \"key_path\" {
 sed -i -- "s#%%MONGO_URL%%#${3}#g" cluster.tf
 sed -i -- "s#%%MONGO_URL%%#${3}#g" terraform.tfvars
 
+# This is where we can call to setup terraform environment, it will also remove the above two
+# lines for sed update for mongo URL.
+# Here user and system can replace any default values for the production cluster
+# eg.  python $BINDIR/make_terraform_env.py --config-file CONFIGURATION.YML --out-file cluster.json
+
+# this will update expire-on tag only
+python2.7 $BINDIR/make_terraform_env.py --out-file cluster.json
+
 # update terraform module
 ./terraform get --update

@@ -33,10 +33,12 @@ run_test bash test_get_override_tickets.sh
 run_test bash test_delete_overrides.sh
 
 # run test under ./bin
-popd 
-pwd 
+popd
+pwd
 cd ${BASEDIR}/bin
 run_test python -m doctest -v  filter_bad_instance.py
+pip install nose
+run_test nosetests -v
 
 if [ $failed -eq 0 ]; then
     echo "All tests passed"
