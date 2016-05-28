@@ -38,7 +38,7 @@ def main():
     args = parse_command_line()
     setup_logging(args.debug, args.log_file) #pylint: disable=no-member
 
-    tf_config = TerraformConfiguration(topology="test_cluster")
+    tf_config = TerraformConfiguration()
 
     # placeholder, read YML file here and update configuration
 
