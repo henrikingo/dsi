@@ -4,6 +4,12 @@ cp terraform.log post-check.log
 REDO_INSTANCE=false
 DIR=$(dirname "$0")
 
+VAR_FILE=""
+if [ -e "cluster.json" ]; then
+    VAR_FILE="-var-file=cluster.json"
+    echo "Using var_file ${VAR_FILE}"
+fi
+
 # This will check for all "bad" intance, mark them as tainted
 # and then re-create them, total will try 5 times. If there
 # is still bad instance at the end, will fail test with system error
@@ -22,7 +28,7 @@ do
     done
 
     if $REDO_INSTANCE; then
-        ./terraform apply | tee post-check.log
+        ./terraform apply $VAR_FILE | tee post-check.log
     fi
 done
 
