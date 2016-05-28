@@ -9,7 +9,7 @@ resource "aws_vpc" "main" {
     enable_dns_hostnames = true
 
     tags {
-        Name = "dsi-single-vpc"
+        Name = "dsi-${var.topology}-vpc"
         TestSetup = "dsi"
         TestTopology = "${var.topology}"
     }
@@ -25,7 +25,7 @@ resource "aws_subnet" "main" {
     availability_zone = "${var.availability_zone}"
 
     tags {
-        Name = "dsi-single-subnet"
+        Name = "dsi-${var.topology}-subnet"
         TestSetup = "dsi"
         TestTopology = "${var.topology}"
         Owner = "${var.owner}"
@@ -52,7 +52,7 @@ resource "aws_route_table_association" "a" {
 }
 
 resource "aws_security_group" "default" {
-    name = "dsi-single-default"
+    name = "dsi-${var.topology}-default"
     description = "DSI config for ${var.topology} cluster"
     vpc_id = "${aws_vpc.main.id}"
 

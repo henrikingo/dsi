@@ -83,7 +83,7 @@ module "configserver_instance" {
     key_file            = "${var.key_path}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
-    placement_group     = "${concat("dsi-perf-",var.availability_zone)}"
+    placement_group     = ""
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     mongourl            = "${var.mongourl}"
