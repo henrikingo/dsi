@@ -49,6 +49,7 @@ module "mongod_instance" {
     mongourl            = "${var.mongourl}"
     expire_on           = "${var.expire_on}"
     provisioner_file    = "mongod-instance-setup.sh"
+    topology            = "${var.topology}"
     type                = ""
 }
 
@@ -69,6 +70,7 @@ module "mongos_instance" {
     mongourl            = "${var.mongourl}"
     expire_on           = "${var.expire_on}"
     provisioner_file    = "generic-mongo-instance-setup.sh"
+    topology            = "${var.topology}"
     type                = "mongos"
 }
 
@@ -89,6 +91,7 @@ module "configserver_instance" {
     mongourl            = "${var.mongourl}"
     expire_on           = "${var.expire_on}"
     provisioner_file    = "generic-mongo-instance-setup.sh"
+    topology            = "${var.topology}"
     type                = "config"
 }
 
@@ -109,5 +112,6 @@ module "workload_instance" {
     mongourl            = "${var.mongourl}"
     expire_on           = "${var.expire_on}"
     provisioner_file    = "workload-client-setup.sh"
+    topology            = "${var.topology}"
     type                = "master"
 }
