@@ -17,11 +17,7 @@ mkdir -p reports/graphs
 for i in "${ALL_HOST[@]}"
 do
     # iostat logs are not available on Windows
-    iostat_log=""
-    if [ -e reports/*/*/iostat.log--ec2-user@${!i} ]
-    then
-       iostat_log=$(ls reports/*/*/iostat.log--ec2-user@${!i})
-    fi
+    iostat_log=$(compgen -G "reports/*/*/iostat.log--ec2-user@${!i}")
 
     # Include timestamp information from workloads if it exists
     timestamps=""
