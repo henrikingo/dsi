@@ -29,7 +29,8 @@ resource "aws_instance" "member" {
         key_file        = "${var.key_file}"
     }
 
-    security_groups     = ["${var.security_groups}"]
+    vpc_security_group_ids     = ["${var.security_groups}"]
+
     availability_zone   = "${var.availability_zone}"
     placement_group     = "${var.placement_group}"
     tenancy             = "dedicated"
