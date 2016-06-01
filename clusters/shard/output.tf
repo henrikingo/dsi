@@ -27,5 +27,5 @@ output "private_config_ip" {
 }
 
 output "public_config_ip" {
-  value = "${module.cluster.private_configserver_ip}"
+  value = "${module.cluster.public_configserver_ip}"
 }

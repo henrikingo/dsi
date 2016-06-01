@@ -26,10 +26,10 @@ echo "Create AWS cluster for $CLUSTER"
 if [ $CLUSTER == "shard" -o $CLUSTER == "longevity" ]
 then
     # Shard cluster
-    ./terraform apply $VAR_FILE -var="count=3"  | tee terraform.log
+    ./terraform apply $VAR_FILE -var="mongod_instance_count=3"  | tee terraform.log
 
     # workaround for failure to bring up all at the same time
-    ./terraform apply $VAR_FILE -var="count=9" | tee -a terraform.log
+    ./terraform apply $VAR_FILE -var="mongod_instance_count=9" | tee -a terraform.log
 else
     # Most cluster types
     ./terraform apply $VAR_FILE | tee terraform.log
