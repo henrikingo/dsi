@@ -83,6 +83,7 @@ class TestMongoNode(unittest.TestCase):
             'program_args': {
                 'port': 9999,
                 'storageEngine': 'wiredTiger',
+                'oplogSize': 1024,
                 'dbpath': '/tmp/db',
                 'logpath': '/tmp/mongod.log',
                 'setParameters': {
@@ -100,6 +101,7 @@ class TestMongoNode(unittest.TestCase):
             '--fork',
             '--port=9999',
             '--dbpath=/tmp/db',
+            '--oplogSize=1024',
             '--logpath=/tmp/mongod.log',
             '--storageEngine=wiredTiger',
             '--setParameter=enableTestCommands=0'
