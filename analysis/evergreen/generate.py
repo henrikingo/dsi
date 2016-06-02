@@ -14,9 +14,9 @@
 
 """Generates overrides from Evergreen data."""
 
+from __future__ import print_function
 import argparse
 import json
-from __future__ import print_function
 
 import perf_regression_check
 
