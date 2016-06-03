@@ -3,3 +3,4 @@ mock
 paramiko
 python-dateutil
 pyyaml
+requests
