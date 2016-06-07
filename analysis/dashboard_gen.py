@@ -1,3 +1,4 @@
+#!/bin/env python2.7
 '''
 Iterate through tests to evaluate their states to display in the performance
 dashboard against the specified baselines. Output is written to dashboard.json
@@ -11,18 +12,16 @@ from __future__ import print_function
 import sys
 import argparse
 import json
+import requests
 from util import read_histories, get_override
 
 
-# Each test is classified into one of the following states
-# pass
-# undesired
-# forced accept
-# unacceptable
+# tests are classified into one of the following states
+# When combining states from multiple checks, the highest valued state wins
 test_state = {
     'pass': 1,
-    'undesired': 2,
-    'forced accept': 3,
+    'forced accept': 2,
+    'undesired': 3,
     'unacceptable': 4,
     'no data': 5
 }
@@ -56,123 +55,137 @@ thresholds = {
 # a multiplier to define the unacceptable
 threshold_multiplier = 1.5
 
+
 '''
-Rules section -
-    All rules return a dictionary that contains information used by
+Checks section -
+    All checks return a dictionary that contains information used by
     the dashboard. The information include state, notes, tickets
-    and perf_ratio. A rule may return only a subset of the information
+    and perf_ratio. A check may return only a subset of the information
     that is relevant to the conditions it checks.
 '''
 
 def throughput_check(test, ref_tag, project_id, variant):
     ''' compute throughput ratios for all points in result series this_one
-     over reference. Classify a test into a to_return['state'] based on the ratios.
-     Use different thresholds for max throughput, and per-thread comparisons.
-    '''
-    to_return = {'state': 'pass', 'notes': '', 'tickets': [],
-                 'perf_ratio': 1}
+     over reference. Classify a test into a result['state'] based on the ratios.
+     Use different thresholds for max throughput, and per-thread comparisons. '''
+    check_result = {'state': 'pass', 'notes': '', 'tickets': [],
+                    'perf_ratio': 1}
 
     # if tag_history is undefined, skip this check completely
     if tag_history:
         reference = tag_history.series_at_tag(test['name'], ref_tag)
+        # Don't do a comparison if the reference data is missing
         if not reference:
-            to_return['notes'] += "No reference data for test in baseline\n"
-            return to_return
-        tempdict = get_override(test['name'], 'reference', override_info)
-        if tempdict:
-            reference = tempdict
-            to_return['tickets'].extend(reference['ticket'])
-    # Don't do a comparison if the reference data is missing
-    if not reference:
-        to_return['notes'] += "No reference data for test in baseline\n"
-        return to_return
+            check_result['notes'] += "No reference data for test in baseline\n"
+            return check_result
+        # throughput override and ticket handling
+        override = get_override(test['name'], 'reference', override_info)
+        if override:
+            check_result['tickets'].extend(override['ticket'])
+            if use_override(override['ticket']):
+                reference = override
 
     # get the thresholds to use
     try:
-        undesired = thresholds[project_id].get(variant, \
+        undesired_target = 1 - thresholds[project_id].get(variant, \
             thresholds['default'])['undesired']
-        thread_undesired = thresholds[project_id].get(variant, \
+        thread_undesired_target = 1 - thresholds[project_id].get(variant, \
             thresholds['default'])['thread_undesired']
-        unacceptable = thresholds[project_id].get(variant, \
+        unacceptable_target = 1 - thresholds[project_id].get(variant, \
             thresholds['default'])['unacceptable']
-        thread_unacceptable = thresholds[project_id].get(variant, \
+        thread_unacceptable_target = 1 - thresholds[project_id].get(variant, \
             thresholds['default'])['thread_unacceptable']
-    except Exception as e:
-        print("{0} is not a supported project".format(e))
+    except KeyError as key_error:
+        print("{0} is not a supported project".format(key_error))
         sys.exit(1)
-
     # some tests may have higher noise margin and need different thresholds
     # this info is kept as part of the override file
     # when threshold override is used, use that for undesired and
-    # use threshold_multiplier * undesired as unacceptable
-    tempdict = get_override(test['name'], 'threshold', override_info)
-    if tempdict:
-        to_return['tickets'].extend(tempdict['ticket'])
-        undesired = tempdict['threshold']
-        thread_undesired = tempdict['thread_threshold']
-        unacceptable = threshold_multiplier * undesired
-        thread_unacceptable = threshold_multiplier * thread_undesired
+    # use threshold_multiplier * undesired as unacceptable.
+    # again, whether we use this override depends on the state of the tickets
+    override = get_override(test['name'], 'threshold', override_info)
+    if override:
+        check_result['tickets'].extend(override['ticket'])
+        if use_override(override['ticket']):
+            undesired_target = 1 - override['threshold']
+            unacceptable_target = 1 - threshold_multiplier * override['threshold']
+            thread_undesired_target = 1 - override['thread_threshold']
+            thread_unacceptable_target = 1 - threshold_multiplier * override['thread_threshold']
 
     # Compute the ratios for max throughput achieved
     ratio_at_max = 1 if reference['max'] == 0 else test['max']/reference['max']
-    to_return['perf_ratio'] = worst_ratio = ratio_at_max
-    num_level = 0
+    check_result['perf_ratio'] = ratio_at_max
+    num_level = worst_ratio = 0
     for level in (r for r in test["results"] if isinstance(test["results"][r], dict)):
-        # Skip the max level beause we already checked that
+        # Skip the max level beause we already calculated that
         if level != 'max':
             num_level += 1
             thread_ratio = 1 if reference['results'][level]['ops_per_sec'] == 0 \
                 else test['results'][level]['ops_per_sec']\
                     /reference['results'][level]['ops_per_sec']
-            if thread_ratio <= worst_ratio:
+            if thread_ratio <= worst_ratio or worst_ratio == 0:
                 worst_ratio = thread_ratio
                 worst_thread = level
 
-    # if a test is unacceptable, don't log the undesired conditions
-
     # only use the tigher threshold at max if more than one thread level
-    # was reported
-    if num_level != 1:
-        if ratio_at_max < 1 - undesired:
-            if ratio_at_max < 1 - unacceptable:
-                to_return['notes'] += 'Max throughput unacceptable '\
-                    + '(<{0:1.2f} of baseline)\n'.format(1-unacceptable)
-                if test_state[to_return['state']] < test_state['unacceptable']:
-                    to_return['state'] = 'unacceptable'
-            else:
-                to_return['notes'] += 'Max throughput undesired '\
-                    + '(<{0:1.2f} of baseline)\n'.format(1-undesired)
-                if test_state[to_return['state']] < test_state['undesired']:
-                    to_return['state'] = 'undesired'
-    if worst_ratio < 1 - thread_undesired:
-        if worst_ratio < 1 - thread_unacceptable:
-            to_return['notes'] += 'Throughput at {0} '.format(worst_thread)\
-                + 'unacceptable (<{0:1.2f}  of baseline)\n'.format(1-thread_unacceptable)
-            if test_state[to_return['state']] < test_state['unacceptable']:
-                to_return['state'] = 'unacceptable'
-        else:
-            to_return['notes'] += 'Throughput at {0} '.format(worst_thread)\
-                + 'undesired (<{0:1.2f} of baseline)\n'.format(1-thread_undesired)
-            if test_state[to_return['state']] < test_state['undesired']:
-                to_return['state'] = 'undesired'
+    # was reported. log only the most severe condition.
+    if num_level > 1:
+        if ratio_at_max < unacceptable_target:
+            check_result['notes'] += 'Max throughput unacceptable '\
+                + '(<{0:1.2f} of baseline)\n'.format(unacceptable_target)
+            check_result['state'] = 'unacceptable'
+        elif ratio_at_max < undesired_target:
+            check_result['notes'] += 'Max throughput undesired '\
+                + '(<{0:1.2f} of baseline)\n'.format(undesired_target)
+            check_result['state'] = 'undesired'
+        if worst_ratio < thread_unacceptable_target:
+            check_result['notes'] += 'Throughput at {0} '.format(worst_thread)\
+                + 'unacceptable (<{0:1.2f} of baseline)\n'.format(thread_unacceptable_target)
+            if test_state[check_result['state']] < test_state['unacceptable']:
+                check_result['state'] = 'unacceptable'
+        elif worst_ratio < thread_undesired_target:
+            check_result['notes'] += 'Throughput at {0} '.format(worst_thread)\
+                + 'undesired (<{0:1.2f} of baseline)\n'.format(thread_undesired_target)
+            if test_state[check_result['state']] < test_state['undesired']:
+                check_result['state'] = 'undesired'
 
-    return to_return
+    return check_result
 
 def repl_lag_check(test, threshold):
-    # Iterate through all thread levels and flag a test if its
-    # max replication lag is higher than the threshold
-    # If there is no max lag information, consider the test 'pass'
-    to_return = {'state': 'pass', 'notes': '', 'tickets': []}
+    ''' Iterate through all thread levels and flag a test if its
+    max replication lag is higher than the threshold
+    If there is no max lag information, consider the test 'pass '''
+    check_result = {'state': 'pass', 'notes': '', 'tickets': []}
     for level in test['results']:
         max_lag = test['results'][level].get('replica_max_lag', 'NA')
         if max_lag != "NA":
             if float(max_lag) > threshold:
-                to_return['state'] = 'unacceptable'
-                to_return['notes'] += 'replica_max_lag ({0}) '.format(max_lag)\
+                check_result['state'] = 'unacceptable'
+                check_result['notes'] += 'replica_max_lag ({0}) '.format(max_lag)\
                     + '> threshold({0}) seconds at {1} thread\n'.format(threshold, level)
-    return to_return
+    return check_result
+
+
+''' Other utility functions '''
+
+def use_override(ticket_list):
+    ''' Determine if we want to use override based on the states of the assoicated tickets.
+    Use overrride if all tickets are in a terminal state (closed/resolved/won't fix). '''
+    base_url = 'https://jira.mongodb.org/rest/api/latest/issue/'
+    for ticket in ticket_list:
+        url = base_url + ticket
+        #req = requests.get(url, auth=('user', 'pass'))
+        req = requests.get(url)
+        req_json = req.json()
+        if 'fields' in req_json:
+            if req_json['fields']['status']['name'] not in ('closed', 'resolved', 'wont fix'):
+                return False
+    return True
 
 def update_state(current, new_data):
+    ''' Update the current test info with new_data. Update the state to the
+    more severe condition. Merge notes and tickets from new_data into current
+    and add perf_ratio '''
     if test_state[new_data['state']] > test_state[current['state']]:
         current['state'] = new_data['state']
     current['notes'] += new_data.get('notes', '')
@@ -180,7 +193,9 @@ def update_state(current, new_data):
     if 'perf_ratio' in new_data:
         current['perf_ratio'] = new_data['perf_ratio']
 
+
 def main(args):
+    ''' Loop through and classify tests in a task into states used for dashboard '''
     parser = argparse.ArgumentParser()
     parser.add_argument("--project_id", dest="project_id",
                         help="project_id for the test in Evergreen")
@@ -231,8 +246,8 @@ def main(args):
         report_for_baseline['data'] = results
         report['baselines'].append(report_for_baseline)
 
-    reportFile = open('dashboard.json', 'w')
-    json.dump(report, reportFile, indent=4, separators=(',', ': '))
+    report_file = open('dashboard.json', 'w')
+    json.dump(report, report_file, indent=4, separators=(',', ': '))
 
 
 if __name__ == '__main__':

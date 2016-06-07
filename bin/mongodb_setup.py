@@ -34,6 +34,7 @@ DEFAULT_MONGOD_OPTS = {
     'storageEngine': 'wiredTiger',
     'dbpath': DB_DIR,
     'logpath': MONGOD_LOG,
+    'oplogSize': 150*1024,  # 150GB
     'port': 27017,
     'fork': '',
     'setParameters': {
