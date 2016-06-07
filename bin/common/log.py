@@ -7,10 +7,7 @@ import logging
 def setup_logging(verbose, filename=None):
     """Configure logging verbosity and destination."""
     loglevel = logging.DEBUG if verbose else logging.INFO
-    if filename:
-        handler = logging.FileHandler(filename)
-    else:
-        handler = logging.StreamHandler()
+    handler = logging.FileHandler(filename) if filename else logging.StreamHandler()
     handler.setLevel(loglevel)
     handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
     root_logger = logging.getLogger()
