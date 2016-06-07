@@ -60,7 +60,8 @@ topology:
     configsvr_type: csrs                      # or "sccc", which is currently not supported
     configsvr:
       - public_ip: ${infrastructure_provisioning.out.configsvr.0.public_ip}
-        private_ip: ${infrastructure_provisioning.out.configsv.0.private_ip}
+        private_ip: ${infrastructure_provisioning.out.configsvr.0.private_ip}
+        configsvr_config: ... # See the last mongod's below for an example of node specific config
       - public_ip: ${infrastructure_provisioning.out.configsvr.1.public_ip}
         private_ip: ${infrastructure_provisioning.out.configsvr.1.private_ip}
       - public_ip: ${infrastructure_provisioning.out.configsvr.2.public_ip}
@@ -68,6 +69,7 @@ topology:
     mongos:
       - public_ip: ${infrastructure_provisioning.out.mongos.0.public_ip}
         private_ip: ${infrastructure_provisioning.out.mongos.0.private_ip}
+        mongos_config: ... # See the last mongod's below for an example of node specific config
       - public_ip: ${infrastructure_provisioning.out.mongos.1.public_ip}
         private_ip: ${infrastructure_provisioning.out.mongos.1.private_ip}
       - public_ip: ${infrastructure_provisioning.out.mongos.2.public_ip}
@@ -131,10 +133,10 @@ topology:
 # from the other modules. In particular, see the test_control module doing that in run.0.workload_config.mongo
 meta :
     # The list of hosts that can be used in a mongodb connection string
-    hosts         : > 
-                      ${mongodb_setup.topology.0.mongos.0.private_ip}:27017, #no line break here
-                      ${mongodb_setup.topology.0.mongos.1.private_ip}:27017,
-                      ${mongodb_setup.topology.0.mongos.2.private_ip}:27017
+    hosts         : >
+                    ${mongodb_setup.topology.0.mongos.0.private_ip}:27017, #no line break here
+                    ${mongodb_setup.topology.0.mongos.1.private_ip}:27017,
+                    ${mongodb_setup.topology.0.mongos.2.private_ip}:27017
     username      : myusername
     password      : mypassword
     is_sharded    : true

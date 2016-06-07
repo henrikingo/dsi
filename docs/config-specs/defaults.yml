@@ -1,0 +1,80 @@
+# Defaults for all config values used by Distributed Performance 2.0 modules.
+# Note: This file is read by dsi/bin/commmon/config.py. Don't mess with it.
+
+infrastructure_provisioning:
+    tfvars :
+        mongod_instance_count      : 1
+        mongos_instance_count      : 0
+        configsvr_instance_count   : 0
+        workload_instance_count    : 1
+
+        mongod_instance_type       : c3.8xlarge
+        configsvr_instance_type    : m3.4xlarge
+        mongos_instance_type       : c3.8xlarge
+        workload_instance_type     : c3.8xlarge
+
+        region                     : us-west-2
+        availability_zone          : us-west-2a
+        ssh_user                   : server-perf-team         # TBD
+        ssh_key                    : server-perf-team-ssh-key # TBD
+        ssh_key_file               : ../keys/aws.pem          # Likely to be changed by PERF-526
+        tags :                                              
+            Name           : server-perf-myvariant
+            owner          : perf@10gen.com                 # valid email address.
+            expire-on-delta: 1                              # Set expire-on tag used by reaper script. Note: must be lower case.
+                                                            # delta is days added to current date.
+            Variant        : Linux 3-shard cluster
+            Project        : sys-perf
+
+system_setup:
+    # This section is currently blank. We might move something here once this module takes more shape.
+
+workload_preparation:
+    # This section intentionally left blank.
+    
+mongodb_setup:
+    bin_dir                : mongodb
+    journal_dir            : /media/ephemeral1/journal
+
+    mongod_config_file     : # Note these defaults can be overridden by user, but not unset.
+        storage:
+            engine: wiredTiger
+        dbpath: data/dbs
+        logpath: data/logs/mongod.log
+        port: 27017
+        fork: true
+        setParameters:
+            enableTestCommands: 1
+    mongos_config_file     :
+        logpath: data/logs/mongos.log
+        port: 27017
+        fork: true
+        setParameters:
+            enableTestCommands: 1
+    configsvr_config_file       :
+        configsvr: true
+        storage:
+            engine: wiredTiger
+        dbpath: data/dbs,
+        logpath: data/logs/mongod.log
+        port: 27017
+        fork: true
+        setParameters:
+            enableTestCommands: 1
+
+    topology:
+      - cluster_type: standalone
+        public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
+        private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
+
+    meta :
+        # The list of hosts that can be used in a mongodb connection string
+        hosts         : ${mongodb_setup.topology.0.private_ip}:27017
+        is_sharded    : false
+        is_replset    : false
+
+    test_control:
+        # This section intentionally left blank
+
+    analysis:
+        # This section intentionally left blank

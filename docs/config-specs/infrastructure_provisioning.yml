@@ -1,34 +1,36 @@
-tfvars :               # Contents of this is transformed into variables.tfvars file (terraform syntax, json)
-    mongod_instance_count      : 9,
-    mongos_instance_count      : 3,
-    configsvr_instance_count   : 3,
-    workload_instance_count    : 1,
+tfvars :               # Contents of this is transformed into input JSON to override terraform default values
+                       # Note that all tfvars values have defaults, and are therefore optional
+    mongod_instance_count      : 9                      # Default: 1
+    mongos_instance_count      : 3                      # Default: 0
+    configsvr_instance_count   : 3                      # Default: 0
+    workload_instance_count    : 1                      # Default: 1
 
-    mongod_instance_type"      : c3.8xlarge,
-    configsvr_instance_type"   : m3.4xlarge
-    mongos_instance_type"      : c3.8xlarge,
-    workload_instance_type"    : c3.8xlarge,
+    mongod_instance_type       : c3.8xlarge             # Default: c3.8xlarge
+    configsvr_instance_type    : m3.4xlarge             # Default: m3.xlarge
+    mongos_instance_type       : c3.8xlarge             # Default: c3.8xlarge
+    workload_instance_type     : c3.8xlarge             # Default: c3.8xlarge
 
-    region                     : us-west-2
-    availability_zone          : us-west-2a
+    region                     : us-west-2              # Default: us-west-2
+    availability_zone          : us-west-2a             # Default: us-west-2a
     aws_access_key             : $RUNTIME_VALUE
     aws_secret_key             : $RUNTIME_VALUE
-    ssh_user                   : server-perf-team
-    ssh_key                    : server-perf-team-ssh-key
-    ssh_key_file               : keys/aws.pem
-    tags :
+    ssh_user                   : server-perf-team       # Default: TBD
+    ssh_key                    : server-perf-team-ssh-key # TBD
+    ssh_key_file               : ../keys/aws.pem        # Default: ../keys/aws.pem  (By default these are outside work dir.)
+    tags :                                              # List of supported tags (at this point, you cannot add your own)
         Name           : server-perf-myvariant
-        Owner          : perf                            # When appending @10gen.com, is a valid email address.
-        expire-on-delta: 1                               # Set expire-on tag used by reaper script. Note: must be lower case.
-                                                         # delta is days added to current date.
+        owner          : perf@10gen.com                 # valid email address.
+        expire-on-delta: 1                              # Set expire-on tag used by reaper script. Note: must be lower case.
+                                                        # delta is days added to current date. Default: 1
         Variant        : Linux 3-shard cluster
         Project        : sys-perf
         # etc... Note that implementation should also add runtime info, such as build_id.
 
-custom_terraform : |                                     # Longer term, I would hope to see a mechanism where user can add
-    resource "aws_ebs_volume" "my_ebs_volume" {          # custom terraform code. Probably depends on how using a separate
-                                                         #  working dir is implemented.
+custom_terraform : |                                    # Longer term, I would hope to see a mechanism where user can add
+    resource "aws_ebs_volume" "my_ebs_volume" {         # custom terraform code. Probably depends on how using a separate
+                                                        #  working dir is implemented.
         # This can contain arbitrary terraform declarations, that are appended
         # to the terraform config that's already there for the variant that is the base for this config
     }
+
 

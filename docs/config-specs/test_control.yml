@@ -3,8 +3,6 @@
 run :
   - id  : benchRun-mmapv1            # Note: standardize on engine explicitly being part of id, and using correct engine names, not "mmap"
     type    : shell                  # or "ycsb"
-    githash : $RUNTIME_VALUE         # Provided by evergreen (read-only, not settable by user) Note: same as ${revision}
-    build_id: $RUNTIME_VALUE         # Evergreen build_id
 
     cmd    : $DSI_PATH/workloads/run_workloads.py -c workloads.yml
     config_filename : workloads.yml # The name used in previous row

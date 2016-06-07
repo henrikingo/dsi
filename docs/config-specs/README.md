@@ -20,27 +20,28 @@ A design goal is that these files contain the entire end-to-end configuration fo
 * ${module_name.key_name} are variables that can reference the value of another key in the 
   configuration. The library that reads the config files will automatically substitute the
   variables for their values.
+* Paths (example: ../keys/aws.pem) are relative to a work directory where the user has cd into 
+  before executing the DP2.0 modules. These configuration files also reside in that work directory.
 
 
 Overview of files
 -----------------
 
-There's a set of files **for each module**:
-
 * `module_name.yml`: The input configuration file for `module_name`. Note that 
   other modules can use config values from this file if needed, but the main 
   context for these config options is the module called `module_name`.
 * `module_name.out.yml`: Output from a module, can be used as input by other 
-   modules. For example: infrastrucutre_provisioning.out.json will contain
-  an ordered list of private and public ip addresses assigned to the requested
-  resources.
-* `module_name.override.yml`: Optional file that can specify keys that override 
-  values from the previous files. (Use case is if you want to run a test using 
+   modules. In practice there's only 1 of these: 
+   infrastrucutre_provisioning.out.json will contain an ordered list of private 
+   and public ip addresses assigned to the requested resources.
+* `overrides.yml`: Optional file that can specify keys that override 
+  values from the previous files. Use case is if you want to run a test using 
   the standard set of files stored in this repo, but override one config option.
   For example: Give me a regular 3-shard cluster, but one shard should use
-  inMemory engine.)
+  inMemory engine.
 
-A common library will know how to read each file in the correct order and how to override values when needed. Modules will simply get/set keys in a dictionary.
+A common library will know how to read each file in the correct order and how to override values 
+when needed. Modules will simply get/set keys in a dictionary.
 
 Use cases and requirements
 --------------------------
