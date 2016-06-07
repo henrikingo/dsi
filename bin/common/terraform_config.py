@@ -1,9 +1,9 @@
-#pylint: disable=attribute-defined-outside-init,too-many-instance-attributes,too-many-arguments
+# pylint: disable=attribute-defined-outside-init,too-many-instance-attributes,too-many-arguments
 
-'''
+"""
 This file take input and generate necessary configuration files for terraform configuration.
 This function should be called from terraform cluster configuration folder.
-'''
+"""
 
 from __future__ import print_function
 import json
@@ -12,21 +12,24 @@ import logging
 
 LOG = logging.getLogger(__name__)
 
+
 def assert_value(condition, message):
-    '''raise ValueError if condition is false'''
+    """raise ValueError if condition is false"""
     if not condition:
         LOG.error(message)
         raise ValueError(message)
 
+
 def generate_expire_on_tag(now=None, day_delta=1):
-    '''
+    """
     this will generate expire-on tag based on current time or input time,
     expired-on tag will be (now + day_delta) day, default to 1 day
-    '''
+    """
     if now is None:
         now = datetime.datetime.now()
     expire_on = now + datetime.timedelta(days=day_delta)
     return "{}-{}-{}".format(expire_on.year, expire_on.month, expire_on.day)
+
 
 class TerraformConfiguration(object):
     """
@@ -74,13 +77,13 @@ class TerraformConfiguration(object):
         self.workload_instance_type = instance_type
 
     def define_mongoodb_url(self, url):
-        '''
+        """
         define url to download mongodb.tar.gz, may move this out of here in the future
-        '''
+        """
         self.mongourl = url
 
     def to_json(self, compact=False, file_name=None):
-        '''to JSON configuration string'''
+        """to JSON configuration string"""
         json_str = ""
         if compact:
             json_str = json.dumps(self, default=lambda o: o.__dict__,
