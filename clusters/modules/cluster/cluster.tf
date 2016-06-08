@@ -14,6 +14,12 @@ variable mongos_instance_count          { default = 0 }
 variable workload_instance_count        { default = 0 }
 variable configserver_instance_count    { default = 0 }
 
+# define whether to use placement_group
+variable mongod_instance_placement_group        { default="yes" }
+variable mongos_instance_placement_group        { default="yes" }
+variable workload_instance_placement_group      { default="yes" }
+variable configserver_instance_placement_group  { default="no" }
+
 # AWS details
 variable region                         {}
 variable availability_zone              {}
@@ -43,7 +49,7 @@ module "mongod_instance" {
     key_file            = "${var.key_path}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
-    placement_group     = "${concat("dsi-perf-",var.availability_zone)}"
+    placement_group     = "${var.mongod_instance_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     mongourl            = "${var.mongourl}"
@@ -64,7 +70,7 @@ module "mongos_instance" {
     key_file            = "${var.key_path}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
-    placement_group     = "${concat("dsi-perf-",var.availability_zone)}"
+    placement_group     = "${var.mongos_instance_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     mongourl            = "${var.mongourl}"
@@ -85,7 +91,7 @@ module "configserver_instance" {
     key_file            = "${var.key_path}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
-    placement_group     = ""
+    placement_group     = "${var.configserver_instance_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     mongourl            = "${var.mongourl}"
@@ -106,7 +112,7 @@ module "workload_instance" {
     key_file            = "${var.key_path}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
-    placement_group     = "${concat("dsi-perf-",var.availability_zone)}"
+    placement_group     = "${var.workload_instance_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     mongourl            = "${var.mongourl}"

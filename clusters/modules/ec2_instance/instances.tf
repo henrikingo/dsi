@@ -32,7 +32,7 @@ resource "aws_instance" "member" {
     vpc_security_group_ids     = ["${var.security_groups}"]
 
     availability_zone   = "${var.availability_zone}"
-    placement_group     = "${var.placement_group}"
+    placement_group     = "${lookup(var.placement_groups, concat(var.availability_zone, ".", var.placement_group))}"
     tenancy             = "dedicated"
 
     key_name = "${var.key_name}"

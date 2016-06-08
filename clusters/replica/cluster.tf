@@ -4,8 +4,10 @@ variable workload_instance_count    { default = 1 }
 variable mongourl   {}
 variable owner      {}
 
-variable workload_instance_type     {}
-variable mongod_instance_type       {}
+variable workload_instance_type                 {}
+variable mongod_instance_type                   {}
+variable workload_instance_placement_group      { default = "yes" }
+variable mongod_instance_placement_group        { default = "yes" }
 
 variable topology                   {}
 variable availability_zone          {}
@@ -23,6 +25,9 @@ module "cluster" {
     mongod_instance_count   = "${var.mongod_instance_count}"
     workload_instance_count = "${var.workload_instance_count}"
     workload_instance_type  = "${var.workload_instance_type}"
+
+    mongod_instance_placement_group     = "${var.mongod_instance_placement_group}"
+    workload_instance_placement_group   = "${var.workload_instance_placement_group}"
 
     topology            = "${var.topology}"
 

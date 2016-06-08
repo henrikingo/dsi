@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
-#pylint: disable=relative-import
+# pylint: disable=relative-import
 
-'''Read configureation and generate terraform configuration JSON file'''
+"""Read configureation and generate terraform configuration JSON file"""
 
 from __future__ import print_function
 import logging
@@ -11,6 +11,7 @@ from common.terraform_config import TerraformConfiguration
 from common.log import setup_logging
 
 LOG = logging.getLogger(__name__)
+
 
 def parse_command_line():
     """Parse command line arguments."""
@@ -33,17 +34,18 @@ def parse_command_line():
         help='name of the output JSON file')
     return parser.parse_args()
 
+
 def main():
-    '''main function'''
+    """Main function."""
     args = parse_command_line()
-    setup_logging(args.debug, args.log_file) #pylint: disable=no-member
+    setup_logging(args.debug, args.log_file)  # pylint: disable=no-member
 
     tf_config = TerraformConfiguration()
 
     # placeholder, read YML file here and update configuration
 
     # write to file
-    tf_config.to_json(file_name=args.out_file) #pylint: disable=no-member
+    tf_config.to_json(file_name=args.out_file)  # pylint: disable=no-member
     return True
 
 if __name__ == '__main__':
