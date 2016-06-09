@@ -1,4 +1,4 @@
-variable mongod_instance_count      { default = 1 }
+variable mongod_instance_count      { default = 3 }
 variable workload_instance_count    { default = 1 }
 
 variable mongourl   {}

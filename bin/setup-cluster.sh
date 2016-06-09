@@ -38,7 +38,9 @@ fi
 # just to print out disk i/o information
 cat terraform.log | grep "  clat ("
 
-if [ $CLUSTER == "longevity" ] || [ $CLUSTER == "single-correctness" ]
+if [ $CLUSTER == "longevity" ] || \
+   [ $CLUSTER == "single-correctness" ] || \
+   [ $CLUSTER == "replica-correctness" ]
 then
     echo "Skipping pre-qualify-cluster.sh for $CLUSTER"
 else

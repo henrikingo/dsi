@@ -3,6 +3,7 @@ security*
 *tfstate*
 terraform-prov*
 ips.sh
+ips.py
 perf.json
 .DS_Store
 *.rpm
@@ -10,7 +11,10 @@ iostat.log*
 mongod-ss.log*
 pidstat.log*
 test_screen_capture.log*
+
+# terraform module folder
 .terraform
+
 *.tar.gz
 *.html
 clusters/test_*

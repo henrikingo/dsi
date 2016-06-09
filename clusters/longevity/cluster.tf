@@ -1,247 +1,58 @@
+variable mongod_instance_count          { default = 9 }
+variable workload_instance_count        { default = 1 }
+variable mongos_instance_count          { default = 1 }
+variable configserver_instance_count    { default = 3 }
 
-resource "aws_vpc" "main" {
-    cidr_block = "10.2.0.0/16"
-    enable_dns_hostnames = true
+variable mongourl   {}
+variable owner      {}
 
-    tags {
-        Name = "${var.user}-longevity-vpc"
-        TestSetup = "longevity"
-        TestTopology = "shard"
-    }
-}
+variable workload_instance_type                 {}
+variable mongod_instance_type                   {}
+variable mongos_instance_type                   {}
+variable configserver_instance_type             {}
 
-resource "aws_internet_gateway" "gw" {
-    vpc_id = "${aws_vpc.main.id}"
-}
+variable workload_instance_placement_group      { default = "yes" }
+variable mongod_instance_placement_group        { default = "yes" }
+variable mongos_instance_placement_group        { default = "yes" }
+variable configserver_instance_placement_group  { default = "no"}
 
-resource "aws_subnet" "main" {
-    vpc_id = "${aws_vpc.main.id}"
-    cidr_block = "10.2.5.0/24"
-    availability_zone = "us-west-2b"
+variable topology                   {}
+variable availability_zone          {}
+variable region                     {}
+variable expire_on                  { default = "2016-12-31" }
 
-    tags {
-        Name = "${var.user}-longevity-subnet"
-        TestSetup = "longevity"
-        TestTopology = "shard"
-    }
-}
+module "cluster" {
+    source = "../modules/cluster"
 
-resource "aws_route_table" "r" {
-    vpc_id = "${aws_vpc.main.id}"
-    route {
-        cidr_block = "0.0.0.0/0"
-        gateway_id = "${aws_internet_gateway.gw.id}"
-    }
+    # variables
+    mongourl = "${var.mongourl}"
 
-    tags {
-        Name = "${var.user}-longevity-routing"
-        TestSetup = "longevity"
-        TestTopology = "shard"
-    }
-}
+    # cluster details
+    mongod_instance_type    = "${var.mongod_instance_type}"
+    mongod_instance_count   = "${var.mongod_instance_count}"
+    workload_instance_count = "${var.workload_instance_count}"
+    workload_instance_type  = "${var.workload_instance_type}"
 
-resource "aws_route_table_association" "a" {
-    subnet_id = "${aws_subnet.main.id}"
-    route_table_id = "${aws_route_table.r.id}"
-}
+    # shard special instances
+    mongos_instance_type        = "${var.mongos_instance_type}"
+    mongos_instance_count       = "${var.mongos_instance_count}"
+    configserver_instance_type  = "${var.configserver_instance_type}"
+    configserver_instance_count = "${var.configserver_instance_count}"
 
-resource "aws_security_group" "longevity-default" {
-    name = "${var.user}-longevity-default"
-    description = "${var.user} config for longevity"
-    vpc_id = "${aws_vpc.main.id}"
+    mongod_instance_placement_group         = "${var.mongod_instance_placement_group}"
+    mongos_instance_placement_group         = "${var.mongos_instance_placement_group}"
+    configserver_instance_placement_group   = "${var.configserver_instance_placement_group}"
+    workload_instance_placement_group       = "${var.workload_instance_placement_group}"
 
-    # SSH access from anywhere
-    ingress {
-        from_port = 22
-        to_port = 22
-        protocol = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
+    topology            = "${var.topology}"
 
-    # mongodb access from VPC
-    ingress {
-        from_port = 27017
-        to_port = 27019
-        protocol = "tcp"
-        cidr_blocks = ["10.2.0.0/16"]
-    }
+    # AWS details
+    availability_zone   = "${var.availability_zone}"
+    region              = "${var.region}"
+    expire_on           = "${var.expire_on}"
 
-    # allow all egress
-    egress {
-        from_port = 0
-        to_port = 0
-        protocol = "-1"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-}
+    owner               = "${var.owner}"
 
-
-resource "aws_instance" "shardmember" {
-    # Amazon Linux AMI 2015.03 (HVM), SSD Volume Type
-    ami = "ami-e7527ed7"
-
-    instance_type = "${var.secondary_type}"
-
-    count = "${var.count}"
-
-    subnet_id = "${aws_subnet.main.id}"
-    private_ip = "${lookup(var.instance_ips, count.index)}"
-
-    connection {
-        # The default username for our AMI
-        user = "ec2-user"
-
-        # The path to your keyfile
-        key_file = "${var.key_path}"
-    }
-
-    security_groups = ["${aws_security_group.longevity-default.id}"]
-    availability_zone = "us-west-2b"
-    # placement_group = "${var.user}-longevity-perf"
-    # tenancy = "dedicated"
-
-    key_name = "${var.key_name}"
-    tags = {
-        Name = "${var.user}-longevity-member-${count.index}"
-        TestSetup = "longevity"
-        TestTopology = "shard"
-        owner = "${var.owner}"
-        expire-on = "2016-07-15"
-    }
-
-    ephemeral_block_device {
-        device_name = "/dev/sdc"
-        virtual_name = "ephemeral0"
-        # delete_on_termination = true
-    }
-    ephemeral_block_device {
-        device_name = "/dev/sdd"
-        virtual_name = "ephemeral1"
-        # delete_on_termination = true
-    }
-
-    associate_public_ip_address = 1
-
-    # We run a remote provisioner on the instance after creating it.
-    provisioner "file" {
-        source = "../remote-scripts/mongod-instance-setup.sh"
-        destination = "/tmp/provision.sh"
-    }
-
-    provisioner "remote-exec" {
-        connection {
-            timeoout = "10m"
-        }
-        inline = [
-            "chmod +x /tmp/provision.sh",
-            "/tmp/provision.sh ${var.mongourl}"
-        ]
-    }
-}
-
-resource "aws_instance" "master" {
-    # Amazon Linux AMI 2015.03 (HVM), SSD Volume Type
-    ami = "ami-e7527ed7"
-
-    instance_type = "${var.primary_type}"
-
-    subnet_id = "${aws_subnet.main.id}"
-    private_ip = "${lookup(var.instance_ips, concat("master", count.index))}"
-    count = "${var.mastercount}"
-
-    connection {
-        # The default username for our AMI
-        user = "ec2-user"
-
-        # The path to your keyfile
-        key_file = "${var.key_path}"
-    }
-
-    security_groups = ["${aws_security_group.longevity-default.id}"]
-    availability_zone = "us-west-2b"
-
-    key_name = "${var.key_name}"
-    tags = {
-        Name = "${var.user}-longevity-master-${count.index}"
-        TestSetup = "longevity"
-        TestTopology = "shard"
-        owner = "${var.owner}"
-        expire-on = "2016-07-15"
-    }
-
-    associate_public_ip_address = 1
-
-    # We run a remote provisioner on the instance after creating it.
-    provisioner "file" {
-        source = "../remote-scripts/workload-client-setup.sh"
-        destination = "/tmp/provision.sh"
-    }
-
-    provisioner "remote-exec" {
-        connection {
-            timeoout = "10m"
-        }
-        inline = [
-            "chmod +x /tmp/provision.sh",
-            "/tmp/provision.sh ${var.mongourl}"
-        ]
-    }
-}
-
-resource "aws_instance" "configserver" {
-    # Amazon Linux AMI 2015.03 (HVM), SSD Volume Type
-    ami = "ami-e7527ed7"
-
-    instance_type = "${var.configserver_type}"
-
-    # config server fixed at 3
-    count = "${var.configcount}"
-
-    subnet_id = "${aws_subnet.main.id}"
-    private_ip = "${lookup(var.instance_ips, concat("config", count.index))}"
-
-    connection {
-        # The default username for our AMI
-        user = "ec2-user"
-
-        # The path to your keyfile
-        key_file = "${var.key_path}"
-    }
-
-    security_groups = ["${aws_security_group.longevity-default.id}"]
-    availability_zone = "us-west-2b"
-
-    key_name = "${var.key_name}"
-    tags = {
-        Name = "${var.user}-longevity-config-${count.index}"
-        TestSetup = "longevity"
-        TestTopology = "shard"
-        owner = "${var.owner}"
-        expire-on = "2016-07-15"
-    }
-
-    associate_public_ip_address = 1
-
-    # We run a remote provisioner on the instance after creating it.
-    provisioner "remote-exec" {
-        connection {
-            timeoout = "10m"
-        }
-        inline = [
-            "sudo yum -y install tmux git wget sysstat dstat perf",
-            "mkdir mongodb; curl --retry 10 ${var.mongourl} | tar zxv -C mongodb; cd mongodb; mv */bin .; cd ~ ",
-            "mkdir -p ~/bin",
-            "ln -s ~/mongodb/bin/mongo ~/bin/mongo",
-            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled",
-            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag",
-            "echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCmHUZLsuGvNUlCiaZ83jS9f49S0plAtCH19Z2iATOYPH1XE2T8ULcHdFX2GkYiaEqI+fCf1J1opif45sW/5yeDtIp4BfRAdOu2tOvkKvzlnGZndnLzFKuFfBPcysKyrGxkqBvdupOdUROiSIMwPcFgEzyLHk3pQ8lzURiJNtplQ82g3aDi4wneLDK+zuIVCl+QdP/jCc0kpYyrsWKSbxi0YrdpG3E25Q4Rn9uom58c66/3h6MVlk22w7/lMYXWc5fXmyMLwyv4KndH2u3lV45UAb6cuJ6vn6wowiD9N9J1GS57m8jAKaQC1ZVgcZBbDXMR8fbGdc9AH044JVtXe3lT shardtest@test.mongo' | tee -a ~/.ssh/authorized_keys",
-            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled",
-            "echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag",
-            "echo f | sudo tee /sys/class/net/eth0/queues/rx-0/rps_cpus",
-            "echo f0 | sudo tee /sys/class/net/eth0/queues/tx-0/xps_cpus",
-            "rm *.tgz",
-            "rm *.rpm",
-            "ls"
-        ]
-    }
+    key_path            = "${var.key_path}"
+    key_name            = "${var.key_name}"
 }
