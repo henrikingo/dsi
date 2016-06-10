@@ -1,5 +1,7 @@
 #!/bin/bash
 
+BINDIR=$(dirname $0)
+
 ./terraform output public_member_ip  | awk '{for (i=1;i<=NF;i++) print("export+p",i,"=",$i)} {printf("export+ALL_HOST=(")}  {for (i=1;i<=NF;i++) printf("\"p%d\"+", i)} {print(")")}' | sed "s/ //g" | sed "s/+/ /g" | tee ips.sh
 ./terraform output private_member_ip  | awk '{for (i=1;i<=NF;i++) print("export+i",i,"=",$i)} {printf("export+ALL_HOST_PRIVATE=(")}  {for (i=1;i<=NF;i++) printf("i%d+", i)} {print(")")}' | sed "s/ //g" | sed "s/+/ /g" | tee -a ips.sh
 ./terraform output public_ip_mc  | awk '{for (i=1;i<=NF;i++) print("export+mc","=",$i)}' | sed "s/ //g" | sed "s/+/ /g" | tee -a ips.sh
@@ -30,3 +32,7 @@ then
 	./terraform output public_config_ip  | awk '{printf("CONFIG_PUBLIC_IPS = [")} {for (i=1;i<=NF;i++) printf("\"%s\",", $i)} {print("]")}' | tee -a ips.py
     ./terraform output private_config_ip  | awk '{printf("CONFIG_PRIVATE_IPS = [")} {for (i=1;i<=NF;i++) printf("\"%s\",", $i)} {print("]")}' | tee -a ips.py
 fi
+
+# generate infrastructure_provisioning.out.yml
+./terraform output | ${BINDIR}/generate_infrastructure.py
+cat infrastructure_provisioning.out.yml

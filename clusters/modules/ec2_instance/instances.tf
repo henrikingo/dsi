@@ -58,7 +58,7 @@ resource "aws_instance" "member" {
     # We run a remote provisioner on the instance after creating it.
     provisioner "file" {
         connection {
-            timeoout = "10m"
+            timeout = "10m"
         }
         source      = "${concat("../remote-scripts/", var.provisioner_file)}"
         destination = "/tmp/provision.sh"
@@ -66,7 +66,7 @@ resource "aws_instance" "member" {
 
     provisioner "remote-exec" {
         connection {
-            timeoout = "10m"
+            timeout = "10m"
         }
         inline = [
             "chmod +x /tmp/provision.sh",
