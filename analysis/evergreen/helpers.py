@@ -17,8 +17,8 @@
 import json
 import re
 
-import requests
 import yaml
+import requests
 
 
 def get_as_json(url, **kwargs):
@@ -45,8 +45,8 @@ def file_as_json(file_or_filename):
     if isinstance(file_or_filename, file):
         return json.load(file_or_filename)
     elif isinstance(file_or_filename, str):
-        with open(file_or_filename) as fd:
-            return json.load(fd)
+        with open(file_or_filename) as file_ptr:
+            return json.load(file_ptr)
     else:
         raise TypeError('Argument must be a string or file pointer')
 
@@ -60,8 +60,8 @@ def file_as_yaml(file_or_filename):
     if isinstance(file_or_filename, file):
         return yaml.load(file_or_filename)
     elif isinstance(file_or_filename, str):
-        with open(file_or_filename) as fd:
-            return yaml.load(fd)
+        with open(file_or_filename) as file_ptr:
+            return yaml.load(file_ptr)
     else:
         raise TypeError('Argument must be a string or file pointer')
 

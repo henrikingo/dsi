@@ -4,3 +4,4 @@ paramiko
 python-dateutil
 pyyaml
 requests
+pylint

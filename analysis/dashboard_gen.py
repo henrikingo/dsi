@@ -18,7 +18,7 @@ from util import read_histories, get_override
 
 # tests are classified into one of the following states
 # When combining states from multiple checks, the highest valued state wins
-test_state = {
+TEST_STATE = {
     'pass': 1,
     'forced accept': 2,
     'undesired': 3,
@@ -28,7 +28,7 @@ test_state = {
 
 # project_id and variant uniquely identify the set of rules to check
 # using a dictionary to help us choose the function with the right rules
-thresholds = {
+THRESHOLDS = {
     'sys-perf': {
         'linux-oplog-compare': {
             'undesired': 0.1, 'thread_undesired': 0.2,
@@ -53,7 +53,7 @@ thresholds = {
 # if only one threshold is defined, such as in the case of
 # using a treshold_override, we use that for undesired and use
 # a multiplier to define the unacceptable
-threshold_multiplier = 1.5
+THRESHOLD_MULTIPLIER = 1.5
 
 
 '''
@@ -64,22 +64,22 @@ Checks section -
     that is relevant to the conditions it checks.
 '''
 
-def throughput_check(test, ref_tag, project_id, variant):
+def throughput_check(test, ref_tag, project_id, variant): # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     ''' compute throughput ratios for all points in result series this_one
      over reference. Classify a test into a result['state'] based on the ratios.
      Use different thresholds for max throughput, and per-thread comparisons. '''
     check_result = {'state': 'pass', 'notes': '', 'tickets': [],
                     'perf_ratio': 1}
 
-    # if tag_history is undefined, skip this check completely
-    if tag_history:
-        reference = tag_history.series_at_tag(test['name'], ref_tag)
+    # if TAG_HISTORY is undefined, skip this check completely
+    if TAG_HISTORY:
+        reference = TAG_HISTORY.series_at_tag(test['name'], ref_tag)
         # Don't do a comparison if the reference data is missing
         if not reference:
             check_result['notes'] += "No reference data for test in baseline\n"
             return check_result
         # throughput override and ticket handling
-        override = get_override(test['name'], 'reference', override_info)
+        override = get_override(test['name'], 'reference', OVERRIDE_INFO)
         if override:
             check_result['tickets'].extend(override['ticket'])
             if use_override(override['ticket']):
@@ -87,14 +87,14 @@ def throughput_check(test, ref_tag, project_id, variant):
 
     # get the thresholds to use
     try:
-        undesired_target = 1 - thresholds[project_id].get(variant, \
-            thresholds['default'])['undesired']
-        thread_undesired_target = 1 - thresholds[project_id].get(variant, \
-            thresholds['default'])['thread_undesired']
-        unacceptable_target = 1 - thresholds[project_id].get(variant, \
-            thresholds['default'])['unacceptable']
-        thread_unacceptable_target = 1 - thresholds[project_id].get(variant, \
-            thresholds['default'])['thread_unacceptable']
+        undesired_target = 1 - THRESHOLDS[project_id].get(variant, \
+            THRESHOLDS['default'])['undesired']
+        thread_undesired_target = 1 - THRESHOLDS[project_id].get(variant, \
+            THRESHOLDS['default'])['thread_undesired']
+        unacceptable_target = 1 - THRESHOLDS[project_id].get(variant, \
+            THRESHOLDS['default'])['unacceptable']
+        thread_unacceptable_target = 1 - THRESHOLDS[project_id].get(variant, \
+            THRESHOLDS['default'])['thread_unacceptable']
     except KeyError as key_error:
         print("{0} is not a supported project".format(key_error))
         sys.exit(1)
@@ -103,14 +103,14 @@ def throughput_check(test, ref_tag, project_id, variant):
     # when threshold override is used, use that for undesired and
     # use threshold_multiplier * undesired as unacceptable.
     # again, whether we use this override depends on the state of the tickets
-    override = get_override(test['name'], 'threshold', override_info)
+    override = get_override(test['name'], 'threshold', OVERRIDE_INFO)
     if override:
         check_result['tickets'].extend(override['ticket'])
         if use_override(override['ticket']):
             undesired_target = 1 - override['threshold']
-            unacceptable_target = 1 - threshold_multiplier * override['threshold']
+            unacceptable_target = 1 - THRESHOLD_MULTIPLIER * override['threshold']
             thread_undesired_target = 1 - override['thread_threshold']
-            thread_unacceptable_target = 1 - threshold_multiplier * override['thread_threshold']
+            thread_unacceptable_target = 1 - THRESHOLD_MULTIPLIER * override['thread_threshold']
 
     # Compute the ratios for max throughput achieved
     ratio_at_max = 1 if reference['max'] == 0 else test['max']/reference['max']
@@ -141,12 +141,12 @@ def throughput_check(test, ref_tag, project_id, variant):
         if worst_ratio < thread_unacceptable_target:
             check_result['notes'] += 'Throughput at {0} '.format(worst_thread)\
                 + 'unacceptable (<{0:1.2f} of baseline)\n'.format(thread_unacceptable_target)
-            if test_state[check_result['state']] < test_state['unacceptable']:
+            if TEST_STATE[check_result['state']] < TEST_STATE['unacceptable']:
                 check_result['state'] = 'unacceptable'
         elif worst_ratio < thread_undesired_target:
             check_result['notes'] += 'Throughput at {0} '.format(worst_thread)\
                 + 'undesired (<{0:1.2f} of baseline)\n'.format(thread_undesired_target)
-            if test_state[check_result['state']] < test_state['undesired']:
+            if TEST_STATE[check_result['state']] < TEST_STATE['undesired']:
                 check_result['state'] = 'undesired'
 
     return check_result
@@ -166,7 +166,7 @@ def repl_lag_check(test, threshold):
     return check_result
 
 
-''' Other utility functions '''
+# Other utility functions
 
 def use_override(ticket_list):
     ''' Determine if we want to use override based on the states of the assoicated tickets.
@@ -186,13 +186,16 @@ def update_state(current, new_data):
     ''' Update the current test info with new_data. Update the state to the
     more severe condition. Merge notes and tickets from new_data into current
     and add perf_ratio '''
-    if test_state[new_data['state']] > test_state[current['state']]:
+    if TEST_STATE[new_data['state']] > TEST_STATE[current['state']]:
         current['state'] = new_data['state']
     current['notes'] += new_data.get('notes', '')
     current['tickets'].extend(new_data.get('tickets', []))
     if 'perf_ratio' in new_data:
         current['perf_ratio'] = new_data['perf_ratio']
 
+HISTORY = None
+TAG_HISTORY = None
+OVERRIDE_INFO = None
 
 def main(args):
     ''' Loop through and classify tests in a task into states used for dashboard '''
@@ -214,13 +217,13 @@ def main(args):
     args = parser.parse_args()
 
     # Set up result histories from various files:
-    # history - this series include the run to be checked, and previous or NDays
-    # tag_history - this is the series that holds the tag build as comparison target
-    # override_info - this series has the override data to avoid false alarm or fatigues
+    # HISTORY - this series include the run to be checked, and previous or NDays
+    # TAG_HISTORY - this is the series that holds the tag build as comparison target
+    # OVERRIDE_INFO - this series has the override data to avoid false alarm or fatigues
     # The result histories are stored in global variables within this module as they
     # are accessed across many rules.
-    global history, tag_history, override_info
-    (history, tag_history, override_info) = read_histories(args.variant, \
+    global HISTORY, TAG_HISTORY, OVERRIDE_INFO # pylint: disable=global-statement
+    (HISTORY, TAG_HISTORY, OVERRIDE_INFO) = read_histories(args.variant, \
         args.hfile, args.tfile, args.ofile)
 
     report = {'baselines':[]}
@@ -228,11 +231,11 @@ def main(args):
         results = []
         report_for_baseline = {'version': baseline}
         # iterate through tests and check for regressions and other violations
-        testnames = history.testnames()
+        testnames = HISTORY.testnames()
         for test in testnames:
             result = {'test_file': test, 'state': 'pass', 'notes': '', \
                 'tickets': [], 'perf_ratio': 1}
-            to_check = history.series_at_revision(test, args.rev)
+            to_check = HISTORY.series_at_revision(test, args.rev)
             if to_check:
                 update_state(result, throughput_check(to_check, baseline, \
                     args.project_id, args.variant))

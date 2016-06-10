@@ -22,6 +22,8 @@ import sys
 
 from evergreen import evergreen, helpers
 
+LOGGER = None
+
 def get_tagged_data(project, variants, tasks, filename_format, cli):
     """Get the raw tagged data for this task.
 
@@ -32,14 +34,14 @@ def get_tagged_data(project, variants, tasks, filename_format, cli):
     :param evergreen.Client cli: A handle on an Evergreen client
     :rtype: dict
     """
-    global logger
 
     try:
         revision = cli.get_recent_revisions(project)[-1]['revision']
     except IndexError:
         raise ValueError('No data found for project {project}'.format(project=project))
     except KeyError:
-        raise RuntimeError('Failed to find any revisions for project {project}'.format(project=project))
+        raise RuntimeError(
+            'Failed to find any revisions for project {project}'.format(project=project))
 
     for build_variant, build_variant_id in cli.build_variants_from_git_commit(project, revision):
         if 'comp' in build_variant or not helpers.matches_any(build_variant, variants):
@@ -51,13 +53,14 @@ def get_tagged_data(project, variants, tasks, filename_format, cli):
 
             tags = cli.query_mongo_perf_task_tags(task_name, task_id)
             filename = filename_format.format(variant=build_variant, task=task_name)
-            with open(filename, 'w') as fp:
-                logger.info('Saving tagged data to {filename}'.format(filename=filename))
-                json.dump(tags, fp, sort_keys=True, separators=[',', ':'], indent=4)
+            with open(filename, 'w') as file_ptr:
+                LOGGER.info('Saving tagged data to {filename}'.format(filename=filename))
+                json.dump(tags, file_ptr, sort_keys=True, separators=[',', ':'], indent=4)
 
+def main():
+    """The script's main entrypoint."""
 
-if __name__ == '__main__':
-    global logger
+    global LOGGER # pylint: disable=global-statement
     parser = argparse.ArgumentParser(prog='get-tags',
                                      description='Get tagged task data')
     parser.add_argument('-p',
@@ -86,12 +89,16 @@ if __name__ == '__main__':
 
     # Parse the arguments and initialize the logging output
     args = parser.parse_args()
-    logger = logging.getLogger('tags.information')
-    logger.addHandler(logging.StreamHandler(sys.stdout))
+    LOGGER = logging.getLogger('tags.information')
+    LOGGER.addHandler(logging.StreamHandler(sys.stdout))
     if args.verbose:
-        logger.setLevel(logging.DEBUG)
+        LOGGER.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.INFO)
+        LOGGER.setLevel(logging.INFO)
 
     # Pass the rest of the command-line arguments
-    get_tagged_data(args.project, args.variants, args.tasks, args.format, evergreen.Client(args.config))
+    get_tagged_data(
+        args.project, args.variants, args.tasks, args.format, evergreen.Client(args.config))
+
+if __name__ == '__main__':
+    main()

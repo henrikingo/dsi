@@ -6,15 +6,15 @@ Example usage:
  Will exit with status code 1 if any regression is found, 0 otherwise.
 '''
 
+from __future__ import print_function
 from datetime import timedelta
 import sys
 import argparse
-from dateutil import parser
 import json
-
+from dateutil import parser
 from util import read_histories, compare_one_result, log_header, read_threshold_overrides
 
-def compare_results(this_one, reference, threshold, label,
+def compare_results(this_one, reference, threshold, label, # pylint: disable=too-many-arguments
                     noise_levels=None, noise_multiple=1,
                     thread_threshold=None, thread_noise_multiple=None,
                     using_override=None):
@@ -68,30 +68,42 @@ def compare_results(this_one, reference, threshold, label,
 
 
 
-def main(args):
-    argParser = argparse.ArgumentParser()
-    argParser.add_argument("-f", "--file", dest="file", help="path to json file containing"
-                        "history data")
-    argParser.add_argument("-t", "--tagFile", dest="tfile", help="path to json file containing"
-                        "tag data")
-    argParser.add_argument("--rev", dest="rev", help="revision to examine for regressions")
-    argParser.add_argument("--ndays", default=7, type=int, dest="ndays", help="Check against"
-                        "commit from n days ago.")
-    argParser.add_argument("--threshold", default=0.05, type=float, dest="threshold", help=
-                        "Don't flag an error if throughput is less than 'threshold'x100 percent off")
-    argParser.add_argument("--noiseLevel", default=1, type=float, dest="noise", help=
-                        "Don't flag an error if throughput is less than 'noise' times the computed noise level off")
-    argParser.add_argument("--threadThreshold", default=0.1, type=float, dest="thread_threshold", help=
-                        "Don't flag an error if thread level throughput is more than"
-                        "'thread_threshold'x100 percent off")
-    argParser.add_argument("--threadNoiseLevel", default=2, type=float, dest="threadNoise", help=
-                        "Don't flag an error if thread level throughput is less than 'noise' times the computed noise level off")
-    argParser.add_argument("--refTag", dest="reference", help=
-                        "Reference tag to compare against. Should be a valid tag name")
-    argParser.add_argument("--overrideFile", dest="overrideFile", help="File to read for comparison override information")
-    argParser.add_argument("--variant", dest="variant", help="Variant to lookup in the override file")
+def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-statements
+    """Main entrypoint for the script."""
 
-    args = argParser.parse_args()
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument(
+        "-f", "--file", dest="file", help="path to json file containing history data")
+    arg_parser.add_argument(
+        "-t", "--tagFile", dest="tfile", help="path to json file containing tag data")
+    arg_parser.add_argument("--rev", dest="rev", help="revision to examine for regressions")
+    arg_parser.add_argument(
+        "--ndays", default=7, type=int, dest="ndays", help="Check against commit from n days ago.")
+    arg_parser.add_argument(
+        "--threshold", default=0.05, type=float, dest="threshold",
+        help="Don't flag an error if throughput is less than 'threshold'x100 percent off")
+    arg_parser.add_argument(
+        "--noiseLevel", default=1, type=float, dest="noise",
+        help="Don't flag an error if throughput is less than "\
+            "'noise' times the computed noise level off")
+    arg_parser.add_argument(
+        "--threadThreshold", default=0.1, type=float, dest="thread_threshold",
+        help="Don't flag an error if thread level throughput is more than "\
+             "'thread_threshold'x100 percent off")
+    arg_parser.add_argument(
+        "--threadNoiseLevel", default=2, type=float, dest="threadNoise",
+        help="Don't flag an error if thread level throughput is less than 'noise' times the"
+             "computed noise level off")
+    arg_parser.add_argument(
+        "--refTag", dest="reference",
+        help="Reference tag to compare against. Should be a valid tag name")
+    arg_parser.add_argument(
+        "--overrideFile", dest="overrideFile",
+        help="File to read for comparison override information")
+    arg_parser.add_argument(
+        "--variant", dest="variant", help="Variant to lookup in the override file")
+
+    args = arg_parser.parse_args()
     (history, tag_history, overrides) = read_histories(args.variant, args.file, args.tfile,
                                                        args.overrideFile)
     testnames = history.testnames()
@@ -108,7 +120,7 @@ def main(args):
         result['log_raw'] = log_header(test)
 
         if not this_one:
-            print "\tno data at this revision, skipping"
+            print("\tno data at this revision, skipping")
             continue
 
         # Handle threshold overrides
@@ -119,7 +131,7 @@ def main(args):
 
         previous = history.series_at_n_before(test, args.rev, 1)
         if not previous:
-            print "\tno previous data, skipping"
+            print("\tno previous data, skipping")
             continue
 
         using_override = []
@@ -150,12 +162,12 @@ def main(args):
                                                         >= this_time):
                         daysprevious = overrides['ndays'][test]
                         using_override.append("reference")
-                        print "Override in ndays for test %s" % test
+                        print("Override in ndays for test %s" % test)
                     else:
-                        print "Out of date override found for ndays. Not using"
+                        print("Out of date override found for ndays. Not using")
             except KeyError as exception:
-                print "Key error accessing overrides for ndays."\
-                    " Key {0} doesn't exist for test {1}".format(str(exception), test)
+                print("Key error accessing overrides for ndays."\
+                    " Key {0} doesn't exist for test {1}".format(str(exception), test))
 
             cresult = compare_results(this_one, daysprevious,
                                       threshold, "NDays",
@@ -168,7 +180,7 @@ def main(args):
             if cresult[0]:
                 test_failed = True
         else:
-            print "\tWARNING: no nday data, skipping"
+            print("\tWARNING: no nday data, skipping")
 
         if tag_history:
             reference = tag_history.series_at_tag(test, args.reference)
@@ -176,9 +188,9 @@ def main(args):
             if threshold_override:
                 using_override.append("threshold")
             if not reference:
-                print "Didn't get any data for test %s with baseline %s" % (test, args.reference)
+                print("Didn't get any data for test %s with baseline %s" % (test, args.reference))
             if test in overrides['reference']:
-                print "Override in references for test %s" % test
+                print("Override in references for test %s" % test)
                 using_override.append("reference")
                 reference = overrides['reference'][test]
             cresult = compare_results(this_one, reference, threshold,
@@ -192,9 +204,9 @@ def main(args):
             if cresult[0]:
                 test_failed = True
         else:
-            print "\tWARNING: no reference data, skipping"
+            print("\tWARNING: no reference data, skipping")
 
-        print result['log_raw']
+        print(result['log_raw'])
         if test_failed:
             result['status'] = 'fail'
             failed += 1
@@ -212,13 +224,6 @@ def main(args):
         sys.exit(1)
     else:
         sys.exit(0)
-
-
-class TestResult:
-    def __init__(self, json):
-        self._raw = json
-
-    #def max(self):
 
 if __name__ == '__main__':
     main(sys.argv[1:])

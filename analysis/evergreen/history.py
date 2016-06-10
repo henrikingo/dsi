@@ -14,6 +14,7 @@
 
 """Module for handling evergreen histories."""
 
+from __future__ import print_function
 import itertools
 from datetime import timedelta
 from dateutil import parser
@@ -139,11 +140,11 @@ class History(object):
         """
         # check if noise has been computed. Compute if it hasn't
         if not self._noise:
-            print "Computing noise levels"
+            print("Computing noise levels")
             self.compute_noise_levels()
         # Look up noise value for test
         if testname not in self._noise:
-            print "Test %s not in self._noise" % (testname)
+            print("Test %s not in self._noise" % (testname))
         return self._noise[testname]
 
 # We wouldn't need this function if we had numpy installed on the system

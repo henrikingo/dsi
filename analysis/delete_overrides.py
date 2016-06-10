@@ -16,8 +16,6 @@
 
 """ Script for removing overrides based on tickets."""
 
-# pylint: disable=logging-format-interpolation
-
 import sys
 import argparse
 import logging
@@ -77,7 +75,7 @@ def main():
         ovr.delete_overrides_by_ticket(args.ticket, args.rule)
 
     # Dump the new file as JSON
-    logger.info('Saving output to {destination}'.format(destination=args.destination_file))
+    logger.info('Saving output to %s', args.destination_file)
     ovr.save_to_file(args.destination_file)
 
 if __name__ == '__main__':

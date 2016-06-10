@@ -14,11 +14,12 @@
 
 """Module of utility functions for analysis"""
 
+from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 import doctest
 import json
-import sys #pylint: disable=wrong-import-order
+import sys
 
 from evergreen.history import History
 
@@ -102,7 +103,7 @@ def compare_one_result_base(current, reference, noise_level=0,
 def log_header(testname):
     ''' Create the string for the log message header
 
-    >>> print log_header("test")
+    >>> print(log_header("test"))
     Test: test
        Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)
     ----------+----------+---------------+-------+-----------+-----------+-----------+------------
@@ -162,7 +163,7 @@ def compare_one_result_values(current, reference, label="Baseline",
     (True, ' Previous |  Failed  |*   Missing    |   3   |       2.00|       1.00|    -50.00%|t     5.00%|')
 
     '''
-    #pylint: enable=line-too-long
+
     (failed, percent_delta, percent_threshold) = \
         compare_one_result_base(current, reference, noise_level,
                                 noise_multiple, default_threshold)
@@ -253,8 +254,8 @@ def read_threshold_overrides(test_name, base_threshold, base_thread_threshold, o
 
     >>> "({0:.4f}, {1:.4f}, {2})".format(*read_threshold_overrides("test", 0.1, 0.15, {}))
     '(0.1000, 0.1500, False)'
-    >>> "({0:.4f}, {1:.4f}, {2})".format(*read_threshold_overrides("test", 0.1, 0.15, {'threshold': {"test" : {"threshold": 0.5,
-    ... "thread_threshold": 0.7}}}))
+    >>> "({0:.4f}, {1:.4f}, {2})".format(*read_threshold_overrides(
+    ... "test", 0.1, 0.15, {'threshold': {"test" : {"threshold": 0.5, "thread_threshold": 0.7}}}))
     '(0.5000, 0.7000, True)'
     '''
 
@@ -268,14 +269,16 @@ def read_threshold_overrides(test_name, base_threshold, base_thread_threshold, o
             thread_threshold = overrides['threshold'][test_name]['thread_threshold']
             threshold_override = True
         except KeyError as exception:
-            print >> sys.stderr, "Threshold overrides not properly"\
+            print("Threshold overrides not properly"\
                 "defined. Key {0} doesn't exist for test"\
-                "{1}".format(str(exception), test_name)
+                "{1}".format(str(exception), test_name), file=sys.stderr)
 
     return(threshold, thread_threshold, threshold_override)
 
 
 def get_override(test_name, override_type, overrides):
+    """Return the overrides of type `override_type` belonging to the test named `test_name`."""
+
     if test_name in overrides[override_type]:
         return overrides[override_type][test_name]
     return None

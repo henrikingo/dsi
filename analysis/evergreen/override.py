@@ -18,19 +18,12 @@ from __future__ import print_function
 import doctest
 import itertools
 import json
-import sys
 
 # os.path is used for pydoc. It won't need to be commented out when we move that test into a
 #  proper test function.
 import os.path # pylint: disable=unused-import
 
 # TODO: It would be nice if the override class handled adding new overrides transparently
-
-
-class NotYetImplemented(RuntimeError):
-    """Indicates that this function has yet to be implemented."""
-    pass
-
 
 class Override(object):
     """Represents an override for a performance test.
@@ -50,9 +43,9 @@ class Override(object):
             ...
         }
 
-    The analysis scripts traverse this hierarchy, selecting the appropriate build variant, rule and test name. If an
-    override exists, it uses that data as the reference point against which to find regressions, rather than the usual
-    data.
+    The analysis scripts traverse this hierarchy, selecting the appropriate build variant, rule and
+    test name. If an override exists, it uses that data as the reference point against which to find
+    regressions, rather than the usual data.
     """
     def __init__(self, initializer):
         """Create a new override.
@@ -62,14 +55,14 @@ class Override(object):
         if initializer is None:
             self.overrides = {}
         elif isinstance(initializer, str):
-            with open(initializer) as fd:
-                self.overrides = json.load(fd)
+            with open(initializer) as file_:
+                self.overrides = json.load(file_)
         elif isinstance(initializer, dict):
             self.overrides = initializer
         else:
             raise TypeError('initializer must be a file, filename or dictionary')
 
-    def update_test(self, build_variant, test, rule, new_data, ticket):
+    def update_test(self, build_variant, test, rule, new_data, ticket): # pylint: disable=too-many-arguments
         """Update the override reference data for the given test.
 
         :param str build_variant: The Evergreen name of the build variant
@@ -77,7 +70,8 @@ class Override(object):
         :param str rule: The regression analysis rule (e.g. "reference", "ndays")
         :param dict new_data: The raw data for this test to use as a new reference point
         :param str ticket: The JIRA ticket to attach to this override reference point
-        :return: The old value of the data for this particular build variant, test and rule, if one existed
+        :return: The old value of the data for this particular build variant,
+                test and rule, if one existed
         :rtype: dict
         """
         # Find the overrides for this build variant...
@@ -152,8 +146,8 @@ class Override(object):
         :param str ticket: The ID of a JIRA ticket (e.g. PERF-226)
         :rtype: list[dict]
         """
-        # TODO implement this
-        raise NotYetImplemented()
+
+        raise NotImplementedError()
 
     def delete_overrides_by_ticket(self, ticket, rule='reference'):
         """Remove the overrides created by a given ticket.
@@ -218,10 +212,13 @@ class Override(object):
         :param file|str file_or_filename: A file or filename destination to save to
         """
         if isinstance(file_or_filename, str):
-            with open(file_or_filename, 'w') as fd:
-                json.dump(self.overrides, fd, file_or_filename, indent=4, separators=[',', ':'], sort_keys=True)
+            with open(file_or_filename, 'w') as file_ptr:
+                json.dump(
+                    self.overrides, file_ptr, file_or_filename, indent=4,
+                    separators=[',', ':'], sort_keys=True)
         elif isinstance(file_or_filename, file):
-            json.dump(self.overrides, file_or_filename, indent=4, separators=[',', ':'], sort_keys=True)
+            json.dump(
+                self.overrides, file_or_filename, indent=4, separators=[',', ':'], sort_keys=True)
         else:
             raise TypeError('Argument must be a file or filename')
 

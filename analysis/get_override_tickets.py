@@ -16,9 +16,7 @@
 
 """Runner script for checking tickets in overrides."""
 
-# pylint: disable=superfluous-parens
-
-
+from __future__ import print_function
 import sys
 import argparse
 import logging
@@ -81,7 +79,7 @@ def main():
         tickets = ovr.get_tickets(args.rule)
 
     for ticket in tickets:
-        print (ticket)
+        print(ticket)
 
 if __name__ == '__main__':
     main()

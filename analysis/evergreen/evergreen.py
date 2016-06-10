@@ -14,12 +14,17 @@
 
 """Module for interacting with Evergreen."""
 
-# TODO: Replace print statements with the logging module. In PyCharm, it doesn't seem to work with the console
+# TODO: Replace print statements with the logging module. In PyCharm, it doesn't seem to work with
+# the console
 
 from __future__ import print_function
 import logging
 
-import helpers
+# This really should be `from evergreen import helpers`, where `evergreen` is
+# this entire package, but the fact that this module is named `evergreen`
+# screws that up because the import statement will look inside this single file
+# instead.
+from . import helpers
 
 
 DEFAULT_EVERGREEN_URL = 'https://evergreen.mongodb.com'
@@ -39,13 +44,13 @@ class Empty(EvergreenError):
 class Client(object):
     """Allows for interaction with an Evergreen server.
 
-    This class has two sets of methods. The first type are the "query" functions, which are simple wrappers around the
-    Evergreen JSON endpoints. They handle making the request and return the output unchanged as a JSON-compatible
-    dictionary.
+    This class has two sets of methods. The first type are the "query" functions, which are simple
+    wrappers around the Evergreen JSON endpoints. They handle making the request and return the
+    output unchanged as a JSON-compatible dictionary.
 
-    The second group builds on the query functions, and they return useful information about Evergreen revisions, build
-    variants and tasks by extracting the relevant information. Most of these are implemented as generators to cache
-    the results of the HTTP queries.
+    The second group builds on the query functions, and they return useful information about
+    Evergreen revisions, build variants and tasks by extracting the relevant information. Most of
+    these are implemented as generators to cache the results of the HTTP queries.
     """
 
     def __init__(self, configuration=None, verbose=True):
@@ -78,7 +83,7 @@ class Client(object):
         :rtype: dict
         """
         return helpers.get_as_json(
-            '{url}/rest/v1/projects/{project_id}/versions'.format(url=self.base_url, project_id=project),
+            '{}/rest/v1/projects/{}/versions'.format(self.base_url, project),
             headers=self.headers
         )
 
@@ -107,7 +112,7 @@ class Client(object):
         :rtype: dict
         """
         return helpers.get_as_json(
-            '{url}/rest/v1/versions/{version_id}'.format(url=self.base_url, version_id=revision_id),
+            '{}/rest/v1/versions/{}'.format(self.base_url, revision_id),
             headers=self.headers
         )
 
@@ -120,7 +125,7 @@ class Client(object):
         :rtype: dict
         """
         return helpers.get_as_json(
-            '{url}/rest/v1/versions/{version_id}/status'.format(url=self.base_url, version_id=revision_id),
+            '{}/rest/v1/versions/{}/status'.format(self.base_url, revision_id),
             headers=self.headers
         )
 
@@ -146,7 +151,7 @@ class Client(object):
         :rtype: dict
         """
         return helpers.get_as_json(
-            '{url}/rest/v1/builds/{build_id}/status'.format(url=self.base_url, build_id=build_variant_id),
+            '{}/rest/v1/builds/{}/status'.format(self.base_url, build_variant_id),
             headers=self.headers
         )
 
@@ -185,23 +190,24 @@ class Client(object):
         :rtype: dict
         """
         return helpers.get_as_json(
-            '{url}/rest/v1/tasks/{task_name}/history'.format(url=self.base_url, task_name=task_name)
+            '{}/rest/v1/tasks/{}/history'.format(self.base_url, task_name)
         )
 
     def get_recent_revisions(self, project_name, max_results=10):
         """Get the most recent revisions for an Evergreen project.
 
-        Valid project names include "performance" for the MongoDB Perf Project, "sys-perf" for System Performance, and
-        so on.
+        Valid project names include "performance" for the MongoDB Perf Project, "sys-perf" for
+        System Performance, and so on.
 
-        This method returns a list of dicts, where each dict describes the version and the various build variants
-        underneath it:
+        This method returns a list of dicts, where each dict describes the version and the various
+        build variants underneath it:
 
             {
                 'version_id': 'performance_30efc2300ad8740023ebb432723a1e662d16ef89',
                 'author': 'David',
                 'revision': '30efc2300ad8740023ebb432723a1e662d16ef89',
-                'message': 'Merge pull request #1032 from ksuarz/master\n\nSERVER-20786 override singleThreaded'
+                'message': 'Merge pull request #1032 from' \
+                        'ksuarz/master\n\nSERVER-20786 override singleThreaded'
             }
 
         :param project_name: The project ID in Evergreen
@@ -214,8 +220,8 @@ class Client(object):
     def query_mongo_perf_task_tags(self, task_name, task_id):
         """Get the tag data of a particular task in the Performance project.
 
-        This works for the performance project. The sys-perf and longevity projects may return empty responses; use
-        a different method instead.
+        This works for the performance project. The sys-perf and longevity projects may return empty
+        responses; use a different method instead.
 
         Evergreen endpoint: /api/2/task/{task_id}/json/tags/{task_name}/perf
 
@@ -233,8 +239,8 @@ class Client(object):
     def query_mongo_perf_task_history(self, task_name, task_id):
         """Get the historical data of a particular task in the Performance project.
 
-        This works for mongo-perf. The sys-perf and longevity projects may return empty responses; use a different
-        method instead.
+        This works for mongo-perf. The sys-perf and longevity projects may return empty responses;
+        use a different method instead.
 
         Evergreen endpoint: /api/2/task/{task_id}/json/history/{task_name}/perf
 
@@ -259,16 +265,15 @@ class Client(object):
         :return: Tuples in the form ("build-variant-name", "build-variant-id")
         :rtype: tuple(str, str)
         """
-        response = helpers.get_as_json('{0}/rest/v1/projects/{1}/revisions/{2}'.format(self.base_url,
-                                                                                       project,
-                                                                                       commit_sha),
-                                       headers=self.headers)
+        response = helpers.get_as_json(
+            '{0}/rest/v1/projects/{1}/revisions/{2}'.format(
+                self.base_url, project, commit_sha),
+            headers=self.headers)
         names = [x.replace('_', '-') for x in response['build_variants']]
         ids = response['builds']
 
         if not names or not ids:
-            raise Empty('No builds found at commit {commit} in project {project}'.format(commit=commit_sha,
-                                                                                         project=project))
+            raise Empty('No builds found at commit {} in project {}'.format(commit_sha, project))
 
         for item in zip(names, ids):
             yield item
@@ -280,13 +285,13 @@ class Client(object):
         :return: Tuples in the form ("build-variant-name", "build-variant-id")
         :rtype: tuple(str, str)
         """
-        response = helpers.get_as_json('{0}/rest/v1/versions/{1}'.format(self.base_url, revision_id),
-                                       headers=self.headers)
+        response = helpers.get_as_json(
+            '{0}/rest/v1/versions/{1}'.format(self.base_url, revision_id), headers=self.headers)
         names = [x.replace('_', '-') for x in response['build_variants']]
         ids = response['builds']
 
         if not names or not ids:
-            raise Empty('No builds found for Evergreen revision {rev}'.format(revision_id))
+            raise Empty('No builds found for Evergreen revision ' + str(revision_id))
 
         for item in zip(names, ids):
             yield item
@@ -302,7 +307,7 @@ class Client(object):
         tasks = build_info['tasks']
 
         if not tasks:
-            raise Empty('No tasks found for build variant {variant}'.format(variant=build_variant_id))
+            raise Empty('No tasks found for build variant ' + str(variant=build_variant_id))
 
         for task_name in tasks.keys():
             yield (task_name, tasks[task_name]['task_id'])
