@@ -8,24 +8,26 @@ on_all_hosts :
     exec_remote : |
         ./linux-setup-tasks.sh  # Implementation of upload phase should chmod a+rx as a convenience to user
         ./mount-ebs-drive.sh
-on_servers :                    # servers = union( mongod, mongos, configsvr) = all_hosts - workload_client
-on_mongod :                     # execution order is from general to specific: all_hosts, servers, mongod, node
-on_mongos :
-on_configsvr :
-on_workload_client :
-    # See above
+
+on_servers : (see above)            # servers = union( mongod, mongos, configsvr) = all_hosts - workload_client
+on_mongod : (see above)             # execution order is from general to specific: all_hosts, servers, mongod, node
+on_mongos : (see above)
+on_configsvr : (see above)
+on_workload_client : (see above)
+
+
 on_host :                       # Do this on a single host specified by ip
-    ip : ${infrastructure_provisioning.out.mongod.14.public_ip}   # Reference key elsewhere in config
-    download_files:
-    upload_files:
-    exec_remote:
+  - ip : ${infrastructure_provisioning.out.mongod.4.public_ip}   # Reference key elsewhere in config
+    download_files :  (see above)
+    upload_files :    (see above)
+    exec_remote :     (see above)
+
 custom_groups :
       my_group :                # We could also allow to specify arbitrary groups of hosts. (post DP2.0 for sure)
         - ip : ${infrastructure_provisioning.out.mongod.0.public_ip}
         - ip : ${infrastructure_provisioning.out.mongod.1.public_ip}
 on_my_group :                   # This is like on_servers, but for the custom group defined above.
-    - download_files
-    - upload_files
-    - exec_remote
-
+    download_files :  (see above)
+    upload_files :    (see above)
+    exec_remote :     (see above)
 

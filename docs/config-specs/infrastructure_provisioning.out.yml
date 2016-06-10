@@ -16,6 +16,10 @@ out:
         private_ip : 10.2.1.6
       - public_ip  : 53.1.1.7
         private_ip : 10.2.1.7
+      - public_ip  : 53.1.1.8
+        private_ip : 10.2.1.8
+      - public_ip  : 53.1.1.9
+        private_ip : 10.2.1.9
     mongos:
       - public_ip  : 53.1.1.100
         private_ip : 10.2.1.100

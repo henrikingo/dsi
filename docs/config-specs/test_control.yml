@@ -32,7 +32,7 @@ run :
             # multiple mongoses to be supported automatically
             uri  : mongodb://${mongodb_setup.meta.hosts}/testdb?readPreference=PRIMARY
             sharded: ${mongodb_setup.meta.is_sharded}
-            replica: ${mongodb_setup.meta.is_replica}
+            replica: ${mongodb_setup.meta.is_replset}
             storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
     on_workload_client :
         logs :                      # Same as client_logs in dsi/clusters/*/*.json
@@ -46,12 +46,12 @@ run :
         post_exec_mongo_shell : |
             # JavaScript to be executed in mongo shell (when MongoDB cluster is running)
         
-    on_servers :                    # servers = union( mongod, mongos, configsvr) = all_hosts - workload_client
-    on_mongod :
-    on_mongos :
-    on_configsvr :
-    on_host :
-        # See above
+    on_all_hosts : (see above)
+    on_servers : (see above)            # servers = union( mongod, mongos, configsvr) = all_hosts - workload_client
+    on_mongod : (see above)
+    on_mongos : (see above)
+    on_configsvr : (see above)
+    on_host : (see system_setup.yml)
 
     # Note: This config doesn't include things like PemFile, or ip addresses,
     # rather test control module will find that info in the infrastructure_provisioning config

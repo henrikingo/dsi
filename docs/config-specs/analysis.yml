@@ -7,3 +7,7 @@
 # Again, note that data_analysis should be able to infer from previous sections where to find necessary log files, etc.                
 # No need to repeat those here.
 
+# For the config.py library: A missing file is ok, but an empty file is not. (In other words,
+# empty values / None are forbidden in general.) So here's a placeholder to make the tests work.
+
+placeholder : Content TBD

@@ -23,6 +23,21 @@ A design goal is that these files contain the entire end-to-end configuration fo
 * Paths (example: ../keys/aws.pem) are relative to a work directory where the user has cd into 
   before executing the DP2.0 modules. These configuration files also reside in that work directory.
 
+**Empty values (python None)**
+
+* Empty values are mostly not allowed.
+  * For mongod options such as `fork`, you must specify `true`.
+  * Note: To some degree this requirement arises from implementation that reads the config files.
+    A None value is interpreted as no value and causes us to lookup the defaults.yml value or
+    sometimes can cause an Exception due to calling .get() on a NoneType.
+* In `overrides.yml` file empty values are allowed.
+  * The interpretation in this case means that this particular value is not overridden, rather
+    the value from the regular `module_name.yml` file will be used. 
+  * This is needed for example when overriding a value in a list. Say you want to change the storage
+    engine for the 3rd mongod in a replica set. The `overrides.yml` file would then contain:
+    `[None, None, { storage : engine : ... }]`
+* Note that if the application tries to read a value that doesn't exist, the config library will
+  (in python) raise a `KeyError`.
 
 Overview of files
 -----------------
@@ -32,7 +47,7 @@ Overview of files
   context for these config options is the module called `module_name`.
 * `module_name.out.yml`: Output from a module, can be used as input by other 
    modules. In practice there's only 1 of these: 
-   infrastrucutre_provisioning.out.json will contain an ordered list of private 
+   infrastrucutre_provisioning.out.yml will contain an ordered list of private 
    and public ip addresses assigned to the requested resources.
 * `overrides.yml`: Optional file that can specify keys that override 
   values from the previous files. Use case is if you want to run a test using 
@@ -50,7 +65,7 @@ I've tried to think about the following use cases when designing the spec:
 
 * Support current set of variants and tests.
   * There will be a directory with common configurations. Roughly we will need
-    * for each variant a set of `infrastructure_provisioning.json`,
+    * for each variant a set of `infrastructure_provisioning.yml`,
       `system_setup.yml` and `mongodb_setup.yml`.
     * for each dsi/clusters/*.json file a set of `workload_preparation.yml`,
       `test_control.yml` and `analysis.yml`

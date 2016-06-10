@@ -32,8 +32,11 @@ configsvr_config_file       :
 
 on_all_hosts :
     download_files :
-    upload_files :
-        # Anything? Could download/upload data set or a data directory
+      - http://url1
+      - http://url2
+    upload_files : # Anything? Could download/upload data set or a data directory
+      - remote-scripts/file1
+      - remote-scripts/file2
     exec_remote : |
         # This would execute in OS shell (before MongoDB cluster is running)
     exec_mongo_shell : |
@@ -41,13 +44,12 @@ on_all_hosts :
         # Note: You can also put .js files in upload_files, and use load() to execute them in mongo shell.
     post_exec_remote : |
         # This would execute in OS shell (after MongoDB cluster is running)
-on_servers :
-on_mongod :
-on_mongos :
-on_configsvr :
-on_workload_client :
-on_host:
-        # See above
+on_servers : (see above)            # servers = union( mongod, mongos, configsvr) = all_hosts - workload_client
+on_mongod : (see above)
+on_mongos : (see above)
+on_configsvr : (see above)
+on_workload_client : (see above)
+on_host : (see system_setup.yml)
 
 # This defines the cluster topology to deploy, and what to deploy on which IP address.
 # Note that it is also possible to override mongod/mongos config file entries on a per-node basis.
@@ -114,18 +116,18 @@ topology:
   - type: replset
     mongod:
       - id: myid1
-        public_ip: ${infrastructure_provisioning.out.mongod.8.public_ip}
-        private_ip: ${infrastructure_provisioning.out.mongod.8.private_ip}
+        public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
+        private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
       - id: myid2
-        public_ip: ${infrastructure_provisioning.out.mongod.9.public_ip}
-        private_ip: ${infrastructure_provisioning.out.mongod.9.private_ip}
+        public_ip: ${infrastructure_provisioning.out.mongod.1.public_ip}
+        private_ip: ${infrastructure_provisioning.out.mongod.1.private_ip}
       - id: myid3
-        public_ip: ${infrastructure_provisioning.out.mongod.10.public_ip}
-        private_ip: ${infrastructure_provisioning.out.mongod.10.private_ip}
+        public_ip: ${infrastructure_provisioning.out.mongod.2.public_ip}
+        private_ip: ${infrastructure_provisioning.out.mongod.2.private_ip}
   - cluster_type: standalone
     id: myid1
-    public_ip: ${infrastructure_provisioning.out.mongod.11.public_ip}
-    private_ip: ${infrastructure_provisioning.out.mongod.11.private_ip}
+    public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
+    private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
 
 
 # Meta data about this mongodb setup

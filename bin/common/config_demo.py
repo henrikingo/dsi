@@ -15,9 +15,9 @@ from config import ConfigDict
 
 def demo(cmd):
     print "#######################################################################"
-    print cmd + ":"
+    print cmd
     print
-    print eval(cmd)
+    print str(eval(cmd))
 
 
 def run_demo():
@@ -25,6 +25,7 @@ def run_demo():
 
     conf = ConfigDict('mongodb_setup')
     conf.load()
+    #demo( "str(conf)" )
 
     #pprint.pprint(conf)
     #pprint.pprint(conf.raw)
@@ -116,7 +117,7 @@ def run_demo():
         print e
 
     print "write the out file"
-    conf.dump()
+    conf.save()
     print
     print
     print "Check that iterators (.keys() & .values()) work"
@@ -124,7 +125,7 @@ def run_demo():
     demo( "conf['infrastructure_provisioning']['tfvars'].values()" )
     demo( "mycluster['shard'][2]['mongod'][0].values()" )
 
-
+    demo( "str(conf)" )
 
     #TODO: API to get keys by their unique id
 
