@@ -14,7 +14,7 @@ import json
 from dateutil import parser
 from util import read_histories, compare_one_result, log_header, read_threshold_overrides
 
-def compare_results(this_one, reference, threshold, label, # pylint: disable=too-many-arguments
+def compare_results(this_one, reference, threshold, label, # pylint: disable=too-many-arguments,too-many-locals
                     noise_levels=None, noise_multiple=1,
                     thread_threshold=None, thread_noise_multiple=None,
                     using_override=None):
@@ -50,19 +50,17 @@ def compare_results(this_one, reference, threshold, label, # pylint: disable=too
     if result[0]: # Comparison failed
         failed = True
     # Check for regression on threading levels
-    for level in (r for r in this_one["results"] if
-                  isinstance(this_one["results"][r], dict)):
-        noise = 0
-        if level in noise_levels:
-            noise = noise_levels[level]
-        result = compare_one_result(this_one, reference, label, level,
-                                    noise_level=noise,
-                                    noise_multiple=thread_noise_multiple,
-                                    default_threshold=thread_threshold,
-                                    using_override=using_override)
-        log += result[1] + '\n'
-        if result[0]: # Comparison failed
-            failed = True
+    thread_levels = [r for r in this_one["results"] if isinstance(this_one["results"][r], dict)]
+    if len(thread_levels) > 1:
+        for level in thread_levels:
+            result = compare_one_result(this_one, reference, label, level,
+                                        noise_level=noise_levels.get(level, 0),
+                                        noise_multiple=thread_noise_multiple,
+                                        default_threshold=thread_threshold,
+                                        using_override=using_override)
+            log += result[1] + '\n'
+            if result[0]: # Comparison failed
+                failed = True
 
     return (failed, log)
 

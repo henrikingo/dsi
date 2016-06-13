@@ -329,10 +329,12 @@ def compare_throughputs( # pylint: disable=too-many-arguments
     if compare_one_throughput(this_one, reference, label, "max", threshold, using_override):
         failed = True
     # Check for regression on threading levels
-    for level in (r for r in this_one["results"] if isinstance(this_one["results"][r], dict)):
-        if compare_one_throughput(this_one, reference, label,
-                                  level, thread_threshold, using_override):
-            failed = True
+    thread_levels = [r for r in this_one["results"] if isinstance(this_one["results"][r], dict)]
+    if len(thread_levels) > 1:
+        for level in thread_levels:
+            if compare_one_throughput(this_one, reference, label,
+                                      level, thread_threshold, using_override):
+                failed = True
     if not failed:
         return 'pass'
     return 'fail'
