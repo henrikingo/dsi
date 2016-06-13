@@ -56,7 +56,7 @@ module "mongod_instance" {
     expire_on           = "${var.expire_on}"
     provisioner_file    = "mongod-instance-setup.sh"
     topology            = "${var.topology}"
-    type                = ""
+    type                = "mongod"
 }
 
 # AWS instance with placement group for mongos
@@ -98,7 +98,7 @@ module "configserver_instance" {
     expire_on           = "${var.expire_on}"
     provisioner_file    = "generic-mongo-instance-setup.sh"
     topology            = "${var.topology}"
-    type                = "config"
+    type                = "configsvr"
 }
 
 # AWS instance for workload generator
@@ -119,5 +119,5 @@ module "workload_instance" {
     expire_on           = "${var.expire_on}"
     provisioner_file    = "workload-client-setup.sh"
     topology            = "${var.topology}"
-    type                = "master"
+    type                = "workloadclient"
 }

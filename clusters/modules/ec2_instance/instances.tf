@@ -11,7 +11,7 @@ variable "mongourl"             {}
 variable "expire_on"            {}
 variable "provisioner_file"     {}
 variable "topology"             {}
-variable "type"                 { default="" }
+variable "type"                 {}
 
 # AWS instance with placement group for mongod
 resource "aws_instance" "member" {
@@ -37,7 +37,7 @@ resource "aws_instance" "member" {
 
     key_name = "${var.key_name}"
     tags = {
-        Name            = "dsi-${var.topology}-member-${count.index}"
+        Name            = "dsi-${var.topology}-${var.type}-${count.index}"
         TestSetup       = "dsi"
         TestTopology    = "${var.topology}"
         owner           = "${var.owner}"
