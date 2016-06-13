@@ -139,8 +139,7 @@ class MongoNode(object):
 
     def launch(self):
         """Starts this node."""
-        # Adjust ulimit so that mongod/s does not run out of files.
-        argv = ['ulimit', '-n', '3000', '-c', 'unlimited', '&&']
+        argv = []
         argv.extend(self.launch_cmd())
         return self.remote_host.run(argv)
 

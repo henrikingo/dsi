@@ -21,6 +21,10 @@ echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag
 echo f | sudo tee /sys/class/net/eth0/queues/rx-0/rps_cpus
 echo f0 | sudo tee /sys/class/net/eth0/queues/tx-0/xps_cpus
 
+# set ulimit nofile for ec2-user
+echo "ec2-user           soft    nofile          10000" | sudo tee -a /etc/security/limits.conf
+echo "ec2-user           hard    nofile          63536" | sudo tee -a /etc/security/limits.conf
+
 # Python dependencies for custom workloads
 sudo pip install argparse python-dateutil pytz
 
