@@ -25,7 +25,8 @@ from evergreen.history import History
 
 def get_json(filename):
     """ Load a file and parse it as json """
-    return json.load(open(filename, 'r'))
+    with open(filename) as json_file:
+        return json.load(json_file)
 
 def read_histories(variant, hfile, tfile, ofile):
     ''' Set up result histories from various files and returns the
