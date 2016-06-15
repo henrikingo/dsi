@@ -1,0 +1,10 @@
+{
+  evergreen: {
+    user: "user_here",
+    api_key: "api_key_here",
+    ui_server_host: "https://evergreen.mongodb.com"
+  },
+  github: {
+    token: "oauth_token_here"
+  }
+}

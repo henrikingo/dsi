@@ -20,7 +20,7 @@ import logging
 import os
 import sys
 
-from evergreen import evergreen, helpers
+from evergreen import evergreen_client, helpers
 
 LOGGER = None
 
@@ -97,8 +97,11 @@ def main():
         LOGGER.setLevel(logging.INFO)
 
     # Pass the rest of the command-line arguments
-    get_tagged_data(
-        args.project, args.variants, args.tasks, args.format, evergreen.Client(args.config))
+    get_tagged_data(args.project,
+                    args.variants,
+                    args.tasks,
+                    args.format,
+                    evergreen_client.Client(args.config))
 
 if __name__ == '__main__':
     main()

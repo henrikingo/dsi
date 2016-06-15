@@ -16,4 +16,5 @@
 
 VERSION_TUPLE = (0, 1, 0)
 
-__all__ = ['evergreen', 'override', 'history']
+__all__ = ['evergreen_client', 'override', 'history', 'update_override',
+           'update_override_threshold']

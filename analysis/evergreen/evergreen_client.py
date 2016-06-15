@@ -14,18 +14,10 @@
 
 """Module for interacting with Evergreen."""
 
-# TODO: Replace print statements with the logging module. In PyCharm, it doesn't seem to work with
-# the console
-
 from __future__ import print_function
 import logging
 
-# This really should be `from evergreen import helpers`, where `evergreen` is
-# this entire package, but the fact that this module is named `evergreen`
-# screws that up because the import statement will look inside this single file
-# instead.
-from . import helpers
-
+from evergreen import helpers
 
 DEFAULT_EVERGREEN_URL = 'https://evergreen.mongodb.com'
 """The default Evergreen URL."""
@@ -56,20 +48,18 @@ class Client(object):
     def __init__(self, configuration=None, verbose=True):
         """Create a new handle to an Evergreen server.
 
-        :param str|file configuration: (optional) A personal YAML configuration for Evergreen
+        :param dict configuration: (optional) contents of personal Evergreen YAML config file
         :param bool verbose: (optional) Control the verbosity of logging statements
         """
         self.logger = logging.getLogger('evergreen')
         self.logger.level = logging.INFO if verbose else logging.WARNING
-
         # Parse the config file
         try:
-            yml = helpers.file_as_yaml(configuration)
             self.headers = {
-                'auth-username': yml['user'],
-                'api-key': yml['api_key']
+                'auth-username': configuration['user'],
+                'api-key': configuration['api_key']
             }
-            self.base_url = yml['ui_server_host']
+            self.base_url = configuration['ui_server_host']
         except (TypeError, KeyError):
             self.base_url = DEFAULT_EVERGREEN_URL
             self.headers = {}
@@ -206,8 +196,8 @@ class Client(object):
                 'version_id': 'performance_30efc2300ad8740023ebb432723a1e662d16ef89',
                 'author': 'David',
                 'revision': '30efc2300ad8740023ebb432723a1e662d16ef89',
-                'message': 'Merge pull request #1032 from' \
-                        'ksuarz/master\n\nSERVER-20786 override singleThreaded'
+                'message': 'Merge pull request #1032 from \
+                        ksuarz/master\n\nSERVER-20786 override singleThreaded'
             }
 
         :param project_name: The project ID in Evergreen
@@ -291,7 +281,7 @@ class Client(object):
         ids = response['builds']
 
         if not names or not ids:
-            raise Empty('No builds found for Evergreen revision ' + str(revision_id))
+            raise Empty('No builds found for Evergreen revision {}'.format(revision_id))
 
         for item in zip(names, ids):
             yield item
@@ -307,7 +297,7 @@ class Client(object):
         tasks = build_info['tasks']
 
         if not tasks:
-            raise Empty('No tasks found for build variant ' + str(variant=build_variant_id))
+            raise Empty('No tasks found for build variant {}'.format(build_variant_id))
 
         for task_name in tasks.keys():
             yield (task_name, tasks[task_name]['task_id'])

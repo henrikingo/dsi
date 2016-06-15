@@ -21,7 +21,7 @@ cd testcases
 run_test bash test_perf_regression_check.sh
 run_test bash test_post_run_check.sh
 run_test bash test_dashboard_gen.sh
-# run_test bash test_update_overrides.sh
+run_test bash test_update_overrides.sh
 run_test bash test_get_override_tickets.sh
 run_test bash test_delete_overrides.sh
 run_test bash test_compare.sh

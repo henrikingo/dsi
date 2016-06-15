@@ -1,0 +1,4 @@
+Please run the following commands to generate and save a token to your config file:
+    curl -i -u <USERNAME> -H 'X-GitHub-OTP: 609277' -d '{"scopes": ["repo"], "note": "get full git hash"}' https://api.github.com/authorizations
+    
+    git config --global github.token <TOKEN>

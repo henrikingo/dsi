@@ -22,6 +22,19 @@ functions:
           virtualenv ./venv
           source ./venv/bin/activate
           pip install -r requirements.txt
+          echo "building credentials file"
+          cat > analysis/testcases/config.yml << END_OF_CREDS
+          {
+            evergreen: {
+              user: "xgen-evg-user",
+              api_key: ${evergreen_token},
+              ui_server_host: "https://evergreen.mongodb.com"
+            },
+            github: {
+              token: ${github_token}
+            }
+          }
+          END_OF_CREDS
           bash testscripts/runtests.sh
 
 #######################################
