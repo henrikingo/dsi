@@ -94,8 +94,7 @@ class ConfigDictTestCase(unittest.TestCase):
         self.assertEqual(mycluster['shard'][2]['mongod'][0]['config_file']['processManagement']['fork'], True)
         self.assertEqual(mongod.raw, {'public_ip': '${infrastructure_provisioning.out.mongod.6.public_ip}', 'mongodb_binary_archive': '<another url>', 'config_file': {'storage': {'engine': 'inMemory'}}, 'private_ip': '${infrastructure_provisioning.out.mongod.6.private_ip}'})
         # Standalone node
-        print self.conf['mongodb_setup']['topology'][2]['config_file']
-        self.assertEqual(self.conf['mongodb_setup']['topology'][2]['config_file'], {})
+        self.assertEqualDicts(self.conf['mongodb_setup']['topology'][2]['config_file'], {'replication': {'oplogSizeMB': 153600, 'replSetName': 'override-rs'}, 'systemLog': {'path': 'data/logs/mongod.log', 'destination': 'file'}, 'setParameter': {'enableTestCommands': True, 'foo': True}, 'net': {'port': 27017}, 'processManagement': {'fork': True}, 'storage': {'engine': 'wiredTiger', 'dbPath': 'data/dbs'}})
 
     def test_set_some_values(self):
         """set some values and write out file"""
