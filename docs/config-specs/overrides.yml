@@ -6,3 +6,23 @@ infrastructure_provisioning:
     tfvars: 
         configsvr_instance_type : t1.micro  # Use even smaller instance type to save money
 
+
+
+
+
+
+# Below section tests that overrides.yml works together with magic per_node_mongo_config()
+mongodb_setup:
+    mongod_config_file:
+        replication :
+            replSetName    : override-rs
+        setParameter:
+            foo: true
+    topology:
+      -mongos:
+          -
+          -
+          -
+          - public_ip: 127.0.0.1  # Adds a 4th mongos on localhost
+            private_ip: 127.0.0.1
+

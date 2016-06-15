@@ -1,8 +1,10 @@
 """ConfigDict class reads yaml config files and presents a dict() get/set API to read configs."""
 
+import copy
 import logging
 import os.path
 import re
+import sys
 import yaml
 
 LOG = logging.getLogger(__name__)
@@ -31,37 +33,36 @@ class ConfigDict(dict):
                'analysis',
                '_internal']
 
-    """The dictionary wrapped by this ConfigDict. When you access["sub"]["keys"], this contains the
-    substructure as well."""
-    raw = {}
-
-    """The dictionary holding defaults, set in dsi/docs/config-specs/defaults.yml.
-
-    If neither raw nor overrides specified a value for a key, the default value is returned from
-    here."""
-    defaults = {}
-
-    """The dictionary holding contents of the *.override.yml files.
-
-    Leaf values from overrides are "upserted" onto the values in raw during __getitem__()."""
-    overrides = {}
-
-    """The complete config dictionary.
-
-    Initially this is equal to self, but then stays at the same root forever.
-    This is used to substitute ${variable.references}, which can point anywhere into the config,
-    not just the sub-structure currently held in self.raw."""
-    root = None
-
-    """When descending to sub keys, this is the current path from root.
-
-    Used in __setitem__() to set the value into the root dictionary.
-    Also checked to see if we're at the path of a mongod_config_file, mongos_config_file or
-    configsvr_config_file."""
-    path = []
-
     def __init__(self, which_module_am_i):
-        dict.__init__(self)
+        self.raw = {}
+        """The dictionary wrapped by this ConfigDict. When you access["sub"]["keys"], this contains
+        the substructure as well."""
+
+        self.defaults = {}
+        """The dictionary holding defaults, set in dsi/docs/config-specs/defaults.yml.
+
+        If neither raw nor overrides specified a value for a key, the default value is returned from
+        here."""
+
+        self.overrides = {}
+        """The dictionary holding contents of the *.override.yml files.
+
+        Leaf values from overrides are "upserted" onto the values in raw during __getitem__()."""
+
+        self.root = None
+        """The complete config dictionary.
+
+        Initially this is equal to self, but then stays at the same root forever.
+        This is used to substitute ${variable.references}, which can point anywhere into the config,
+        not just the sub-structure currently held in self.raw."""
+
+        self.path = []
+        """When descending to sub keys, this is the current path from root.
+
+        Used in __setitem__() to set the value into the root dictionary.
+        Also checked to see if we're at the path of a mongod/mongos/configsvr config_file."""
+
+        super(ConfigDict, self).__init__()
         self.assert_valid_module(which_module_am_i)
         self.module = which_module_am_i
         self.root = self
@@ -69,12 +70,15 @@ class ConfigDict(dict):
     def load(self):
         """Populate with contents of module_name.yml, module_name.out.yml, overrides.yml."""
 
-        file_name = '../../docs/config-specs/defaults.yml'
+        # defaults.yml
+        file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                 '..', '..', 'docs', 'config-specs', 'defaults.yml')
         file_handle = open(file_name)
         self.defaults = yaml.safe_load(file_handle)
         file_handle.close()
         LOG.info('ConfigDict: Loaded: %s', file_name)
 
+        # All module_name.yml and module_name.out.yml
         for module_name in self.modules:
             file_name = module_name + '.yml'
             if os.path.isfile(file_name):
@@ -92,6 +96,7 @@ class ConfigDict(dict):
                 file_handle.close()
                 LOG.info('ConfigDict: Loaded: %s', file_name)
 
+        # overrides.yml
         file_name = 'overrides.yml'
         if os.path.isfile(file_name):
             file_handle = open(file_name)
@@ -167,15 +172,12 @@ class ConfigDict(dict):
 
     def values(self):
         """Return list of values, taking into account overrides."""
-        values = []
-        for key in self.keys():
-            values.append(self[key])
-        return values
+        return [self[key] for key in self.keys()]
 
     def __getitem__(self, key):
         """Return dict item, after applying overrides and ${variable.references}"""
         value = self.descend_key_and_apply_overrides(key)
-        value = self.variable_references(value)
+        value = self.variable_references(key, value)
         return value
 
     def __setitem__(self, key, value):
@@ -187,6 +189,15 @@ class ConfigDict(dict):
             to_set = to_set[element]
         to_set[key] = value
 
+    def as_dict(self):
+        # pylint: disable=line-too-long
+        """Cast this DictConfig into a normal dict.
+
+        Note that this is a supplement solution until we fix the issues arising from subclassing
+        from dict / not being able to cast normally with dict(config).
+        http://stackoverflow.com/questions/18317905/overloaded-iter-is-bypassed-when-deriving-from-dict
+        """
+        return ConfigDict.make_dict(self)
 
     ### __getitem__() helpers
     def descend_key_and_apply_overrides(self, key):
@@ -216,7 +227,10 @@ class ConfigDict(dict):
         if  value is None:
             value = self.raw.get(key, None)
         if value is None and isinstance(self.defaults, dict):
-            value = self.defaults[key]
+            value = self.defaults.get(key, None)
+        # We raise our own error to highlight that key really is missing, not a bug or anything.
+        if value is None:
+            raise KeyError("ConfigDict: Key not found: {}".format(key))
 
         value = self.wrap_dict_as_config_dict(key, value)
 
@@ -259,7 +273,7 @@ class ConfigDict(dict):
         else:
             return value
 
-    def variable_references(self, value):
+    def variable_references(self, key, value):
         """For leaf node that is a string, substitute ${variable.references}"""
         # str and unicode strings have the common parent class basestring.
         if isinstance(value, basestring):
@@ -272,8 +286,16 @@ class ConfigDict(dict):
                     # value would itself contain a ${variable.reference}, then it will
                     # automatically be substituted too, as part of the descend_root[key].
                     descend_root = self.root
-                    for key in path_list:
-                        descend_root = descend_root[key]
+                    for path_element in path_list:
+                        try:
+                            descend_root = descend_root[path_element]
+                        except:
+                            path_from_root = copy.copy(self.path)
+                            path_from_root.append(key)
+                            raise ValueError("ConfigDict error at {}: Cannot resolve variable "
+                                             "reference '{}', error at '{}': {} {}"
+                                             .format(path_from_root, path, path_element,
+                                                     sys.exc_info()[0], sys.exc_info()[1]))
                     values.append(descend_root)
                 between_values = re.split(r"\$\{.*?\}", value)
 
@@ -305,7 +327,6 @@ class ConfigDict(dict):
         """If key is a (mongod|mongos|configsvr)_config, key for a node in a mongodb_setup.topology
 
            we need to magically return the common mongod/s_config merged with contents of this key.
-           TODO: Do we require the common mongod_config_file to exist?
            Some non-default options like fork are needed for anything to work. The below code will
            not raise exception if no config exists."""
         # pylint: disable=too-many-boolean-expressions
@@ -359,3 +380,16 @@ class ConfigDict(dict):
             return True
         except ValueError:
             return False
+
+    @staticmethod
+    def make_dict(config):
+        """Return a normal dictionary copy of the config"""
+        if isinstance(config, dict):
+            new_dict = {}
+            for key, value in config:
+                new_dict[key] = ConfigDict.make_dict(value)
+        elif isinstance(config, list):
+            new_dict = [ConfigDict.make_dict(item) for item in config]
+        else:
+            new_dict = config
+        return new_dict

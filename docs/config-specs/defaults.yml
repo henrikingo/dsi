@@ -15,52 +15,57 @@ infrastructure_provisioning:
 
         region                     : us-west-2
         availability_zone          : us-west-2a
-        ssh_user                   : server-perf-team         # TBD
-        ssh_key                    : server-perf-team-ssh-key # TBD
-        ssh_key_file               : ../keys/aws.pem          # Likely to be changed by PERF-526
+        ssh_user                   : ec2-user
+        ssh_key_file               : ../../keys/aws.pem       # Likely to be changed by PERF-526
         tags :                                              
-            Name           : server-perf-myvariant
+            Name           : server-perf-defaultvariant
             owner          : perf@10gen.com                 # valid email address.
             expire-on-delta: 1                              # Set expire-on tag used by reaper script. Note: must be lower case.
                                                             # delta is days added to current date.
             Variant        : Linux 3-shard cluster
             Project        : sys-perf
 
-system_setup:
-    # This section is currently blank. We might move something here once this module takes more shape.
-
-workload_preparation:
-    # This section intentionally left blank.
-    
 mongodb_setup:
     bin_dir                : mongodb
     journal_dir            : /media/ephemeral1/journal
+    clean_db_dir           : true                           # TODO: Ultimately, preparing the dbpath directory must move to workload_preparation
 
     mongod_config_file     : # Note these defaults can be overridden by user, but not unset.
+        net:
+            port: 27017
+        processManagement:
+            fork: true
+        replication:
+            oplogSizeMB: 153600  # 150GB oplog
+        setParameter:
+            enableTestCommands: true
         storage:
+            dbPath: data/dbs
             engine: wiredTiger
-        dbpath: data/dbs
-        logpath: data/logs/mongod.log
-        port: 27017
-        fork: true
-        setParameters:
-            enableTestCommands: 1
-    mongos_config_file     :
-        logpath: data/logs/mongos.log
-        port: 27017
-        fork: true
-        setParameters:
-            enableTestCommands: 1
-    configsvr_config_file       :
-        configsvr: true
+        systemLog:
+            destination: file
+            path: data/logs/mongod.log
+
+    mongos_config_file:
+        net:
+            port: 27017
+        processManagement:
+            fork: true
+        setParameter:
+            enableTestCommands: true
+        systemLog:
+            destination: file
+            path: data/logs/mongos.log
+
+    configsvr_config_file:
+        net:
+            port: 27017
+        processManagement:
+            fork: true
+        setParameter:
+            enableTestCommands: true
         storage:
-            engine: wiredTiger
-        dbpath: data/dbs,
-        logpath: data/logs/mongod.log
-        port: 27017
-        fork: true
-        setParameters:
-            enableTestCommands: 1
+            dbPath: data/dbs
 
     topology:
       - cluster_type: standalone
@@ -73,8 +78,3 @@ mongodb_setup:
         is_sharded    : false
         is_replset    : false
 
-    test_control:
-        # This section intentionally left blank
-
-    analysis:
-        # This section intentionally left blank

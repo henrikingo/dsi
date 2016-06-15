@@ -46,7 +46,7 @@ class ConfigDictTestCase(unittest.TestCase):
                          'http://url1')
         self.assertEqual(self.conf['workload_preparation']['on_workload_client']['download_files'],
                          ['http://url1'])
-        self.assertEqualDicts(self.conf['infrastructure_provisioning']['out']['workload_client'][0], {'public_ip': '53.1.1.101', 'private_ip': '10.2.1.101'})
+        self.assertEqualDicts(self.conf['infrastructure_provisioning']['out']['mongos'][2], {'public_ip': '53.1.1.102', 'private_ip': '10.2.1.102'})
         self.assertEqual(self.conf['infrastructure_provisioning']['out']['workload_client'][0]['public_ip'],
                          "53.1.1.101")
 
@@ -57,8 +57,8 @@ class ConfigDictTestCase(unittest.TestCase):
 
     def test_defaults(self):
         """test value from defaults.yml"""
-        self.assertEqual(self.conf['mongodb_setup']['mongod_config_file']['port'], 27017)
-        self.assertEqual(self.conf['mongodb_setup']['mongod_config_file']['fork'], True)
+        self.assertEqual(self.conf['mongodb_setup']['mongod_config_file']['net']['port'], 27017)
+        self.assertEqual(self.conf['mongodb_setup']['mongod_config_file']['processManagement']['fork'], True)
 
     def test_copy(self):
         """copy value into new python variable"""
@@ -80,18 +80,18 @@ class ConfigDictTestCase(unittest.TestCase):
     def test_variable_references(self):
         """test ${variable.references}"""
         self.assertEqual(self.conf['mongodb_setup']['topology'][0]['mongos'][0]['private_ip'], "10.2.1.100")
-        self.assertEqual(self.conf['mongodb_setup']['meta']['hosts'], "10.2.1.100:27017, #no line break here 10.2.1.101:27017, 10.2.1.102:27017\n")
+        self.assertEqual(self.conf['mongodb_setup']['meta']['hosts'], "10.2.1.100:27017, #no line break or space here 10.2.1.101:27017, 10.2.1.102:27017\n")
 
     def test_per_node_mongod_config(self):
         """test magic per_node_mongod_config() (merging the common mongod_config_file with per node mongod_config)"""
         mycluster = self.conf['mongodb_setup']['topology'][0]
         mongod = mycluster['shard'][2]['mongod'][0]
-        self.assertEqualDicts(mycluster['shard'][0]['mongod'][0]['mongod_config'], {'fork': True, 'setParameters': {'enableTestCommands': 1}, 'dbpath': 'data/dbs', 'replication': {'replSetName': 'myrs0'}, 'logpath': 'data/logs/mongod.log', 'storage': {'engine': 'wiredTiger'}, 'port': 27017})
-        self.assertEqualDicts(mycluster['shard'][2]['mongod'][0]['mongod_config'], {'fork': True, 'setParameters': {'enableTestCommands': 1}, 'dbpath': 'data/dbs', 'replication': {'replSetName': 'myrs0'}, 'logpath': 'data/logs/mongod.log', 'storage': {'engine': 'inMemory'}, 'port': 27017})
+        self.assertEqualDicts(mycluster['shard'][0]['mongod'][0]['mongod_config'], {'replication': {'oplogSizeMB': 153600, 'replSetName': 'override-rs'}, 'systemLog': {'path': 'data/logs/mongod.log', 'destination': 'file'}, 'setParameter': {'enableTestCommands': True, 'foo': True}, 'net': {'port': 27017}, 'processManagement': {'fork': True}, 'storage': {'engine': 'wiredTiger', 'dbPath': 'data/dbs'}})
+        self.assertEqualDicts(mycluster['shard'][2]['mongod'][0]['mongod_config'], {'replication': {'oplogSizeMB': 153600, 'replSetName': 'override-rs'}, 'systemLog': {'path': 'data/logs/mongod.log', 'destination': 'file'}, 'setParameter': {'enableTestCommands': True, 'foo': True}, 'net': {'port': 27017}, 'processManagement': {'fork': True}, 'storage': {'engine': 'inMemory', 'dbPath': 'data/dbs'}})
         self.assertEqualDicts(mycluster['shard'][2]['mongod'][0]['mongod_config'].overrides, {})
         self.assertEqual(mycluster['shard'][2]['mongod'][0]['mongod_config']['storage']['engine'], "inMemory")
-        self.assertEqual(mycluster['shard'][2]['mongod'][0]['mongod_config']['port'], 27017)
-        self.assertEqual(mycluster['shard'][2]['mongod'][0]['mongod_config']['fork'], True)
+        self.assertEqual(mycluster['shard'][2]['mongod'][0]['mongod_config']['net']['port'], 27017)
+        self.assertEqual(mycluster['shard'][2]['mongod'][0]['mongod_config']['processManagement']['fork'], True)
         self.assertEqual(mongod.raw, {'public_ip': '${infrastructure_provisioning.out.mongod.6.public_ip}', 'mongodb_binary_archive': '<another url>', 'mongod_config': {'storage': {'engine': 'inMemory'}}, 'private_ip': '${infrastructure_provisioning.out.mongod.6.private_ip}'})
 
     def test_set_some_values(self):
@@ -122,7 +122,7 @@ class ConfigDictTestCase(unittest.TestCase):
         mycluster = self.conf['mongodb_setup']['topology'][0]
         self.assertEqualLists(self.conf.keys(), ['infrastructure_provisioning', 'system_setup', 'test_control', 'workload_preparation', 'mongodb_setup', 'analysis'])
         self.assertEqualLists(self.conf['infrastructure_provisioning']['tfvars'].values(), ['us-west-2a', 1, 9, 3, 'server-perf-team-ssh-key', 3, '../keys/aws.pem', '$RUNTIME_VALUE', '$RUNTIME_VALUE', 'c3.8xlarge', 'us-west-2', {'Name': 'server-perf-myvariant', 'Variant': 'Linux 3-shard cluster', 'Project': 'sys-perf', 'owner': 'perf@10gen.com', 'expire-on-delta': 1}, 'server-perf-team', 'c3.8xlarge', 'c3.8xlarge', 't1.micro'])
-        self.assertEqualLists(mycluster['shard'][2]['mongod'][0].values(), ['53.1.1.7', '<another url>', {'fork': True, 'setParameters': {'enableTestCommands': 1}, 'dbpath': 'data/dbs', 'replication': {'replSetName': 'myrs0'}, 'logpath': 'data/logs/mongod.log', 'storage': {'engine': 'inMemory'}, 'port': 27017}, '10.2.1.7'])
+        self.assertEqualLists(mycluster['shard'][2]['mongod'][0].values(), ['53.1.1.7', '<another url>', {'replication': {'oplogSizeMB': 153600, 'replSetName': 'override-rs'}, 'systemLog': {'path': 'data/logs/mongod.log', 'destination': 'file'}, 'setParameter': {'enableTestCommands': True, 'foo': True}, 'net': {'port': 27017}, 'processManagement': {'fork': True}, 'storage': {'engine': 'inMemory', 'dbPath': 'data/dbs'}}, '10.2.1.7'])
 
     # Helpers
     # pylint: disable=invalid-name
