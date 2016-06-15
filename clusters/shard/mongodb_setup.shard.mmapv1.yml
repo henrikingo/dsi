@@ -50,5 +50,7 @@ topology:
 meta :
     # The list of hosts that can be used in a mongodb connection string
     hosts: ${mongodb_setup.topology.0.mongos.0.private_ip}:27017
+    hostname: ${mongodb_setup.topology.0.mongos.0.private_ip}
+    port: 27017
     is_sharded: true
     is_replset: false

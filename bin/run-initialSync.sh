@@ -29,14 +29,18 @@ function runInitialSyncTest {
         TEST="$TEST_NAME"
     fi
 
-    MC_MONITOR_INTERVAL=1 ${BINDIR}/mc -config run-$TEST.json -run $TEST-run -o perf.json
+    MC_MONITOR_INTERVAL=1 ${BINDIR}/mc -config mc.json -run $TEST-run -o perf.json
 }
 
 declare -a arr=("initialSync_c_1_d_1_w_f" "initialSync_c_32_d_1_w_f" "initialSync_c_1_d_32_w_f" "initialSync_c_32_d_32_w_f" "initialSync_c_1_d_1_w_t" "initialSync_c_32_d_1_w_t" "initialSync_c_1_d_32_w_t" "initialSync_c_32_d_32_w_t" )
+cp mongodb_setup.replica-2node.${STORAGE_ENGINE}.yml mongodb_setup.yml
 for i in "${arr[@]}"
 do
     cp mongodb_setup.replica-2node.${STORAGE_ENGINE}.yml mongodb_setup.yml
     python ${BINDIR}/mongodb_setup.py --config
+    # This should be updated to match run-benchRun.sh from PERF-531
+    cp run-$TEST.json mc.json
+    echo "Using run-$TEST.json as mc.json"
     runInitialSyncTest $i
 done
 
@@ -47,3 +51,6 @@ chmod 766 perf.json
 cp ./perf.json ..
 pwd
 cat ../perf.json
+
+
+

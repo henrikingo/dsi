@@ -57,17 +57,22 @@ ssh -oStrictHostKeyChecking=no -T -i $PEMFILE $SSHUSER@$mc "tar zxvf ycsb.tar.gz
 
 
 cat ips.sh
-cat run-$TEST.json
-./update_run_config.sh
-cat run-$TEST.json
 rm -rf ./reports
 rm -f ../../reports.tgz
 
+# PERF-531. Generating config file for mission control.
+cp $DSI_PATH/test_control/test_control.ycsb.yml test_control.yml
+python $BINDIR/config_test_control.py
+echo "Generated mc.json"
+
+cat mc.json
+
+
 if [ $CLUSTER == "longevity" ]
 then
-    MC_PER_THREAD_STATS="no" MC_MONITOR_INTERVAL=10 ${BINDIR}/mc -config run-$TEST.json -run ycsb-run-longevity -o perf.json
+    MC_PER_THREAD_STATS="no" MC_MONITOR_INTERVAL=10 ${BINDIR}/mc -config mc.json -run ycsb-run-longevity -o perf.json
 else
-    MC_MONITOR_INTERVAL=1 ${BINDIR}/mc -config run-$TEST.json -run $TEST-run -o perf.json
+    MC_MONITOR_INTERVAL=1 ${BINDIR}/mc -config mc.json -run $TEST-run -o perf.json
 fi
 
 rm -f ../perf.json

@@ -16,10 +16,17 @@ class ConfigDictTestCase(unittest.TestCase):
 
     def setUp(self):
         """Init a ConfigDict object and load the configuration files from docs/config-specs/"""
+        self.old_dir = os.getcwd() # Save the old path to restore Note
+        # that this chdir only works without breaking relative imports
+        # because it's at the same directory depth
         os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/../../docs/config-specs/')
         self.conf = ConfigDict('mongodb_setup')
         self.conf.load()
         self.assertEqual(self.conf.module, 'mongodb_setup')
+
+    def tearDown(self):
+        """Restore working directory"""
+        os.chdir(self.old_dir)
 
     def test_traverse_entire_dict(self):
         """Traverse entire dict (also tests that the structure of docs/config-specs/ files are ok)"""

@@ -1,9 +1,0 @@
-{
-    "mongod_instance_count"     : "1",
-    "workload_instance_count"   : "1",
-
-    "mongourl"                  : "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.2.6.tgz",
-
-    "workload_instance_type"    : "c3.2xlarge",
-    "mongod_instance_type"      : "c3.2xlarge"
-}
