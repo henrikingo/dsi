@@ -319,7 +319,7 @@ class ConfigDict(dict):
         parts = path.split('.')
         # If an element in the path converts to integer, do so
         for i, element in enumerate(parts):
-            if self.is_integer(element):
+            if is_integer(element):
                 parts[i] = int(element)
         return parts
 
@@ -335,13 +335,13 @@ class ConfigDict(dict):
         if     len(self.path) > 3 and \
                self.path[0] == 'mongodb_setup' and \
                self.path[1] == 'topology' and \
-               self.is_integer(self.path[2]) and \
+               is_integer(self.path[2]) and \
                (self.path[-1] in ('mongod', 'mongos', 'configsvr') or \
-                self.is_integer(self.path[-1])) and \
-               key in ('mongod_config', 'mongos_config', 'configsvr_config'):
+                is_integer(self.path[-1])) and \
+               key == ('config_file'):
 
             # Note: In the below 2 lines, overrides and ${variables} are already applied
-            common_config = self.root['mongodb_setup'].get(key+'_file')
+            common_config = self.root['mongodb_setup'].get(self.topology_node_type()+'_config_file')
             node_specific_config = self.raw.get(key, {})
             # Technically this works the same as if common_config was the raw value
             # and node_specific_config is a dict with overrides. So let's reuse some code...
@@ -351,6 +351,18 @@ class ConfigDict(dict):
             value = helper[key]
 
         return value
+
+    def topology_node_type(self):
+        """Return one of mongod, mongos or configsvr by looking upwards in self.path
+
+        Note: This only works when called from get_node_mongo_config(). We don't guard against
+        random results if calling it from elsewhere."""
+        if self.path[-1] in ('mongod', 'mongos', 'configsvr'):
+            return self.path[-1]
+        elif is_integer(self.path[-1]):
+            return 'mongod'
+        else:
+            return None
 
 
     ### __setitem__() helpers
@@ -372,15 +384,6 @@ class ConfigDict(dict):
             raise KeyError('Only values under self["' + self.module +
                            '"]["out"] are settable in this object')
 
-    def is_integer(self, astring):
-        """Return True if astring is an integer, false otherwise."""
-        # pylint: disable=no-self-use
-        try:
-            int(astring)
-            return True
-        except ValueError:
-            return False
-
     @staticmethod
     def make_dict(config):
         """Return a normal dictionary copy of the config"""
@@ -393,3 +396,13 @@ class ConfigDict(dict):
         else:
             new_dict = config
         return new_dict
+        
+def is_integer(astring):
+    """Return True if astring is an integer, false otherwise."""
+    # pylint: disable=no-self-use
+    try:
+        int(astring)
+        return True
+    except ValueError:
+        return False
+

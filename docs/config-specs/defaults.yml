@@ -26,9 +26,9 @@ infrastructure_provisioning:
             Project        : sys-perf
 
 mongodb_setup:
-    bin_dir                : mongodb
+    mongo_dir              : mongodb
     journal_dir            : /media/ephemeral1/journal
-    clean_db_dir           : true                           # TODO: Ultimately, preparing the dbpath directory must move to workload_preparation
+    clean_db_dir           : true
 
     mongod_config_file     : # Note these defaults can be overridden by user, but not unset.
         net:

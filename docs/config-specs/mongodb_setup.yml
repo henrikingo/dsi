@@ -1,11 +1,11 @@
 mongodb_binary_archive : $RUNTIME_VALUE # This is a tar file containing bin/mongo(d/s/). Usually filled in by environment.
                                         # URL or local file path.
-mongo_root             : mongodb        # String that will be used in the path of the installation directory
+mongo_dir             : mongodb         # String that will be used in the path of the installation directory
                                         # Useful to test multiple versions of MongoDB on same infrastructure (manual 
                                         # runs for analysing build failures)
                                         # Note: mongo_root is the directory where a mongodb.tar.gz was extracted.
 journal_dir            : /media/ephemeral1/journal  # If specified, create a symlink to have journal at this path
-clean_db_dir           : true                       # TODO: Ultimately, preparing the dbpath directory must move to workload_preparation
+clean_db_dir           : true
 
 mongod_config_file     :          # This section is literally a mongod config file
     replication :                 # as specified in https://docs.mongodb.org/manual/reference/configuration-options/
@@ -70,7 +70,7 @@ topology:
     configsvr:
       - public_ip: ${infrastructure_provisioning.out.configsvr.0.public_ip}
         private_ip: ${infrastructure_provisioning.out.configsvr.0.private_ip}
-        configsvr_config: ...                                                 # See the last mongod's below for an example of node specific config
+        config_file: ...                                                 # See the last mongod's below for an example of node specific config
       - public_ip: ${infrastructure_provisioning.out.configsvr.1.public_ip}
         private_ip: ${infrastructure_provisioning.out.configsvr.1.private_ip}
       - public_ip: ${infrastructure_provisioning.out.configsvr.2.public_ip}
@@ -78,7 +78,7 @@ topology:
     mongos:
       - public_ip: ${infrastructure_provisioning.out.mongos.0.public_ip}
         private_ip: ${infrastructure_provisioning.out.mongos.0.private_ip}
-        mongos_config: ...                                                    # See the last mongod's below for an example of node specific config
+        config_file: ...                                                    # See the last mongod's below for an example of node specific config
       - public_ip: ${infrastructure_provisioning.out.mongos.1.public_ip}
         private_ip: ${infrastructure_provisioning.out.mongos.1.private_ip}
       - public_ip: ${infrastructure_provisioning.out.mongos.2.public_ip}
@@ -112,17 +112,17 @@ topology:
         cluster_type: replset
         mongod:
           - mongodb_binary_archive: <another url>     # Testing a cluster where some nodes are of a different version
-            mongod_config: &diff_mongod_config          # And a different config.
+            config_file: &diff_mongod_config          # And a different config.
               storage:                                # Note: These are merged (or "upserted") into the 
-                engine: inMemory                      # global/common mongod_config specified above
+                engine: inMemory                      # global/common mongod_config_file specified above
             public_ip: ${infrastructure_provisioning.out.mongod.6.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.6.private_ip}
           - mongodb_binary_archive: <another url>
-            mongod_config: *diff_mongod_config    
+            config_file: *diff_mongod_config
             public_ip: ${infrastructure_provisioning.out.mongod.7.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.7.private_ip}
           - mongodb_binary_archive: <another url>
-            mongod_config: *diff_mongod_config    
+            config_file: *diff_mongod_config
             public_ip: ${infrastructure_provisioning.out.mongod.7.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.7.private_ip}
   - cluster_type: replset

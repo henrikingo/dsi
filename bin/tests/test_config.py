@@ -83,16 +83,16 @@ class ConfigDictTestCase(unittest.TestCase):
         self.assertEqual(self.conf['mongodb_setup']['meta']['hosts'], "10.2.1.100:27017, #no line break or space here 10.2.1.101:27017, 10.2.1.102:27017\n")
 
     def test_per_node_mongod_config(self):
-        """test magic per_node_mongod_config() (merging the common mongod_config_file with per node mongod_config)"""
+        """test magic per_node_mongod_config() (merging the common mongod_config_file with per node config_file)"""
         mycluster = self.conf['mongodb_setup']['topology'][0]
         mongod = mycluster['shard'][2]['mongod'][0]
-        self.assertEqualDicts(mycluster['shard'][0]['mongod'][0]['mongod_config'], {'replication': {'oplogSizeMB': 153600, 'replSetName': 'override-rs'}, 'systemLog': {'path': 'data/logs/mongod.log', 'destination': 'file'}, 'setParameter': {'enableTestCommands': True, 'foo': True}, 'net': {'port': 27017}, 'processManagement': {'fork': True}, 'storage': {'engine': 'wiredTiger', 'dbPath': 'data/dbs'}})
-        self.assertEqualDicts(mycluster['shard'][2]['mongod'][0]['mongod_config'], {'replication': {'oplogSizeMB': 153600, 'replSetName': 'override-rs'}, 'systemLog': {'path': 'data/logs/mongod.log', 'destination': 'file'}, 'setParameter': {'enableTestCommands': True, 'foo': True}, 'net': {'port': 27017}, 'processManagement': {'fork': True}, 'storage': {'engine': 'inMemory', 'dbPath': 'data/dbs'}})
-        self.assertEqualDicts(mycluster['shard'][2]['mongod'][0]['mongod_config'].overrides, {})
-        self.assertEqual(mycluster['shard'][2]['mongod'][0]['mongod_config']['storage']['engine'], "inMemory")
-        self.assertEqual(mycluster['shard'][2]['mongod'][0]['mongod_config']['net']['port'], 27017)
-        self.assertEqual(mycluster['shard'][2]['mongod'][0]['mongod_config']['processManagement']['fork'], True)
-        self.assertEqual(mongod.raw, {'public_ip': '${infrastructure_provisioning.out.mongod.6.public_ip}', 'mongodb_binary_archive': '<another url>', 'mongod_config': {'storage': {'engine': 'inMemory'}}, 'private_ip': '${infrastructure_provisioning.out.mongod.6.private_ip}'})
+        self.assertEqualDicts(mycluster['shard'][0]['mongod'][0]['config_file'], {'replication': {'oplogSizeMB': 153600, 'replSetName': 'override-rs'}, 'systemLog': {'path': 'data/logs/mongod.log', 'destination': 'file'}, 'setParameter': {'enableTestCommands': True, 'foo': True}, 'net': {'port': 27017}, 'processManagement': {'fork': True}, 'storage': {'engine': 'wiredTiger', 'dbPath': 'data/dbs'}})
+        self.assertEqualDicts(mycluster['shard'][2]['mongod'][0]['config_file'], {'replication': {'oplogSizeMB': 153600, 'replSetName': 'override-rs'}, 'systemLog': {'path': 'data/logs/mongod.log', 'destination': 'file'}, 'setParameter': {'enableTestCommands': True, 'foo': True}, 'net': {'port': 27017}, 'processManagement': {'fork': True}, 'storage': {'engine': 'inMemory', 'dbPath': 'data/dbs'}})
+        self.assertEqualDicts(mycluster['shard'][2]['mongod'][0]['config_file'].overrides, {})
+        self.assertEqual(mycluster['shard'][2]['mongod'][0]['config_file']['storage']['engine'], "inMemory")
+        self.assertEqual(mycluster['shard'][2]['mongod'][0]['config_file']['net']['port'], 27017)
+        self.assertEqual(mycluster['shard'][2]['mongod'][0]['config_file']['processManagement']['fork'], True)
+        self.assertEqual(mongod.raw, {'public_ip': '${infrastructure_provisioning.out.mongod.6.public_ip}', 'mongodb_binary_archive': '<another url>', 'config_file': {'storage': {'engine': 'inMemory'}}, 'private_ip': '${infrastructure_provisioning.out.mongod.6.private_ip}'})
 
     def test_set_some_values(self):
         """set some values and write out file"""
