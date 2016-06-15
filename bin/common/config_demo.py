@@ -52,8 +52,8 @@ def run_demo():
 
     print
     print "Value from defaults.yml"
-    demo( "conf['mongodb_setup']['mongod_config_file']['port']" )
-    demo( "conf['mongodb_setup']['mongod_config_file']['fork']" )
+    demo( "conf['mongodb_setup']['mongod_config_file']['net']['port']" )
+    demo( "conf['mongodb_setup']['mongod_config_file']['processManagement']['fork']" )
 
 
 
@@ -83,19 +83,23 @@ def run_demo():
     demo( "conf['mongodb_setup']['meta']['hosts']" )
 
     print
-    print "When getting mongod_config for a single node, it should contain both the common mongod_config, and node specific additions."
-    print "Note: This is the way to get the config in general: iterate over all mongod/mongos nodes, read their mongod_config and use it."
+    print "When getting config_file for a single node, it should contain both the common mongod_config_file, and node specific config_file."
+    print "Note: This is the way to get the config in general: iterate over all mongod/mongos nodes, read their config_file and use it."
     mycluster = conf['mongodb_setup']['topology'][0]
-    demo( "str(mycluster['shard'][0]['mongod'][0]['mongod_config'])" )
-    demo( "str(mycluster['shard'][2]['mongod'][0]['mongod_config'])" )
-    demo( "mycluster['shard'][2]['mongod'][0]['mongod_config'].overrides" )
-    demo( "mycluster['shard'][2]['mongod'][0]['mongod_config']['storage']['engine']" )
-    demo( "mycluster['shard'][2]['mongod'][0]['mongod_config']['port']" )
-    demo( "mycluster['shard'][2]['mongod'][0]['mongod_config']['fork']" )
+    demo( "str(mycluster['shard'][0]['mongod'][0]['config_file'])" )
+    demo( "str(mycluster['shard'][2]['mongod'][0]['config_file'])" )
+    demo( "mycluster['shard'][2]['mongod'][0]['config_file'].overrides" )
+    demo( "mycluster['shard'][2]['mongod'][0]['config_file']['storage']['engine']" )
+    demo( "mycluster['shard'][2]['mongod'][0]['config_file']['net']['port']" )
+    demo( "mycluster['shard'][2]['mongod'][0]['config_file']['processManagement']['fork']" )
 
     mongod = mycluster['shard'][2]['mongod'][0]
     demo( "mongod.raw" )
-
+    print
+    print "this is the standalone node, has a slightly different path:"
+    # Standalone node
+    demo( "conf['mongodb_setup']['topology'][2]['config_file']" )
+    
     print
     print
     print "set something"
@@ -125,7 +129,10 @@ def run_demo():
     demo( "conf['infrastructure_provisioning']['tfvars'].values()" )
     demo( "mycluster['shard'][2]['mongod'][0].values()" )
 
-    demo( "str(conf)" )
+    print
+    print "Traversing the entire ConfigDict now, but not printing that..."
+    str(conf)
+    print "...done"
 
     #TODO: API to get keys by their unique id
 
