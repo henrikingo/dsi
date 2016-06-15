@@ -324,7 +324,7 @@ class ConfigDict(dict):
         return parts
 
     def get_node_mongo_config(self, key):
-        """If key is a (mongod|mongos|configsvr)_config, key for a node in a mongodb_setup.topology
+        """If key is a config_file key for a node in a mongodb_setup.topology
 
            we need to magically return the common mongod/s_config merged with contents of this key.
            Some non-default options like fork are needed for anything to work. The below code will
@@ -332,12 +332,11 @@ class ConfigDict(dict):
         # pylint: disable=too-many-boolean-expressions
 
         value = None
-        if     len(self.path) > 3 and \
+        if     len(self.path) >= 3 and \
                self.path[0] == 'mongodb_setup' and \
                self.path[1] == 'topology' and \
                is_integer(self.path[2]) and \
-               (self.path[-1] in ('mongod', 'mongos', 'configsvr') or \
-                is_integer(self.path[-1])) and \
+               isinstance(self.path[-1], int) and \
                key == ('config_file'):
 
             # Note: In the below 2 lines, overrides and ${variables} are already applied
@@ -357,8 +356,8 @@ class ConfigDict(dict):
 
         Note: This only works when called from get_node_mongo_config(). We don't guard against
         random results if calling it from elsewhere."""
-        if self.path[-1] in ('mongod', 'mongos', 'configsvr'):
-            return self.path[-1]
+        if self.path[-2] in ('mongod', 'mongos', 'configsvr'):
+            return self.path[-2]
         elif is_integer(self.path[-1]):
             return 'mongod'
         else:
@@ -396,7 +395,7 @@ class ConfigDict(dict):
         else:
             new_dict = config
         return new_dict
-        
+
 def is_integer(astring):
     """Return True if astring is an integer, false otherwise."""
     # pylint: disable=no-self-use
