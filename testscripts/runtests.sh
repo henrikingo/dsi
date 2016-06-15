@@ -14,16 +14,8 @@ function run_test {
     fi
 }
 
-run_test ${BASEDIR}/testscripts/test_mongodb_setup.py
-
 pushd .
-cd ${BASEDIR}/bin
-run_test python -m doctest -v setup_work_env.py  # Doc test util.py
-cd ..
 cd ${BASEDIR}/analysis
-
-run_test python -m doctest -v util.py # Doc test util.py
-run_test python -m doctest -v evergreen/override.py # Doc test util.py
 
 cd testcases
 run_test bash test_perf_regression_check.sh
@@ -37,12 +29,9 @@ run_test bash test_compare.sh
 # run test under ./bin
 popd
 pwd
-cd ${BASEDIR}/bin
-run_test python -m doctest -v  filter_bad_instance.py
 pip install nose
-run_test nosetests -v
+run_test nosetests -v --with-doctest --exe --ignore-files=timeseries.py . analysis
 
-cd ..
 for file in $(find analysis -name "*.py"); do
     pylint --disable=locally-disabled,fixme  --reports=n $file
     if [ $? -ne 0 ]; then
