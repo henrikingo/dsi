@@ -26,6 +26,7 @@ keys/*
 
 # Python
 *.pyc
+venv
 
 # PyCharm
 .idea

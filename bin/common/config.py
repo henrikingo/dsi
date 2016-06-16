@@ -92,7 +92,10 @@ class ConfigDict(dict):
                 # Note: The .out.yml files will add a single top level key: 'out'
                 out = yaml.safe_load(file_handle)
                 if isinstance(out, dict):
-                    self.raw[module_name].update(out)
+                    if module_name in self.raw:
+                        self.raw[module_name].update(out)
+                    else:
+                        self.raw.update({module_name: out})
                 file_handle.close()
                 LOG.info('ConfigDict: Loaded: %s', file_name)
 
@@ -159,16 +162,24 @@ class ConfigDict(dict):
             defaults_keys = set(self.defaults.keys())
         return list(raw_keys | overrides_keys | defaults_keys)
 
+    def iteritems(self):
+        """Iterator over the key, values"""
+        return iter((key, self[key]) for key in self.keys())
+
     def iterkeys(self):
-        for key in self.keys():
-            yield (key, self[key])
+        """Iterator over the keys"""
+        return iter(self.keys())
+
+    def itervalues(self):
+        """Iterator over the values"""
+        return iter(self.values())
 
     # pylint: disable=fixme,line-too-long
     # TODO: __iter__ isn't actually called if you do dict(instance_of_ConfigDict), so casting
     # to dict doesn't work. See http://stackoverflow.com/questions/18317905/overloaded-iter-is-bypassed-when-deriving-from-dict
     def __iter__(self):
-        for key in self.keys():
-            yield (key, self[key])
+        """Iterator over the keys"""
+        return self.iterkeys()
 
     def values(self):
         """Return list of values, taking into account overrides."""
@@ -197,7 +208,7 @@ class ConfigDict(dict):
         from dict / not being able to cast normally with dict(config).
         http://stackoverflow.com/questions/18317905/overloaded-iter-is-bypassed-when-deriving-from-dict
         """
-        return ConfigDict.make_dict(self)
+        return copy_obj(self)
 
     ### __getitem__() helpers
     def descend_key_and_apply_overrides(self, key):
@@ -383,18 +394,19 @@ class ConfigDict(dict):
             raise KeyError('Only values under self["' + self.module +
                            '"]["out"] are settable in this object')
 
-    @staticmethod
-    def make_dict(config):
-        """Return a normal dictionary copy of the config"""
-        if isinstance(config, dict):
-            new_dict = {}
-            for key, value in config:
-                new_dict[key] = ConfigDict.make_dict(value)
-        elif isinstance(config, list):
-            new_dict = [ConfigDict.make_dict(item) for item in config]
-        else:
-            new_dict = config
+
+def copy_obj(obj):
+    """Return a copy of the dictionary or list"""
+    if isinstance(obj, dict):
+        new_dict = {}
+        for key in obj.keys():
+            new_dict[key] = copy_obj(obj[key])
         return new_dict
+    elif isinstance(obj, list):
+        return [copy_obj(item) for item in obj]
+    else:
+        return obj
+
 
 def is_integer(astring):
     """Return True if astring is an integer, false otherwise."""

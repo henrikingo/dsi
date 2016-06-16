@@ -28,12 +28,11 @@ class ConfigDictTestCase(unittest.TestCase):
         # the entire structure without errors.
         str(self.conf)
 
+    @unittest.skip("dict(ConfigDict) does not work")
     def test_cast_as_dict(self):
         """DISABLED: it is possible to cast a ConfigDict to a dict"""
-        return True
         # TODO: this doesn't actually work. Seems like a limitation of python when sub-classing
         # native type like dict: http://stackoverflow.com/questions/18317905/overloaded-iter-is-bypassed-when-deriving-from-dict
-        # pylint: disable=unreachable
         complete_dict = dict(self.conf)
         sub_dict = dict(self.conf['workload_preparation']['on_workload_client'])
         self.assertEqual(complete_dict['workload_preparation']['on_workload_client']['download_files'][0],
@@ -159,3 +158,6 @@ class ConfigDictTestCase(unittest.TestCase):
                 self.assertEqual(list1value, list2value, 'assertEqualLists failed: mismatch in values.')
         self.assertEqual(len(list2), 0)
 
+
+if __name__ == '__main__':
+    unittest.main()

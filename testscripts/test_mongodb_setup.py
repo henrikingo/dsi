@@ -20,7 +20,8 @@ MONGOD_OPTS = {
         'systemLog': {'path': 'mongod.log'},
         'storage': {'dbPath': 'db'},
         'net': {'port': 9999}
-    }
+    },
+    'rs_conf_member': {}
 }
 
 
@@ -92,7 +93,7 @@ class TestMongoNode(unittest.TestCase):
 
     def setUp(self):
         """Create a MongoNode instance to use throughout tests."""
-        self.mongo_node = mongodb_setup.MongoNode(MONGOD_OPTS.copy())
+        self.mongo_node = mongodb_setup.MongoNode(mongodb_setup.copy_obj(MONGOD_OPTS))
 
     def test_hostport(self):
         """Test hostport format"""
@@ -118,11 +119,12 @@ class TestReplSet(unittest.TestCase):
         """Test priority handling."""
         repl_set_opts = {
             'name': 'rs',
-            'mongod': [MONGOD_OPTS.copy(), MONGOD_OPTS.copy()]
+            'mongod': [mongodb_setup.copy_obj(MONGOD_OPTS),
+                       mongodb_setup.copy_obj(MONGOD_OPTS)]
         }
         replset = mongodb_setup.ReplSet(repl_set_opts)
         self.assertEquals(replset.is_any_priority_set(), False)
-        repl_set_opts['mongod'][1]['priority'] = 5
+        repl_set_opts['mongod'][1]['rs_conf_member']['priority'] = 5
         replset = mongodb_setup.ReplSet(repl_set_opts)
         self.assertEquals(replset.is_any_priority_set(), True)
 
@@ -130,11 +132,12 @@ class TestReplSet(unittest.TestCase):
         """Test priority handling."""
         repl_set_opts = {
             'name': 'rs',
-            'mongod': [MONGOD_OPTS.copy(), MONGOD_OPTS.copy()]
+            'mongod': [mongodb_setup.copy_obj(MONGOD_OPTS),
+                       mongodb_setup.copy_obj(MONGOD_OPTS)]
         }
         replset = mongodb_setup.ReplSet(repl_set_opts)
         self.assertEquals(replset.highest_priority_node(), replset.nodes[0])
-        repl_set_opts['mongod'][1]['priority'] = 5
+        repl_set_opts['mongod'][1]['rs_conf_member']['priority'] = 5
         replset = mongodb_setup.ReplSet(repl_set_opts)
         self.assertEquals(replset.highest_priority_node(), replset.nodes[1])
 

@@ -66,6 +66,10 @@ mongodb_setup:
             enableTestCommands: true
         storage:
             dbPath: data/dbs
+            engine: wiredTiger
+        systemLog:
+            destination: file
+            path: data/logs/mongod.log
 
     topology:
       - cluster_type: standalone
