@@ -2,7 +2,7 @@
 
 # Runs a canned test against dashboard_gen.py
 
-python ../dashboard_gen.py --rev 0ff97139df609ae1847da9bfb25c35d209e0936e -f core_workloads_wt.history.json -t linux-standalone.core_workloads_WT.tags.json --refTag 3.2.1-Baseline --overrideFile system_perf_override.json --project_id sys-perf --task_name core_workloads_WT --variant linux-standalone > dashboard_gen.out 2> dashboard_gen.err
+python ../dashboard_gen.py --rev 0ff97139df609ae1847da9bfb25c35d209e0936e -f core_workloads_wt.history.json -t linux-standalone.core_workloads_WT.tags.json --refTag 3.2.1-Baseline --overrideFile system_perf_override.json --project_id sys-perf --task_name core_workloads_WT --variant linux-standalone > dashboard_gen.out --jira-user fake-user --jira-password fake-passwd 2> dashboard_gen.err
 
 failed=0
 
@@ -19,7 +19,7 @@ if [ $? -ne 0 ]; then
 fi
 diff dashboard.json reference/dashboard_gen.dashboard.json.ok
 if [ $? -ne 0 ]; then
-    echo "Error in dashboard_gen.py report.json output."
+    echo "Error in dashboard_gen.py dashboard.json output."
     ((failed++))
 fi
 

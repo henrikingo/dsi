@@ -14,9 +14,9 @@
                     "tickets": [
                         "PERF-335"
                     ],
-                    "state": "pass",
+                    "state": "unacceptable",
                     "test_file": "insert_jtrue-wiredTiger",
-                    "notes": "",
+                    "notes": "Max throughput unacceptable (<0.88 of baseline)\nThroughput at 32 undesired (<0.88 of baseline)\n",
                     "perf_ratio": 0.8736567758274275
                 },
                 {

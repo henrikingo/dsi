@@ -5,14 +5,17 @@ dashboard against the specified baselines. Output is written to dashboard.json
 which in turn is sent to the Evergreen database.
 
 Example usage:
- dashboard_gen.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f
-         --project_id $pr_id --variant $variant
+ dashboard_gen.py -f history_file.json --rev
+        18808cd923789a34abd7f13d62e7a73fafd5ce5f --project_id $pr_id --variant
+        $variant --jira-user user --jira-password passwd
 '''
 from __future__ import print_function
-import sys
+
 import argparse
 import json
+import sys
 import requests
+
 from util import read_histories, get_override
 
 
@@ -55,6 +58,10 @@ THRESHOLDS = {
 # a multiplier to define the unacceptable
 THRESHOLD_MULTIPLIER = 1.5
 
+# test data series
+HISTORY = None
+TAG_HISTORY = None
+OVERRIDE_INFO = None
 
 '''
 Checks section -
@@ -64,10 +71,11 @@ Checks section -
     that is relevant to the conditions it checks.
 '''
 
-def throughput_check(test, ref_tag, project_id, variant): # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_password):
     ''' compute throughput ratios for all points in result series this_one
      over reference. Classify a test into a result['state'] based on the ratios.
      Use different thresholds for max throughput, and per-thread comparisons. '''
+     # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
     check_result = {'state': 'pass', 'notes': '', 'tickets': [],
                     'perf_ratio': 1}
 
@@ -82,10 +90,11 @@ def throughput_check(test, ref_tag, project_id, variant): # pylint: disable=too-
         override = get_override(test['name'], 'reference', OVERRIDE_INFO)
         if override:
             check_result['tickets'].extend(override['ticket'])
-            if use_override(override['ticket']):
+            if use_override(override['ticket'], jira_user, jira_password):
                 reference = override
 
-    # get the thresholds to use
+    # if the thresholds are given on command line, use them
+    # otherwise get the thresholds to use using project/variant
     try:
         undesired_target = 1 - THRESHOLDS[project_id].get(variant, \
             THRESHOLDS['default'])['undesired']
@@ -106,7 +115,7 @@ def throughput_check(test, ref_tag, project_id, variant): # pylint: disable=too-
     override = get_override(test['name'], 'threshold', OVERRIDE_INFO)
     if override:
         check_result['tickets'].extend(override['ticket'])
-        if use_override(override['ticket']):
+        if use_override(override['ticket'], jira_user, jira_password):
             undesired_target = 1 - override['threshold']
             unacceptable_target = 1 - THRESHOLD_MULTIPLIER * override['threshold']
             thread_undesired_target = 1 - override['thread_threshold']
@@ -122,7 +131,7 @@ def throughput_check(test, ref_tag, project_id, variant): # pylint: disable=too-
             num_level += 1
             thread_ratio = 1 if reference['results'][level]['ops_per_sec'] == 0 \
                 else test['results'][level]['ops_per_sec']\
-                    /reference['results'][level]['ops_per_sec']
+                    / reference['results'][level]['ops_per_sec']
             if thread_ratio <= worst_ratio or worst_ratio == 0:
                 worst_ratio = thread_ratio
                 worst_thread = level
@@ -151,6 +160,7 @@ def throughput_check(test, ref_tag, project_id, variant): # pylint: disable=too-
 
     return check_result
 
+
 def repl_lag_check(test, threshold):
     ''' Iterate through all thread levels and flag a test if its
     max replication lag is higher than the threshold
@@ -168,19 +178,25 @@ def repl_lag_check(test, threshold):
 
 # Other utility functions
 
-def use_override(ticket_list):
-    ''' Determine if we want to use override based on the states of the assoicated tickets.
-    Use overrride if all tickets are in a terminal state (closed/resolved/won't fix). '''
+def use_override(ticket_list, jira_user, jira_password):
+    ''' Determine if we want to use override based on the states of the
+    assoicated tickets. Use overrride if all tickets are in a terminal state
+    (closed/resolved/won't fix). '''
     base_url = 'https://jira.mongodb.org/rest/api/latest/issue/'
     for ticket in ticket_list:
         url = base_url + ticket
-        #req = requests.get(url, auth=('user', 'pass'))
-        req = requests.get(url)
-        req_json = req.json()
-        if 'fields' in req_json:
-            if req_json['fields']['status']['name'] not in ('closed', 'resolved', 'wont fix'):
-                return False
+        req = requests.get(url, auth=(jira_user, jira_password))
+        # Don't use override if any ticket is in a non-terminal state
+        if req.status_code != 200:
+            return False
+        else:
+            req_json = req.json()
+            if 'fields' in req_json:
+                if req_json['fields']['status']['name'] not in \
+                        ('closed', 'resolved', 'wont fix'):
+                    return False
     return True
+
 
 def update_state(current, new_data):
     ''' Update the current test info with new_data. Update the state to the
@@ -193,28 +209,41 @@ def update_state(current, new_data):
     if 'perf_ratio' in new_data:
         current['perf_ratio'] = new_data['perf_ratio']
 
-HISTORY = None
-TAG_HISTORY = None
-OVERRIDE_INFO = None
 
-def main(args):
-    ''' Loop through and classify tests in a task into states used for dashboard '''
+def main():
+    ''' Loop through and classify tests in a task into states used for
+    dashboard '''
     parser = argparse.ArgumentParser()
     parser.add_argument("--project_id", dest="project_id",
                         help="project_id for the test in Evergreen")
-    parser.add_argument("--task_name", dest="task_name", help="task_name for the test in Evergreen")
-    parser.add_argument("-f", "--file", dest="hfile", help="path to json file containing"
-                        "history data")
-    parser.add_argument("-t", "--tagFile", dest="tfile", help="path to json file containing"
-                        "tag data")
-    parser.add_argument("--rev", dest="rev", help="revision to examine for regressions")
+    parser.add_argument("--task_name", dest="task_name", help="task_name for"
+                        " the test in Evergreen")
+    parser.add_argument("-f", "--file", dest="hfile", help="path to json file"
+                        " containing history data")
+    parser.add_argument("-t", "--tagFile", dest="tfile", help="path to json"
+                        " file containing tag data")
+    parser.add_argument("--rev", dest="rev", help="revision to examine for"
+                        " regressions")
     parser.add_argument("--refTag", nargs="+", dest="reference", help=
-                        "Reference tag to compare against. Should be a valid tag name")
+                        "Reference tag to compare against. Should be a valid"
+                        " tag name")
     parser.add_argument("--overrideFile", dest="ofile",
-                        help="File to read for comparison override information")
-    parser.add_argument("--variant", dest="variant", help="Variant to lookup in the override file")
-
-    args = parser.parse_args()
+                        help="File to read override information")
+    parser.add_argument("--variant", dest="variant", help="Variant to lookup"
+                        " in the override file")
+    parser.add_argument("--threshold", dest="threshold", help="Threshold for"
+                        " undesired tests")
+    parser.add_argument("--threadThreshold", dest="threadThreshold", help=""
+                        "threadThreshold to use for undesired")
+    parser.add_argument("--jira-user", dest="jira_user", required=True, help=
+                        "Jira account used to check ticket states. Incorrect"
+                        "user/password may result in override information not"
+                        "properly used")
+    parser.add_argument("--jira-password", dest="jira_password", required=True,
+                        help="Password for the Jira account. Incorrect"
+                        " user/passowrd may result in override information not"
+                        "properly used")
+    ARGS = parser.parse_args()  # pylint: disable=invalid-name
 
     # Set up result histories from various files:
     # HISTORY - this series include the run to be checked, and previous or NDays
@@ -223,11 +252,11 @@ def main(args):
     # The result histories are stored in global variables within this module as they
     # are accessed across many rules.
     global HISTORY, TAG_HISTORY, OVERRIDE_INFO # pylint: disable=global-statement
-    (HISTORY, TAG_HISTORY, OVERRIDE_INFO) = read_histories(args.variant, \
-        args.hfile, args.tfile, args.ofile)
+    (HISTORY, TAG_HISTORY, OVERRIDE_INFO) = read_histories(ARGS.variant, \
+        ARGS.hfile, ARGS.tfile, ARGS.ofile)
 
     report = {'baselines':[]}
-    for baseline in args.reference:
+    for baseline in ARGS.reference:
         results = []
         report_for_baseline = {'version': baseline}
         # iterate through tests and check for regressions and other violations
@@ -235,10 +264,13 @@ def main(args):
         for test in testnames:
             result = {'test_file': test, 'state': 'pass', 'notes': '', \
                 'tickets': [], 'perf_ratio': 1}
-            to_check = HISTORY.series_at_revision(test, args.rev)
+            to_check = HISTORY.series_at_revision(test, ARGS.rev)
             if to_check:
-                update_state(result, throughput_check(to_check, baseline, \
-                    args.project_id, args.variant))
+                update_state(result,
+                             throughput_check(to_check, baseline,
+                                              ARGS.project_id, ARGS.variant,
+                                              ARGS.jira_user,
+                                              ARGS.jira_password))
                 update_state(result, repl_lag_check(to_check, 10))
             else:
                 result['state'] = 'no data'
@@ -254,4 +286,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()
