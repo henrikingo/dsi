@@ -294,7 +294,8 @@
                 ],
                 "workload":"ycsb"
             }
-        }
+        },
+        "threshold":{}
     },
     "linux-standalone":{
         "ndays":{},
