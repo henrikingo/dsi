@@ -1,0 +1,14 @@
+{
+    "PemFile": "../../keys/aws.pem",
+    "runs": [
+            {
+                        "run_id": "benchRun",
+                        "clients": [ %%CLIENT%% ],
+                        "client_logs": [],
+                        "servers": [ %%ALLMEMBERS%%],
+                        "server_logs": [],
+                        "type"  : "shell",
+                        "cmd": "cd workloads/; ./run_workloads.py -c workloads.yml -l initialsync_c_32_d_1_w_t -t %%I1%% --storageEngine wiredTiger -r; sleep 1"
+                    }
+        ]}
+

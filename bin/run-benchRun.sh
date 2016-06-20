@@ -43,8 +43,12 @@ chmod 777 perf.json
 # Run the initial sync tests if we are in a replica set
 if [ $CLUSTER == "replica" ]
 then
-    ${BINDIR}/configure-mongodb-cluster.sh replica-2node $1
-    ${BINDIR}/run-initialSync.sh ${STORAGE_ENGINE} replica_2node ${CLUSTER}
+    declare -a arr=("initialSync_c_1_d_1_w_f" "initialSync_c_32_d_1_w_f" "initialSync_c_1_d_32_w_f" "initialSync_c_32_d_32_w_f" "initialSync_c_1_d_1_w_t" "initialSync_c_32_d_1_w_t" "initialSync_c_1_d_32_w_t" "initialSync_c_32_d_32_w_t" )
+    for i in "${arr[@]}"
+    do
+        ${BINDIR}/configure-mongodb-cluster.sh replica-2node $1
+        ${BINDIR}/run-initialSync.sh ${STORAGE_ENGINE} replica_2node ${CLUSTER} $i
+    done
 fi
 
 # Copy back over timestamp csv file

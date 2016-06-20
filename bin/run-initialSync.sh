@@ -2,6 +2,7 @@
 
 STORAGE_ENGINE=$1
 CLUSTER=$3
+TEST_NAME=$4
 
 BINDIR=$(dirname $0)
 source setting.sh
@@ -16,9 +17,9 @@ fi
 
 if [ $STORAGE_ENGINE != "wiredTiger" ]
 then
-    TEST="initialSync-$STORAGE_ENGINE"
+    TEST="$TEST_NAME-$STORAGE_ENGINE"
 else
-    TEST="initialSync"
+    TEST="$TEST_NAME"
 fi
 
 MC_MONITOR_INTERVAL=1 ${BINDIR}/mc -config run-$TEST.json -run $TEST-run -o perf.json
