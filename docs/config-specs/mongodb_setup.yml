@@ -1,27 +1,25 @@
-mongodb_binary_archive : $RUNTIME_VALUE # This is a tar file containing bin/mongo(d/s/). Usually filled in by environment.
+mongodb_binary_archive: $RUNTIME_VALUE  # This is a tar file containing bin/mongo(d/s/). Usually filled in by environment.
                                         # URL or local file path.
-mongo_dir             : mongodb         # String that will be used in the path of the installation directory
+mongo_dir: mongodb                      # String that will be used in the path of the installation directory
                                         # Useful to test multiple versions of MongoDB on same infrastructure (manual 
                                         # runs for analysing build failures)
                                         # Note: mongo_root is the directory where a mongodb.tar.gz was extracted.
-journal_dir            : /media/ephemeral1/journal  # If specified, create a symlink to have journal at this path
-clean_db_dir           : true
+journal_dir: /media/ephemeral1/journal  # If specified, create a symlink to have journal at this path
+clean_db_dir: true
 
-mongod_config_file     :          # This section is literally a mongod config file
-    replication :                 # as specified in https://docs.mongodb.org/manual/reference/configuration-options/
-        replSetName    : myrs0    # We will use this and completely cease using command line options
-    storage :                     # A test can specify any option supported by mongod, including undocumented ones
-        engine         : wiredTiger
+mongod_config_file:               # This section is literally a mongod config file
+    replication:                  # as specified in https://docs.mongodb.org/manual/reference/configuration-options/
+        replSetName: myrs0        # We will use this and completely cease using command line options
+    storage:                      # A test can specify any option supported by mongod, including undocumented ones
+        engine: wiredTiger
     # etc...
-rs_conf                :          # The top level settings for rs.conf() / rs.initiate()
+rs_conf:                          # The top level settings for rs.conf() / rs.initiate()
     protocolVersion: 1            # See also node specific settings under topology
     settings:
         heartbeatTimeoutSecs: 10
 
-mongos_config_file     :
-    # etc ...
-configsvr_config_file       :
-    # etc ...
+mongos_config_file: ...
+configsvr_config_file: ...
 
 # Note on execution order for the on_* hooks in mongodb_setup:
 # 1. mongodb_setup: killall mongod/mongos (entire cluster)
@@ -37,26 +35,26 @@ configsvr_config_file       :
 # the list of mongos servers sequentially, it must not execute concurrently on all mongos servers.
 
 
-on_all_hosts :
-    download_files :
+on_all_hosts:
+    download_files:
       - http://url1
       - http://url2
-    upload_files : # Anything? Could download/upload data set or a data directory
+    upload_files: # Anything? Could download/upload data set or a data directory
       - remote-scripts/file1
       - remote-scripts/file2
-    exec_remote : |
+    exec_remote: |
         # This would execute in OS shell (before MongoDB cluster is running)
-    exec_mongo_shell : |
+    exec_mongo_shell: |
         # JavaScript to be executed in mongo shell (when MongoDB cluster is running)
         # Note: You can also put .js files in upload_files, and use load() to execute them in mongo shell.
-    post_exec_remote : |
+    post_exec_remote: |
         # This would execute in OS shell (after MongoDB cluster is running)
-on_servers : (see above)            # servers = union( mongod, mongos, configsvr) = all_hosts - workload_client
-on_mongod : (see above)
-on_mongos : (see above)
-on_configsvr : (see above)
-on_workload_client : (see above)
-on_host : (see system_setup.yml)
+on_servers: (see above)            # servers = union( mongod, mongos, configsvr) = all_hosts - workload_client
+on_mongod: (see above)
+on_mongos: (see above)
+on_configsvr: (see above)
+on_workload_client: (see above)
+on_host: (see system_setup.yml)
 
 # This defines the cluster topology to deploy, and what to deploy on which IP address.
 # Note that it is also possible to override mongod/mongos config file entries on a per-node basis.
@@ -97,7 +95,7 @@ topology:
             private_ip: ${infrastructure_provisioning.out.mongod.2.private_ip}
       - id: myrs1
         cluster_type: replset
-        rs_conf :                                                              # It is possible to set top level rs.conf() settings on a per shard basis here
+        rs_conf :                                     # It is possible to set top level rs.conf() settings on a per shard basis here
             protocolVersion: 0
         mongod:
           - public_ip: ${infrastructure_provisioning.out.mongod.3.public_ip}
@@ -145,14 +143,10 @@ topology:
 # Meta data about this mongodb setup
 # It is possible to provide meta data that is not used by mongodb_setup itself, but that can be convenient to reference 
 # from the other modules. In particular, see the test_control module doing that in run.0.workload_config.mongo
-meta :
+meta:
     # The list of hosts that can be used in a mongodb connection string
-    hosts         : >
-                    ${mongodb_setup.topology.0.mongos.0.private_ip}:27017, #no line break or space here
-                    ${mongodb_setup.topology.0.mongos.1.private_ip}:27017,
-                    ${mongodb_setup.topology.0.mongos.2.private_ip}:27017
-    username      : myusername
-    password      : mypassword
-    is_sharded    : true
-    is_replset    : false
-
+    hosts: ${mongodb_setup.topology.0.mongos.0.private_ip}:27017,${mongodb_setup.topology.0.mongos.1.private_ip}:27017,${mongodb_setup.topology.0.mongos.2.private_ip}:27017
+    username: myusername
+    password: mypassword
+    is_sharded: true
+    is_replset: false

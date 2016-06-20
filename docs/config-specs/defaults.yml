@@ -2,7 +2,7 @@
 # Note: This file is read by dsi/bin/commmon/config.py. Don't mess with it.
 
 infrastructure_provisioning:
-    tfvars :
+    tfvars:
         mongod_instance_count      : 1
         mongos_instance_count      : 0
         configsvr_instance_count   : 0
@@ -17,20 +17,20 @@ infrastructure_provisioning:
         availability_zone          : us-west-2a
         ssh_user                   : ec2-user
         ssh_key_file               : ../../keys/aws.pem       # Likely to be changed by PERF-526
-        tags :                                              
-            Name           : server-perf-defaultvariant
-            owner          : perf@10gen.com                 # valid email address.
-            expire-on-delta: 1                              # Set expire-on tag used by reaper script. Note: must be lower case.
-                                                            # delta is days added to current date.
-            Variant        : Linux 3-shard cluster
-            Project        : sys-perf
+        tags:
+            Name: server-perf-defaultvariant
+            owner: perf@10gen.com               # valid email address.
+            expire-on-delta: 1                  # Set expire-on tag used by reaper script. Note: must be lower case.
+                                                # delta is days added to current date.
+            Variant: Linux 3-shard cluster
+            Project: sys-perf
 
 mongodb_setup:
-    mongo_dir              : mongodb
-    journal_dir            : /media/ephemeral1/journal
-    clean_db_dir           : true
+    mongo_dir: mongodb
+    journal_dir: /media/ephemeral1/journal
+    clean_db_dir: true
 
-    mongod_config_file     : # Note these defaults can be overridden by user, but not unset.
+    mongod_config_file: # Note these defaults can be overridden by user, but not unset.
         net:
             port: 27017
         processManagement:
@@ -76,9 +76,8 @@ mongodb_setup:
         public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
         private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
 
-    meta :
+    meta:
         # The list of hosts that can be used in a mongodb connection string
-        hosts         : ${mongodb_setup.topology.0.private_ip}:27017
-        is_sharded    : false
-        is_replset    : false
-
+        hosts: ${mongodb_setup.topology.0.private_ip}:27017
+        is_sharded: false
+        is_replset: false

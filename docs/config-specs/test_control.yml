@@ -1,13 +1,13 @@
 # This essentially ports dsi/clusters/*/*.json to yml. Additions are up for debate.
 # Note, unlike other files, this is a list of test runs. Hence, even if there's only a single entry, it is a list.
-run :
-  - id  : benchRun-mmapv1            # Note: standardize on engine explicitly being part of id, and using correct engine names, not "mmap"
-    type    : shell                  # or "ycsb"
+run:
+  - id: benchRun-mmapv1            # Note: standardize on engine explicitly being part of id, and using correct engine names, not "mmap"
+    type: shell                    # or "ycsb"
 
-    cmd    : $DSI_PATH/workloads/run_workloads.py -c workloads.yml
-    config_filename : workloads.yml # The name used in previous row
-    workload_config :               # This section will be copied out into a file and given as config file
-                                    # to the benchmark tool. Can be yml (run_workloads.py) or a text block (ycsb)
+    cmd: $DSI_PATH/workloads/run_workloads.py -c workloads.yml
+    config_filename: workloads.yml # The name used in previous row
+    workload_config:               # This section will be copied out into a file and given as config file
+                                   # to the benchmark tool. Can be yml (run_workloads.py) or a text block (ycsb)
         ########################################################################
         # Test lists. Command line will indicate which list of tests to execute.
         # The 'default' list is the default.
@@ -27,33 +27,32 @@ run :
             test: # Put new workloads here when testing
               - hello.js
 
-        mongo : 
-            # Note: We shall move to use a connection string for all tests. This allows things like failover and
+        mongo:
+            # Note: We shall move to use a connection string for all tests. This allows things like
             # multiple mongoses to be supported automatically
-            uri  : mongodb://${mongodb_setup.meta.hosts}/testdb?readPreference=PRIMARY
+            # (After consideration, don't want automatic failover for perf tests. If it fails, fail hard.)
+            uri: mongodb://${mongodb_setup.meta.hosts}/testdb?readPreference=PRIMARY
             sharded: ${mongodb_setup.meta.is_sharded}
             replica: ${mongodb_setup.meta.is_replset}
             storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
-    on_workload_client :
-        logs :                      # Same as client_logs in dsi/clusters/*/*.json
-          -                         # Don't know what MC puts here now, but looks like a list.
-        pre_exec : |                # Hook allows for example collecting metrics not done in MC
-                                    # Note: There's no upload_files, you do that in workload_preparation
-        pre_exec_mongo_shell : |
+    on_workload_client:
+        logs:                      # Same as client_logs in dsi/clusters/*/*.json
+          -                        # Don't know what MC puts here now, but looks like a list.
+        pre_exec: |                # Hook allows for example collecting metrics not done in MC
+                                   # Note: There's no upload_files, you do that in workload_preparation
+        pre_exec_mongo_shell: |
             # JavaScript to be executed in mongo shell (when MongoDB cluster is running)
-        post_exec : |               # Hook to for example kill the process collecting the custom metrics
+        post_exec: |               # Hook to for example kill the process collecting the custom metrics
             # ...
-        post_exec_mongo_shell : |
+        post_exec_mongo_shell: |
             # JavaScript to be executed in mongo shell (when MongoDB cluster is running)
         
-    on_all_hosts : (see above)
-    on_servers : (see above)            # servers = union( mongod, mongos, configsvr) = all_hosts - workload_client
-    on_mongod : (see above)
-    on_mongos : (see above)
-    on_configsvr : (see above)
-    on_host : (see system_setup.yml)
+    on_all_hosts: (see above)
+    on_servers: (see above)            # servers = union( mongod, mongos, configsvr) = all_hosts - workload_client
+    on_mongod: (see above)
+    on_mongos: (see above)
+    on_configsvr: (see above)
+    on_host: (see system_setup.yml)
 
     # Note: This config doesn't include things like PemFile, or ip addresses,
     # rather test control module will find that info in the infrastructure_provisioning config
-
-

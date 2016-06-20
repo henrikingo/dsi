@@ -25,6 +25,7 @@ class ConfigDict(dict):
     module_name.yml
     defaults.yml
     raise KeyError"""
+
     modules = ['infrastructure_provisioning',
                'system_setup',
                'workload_preparation',
@@ -73,31 +74,28 @@ class ConfigDict(dict):
         # defaults.yml
         file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                  '..', '..', 'docs', 'config-specs', 'defaults.yml')
-        file_handle = open(file_name)
-        self.defaults = yaml.safe_load(file_handle)
-        file_handle.close()
-        LOG.info('ConfigDict: Loaded: %s', file_name)
+        with open(file_name) as file_handle:
+            self.defaults = yaml.safe_load(file_handle)
+            LOG.info('ConfigDict: Loaded: %s', file_name)
 
         # All module_name.yml and module_name.out.yml
         for module_name in self.modules:
             file_name = module_name + '.yml'
             if os.path.isfile(file_name):
-                file_handle = open(file_name)
-                self.raw[module_name] = yaml.safe_load(file_handle)
-                file_handle.close()
-                LOG.info('ConfigDict: Loaded: %s', file_name)
+                with open(file_name) as file_handle:
+                    self.raw[module_name] = yaml.safe_load(file_handle)
+                    LOG.info('ConfigDict: Loaded: %s', file_name)
             file_name = module_name + '.out.yml'
             if os.path.isfile(file_name):
-                file_handle = open(file_name)
-                # Note: The .out.yml files will add a single top level key: 'out'
-                out = yaml.safe_load(file_handle)
-                if isinstance(out, dict):
-                    if module_name in self.raw:
-                        self.raw[module_name].update(out)
-                    else:
-                        self.raw.update({module_name: out})
-                file_handle.close()
-                LOG.info('ConfigDict: Loaded: %s', file_name)
+                with open(file_name) as file_handle:
+                    # Note: The .out.yml files will add a single key: ['module_name']['out']
+                    out = yaml.safe_load(file_handle)
+                    if isinstance(out, dict):
+                        if module_name in self.raw:
+                            self.raw[module_name].update(out)
+                        else:
+                            self.raw.update({module_name: out})
+                        LOG.info('ConfigDict: Loaded: %s', file_name)
 
         # overrides.yml
         file_name = 'overrides.yml'
@@ -154,13 +152,20 @@ class ConfigDict(dict):
         raw_keys = set()
         overrides_keys = set()
         defaults_keys = set()
+        # Magic key: In a mongodb_setup.topology, if this is a mongod/mongos/configsvr node
+        # always return a config_file key.
+        config_file_key = set(['config_file']) if self.is_topology_node() else set()
         if isinstance(self.raw, dict):
             raw_keys = set(self.raw.keys())
         if isinstance(self.overrides, dict):
             overrides_keys = set(self.overrides.keys())
         if isinstance(self.defaults, dict):
             defaults_keys = set(self.defaults.keys())
-        return list(raw_keys | overrides_keys | defaults_keys)
+        return list(raw_keys | overrides_keys | defaults_keys | config_file_key)
+
+    def iteritems(self):
+        """Iterator over the key, values"""
+        return iter((key, self[key]) for key in self.keys())
 
     def iteritems(self):
         """Iterator over the key, values"""
@@ -169,6 +174,10 @@ class ConfigDict(dict):
     def iterkeys(self):
         """Iterator over the keys"""
         return iter(self.keys())
+
+    def itervalues(self):
+        """Iterator over the values"""
+        return iter(self.values())
 
     def itervalues(self):
         """Iterator over the values"""
@@ -296,6 +305,11 @@ class ConfigDict(dict):
                     # Note that because self.root is itself a ConfigDict, if a referenced
                     # value would itself contain a ${variable.reference}, then it will
                     # automatically be substituted too, as part of the descend_root[key].
+                    # For example, in docs/config-specs/*.yml we have:
+                    # mongodb_setup.meta.hosts ->
+                    # mongodb_setup.topology.0.mongos.0.private_ip ->
+                    # infrastructure_provisioning.out.mongos.0.private_ip
+                    # and that resolves correctly via recursion.
                     descend_root = self.root
                     for path_element in path_list:
                         try:
@@ -343,13 +357,7 @@ class ConfigDict(dict):
         # pylint: disable=too-many-boolean-expressions
 
         value = None
-        if     len(self.path) >= 3 and \
-               self.path[0] == 'mongodb_setup' and \
-               self.path[1] == 'topology' and \
-               is_integer(self.path[2]) and \
-               isinstance(self.path[-1], int) and \
-               key == ('config_file'):
-
+        if self.is_topology_node() and key == ('config_file'):
             # Note: In the below 2 lines, overrides and ${variables} are already applied
             common_config = self.root['mongodb_setup'].get(self.topology_node_type()+'_config_file')
             node_specific_config = self.raw.get(key, {})
@@ -361,6 +369,43 @@ class ConfigDict(dict):
             value = helper[key]
 
         return value
+
+    def is_topology_node(self):
+        '''Returns true if self.path is a mongod/s/configsvr node under mongodb_setup.topology.
+
+        Note: We cannot call self['cluster_type'] or self.get('cluster_type') in this function, as
+        that would cause recursion. This causes a small restriction on defining topologies in the
+        Yaml files: For a standalone node, the 'cluster_type' value must be a literal word, it
+        cannot be a ${variable.reference}. It can however be defined in any of defaults.yml,
+        mongodb_setup.yml or overrides.yml.'''
+        # pylint: disable=too-many-boolean-expressions
+        # Standalone nodes have a different path
+        if len(self.path) >= 3 and \
+           self.path[0] == 'mongodb_setup' and \
+           self.path[1] == 'topology' and \
+           isinstance(self.path[2], int) and \
+           ((isinstance(self.raw, dict) and \
+             self.raw.get('cluster_type') == 'standalone') \
+            or \
+            (isinstance(self.defaults, dict) and \
+             self.defaults.get('cluster_type') == 'standalone') \
+            or \
+            (isinstance(self.overrides, dict) and \
+             self.overrides.get('cluster_type') == 'standalone')):
+
+            return True
+
+        # replset and sharded_cluster topologies
+        if len(self.path) >= 3 and \
+           self.path[0] == 'mongodb_setup' and \
+           self.path[1] == 'topology' and \
+           isinstance(self.path[2], int) and \
+           self.path[-2] in ('mongod', 'mongos', 'configsvr') and \
+           isinstance(self.path[-1], int):
+
+            return True
+
+        return False
 
     def topology_node_type(self):
         """Return one of mongod, mongos or configsvr by looking upwards in self.path
@@ -408,12 +453,22 @@ def copy_obj(obj):
         return obj
 
 
+def copy_obj(obj):
+    """Return a copy of the dictionary or list. For a ConfigDict(), return plain dict()."""
+    if isinstance(obj, dict):
+        new_dict = {}
+        for key in obj.keys():
+            new_dict[key] = copy_obj(obj[key])
+        return new_dict
+    elif isinstance(obj, list):
+        return [copy_obj(item) for item in obj]
+    else:
+        return obj
+
 def is_integer(astring):
     """Return True if astring is an integer, false otherwise."""
-    # pylint: disable=no-self-use
     try:
         int(astring)
         return True
     except ValueError:
         return False
-
