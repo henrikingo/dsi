@@ -1,11 +1,23 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
+# pylint: disable=relative-import,fixme
+
+'''Setup an work environment. Copy over the appropriate files.
+
+The long term intention is that this script sets up a working
+directory for use with the DP 2.0 operational flow. It will copy in
+the appropriate configuration files into the directory, and whatever
+other local initialization is needed. All local state will then live
+in this directory, while all static content, configuration, and
+scripts/executables will be accessed from the DSI repo.
+
+In the short term, this script will copy over the state needed to run
+the workflow, matching current reality. As new DP 2.0 features come
+online, this script should be updated to pick them up, and to move
+towards the long term intention.
 
 '''
-Setup an work environment. Copy over the appropriate files.
-'''
 
-# pylint: disable=superfluous-parens
-
+from __future__ import print_function
 import sys
 import argparse
 import glob
@@ -16,25 +28,9 @@ import shutil
 import subprocess
 import yaml
 
-LOGGER = logging.getLogger('dsi.setup')
+from common.log import setup_logging
 
-def setup_logging(verbose=False):
-    ''' Setup logging for this module'''
-    # Setup logging. All warning or higher goes to stderr. -v command line option affects stdout
-
-    # I'm thinking that maybe we should just use the err_handler, and
-    # anything that goes to stdout should be print
-
-    err_handler = logging.StreamHandler(sys.stderr)
-    err_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
-    err_handler.setLevel(logging.WARNING)
-    LOGGER.addHandler(err_handler)
-    stdout_handler = logging.StreamHandler(sys.stdout)
-    if verbose:
-        LOGGER.setLevel(logging.DEBUG)
-    else:
-        LOGGER.setLevel(logging.INFO)
-    LOGGER.addHandler(stdout_handler)
+LOGGER = logging.getLogger(__name__)
 
 def parse_command_line(args=None):
     '''
@@ -65,12 +61,26 @@ def parse_command_line(args=None):
     '''
 
     parser = argparse.ArgumentParser(description='Setup DSI working environment')
+
+    # These command line options support current configuration. It
+    # should eventually support selecting the appropriate files for
+    # infrastructure.yml, mongodb_setup.yml, test_control.yml, and
+    # analyis.yml. The options should be reviewed as the different
+    # units start to use the config file, with new command line
+    # options added as needed, and old options removed.
+    #
+    # For example, the --cluster-type option currently affects the
+    # infrastructure provisioning and mongodb provisioning
+    # steps. Eventually that option should be removed, and replaced
+    # with distinct options for selecting infrastructure provisioning
+    # options and mongodb setup options.
     parser.add_argument('-k',
                         '--aws-key-name',
                         help='AWS key name')
     parser.add_argument('-s',
                         '--aws-secret-file',
                         help='File containing AWS secret')
+    # To be replaced by infrastructure.yml selection option
     parser.add_argument('-c',
                         '--cluster-type',
                         help='Set the cluster type')
@@ -78,8 +88,14 @@ def parse_command_line(args=None):
                         action='append',
                         help='Config file to load. Can be called multiple times and combined.'\
                         'On conflicts the last file on the command line wins')
+    parser.add_argument('-d',
+                        '--debug',
+                        action='store_true',
+                        help='enable debug output')
     parser.add_argument('--directory',
                         help="Directory to setup. Defaults to current directory")
+    parser.add_argument('--log-file',
+                        help='path to log file')
     parser.add_argument('-m',
                         '--mongo-download-url',
                         help='URL to download mongodb binaries from')
@@ -111,6 +127,8 @@ def parse_command_line(args=None):
               'production': False,
              }
 
+    setup_logging(args.debug, args.log_file)  # pylint: disable=no-member
+
     if args.config:
         for conf in args.config:
             config.update(yaml.load(open(conf)))
@@ -131,7 +149,6 @@ def parse_command_line(args=None):
     if args.production:
         config['production'] = True
 
-    setup_logging(args.verbose)
     return config
 
 def main():
@@ -150,24 +167,35 @@ def main():
     dsipath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     LOGGER.info('dsipath is %s', dsipath)
 
+    # Create directory if it doesn't exist
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    # TODO: Copy of persisted terraform information should be copied
+    # into working directory here. This is future work to support tying
+    # the terraform cluster to the evergreen runner.
+
     # Write out the dsienv.sh file. It saves the path to DSI repo
-    dsienv = open(os.path.join(directory, 'dsienv.sh'), 'w')
-    dsienv.write('export DSI_PATH={0}\n'.format(dsipath))
-    dsienv.write('export PATH=$PATH:{0}/bin\n'.format(dsipath))
-    dsienv.close()
+    with open(os.path.join(directory, 'dsienv.sh'), 'w') as dsienv:
+        dsienv.write('export DSI_PATH={0}\n'.format(dsipath))
+        dsienv.write('export PATH=$PATH:{0}/bin\n'.format(dsipath))
 
     if 'aws_secret_file' in config:
         # Read in the secret
         config['aws_secret'] = open(config['aws_secret_file']).read().rstrip()
 
+    #Todo: This section should be replaced by code to select infrastructure.yml
     cluster_path = os.path.join(dsipath, 'clusters', config['cluster_type'])
     remote_scripts_path = os.path.join(dsipath, 'clusters', 'remote-scripts')
     # Copy over all files from cluster directory
     for filename in glob.glob(os.path.join(cluster_path, '*')):
         shutil.copy(filename, directory)
+
     # Copy over all files from the remote scripts directory Note that
     # this is copying above the workload directory for now. This is
     # suboptimal and should be changed in the future.
+
+    # This should ideally go away when we go to infrastructure.yml
     remote_scripts_target = os.path.join(os.path.dirname(directory), 'remote-scripts')
     print ("remote_scripts_target is {}".format(remote_scripts_target))
     print ("remote_scripts_path is {}".format(remote_scripts_path))
@@ -183,17 +211,18 @@ def main():
     # Set the region file
     if config['region']:
         LOGGER.info("Setting up region file with region %s", config['region'])
-        region = open(os.path.join(directory, "aws-region"), 'w')
-        region.write(config['region'] + '\n')
-        region.close()
+        with open(os.path.join(directory, "aws-region"), 'w') as region:
+            region.write(config['region'] + '\n')
 
     # Touch ips.sh so settings.sh doesn't complain
     open((os.path.join(directory, 'ips.sh')), 'w').close()
 
     # update settings.sh with proper key file
-    settings = open(os.path.join(directory, 'setting.sh'), 'a')
-    settings.write('export PEMFILE={0}\n'.format(config['ssh_keyfile_path']))
-    settings.close()
+    with open(os.path.join(directory, 'setting.sh'), 'a') as settings:
+        settings.write('export PEMFILE={0}\n'.format(config['ssh_keyfile_path']))
+
+    # In the long term this code should change to update the config
+    # file infrastructure.yml, or to generate it.
 
     # make_terraform_env.sh replaces values in various tf and tfvar
     # files for the cluster. Ideally all these changes should be in
@@ -208,19 +237,39 @@ def main():
     subprocess.call([os.path.join(dsipath, 'bin', 'make_terraform_env.sh'),
                      config['aws_key_name'],
                      config['aws_secret'],
-                     config['mongo_download_url']])
+                     config['mongo_download_url']], cwd=directory)
+
+    # The following section goes away when we start using and updating
+    # infrastructure_provisioning.yml.
+
+    # This writes an overrides.yml with the key path. It does a coare
+    # merge. It will override any other infrastructure_provisioning
+    # entries
+    overrides = {}
+    override_path = os.path.join(directory, 'overrides.yml')
+    if os.path.exists(override_path):
+        with open(override_path) as override_file:
+            overrides = yaml.load(override_file)
+    overrides.update({'infrastructure_provisioning':
+                      {'tfvars': {'ssh_key_file': config['ssh_keyfile_path']}}})
+    with open(override_path, 'w') as override_file:
+        override_file.write(yaml.dump(overrides, default_flow_style=False))
 
     # This should be replaced by json manipulation. However the
     # special characters in the json files for templating keep python
     # from being able to parse them
     LOGGER.info("Calling update_pem_file_path.sh with %s", config['ssh_keyfile_path'])
     subprocess.call([os.path.join(dsipath, 'bin', 'update_pem_file_path.sh'),
-                     config['ssh_keyfile_path']])
+                     config['ssh_keyfile_path']], cwd=directory)
+
+    # Long term everything that needs to be specified in the config
+    # files is handled above, and the following warning can be
+    # removed.
 
     # Prompt the user to edit it.
     if not config['production']:
         print("Local environment setup in {0}".format(directory))
-        print("Please review/edit security.tf, cluster.tf, and terraform.tfvars for your setup,"
+        print("Please review/edit security.tf and terraform.tfvars for your setup,"
               " before continuing deployment")
         print("You may need to update the owner, user, and key_name fields in those files")
 
