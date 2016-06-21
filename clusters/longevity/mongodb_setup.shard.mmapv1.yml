@@ -18,7 +18,7 @@ topology:
       - public_ip: ${infrastructure_provisioning.out.mongos.0.public_ip}
         private_ip: ${infrastructure_provisioning.out.mongos.0.private_ip}
     shard:
-      - id: myrs0
+      - id: rs0
         cluster_type: replset
         mongod:
           - public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
@@ -27,7 +27,7 @@ topology:
             private_ip: ${infrastructure_provisioning.out.mongod.1.private_ip}
           - public_ip: ${infrastructure_provisioning.out.mongod.2.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.2.private_ip}
-      - id: myrs1
+      - id: rs1
         cluster_type: replset
         mongod:
           - public_ip: ${infrastructure_provisioning.out.mongod.3.public_ip}
@@ -36,7 +36,7 @@ topology:
             private_ip: ${infrastructure_provisioning.out.mongod.4.private_ip}
           - public_ip: ${infrastructure_provisioning.out.mongod.5.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.5.private_ip}
-      - id: myrs2
+      - id: rs2
         cluster_type: replset
         mongod:
           - public_ip: ${infrastructure_provisioning.out.mongod.6.public_ip}
