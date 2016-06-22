@@ -18,11 +18,13 @@ from __future__ import print_function
 import doctest
 import itertools
 import json
+import re
 
 # os.path is used for pydoc. It won't need to be commented out when we move that test into a
 #  proper test function.
 import os.path # pylint: disable=unused-import
 
+import requests
 # TODO: It would be nice if the override class handled adding new overrides transparently
 
 class Override(object):
@@ -221,6 +223,125 @@ class Override(object):
                 self.overrides, file_or_filename, indent=4, separators=[',', ':'], sort_keys=True)
         else:
             raise TypeError('Argument must be a file or filename')
+
+    def validate(self, *args, **kwargs):
+        """
+        Validate this override configuration, raising an `AssertionError` if a problem is detected.
+        """
+
+        validate(self.overrides, *args, **kwargs)
+
+def validate(overrides_dict, jira_api_auth=None):
+    """
+    Lint an override dictionary for valid structure/contents, throwing an `AssertionError` if a
+    problem is detected. If you want to check whether ticket names contained in `overrides_dict`
+    correspond to tickets that actually exist in the MongoDB JIRA server, set `jira_api_auth` to a
+    `("jira_username", "jira_password")` tuple. Otherwise, ticket names will only undergo a rough
+    regex validation.
+    """
+
+    assert len(overrides_dict) > 0, "No variants specified."
+    expected_keys_per_type = {
+        "ndays": ["results", "threads", "ticket", "revision", "create_time"],
+        "reference": ["results", "threads", "ticket", "revision"],
+        "threshold": ["threshold", "thread_threshold", "ticket"]
+    }
+
+    # We need to query the JIRA API to determine whether a particular ticket exists. In the interest
+    # of decreasing running time, instead of making an API call per ticket name while iterating
+    # through `overrides_dict` (which we would obviously memoize since there aren't many /unique/
+    # ticket names in any given override file, though that would still result in at least a few
+    # different HTTP requests), we store all of the ticket names as they're encountered and perform
+    # one bulk lookup at the end of the validation.
+    all_tickets = set()
+
+    query_jira_for_tickets = jira_api_auth is not None
+
+    for variant_name, variant_override in overrides_dict.items():
+        for override_type in ["reference", "ndays", "threshold"]:
+            assert override_type in variant_override, \
+                'Required override type "{}" missing from override["{}"]'.format(
+                    override_type, variant_name)
+
+            required_keys = expected_keys_per_type[override_type]
+            for test_name, test_override in variant_override[override_type].items():
+                for key in required_keys:
+                    assert key in test_override, \
+                        ('Required key "{}" not present in override["{}"]'
+                         '["{}"]["{}"]').format(key, variant_name, override_type, test_name)
+
+                if override_type in ["reference", "ndays"]:
+                    _validate_results_dict(
+                        variant_name, override_type, test_name, test_override["results"])
+
+                ticket_list = test_override["ticket"]
+                _validate_ticket_list(variant_name, override_type, test_name, ticket_list)
+
+                if query_jira_for_tickets:
+                    all_tickets.update(ticket_list)
+
+    if query_jira_for_tickets and all_tickets:
+        _check_tickets_exist(all_tickets, jira_api_auth)
+
+def _validate_results_dict(variant_name, override_type, test_name, result_dict):
+    """
+    Validate `result_dict`, a "results" dictionary from an override configuration, throwing an
+    `AssertionError` if a problem is detected.
+    """
+
+    thread_specific_override = False
+    for num_threads, thread_override in result_dict.items():
+        try:
+            num_threads = int(num_threads)
+        except ValueError:
+            continue
+
+        thread_specific_override = True
+        assert "ops_per_sec" in thread_override, \
+            ('"ops_per_sec" key missing in override["{}"]["{}"]'
+             '["{}"]["{}"].').format(variant_name, override_type, test_name, num_threads)
+
+    assert thread_specific_override, \
+        ('No override data found in override["{}"]["{}"]'
+         '["{}"]["results"]').format(variant_name, override_type, test_name)
+
+def _validate_ticket_list(
+        variant_name, override_type, test_name, ticket_list):
+    """
+    Validate `ticket_list`, a list of tickets from an override configuration, throwing an
+    `AssertionError` if a problem is detected.
+    """
+
+    ticket_name_regex = r"^(PERF|SERVER|BF)-\d+$"
+    err_msg_ticket_path = 'override["{}"]["{}"]["{}"]["ticket"]'.format(
+        variant_name, override_type, test_name)
+    assert isinstance(ticket_list, list), err_msg_ticket_path + " is not a list."
+    assert ticket_list, err_msg_ticket_path + " is empty."
+
+    for ticket_name in ticket_list:
+        assert isinstance(ticket_name, basestring), \
+            "Ticket `{}` in {} is not a string.".format(
+                ticket_name, err_msg_ticket_path)
+
+        valid_ticket_name = re.match(ticket_name_regex, ticket_name) is not None
+        assert valid_ticket_name, \
+            'Ticket name "{}" in {} is invalid; it must satisfy the following ' \
+            'regex: "{}"'.format(ticket_name, err_msg_ticket_path, ticket_name_regex)
+
+def _check_tickets_exist(ticket_names, jira_api_auth):
+    """
+    Check whether all ticket names in `ticket_names` exist on the  `https://jira.mongodb.org` JIRA
+    server by querying the API. If any tickets are found to not exist an `AssertionError` with a
+    helpful message will be raised.
+    """
+
+    jira_api_url = "https://jira.mongodb.org/rest/api/2/search"
+    ticket_jql_query = {"jql": "issueKey in ({})".format(",".join(ticket_names))}
+    api_resp = requests.post(jira_api_url, json=ticket_jql_query, auth=jira_api_auth)
+
+    assert api_resp.status_code in [200, 400], \
+        'Unexpected HTTP response from JIRA API for "{}":\n{}'.format(jira_api_url, vars(api_resp))
+    assert api_resp.status_code == 200, "\n".join(api_resp.json()["errorMessages"])
 
 if __name__ == "__main__":
     doctest.testmod()
