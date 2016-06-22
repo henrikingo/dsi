@@ -46,7 +46,9 @@ then
     declare -a arr=("initialSync_c_1_d_1_w_f" "initialSync_c_32_d_1_w_f" "initialSync_c_1_d_32_w_f" "initialSync_c_32_d_32_w_f" "initialSync_c_1_d_1_w_t" "initialSync_c_32_d_1_w_t" "initialSync_c_1_d_32_w_t" "initialSync_c_32_d_32_w_t" )
     for i in "${arr[@]}"
     do
-        ${BINDIR}/configure-mongodb-cluster.sh replica-2node $1
+        VENV_PYTHON=${BINDIR}/../venv/bin/python
+        cp mongodb_setup.replica-2node.${STORAGE_ENGINE}.yml mongodb_setup.yml
+        ${VENV_PYTHON} ${BINDIR}/mongodb_setup.py --config
         ${BINDIR}/run-initialSync.sh ${STORAGE_ENGINE} replica_2node ${CLUSTER} $i
     done
 fi

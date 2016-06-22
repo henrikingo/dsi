@@ -659,6 +659,8 @@ class MongodbSetup(object):
 
     def start(self):
         """Start all clusters"""
+        self.shutdown()
+        self.destroy()
         if not all(self.start_cluster(cluster) for cluster in self.clusters):
             self.shutdown()
             return False
@@ -678,7 +680,13 @@ class MongodbSetup(object):
 
     def shutdown(self):
         """Shutdown all launched mongo programs"""
-        return all(cluster.shutdown() for cluster in self.clusters)
+        for cluster in self.clusters:
+            cluster.shutdown()
+
+    def destroy(self):
+        """Kill all launched mongo programs"""
+        for cluster in self.clusters:
+            cluster.destroy()
 
     def close(self):
         """Close connections to all hosts."""
