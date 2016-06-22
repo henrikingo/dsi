@@ -17,10 +17,6 @@ function run_test {
 pushd .
 cd ${BASEDIR}/analysis
 
-if [ "$github_token" != "" ]; then
-    echo "Using github token."
-fi
-
 for file in v3.2/*.json v3.0/*.json master/*.json; do
     cmd_str="python validate_override_file.py $file"
     if [ "$perf_jira_user" != "" ] && [ "$perf_jira_pw" != "" ]; then
