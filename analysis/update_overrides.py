@@ -1,37 +1,24 @@
-# Copyright 2015 MongoDB Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
+#!/usr/bin/env python2.7
 """Runner script for updating overrides."""
+
 import argparse
 import logging
 import sys
 
-from evergreen.update_override import UpdateOverride
-from evergreen.update_override_threshold import UpdateOverrideThreshold
+from evergreen.override import Override
 
 LOGGER = None
 WARNER = None
 
 
-def main():
+def main(args):
     """Update the overrides"""
+
     global LOGGER, WARNER  # pylint: disable=global-statement
     parser = argparse.ArgumentParser(description='Update performance test overrides. The '
                                      'parameters used for specifying project/variants/tasks/tests'
-                                     ' are considered regular expression patterns. To express'
+                                     'are considered regular expression patterns. To express an '
                                      'exact match, enclose the terms in ^ and $')
-
     parser.add_argument('reference',
                         help='The Git commit prefix (min. length 7) or tag from which to pull '
                         'data from as an override reference')
@@ -78,7 +65,7 @@ def main():
                         help='New thread threshold. Must be used in tandem with --threshold')
 
     # Parse the arguments and initialize the logging output
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     WARNER = logging.getLogger('override.update.warnings')
     err_handler = logging.StreamHandler(sys.stderr)
@@ -105,39 +92,28 @@ def main():
     elif args.thread_threshold:
         WARNER.critical('--thread-threshold set on command line, but --threshold is not.')
 
+    update_obj = Override(args.project,
+                          override_info=args.override_file,
+                          config_file=args.config,
+                          reference=args.reference,
+                          variants=args.variants.split('|'),
+                          tasks=args.tasks.split('|'),
+                          tests=args.tests.split('|'),
+                          verbose=args.verbose)
+
     if use_threshold_overrides:
-        update_obj = UpdateOverrideThreshold(args.project,
-                                             args.reference,
-                                             args.variants.split('|'),
-                                             args.tasks.split('|'),
-                                             args.tests.split('|'),
-                                             float(args.threshold),
+        update_obj.update_override_threshold(float(args.threshold),
                                              float(args.thread_threshold),
-                                             args.override_file,
-                                             config_file=args.config,
-                                             ticket=args.ticket,
-                                             verbose=args.verbose)
-        update_obj.update_override()
+                                             ticket=args.ticket)
     else:
         if args.ndays:
             rule = 'ndays'
         else:
             rule = 'reference'
-        update_obj = UpdateOverride(args.project,  # pylint: disable=redefined-variable-type
-                                    args.reference,
-                                    args.variants.split('|'),
-                                    args.tasks.split('|'),
-                                    args.tests.split('|'),
-                                    args.override_file,
-                                    config_file=args.config,
-                                    rule=rule,
-                                    ticket=args.ticket,
-                                    verbose=args.verbose)
-
-        update_obj.update_override()
+        update_obj.update_override(rule, ticket=args.ticket)
     # Dump the new file as JSON
     LOGGER.info('Saving output to %s', args.destination_file)
-    update_obj.ovr.save_to_file(args.destination_file)
+    update_obj.save_to_file(args.destination_file)
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

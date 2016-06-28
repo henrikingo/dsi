@@ -1,70 +1,426 @@
-# Copyright 2015 MongoDB Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-"""Module for manipulating override files."""
+"""Module to track state dependencies during override file update operations.
+"""
 
 from __future__ import print_function
-import doctest
+import copy
 import itertools
 import json
+import logging
 import re
-
-# os.path is used for pydoc. It won't need to be commented out when we move that test into a
-#  proper test function.
-import os.path # pylint: disable=unused-import
+import sys
 
 import requests
-# TODO: It would be nice if the override class handled adding new overrides transparently
 
-class Override(object):
-    """Represents an override for a performance test.
+from evergreen import evergreen_client
+from evergreen import helpers
+from evergreen.history import History
 
-    The override data is structured in a hierarchy:
+LOGGER = None
+WARNER = None
 
-        {
-            "build_variant": {
-                "rule": {
-                    "test_name": {
-                        <data>
-                    },
-                    ...
-                },
-                ...
-            },
-            ...
-        }
-
-    The analysis scripts traverse this hierarchy, selecting the appropriate build variant, rule and
-    test name. If an override exists, it uses that data as the reference point against which to find
-    regressions, rather than the usual data.
+def _setup_logging(verbose):
+    """Initialize the logger and warner
+    :param bool verbose: specifies the level at which LOGGER logs.
     """
-    def __init__(self, initializer):
-        """Create a new override.
+    global LOGGER, WARNER  # pylint: disable=global-statement
+    WARNER = logging.getLogger('override.update.warnings')
+    LOGGER = logging.getLogger('override.update.information')
 
-        :param initializer: The starting point for building overrides
+    if verbose:
+        LOGGER.setLevel(logging.DEBUG)
+    else:
+        LOGGER.setLevel(logging.INFO)
+
+class OverrideError(Exception):
+    """Generic class for Override errors."""
+    pass
+
+
+class TestDataNotFound(OverrideError):
+    """Indicates that test data for a desired override update could not be found in the latest
+    project revisions.
+    """
+    pass
+
+
+class Override(object):  # pylint: disable=too-many-instance-attributes
+    """This class handles operations related to updating an override file.
+    """
+
+    def __init__(self, project, override_info=None, config_file=None, reference=None,  # pylint: disable=too-many-arguments
+                 variants=None, tasks=None, tests=None, verbose=False):
         """
-        if initializer is None:
-            self.overrides = {}
-        elif isinstance(initializer, str):
-            with open(initializer) as file_:
-                self.overrides = json.load(file_)
-        elif isinstance(initializer, dict):
-            self.overrides = initializer
-        else:
-            raise TypeError('initializer must be a file, filename or dictionary')
+        :param str project: The project name in Evergreen
+        :param str|dict override_info: The filename or dict representing the override file JSON
+        :param str config_file: For automated tests, a config with Evergreen & Github creds
+        :param str reference: A Git SHA1 prefix (min. 7 char) or tag to use as a reference
+        :param list[str] variants: The build variant(s) to override
+        :param list[str] tasks: The task(s) to override
+        :param list[str] tests: The test(s) to override
+        :param bool verbose: The setting for our logger (verbose corresponding to DEBUG mode)
+        """
+        _setup_logging(verbose)
 
-    def update_test(self, build_variant, test, rule, new_data, ticket): # pylint: disable=too-many-arguments
+        self.project = project
+
+        if not override_info:
+            self.overrides = {}
+        elif isinstance(override_info, str):
+            with open(override_info) as file_handle:
+                self.overrides = json.load(file_handle)
+        elif isinstance(override_info, dict):
+            self.overrides = override_info
+        else:
+            raise TypeError('override_info must be a file, filename, or dictionary')
+
+        if config_file:
+            creds = helpers.file_as_yaml(config_file)
+            self.evg = evergreen_client.Client(creds['evergreen'])
+        else:
+            self.evg = None
+
+        if reference:
+            if creds is None:
+                creds = helpers.create_credentials_config()
+                self.evg = evergreen_client.Client(creds['evergreen'])
+            # Are we comparing against a tag or a commit?
+            try:
+                # Attempt to query Evergreen by treating this reference as a Git commit
+                full_reference = helpers.get_full_git_commit_hash(reference,
+                                                                  creds['github']['token'])
+                self.commit = full_reference
+                self.compare_to_commit = True
+                LOGGER.debug('Treating reference point "{commit}" as a Git commit'.format(
+                    commit=self.commit))
+            except KeyError:
+                LOGGER.debug('Unable to retrieve a valid github token from ~/.gitconfig')
+                sys.exit(0)
+            except requests.HTTPError:
+                # Evergreen could not find a commit, so fall back to using a tag
+
+                # Find the latest builds in Evergreen, get the oldest result in the history,
+                # then pull out the Git commit
+                self.commit = reference
+                self.compare_to_commit = False
+                LOGGER.debug('Treating reference point "{tag}" as a tagged baseline'.format(
+                    tag=self.commit))
+                LOGGER.debug(
+                    'Getting {proj} project information from commit {commit}'.format(
+                        proj=self.project, commit=self.commit))
+        else:
+            self.commit = None
+
+        # variants, tasks, and tests default to None. Unless we are explicitly doing a "general"
+        # overrides file update (i.e. the specified tasks & tests are updated for all variants),
+        # we don't need the Override object to require this information upon initialization.
+        self.variants = variants
+        self.tasks = tasks
+        self.tests = tests
+
+        # used for logging information after an update has been made.
+        self.build_variants_applied = set()
+        self.tasks_applied = set()
+        self.tests_applied = set()
+        self.summary = {}
+
+    def _log_final_checks(self):
+        """Sanity checks, called at the very end of general override rule updates (excludes the
+        delete ticket & update operation)
+        """
+        for unused_test in [test for test in self.tests if test not in self.tests_applied]:
+            WARNER.warn('Pattern not applied for tests: {0}'.format(unused_test))
+
+        for unused_task in [task for task in self.tasks if task not in self.tasks_applied]:
+            WARNER.warn('Pattern not applied for tasks: {0}'.format(unused_task))
+
+        for unused_variant in [variant for variant in self.variants
+                               if variant not in self.build_variants_applied]:
+            WARNER.warn('Pattern not applied for build variants: {0}'.format(unused_variant))
+        self._log_summary()
+
+    def _log_summary(self):
+        """Review and print a summary of what's been accomplished to the logfile.
+        All operations that involve updating the override file will use this function.
+        """
+        if len(self.summary) == 0:
+            WARNER.critical('No overrides have changed.')
+        else:
+            for rule in self.summary.keys():
+                if len(rule) == 0:
+                    WARNER.critical('No overrides for rule {0} have changed.'.format(rule))
+                for variant in self.summary[rule].keys():
+                    if not self.summary[rule][variant]:
+                        WARNER.warn('No tasks under the build variant {0} were overridden'.format(
+                            variant))
+                    for task in self.summary[rule][variant].keys():
+                        if not self.summary[rule][variant][task]:
+                            WARNER.warn('No tests under the task {0}.{1} were overridden'.format(
+                                variant, task))
+                LOGGER.info('The following tests have been overridden for rule {0}:'.format(rule))
+                LOGGER.info(json.dumps(self.summary[rule],
+                                       indent=2,
+                                       separators=[',', ': '],
+                                       sort_keys=True))
+        LOGGER.debug('Override update complete.')
+
+    def _get_task_history(self, task_name, task_id):
+        """Helper function to get the performance data for a particular task.
+
+        :type task_name: str
+        :type task_id: str
+        :rtype: History
+        """
+        if self.compare_to_commit:
+            task_data = self.evg.query_mongo_perf_task_history(task_name, task_id)
+        else:
+            task_data = self.evg.query_mongo_perf_task_tags(task_name, task_id)
+
+        # Examine the history data
+        history = History(task_data)
+        return history
+
+    def _get_test_reference_data(self, history, test_name):
+        """Helper function to get the data for a particular test from a specific commit or tag.
+
+        :type history: History
+        :type test_name: str
+        :rtype: dict
+        """
+        if self.compare_to_commit:
+            test_reference = history.series_at_revision(test_name, self.commit)
+        else:
+            test_reference = history.series_at_tag(test_name, self.commit)
+        return test_reference
+
+    def update_override(self, rule, new_override_val=None, ticket=None):
+        """Update a performance override rule.
+
+        :param str rule: The rule to override (reference, ndays, threshold)
+        :param dict new_override_val: Required only when rule == 'threshold', where
+               new_override_val has keys 'thread_threshold' and 'threshold' corresponding to float
+               values.
+        :param str ticket: Associate a JIRA ticket with this update.
+        """
+        self.summary[rule] = {}
+        # Find the build variants for the project at this Git commit
+        for build_variant_name, build_variant_id in self.evg.build_variants_from_git_commit(
+                self.project, self.commit):
+            match = helpers.matches_any(build_variant_name, self.variants)
+            if not match:
+                LOGGER.debug('Skipping build variant: {0}'.format(build_variant_name))
+                continue
+
+            self.build_variants_applied.add(match)
+            self.summary[rule][build_variant_name] = {}
+            LOGGER.debug('Processing build variant: {0}'.format(build_variant_name))
+
+            # Find the tasks in this build variant that we're interested in
+            for task_name, task_id in self.evg.tasks_from_build_variant(build_variant_id):
+                if 'compile' in task_name:
+                    LOGGER.debug('\tSkipping compilation stage')
+                    continue
+
+                match = helpers.matches_any(task_name, self.tasks)
+                if not match:
+                    LOGGER.debug('\tSkipping task: {0}'.format(task_name))
+                    continue
+
+                self.tasks_applied.add(match)
+                self.summary[rule][build_variant_name][task_name] = []
+                LOGGER.debug('\tProcessing task: {0}'.format(task_name))
+
+                if rule is not 'threshold':
+                    history = self._get_task_history(task_name, task_id)
+
+                # Cycle through the names of the tests in this task
+                for test_name, _ in self.evg.tests_from_task(task_id):
+                    match = helpers.matches_any(test_name, self.tests)
+                    if not match:
+                        LOGGER.debug('\t\tSkipping test: {0}'.format(test_name))
+                        continue
+
+                    self.tests_applied.add(match)
+                    self.summary[rule][build_variant_name][task_name].append(test_name)
+                    LOGGER.debug('\t\tProcessing test: {0}'.format(test_name))
+
+                    if rule is not 'threshold':
+                        # Get the reference data we want to use as the override value
+                        new_override_val = self._get_test_reference_data(history, test_name)
+                        if not new_override_val:
+                            raise evergreen_client.Empty(
+                                'No data for {bv}.{task}.{test} at reference {ref}'.format(
+                                    bv=build_variant_name,
+                                    task=task_name,
+                                    test=test_name,
+                                    ref=self.commit)
+                                )
+
+                    # Finally, update the old override rule
+                    self.update_test(build_variant_name, test_name, rule, new_override_val, ticket)
+        self._log_final_checks()
+
+    def update_override_threshold(self, threshold, thread_threshold, ticket=None):
+        """Update a performance threshold level override. Wrapper function to update_override.
+
+        :param float threshold: The new threshold to use
+        :param float thread_threshold: The new thread threshold to use
+        :param str ticket: Associate a JIRA ticket with this override
+        """
+        new_override = {'threshold': threshold,
+                        'thread_threshold': thread_threshold}
+        self.update_override('threshold', new_override_val=new_override, ticket=ticket)
+
+    def update_override_reference(self, ticket=None):
+        """Update a performance reference override. Wrapper function to update_override.
+
+        :param str ticket: Associate a JIRA ticket with this override
+        """
+        self.update_override('reference', ticket=ticket)
+
+    def update_override_ndays(self, ticket=None):
+        """Update a performance ndays override. Wrapper function to update_override.
+
+        :param str ticket: Associate a JIRA ticket with this override
+        """
+        self.update_override('ndays', ticket=ticket)
+
+    def _process_revision(self, revision_builds, variant_tests, tasks):
+        """How many tests (by build variant) does this revision have data for?
+
+        :param dict revision_builds: builds associated with a revision
+        :param dict variant_tests: each str variant (key) is associated with a list[str] of
+           tests (value).
+        :type tasks: str|list[str]
+        :rtype: int
+        """
+        num_tests_missing_data = 0
+        variant_tests_remaining = copy.deepcopy(variant_tests)
+        for variant in variant_tests.keys():
+            variant_info = revision_builds[variant]
+            for task_name, task_info in variant_info['tasks'].iteritems():
+                if task_info['status'] != 'success':
+                    continue
+                if 'compile' in task_name:
+                    continue
+                match = helpers.matches_any(task_name, tasks)
+                if not match:
+                    continue
+                for test_name, _ in self.evg.tests_from_task(task_info['task_id']):
+                    if test_name in variant_tests[variant]:
+                        variant_tests_remaining[variant].remove(test_name)
+            tests_remain = variant_tests_remaining[variant]
+            num_tests_missing_data += len(tests_remain)
+            for test in tests_remain:
+                LOGGER.debug('\tNo result for test {} in variant {}'.format(test, variant))
+        return num_tests_missing_data
+
+    def _get_recent_commit(self, overrides_to_update, tasks):
+        """Helper function used during a delete and update operation. If no reference has been
+        given, attempt to find a perf project revision that has the test data for all of the
+        override rules that require updates.
+
+        :type overrides_to_update: dict
+        :type tasks: str|list[str]
+        :raises: TestDataNotFound if no such reference is found within the 10 most recent revisions.
+        """
+        # get tests by variant (regardless of whether the rule is reference or ndays)
+        if not self.evg:
+            creds = helpers.create_credentials_config()
+            self.evg = evergreen_client.Client(creds['evergreen'])
+        variant_tests = {}
+        for _, build_variant_tests in overrides_to_update.iteritems():
+            for build_variant, test_list in build_variant_tests.iteritems():
+                if build_variant not in variant_tests:
+                    variant_tests[build_variant] = set()
+                variant_tests[build_variant].update(test_list)
+
+        revision_case_count = []  # does the revision cover all variant-test cases?
+        for revision_info in self.evg.get_recent_revisions(self.project):
+            revision = revision_info['revision']
+            # revision does not contain all the variants targeted in the update
+            if set(variant_tests.keys()) > set(revision_info['builds'].keys()):
+                continue
+            LOGGER.debug('Processing revision: {0}'.format(revision))
+            num_tests_missing_data = self._process_revision(revision_info['builds'],
+                                                            variant_tests,
+                                                            tasks)
+            revision_case_count.append((revision, num_tests_missing_data))
+            if num_tests_missing_data == 0:
+                self.commit = revision
+                self.compare_to_commit = True
+                LOGGER.info('Treating reference point "{commit}" as a Git commit'.format(
+                    commit=self.commit))
+                return
+        # Could not find a revision with the necessary test data. Output an error message with some
+        # details about the 'closest' most recent revision.
+        (min_revision, min_count) = min(revision_case_count, key=lambda x: x[1])
+        raise TestDataNotFound('Could not find test data for all the variant-test updates '
+                               'needed within the 10 most recent revisions of project {}. '
+                               'Revision {} comes closest with {} case(s) of missing test '
+                               'data. Please re-run this operation with a commit reference '
+                               'of your choice that will best address the necessary '
+                               'updates.'.format(self.project, min_revision, min_count))
+
+    def _update_multiple_overrides(self, overrides_to_update, tasks):
+        """Called after a ticket deletion operation. In the event that tickets remain for an
+        override case, we need to update the data associated with those tests. Because the rules
+        and tests that require updates may not be the same across all variants, this function is
+        used in place of the multiple calls to update_overrides we would have otherwise had to do.
+
+        :param dict overrides_to_update: structured so that for every rule, we know the build
+        variants and the corresponding list of tests that need to be updated
+            i.e. {rule -> {build_variant -> [tests]}}
+        :param str|list[str] tasks: as of right now, the user must specify which tasks we should
+        look at during the update operation. This will likely not be necessary after PERF-504 (adds
+        task attribute to the override file) is implemented.
+        """
+        if not self.commit:
+            self._get_recent_commit(overrides_to_update, tasks)
+        for rule, build_variant_tests in overrides_to_update.iteritems():
+            LOGGER.debug('Updating overrides for rule: {0}'.format(rule))
+            self.summary[rule] = {}
+            for build_variant_name, build_variant_id in self.evg.build_variants_from_git_commit(
+                    self.project, self.commit):
+                if build_variant_name not in build_variant_tests.keys():
+                    LOGGER.debug('Skipping build variant: {0}'.format(build_variant_name))
+                    continue
+                self.summary[rule][build_variant_name] = {}
+                LOGGER.debug('Processing build variant: {0}'.format(build_variant_name))
+
+                tests = overrides_to_update[rule][build_variant_name]
+                for task_name, task_id in self.evg.tasks_from_build_variant(build_variant_id):
+                    if 'compile' in task_name:
+                        LOGGER.debug('\tSkipping compilation stage')
+                        continue
+                    match = helpers.matches_any(task_name, tasks)
+                    if not match:
+                        LOGGER.debug('\tSkipping task: {0}'.format(task_name))
+                        continue
+                    self.summary[rule][build_variant_name][task_name] = []
+                    LOGGER.debug('\tProcessing task: {0}'.format(task_name))
+
+                    history = self._get_task_history(task_name, task_id)
+                    try:
+                        for test_name, _ in self.evg.tests_from_task(task_id):
+                            if test_name not in tests:
+                                LOGGER.debug('\t\tSkipping test: {0}'.format(test_name))
+                                continue
+
+                            self.summary[rule][build_variant_name][task_name].append(test_name)
+                            LOGGER.debug('\t\tProcessing test: {0}'.format(test_name))
+
+                            # Get the reference data we want to use as the override value
+                            test_reference = self._get_test_reference_data(history, test_name)
+
+                            # Finally, update the old override rule
+                            self.update_test(build_variant_name, test_name, rule, test_reference)
+                    except evergreen_client.Empty:
+                        # _log_summary() will account for the case where we've skipped a task
+                        # with no test results. (Hence no additional log message here.)
+                        continue
+        self._log_summary()
+
+    def update_test(self, build_variant, test, rule, new_data, ticket=None):  # pylint: disable=too-many-arguments
         """Update the override reference data for the given test.
 
         :param str build_variant: The Evergreen name of the build variant
@@ -102,17 +458,20 @@ class Override(object):
         finally:
             rule_ovr[test] = new_data
 
-        # Attach a ticket number
-        try:
-            rule_ovr[test]['ticket'] = previous_data['ticket']
+        # attach a ticket number if one has been specified.
+        rule_ovr[test]['ticket'] = []
+        if 'ticket' in previous_data:
+            curr_tickets = previous_data['ticket']
+            if not isinstance(curr_tickets, list):
+                curr_tickets = [curr_tickets]
+            rule_ovr[test]['ticket'] = curr_tickets
+        if ticket and ticket not in rule_ovr[test]['ticket']:
             rule_ovr[test]['ticket'].append(ticket)
-        except AttributeError:
-            # There's something else there but it's not a list, so convert it to one
-            rule_ovr[test]['ticket'] = [previous_data['ticket'], ticket]
-        except KeyError:
-            # There is no previous ticket associated with this override
-            rule_ovr[test]['ticket'] = [ticket]
-
+        # ticket array is still empty
+        elif not rule_ovr[test]['ticket']:
+            WARNER.warn('Override rule for test {} under rule {} and build variant {} is '
+                        'not associated with any tickets. Resulting file will be '
+                        'considered invalid.'.format(test, rule, build_variant))
         return previous_data
 
     def get_tickets(self, rule='reference'):
@@ -120,18 +479,7 @@ class Override(object):
 
         :param str rule: Which rule to check for tickets. (Default reference)
         :return: A set of strings of the tickets referenced in the overrides
-
-        >>> Override(None).get_tickets()
-        set([])
-        >>> over = Override(os.path.join(os.path.dirname(__file__),\
-                                         "../testcases/perf_override.json"))
-        >>> over.get_tickets()
-        set([u'BF-1262', u'BF-1449', u'BF-1461', u'SERVER-19901', u'SERVER-20623', u'SERVER-21263',\
- u'BF-1169', u'SERVER-20018', u'mmapspedup', u'geo', u'SERVER-21080'])
-        >>> over.get_tickets('threshold')
-        set([u'PERF-443'])
         """
-
         tickets = set()
         for variant_value in self.overrides.values():
             if rule in variant_value:
@@ -148,10 +496,53 @@ class Override(object):
         :param str ticket: The ID of a JIRA ticket (e.g. PERF-226)
         :rtype: list[dict]
         """
-
         raise NotImplementedError()
 
-    def delete_overrides_by_ticket(self, ticket, rule='reference'):
+    def _ticket_variant_rule_deletion(self, build_variant, rule, ticket, to_update, to_remove):  # pylint: disable=too-many-arguments
+        """Given a ticket, build variant, and rule, figure out what can be completely removed
+        and what tests will need to be updated.
+
+        :type build_variant: str
+        :type rule: str
+        :type ticket: str
+        :param dict to_update: for every rule, record the build variants and corresponding list of
+            tests that need to be updated, i.e. {rule -> {build variant -> [tests]}}
+        :param list[(str, str, str)] to_remove: record the build variant, rule, and test where the
+            'ticket' key of a test was not a list. Presumably, this is a single ticket (str) and so
+            we append it to a list to be removed as well. (Will not be needed when JSON validation
+            of the override file is in place.)
+        :rtype: (dict, list[(str, str, str)])
+        """
+        # Remove anything that can be blanket removed.
+        self.overrides[build_variant][rule] = {name: test for (name, test) in
+                                               self.overrides[build_variant][rule].items()
+                                               if 'ticket' in test and
+                                               test['ticket'].count(ticket) != len(test['ticket'])}
+        #build_variant_rule = self.overrides[build_variant][rule]
+        for test in self.overrides[build_variant][rule]:
+            # Look to see if it should be pulled from the ticket list
+            check_tickets = self.overrides[build_variant][rule][test]['ticket']
+            if ticket in check_tickets:
+                if isinstance(check_tickets, list):
+                    check_tickets.remove(ticket)
+                    LOGGER.info('Deleting test {} from variant {} and rule {}, but '
+                                'override remains'.format(test, build_variant, rule))
+                    LOGGER.info('Remaining tickets are {}'.format(str(check_tickets)))
+                    if rule is 'threshold':
+                        WARNER.warn('Threshold override for {} from variant {} '
+                                    'remains due to other outstanding '
+                                    'tickets.'.format(test, build_variant))
+                    else:
+                        if rule not in to_update:
+                            to_update[rule] = {}
+                        if build_variant not in to_update[rule]:
+                            to_update[rule][build_variant] = []
+                        to_update[rule][build_variant].append(test)
+                else:
+                    to_remove.append((build_variant, rule, test))
+        return (to_update, to_remove)
+
+    def delete_overrides_by_ticket(self, ticket, rules, tasks='.*'):
         """Remove the overrides created by a given ticket.
 
         The override is completely removed if the ticket is the only
@@ -160,53 +551,25 @@ class Override(object):
 
         :param str ticket: The ID of a JIRA ticket (e.g. SERVER-20123)
         :param str rule: Which rule to delete from. (Default reference)
-
-        In the example below, the first override should be removed
-        because SERVER-21080 is the only ticket in the list, even if
-        it shows up twice. The second test has two distinct tickets,
-        so when we delete SERVER-21080 it is just removed from the
-        list.
-        >>> over =  Override({"linux-mmap-repl":{\
-        "reference":{\
-            "Commands.CountsIntIDRange":{\
-                "ticket":[\
-                    "SERVER-21080",\
-                    "SERVER-21080"\
-                ]\
-            },\
-            "Commands.CountsIntIDRange":{\
-                "ticket":[\
-                    "SERVER-21080",\
-                    "SERVER-21081"\
-                ]\
-            }}}})
-        >>> over.delete_overrides_by_ticket("SERVER-21080", "reference")
-        Deleting test Commands.CountsIntIDRange from variant linux-mmap-repl and rule reference,\
- but override remains
-        Remaining tickets are ['SERVER-21081']
-        >>> over.overrides
-        {'linux-mmap-repl': {'reference': {'Commands.CountsIntIDRange': {'ticket':\
- ['SERVER-21081']}}}}
-
+        :param str|list[str] tasks: Regex (or list of regex) matching tasks to update.
         """
-        for build_variant in self.overrides:
-            if rule in self.overrides[build_variant]:
-                # Remove anything that can be blanket removed. Can't otherwise remove from something
-                # we're iterating over
-                self.overrides[build_variant][rule] = {name: test for (name, test) in
-                                                       self.overrides[build_variant][rule].items()
-                                                       if 'ticket' in test and
-                                                       test['ticket'].count(ticket) !=
-                                                       len(test['ticket'])}
-                for test in self.overrides[build_variant][rule]:
-                    #Look to see if it should be pulled from the ticket list
-                    if 'ticket' in self.overrides[build_variant][rule][test]:
-                        if ticket in self.overrides[build_variant][rule][test]['ticket']:
-                            self.overrides[build_variant][rule][test]['ticket'].remove(ticket)
-                            print("Deleting test {} from variant {} and rule {}, but "
-                                  "override remains".format(test, build_variant, rule))
-                            print("Remaining tickets are {}".format(str(
-                                self.overrides[build_variant][rule][test]['ticket'])))
+        to_update = {}
+        to_remove = []
+        for build_variant in self.overrides.keys():
+            for rule in rules:
+                if rule in self.overrides[build_variant]:
+                    (to_update, to_remove) = self._ticket_variant_rule_deletion(build_variant,
+                                                                                rule,
+                                                                                ticket,
+                                                                                to_update,
+                                                                                to_remove)
+
+        # This is used to account for cases where the 'ticket' key has a str value.
+        # Can be removed after merge with JSON validation precursor check.
+        for (build_variant, rule, test) in to_remove:
+            del self.overrides[build_variant][rule][test]
+
+        self._update_multiple_overrides(to_update, tasks)
 
     def save_to_file(self, file_or_filename):
         """Saves this override to a JSON file.
@@ -342,6 +705,3 @@ def _check_tickets_exist(ticket_names, jira_api_auth):
     assert api_resp.status_code in [200, 400], \
         'Unexpected HTTP response from JIRA API for "{}":\n{}'.format(jira_api_url, vars(api_resp))
     assert api_resp.status_code == 200, "\n".join(api_resp.json()["errorMessages"])
-
-if __name__ == "__main__":
-    doctest.testmod()

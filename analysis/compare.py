@@ -1,5 +1,4 @@
-#!/bin/env python2.7
-
+#!/usr/bin/env python2.7
 """Compute the ratio of scores in one test run to those in another."""
 
 import json

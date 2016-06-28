@@ -1,17 +1,3 @@
-# Copyright 2015 MongoDB Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 """Helper functions that don't fit anywhere else"""
 
 from ConfigParser import ConfigParser, NoOptionError
@@ -83,6 +69,7 @@ def get_git_credentials(config_file='~/.gitconfig'):
 def create_credentials_config():
     """A method to retrieve github and evergreen credentials
     used to send authenticated API requests
+
     :rtype: dict
     """
     evg_creds = get_evergreen_credentials()
@@ -144,8 +131,8 @@ def file_as_json(file_or_filename):
     if isinstance(file_or_filename, file):
         return json.load(file_or_filename)
     elif isinstance(file_or_filename, str):
-        with open(file_or_filename) as file_ptr:
-            return json.load(file_ptr)
+        with open(file_or_filename) as file_handle:
+            return json.load(file_handle)
     else:
         raise TypeError('Argument must be a string or file pointer')
 
@@ -159,8 +146,8 @@ def file_as_yaml(file_or_filename):
     if isinstance(file_or_filename, file):
         return yaml.load(file_or_filename)
     elif isinstance(file_or_filename, str):
-        with open(file_or_filename) as file_ptr:
-            return yaml.load(file_ptr)
+        with open(file_or_filename) as file_handle:
+            return yaml.load(file_handle)
     else:
         raise TypeError('Argument must be a string or file pointer')
 

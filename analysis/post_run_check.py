@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.7
 """
 Example usage:
 post_run_check.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f

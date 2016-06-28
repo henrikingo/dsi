@@ -1,5 +1,5 @@
-#!/bin/env python2.7
-'''
+#!/usr/bin/env python2.7
+"""
 Iterate through tests to evaluate their states to display in the performance
 dashboard against the specified baselines. Output is written to dashboard.json
 which in turn is sent to the Evergreen database.
@@ -8,7 +8,7 @@ Example usage:
  dashboard_gen.py -f history_file.json --rev
         18808cd923789a34abd7f13d62e7a73fafd5ce5f --project_id $pr_id --variant
         $variant --jira-user user --jira-password passwd
-'''
+"""
 from __future__ import print_function
 
 import argparse

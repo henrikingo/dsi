@@ -1,10 +1,11 @@
-''' Check for performance regressions in mongo-perf project.
+#!/usr/bin/env python2.7
+"""Check for performance regressions in mongo-perf project.
 
 Example usage:
  perf_regression_check.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f
  Loads the history json file, and looks for regressions at the revision 18808cd...
  Will exit with status code 1 if any regression is found, 0 otherwise.
-'''
+"""
 
 from __future__ import print_function
 from datetime import timedelta
@@ -12,6 +13,7 @@ import sys
 import argparse
 import json
 from dateutil import parser
+
 from util import read_histories, compare_one_result, log_header, read_threshold_overrides
 
 def compare_results(this_one, reference, threshold, label, # pylint: disable=too-many-arguments,too-many-locals

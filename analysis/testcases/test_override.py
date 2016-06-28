@@ -1,108 +1,190 @@
-"""Unit tests for `evergreen.override`."""
+"""Unit tests for the Override class. Run using nosetests."""
 
+import json
+import os
 import unittest
+from mock import patch
 
-from evergreen import override # pylint: disable=import-error
+from evergreen.override import Override, TestDataNotFound  # pylint: disable=import-error
 
-class TestValidate(unittest.TestCase):
-    """Test `validation()`."""
+
+class TestOverride(unittest.TestCase):
+    """Test class evaluates correctness of operations to override rule JSON files.
+    """
 
     def setUp(self):
-        """Instantiate a valid override dictionary in `self.override`."""
+        """Specifies the paths used to fetch JSON testing files. Additionally,
+        sets up the common parameters for each operation being tested.
+        """
+        self.abs_path = os.path.dirname(os.path.abspath(__file__))
+        self.file_path_prefix = os.path.join(self.abs_path, 'unittest-files')
 
-        self.override = {
-            "variant": {
-                "reference": {
-                    "test": {
-                        "results": {
-                            "1": {
-                                "ops_per_sec": 1
-                            }
-                        },
-                        "threads": None,
-                        "ticket": ["SERVER-1"],
-                        "revision": None
-                    }
-                },
-                "ndays": {
-                    "test": {
-                        "create_time": "foo",
-                        "results": {
-                            "1": {
-                                "ops_per_sec": 1
-                            }
-                        },
-                        "threads": None,
-                        "ticket": ["PERF-2"],
-                        "revision": None
-                    }
-                },
-                "threshold": {
-                    "test": {
-                        "thread_threshold": 1,
-                        "ticket": ["BF-3"],
-                        "threshold": 1
-                    }
-                }
-            }
-        }
+        # parameters used in test cases
+        self.project = 'performance'
+        self.git_hash = 'c2af7ab'
+        self.config_file = os.path.join(self.abs_path, 'config.yml')
+        self.verbose = True
 
-    def test_successful_validation(self):
-        """Successfully validate a correct override dictionary."""
+    def _load_latest_revisions(self):
+        """For tests related to delete & update which fetch the latest revision:
+        this JSON file is directly from an Evergreen API call to projects/performance/versions.
+        We need to mock the API call because the 10 most recent versions will continually
+        change.
+        """
+        latest_revisions_file = os.path.join(self.file_path_prefix,
+                                             'performance_latest_revisions.json')
+        with open(latest_revisions_file) as file_handle:
+            return json.load(file_handle)
 
-        try:
-            override.validate(self.override)
+    def test_update_reference(self):
+        """Test Override.update_override with rule reference
+        """
+        variants = '.*'
+        tasks = 'query'
+        tests_to_update = 'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$'
+        override_file = os.path.join(self.abs_path, 'perf_override.json')
+        with open(override_file) as override_file_handle:
+            original_override_info = json.load(override_file_handle)
+        ticket = 'PERF-REF'
 
-        except AssertionError as err:
-            self.fail(
-                "Failed to validate correct override file with the following error: `{}`".format(
-                    err))
+        update_obj = Override(self.project,
+                              override_info=override_file,
+                              config_file=self.config_file,
+                              reference=self.git_hash,
+                              variants=variants.split('|'),
+                              tasks=tasks.split('|'),
+                              tests=tests_to_update.split('|'),
+                              verbose=self.verbose)
 
-    def test_empty_override(self):
-        """Fail validation when missing a variant override."""
+        update_obj.update_override('reference', ticket=ticket)
 
-        self.override["variant"] = {}
-        self._test_validation_fail()
+        expected_json = os.path.join(self.file_path_prefix, 'update_override_exp.json.ok')
+        with open(expected_json) as exp_file_handle:
+            updated_override = json.load(exp_file_handle)
+            self.assertEqual(update_obj.overrides, updated_override)
 
-    def test_missing_override_type(self):
-        """Fail validation when missing an override_type."""
+            # Quick check of the update_override_reference wrapper function.
+            # First, reset the override file information.
+            update_obj.overrides = original_override_info
+            update_obj.update_override_reference(ticket=ticket)
+            self.assertEqual(update_obj.overrides, updated_override)
 
-        del self.override["variant"]["reference"]
-        self._test_validation_fail()
+    def test_update_threshold(self):
+        """Test Override.update_override with rule threshold
+        """
+        variants = '.*'
+        tasks = 'query'
+        tests_to_update = 'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$'
+        threshold = 0.66
+        thread_threshold = 0.77
+        override_file = os.path.join(self.file_path_prefix, 'update_override_exp.json.ok')
+        with open(override_file) as override_file_handle:
+            original_override_info = json.load(override_file_handle)
+        ticket = 'PERF-THRESH'
 
-    def test_missing_test_override_key(self):
-        """Fail validation when missing a required key in an override."""
+        update_obj = Override(self.project,
+                              override_info=override_file,
+                              config_file=self.config_file,
+                              reference=self.git_hash,
+                              variants=variants.split('|'),
+                              tasks=tasks.split('|'),
+                              tests=tests_to_update.split('|'),
+                              verbose=self.verbose)
 
-        del self.override["variant"]["reference"]["test"]["ticket"]
-        self._test_validation_fail()
-        self.setUp()
-        del self.override["variant"]["ndays"]["test"]["create_time"]
-        self._test_validation_fail()
+        new_override_val = {'threshold': threshold, 'thread_threshold': thread_threshold}
+        update_obj.update_override('threshold',
+                                   new_override_val=new_override_val,
+                                   ticket=ticket)
 
-    def test_missing_thread_override(self):
-        """Fail validation when \"results\" is empty."""
+        expected_json = os.path.join(self.file_path_prefix, 'update_override_threshold_exp.json.ok')
+        with open(expected_json) as exp_file_handle:
+            updated_override = json.load(exp_file_handle)
+            self.assertEqual(update_obj.overrides, updated_override)
 
-        self.override["variant"]["reference"]["test"]["results"] = {}
-        self._test_validation_fail()
+            # Quick check of the update_override_threshold wrapper function.
+            # First, reset the override file information.
+            update_obj.overrides = original_override_info
+            update_obj.update_override_threshold(threshold, thread_threshold, ticket=ticket)
+            self.assertEqual(update_obj.overrides, updated_override)
 
-    def test_bad_ticket_name(self):
-        """Fail when an invalid ticket name is found."""
+    def test_delete_and_update(self):
+        """Test Override.delete_overrides_by_ticket
+        """
+        override_file = os.path.join(self.abs_path, 'perf_delete.json')
+        rules = ['reference', 'ndays', 'threshold']
+        ticket = 'PERF-002'
 
-        self.override["variant"]["reference"]["test"]["ticket"] = ["bad-ticket-name"]
-        self._test_validation_fail()
+        update_obj = Override(self.project,
+                              override_info=override_file,
+                              config_file=self.config_file,
+                              reference=self.git_hash,
+                              verbose=self.verbose)
+        update_obj.delete_overrides_by_ticket(ticket, rules)
 
-    def test_bad_threshold(self):
-        """Fail validation when \"threshold\" overrides are missing required keys."""
+        expected_json = os.path.join(self.file_path_prefix, 'delete_update_override.json.ok')
+        with open(expected_json) as file_handle:
+            self.assertEqual(update_obj.overrides, json.load(file_handle))
 
-        del self.override["variant"]["threshold"]["test"]["thread_threshold"]
-        self._test_validation_fail()
-        self.setUp()
-        del self.override["variant"]["threshold"]["test"]["ticket"]
-        self._test_validation_fail()
+    @patch('evergreen.evergreen_client.Client.get_recent_revisions')
+    def test_delete_latest_update(self, mock_get_revisions):
+        """Test Override.delete_overrides_by_ticket with no revision specified.
+        """
+        mock_get_revisions.return_value = self._load_latest_revisions()
+        override_file = os.path.join(self.abs_path, 'perf_delete.json')
+        rules = ['reference', 'ndays', 'threshold']
+        ticket = 'PERF-002'
 
-    def _test_validation_fail(self):
-        with self.assertRaises(AssertionError):
-            override.validate(self.override)
+        update_obj = Override(self.project,
+                              override_info=override_file,
+                              config_file=self.config_file,
+                              verbose=self.verbose)
+        update_obj.delete_overrides_by_ticket(ticket, rules)
 
-if __name__ == "__main__":
+        expected_json = os.path.join(self.file_path_prefix, 'delete_update_latest.json.ok')
+        with open(expected_json) as file_handle:
+            self.assertEqual(update_obj.overrides, json.load(file_handle))
+
+    def test_delete_latest_not_found(self):
+        """Test Override.delete_overrides_by_ticket unable to find a recent revision with
+        data for all tests that need to be updated.
+        The override file passed in contains a test "Commands.UniqueTestCase" that should
+        not be present in any project revision, so no mocking is needed here.
+        """
+        override_file = os.path.join(self.abs_path, 'perf_delete_unique_test.json')
+        rules = ['reference', 'ndays', 'threshold']
+        ticket = 'PERF-002'
+
+        update_obj = Override(self.project,
+                              override_info=override_file,
+                              config_file=self.config_file,
+                              verbose=self.verbose)
+
+        with self.assertRaises(TestDataNotFound):
+            update_obj.delete_overrides_by_ticket(ticket, rules)
+
+    def test_get_tickets_rule_reference(self):
+        """Test Override.get_tickets for rule reference on perf_override.json
+        """
+        override_file = os.path.join(self.abs_path, 'perf_override.json')
+        override_obj = Override(self.project, override_info=override_file)
+        expected_ref_tickets = set([u'BF-1262', u'BF-1449', u'BF-1461', u'SERVER-19901',
+                                    u'SERVER-20623', u'SERVER-21263', u'BF-1169', u'SERVER-20018',
+                                    u'mmapspedup', u'geo', u'SERVER-21080'])
+        self.assertEqual(override_obj.get_tickets(), expected_ref_tickets)
+
+    def test_get_tickets_rule_threshold(self):
+        """Test Override.get_tickets for rule threshold on perf_override.json
+        """
+        override_file = os.path.join(self.abs_path, 'perf_override.json')
+        override_obj = Override(self.project, override_info=override_file)
+        expected_thresh_tickets = set([u'PERF-443'])
+        self.assertEqual(override_obj.get_tickets(rule='threshold'), expected_thresh_tickets)
+
+    def test_get_tickets_none(self):
+        """Test Override.get_tickets returns empty set when override file is None
+        """
+        override_obj = Override(self.project, override_info=None)
+        self.assertEqual(override_obj.get_tickets(), set([]))
+
+if __name__ == '__main__':
     unittest.main()

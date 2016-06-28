@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.7
 """Script for validating override JSON files. `--help` for more."""
 
 from __future__ import print_function
@@ -37,7 +38,7 @@ def main(args):
         arg_parser.error("--jira-user and --jira-password must both be specified.")
 
     print("Validating file: " + args.file)
-    override.Override(args.file).validate(j_auth)
+    override.Override("performance", override_info=args.file).validate(j_auth)
     print("Valid override file.")
 
 if __name__ == "__main__":

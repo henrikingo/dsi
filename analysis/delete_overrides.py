@@ -1,41 +1,31 @@
-#!/usr/bin/env python
-
-# Copyright 2016 MongoDB Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
+#!/usr/bin/env python2.7
 """ Script for removing overrides based on tickets."""
 
 import sys
 import argparse
 import logging
 
+from evergreen.override import Override
 
-from evergreen import override
+LOGGER = None
+WARNER = None
 
 
-def main():
-    '''
-    Delete unneeded overrides.
-    '''
+def main(args):
+    """Delete unneeded overrides."""
 
-    global logger, warner # pylint: disable=invalid-name,global-variable-undefined
-    parser = argparse.ArgumentParser(description='Update performance test overrides. The \
-        parameters used for specifying project/variants/tasks/tests are considered regular \
-        expression patterns. To express exact match, enclose the terms in ^ and $')
+    global LOGGER, WARNER  # pylint: disable=global-statement
+    parser = argparse.ArgumentParser(description='Update performance test overrides. The '
+                                     'parameters used for specifying project/variants/tasks/tests '
+                                     'are considered regular expression patterns. To express '
+                                     'an exact match, enclose the terms in ^ and $')
 
     parser.add_argument('ticket',
-                        help='Remove overrides releated to this ticket')
+                        help='Remove overrides related to this ticket')
+    parser.add_argument('-n',
+                        '--reference',
+                        help='The Git commit hash (min. length 7 prefix) or tag from which to pull '
+                        'data from as an override reference')
     parser.add_argument('-f',
                         '--override-file',
                         help='The path to the override file to update')
@@ -49,34 +39,50 @@ def main():
     parser.add_argument('-r',
                         '--rule',
                         default='all',
-                        help='The rule to check')
+                        help='The rule to check.')
+    parser.add_argument('-k',
+                        '--tasks',
+                        default='.*',
+                        help='The task or tasks to update')
+    parser.add_argument('-p',
+                        '--project',
+                        default='performance',
+                        help='The Evergreen project for which to generate overrides')
+    parser.add_argument('-c',
+                        '--config',
+                        help='The path to your evergreen & github auth configuration file. '
+                        '(See testcases/example_update_override_config.yml for formatting.)')
 
     # Parse the arguments and initialize the logging output
-    args = parser.parse_args()
-    warner = logging.getLogger('override.update.warnings')
+    args = parser.parse_args(args)
+
+    WARNER = logging.getLogger('override.update.warnings')
     err_handler = logging.StreamHandler(sys.stderr)
     err_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
-    warner.addHandler(err_handler)
+    WARNER.addHandler(err_handler)
 
-    logger = logging.getLogger('override.update.information')
-    logger.addHandler(logging.StreamHandler(sys.stdout))
+    LOGGER = logging.getLogger('override.update.information')
+    LOGGER.addHandler(logging.StreamHandler(sys.stdout))
     if args.verbose:
-        logger.setLevel(logging.DEBUG)
+        LOGGER.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.INFO)
+        LOGGER.setLevel(logging.INFO)
 
-    ovr = override.Override(args.override_file)
-    if args.rule == 'all':
-        # Check reference, ndays, and threshold
-        ovr.delete_overrides_by_ticket(args.ticket, 'reference')
-        ovr.delete_overrides_by_ticket(args.ticket, 'ndays')
-        ovr.delete_overrides_by_ticket(args.ticket, 'threshold')
+    override_obj = Override(args.project,
+                            override_info=args.override_file,
+                            config_file=args.config,
+                            reference=args.reference,
+                            verbose=args.verbose)
+    rule = args.rule
+    if rule is 'all':
+        rules = ['reference', 'ndays', 'threshold']
     else:
-        ovr.delete_overrides_by_ticket(args.ticket, args.rule)
+        rules = [rule]
+    override_obj.delete_overrides_by_ticket(args.ticket, rules, tasks=args.tasks.split('|'))
 
     # Dump the new file as JSON
-    logger.info('Saving output to %s', args.destination_file)
-    ovr.save_to_file(args.destination_file)
+    LOGGER.info('Saving output to %s', args.destination_file)
+    override_obj.save_to_file(args.destination_file)
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

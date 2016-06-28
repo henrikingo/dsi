@@ -1,0 +1,17 @@
+WARNING: Threshold override for Queries.FindProjectionThreeFields from variant linux-wt-standalone remains due to other outstanding tickets.
+WARNING: Threshold override for Queries.FindProjectionDottedField from variant linux-mmap-standalone remains due to other outstanding tickets.
+WARNING: No tests under the task linux-mmap-repl.insert were overridden
+WARNING: No tests under the task linux-mmap-repl.update were overridden
+WARNING: No tests under the task linux-mmap-repl.singleThreaded were overridden
+WARNING: No tests under the task linux-mmap-standalone.insert were overridden
+WARNING: No tests under the task linux-mmap-standalone.misc were overridden
+WARNING: No tests under the task linux-mmap-standalone.update were overridden
+WARNING: No tests under the task linux-mmap-standalone.query were overridden
+WARNING: No tests under the task linux-mmap-standalone.singleThreaded were overridden
+WARNING: No tests under the task linux-mmap-standalone.where were overridden
+WARNING: No tests under the task linux-mmap-standalone.insert were overridden
+WARNING: No tests under the task linux-mmap-standalone.geo were overridden
+WARNING: No tests under the task linux-mmap-standalone.misc were overridden
+WARNING: No tests under the task linux-mmap-standalone.update were overridden
+WARNING: No tests under the task linux-mmap-standalone.singleThreaded were overridden
+WARNING: No tests under the task linux-mmap-standalone.where were overridden
