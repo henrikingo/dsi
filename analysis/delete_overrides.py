@@ -33,9 +33,6 @@ def main(args):
                         '--destination-file',
                         default='override.json',
                         help='The path to write the updated override')
-    parser.add_argument('--verbose',
-                        action='store_true',
-                        help='Enable verbose output')
     parser.add_argument('-r',
                         '--rule',
                         default='all',
@@ -50,8 +47,11 @@ def main(args):
                         help='The Evergreen project for which to generate overrides')
     parser.add_argument('-c',
                         '--config',
-                        help='The path to your evergreen & github auth configuration file. '
-                        '(See testcases/example_update_override_config.yml for formatting.)')
+                        help='The path to your evergreen & github auth configuration file.'
+                        ' (See testcases/example_update_override_config.yml for formatting.)')
+    parser.add_argument('--verbose',
+                        action='store_true',
+                        help='Enable verbose output')
 
     # Parse the arguments and initialize the logging output
     args = parser.parse_args(args)

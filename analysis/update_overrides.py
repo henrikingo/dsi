@@ -22,7 +22,9 @@ def main(args):
     parser.add_argument('reference',
                         help='The Git commit prefix (min. length 7) or tag from which to pull '
                         'data from as an override reference')
-    parser.add_argument('ticket',
+    parser.add_argument('-i',
+                        '--ticket',
+                        default=None,
                         help='The JIRA ticket associated with this override update')
     parser.add_argument('-p',
                         '--project',

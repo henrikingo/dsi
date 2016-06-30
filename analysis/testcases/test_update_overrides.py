@@ -35,18 +35,22 @@ class TestUpdateOverrides(unittest.TestCase):
         self.override_file = os.path.join(self.abs_path, 'perf_override.json')
 
     def _update_overrides_compare(self, git_hash):
-        """General comparison function used for all the test cases"""
+        """General comparison function used for hash-related test cases"""
         reference_args = [git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'query',
                           '-f', self.override_file, '-d', self.intermed_file, '--verbose', '-t',
                           'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$',
-                          'noise']
+                          '-i', 'noise']
+
         update_overrides.main(reference_args)
 
         threshold_args = [git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'query',
                           '-f', self.intermed_file, '-d', self.output_file, '--verbose', '-t',
                           'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$',
-                          '--threshold', '0.66', '--thread-threshold', '0.77', 'test_threshold']
+                          '--threshold', '0.66', '--thread-threshold', '0.77',
+                          '-i', 'test_threshold']
         update_overrides.main(threshold_args)
+
+        os.remove(self.intermed_file)
 
         expected_json = os.path.join(self.reference_files, 'update_overrides.json.ok')
         with open(expected_json) as exp_file_handle, open(self.output_file) as obs_file_handle:
@@ -72,9 +76,58 @@ class TestUpdateOverrides(unittest.TestCase):
         git_hash = 'c2af7abae8d09d290d7457ab77f5a7529806b75a'
         self._update_overrides_compare(git_hash)
 
+    def test_no_ticket_reference_update(self):
+        """Testing update_overrides with no ticket parameter & rule reference.
+        Test override values are still found and updated.
+        """
+        git_hash = 'c2af7ab'
+        reference_args = [git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'query',
+                          '-f', self.override_file, '-d', self.output_file, '--verbose', '-t',
+                          'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$']
+        update_overrides.main(reference_args)
+
+        expected_json = os.path.join(self.unittest_files, 'update_ref_no_ticket.json.ok')
+        with open(expected_json) as exp_file_handle, open(self.output_file) as obs_file_handle:
+            exp_updated_override = json.load(exp_file_handle)
+            obs_updated_override = json.load(obs_file_handle)
+            self.assertEqual(obs_updated_override, exp_updated_override)
+
+    def test_no_ticket_threshold_update(self):
+        """Testing update_overrides with no ticket parameter & rule threshold.
+        Test override values are still found and updated.
+        """
+        git_hash = 'c2af7ab'
+        override_file = os.path.join(self.unittest_files, 'update_override_reference.json.ok')
+        threshold_args = [git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'query',
+                          '-f', override_file, '-d', self.output_file, '--verbose', '-t',
+                          'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$',
+                          '--threshold', '0.66', '--thread-threshold', '0.77']
+        update_overrides.main(threshold_args)
+
+        expected_json = os.path.join(self.unittest_files, 'update_thresh_no_ticket.json.ok')
+        with open(expected_json) as exp_file_handle, open(self.output_file) as obs_file_handle:
+            exp_updated_override = json.load(exp_file_handle)
+            obs_updated_override = json.load(obs_file_handle)
+            self.assertEqual(obs_updated_override, exp_updated_override)
+
+    def test_no_ticket_no_update(self):
+        """Testing update_overrides with no ticket parameter and no relevant overrides found.
+        Output file should be identical to the input file.
+        """
+        git_hash = 'c2af7ab'
+        reference_args = [git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'misc',
+                          '-f', self.override_file, '-d', self.output_file, '--verbose', '-t',
+                          'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$']
+        update_overrides.main(reference_args)
+
+        expected_json = self.override_file
+        with open(expected_json) as exp_file_handle, open(self.output_file) as obs_file_handle:
+            exp_updated_override = json.load(exp_file_handle)
+            obs_updated_override = json.load(obs_file_handle)
+            self.assertEqual(obs_updated_override, exp_updated_override)
+
     def tearDown(self):
         """Deletes output JSON files after each test case"""
-        os.remove(self.intermed_file)
         os.remove(self.output_file)
 
 if __name__ == '__main__':

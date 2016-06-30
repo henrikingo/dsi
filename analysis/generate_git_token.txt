@@ -1,4 +1,5 @@
 Please run the following commands to generate and save a token to your config file:
+
     curl -i -u <USERNAME> -H 'X-GitHub-OTP: <2FA 6-DIGIT CODE>' -d '{"scopes": ["repo"], "note": "get full git hash"}' https://api.github.com/authorizations
 
     (Note -H 'X-GitHub-OTP: <2FA 6-DIGIT CODE>' assumes you have 2-factor authentication on.)
