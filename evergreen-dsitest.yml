@@ -23,7 +23,7 @@ functions:
           source ./venv/bin/activate
           pip install -r requirements.txt
           echo "building credentials file"
-          cat > analysis/testcases/config.yml << END_OF_CREDS
+          cat > config.yml << END_OF_CREDS
           {
             evergreen: {
               user: "xgen-evg-user",

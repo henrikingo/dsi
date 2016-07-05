@@ -52,7 +52,7 @@ def main(args):
     parser.add_argument('-c',
                         '--config',
                         help='The path to your evergreen & github auth configuration file.'
-                        ' (See testcases/example_update_override_config.yml for formatting.)')
+                        ' (See /example_config.yml for formatting.)')
     parser.add_argument('--verbose',
                         action='store_true',
                         help='Enable verbose output')

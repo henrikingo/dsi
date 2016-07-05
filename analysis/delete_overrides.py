@@ -47,15 +47,14 @@ def main(args):
                         help='The Evergreen project for which to generate overrides')
     parser.add_argument('-c',
                         '--config',
-                        help='The path to your evergreen & github auth configuration file.'
-                        ' (See testcases/example_update_override_config.yml for formatting.)')
+                        help='The path to your evergreen & github auth configuration file. '
+                        '(See /example_config.yml for formatting.)')
     parser.add_argument('--verbose',
                         action='store_true',
                         help='Enable verbose output')
 
     # Parse the arguments and initialize the logging output
     args = parser.parse_args(args)
-
     WARNER = logging.getLogger('override.update.warnings')
     err_handler = logging.StreamHandler(sys.stderr)
     err_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))

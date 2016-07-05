@@ -1,11 +1,11 @@
 """Unit tests for the Override class. Run using nosetests."""
 
-import json
-import os
 import unittest
 from mock import patch
 
-from evergreen.override import Override, TestDataNotFound  # pylint: disable=import-error
+from tests import test_utils
+import util
+from evergreen.override import Override, TestDataNotFound # pylint: disable=import-error
 
 
 class TestOverride(unittest.TestCase):
@@ -16,25 +16,11 @@ class TestOverride(unittest.TestCase):
         """Specifies the paths used to fetch JSON testing files. Additionally,
         sets up the common parameters for each operation being tested.
         """
-        self.abs_path = os.path.dirname(os.path.abspath(__file__))
-        self.file_path_prefix = os.path.join(self.abs_path, 'unittest-files')
-
         # parameters used in test cases
         self.project = 'performance'
         self.git_hash = 'c2af7ab'
-        self.config_file = os.path.join(self.abs_path, 'config.yml')
+        self.config_file = test_utils.repo_root_file_path('config.yml')
         self.verbose = True
-
-    def _load_latest_revisions(self):
-        """For tests related to delete & update which fetch the latest revision:
-        this JSON file is directly from an Evergreen API call to projects/performance/versions.
-        We need to mock the API call because the 10 most recent versions will continually
-        change.
-        """
-        latest_revisions_file = os.path.join(self.file_path_prefix,
-                                             'performance_latest_revisions.json')
-        with open(latest_revisions_file) as file_handle:
-            return json.load(file_handle)
 
     def test_update_reference(self):
         """Test Override.update_override with rule reference
@@ -42,11 +28,9 @@ class TestOverride(unittest.TestCase):
         variants = '.*'
         tasks = 'query'
         tests_to_update = 'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$'
-        override_file = os.path.join(self.abs_path, 'perf_override.json')
-        with open(override_file) as override_file_handle:
-            original_override_info = json.load(override_file_handle)
+        override_file = test_utils.fixture_file_path('perf_override.json')
+        original_override_info = util.get_json(override_file)
         ticket = 'PERF-REF'
-
         update_obj = Override(self.project,
                               override_info=override_file,
                               config_file=self.config_file,
@@ -58,16 +42,15 @@ class TestOverride(unittest.TestCase):
 
         update_obj.update_override('reference', ticket=ticket)
 
-        expected_json = os.path.join(self.file_path_prefix, 'update_override_exp.json.ok')
-        with open(expected_json) as exp_file_handle:
-            updated_override = json.load(exp_file_handle)
-            self.assertEqual(update_obj.overrides, updated_override)
+        updated_override = test_utils.read_fixture_json_file('update_override_exp.json.ok')
 
-            # Quick check of the update_override_reference wrapper function.
-            # First, reset the override file information.
-            update_obj.overrides = original_override_info
-            update_obj.update_override_reference(ticket=ticket)
-            self.assertEqual(update_obj.overrides, updated_override)
+        self.assertEqual(update_obj.overrides, updated_override)
+
+        # Quick check of the update_override_reference wrapper function.
+        # First, reset the override file information.
+        update_obj.overrides = original_override_info
+        update_obj.update_override_reference(ticket=ticket)
+        self.assertEqual(update_obj.overrides, updated_override)
 
     def test_update_threshold(self):
         """Test Override.update_override with rule threshold
@@ -77,9 +60,8 @@ class TestOverride(unittest.TestCase):
         tests_to_update = 'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$'
         threshold = 0.66
         thread_threshold = 0.77
-        override_file = os.path.join(self.file_path_prefix, 'update_override_exp.json.ok')
-        with open(override_file) as override_file_handle:
-            original_override_info = json.load(override_file_handle)
+        override_file = test_utils.fixture_file_path('update_override_exp.json.ok')
+        original_override_info = util.get_json(override_file)
         ticket = 'PERF-THRESH'
 
         update_obj = Override(self.project,
@@ -96,21 +78,20 @@ class TestOverride(unittest.TestCase):
                                    new_override_val=new_override_val,
                                    ticket=ticket)
 
-        expected_json = os.path.join(self.file_path_prefix, 'update_override_threshold_exp.json.ok')
-        with open(expected_json) as exp_file_handle:
-            updated_override = json.load(exp_file_handle)
-            self.assertEqual(update_obj.overrides, updated_override)
+        updated_override = test_utils.read_fixture_json_file(
+            'update_override_threshold_exp.json.ok')
+        self.assertEqual(update_obj.overrides, updated_override)
 
-            # Quick check of the update_override_threshold wrapper function.
-            # First, reset the override file information.
-            update_obj.overrides = original_override_info
-            update_obj.update_override_threshold(threshold, thread_threshold, ticket=ticket)
-            self.assertEqual(update_obj.overrides, updated_override)
+        # Quick check of the update_override_threshold wrapper function.
+        # First, reset the override file information.
+        update_obj.overrides = original_override_info
+        update_obj.update_override_threshold(threshold, thread_threshold, ticket=ticket)
+        self.assertEqual(update_obj.overrides, updated_override)
 
     def test_delete_and_update(self):
         """Test Override.delete_overrides_by_ticket
         """
-        override_file = os.path.join(self.abs_path, 'perf_delete.json')
+        override_file = test_utils.fixture_file_path('perf_delete.json')
         rules = ['reference', 'ndays', 'threshold']
         ticket = 'PERF-002'
 
@@ -121,16 +102,16 @@ class TestOverride(unittest.TestCase):
                               verbose=self.verbose)
         update_obj.delete_overrides_by_ticket(ticket, rules)
 
-        expected_json = os.path.join(self.file_path_prefix, 'delete_update_override.json.ok')
-        with open(expected_json) as file_handle:
-            self.assertEqual(update_obj.overrides, json.load(file_handle))
+        expected_overrides = test_utils.read_fixture_json_file('delete_update_override.json.ok')
+        self.assertEqual(update_obj.overrides, expected_overrides)
 
     @patch('evergreen.evergreen_client.Client.get_recent_revisions')
     def test_delete_latest_update(self, mock_get_revisions):
         """Test Override.delete_overrides_by_ticket with no revision specified.
         """
-        mock_get_revisions.return_value = self._load_latest_revisions()
-        override_file = os.path.join(self.abs_path, 'perf_delete.json')
+        mock_get_revisions.return_value = test_utils.read_fixture_json_file(
+            'performance_latest_revisions.json')
+        override_file = test_utils.fixture_file_path('perf_delete.json')
         rules = ['reference', 'ndays', 'threshold']
         ticket = 'PERF-002'
 
@@ -140,9 +121,8 @@ class TestOverride(unittest.TestCase):
                               verbose=self.verbose)
         update_obj.delete_overrides_by_ticket(ticket, rules)
 
-        expected_json = os.path.join(self.file_path_prefix, 'delete_update_latest.json.ok')
-        with open(expected_json) as file_handle:
-            self.assertEqual(update_obj.overrides, json.load(file_handle))
+        expected_overrides = test_utils.read_fixture_json_file('delete_update_latest.json.ok')
+        self.assertEqual(update_obj.overrides, expected_overrides)
 
     def test_delete_latest_not_found(self):
         """Test Override.delete_overrides_by_ticket unable to find a recent revision with
@@ -150,7 +130,7 @@ class TestOverride(unittest.TestCase):
         The override file passed in contains a test "Commands.UniqueTestCase" that should
         not be present in any project revision, so no mocking is needed here.
         """
-        override_file = os.path.join(self.abs_path, 'perf_delete_unique_test.json')
+        override_file = test_utils.fixture_file_path('perf_delete_unique_test.json')
         rules = ['reference', 'ndays', 'threshold']
         ticket = 'PERF-002'
 
@@ -165,7 +145,7 @@ class TestOverride(unittest.TestCase):
     def test_get_tickets_rule_reference(self):
         """Test Override.get_tickets for rule reference on perf_override.json
         """
-        override_file = os.path.join(self.abs_path, 'perf_override.json')
+        override_file = test_utils.read_fixture_json_file('perf_override.json')
         override_obj = Override(self.project, override_info=override_file)
         expected_ref_tickets = set([u'BF-1262', u'BF-1449', u'BF-1461', u'SERVER-19901',
                                     u'SERVER-20623', u'SERVER-21263', u'BF-1169', u'SERVER-20018',
@@ -175,7 +155,7 @@ class TestOverride(unittest.TestCase):
     def test_get_tickets_rule_threshold(self):
         """Test Override.get_tickets for rule threshold on perf_override.json
         """
-        override_file = os.path.join(self.abs_path, 'perf_override.json')
+        override_file = test_utils.fixture_file_path('perf_override.json')
         override_obj = Override(self.project, override_info=override_file)
         expected_thresh_tickets = set([u'PERF-443'])
         self.assertEqual(override_obj.get_tickets(rule='threshold'), expected_thresh_tickets)

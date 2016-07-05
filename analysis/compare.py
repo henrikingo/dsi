@@ -1,38 +1,48 @@
 #!/usr/bin/env python2.7
 """Compute the ratio of scores in one test run to those in another."""
 
-import json
 import argparse
+import json
+import sys
+import util
 
-def main():
-    """Script entry point."""
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-b", "--baseline", default="base.json", dest="baseline",
-                        help="path to json file containing baseline data")
-    parser.add_argument("-c", "--comparison", default="compare.json", dest="compare",
-                        help="path to json file containing comparison data")
-    args = parser.parse_args()
+def compare(this_run, baseline_run):
+    """
+    Compare two test runs and return the comparison data in the form of a test run.
 
-    compare = json.load(open(args.compare))
-    baseline = json.load(open(args.baseline))
-    baselinedict = dict((s['name'], s) for s in baseline['results'])
-
-    # Note, we're putting things in an ops_per_sec fields, but it's really
-    # a ratio. Would like to rename and have evergreen pick it up.
+    `this_run` is the test run to compare against the tagged test run in `baseline_run`.
+    """
 
     newresults = []
-    for result in compare['results']:
+    baseline_run = dict((s['name'], s) for s in baseline_run['results'])
+
+    for result in this_run['results']:
         nresult = {'name' : result['name']}
         res = result['results']
-        baseline_res = baselinedict[result['name']]['results']
+        baseline_res = baseline_run[result['name']]['results']
         nresult['results'] = dict(
             (thread, {'ops_per_sec' : 100*res[thread]['ops_per_sec'] /
                                       baseline_res[thread]['ops_per_sec']})
             for thread in res if isinstance(res[thread], dict) and thread in baseline_res)
         newresults.append(nresult)
 
-    out = open("perf.json", 'w')
-    json.dump({'results' : newresults}, out, indent=4, separators=(',', ':'))
+    return {"results": newresults}
 
-if __name__ == '__main__':
-    main()
+def main(args):
+    """Script entry point."""
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-b", "--baseline", default="base.json", dest="baseline",
+                        help="path to json file containing baseline data")
+    parser.add_argument("-c", "--comparison", default="compare.json", dest="compare",
+                        help="path to json file containing comparison data")
+    args = parser.parse_args(args)
+
+    compare_run = util.get_json(args.compare)
+    baseline_run = util.get_json(args.baseline)
+    newresults = compare(compare_run, baseline_run)
+    with open("perf.json", "w") as out:
+        json.dump(newresults, out, indent=4, separators=(',', ':'))
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

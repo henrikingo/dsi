@@ -102,8 +102,13 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
         help="File to read for comparison override information")
     arg_parser.add_argument(
         "--variant", dest="variant", help="Variant to lookup in the override file")
+    arg_parser.add_argument(
+        "--out-file", help="File to write the results table to. Defaults to stdout.")
+    arg_parser.add_argument(
+        "--report-file", help='File to write the report JSON file to. Defaults to "report.json".',
+        default="report.json")
 
-    args = arg_parser.parse_args()
+    args = arg_parser.parse_args(args)
     (history, tag_history, overrides) = read_histories(args.variant, args.file, args.tfile,
                                                        args.overrideFile)
     testnames = history.testnames()
@@ -206,7 +211,9 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
         else:
             print("\tWARNING: no reference data, skipping")
 
-        print(result['log_raw'])
+        if args.out_file is None:
+            print(result['log_raw'])
+
         if test_failed:
             result['status'] = 'fail'
             failed += 1
@@ -214,16 +221,20 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
             result['status'] = 'pass'
         results.append(result)
 
+    if args.out_file is None:
+        print(result["log_raw"])
+    else:
+        with open(args.out_file, "w") as out_file:
+            for result in results:
+                out_file.write(result["log_raw"])
+
     report = {}
     report['failures'] = failed
     report['results'] = results
 
-    report_file = open('report.json', 'w')
-    json.dump(report, report_file, indent=4, separators=(',', ': '))
-    if failed > 0:
-        sys.exit(1)
-    else:
-        sys.exit(0)
+    with open(args.report_file, "w") as report_file:
+        json.dump(report, report_file, indent=4, separators=(',', ': '))
+    return 1 if failed > 0 else 0
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    sys.exit(main(sys.argv[1:]))

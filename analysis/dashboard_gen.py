@@ -210,10 +210,10 @@ def update_state(current, new_data):
         current['perf_ratio'] = new_data['perf_ratio']
 
 
-def main():
+def main(args):
     ''' Loop through and classify tests in a task into states used for
     dashboard '''
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--project_id", dest="project_id",
                         help="project_id for the test in Evergreen")
     parser.add_argument("--task_name", dest="task_name", help="task_name for"
@@ -243,7 +243,10 @@ def main():
                         help="Password for the Jira account. Incorrect"
                         " user/passowrd may result in override information not"
                         "properly used")
-    ARGS = parser.parse_args()  # pylint: disable=invalid-name
+    parser.add_argument(
+        "--dashboard-file", default="dashboard.json",
+        help="File to write the dashboard JSON to.")
+    ARGS = parser.parse_args(args)  # pylint: disable=invalid-name
 
     # Set up result histories from various files:
     # HISTORY - this series include the run to be checked, and previous or NDays
@@ -281,9 +284,8 @@ def main():
         report_for_baseline['data'] = results
         report['baselines'].append(report_for_baseline)
 
-    report_file = open('dashboard.json', 'w')
-    json.dump(report, report_file, indent=4, separators=(',', ': '))
+    with open(ARGS.dashboard_file, "w") as dashboard_file:
+        json.dump(report, dashboard_file, indent=4, separators=(',', ': '))
 
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    main(sys.argv[1:])

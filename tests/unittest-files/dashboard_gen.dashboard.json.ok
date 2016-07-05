@@ -1,0 +1,108 @@
+{
+    "baselines": [
+        {
+            "version": "3.2.1-Baseline",
+            "data": [
+                {
+                    "tickets": [],
+                    "state": "undesired",
+                    "test_file": "insert_ttl-wiredTiger",
+                    "notes": "Max throughput undesired (<0.92 of baseline)\n",
+                    "perf_ratio": 0.8954780838186703
+                },
+                {
+                    "tickets": [
+                        "PERF-335"
+                    ],
+                    "state": "unacceptable",
+                    "test_file": "insert_jtrue-wiredTiger",
+                    "notes": "Max throughput unacceptable (<0.88 of baseline)\nThroughput at 32 undesired (<0.88 of baseline)\n",
+                    "perf_ratio": 0.8736567758274275
+                },
+                {
+                    "tickets": [
+                        "PERF-335"
+                    ],
+                    "state": "pass",
+                    "test_file": "removemulti_jtrue-wiredTiger",
+                    "notes": "",
+                    "perf_ratio": 0.9918149746325572
+                },
+                {
+                    "tickets": [],
+                    "state": "pass",
+                    "test_file": "insert_capped_indexes-wiredTiger",
+                    "notes": "",
+                    "perf_ratio": 0.9709418610257381
+                },
+                {
+                    "tickets": [],
+                    "state": "pass",
+                    "test_file": "insert_capped-wiredTiger",
+                    "notes": "",
+                    "perf_ratio": 0.9751162842353959
+                },
+                {
+                    "tickets": [],
+                    "state": "pass",
+                    "test_file": "initial_load_capped-wiredTiger",
+                    "notes": "",
+                    "perf_ratio": 1
+                },
+                {
+                    "tickets": [],
+                    "state": "pass",
+                    "test_file": "word_count_1M_doc-wiredTiger",
+                    "notes": "",
+                    "perf_ratio": 0.917709419534237
+                },
+                {
+                    "tickets": [],
+                    "state": "pass",
+                    "test_file": "map_reduce_1M_doc-wiredTiger",
+                    "notes": "No reference data for test in baseline\n",
+                    "perf_ratio": 1
+                },
+                {
+                    "tickets": [],
+                    "state": "unacceptable",
+                    "test_file": "insert_vector_secondary_overall-wiredTiger",
+                    "notes": "Max throughput unacceptable (<0.88 of baseline)\nThroughput at 32 undesired (<0.88 of baseline)\n",
+                    "perf_ratio": 0.8663892791236775
+                },
+                {
+                    "tickets": [
+                        "PERF-335"
+                    ],
+                    "state": "pass",
+                    "test_file": "updatemulti_jtrue-wiredTiger",
+                    "notes": "",
+                    "perf_ratio": 0.9464112634209267
+                },
+                {
+                    "tickets": [],
+                    "state": "unacceptable",
+                    "test_file": "insert_vector_secondary_load_phase-wiredTiger",
+                    "notes": "Max throughput unacceptable (<0.88 of baseline)\nThroughput at 32 undesired (<0.88 of baseline)\n",
+                    "perf_ratio": 0.8663940919696419
+                },
+                {
+                    "tickets": [
+                        "SERVER-21092"
+                    ],
+                    "state": "pass",
+                    "test_file": "contended_update-wiredTiger",
+                    "notes": "",
+                    "perf_ratio": 0.9603598706483036
+                },
+                {
+                    "tickets": [],
+                    "state": "unacceptable",
+                    "test_file": "insert_vector_primary-wiredTiger",
+                    "notes": "Max throughput unacceptable (<0.88 of baseline)\nThroughput at 32 undesired (<0.88 of baseline)\n",
+                    "perf_ratio": 0.8663940919696419
+                }
+            ]
+        }
+    ]
+}

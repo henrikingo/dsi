@@ -2,14 +2,13 @@
 
 import json
 import os
-import sys
 import unittest
 
 # TODO: once all shell script tests are moved to python unittests, analysis can be
 # made into its own module. This will allow these tests to use absolute imports
 # (i.e. import analysis.update_overrides)
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 import update_overrides  # pylint: disable=import-error,wrong-import-position
+from tests import test_utils
 
 
 class TestUpdateOverrides(unittest.TestCase):
@@ -20,19 +19,13 @@ class TestUpdateOverrides(unittest.TestCase):
         """Specifies the path to output the JSON files. Additionally,
         sets up the common parameters for each operation being tested.
         """
-        self.abs_path = os.path.dirname(os.path.abspath(__file__))
-        self.unittest_files = os.path.join(self.abs_path, 'unittest-files')
-        self.reference_files = os.path.join(self.abs_path, 'reference')
-
         # the original update_overrides test script does a reference update
         # and then a threshold update before comparing the final output file
         # against the expected result.
-        self.intermed_file = os.path.join(self.unittest_files,
-                                          'update_override_intermed.json')
-        self.output_file = os.path.join(self.unittest_files,
-                                        'update_override_test.json')
-        self.config_file = os.path.join(self.abs_path, 'config.yml')
-        self.override_file = os.path.join(self.abs_path, 'perf_override.json')
+        self.intermed_file = test_utils.fixture_file_path('update_override_intermed.json')
+        self.output_file = test_utils.fixture_file_path('update_override_test.json')
+        self.config_file = test_utils.repo_root_file_path('config.yml')
+        self.override_file = test_utils.fixture_file_path('perf_override.json')
 
     def _update_overrides_compare(self, git_hash):
         """General comparison function used for hash-related test cases"""
@@ -52,7 +45,7 @@ class TestUpdateOverrides(unittest.TestCase):
 
         os.remove(self.intermed_file)
 
-        expected_json = os.path.join(self.reference_files, 'update_overrides.json.ok')
+        expected_json = test_utils.fixture_file_path('update_overrides.json.ok')
         with open(expected_json) as exp_file_handle, open(self.output_file) as obs_file_handle:
             exp_updated_override = json.load(exp_file_handle)
             obs_updated_override = json.load(obs_file_handle)
@@ -86,7 +79,7 @@ class TestUpdateOverrides(unittest.TestCase):
                           'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$']
         update_overrides.main(reference_args)
 
-        expected_json = os.path.join(self.unittest_files, 'update_ref_no_ticket.json.ok')
+        expected_json = test_utils.fixture_file_path('update_ref_no_ticket.json.ok')
         with open(expected_json) as exp_file_handle, open(self.output_file) as obs_file_handle:
             exp_updated_override = json.load(exp_file_handle)
             obs_updated_override = json.load(obs_file_handle)
@@ -97,14 +90,14 @@ class TestUpdateOverrides(unittest.TestCase):
         Test override values are still found and updated.
         """
         git_hash = 'c2af7ab'
-        override_file = os.path.join(self.unittest_files, 'update_override_reference.json.ok')
+        override_file = test_utils.fixture_file_path('update_override_reference.json.ok')
         threshold_args = [git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'query',
                           '-f', override_file, '-d', self.output_file, '--verbose', '-t',
                           'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$',
                           '--threshold', '0.66', '--thread-threshold', '0.77']
         update_overrides.main(threshold_args)
 
-        expected_json = os.path.join(self.unittest_files, 'update_thresh_no_ticket.json.ok')
+        expected_json = test_utils.fixture_file_path('update_thresh_no_ticket.json.ok')
         with open(expected_json) as exp_file_handle, open(self.output_file) as obs_file_handle:
             exp_updated_override = json.load(exp_file_handle)
             obs_updated_override = json.load(obs_file_handle)

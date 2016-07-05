@@ -1,0 +1,9 @@
+[MESSAGES CONTROL]
+disable=locally-disabled,fixme,duplicate-code,import-error
+
+[REPORTS]
+output-format=colorized
+reports=no
+
+[BASIC]
+good-names=runTest,_

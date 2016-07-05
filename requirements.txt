@@ -1,3 +1,4 @@
+nose
 argparse
 mock
 paramiko

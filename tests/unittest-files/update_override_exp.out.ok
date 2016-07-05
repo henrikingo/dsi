@@ -142,7 +142,7 @@ Processing build variant: linux-wt-mmap-repl-compare
 	Skipping task: misc-wt-mmap-repl-comp
 	Skipping task: update-wt-mmap-repl-comp
 	Skipping task: singleThreaded-wt-mmap-repl-comp
-The following tests have been overridden for rule reference:
+The following tests have been overridden:
 {
   "linux-mmap-repl": {},
   "linux-mmap-repl-compare": {},

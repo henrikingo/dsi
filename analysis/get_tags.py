@@ -44,7 +44,7 @@ def get_tagged_data(project, variants, tasks, filename_format, cli):
                 LOGGER.info('Saving tagged data to {filename}'.format(filename=filename))
                 json.dump(tags, file_ptr, sort_keys=True, separators=[',', ':'], indent=4)
 
-def main():
+def main(args):
     """The script's main entrypoint."""
 
     global LOGGER # pylint: disable=global-statement
@@ -91,4 +91,4 @@ def main():
                     evergreen_client.Client(args.config))
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

@@ -8,7 +8,7 @@ import logging
 
 from evergreen import override
 
-def main():
+def main(args):
     '''
     Check overrides for tickets
     '''
@@ -40,7 +40,7 @@ def main():
                         help='The rule to check')
 
     # Parse the arguments and initialize the logging output
-    args = parser.parse_args()
+    args = parser.parse_args(args)
     warner = logging.getLogger('override.update.warnings')
     err_handler = logging.StreamHandler(sys.stderr)
     err_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
@@ -67,4 +67,4 @@ def main():
         print(ticket)
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
