@@ -1,8 +1,2 @@
-nose
-argparse
-mock
-paramiko
-python-dateutil
-pyyaml
-requests
-pylint
+-r requirements/provisioning.txt
+-r requirements/test.txt

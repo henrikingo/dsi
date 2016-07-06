@@ -1,0 +1,4 @@
+paramiko
+pyyaml
+requests
+-r analysis.txt
