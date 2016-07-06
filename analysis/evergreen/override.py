@@ -494,9 +494,18 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         """Get the overrides created by a given ticket.
 
         :param str ticket: The ID of a JIRA ticket (e.g. PERF-226)
-        :rtype: list[dict]
+        :rtype: A list of tuples of the form
+                `(variant_name, type_name, test_name, override_object)`
         """
-        raise NotImplementedError()
+
+        overrides = []
+        for variant_name, variant_overrides in self.overrides.items():
+            for type_name, type_overrides in variant_overrides.items():
+                for test_name, test_override in type_overrides.items():
+                    if ticket in test_override["ticket"]:
+                        overrides.append((variant_name, type_name, test_name, test_override))
+
+        return overrides
 
     def _ticket_variant_rule_deletion(self, build_variant, rule, ticket, to_update, to_remove):  # pylint: disable=too-many-arguments
         """Given a ticket, build variant, and rule, figure out what can be completely removed

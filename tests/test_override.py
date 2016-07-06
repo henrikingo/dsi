@@ -166,5 +166,37 @@ class TestOverride(unittest.TestCase):
         override_obj = Override(self.project, override_info=None)
         self.assertEqual(override_obj.get_tickets(), set([]))
 
+    def test_get_overrides_by_ticket(self):
+        """Test Override.get_overrides_by_ticket
+        """
+
+        test1 = {"ticket": ["1", "2"]}
+        test2 = {"ticket": ["1", "3"]}
+        test3 = {"ticket": ["2", "3"]}
+        override_dict = {
+            "variant1": {
+                "ndays": {
+                    "test1": test1
+                },
+                "reference": {
+                    "test2": test2
+                }
+            },
+            "variant2": {
+                "ndays": {
+                    "test3": test3
+                }
+            }
+        }
+        override = Override("", override_dict)
+        expected_results = sorted([
+            ("variant1", "ndays", "test1", test1),
+            ("variant1", "reference", "test2", test2)])
+        self.assertEqual(sorted(override.get_overrides_by_ticket("1")), expected_results)
+        expected_results = sorted([
+            ("variant1", "ndays", "test1", test1),
+            ("variant2", "ndays", "test3", test3)])
+        self.assertEqual(sorted(override.get_overrides_by_ticket("2")), expected_results)
+
 if __name__ == '__main__':
     unittest.main()
