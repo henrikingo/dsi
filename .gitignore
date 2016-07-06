@@ -30,3 +30,5 @@ venv
 
 # PyCharm
 .idea
+
+/config.yml
