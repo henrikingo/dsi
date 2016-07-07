@@ -196,7 +196,7 @@ def sys_linux_3_node_repl_set(test):
     to_return.update(replica_lag_check(test, threshold=10))
     return to_return
 
-def sys_linux_3_node_replSet_initialsync(test): #pylint: disable=invalid-name
+def sys_linux_3_node_repl_set_isync(test):
     """Rules for a 3-node replica set on Linux."""
 
     to_return = {}
@@ -281,7 +281,7 @@ CHECK_RULES = {
         'linux-standalone': sys_linux_standalone,
         'linux-3-shard': sys_linux_3_shard,
         'linux-3-node-replSet': sys_linux_3_node_repl_set,
-        'linux-3-node-replSet-initialsync': sys_linux_3_node_replSet_initialsync,
+        'linux-3-node-replSet-initialsync': sys_linux_3_node_repl_set_isync,
         'linux-oplog-compare': sys_linux_oplog_compare,
         'linux-standalone-c3-2xlarge': sys_linux_standlone_c3_2xlarge,
         'linux-standalone-c3-4xlarge': sys_linux_standlone_c3_4xlarge,
