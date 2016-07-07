@@ -196,7 +196,7 @@ def sys_linux_3_node_repl_set(test):
     to_return.update(replica_lag_check(test, threshold=10))
     return to_return
 
-def sys_linux_3_node_replSet_initialsync(test):
+def sys_linux_3_node_replSet_initialsync(test): #pylint: disable=invalid-name
     """Rules for a 3-node replica set on Linux."""
 
     to_return = {}
@@ -206,7 +206,7 @@ def sys_linux_3_node_replSet_initialsync(test):
     # max_lag check
     to_return.update(replica_lag_check(test, threshold=10))
     return to_return
-    
+
 def sys_linux_oplog_compare(test):
     """Rules for an oplog setup on Linux."""
 
