@@ -33,8 +33,8 @@ done
 
 popd
 pwd
-PYTHONPATH=analysis run_test nosetests -v --with-doctest --exe --ignore-files=timeseries.py --stop
 run_test pylint --rcfile=pylintrc $(find analysis tests -name "*.py")
+PYTHONPATH=analysis run_test nosetests -v --with-doctest --exe --ignore-files=timeseries.py --stop
 
 if [ $failed -eq 0 ]; then
     echo "All tests passed"
