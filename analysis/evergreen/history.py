@@ -112,10 +112,11 @@ class History(object):
             # Determine levels from last commit? Probably a better way to do this.
             for thread in threads:
                 test_series = self.series(test)
-                self._noise[test][thread] = sum((compute_range(
-                    x["results"][thread].get("ops_per_sec_values", [0]))[2]for x in test_series))
+                self._noise[test][thread] = sum(
+                    (compute_range(x["results"][thread].get("ops_per_sec_values", [0]))[2]
+                     for x in test_series if thread in x["results"]))
                 test_series = self.series(test)
-                self._noise[test][thread] /= sum(1 for x in test_series)
+                self._noise[test][thread] /= sum(1 for x in test_series if thread in x["results"])
 
 
     def noise_levels(self, testname):
