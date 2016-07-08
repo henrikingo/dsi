@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-"""
+'''
 Iterate through tests to evaluate their states to display in the performance
 dashboard against the specified baselines. Output is written to dashboard.json
 which in turn is sent to the Evergreen database.
@@ -8,7 +8,7 @@ Example usage:
  dashboard_gen.py -f history_file.json --rev
         18808cd923789a34abd7f13d62e7a73fafd5ce5f --project_id $pr_id --variant
         $variant --jira-user user --jira-password passwd
-"""
+'''
 from __future__ import print_function
 
 import argparse
@@ -16,7 +16,7 @@ import json
 import sys
 import requests
 
-from util import read_histories, get_override
+from util import read_histories, get_override, compare_one_result_base
 
 
 # tests are classified into one of the following states
@@ -31,10 +31,18 @@ TEST_STATE = {
 
 # project_id and variant uniquely identify the set of rules to check
 # using a dictionary to help us choose the function with the right rules
+# defaults are defined at both project and global level; if a project/variant
+# combination cannot be found, move up one level for default values
 THRESHOLDS = {
     'sys-perf': {
         'linux-oplog-compare': {
             'undesired': 0.1, 'thread_undesired': 0.2,
+            'unacceptable': 0.15, 'thread_unacceptable': 0.23
+            }
+        },
+    'performance': {
+        'default': {
+            'undesired': 0.1, 'thread_undesired': 0.15,
             'unacceptable': 0.15, 'thread_unacceptable': 0.23
             }
         },
@@ -57,6 +65,9 @@ THRESHOLDS = {
 # using a treshold_override, we use that for undesired and use
 # a multiplier to define the unacceptable
 THRESHOLD_MULTIPLIER = 1.5
+# Fudge factors used for sample noise in multi-trial tests
+NOISE_MULTIPLE = 1
+THREAD_NOISE_MULTIPLE = 2
 
 # test data series
 HISTORY = None
@@ -75,7 +86,7 @@ def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_passwor
     ''' compute throughput ratios for all points in result series this_one
      over reference. Classify a test into a result['state'] based on the ratios.
      Use different thresholds for max throughput, and per-thread comparisons. '''
-     # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
+    # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
     check_result = {'state': 'pass', 'notes': '', 'tickets': [],
                     'perf_ratio': 1}
 
@@ -91,24 +102,28 @@ def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_passwor
         if override:
             check_result['tickets'].extend(override['ticket'])
             if use_override(override['ticket'], jira_user, jira_password):
+                check_result['notes'] += 'Override used for thresholds'
                 reference = override
 
-    # if the thresholds are given on command line, use them
-    # otherwise get the thresholds to use using project/variant
+    # get the thresholds to use using project/variant
+    # if combination is not found, use project defaults
+    # if project default is undefined, use global defaults
     try:
-        undesired_target = 1 - THRESHOLDS[project_id].get(variant, \
+        if variant not in THRESHOLDS[project_id]:
+            variant = 'default'
+        undesired_threshold = THRESHOLDS[project_id].get(variant, \
             THRESHOLDS['default'])['undesired']
-        thread_undesired_target = 1 - THRESHOLDS[project_id].get(variant, \
+        thread_undesired_threshold = THRESHOLDS[project_id].get(variant, \
             THRESHOLDS['default'])['thread_undesired']
-        unacceptable_target = 1 - THRESHOLDS[project_id].get(variant, \
+        unacceptable_threshold = THRESHOLDS[project_id].get(variant, \
             THRESHOLDS['default'])['unacceptable']
-        thread_unacceptable_target = 1 - THRESHOLDS[project_id].get(variant, \
+        thread_unacceptable_threshold = THRESHOLDS[project_id].get(variant, \
             THRESHOLDS['default'])['thread_unacceptable']
     except KeyError as key_error:
         print("{0} is not a supported project".format(key_error))
         sys.exit(1)
+
     # some tests may have higher noise margin and need different thresholds
-    # this info is kept as part of the override file
     # when threshold override is used, use that for undesired and
     # use threshold_multiplier * undesired as unacceptable.
     # again, whether we use this override depends on the state of the tickets
@@ -116,47 +131,65 @@ def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_passwor
     if override:
         check_result['tickets'].extend(override['ticket'])
         if use_override(override['ticket'], jira_user, jira_password):
-            undesired_target = 1 - override['threshold']
-            unacceptable_target = 1 - THRESHOLD_MULTIPLIER * override['threshold']
-            thread_undesired_target = 1 - override['thread_threshold']
-            thread_unacceptable_target = 1 - THRESHOLD_MULTIPLIER * override['thread_threshold']
+            check_result['notes'] += 'Override used for thresholds'
+            undesired_threshold = 1 - override['threshold']
+            unacceptable_threshold = 1 - THRESHOLD_MULTIPLIER * override['threshold']
+            thread_undesired_threshold = 1 - override['thread_threshold']
+            thread_unacceptable_threshold = 1 - THRESHOLD_MULTIPLIER * override['thread_threshold']
 
-    # Compute the ratios for max throughput achieved
-    ratio_at_max = 1 if reference['max'] == 0 else test['max']/reference['max']
-    check_result['perf_ratio'] = ratio_at_max
-    num_level = worst_ratio = 0
-    for level in (r for r in test["results"] if isinstance(test["results"][r], dict)):
-        # Skip the max level beause we already calculated that
-        if level != 'max':
-            num_level += 1
-            thread_ratio = 1 if reference['results'][level]['ops_per_sec'] == 0 \
-                else test['results'][level]['ops_per_sec']\
-                    / reference['results'][level]['ops_per_sec']
-            if thread_ratio <= worst_ratio or worst_ratio == 0:
-                worst_ratio = thread_ratio
-                worst_thread = level
-
-    # only use the tigher threshold at max if more than one thread level
-    # was reported. log only the most severe condition.
-    if num_level > 1:
-        if ratio_at_max < unacceptable_target:
-            check_result['notes'] += 'Max throughput unacceptable '\
-                + '(<{0:1.2f} of baseline)\n'.format(unacceptable_target)
+    # if noise data is available, take that into account for comparison
+    # use the larger of threshold or noise to avoid false positive
+    # when fixing PERF-595, we need to review noise-handling in all analysis scripts
+    noise_levels = HISTORY.noise_levels(test['name'])
+    worst_noise = max(noise_levels.values()) if (len(noise_levels.values()) == 0) else 0
+    (failed, ratio, target) = compare_one_result_base(
+        test['max'], reference['max'], worst_noise,
+        NOISE_MULTIPLE, unacceptable_threshold)
+    check_result['perf_ratio'] = 1 + ratio
+    if failed:
+        failed_reason = ' with test noise' if (target < unacceptable_threshold-0.0001)\
+            else ''
+        check_result['notes'] += 'Max throughput unacceptable '\
+            + '(<{0:.2f} of baseline){1}\n'.format(1-target, failed_reason)
+        if TEST_STATE[check_result['state']] < TEST_STATE['unacceptable']:
             check_result['state'] = 'unacceptable'
-        elif ratio_at_max < undesired_target:
+    else:
+        (failed, ratio, target) = compare_one_result_base(
+            test['max'], reference['max'], worst_noise,
+            NOISE_MULTIPLE, undesired_threshold)
+        if failed:
+            failed_reason = ' with test noise' if (target < undesired_threshold-0.0001)\
+                else ''
             check_result['notes'] += 'Max throughput undesired '\
-                + '(<{0:1.2f} of baseline)\n'.format(undesired_target)
-            check_result['state'] = 'undesired'
-        if worst_ratio < thread_unacceptable_target:
-            check_result['notes'] += 'Throughput at {0} '.format(worst_thread)\
-                + 'unacceptable (<{0:1.2f} of baseline)\n'.format(thread_unacceptable_target)
-            if TEST_STATE[check_result['state']] < TEST_STATE['unacceptable']:
-                check_result['state'] = 'unacceptable'
-        elif worst_ratio < thread_undesired_target:
-            check_result['notes'] += 'Throughput at {0} '.format(worst_thread)\
-                + 'undesired (<{0:1.2f} of baseline)\n'.format(thread_undesired_target)
+                + '(<{0:.2f} of baseline){1}\n'.format(1-target, failed_reason)
             if TEST_STATE[check_result['state']] < TEST_STATE['undesired']:
                 check_result['state'] = 'undesired'
+    # check throughput at each thread level
+    for level in (r for r in test["results"] if isinstance(test["results"][r], dict)):
+        (failed, ratio, target) = compare_one_result_base(
+            test['results'][level]['ops_per_sec'],
+            reference['results'][level]['ops_per_sec'], noise_levels.get(level, 0),
+            THREAD_NOISE_MULTIPLE, thread_unacceptable_threshold)
+        if failed:
+            failed_reason = ' with test noise' if (target < thread_unacceptable_threshold-0.0001)\
+                else ''
+            check_result['notes'] += 'Throughput at {0} unacceptable '.format(level)\
+                + '(<{0:.2f} of baseline){1}\n'.format(1-target, failed_reason)
+            if TEST_STATE[check_result['state']] < TEST_STATE['unacceptable']:
+                check_result['state'] = 'unacceptable'
+        else:
+            (failed, ratio, target) = compare_one_result_base(
+                test['results'][level]['ops_per_sec'],
+                reference['results'][level]['ops_per_sec'], noise_levels.get(level, 0),
+                THREAD_NOISE_MULTIPLE, thread_undesired_threshold)
+            if failed:
+                failed_reason = ' with test noise' \
+                    if (target < thread_undesired_threshold-0.0001)\
+                    else ''
+                check_result['notes'] += 'Throughput at {0} undesired '.format(level)\
+                    + '(<{0:.2f} of baseline){1}\n'.format(1-target, failed_reason)
+                if TEST_STATE[check_result['state']] < TEST_STATE['undesired']:
+                    check_result['state'] = 'undesired'
 
     return check_result
 
@@ -167,12 +200,13 @@ def repl_lag_check(test, threshold):
     If there is no max lag information, consider the test 'pass '''
     check_result = {'state': 'pass', 'notes': '', 'tickets': []}
     for level in test['results']:
-        max_lag = test['results'][level].get('replica_max_lag', 'NA')
-        if max_lag != "NA":
-            if float(max_lag) > threshold:
-                check_result['state'] = 'unacceptable'
-                check_result['notes'] += 'replica_max_lag ({0}) '.format(max_lag)\
-                    + '> threshold({0}) seconds at {1} thread\n'.format(threshold, level)
+        if isinstance(test['results'][level], dict):
+            max_lag = test['results'][level].get('replica_max_lag', 'NA')
+            if max_lag != "NA":
+                if float(max_lag) > threshold:
+                    check_result['state'] = 'unacceptable'
+                    check_result['notes'] += 'replica_max_lag ({0}) '.format(max_lag)\
+                        + '> threshold({0}) seconds at {1} thread\n'.format(threshold, level)
     return check_result
 
 
@@ -231,10 +265,6 @@ def main(args):
                         help="File to read override information")
     parser.add_argument("--variant", dest="variant", help="Variant to lookup"
                         " in the override file")
-    parser.add_argument("--threshold", dest="threshold", help="Threshold for"
-                        " undesired tests")
-    parser.add_argument("--threadThreshold", dest="threadThreshold", help=""
-                        "threadThreshold to use for undesired")
     parser.add_argument("--jira-user", dest="jira_user", required=True, help=
                         "Jira account used to check ticket states. Incorrect"
                         "user/password may result in override information not"

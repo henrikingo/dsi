@@ -51,9 +51,9 @@
                 },
                 {
                     "tickets": [],
-                    "state": "pass",
+                    "state": "undesired",
                     "test_file": "word_count_1M_doc-wiredTiger",
-                    "notes": "",
+                    "notes": "Max throughput undesired (<0.92 of baseline)\n",
                     "perf_ratio": 0.917709419534237
                 },
                 {
