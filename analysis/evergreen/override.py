@@ -490,6 +490,15 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                                                                   test['ticket'], list)])))
         return tickets
 
+    def rename_ticket(self, old_ticket, new_ticket):
+        """Replace all occurrences of `old_ticket` in "ticket" fields with `new_ticket`."""
+
+        for test in self.get_overrides_by_ticket(old_ticket):
+            tickets = test[3]["ticket"]
+            old_ticket_index = tickets.index(old_ticket)
+            tickets.pop(old_ticket_index)
+            tickets.insert(old_ticket_index, new_ticket)
+
     def get_overrides_by_ticket(self, ticket):
         """Get the overrides created by a given ticket.
 

@@ -198,5 +198,28 @@ class TestOverride(unittest.TestCase):
             ("variant2", "ndays", "test3", test3)])
         self.assertEqual(sorted(override.get_overrides_by_ticket("2")), expected_results)
 
+    def test_rename_ticket(self):
+        """Test Override.rename_ticket correctly renames tickets in place.
+        """
+
+        test1_tickets = ["1", "2", "bar"]
+        test2_tickets = ["4", "2", "baz"]
+        override_dict = {
+            "variant1": {
+                "ndays": {
+                    "test1": {"ticket": test1_tickets}
+                }
+            },
+            "variant2": {
+                "reference": {
+                    "test2": {"ticket": test2_tickets}
+                }
+            }
+        }
+        override = Override("", override_dict)
+        override.rename_ticket("2", "foo")
+        self.assertEqual(test1_tickets, ["1", "foo", "bar"])
+        self.assertEqual(test2_tickets, ["4", "foo", "baz"])
+
 if __name__ == '__main__':
     unittest.main()
