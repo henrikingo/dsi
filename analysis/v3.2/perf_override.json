@@ -1524,6 +1524,37 @@
     "linux-mmap-repl-compare":{
         "ndays":{},
         "reference":{
+            "Commands.FindAndModifyInserts":{
+                "create_time":"2016-07-07T15:24:35.97Z",
+                "max":100.42835475816558,
+                "name":"Commands.FindAndModifyInserts",
+                "order":562,
+                "results":{
+                    "1":{
+                        "ops_per_sec":99.17600339704202
+                    },
+                    "2":{
+                        "ops_per_sec":97.86732271415534
+                    },
+                    "4":{
+                        "ops_per_sec":100.42835475816558
+                    },
+                    "8":{
+                        "ops_per_sec":96.85945365897729
+                    }
+                },
+                "revision":"7cc1cf4d93ec4dbefb297ba9fedab3a42473119a",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "BF-2785"
+                ]
+            },
             "Insert.DocValidation.OneInt":{
                 "create_time":"2016-02-01T01:14:45.284Z",
                 "max":87.5670410988783,
@@ -1615,6 +1646,68 @@
                 ],
                 "ticket":[
                     "PERF-424"
+                ]
+            },
+            "Insert.JustID":{
+                "create_time":"2016-07-07T15:24:35.97Z",
+                "max":85.92492621742005,
+                "name":"Insert.JustID",
+                "order":562,
+                "results":{
+                    "1":{
+                        "ops_per_sec":85.92492621742005
+                    },
+                    "2":{
+                        "ops_per_sec":84.85580449871902
+                    },
+                    "4":{
+                        "ops_per_sec":72.1499250652767
+                    },
+                    "8":{
+                        "ops_per_sec":73.54411352890754
+                    }
+                },
+                "revision":"7cc1cf4d93ec4dbefb297ba9fedab3a42473119a",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "BF-2785"
+                ]
+            },
+            "Insert.LargeDocVector":{
+                "create_time":"2016-07-07T15:24:35.97Z",
+                "max":48.779957337971446,
+                "name":"Insert.LargeDocVector",
+                "order":562,
+                "results":{
+                    "1":{
+                        "ops_per_sec":48.779957337971446
+                    },
+                    "2":{
+                        "ops_per_sec":42.46111043116282
+                    },
+                    "4":{
+                        "ops_per_sec":35.567076138685195
+                    },
+                    "8":{
+                        "ops_per_sec":36.71569394463148
+                    }
+                },
+                "revision":"7cc1cf4d93ec4dbefb297ba9fedab3a42473119a",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "BF-2785"
                 ]
             },
             "Inserts.PartialIndex.FilteredRange":{
@@ -5590,6 +5683,37 @@
     "linux-wt-mmap-repl-compare":{
         "ndays":{},
         "reference":{
+            "Commands.FindAndModifyInserts":{
+                "create_time":"2016-07-07T15:24:35.97Z",
+                "max":147.69901199588938,
+                "name":"Commands.FindAndModifyInserts",
+                "order":562,
+                "results":{
+                    "1":{
+                        "ops_per_sec":92.17441407533958
+                    },
+                    "2":{
+                        "ops_per_sec":93.63360788063146
+                    },
+                    "4":{
+                        "ops_per_sec":94.905557889782
+                    },
+                    "8":{
+                        "ops_per_sec":147.69901199588938
+                    }
+                },
+                "revision":"7cc1cf4d93ec4dbefb297ba9fedab3a42473119a",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "BF-2785"
+                ]
+            },
             "Insert.DocValidation.OneInt":{
                 "create_time":"2016-02-01T01:14:45.284Z",
                 "max":142.81351015878184,
@@ -5681,6 +5805,68 @@
                 ],
                 "ticket":[
                     "PERF-424"
+                ]
+            },
+            "Insert.JustID":{
+                "create_time":"2016-07-07T15:24:35.97Z",
+                "max":139.16564252152767,
+                "name":"Insert.JustID",
+                "order":562,
+                "results":{
+                    "1":{
+                        "ops_per_sec":90.99026435526483
+                    },
+                    "2":{
+                        "ops_per_sec":92.31982921725564
+                    },
+                    "4":{
+                        "ops_per_sec":108.33464419585636
+                    },
+                    "8":{
+                        "ops_per_sec":139.16564252152767
+                    }
+                },
+                "revision":"7cc1cf4d93ec4dbefb297ba9fedab3a42473119a",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "BF-2785"
+                ]
+            },
+            "Insert.LargeDocVector":{
+                "create_time":"2016-07-07T15:24:35.97Z",
+                "max":231.57778184724472,
+                "name":"Insert.LargeDocVector",
+                "order":562,
+                "results":{
+                    "1":{
+                        "ops_per_sec":92.02840247727147
+                    },
+                    "2":{
+                        "ops_per_sec":133.4308849889477
+                    },
+                    "4":{
+                        "ops_per_sec":222.92305248387248
+                    },
+                    "8":{
+                        "ops_per_sec":231.57778184724472
+                    }
+                },
+                "revision":"7cc1cf4d93ec4dbefb297ba9fedab3a42473119a",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "BF-2785"
                 ]
             },
             "Inserts.PartialIndex.FilteredRange":{
@@ -5891,6 +6077,37 @@
     "linux-wt-mmap-standalone-compare":{
         "ndays":{},
         "reference":{
+            "Commands.FindAndModifyInserts":{
+                "create_time":"2016-07-07T15:24:35.97Z",
+                "max":146.4555685791735,
+                "name":"Commands.FindAndModifyInserts",
+                "order":562,
+                "results":{
+                    "1":{
+                        "ops_per_sec":92.76431083419115
+                    },
+                    "2":{
+                        "ops_per_sec":92.72241305461839
+                    },
+                    "4":{
+                        "ops_per_sec":96.6190042913528
+                    },
+                    "8":{
+                        "ops_per_sec":146.4555685791735
+                    }
+                },
+                "revision":"7cc1cf4d93ec4dbefb297ba9fedab3a42473119a",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "BF-2785"
+                ]
+            },
             "Insert.DocValidation.OneInt":{
                 "create_time":"2016-02-01T01:14:45.284Z",
                 "max":134.00715518690714,
@@ -5982,6 +6199,68 @@
                 ],
                 "ticket":[
                     "PERF-424"
+                ]
+            },
+            "Insert.JustID":{
+                "create_time":"2016-07-07T15:24:35.97Z",
+                "max":124.50030616021276,
+                "name":"Insert.JustID",
+                "order":562,
+                "results":{
+                    "1":{
+                        "ops_per_sec":92.92395126828829
+                    },
+                    "2":{
+                        "ops_per_sec":92.45908278236823
+                    },
+                    "4":{
+                        "ops_per_sec":93.34645723638495
+                    },
+                    "8":{
+                        "ops_per_sec":124.50030616021276
+                    }
+                },
+                "revision":"7cc1cf4d93ec4dbefb297ba9fedab3a42473119a",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "BF-2785"
+                ]
+            },
+            "Insert.LargeDocVector":{
+                "create_time":"2016-07-07T15:24:35.97Z",
+                "max":189.33365151016565,
+                "name":"Insert.LargeDocVector",
+                "order":562,
+                "results":{
+                    "1":{
+                        "ops_per_sec":90.55693643135864
+                    },
+                    "2":{
+                        "ops_per_sec":115.4548260172645
+                    },
+                    "4":{
+                        "ops_per_sec":171.74115138433584
+                    },
+                    "8":{
+                        "ops_per_sec":189.33365151016565
+                    }
+                },
+                "revision":"7cc1cf4d93ec4dbefb297ba9fedab3a42473119a",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "BF-2785"
                 ]
             },
             "Inserts.PartialIndex.FilteredRange":{
@@ -9710,6 +9989,37 @@
     "linux-wt-repl-compare":{
         "ndays":{},
         "reference":{
+            "Commands.FindAndModifyInserts":{
+                "create_time":"2016-07-07T15:24:35.97Z",
+                "max":98.82907721509095,
+                "name":"Commands.FindAndModifyInserts",
+                "order":562,
+                "results":{
+                    "1":{
+                        "ops_per_sec":98.545334097247
+                    },
+                    "2":{
+                        "ops_per_sec":98.82907721509095
+                    },
+                    "4":{
+                        "ops_per_sec":98.64735313909328
+                    },
+                    "8":{
+                        "ops_per_sec":97.68181399097001
+                    }
+                },
+                "revision":"7cc1cf4d93ec4dbefb297ba9fedab3a42473119a",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "BF-2785"
+                ]
+            },
             "Insert.DocValidation.OneInt":{
                 "create_time":"2016-02-01T01:14:45.284Z",
                 "max":87.82001070001846,
@@ -9801,6 +10111,68 @@
                 ],
                 "ticket":[
                     "PERF-424"
+                ]
+            },
+            "Insert.JustID":{
+                "create_time":"2016-07-07T15:24:35.97Z",
+                "max":84.7280023083733,
+                "name":"Insert.JustID",
+                "order":562,
+                "results":{
+                    "1":{
+                        "ops_per_sec":84.13688445788034
+                    },
+                    "2":{
+                        "ops_per_sec":84.7280023083733
+                    },
+                    "4":{
+                        "ops_per_sec":83.73468787262948
+                    },
+                    "8":{
+                        "ops_per_sec":82.20713770579778
+                    }
+                },
+                "revision":"7cc1cf4d93ec4dbefb297ba9fedab3a42473119a",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "BF-2785"
+                ]
+            },
+            "Insert.LargeDocVector":{
+                "create_time":"2016-07-07T15:24:35.97Z",
+                "max":49.572586304591894,
+                "name":"Insert.LargeDocVector",
+                "order":562,
+                "results":{
+                    "1":{
+                        "ops_per_sec":49.572586304591894
+                    },
+                    "2":{
+                        "ops_per_sec":49.072210646233934
+                    },
+                    "4":{
+                        "ops_per_sec":46.16669398598879
+                    },
+                    "8":{
+                        "ops_per_sec":44.90770074343365
+                    }
+                },
+                "revision":"7cc1cf4d93ec4dbefb297ba9fedab3a42473119a",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "BF-2785"
                 ]
             },
             "Inserts.PartialIndex.FilteredRange":{
