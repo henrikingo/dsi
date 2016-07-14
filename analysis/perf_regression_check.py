@@ -12,9 +12,13 @@ from datetime import timedelta
 import sys
 import argparse
 import json
+import logging
 from dateutil import parser
 
 from util import read_histories, compare_one_result, log_header, read_threshold_overrides
+import log_analysis
+
+logging.basicConfig(level=logging.INFO)
 
 def compare_results(this_one, reference, threshold, label, # pylint: disable=too-many-arguments,too-many-locals
                     noise_levels=None, noise_multiple=1,
@@ -107,6 +111,11 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
     arg_parser.add_argument(
         "--report-file", help='File to write the report JSON file to. Defaults to "report.json".',
         default="report.json")
+    arg_parser.add_argument(
+        "--reports-dir",
+        help=(
+            "The path to the reports directory created during the performance tests, which "
+            "contains log files somewhere in its tree."))
 
     args = arg_parser.parse_args(args)
     (history, tag_history, overrides) = read_histories(args.variant, args.file, args.tfile,
@@ -227,6 +236,11 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
         with open(args.out_file, "w") as out_file:
             for result in results:
                 out_file.write(result["log_raw"])
+
+    if args.reports_dir is not None:
+        log_analysis_results, num_failures = log_analysis.analyze_logs(args.reports_dir)
+        results.extend(log_analysis_results)
+        failed += num_failures
 
     report = {}
     report['failures'] = failed

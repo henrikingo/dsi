@@ -13,11 +13,15 @@ import sys
 import argparse
 import json
 import StringIO
+import logging
 
 from datetime import timedelta
 from dateutil import parser as date_parser
 
 from util import read_histories, compare_one_result, log_header, read_threshold_overrides
+import log_analysis
+
+logging.basicConfig(level=logging.INFO)
 
 # Rules section - types of rules are:
 # 1. Common regression rules
@@ -362,7 +366,7 @@ regression_line = None
 replica_lag_line = None
 # pylint: enable=invalid-name
 
-def main(args): # pylint: disable=too-many-locals,too-many-statements
+def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-branches
     """
     For each test in the result, we call the variant-specific functions to check for
     regressions and other conditions. We keep a count of failed tests in 'failed'.
@@ -389,6 +393,11 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements
         default="report.json")
     parser.add_argument(
         "--out-file", help="File to write the results table to. Defaults to stdout.")
+    parser.add_argument(
+        "--reports-dir",
+        help=(
+            "The path to the reports directory created during the performance tests, which "
+            "contains log files somewhere in its tree."))
 
     args = parser.parse_args(args)
     print(args.hfile)
@@ -489,6 +498,11 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements
                     '|{0:>16}'.format(data)
                 print_line = print_line + formatted
             print(print_line, file=sys.stderr)
+
+    if args.reports_dir is not None:
+        log_analysis_results, num_failures = log_analysis.analyze_logs(args.reports_dir)
+        report['results'].extend(log_analysis_results)
+        failed += num_failures
 
     # flush stderr to the log file
     sys.stderr.flush()
