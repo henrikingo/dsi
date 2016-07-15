@@ -13,21 +13,49 @@ run:
         # tests.test list, and remove the existing hello.js
         ########################################################################
         tests:
-            default:
-              - contended_update.js
-              - map_reduce.js
-              - insert_capped.js
-              - insert_ttl.js
-              - insert_capped_indexes.js
-              - insert_vector.js
-              - word_count.js
-              - jtrue.js
-              - move_chunk.js
-              - mongos_read_single.js
-              - mongos_insert_vector.js
-              - mongos_insert_single.js
-              - mongos_50read_50write.js
-              - move_chunk_with_load.js
+          initialsync:
+            - initialsync.js
+          initialsync_c_1_d_1_w_f:
+            - initialsync.js:
+                num_collections: 1
+                num_dbs: 1
+                write_load: false
+          initialsync_c_1_d_32_w_f:
+            - initialsync.js:
+                num_collections: 1
+                num_dbs: 32
+                write_load: false
+          initialsync_c_32_d_1_w_f:
+            - initialsync.js:
+                num_collections: 32
+                num_dbs: 1
+                write_load: false
+          initialsync_c_32_d_32_w_f:
+            - initialsync.js:
+                num_collections: 32
+                num_dbs: 32
+                write_load: false
+          initialsync_c_1_d_1_w_t:
+            - initialsync.js:
+                num_collections: 1
+                num_dbs: 1
+                write_load: true
+          initialsync_c_1_d_32_w_t:
+            - initialsync.js:
+                num_collections: 1
+                num_dbs: 32
+                write_load: true
+          initialsync_c_32_d_1_w_t:
+            - initialsync.js:
+                num_collections: 32
+                num_dbs: 1
+                write_load: true
+          initialsync_c_32_d_32_w_t:
+            - initialsync.js:
+                num_collections: 32
+                num_dbs: 32
+                write_load: true
+
         # These next five lines match existing
         # workloads.yml. Workloads needs to be updated to consume from
         # mongo entry.
@@ -37,7 +65,7 @@ run:
         sharded: ${mongodb_setup.meta.is_sharded}
         replica: ${mongodb_setup.meta.is_replset}
         storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
-        test_list: default
+        test_list: initialsync_c_1_d_1_w_f
         mongo:
             # It turns out the shell supports connection strings, but
             # benchRun itself does not.

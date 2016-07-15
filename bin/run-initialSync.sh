@@ -6,7 +6,6 @@ CLUSTER=$3
 BINDIR=$(dirname $0)
 source setting.sh
 
-./update_run_config.sh
 rm -rf ./reports
 rm -f ../../reports.tgz
 
@@ -29,19 +28,35 @@ function runInitialSyncTest {
         TEST="$TEST_NAME"
     fi
 
-    # This should be updated to match run-benchRun.sh from PERF-531
-    cp run-$TEST.json mc.json
-    echo "Using run-$TEST.json as mc.json"
-
     MC_MONITOR_INTERVAL=1 ${BINDIR}/mc -config mc.json -run $TEST-run -o perf.json
 }
 
-declare -a arr=("initialSync_c_1_d_1_w_f" "initialSync_c_32_d_1_w_f" "initialSync_c_1_d_32_w_f" "initialSync_c_32_d_32_w_f" "initialSync_c_1_d_1_w_t" "initialSync_c_32_d_1_w_t" "initialSync_c_1_d_32_w_t" "initialSync_c_32_d_32_w_t" )
+# Copy over appropriate test_control config file
+cp $DSI_PATH/test_control/test_control.initialSync.yml .
+
 cp mongodb_setup.replica-2node.${STORAGE_ENGINE}.yml mongodb_setup.yml
+
+declare -a arr=("initialsync_c_1_d_1_w_f" "initialsync_c_32_d_1_w_f" "initialsync_c_1_d_32_w_f" "initialsync_c_32_d_32_w_f" "initialsync_c_1_d_1_w_t" "initialsync_c_32_d_1_w_t" "initialsync_c_1_d_32_w_t" "initialsync_c_32_d_32_w_t" )
 for i in "${arr[@]}"
 do
-    cp mongodb_setup.replica-2node.${STORAGE_ENGINE}.yml mongodb_setup.yml
     python ${BINDIR}/mongodb_setup.py --config
+
+    # update the test control for each iteration through the loop and
+    # keep a copy of each config file that is used.
+
+    # Note that this code exists because our infrastructure cannot
+    # reset or reconfigure the cluster between test runs. If it could,
+    # this whole loop would not be needed and this file could be
+    # collapsed with run-benchRun.sh, or removed.
+    # See https://jira.mongodb.org/browse/PERF-562
+
+    python ${BINDIR}/update_test_list.py $i --input-file test_control.initialSync.yml --output-file test_control.yml
+    # Keep a copy of this file.
+    cp test_control.yml test_control.${i}.yml
+    python $BINDIR/config_test_control.py
+    echo "Generated mc.json"
+    cat mc.json
+    scp -oStrictHostKeyChecking=no -i $PEMFILE  workloads.yml $SSHUSER@$mc:./workloads/
     runInitialSyncTest $i
 done
 
@@ -52,6 +67,3 @@ chmod 766 perf.json
 cp ./perf.json ..
 pwd
 cat ../perf.json
-
-
-

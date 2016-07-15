@@ -1,5 +1,7 @@
 """ Translate DSI configuration file to json file readable by mission control """
 
+from __future__ import print_function
+
 import json
 import logging
 import os
@@ -14,6 +16,7 @@ from common.log import setup_logging
 from common.settings import source
 
 LOG = logging.getLogger(__name__)
+
 
 def generate_mc_json():
     ''' Generate a json config file for mission control '''
@@ -64,6 +67,7 @@ def generate_mc_json():
 
     # Dump out the config for for the workload. Need to adjust for ycsb Needs to be copied up.
 
+
 def main(argv):
     ''' Main function. Parse command line options and call generate_mc_json '''
     parser = argparse.ArgumentParser(
@@ -79,6 +83,6 @@ def main(argv):
     args = parser.parse_args(argv)
     setup_logging(args.debug, args.log_file)
     generate_mc_json()
-    
+
 if __name__ == '__main__':
     main(sys.argv[1:])

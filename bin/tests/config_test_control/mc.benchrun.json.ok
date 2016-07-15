@@ -6,7 +6,7 @@
             "clients":[
                 "ec2-user@52.41.196.69"
             ],
-            "cmd":"cd workloads && ./run_workloads.py -c workloads.yml -l default",
+            "cmd":"cd workloads && ./run_workloads.py -c workloads.yml",
             "run_id":"benchRun-wiredTiger",
             "server_logs":[],
             "servers":[
