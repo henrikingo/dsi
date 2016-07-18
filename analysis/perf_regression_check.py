@@ -238,7 +238,7 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
                 out_file.write(result["log_raw"])
 
     if args.reports_dir is not None:
-        log_analysis_results, num_failures = log_analysis.analyze_logs(args.reports_dir)
+        log_analysis_results, _ = log_analysis.analyze_logs(args.reports_dir)
         results.extend(log_analysis_results)
 
     report = {}
