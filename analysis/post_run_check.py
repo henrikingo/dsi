@@ -502,7 +502,6 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
     if args.reports_dir is not None:
         log_analysis_results, num_failures = log_analysis.analyze_logs(args.reports_dir)
         report['results'].extend(log_analysis_results)
-        failed += num_failures
 
     # flush stderr to the log file
     sys.stderr.flush()
