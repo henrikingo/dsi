@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # To destroy a cluster in the current folder. Require terraform installed under the same folder
-
+cd `dirname $0`
 yes yes | ./terraform destroy
 
 if [ $? != 0 ]
