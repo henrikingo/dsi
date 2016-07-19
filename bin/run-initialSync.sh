@@ -29,6 +29,10 @@ function runInitialSyncTest {
         TEST="$TEST_NAME"
     fi
 
+    # This should be updated to match run-benchRun.sh from PERF-531
+    cp run-$TEST.json mc.json
+    echo "Using run-$TEST.json as mc.json"
+
     MC_MONITOR_INTERVAL=1 ${BINDIR}/mc -config mc.json -run $TEST-run -o perf.json
 }
 
@@ -38,9 +42,6 @@ for i in "${arr[@]}"
 do
     cp mongodb_setup.replica-2node.${STORAGE_ENGINE}.yml mongodb_setup.yml
     python ${BINDIR}/mongodb_setup.py --config
-    # This should be updated to match run-benchRun.sh from PERF-531
-    cp run-$TEST.json mc.json
-    echo "Using run-$TEST.json as mc.json"
     runInitialSyncTest $i
 done
 
