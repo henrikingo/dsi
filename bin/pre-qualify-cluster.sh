@@ -33,7 +33,7 @@ do
 done
 
 if $REDO_INSTANCE; then
-    >&2 echo "Error: still have tainted instance after 5 tries, exit tests"
+    >&2 echo "Error: cluster up, but still have tainted instance after 5 tries"
     exit 1
 fi
 

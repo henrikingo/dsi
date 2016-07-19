@@ -51,6 +51,11 @@ else
     if [ $CLUSTER != "single" ] && [ $CLUSTER != "windows-single" ]
     then
         # disable system failure for the larger cluster types, as well as low end instance types
+        if [[ $rc != 0 ]]
+        then
+            >&2 echo "Prequalify failed, but still running tests. There should be a functional"
+            >&2 echo "cluster, but some of the nodes may have slow IO"
+        fi
         rc=0
     fi
 fi
@@ -59,4 +64,8 @@ fi
 ${BINDIR}/env.sh
 
 # Use the return code from pre-qualify-cluster.sh if there was one
-if [[ $rc != 0 ]]; then exit $rc; fi
+if [[ $rc != 0 ]]
+then
+    >&2 echo "Error: Prequalify failed for setup-cluster.sh. Exiting and not running tests"
+    exit $rc
+fi
