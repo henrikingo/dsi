@@ -6,6 +6,7 @@ mongod_config_file:
         replSetName: initialsyncrs
     setParameter:
         use3dot2InitialSync: True
+        initialSyncOplogBuffer: "inMemoryBlockingQueue"
 
 topology:
   - id: initialsyncrs
