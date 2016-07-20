@@ -1,11 +1,12 @@
 # Shared by all mongods
 mongod_config_file:
     storage:
-        engine: wiredTiger
+        engine: mmapv1
     replication:
         replSetName: initialsyncrs
     setParameter:
-        use3dot2InitialSync: True
+        use3dot2InitialSync: False
+        dataReplicatorInitialSyncInserterThreads: 40
 
 topology:
   - id: initialsyncrs

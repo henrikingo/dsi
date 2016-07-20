@@ -4,6 +4,8 @@ mongod_config_file:
         engine: mmapv1
     replication:
         replSetName: initialsyncrs
+    setParameter:
+        use3dot2InitialSync: True
 
 topology:
   - id: initialsyncrs
