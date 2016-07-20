@@ -38,6 +38,8 @@ fi
 # just to print out disk i/o information
 cat terraform.log | grep "  clat ("
 
+# Use rc 0 unless set otherwise
+rc=0
 if [ $CLUSTER == "longevity" ] || \
    [ $CLUSTER == "single-correctness" ] || \
    [ $CLUSTER == "replica-correctness" ]
@@ -67,5 +69,14 @@ ${BINDIR}/env.sh
 if [[ $rc != 0 ]]
 then
     >&2 echo "Error: Prequalify failed for setup-cluster.sh. Exiting and not running tests"
-    exit $rc
+else
+    # Check that all the nodes in the cluster are properly up
+    good_line_count=$(./terraform plan | egrep "Plan" | egrep -c "0 to add")
+    if [ $good_line_count != 1 ]
+    then
+        >&2 echo "Error: Past pre-qualify, but something wrong with provisioning. Still need to add node(s)."
+        ./terraform plan
+        rc=1
+    fi
 fi
+exit $rc
