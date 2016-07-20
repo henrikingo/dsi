@@ -31,8 +31,11 @@ function runInitialSyncTest {
     MC_MONITOR_INTERVAL=1 ${BINDIR}/mc -config mc.json -run $TEST-run -o perf.json
 }
 
-# Copy over appropriate test_control config file
-cp $DSI_PATH/test_control/test_control.initialSync.yml .
+# Copy over the test_control.yml from repo if we don't already have one.
+if [ ! -e test_control.yml ]
+then
+    cp $DSI_PATH/test_control/test_control.initialSync.yml .
+fi
 
 declare -a arr=("initialsync_c_1_d_1_w_f" "initialsync_c_32_d_1_w_f" "initialsync_c_1_d_32_w_f" "initialsync_c_32_d_32_w_f" "initialsync_c_1_d_1_w_t" "initialsync_c_32_d_1_w_t" "initialsync_c_1_d_32_w_t" "initialsync_c_32_d_32_w_t" )
 for i in "${arr[@]}"

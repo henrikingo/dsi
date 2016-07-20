@@ -28,6 +28,11 @@ run:
               - mongos_insert_single.js
               - mongos_50read_50write.js
               - move_chunk_with_load.js
+            short: # Just does Hello World
+              - hello.js:
+                  parameter1: foo
+                  parameter2: [true, false]
+
         # These next five lines match existing
         # workloads.yml. Workloads needs to be updated to consume from
         # mongo entry.

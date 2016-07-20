@@ -60,8 +60,13 @@ cat ips.sh
 rm -rf ./reports
 rm -f ../../reports.tgz
 
+# Copy over the test_control.yml from repo if we don't already have one.
+if [ ! -e test_control.yml ]
+then
+    cp $DSI_PATH/test_control/test_control.ycsb.yml test_control.yml
+fi
+
 # PERF-531. Generating config file for mission control.
-cp $DSI_PATH/test_control/test_control.ycsb.yml test_control.yml
 python $BINDIR/config_test_control.py
 echo "Generated mc.json"
 

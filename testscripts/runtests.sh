@@ -38,7 +38,8 @@ pwd
 python_to_lint=(
     bin/config_test_control.py
     bin/update_test_list.py
-  )
+    bin/setup_work_env.py
+)
 
 run_test pylint --rcfile=pylintrc $(find analysis tests -name "*.py" ! -name "readers.py") ${python_to_lint[*]}
 PYTHONPATH=analysis run_test nosetests -v --with-doctest --exe --ignore-files=timeseries.py --ignore-files=update_test_list.py --stop
