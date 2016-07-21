@@ -1,0 +1,9 @@
+run:
+  - id: ycsb-${mongodb_setup.mongod_config_file.storage.engine}_load
+    type: ycsb
+    "cmd": "cd YCSB/ycsb-mongodb; ./bin/ycsb load mongodb -s -P workloads/workloadLongevity -p mongodb.url=${mongodb_setup.meta.hosts} -threads 32; sleep 1"
+  - id: ycsb-${mongodb_setup.mongod_config_file.storage.engine}_50read50update
+    type: ycsb
+    "cmd": "cd YCSB/ycsb-mongodb; ./bin/ycsb run mongodb -s -P workloads/workloadLongevity -p mongodb.url=${mongodb_setup.meta.hosts} -threads 64; sleep 1"
+
+
