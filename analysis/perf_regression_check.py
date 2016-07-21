@@ -228,7 +228,7 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
         results.append(result)
 
     if args.log_analysis is not None:
-        log_analysis_results, _ = log_analysis.analyze_logs(*args.log_analysis)
+        log_analysis_results, _ = log_analysis.analyze_logs(args.log_analysis, args.perf_file)
         results.extend(log_analysis_results)
 
     if args.out_file is not None:

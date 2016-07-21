@@ -630,7 +630,7 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
             print(print_line, file=sys.stderr)
 
     if args.log_analysis is not None:
-        log_analysis_results, _ = log_analysis.analyze_logs(*args.log_analysis)
+        log_analysis_results, _ = log_analysis.analyze_logs(args.log_analysis, args.perf_file)
         report['results'].extend(log_analysis_results)
         # are there resource rules to check for this project?
         if (args.project_id in RESOURCE_RULES_FTDC_FILE
