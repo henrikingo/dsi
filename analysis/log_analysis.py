@@ -42,7 +42,7 @@ def _format_bad_lines_err_msg(path, bad_lines):
     `bad_lines`.
     """
 
-    return "\nLog file: {}\nNumber of bad lines: {}\nBad lines below: \n{}\n".format(
+    return "\nLog file: {0}\nNumber of bad lines: {1}\nBad lines below: \n{2}\n".format(
         path, len(bad_lines), "".join(bad_lines))
 
 def _get_bad_log_lines(reports_dir_path):
