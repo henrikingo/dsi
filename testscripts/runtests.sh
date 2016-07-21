@@ -40,7 +40,7 @@ python_to_lint=(
     bin/update_test_list.py
   )
 
-run_test pylint --rcfile=pylintrc $(find analysis tests -name "*.py") ${python_to_lint[*]}
+run_test pylint --rcfile=pylintrc $(find analysis tests -name "*.py" ! -name "readers.py") ${python_to_lint[*]}
 PYTHONPATH=analysis run_test nosetests -v --with-doctest --exe --ignore-files=timeseries.py --ignore-files=update_test_list.py --stop
 
 if [ $failed -eq 0 ]; then
