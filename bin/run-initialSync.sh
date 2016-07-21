@@ -34,8 +34,6 @@ function runInitialSyncTest {
 # Copy over appropriate test_control config file
 cp $DSI_PATH/test_control/test_control.initialSync.yml .
 
-cp mongodb_setup.replica-2node.${STORAGE_ENGINE}.yml mongodb_setup.yml
-
 declare -a arr=("initialsync_c_1_d_1_w_f" "initialsync_c_32_d_1_w_f" "initialsync_c_1_d_32_w_f" "initialsync_c_32_d_32_w_f" "initialsync_c_1_d_1_w_t" "initialsync_c_32_d_1_w_t" "initialsync_c_1_d_32_w_t" "initialsync_c_32_d_32_w_t" )
 for i in "${arr[@]}"
 do
