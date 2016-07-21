@@ -6,3 +6,6 @@ reports=no
 
 [BASIC]
 good-names=runTest,_
+
+[FORMAT]
+max-line-length=120

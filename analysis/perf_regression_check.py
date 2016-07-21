@@ -17,6 +17,7 @@ from dateutil import parser
 
 from util import read_histories, compare_one_result, log_header, read_threshold_overrides
 import log_analysis
+import arg_parsing
 
 logging.basicConfig(level=logging.INFO)
 
@@ -111,11 +112,7 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
     arg_parser.add_argument(
         "--report-file", help='File to write the report JSON file to. Defaults to "report.json".',
         default="report.json")
-    arg_parser.add_argument(
-        "--reports-dir",
-        help=(
-            "The path to the reports directory created during the performance tests, which "
-            "contains log files somewhere in its tree."))
+    arg_parsing.add_args(arg_parser, "log analysis")
 
     args = arg_parser.parse_args(args)
     (history, tag_history, overrides) = read_histories(args.variant, args.file, args.tfile,
@@ -230,16 +227,14 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
             result['status'] = 'pass'
         results.append(result)
 
-    if args.out_file is None:
-        print(result["log_raw"])
-    else:
+    if args.log_analysis is not None:
+        log_analysis_results, _ = log_analysis.analyze_logs(*args.log_analysis)
+        results.extend(log_analysis_results)
+
+    if args.out_file is not None:
         with open(args.out_file, "w") as out_file:
             for result in results:
                 out_file.write(result["log_raw"])
-
-    if args.reports_dir is not None:
-        log_analysis_results, _ = log_analysis.analyze_logs(args.reports_dir)
-        results.extend(log_analysis_results)
 
     report = {}
     report['failures'] = failed

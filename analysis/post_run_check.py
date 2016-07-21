@@ -20,6 +20,7 @@ from dateutil import parser as date_parser
 
 from util import read_histories, compare_one_result, log_header, read_threshold_overrides
 import log_analysis
+import arg_parsing
 
 logging.basicConfig(level=logging.INFO)
 
@@ -393,11 +394,7 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
         default="report.json")
     parser.add_argument(
         "--out-file", help="File to write the results table to. Defaults to stdout.")
-    parser.add_argument(
-        "--reports-dir",
-        help=(
-            "The path to the reports directory created during the performance tests, which "
-            "contains log files somewhere in its tree."))
+    arg_parsing.add_args(parser, "log analysis")
 
     args = parser.parse_args(args)
     print(args.hfile)
@@ -499,8 +496,8 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
                 print_line = print_line + formatted
             print(print_line, file=sys.stderr)
 
-    if args.reports_dir is not None:
-        log_analysis_results, _ = log_analysis.analyze_logs(args.reports_dir)
+    if args.log_analysis is not None:
+        log_analysis_results, _ = log_analysis.analyze_logs(*args.log_analysis)
         report['results'].extend(log_analysis_results)
 
     # flush stderr to the log file
