@@ -544,7 +544,6 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
     (history, tag_history, overrides) = read_histories(args.variant,
                                                        args.hfile, args.tfile, args.ofile)
     task_max_thread_level = 0
-    failed = 0
     results = []
 
     # regression summary table lines
@@ -665,7 +664,7 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
 
     with open(args.report_file, 'w') as report_file:
         json.dump(report, report_file, indent=4, separators=(',', ': '))
-    return 1 if failed > 0 else 0
+    return 1 if num_failures > 0 else 0
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
