@@ -20,7 +20,7 @@ class TestTerraformConfiguration(unittest.TestCase):
             now=datetime.datetime(2016, 5, 25, 7, 11, 49, 131998))
         json_string = tf_config.to_json(compact=True)
 
-        self.assertEqual(json_string, '{"expire_on":"2016-5-26"}')
+        self.assertEqual(json_string, '{"expire_on":"2016-5-27"}')
 
     def test_mongod_instance(self):
         """Test mongod instance parameters."""
@@ -29,7 +29,7 @@ class TestTerraformConfiguration(unittest.TestCase):
             now=datetime.datetime(2016, 5, 25, 7, 11, 49, 131998))
         tf_config.define_mongod_instance(10, "c3.8xlarge")
         self._test_configuration(tf_config,
-                                 '{"expire_on":"2016-5-26",'
+                                 '{"expire_on":"2016-5-27",'
                                  '"mongod_instance_count":10,'
                                  '"mongod_instance_placement_group":"yes",'
                                  '"mongod_instance_type":"c3.8xlarge",'
@@ -48,7 +48,7 @@ class TestTerraformConfiguration(unittest.TestCase):
                                  '{"configserver_instance_count":3,'
                                  '"configserver_instance_placement_group":"no",'
                                  '"configserver_instance_type":"m3.xlarge",'
-                                 '"expire_on":"2016-5-26",'
+                                 '"expire_on":"2016-5-27",'
                                  '"mongod_instance_count":10,'
                                  '"mongod_instance_placement_group":"yes",'
                                  '"mongod_instance_type":"c3.2xlarge",'
@@ -65,7 +65,7 @@ class TestTerraformConfiguration(unittest.TestCase):
 
         tf_config.define_mongos_instance(10, "m3.2xlarge")
         self._test_configuration(tf_config,
-                                 '{"expire_on":"2016-5-26",'
+                                 '{"expire_on":"2016-5-27",'
                                  '"mongos_instance_count":10,'
                                  '"mongos_instance_placement_group":"no",'
                                  '"mongos_instance_type":"m3.2xlarge",'
@@ -91,15 +91,15 @@ class TestTerraformConfiguration(unittest.TestCase):
         """Test expire-on tag generator."""
         tag = terraform_config.generate_expire_on_tag(
             now=datetime.datetime(2016, 5, 25, 7, 11, 49, 131998))
-        self.assertEqual(tag, "2016-5-26")
+        self.assertEqual(tag, "2016-5-27")
 
         tag = terraform_config.generate_expire_on_tag(
             now=datetime.datetime(2016, 5, 31, 7, 11, 49, 131998))
-        self.assertEqual(tag, "2016-6-1")
+        self.assertEqual(tag, "2016-6-2")
 
         tag = terraform_config.generate_expire_on_tag(
             now=datetime.datetime(2016, 12, 31, 7, 11, 49, 131998))
-        self.assertEqual(tag, "2017-1-1")
+        self.assertEqual(tag, "2017-1-2")
 
     def test_placement_group_mapping(self):
         """Test proper mapping from instance type to whether support placement group."""
