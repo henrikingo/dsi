@@ -2,7 +2,7 @@
 """
 Example usage:
 post_run_check.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f
-        --project_id $pr_id --variant $variant --reports-dir ..
+        --project_id $pr_id --variant $variant --log-analysis ..
 Loads the history json file, and looks for regressions at the revision 18808cd...
 Evergreen project_id and variant are used to uniquely identify the rule set to use.
 Additionally, runs resource sanity checks and detects anomalous messages in the mongod.log.
@@ -20,6 +20,7 @@ import sys
 import warnings
 
 from datetime import timedelta
+import re
 from dateutil import parser as date_parser
 
 import readers
@@ -458,6 +459,11 @@ regression_line = None
 replica_lag_line = None
 # pylint: enable=invalid-name
 
+# As discussed, new rules are subject to a quarantine period irrespective of project/variant/etc.
+# The report.json `test_file` regex value of these checks are listed here; will not increment the
+# number of failures in the report for tests specified in this variable.
+QUARANTINED_RULES = [r'mongod\.log\.([0-9])+', r'resource_sanity_checks']
+
 # These rules are run for every test.
 # TODO: it is best practice to declare all constants at the top of a Python file. This can be done
 # when we move the regression rules to rules.py. This will likely happen pending the refactoring
@@ -596,14 +602,12 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
                 print(sys.exc_info()[0])
                 sys.exit(1)
             if any(val == 'fail' for val in result.itervalues()):
-                failed += 1
                 result['status'] = 'fail'
             else:
                 result['status'] = 'pass'
             results.append(result)
 
     report = {}
-    report['failures'] = failed
     report['results'] = results
 
     # flush stdout to the log file
@@ -644,11 +648,17 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
             resource_rule_outcome = resource_rules(
                 args.log_analysis, args.project_id, args.variant, resource_constant_values)
             report['results'] += [resource_rule_outcome]
-
     else:
         print('Did not specify a value for parameter --log-analysis. Skipping mongod.log and '
               'FTDC resource sanity checks.')
 
+    num_failures = 0
+    for test_result in report['results']:
+        match_on_rule = any(
+            re.match(rule_regex, test_result['test_file']) for rule_regex in QUARANTINED_RULES)
+        if test_result['status'] is 'fail' and not match_on_rule:
+            num_failures += 1
+    report['failures'] = num_failures
 
     # flush stderr to the log file
     sys.stderr.flush()
