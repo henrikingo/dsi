@@ -642,7 +642,7 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
                 'max_thread_level': task_max_thread_level
             }
             resource_rule_outcome = resource_rules(
-                args.log_analysis[0], args.project_id, args.variant, resource_constant_values)
+                args.log_analysis, args.project_id, args.variant, resource_constant_values)
             report['results'] += [resource_rule_outcome]
 
     else:
