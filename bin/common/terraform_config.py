@@ -23,10 +23,10 @@ def assert_value(condition, message):
         raise ValueError(message)
 
 
-def generate_expire_on_tag(now=None, day_delta=1):
+def generate_expire_on_tag(now=None, day_delta=2):
     """
     This will generate expire-on tag based on current time or input time,
-    expired-on tag will be (now + day_delta) day, default to 1 day.
+    expired-on tag will be (now + day_delta) day, default to 2 day.
     """
     if now is None:
         now = datetime.datetime.now()
@@ -73,7 +73,7 @@ class TerraformConfiguration(object):
 
     INSTANCE_ROLES = ["mongod", "mongos", "workload", "configserver"]
 
-    def __init__(self, topology=None, region=None, availability_zone=None, now=None, day_delta=1):
+    def __init__(self, topology=None, region=None, availability_zone=None, now=None, day_delta=2):
         if topology is not None:
             self.topology = topology
         if region is not None:
