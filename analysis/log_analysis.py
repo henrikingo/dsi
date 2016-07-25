@@ -130,7 +130,13 @@ def _get_test_times(perf_file_path):
     """
 
     LOGGER.info("Getting test times from `%s`", perf_file_path)
-    perf_json = util.get_json(perf_file_path)
+    try:
+        perf_json = util.get_json(perf_file_path)
+
+    except IOError:
+        LOGGER.error("Failed to read file `%s`", perf_file_path)
+        return None
+
     return [(_num_or_str_to_date(perf_json["start"]), _num_or_str_to_date(perf_json["end"]))]
 
 def _num_or_str_to_date(ts_or_date_str):
