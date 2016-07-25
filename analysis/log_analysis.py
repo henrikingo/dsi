@@ -23,6 +23,7 @@ def analyze_logs(reports_dir_path, perf_file_path=None):
     timestamp data.
     """
 
+    LOGGER.info("Analyzing logs")
     results = []
     num_failures = 0
 
