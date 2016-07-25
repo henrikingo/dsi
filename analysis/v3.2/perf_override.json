@@ -1555,6 +1555,37 @@
                     "BF-2785"
                 ]
             },
+            "Commands.FindAndModifySortedDeleteIndexed":{
+                "create_time":"2016-04-18T15:17:16.284Z",
+                "max":89.20973026166149,
+                "name":"Commands.FindAndModifySortedDeleteIndexed",
+                "order":427,
+                "results":{
+                    "1":{
+                        "ops_per_sec":89.20973026166149
+                    },
+                    "2":{
+                        "ops_per_sec":84.16542444584499
+                    },
+                    "4":{
+                        "ops_per_sec":79.72775857056891
+                    },
+                    "8":{
+                        "ops_per_sec":80.34723587806396
+                    }
+                },
+                "revision":"07e21d8d5fd5a7ea861ec556a756b6e61c9078ad",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "BF-2231"
+                ]
+            },
             "Insert.DocValidation.OneInt":{
                 "create_time":"2016-02-01T01:14:45.284Z",
                 "max":87.5670410988783,
@@ -5900,6 +5931,37 @@
                     "BF-2785"
                 ]
             },
+            "Commands.FindAndModifySortedDeleteIndexed":{
+                "create_time":"2016-04-18T15:17:16.284Z",
+                "max":73.6538642960919,
+                "name":"Commands.FindAndModifySortedDeleteIndexed",
+                "order":427,
+                "results":{
+                    "1":{
+                        "ops_per_sec":73.6538642960919
+                    },
+                    "2":{
+                        "ops_per_sec":49.77950693585305
+                    },
+                    "4":{
+                        "ops_per_sec":31.150400036549268
+                    },
+                    "8":{
+                        "ops_per_sec":32.7547233087216
+                    }
+                },
+                "revision":"07e21d8d5fd5a7ea861ec556a756b6e61c9078ad",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "BF-2231"
+                ]
+            },
             "Insert.DocValidation.OneInt":{
                 "create_time":"2016-02-01T01:14:45.284Z",
                 "max":142.81351015878184,
@@ -6478,6 +6540,37 @@
                 ],
                 "ticket":[
                     "BF-2785"
+                ]
+            },
+            "Commands.FindAndModifySortedDeleteIndexed":{
+                "create_time":"2016-04-18T15:17:16.284Z",
+                "max":71.57226995893006,
+                "name":"Commands.FindAndModifySortedDeleteIndexed",
+                "order":427,
+                "results":{
+                    "1":{
+                        "ops_per_sec":71.57226995893006
+                    },
+                    "2":{
+                        "ops_per_sec":41.498730978098216
+                    },
+                    "4":{
+                        "ops_per_sec":28.380519855055145
+                    },
+                    "8":{
+                        "ops_per_sec":24.91833948789151
+                    }
+                },
+                "revision":"07e21d8d5fd5a7ea861ec556a756b6e61c9078ad",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "BF-2231"
                 ]
             },
             "Insert.DocValidation.OneInt":{
@@ -10576,6 +10669,37 @@
                 ],
                 "ticket":[
                     "BF-2785"
+                ]
+            },
+            "Commands.FindAndModifySortedDeleteIndexed":{
+                "create_time":"2016-04-18T15:17:16.284Z",
+                "max":105.61504232998402,
+                "name":"Commands.FindAndModifySortedDeleteIndexed",
+                "order":427,
+                "results":{
+                    "1":{
+                        "ops_per_sec":91.8042891521224
+                    },
+                    "2":{
+                        "ops_per_sec":100.96003495075936
+                    },
+                    "4":{
+                        "ops_per_sec":87.50902330805157
+                    },
+                    "8":{
+                        "ops_per_sec":105.61504232998402
+                    }
+                },
+                "revision":"07e21d8d5fd5a7ea861ec556a756b6e61c9078ad",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "8",
+                    "2",
+                    "4"
+                ],
+                "ticket":[
+                    "BF-2231"
                 ]
             },
             "Insert.DocValidation.OneInt":{
