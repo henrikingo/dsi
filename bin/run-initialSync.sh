@@ -31,11 +31,18 @@ function runInitialSyncTest {
     MC_MONITOR_INTERVAL=1 ${BINDIR}/mc -config mc.json -run $TEST-run -o perf.json
 }
 
-# Copy over the test_control.yml from repo if we don't already have one.
+# Copy over the test_control.yml from repo if we don't already have
+# one. This matches code in run-benchRun.sh and run-ycsb.sh.
 if [ ! -e test_control.yml ]
 then
-    cp $DSI_PATH/test_control/test_control.initialSync.yml .
+    cp $DSI_PATH/test_control/test_control.initialSync.yml test_control.yml
 fi
+
+# Initial sync tests run multiple times, each with a different test
+# list. This line copies the starting config file to a copy that will
+# only be read. A succession of test_control.yml files will be made
+# from it. 
+cp test_control.yml test_control.initialSync.yml 
 
 declare -a arr=("initialsync_c_1_d_1_w_f" "initialsync_c_32_d_1_w_f" "initialsync_c_1_d_32_w_f" "initialsync_c_32_d_32_w_f" "initialsync_c_1_d_1_w_t" "initialsync_c_32_d_1_w_t" "initialsync_c_1_d_32_w_t" "initialsync_c_32_d_32_w_t" )
 for i in "${arr[@]}"
