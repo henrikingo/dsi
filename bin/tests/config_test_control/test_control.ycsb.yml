@@ -1,0 +1,15 @@
+run:
+  - id: ycsb_load-${mongodb_setup.mongod_config_file.storage.engine}
+    type: ycsb
+    "cmd": "cd YCSB/ycsb-mongodb; ./bin/ycsb load mongodb -s -P workloads/workloadEvergreen -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32; sleep 1"
+  - id: ycsb_100read-${mongodb_setup.mongod_config_file.storage.engine}
+    type: ycsb
+    "cmd": "cd YCSB/ycsb-mongodb; ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
+  - id: ycsb_95read5update-${mongodb_setup.mongod_config_file.storage.engine}
+    type: ycsb
+    "cmd": "cd YCSB/ycsb-mongodb; ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen_95read5update -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
+  - id: ycsb_50read50update-${mongodb_setup.mongod_config_file.storage.engine}
+    type: ycsb
+    "cmd": "cd YCSB/ycsb-mongodb; ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen_50read50update -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
+
+

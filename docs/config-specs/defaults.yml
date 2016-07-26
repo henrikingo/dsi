@@ -84,3 +84,6 @@ mongodb_setup:
         hosts: ${mongodb_setup.topology.0.private_ip}:27017
         is_sharded: false
         is_replset: false
+
+test_control:
+    jstests_dir: ./jstests/hooks

@@ -1,0 +1,76 @@
+run:
+  - id: benchRun-${mongodb_setup.mongod_config_file.storage.engine}
+    type: shell
+
+    # This line to be shortened after the config file is copied from below into the production server.
+    cmd: cd workloads && ./run_workloads.py -c workloads.yml
+    config_filename: workloads.yml # The name used in previous row
+    workload_config:
+        ########################################################################
+        # Test lists. Command line will indicate which list of tests to execute.
+        # The 'default' list is the default.
+        # When testing new test workloads, please put your tests in the
+        # tests.test list, and remove the existing hello.js
+        ########################################################################
+        tests:
+            default:
+              - contended_update.js
+              - map_reduce.js
+              - insert_capped.js
+              - insert_ttl.js
+              - insert_capped_indexes.js
+              - insert_vector.js
+              - word_count.js
+              - jtrue.js
+              - move_chunk.js
+              - mongos_read_single.js
+              - mongos_insert_vector.js
+              - mongos_insert_single.js
+              - mongos_50read_50write.js
+              - move_chunk_with_load.js
+            test:
+              - # Empty list. Put new workloads here for testing
+            short: # Just does Hello World
+              - hello.js:
+                  parameter1: foo
+                  parameter2: [true, false]
+
+        # These next five lines match existing
+        # workloads.yml. Workloads needs to be updated to consume from
+        # mongo entry.
+        target: ${mongodb_setup.meta.hostname}
+        port: ${mongodb_setup.meta.port}
+        # Hard coding for now. These aren't working right now
+        sharded: ${mongodb_setup.meta.is_sharded}
+        replica: ${mongodb_setup.meta.is_replset}
+        storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
+        test_list: default
+        mongo:
+            # It turns out the shell supports connection strings, but
+            # benchRun itself does not.
+            uri: ${mongodb_setup.meta.hosts}
+            # Hard coding for now. These aren't working right now
+            sharded: ${mongodb_setup.meta.is_sharded}
+            replica: ${mongodb_setup.meta.is_replset}
+            storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
+    on_workload_client:
+        logs:                      # Same as client_logs in dsi/clusters/*/*.json
+          -                         # Don't know what MC puts here now, but looks like a list.
+        pre_exec: |                # Hook allows for example collecting metrics not done in MC
+                                    # Note: There's no upload_files, you do that in workload_preparation
+        pre_exec_mongo_shell: |
+            # JavaScript to be executed in mongo shell (when MongoDB cluster is running)
+        post_exec: |               # Hook to for example kill the process collecting the custom metrics
+            # ...
+        post_exec_mongo_shell: |
+            # JavaScript to be executed in mongo shell (when MongoDB cluster is running)
+
+    on_servers:                    # servers = union( mongod, mongos, configsvr) = all_hosts - workload_client
+    on_mongod:
+    on_mongos:
+    on_configsvr:
+    on_host:
+        # See above
+
+    # Note: This config doesn't include things like PemFile, or ip addresses,
+    # rather test control module will find that info in the infrastructure_provisioning config

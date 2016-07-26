@@ -281,7 +281,6 @@ class TestFailureOutputFormatting(unittest.TestCase):
         expected = {}
         self.assertEqual(observed, expected)
 
-
 class TestLogAnalysisRules(unittest.TestCase):
     """Test class evaluates correctness of mongod.log check rules
     """
@@ -388,6 +387,7 @@ class TestDBCorrectnessRules(unittest.TestCase):
                        'Error: Collection validation failed :\n@(shell eval):1:20\n'
                        '@(shell eval):1:2\n\nFailed to run JS test on server [localhost], '
                        'host [localhost]')
+
         expected_results = [
             {
                 'status': 'fail',

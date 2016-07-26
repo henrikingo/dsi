@@ -1,10 +1,10 @@
+#!/usr/bin/env python2.7
 """ Translate DSI configuration file to json file readable by mission control """
 
 from __future__ import print_function
 
 import json
 import logging
-import os
 import sys
 
 import argparse
@@ -24,9 +24,15 @@ def generate_mc_json():
     conf.load()
     mc_conf = {}
 
+    # NOTE: MC will NOT run DB correctness checks if the jstests_dir
+    # parameter is not present in the mc.json.  This is the path to DB
+    # correctness JS tests, to be run at the end of a task.
+    try:
+        mc_conf['jstests_dir'] = conf['test_control']['jstests_dir']
+    except KeyError:
+        LOG.warn("No jstests_dir found in test_control")
+
     # New path for reading in the ssh_user and ssh_key_file values
-    # Path to DB correctness JS tests, to be run at the end of a task by MC.
-    mc_conf['js_tests_dir'] = os.path.join(os.path.join('~', 'jstests'), 'hooks')
     mc_conf['PemFile'] = conf['infrastructure_provisioning']['tfvars']['ssh_key_file']
     ssh_user = conf['infrastructure_provisioning']['tfvars']['ssh_user']
 
@@ -54,7 +60,7 @@ def generate_mc_json():
                 if isinstance(run['workload_config'], dict):
                     workloads_file.write(yaml.dump(run['workload_config'].as_dict()))
         except KeyError:
-            print("No workload config in test control")
+            LOG.warn("No workload config in test control")
 
     with open('mc.json', 'w') as mc_config_file:
         json.dump(mc_conf, mc_config_file, indent=4, separators=[',', ':'], sort_keys=True)

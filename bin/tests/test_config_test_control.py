@@ -56,8 +56,7 @@ class TestConfigTestControl(unittest.TestCase):
         Load in configuration for a single cluster with benchrun
         tests. Check the generated mc.json and workloads.yml
         '''
-        shutil.copy(os.path.join(self.repo_dir, 'test_control', 'test_control.benchRun.yml'),
-                    self.config_file)
+        shutil.copy('test_control.benchRun.yml', self.config_file)
         config_test_control.generate_mc_json()
 
         self.assertEqual(load_json('mc.json'),
@@ -73,8 +72,7 @@ class TestConfigTestControl(unittest.TestCase):
         tests. Check the generated mc.json
 
         '''
-        shutil.copy(os.path.join(self.repo_dir, 'test_control', 'test_control.ycsb.yml'),
-                    self.config_file)
+        shutil.copy('test_control.ycsb.yml', self.config_file)
         config_test_control.generate_mc_json()
         self.assertEqual(load_json('mc.json'), load_json('mc.ycsb.json.ok', self.artifact_dir),
                          'mc.json doesn\'t match excpected for test_control.ycsb.yml')
