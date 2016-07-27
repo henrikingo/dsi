@@ -27,6 +27,7 @@ import readers
 import rules
 from util import read_histories, compare_one_result, log_header, read_threshold_overrides
 import log_analysis
+import ycsb_throughput_analysis
 import arg_parsing
 
 logging.basicConfig(level=logging.INFO)
@@ -462,7 +463,8 @@ replica_lag_line = None
 # As discussed, new rules are subject to a quarantine period irrespective of project/variant/etc.
 # The report.json `test_file` regex value of these checks are listed here; will not increment the
 # number of failures in the report for tests specified in this variable.
-QUARANTINED_RULES = [r'mongod\.log\.([0-9])+', r'resource_sanity_checks']
+QUARANTINED_RULES = [
+    r'mongod\.log\.([0-9])+', r'resource_sanity_checks', r'ycsb-throughput-analysis']
 
 # These rules are run for every test.
 # TODO: it is best practice to declare all constants at the top of a Python file. This can be done
@@ -530,9 +532,14 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
         default="report.json")
     parser.add_argument(
         "--out-file", help="File to write the results table to. Defaults to stdout.")
+    parser.add_argument(
+        "--ycsb-throughput-analysis",
+        help=(
+            "Analyze the throughput-over-time data from YCSB log files. The argument to this "
+            "flag should be the directory to recursively search for the files."))
+
     arg_parsing.add_args(parser, "log analysis")
     args = parser.parse_args(args)
-    print(args.hfile)
 
     # Set up result histories from various files:
     # history - this series include the run to be checked, and previous or NDays
@@ -650,6 +657,11 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
     else:
         print('Did not specify a value for parameter --log-analysis. Skipping mongod.log and '
               'FTDC resource sanity checks.')
+
+    if args.ycsb_throughput_analysis is not None:
+        analysis_results = ycsb_throughput_analysis.analyze_ycsb_throughput(
+            args.ycsb_throughput_analysis)
+        report['results'].extend(analysis_results)
 
     num_failures = 0
     for test_result in report['results']:

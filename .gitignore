@@ -11,6 +11,7 @@ iostat.log*
 mongod-ss.log*
 pidstat.log*
 test_screen_capture.log*
+!/tests/unittest-files/test_ycsb_throughput_analysis/**/test_screen_capture.log*
 
 # terraform module folder
 .terraform
