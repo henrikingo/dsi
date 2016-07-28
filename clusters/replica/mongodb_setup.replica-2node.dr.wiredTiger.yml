@@ -6,7 +6,6 @@ mongod_config_file:
         replSetName: initialsyncrs
     setParameter:
         use3dot2InitialSync: False
-        dataReplicatorInitialSyncInserterThreads: 40
 
 topology:
   - id: initialsyncrs
