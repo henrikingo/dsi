@@ -59,8 +59,9 @@ class TestYCSBThroughputAnalysis(unittest.TestCase):
             ycsb_throughput.Throughput(10, 0),
             ycsb_throughput.Throughput(20, 0),
             ycsb_throughput.Throughput(30, 20)]
+        self.assertFalse(analyze(min_duration=8, skip_initial_seconds=-1))
         self.assertFalse(analyze(min_duration=10, skip_initial_seconds=-1))
-        self.assertFalse(analyze(min_duration=20, skip_initial_seconds=-1))
+        self.assertTrue(analyze(min_duration=20, skip_initial_seconds=-1))
         self.assertTrue(analyze(min_duration=30, skip_initial_seconds=-1))
 
         # throughputs = [(0, 10), (10, 5), (20, 5), (30, 10)]
@@ -83,3 +84,10 @@ class TestYCSBThroughputAnalysis(unittest.TestCase):
             ycsb_throughput.Throughput(40, 100)]
         self.assertTrue(analyze(max_drop=0.9, min_duration=5, skip_initial_seconds=20))
         self.assertFalse(analyze(max_drop=0.9, min_duration=1, skip_initial_seconds=5))
+
+        throughputs = [
+            ycsb_throughput.Throughput(0, 10),
+            ycsb_throughput.Throughput(10, 10),
+            ycsb_throughput.Throughput(20, 0),
+            ycsb_throughput.Throughput(30, 10)]
+        self.assertTrue(analyze(max_drop=1, min_duration=1, skip_initial_seconds=-1))

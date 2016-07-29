@@ -116,7 +116,7 @@ def _analyze_throughputs(throughputs, max_drop=0.5, min_duration=10, skip_initia
             first_low_throughput_time = throughput.time
 
             # Search until the point where performance numbers return to normal.
-            low_throughputs = list(itertools.dropwhile(
+            low_throughputs = list(itertools.takewhile(
                 lambda throughput: throughput.ops < min_acceptable_throughput, throughputs_iter))
 
             # If there aren't at least two consecutive low throughputs there aren't enough
@@ -126,7 +126,6 @@ def _analyze_throughputs(throughputs, max_drop=0.5, min_duration=10, skip_initia
 
             last_low_throughput_time = low_throughputs[-1].time
             duration = last_low_throughput_time - first_low_throughput_time
-
             if duration >= min_duration:
                 # We've detected a long-enough period of reduced throughput.
 
