@@ -99,8 +99,13 @@ def _analyze_throughputs(throughputs, max_drop=0.5, min_duration=10, skip_initia
 
     # Skip datapoints based on `skip_initial_seconds`. `throughputs` is a list of `(time,
     # throughput)` tuples.
-    while throughputs[0].time <= skip_initial_seconds:
+    while throughputs and throughputs[0].time <= skip_initial_seconds:
         throughputs = throughputs[1:]
+
+    if not throughputs:
+        return True, (
+            "Insufficient data to perform throughput analysis (less than {0} seconds of data "
+            "was present).")
 
     avg_throughput = float(sum(pair.ops for pair in throughputs)) / len(throughputs)
     min_acceptable_throughput = avg_throughput * max_drop
@@ -113,6 +118,12 @@ def _analyze_throughputs(throughputs, max_drop=0.5, min_duration=10, skip_initia
             # Search until the point where performance numbers return to normal.
             low_throughputs = list(itertools.dropwhile(
                 lambda throughput: throughput.ops < min_acceptable_throughput, throughputs_iter))
+
+            # If there aren't at least two consecutive low throughputs there aren't enough
+            # datapoints to confidently flag a regression, no matter what the reporting interval is.
+            if not low_throughputs:
+                continue
+
             last_low_throughput_time = low_throughputs[-1].time
             duration = last_low_throughput_time - first_low_throughput_time
 
