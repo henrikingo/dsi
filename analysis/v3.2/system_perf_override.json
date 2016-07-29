@@ -25,10 +25,10 @@
                 ],
                 "workload":""
             },
-            "ycsb-mmapv1_50read50update":{
+            "ycsb_50read50update-mmapv1":{
                 "end":1450809316.0,
                 "max":17260.038006603692,
-                "name":"ycsb-mmapv1_50read50update",
+                "name":"ycsb_50read50update-mmapv1",
                 "order":1763,
                 "results":{
                     "64":{
@@ -97,10 +97,10 @@
                 ],
                 "workload":""
             },
-            "ycsb-mmapv1_50read50update":{
+            "ycsb_50read50update-mmapv1":{
                 "end":1450809993.0,
                 "max":16528.543141150454,
-                "name":"ycsb-mmapv1_50read50update",
+                "name":"ycsb_50read50update-mmapv1",
                 "order":1763,
                 "results":{
                     "64":{
@@ -121,10 +121,10 @@
                 ],
                 "workload":"ycsb"
             },
-            "ycsb-mmapv1_50read50update_w_majority":{
+            "ycsb_50read50update_w_majority-mmapv1":{
                 "end":1450810632.0,
                 "max":5731.628663517977,
-                "name":"ycsb-mmapv1_50read50update_w_majority",
+                "name":"ycsb_50read50update_w_majority-mmapv1",
                 "order":1763,
                 "results":{
                     "64":{
@@ -180,10 +180,10 @@
     "linux-3-shard":{
         "ndays":{},
         "reference":{
-            "ycsb-mmap_100read":{
+            "ycsb_100read-mmapv1":{
                 "end":1450808124.0,
                 "max":67690.14160777624,
-                "name":"ycsb-mmap_100read",
+                "name":"ycsb_100read-mmapv1",
                 "order":1763,
                 "results":{
                     "64":{
@@ -201,10 +201,10 @@
                 ],
                 "workload":"ycsb"
             },
-            "ycsb-mmap_50read50update":{
+            "ycsb_50read50update-mmapv1":{
                 "end":1450809023.0,
                 "max":44939.88167329155,
-                "name":"ycsb-mmap_50read50update",
+                "name":"ycsb_50read50update-mmapv1",
                 "order":1763,
                 "results":{
                     "64":{
@@ -224,10 +224,10 @@
                 ],
                 "workload":"ycsb"
             },
-            "ycsb-mmap_50read50update_w_majority":{
+            "ycsb_50read50update_w_majority-mmapv1":{
                 "end":1450809704.0,
                 "max":6960.803887779693,
-                "name":"ycsb-mmap_50read50update_w_majority",
+                "name":"ycsb_50read50update_w_majority-mmapv1",
                 "order":1763,
                 "results":{
                     "64":{
@@ -248,10 +248,10 @@
                 ],
                 "workload":"ycsb"
             },
-            "ycsb_100read":{
+            "ycsb_100read-wiredTiger":{
                 "end":1450801113.0,
                 "max":67234.34868405572,
-                "name":"ycsb_100read",
+                "name":"ycsb_100read-wiredTiger",
                 "order":1763,
                 "results":{
                     "64":{
@@ -269,11 +269,11 @@
                 ],
                 "workload":"ycsb"
             },
-            "ycsb_50read50update":{
+            "ycsb_50read50update-wiredTiger":{
                 "create_time":"2015-12-22T14:44:07.968Z",
                 "end":1450801854.0,
                 "max":70670.6289332622,
-                "name":"ycsb_50read50update",
+                "name":"ycsb_50read50update-wiredTiger",
                 "order":1763,
                 "results":{
                     "64":{
@@ -300,10 +300,10 @@
     "linux-standalone":{
         "ndays":{},
         "reference":{
-            "ycsb-mmapv1_50read50update":{
+            "ycsb_50read50update-mmapv1":{
                 "end":1450811310.0,
                 "max":19961.036057615536,
-                "name":"ycsb-mmapv1_50read50update",
+                "name":"ycsb_50read50update-mmapv1",
                 "order":1763,
                 "results":{
                     "64":{
