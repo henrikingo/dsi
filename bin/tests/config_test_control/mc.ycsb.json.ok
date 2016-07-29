@@ -6,8 +6,8 @@
             "clients":[
                 "ec2-user@52.41.196.69"
             ],
-            "cmd":"cd YCSB/ycsb-mongodb; ./bin/ycsb load mongodb -s -P workloads/workloadEvergreen -p mongodb.url=10.2.0.100:27017 -threads 32; sleep 1",
-            "run_id":"ycsb-wiredTiger_load",
+            "cmd":"cd YCSB/ycsb-mongodb; ./bin/ycsb load mongodb -s -P workloads/workloadEvergreen -p mongodb.url=mongodb://10.2.0.100:27017/ycsb -threads 32; sleep 1",
+            "run_id":"ycsb_load-wiredTiger",
             "server_logs":[],
             "servers":[
                 "ec2-user@50.112.25.151"
@@ -19,8 +19,8 @@
             "clients":[
                 "ec2-user@52.41.196.69"
             ],
-            "cmd":"cd YCSB/ycsb-mongodb; ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen -p mongodb.url=10.2.0.100:27017 -threads 64; sleep 1",
-            "run_id":"ycsb-wiredTiger_100read",
+            "cmd":"cd YCSB/ycsb-mongodb; ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen -p mongodb.url=mongodb://10.2.0.100:27017/ycsb -threads 64; sleep 1",
+            "run_id":"ycsb_100read-wiredTiger",
             "server_logs":[],
             "servers":[
                 "ec2-user@50.112.25.151"
@@ -32,8 +32,8 @@
             "clients":[
                 "ec2-user@52.41.196.69"
             ],
-            "cmd":"cd YCSB/ycsb-mongodb; ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen_95read5update -p mongodb.url=10.2.0.100:27017 -threads 64; sleep 1",
-            "run_id":"ycsb-wiredTiger_95read5update",
+            "cmd":"cd YCSB/ycsb-mongodb; ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen_95read5update -p mongodb.url=mongodb://10.2.0.100:27017/ycsb -threads 64; sleep 1",
+            "run_id":"ycsb_95read5update-wiredTiger",
             "server_logs":[],
             "servers":[
                 "ec2-user@50.112.25.151"
@@ -45,8 +45,8 @@
             "clients":[
                 "ec2-user@52.41.196.69"
             ],
-            "cmd":"cd YCSB/ycsb-mongodb; ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen_50read50update -p mongodb.url=10.2.0.100:27017 -threads 64; sleep 1",
-            "run_id":"ycsb-wiredTiger_50read50update",
+            "cmd":"cd YCSB/ycsb-mongodb; ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen_50read50update -p mongodb.url=mongodb://10.2.0.100:27017/ycsb -threads 64; sleep 1",
+            "run_id":"ycsb_50read50update-wiredTiger",
             "server_logs":[],
             "servers":[
                 "ec2-user@50.112.25.151"
