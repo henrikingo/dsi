@@ -123,21 +123,32 @@ def _is_log_line_bad(log_line, test_times=None):
     log_msg = log_msg.lower()
     return err_type_char in ["F", "E"] or any(bad_msg in log_msg for bad_msg in BAD_MESSAGES)
 
-def _get_test_times(perf_file_path):
+def _get_test_times(perf_json_or_path):
     """
     Read the performance report file at `perf_file_path` (usually called "perf.json") and return a
     `(start, end)` tuple of its "start" and "end" timestamps, represented as UTC `datetime`s.
     """
 
-    LOGGER.info("Getting test times from `%s`", perf_file_path)
+    if isinstance(perf_json_or_path, dict):
+        perf_json = perf_json_or_path
+
+    else:
+        perf_file_path = perf_json_or_path
+        LOGGER.info("Getting test times from `%s`", perf_file_path)
+        try:
+            perf_json = util.get_json(perf_file_path)
+
+        except IOError:
+            LOGGER.error("Failed to read file `%s`", perf_file_path)
+            return None
+
     try:
-        perf_json = util.get_json(perf_file_path)
+        return [(_num_or_str_to_date(perf_json["start"]), _num_or_str_to_date(perf_json["end"]))]
 
-    except IOError:
-        LOGGER.error("Failed to read file `%s`", perf_file_path)
-        return None
-
-    return [(_num_or_str_to_date(perf_json["start"]), _num_or_str_to_date(perf_json["end"]))]
+    except KeyError:
+        return [
+            (_num_or_str_to_date(test["start"]), _num_or_str_to_date(test["end"]))
+            for test in perf_json["results"] if "start" in test and "end" in test]
 
 def _num_or_str_to_date(ts_or_date_str):
     """
