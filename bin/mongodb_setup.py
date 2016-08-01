@@ -107,6 +107,9 @@ class MongoNode(object):
     run_locally = False
     """True if launching mongodb locally"""
 
+    default_mongodb_binary_archive = ''
+    """Default mongodb archive."""
+
     def __init__(self, opts, is_mongos=False):
         """
         :param opts: Read-only options for mongo[ds], example:
@@ -126,6 +129,8 @@ class MongoNode(object):
         self.mongo_program = 'mongos' if is_mongos else 'mongod'
         self.public_ip = opts['public_ip']
         self.private_ip = opts.get('private_ip', self.public_ip)
+        self.mongodb_binary_archive = opts.get(
+            'mongodb_binary_archive', self.default_mongodb_binary_archive)
         self.bin_dir = os.path.join(opts.get('mongo_dir', self.default_mongo_dir), 'bin')
         self.add_to_replica = opts.get('add_to_replica', True)
         self.clean_logs = opts.get('clean_logs', True)
@@ -175,6 +180,17 @@ class MongoNode(object):
             self.host.kill_mongo_procs()
         # limit max processes and enable core files
         commands = []
+        # Download the mongodb binaries for this run
+        if self.mongodb_binary_archive:
+            mongo_dir = os.path.dirname(self.bin_dir)
+            commands.extend([
+                ['rm', '-rf', mongo_dir],
+                ['mkdir', mongo_dir],
+                ['curl', '--retry', '10', self.mongodb_binary_archive, '|',
+                 'tar', 'zxv', '-C', mongo_dir],
+                ['mv', mongo_dir + '/*/bin', mongo_dir]
+            ])
+
         # Clean the data/logs directories
         if self.clean_logs:
             commands.append(['rm', '-rf', os.path.join(self.logdir, '*.log')])
@@ -720,6 +736,9 @@ def parse_command_line():
         '--mongo-dir',
         help='path to dir containing ./bin/mongo binaries')
     parser.add_argument(
+        '--mongodb-binary-archive',
+        help='url to mongodb tar file')
+    parser.add_argument(
         '-d',
         '--debug',
         action='store_true',
@@ -739,7 +758,7 @@ def parse_command_line():
     elif not args.config:
         exit('--config or (cluster_type and storage_engine) must be set')
     # --mongo-dir must have a bin/ sub-directory
-    if args.mongo_dir:
+    if args.mongo_dir and not args.mongodb_binary_archive:
         bin_dir = os.path.join(args.mongo_dir, 'bin')
         if args.run_locally and not os.path.isdir(bin_dir):
             exit('--mongo-dir: {}, is not a directory!'.format(bin_dir))
@@ -751,6 +770,8 @@ def main():
     args = parse_command_line()
     setup_logging(args.debug, args.log_file)
 
+    if args.mongodb_binary_archive is not None:
+        MongoNode.default_mongodb_binary_archive = args.mongodb_binary_archive
     if args.mongo_dir is not None:
         MongoNode.default_mongo_dir = args.mongo_dir
     MongoNode.run_locally = args.run_locally
