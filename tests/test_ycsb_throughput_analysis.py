@@ -7,6 +7,11 @@ import unittest
 import ycsb_throughput_analysis as ycsb_throughput
 from tests import test_utils
 
+def tuples_to_throughputs(time_ops_tuples):
+    """Convert a list of (time, num_ops) tuples to a list of `ycsb_throughput.Throughput`s."""
+
+    return [ycsb_throughput.Throughput(*pair) for pair in time_ops_tuples]
+
 class TestYCSBThroughputAnalysis(unittest.TestCase):
     """Test suite."""
 
@@ -46,48 +51,52 @@ class TestYCSBThroughputAnalysis(unittest.TestCase):
             (50.0, 133321.47)]
         self.assertEqual(actual_throughputs, expected_throughputs)
 
-    def test_analyze_throughputs(self):
-        """Test `_analyze_throughputs()`."""
+    def test_analyze_spiky_throughput(self):
+        """Test `_analyze_spiky_throughput()`."""
 
         def analyze(*args, **kwargs):
             """Convenience function to reduce boilerplate when calling `_analyze_throughputs()`."""
 
-            return ycsb_throughput._analyze_throughputs(throughputs, *args, **kwargs)[0]
+            messages = ycsb_throughput._analyze_spiky_throughput(throughputs, *args, **kwargs)
+            return not messages
 
-        throughputs = [
-            ycsb_throughput.Throughput(0, 20),
-            ycsb_throughput.Throughput(10, 0),
-            ycsb_throughput.Throughput(20, 0),
-            ycsb_throughput.Throughput(30, 20)]
-        self.assertFalse(analyze(min_duration=8, skip_initial_seconds=-1))
+        throughputs = tuples_to_throughputs([(0, 20), (10, 0), (20, 0), (30, 20)])
         self.assertFalse(analyze(min_duration=10, skip_initial_seconds=-1))
         self.assertTrue(analyze(min_duration=20, skip_initial_seconds=-1))
         self.assertTrue(analyze(min_duration=30, skip_initial_seconds=-1))
 
-        # throughputs = [(0, 10), (10, 5), (20, 5), (30, 10)]
-        throughputs = [
-            ycsb_throughput.Throughput(0, 10),
-            ycsb_throughput.Throughput(10, 5),
-            ycsb_throughput.Throughput(20, 5),
-            ycsb_throughput.Throughput(30, 10)]
+        throughputs = tuples_to_throughputs([(0, 10), (10, 5), (20, 5), (30, 10)])
         self.assertFalse(analyze(max_drop=0.8, min_duration=10, skip_initial_seconds=-1))
         self.assertTrue(analyze(max_drop=0.4, min_duration=10, skip_initial_seconds=-1))
 
-
-        throughputs = [(0, 0), (5, 0), (10, 0), (20, 0), (30, 100), (40, 100)]
-        throughputs = [
-            ycsb_throughput.Throughput(0, 0),
-            ycsb_throughput.Throughput(5, 0),
-            ycsb_throughput.Throughput(10, 0),
-            ycsb_throughput.Throughput(20, 0),
-            ycsb_throughput.Throughput(30, 100),
-            ycsb_throughput.Throughput(40, 100)]
+        throughputs = tuples_to_throughputs(
+            [(0, 0), (5, 0), (10, 0), (20, 0), (30, 100), (40, 100)])
         self.assertTrue(analyze(max_drop=0.9, min_duration=5, skip_initial_seconds=20))
         self.assertFalse(analyze(max_drop=0.9, min_duration=1, skip_initial_seconds=5))
 
-        throughputs = [
-            ycsb_throughput.Throughput(0, 10),
-            ycsb_throughput.Throughput(10, 10),
-            ycsb_throughput.Throughput(20, 0),
-            ycsb_throughput.Throughput(30, 10)]
-        self.assertTrue(analyze(max_drop=1, min_duration=1, skip_initial_seconds=-1))
+    def test_analyze_long_term(self):
+        """Test `_analyze_long_term_degradation().`"""
+
+        def analyze(*args, **kwargs):
+            """Convenience function to reduce boilerplate."""
+
+            results = ycsb_throughput._analyze_long_term_degradation(
+                throughputs, *args, **kwargs)
+
+            return not results
+
+        throughputs = tuples_to_throughputs(
+            [(0, 10)] + [(time, 5) for time in range(1, 10 * 60 + 3)])
+        self.assertFalse(analyze(), "Detects long-term throughput degradation")
+        self.assertTrue(
+            analyze(duration_seconds=10 * 100),
+            "Ignores degradation shorter than `duration_seconds`")
+        self.assertTrue(analyze(max_drop=0.3), "Ignores degradation higher than `max_drop`")
+        self.assertTrue(analyze(max_drop=0.4), "Ignores degradation higher than `max_drop`")
+        self.assertFalse(analyze(max_drop=0.51), "Flags degradation lower than `max_drop`")
+
+        times = range(10 * 61)
+        ops = [100] + [75] * (10 * 30) + [25] * (10 * 30)
+        throughputs = tuples_to_throughputs(zip(times, ops))
+        self.assertFalse(analyze())
+        self.assertTrue(analyze(duration_seconds=10 * 70))

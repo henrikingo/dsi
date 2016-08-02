@@ -4,6 +4,7 @@ import logging
 import os
 import itertools
 import collections
+import math
 
 LOGGER = logging.getLogger(__name__)
 
@@ -23,7 +24,14 @@ def analyze_ycsb_throughput(reports_dir_path):
         LOGGER.info("Reading file: " + path)
         with open(path) as ycsb_file:
             throughputs = _throughputs_from_lines(ycsb_file)
-        pass_test, result_message = _analyze_throughputs(throughputs)
+
+        if throughputs:
+            pass_test, result_message = _analyze_throughputs(throughputs)
+        else:
+            pass_test = False
+            result_message = "No throughput data found in: {0}".format(path)
+            LOGGER.error(result_message)
+
         results.append({
             "status": "pass" if pass_test else "fail",
             "log_raw": "File: {0}\n".format(path) + result_message,
@@ -81,7 +89,20 @@ def _throughputs_from_lines(lines):
 
     return throughputs
 
-def _analyze_throughputs(throughputs, max_drop=0.5, min_duration=10, skip_initial_seconds=10): # pylint: disable=too-many-locals
+def _analyze_throughputs(throughputs):
+    """
+    Analyze `throughputs`, a list of `Throughput`s, for anomalous performance using the
+    `_analyze_*()` functions. Return `(passed, message)`, where `passed` is a boolean indicating
+    whether the analysis passed successfully (ie no problems were detected) and `message` is a
+    human-friendly message summarizing the analysis results.
+    """
+
+    err_messages = _analyze_spiky_throughput(throughputs)
+    err_messages += _analyze_long_term_degradation(throughputs)
+    passed = not err_messages
+    return passed, "No problems detected." if passed else "\n".join(err_messages)
+
+def _analyze_spiky_throughput(throughputs, max_drop=0.5, min_duration=10, skip_initial_seconds=10): # pylint: disable=too-many-locals
     """
     Analyze throughput data for periods of reduced throughput. Any throughput value that is less
     than the average throughput of the entire run multiplied by `max_drop` is considered a "low"
@@ -90,9 +111,8 @@ def _analyze_throughputs(throughputs, max_drop=0.5, min_duration=10, skip_initia
     first few datapoints because the test is "warming up" and needs a little bit of time before
     hitting its initial maximum throughput; the amount of time to skip at the beginning of the test
     is specified in `skip_initial_seconds` in seconds (so if `skip_initial_seconds=20` the first 20
-    seconds worth of datapoints will be skipped). The function returns `(pass, msg)`, where `pass`
-    is a boolean indicating whether the analysis passed successfully (ie no errors were detected)
-    and `msg` is a human-friendly string summarizing the findings of the analysis.
+    seconds worth of datapoints will be skipped). The function returns a list of detailed error
+    messages (`strings`), which is empty if no problems were detected in the throughput data.
     """
 
     err_messages = []
@@ -133,13 +153,60 @@ def _analyze_throughputs(throughputs, max_drop=0.5, min_duration=10, skip_initia
                     "    {0} sec: {1} ops/sec".format(time, throughput)
                     for time, throughput in low_throughputs)
                 err_msg = (
-                    "Detected low throughput for {0} seconds, starting at {1} seconds and ending "
-                    "at {2} seconds. The minimum acceptable throughput is {3} ops/sec (the "
-                    "average throughput for the test was {4}ops/sec ), and the low "
+                    "spiky throughput: Detected low throughput for {0} seconds, starting at {1} "
+                    "seconds and ending at {2} seconds. The minimum acceptable throughput is {3} "
+                    "ops/sec (the average throughput for the test was {4}ops/sec ), and the low "
                     "throughputs were: \n{5}\n").format(
                         duration, first_low_throughput_time, last_low_throughput_time,
                         min_acceptable_throughput, avg_throughput, low_throughputs_str)
                 err_messages.append(err_msg)
 
-    passed = not err_messages
-    return passed, "No problems detected." if passed else "\n".join(err_messages)
+    return err_messages
+
+def _analyze_long_term_degradation(throughputs, duration_seconds=10 * 60, max_drop=0.7):
+    """
+    Analyze `throughputs`, a list of `Throughput`s, for long term degradation in throughput. The
+    `throughputs` are looked at in `duration_seconds` chunks (so every single sequence of
+    consecutive `Throughput`s that take up a chunk of time equal to `duration_seconds`), and the
+    average throughput of each chunk is computed. If the average throughput is less than the maximum
+    throughput of the entire run multiplied by `max_drop`, it's flagged as a long-term degradation.
+    The function returns a list of detailed `string` error messages, which is empty if no problems
+    were detected in the throughput data.
+
+    The differences between `_analyze_long_term_degradation()` and `_analyze_spiky_throughput()` are
+    that: `_analyze_long_term_degradation()` uses the maximum throughput of the run, and not the
+    average throughput, as its comparison point. Also, for each chunk that it compares against the
+    maximum throughput, it uses the chunk's average throughput instead of comparing every single
+    throughput datapoint inside it.
+    """
+
+    err_messages = []
+    max_throughput = max(throughput.ops for throughput in throughputs)
+    min_acceptable_throughput = max_throughput * max_drop
+
+    reporting_interval = throughputs[1].time - throughputs[0].time
+    data_window_width = int(math.ceil(float(duration_seconds) / reporting_interval))
+
+    for window_start_ind in range(len(throughputs) - data_window_width + 1):
+        window_throughputs = throughputs[window_start_ind:window_start_ind + data_window_width]
+        avg_throughput = average_throughput(window_throughputs)
+        if avg_throughput < min_acceptable_throughput:
+            low_throughputs = "\n".join(
+                "    {0} sec: {1} ops/sec".format(time, ops) for time, ops in window_throughputs)
+            start_time = window_throughputs[0].time
+            end_time = window_throughputs[-1].time
+            err_message = (
+                "long term throughput degradation: Detected a low average throughput of {0} "
+                "starting at {1} and ending at {2} (total duration of {3} seconds). The maximum "
+                "throughput of the run was {4}, so the minimum acceptable throughput was {5}. The "
+                "throughputs during this time were: \n{6}\n").format(
+                    avg_throughput, start_time, end_time, start_time - end_time, max_throughput,
+                    min_acceptable_throughput, low_throughputs)
+            err_messages.append(err_message)
+
+    return err_messages
+
+def average_throughput(throughputs):
+    """Return the average `ops` value of `throughputs`, a list of `Throughput`s."""
+
+    return float(sum(throughput.ops for throughput in throughputs)) / len(throughputs)
