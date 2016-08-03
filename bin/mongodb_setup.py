@@ -188,7 +188,8 @@ class MongoNode(object):
                 ['mkdir', mongo_dir],
                 ['curl', '--retry', '10', self.mongodb_binary_archive, '|',
                  'tar', 'zxv', '-C', mongo_dir],
-                ['mv', mongo_dir + '/*/bin', mongo_dir]
+                ['mv', mongo_dir + '/*/bin', mongo_dir],
+                [mongo_dir + '/bin/mongod', '--version']
             ])
 
         # Clean the data/logs directories
@@ -659,7 +660,8 @@ class MongodbSetup(object):
     def __init__(self, config):
         self.config = config
         self.mongodb_setup = config['mongodb_setup']
-        self.mongodb_binary_archive = self.mongodb_setup.get('mongodb_binary_archive')
+        self.mongodb_binary_archive = self.mongodb_setup.get('mongodb_binary_archive',
+                                      MongoNode.default_mongodb_binary_archive)
         journal_dir = self.mongodb_setup.get('journal_dir')
         if journal_dir:
             MongoNode.journal_dir = journal_dir
@@ -667,6 +669,15 @@ class MongodbSetup(object):
         MongoNode.ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
         self.clusters = []
         self.parse_topologies()
+        # Download mongo shell to workload clients
+        # This is a quick fix, see: PERF-648
+        # Since all nodes need at least the mongo shell, this is a bit out of
+        # place here. This part of the code is based on iterating over
+        # config[mongodb_setup][topology], but it turns out for downloading
+        # mongodb, it would make sense to simply do it for all nodes in
+        # infrastructure_provisioning.yml.
+        # TODO: refactor
+        self.parse_workload_clients()
 
     def parse_topologies(self):
         """Create cluster for each topology"""
@@ -675,6 +686,9 @@ class MongodbSetup(object):
 
     def start(self):
         """Start all clusters"""
+        LOG.info('mongodb_binary_archive: %s', self.mongodb_binary_archive)
+        if self.mongodb_binary_archive:
+            self.download_mongodb_binary()
         self.shutdown()
         self.destroy()
         if not all(self.start_cluster(cluster) for cluster in self.clusters):
@@ -708,6 +722,47 @@ class MongodbSetup(object):
         """Close connections to all hosts."""
         for cluster in self.clusters:
             cluster.close()
+
+    def parse_workload_clients(self):
+        """Parse workload clients from infrastructure_provisioning section"""
+        # Use of MongoNode is ok for now, we use it to run(commands) only.
+        # When refactoring should create new class / use RemoteHost directly
+        self.workload_clients = []
+        out = self.config["infrastructure_provisioning"]["out"]
+        fake_mongo_config = {'systemLog' : {'path' : ''},
+                             'storage' : {'dbPath' : ''},
+                             'net' : {'port' : 0}}
+        for client in out["workload_client"]:
+            opt = client.as_dict()
+            opt['mongo_dir'] = self.config["mongodb_setup"]["mongo_dir"]
+            opt['config_file'] = fake_mongo_config
+            self.workload_clients.append(MongoNode(opt))
+
+    def download_mongodb_binary(self):
+        """Download and untar mongodb_binary_archive."""
+        # Note: Currently used for workload_clients only, see TODO comment above
+        # Note: Since we misuse MongoNode for this purpose, code is directly
+        # here instead of in a class, since the class doesn't exist yet.
+        LOG.info('Download mongodb_binary_archive for workload_client')
+        client = self.workload_clients[0]
+        commands = []
+        if self.mongodb_binary_archive:
+            mongo_dir = self.config["mongodb_setup"]["mongo_dir"]
+            commands.extend([
+                ['echo', 'Downloading {} to workload client.'.format(self.mongodb_binary_archive)],
+                ['rm', '-rf', mongo_dir],
+                ['rm', '-rf', 'bin'],
+                ['mkdir', mongo_dir],
+                ['curl', '--retry', '10', self.mongodb_binary_archive, '|',
+                 'tar', 'zxv', '-C', mongo_dir],
+                ['mv', mongo_dir + '/*/bin', mongo_dir],
+                ['mkdir', '-p', '~/bin'],
+                ['ln', '-s', '~/mongodb/bin/mongo', '~/bin/mongo'],
+                ['bin/mongo --version']
+            ])
+            commands.append(['ls', '-la'])
+        return client.host.run(commands)
+
 
 
 def parse_command_line():
