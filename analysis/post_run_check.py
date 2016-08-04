@@ -43,16 +43,14 @@ def project_test_rules(project, variant, test):
     """
     to_return = {}
     regression_rules = _get_project_variant_rules(project, variant, PROJECT_TEST_RULES)
-    threshold_values = _get_project_variant_rules(project, variant, rules.THRESHOLDS)
 
     for regression_rule_function in regression_rules:
         build_args = {'test': test}
         arguments_needed = inspect.getargspec(regression_rule_function).args
         for parameter in arguments_needed:
-            if parameter in threshold_values:
-                build_args[parameter] = threshold_values[parameter]
-            elif parameter in rules.PROJECT_TEST_CONSTANTS:
-                build_args[parameter] = rules.PROJECT_TEST_CONSTANTS[parameter]
+            constant_found = _lookup_constant_value(project, variant, parameter)
+            if constant_found:
+                build_args[parameter] = constant_found
         result = regression_rule_function(**build_args)
         to_return.update(result)
 
@@ -450,6 +448,24 @@ def _get_project_variant_rules(project, variant, rules_dict):
     else:
         return project_rules[variant]
 
+def _lookup_constant_value(project, variant, constant_name):
+    """Looks in the rules.CONSTANTS dictionary for default or variant-specific constant values
+
+    :type project: str
+    :type variant: str
+    :type constant_name: str
+    :rtype: float|None
+    """
+    if project not in rules.CONSTANTS:
+        return None
+    project_constants = rules.CONSTANTS[project]
+    if variant in project_constants and constant_name in project_constants[variant]:
+        return project_constants[variant][constant_name]
+    elif constant_name in project_constants['default']:
+        return project_constants['default'][constant_name]
+    else:
+        return None
+
 # pylint: disable=invalid-name
 # pylint wants global variables to be written in uppercase, but changing all of the occurrences of
 # the following ones would be too painful so we opt to locally disable the warning instead.
@@ -645,11 +661,14 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
         # are there resource rules to check for this project?
         if (args.project_id in RESOURCE_RULES_FTDC_FILE
                 and args.project_id in RESOURCE_RULES_FTDC_CHUNK):
-            # The only reason this is declared here presently is because I get the maximum thread
-            # level from a task during the test regression rule checks. Maximum thread level is
-            # passed in to the '# of connections' rule we are currently using.
+            # Maximum thread level is passed in to the '# of connections' rule
+            # we are currently using.
+            max_thread_level = _lookup_constant_value(
+                args.project_id, args.variant, 'max_thread_level')
+            if not max_thread_level:
+                max_thread_level = task_max_thread_level
             resource_constant_values = {
-                'max_thread_level': task_max_thread_level
+                'max_thread_level': max_thread_level
             }
             resource_rule_outcome = resource_rules(
                 args.log_analysis, args.project_id, args.variant, resource_constant_values)

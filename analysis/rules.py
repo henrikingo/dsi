@@ -40,15 +40,21 @@ MS = 1000.0
 REPL_MEMBER_LAG_THRESHOLD_S = 10.0
 REPL_MEMBER_LAG_THRESHOLD_MS = REPL_MEMBER_LAG_THRESHOLD_S * MS
 
-THRESHOLDS = {
+CONSTANTS = {
     'sys-perf': {
         'default': {
             'threshold': 0.08,
-            'thread_threshold': 0.12
+            'thread_threshold': 0.12,
+            'lag_threshold': REPL_MEMBER_LAG_THRESHOLD_S,
+            'ndays': 7.0
         },
         'linux-oplog-compare': {
             'threshold': 0.1,
             'thread_threshold': 0.2
+        },
+        'linux-3-node-replSet-initialsync': {
+            # from Judah: initial sync uses 16 threads to put data into the database
+            'max_thread_level': 16.0
         }
     },
     'mongo-longevity': {
@@ -57,11 +63,6 @@ THRESHOLDS = {
             'thread_threshold': 0.25
         }
     }
-}
-
-PROJECT_TEST_CONSTANTS = {
-    'lag_threshold': REPL_MEMBER_LAG_THRESHOLD_S,
-    'ndays': 7
 }
 
 def _fetch_constant(chunk, key):
@@ -237,7 +238,7 @@ def unify_chunk_failures(chunk_failure_info):
 # Resource sanity check rules
 
 def below_configured_cache_size(chunk, times, configured_cache_size):
-    """Is the current cache size below the WT configured cache size?
+    """Is the current cache size below (1+CACHE_ALLOCATOR_OVERHEAD) * WT configured cache size?
 
     :param collection.OrderedDict chunk: FTDC JSON chunk
     :param list[int] times: the time at which each metric value was collected
@@ -255,7 +256,7 @@ def below_configured_cache_size(chunk, times, configured_cache_size):
     additional = {'WT configured cache size (bytes)': configured_cache_size}
 
     for index, cache_size in enumerate(cache_size_values):
-        if cache_size > configured_cache_size:
+        if cache_size > (1 + CACHE_ALLOCATOR_OVERHEAD) * configured_cache_size:
             failure_times.append(times[index])
             compared_values.append((cache_size,))
     return failure_collection(failure_times, compared_values, labels, additional)
@@ -303,7 +304,7 @@ def max_connections(chunk, times, max_thread_level, repl_member_list):
     curr_connection_values = chunk[FTDC_KEYS['curr_connections']]
 
     if not repl_member_list:  # standalone
-        upper_bound_factor = 1
+        upper_bound_factor = 0
     else:
         upper_bound_factor = 2 * len(repl_member_list)
 
@@ -312,10 +313,12 @@ def max_connections(chunk, times, max_thread_level, repl_member_list):
     compared_values = []
     additional = {
         'max thread level for this task': max_thread_level,
-        'rule': '# connections <= (max thread level + {0})'.format(upper_bound_factor)
+        'connections between members? (2 * N)': upper_bound_factor,
+        'connections to MC and shell': 2,
+        'rule': '# connections <= (2 * max thread level + 2 + {0})'.format(upper_bound_factor)
     }
     for index, num_connections in enumerate(curr_connection_values):
-        if num_connections > max_thread_level * upper_bound_factor:
+        if num_connections > (max_thread_level * 2) + 2 + upper_bound_factor:
             failure_times.append(times[index])
             compared_values.append((num_connections,))
     return failure_collection(failure_times, compared_values, labels, additional)

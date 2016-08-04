@@ -163,7 +163,7 @@ class TestRules(unittest.TestCase):
     def test_max_connections_fail(self):
         """Test expected failure for current # connections above our specified upper bound
         """
-        max_thread_level = 0
+        max_thread_level = -3
         observed = rules.max_connections(self.single_chunk_3node,
                                          self.times_3node,
                                          max_thread_level,
@@ -174,7 +174,9 @@ class TestRules(unittest.TestCase):
             'labels': ('number of current connections',),
             'additional': {
                 'max thread level for this task': max_thread_level,
-                'rule': '# connections <= (max thread level + 6)'
+                'connections between members? (2 * N)': 6,
+                'connections to MC and shell': 2,
+                'rule': '# connections <= (2 * max thread level + 2 + 6)'
             }
         }
         self.assertEqual(observed, expected)
