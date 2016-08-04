@@ -77,7 +77,7 @@ OVERRIDE_INFO = None
 '''
 Checks section -
     All checks return a dictionary that contains information used by
-    the dashboard. The information include state, notes, tickets
+    the dashboard. The information include state, notes, ticket
     and perf_ratio. A check may return only a subset of the information
     that is relevant to the conditions it checks.
 '''
@@ -87,7 +87,7 @@ def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_passwor
      over reference. Classify a test into a result['state'] based on the ratios.
      Use different thresholds for max throughput, and per-thread comparisons. '''
     # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
-    check_result = {'state': 'pass', 'notes': '', 'tickets': [],
+    check_result = {'state': 'pass', 'notes': '', 'ticket': [],
                     'perf_ratio': 1}
 
     # if TAG_HISTORY is undefined, skip this check completely
@@ -100,7 +100,7 @@ def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_passwor
         # throughput override and ticket handling
         override = get_override(test['name'], 'reference', OVERRIDE_INFO)
         if override:
-            check_result['tickets'].extend(override['ticket'])
+            check_result['ticket'].extend(override['ticket'])
             if use_override(override['ticket'], jira_user, jira_password):
                 check_result['notes'] += 'Override used for thresholds'
                 reference = override
@@ -126,10 +126,10 @@ def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_passwor
     # some tests may have higher noise margin and need different thresholds
     # when threshold override is used, use that for undesired and
     # use threshold_multiplier * undesired as unacceptable.
-    # again, whether we use this override depends on the state of the tickets
+    # again, whether we use this override depends on the state of the ticket(s)
     override = get_override(test['name'], 'threshold', OVERRIDE_INFO)
     if override:
-        check_result['tickets'].extend(override['ticket'])
+        check_result['ticket'].extend(override['ticket'])
         if use_override(override['ticket'], jira_user, jira_password):
             check_result['notes'] += 'Override used for thresholds'
             undesired_threshold = 1 - override['threshold']
@@ -198,7 +198,7 @@ def repl_lag_check(test, threshold):
     ''' Iterate through all thread levels and flag a test if its
     max replication lag is higher than the threshold
     If there is no max lag information, consider the test 'pass '''
-    check_result = {'state': 'pass', 'notes': '', 'tickets': []}
+    check_result = {'state': 'pass', 'notes': '', 'ticket': []}
     for level in test['results']:
         if isinstance(test['results'][level], dict):
             max_lag = test['results'][level].get('replica_max_lag', 'NA')
@@ -234,12 +234,12 @@ def use_override(ticket_list, jira_user, jira_password):
 
 def update_state(current, new_data):
     ''' Update the current test info with new_data. Update the state to the
-    more severe condition. Merge notes and tickets from new_data into current
+    more severe condition. Merge notes and ticket from new_data into current
     and add perf_ratio '''
     if TEST_STATE[new_data['state']] > TEST_STATE[current['state']]:
         current['state'] = new_data['state']
     current['notes'] += new_data.get('notes', '')
-    current['tickets'].extend(new_data.get('tickets', []))
+    current['ticket'].extend(new_data.get('ticket', []))
     if 'perf_ratio' in new_data:
         current['perf_ratio'] = new_data['perf_ratio']
 
@@ -296,7 +296,7 @@ def main(args):
         testnames = HISTORY.testnames()
         for test in testnames:
             result = {'test_file': test, 'state': 'pass', 'notes': '', \
-                'tickets': [], 'perf_ratio': 1}
+                'ticket': [], 'perf_ratio': 1}
             to_check = HISTORY.series_at_revision(test, ARGS.rev)
             if to_check:
                 update_state(result,
