@@ -95,6 +95,8 @@ def _get_log_file_paths(dir_path):
 BAD_LOG_TYPES = ["F", "E"] # See https://docs.mongodb.com/manual/reference/log-messages/
 BAD_MESSAGES = [msg.lower() for msg in [
     "starting an election", "election succeeded", "transition to primary"]]
+MESSAGE_WHITELIST = [msg.lower() for msg in [
+    "ttl query execution for index"]]
 
 def _is_log_line_bad(log_line, test_times=None):
     """
@@ -121,6 +123,9 @@ def _is_log_line_bad(log_line, test_times=None):
         return False
 
     log_msg = log_msg.lower()
+    if any(whitelist_msg in log_msg for whitelist_msg in MESSAGE_WHITELIST):
+        return False
+
     return err_type_char in ["F", "E"] or any(bad_msg in log_msg for bad_msg in BAD_MESSAGES)
 
 def _get_test_times(perf_json_or_path):

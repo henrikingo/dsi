@@ -24,7 +24,8 @@ class TestLogAnalysis(unittest.TestCase):
 
         good_lines = [
             "2016-07-14T01:00:04.000+0000 L err-type nothing bad here",
-            "2016-07-14T01:00:04.000+0000 L err-type or here"]
+            "2016-07-14T01:00:04.000+0000 L err-type or here",
+            "2016-07-14T01:00:04.000+0000 E err-type ttl query execution for index"]
 
         for line in bad_lines:
             self.assertTrue(log_analysis._is_log_line_bad(line))
