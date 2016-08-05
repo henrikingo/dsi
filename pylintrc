@@ -8,4 +8,4 @@ reports=no
 good-names=runTest,_
 
 [FORMAT]
-max-line-length=120
+max-line-length=100
