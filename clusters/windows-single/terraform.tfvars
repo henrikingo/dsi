@@ -3,7 +3,6 @@ key_name = "rui-aws-cap"
 mongo_instance_count = "1"
 other_instance_count = "1"
 
-mongourl = "%%MONGO_URL%%"
 user = "rui"
 owner = "rui.zhang"
 

@@ -1,16 +1,6 @@
 #!/bin/bash
 
-MONGOURL=$1
-
 sudo yum -y -q install git fio wget sysstat dstat perf xfsprogs
-mkdir mongodb
-curl --retry 10 "${MONGOURL}" | tar zxv -C mongodb
-cd mongodb || exit 1
-mv ./*/bin .
-cd ~
-
-mkdir -p ~/bin
-ln -s ~/mongodb/bin/mongo ~/bin/mongo
 
 # provision ephermeral1 for journal
 dev=/dev/xvdc; sudo umount $dev; sudo mkfs.xfs -f $dev; sudo mount $dev

@@ -2,12 +2,10 @@
 variable "instance_type"        {}
 variable "count"                {}
 variable "subnet_id"            {}
-variable "mongourl"             {}
 variable "owner"                {}
 variable "security_groups"      {}
 variable "availability_zone"    {}
 variable "placement_group"      {}
-variable "mongourl"             {}
 variable "expire_on"            {}
 variable "provisioner_file"     {}
 variable "topology"             {}
@@ -70,7 +68,7 @@ resource "aws_instance" "member" {
         }
         inline = [
             "chmod +x /tmp/provision.sh",
-            "/tmp/provision.sh ${var.mongourl}"
+            "/tmp/provision.sh"
         ]
     }
 }

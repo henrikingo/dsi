@@ -9,7 +9,7 @@ import yaml
 
 # TODO: Learn how to do this correctly without complaint from pylint
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
-from config import ConfigDict #pylint: disable=E0401
+from config import ConfigDict
 
 class ConfigDictTestCase(unittest.TestCase):
     """Unit tests for ConfigDict library."""

@@ -28,11 +28,6 @@ variable \"key_path\" {
     default = \"${PEMFILE}\"
 }" > security.tf
 
-# replace the mongodb url with the proper build URL
-
-sed -i -- "s#%%MONGO_URL%%#${3}#g" cluster.tf
-sed -i -- "s#%%MONGO_URL%%#${3}#g" terraform.tfvars
-
 # This is where we can call to setup terraform environment, it will also remove the above two
 # lines for sed update for mongo URL.
 # Here user and system can replace any default values for the production cluster

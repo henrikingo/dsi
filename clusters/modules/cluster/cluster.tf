@@ -1,4 +1,3 @@
-variable mongourl                       {}
 variable owner                          {}
 variable topology                       {}
 
@@ -52,7 +51,6 @@ module "mongod_instance" {
     placement_group     = "${var.mongod_instance_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
-    mongourl            = "${var.mongourl}"
     expire_on           = "${var.expire_on}"
     provisioner_file    = "mongod-instance-setup.sh"
     topology            = "${var.topology}"
@@ -73,7 +71,6 @@ module "mongos_instance" {
     placement_group     = "${var.mongos_instance_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
-    mongourl            = "${var.mongourl}"
     expire_on           = "${var.expire_on}"
     provisioner_file    = "generic-mongo-instance-setup.sh"
     topology            = "${var.topology}"
@@ -94,7 +91,6 @@ module "configserver_instance" {
     placement_group     = "${var.configserver_instance_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
-    mongourl            = "${var.mongourl}"
     expire_on           = "${var.expire_on}"
     provisioner_file    = "generic-mongo-instance-setup.sh"
     topology            = "${var.topology}"
@@ -115,7 +111,6 @@ module "workload_instance" {
     placement_group     = "${var.workload_instance_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
-    mongourl            = "${var.mongourl}"
     expire_on           = "${var.expire_on}"
     provisioner_file    = "workload-client-setup.sh"
     topology            = "${var.topology}"

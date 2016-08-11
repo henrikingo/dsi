@@ -1,13 +1,6 @@
 #!/bin/bash
 
 sudo yum -y -q install tmux git wget sysstat dstat perf
-mkdir mongodb; curl --retry 10 "$1" | tar zxv -C mongodb
-cd mongodb || exit 1
-mv ./*/bin .
-echo "$1"
-mkdir -p ~/bin
-ln -s ~/mongodb/bin/mongo ~/bin/mongo
-cd ~ || exit 1
 
 curl -O --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/java/jdk-7u71-linux-x64.rpm; sudo rpm -i jdk-7u71-linux-x64.rpm;
 sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.7.0_71/bin/java 20000

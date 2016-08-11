@@ -1,7 +1,6 @@
 variable mongod_instance_count      { default = 1 }
 variable workload_instance_count    { default = 1 }
 
-variable mongourl   {}
 variable owner      {}
 
 variable workload_instance_type                 {}
@@ -16,9 +15,6 @@ variable expire_on                  { default = "2016-12-31" }
 
 module "cluster" {
     source = "../modules/cluster"
-
-    # variables
-    mongourl = "${var.mongourl}"
 
     # cluster details
     mongod_instance_type    = "${var.mongod_instance_type}"

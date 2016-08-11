@@ -113,6 +113,7 @@ class LocalHost(Host):
 
     def __init__(self):
         super(LocalHost, self).__init__()
+        self.host = "localhost"
 
     def exec_command(self, argv):
         """Execute the command and log the output."""

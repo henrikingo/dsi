@@ -167,17 +167,9 @@ class ConfigDict(dict):
         """Iterator over the key, values"""
         return iter((key, self[key]) for key in self.keys())
 
-    def iteritems(self):
-        """Iterator over the key, values"""
-        return iter((key, self[key]) for key in self.keys())
-
     def iterkeys(self):
         """Iterator over the keys"""
         return iter(self.keys())
-
-    def itervalues(self):
-        """Iterator over the values"""
-        return iter(self.values())
 
     def itervalues(self):
         """Iterator over the values"""
@@ -438,20 +430,6 @@ class ConfigDict(dict):
         else:
             raise KeyError('Only values under self["' + self.module +
                            '"]["out"] are settable in this object')
-
-
-def copy_obj(obj):
-    """Return a copy of the dictionary or list"""
-    if isinstance(obj, dict):
-        new_dict = {}
-        for key in obj.keys():
-            new_dict[key] = copy_obj(obj[key])
-        return new_dict
-    elif isinstance(obj, list):
-        return [copy_obj(item) for item in obj]
-    else:
-        return obj
-
 
 def copy_obj(obj):
     """Return a copy of the dictionary or list. For a ConfigDict(), return plain dict()."""

@@ -33,30 +33,21 @@ from common.log import setup_logging
 LOGGER = logging.getLogger(__name__)
 
 def parse_command_line(args=None):
+    #pylint: disable=line-too-long
     '''
     Parse the command line options for setting up a working directory
 
     >>> from collections import OrderedDict
     >>> OrderedDict(parse_command_line([]))
-    OrderedDict([('aws_secret', 'NoSecret'), ('production', False), ('ssh_keyfile_path',\
- 'InvalidPath'), ('mongo_download_url',\
- 'https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.2.3.tgz'),\
- ('directory', '.'), ('cluster_type', 'single'), ('region', None), ('aws_key_name',\
- 'InvalidKeyName')])
+    OrderedDict([('aws_secret', 'NoSecret'), ('ssh_keyfile_path', 'InvalidPath'), ('cluster_type', 'single'), ('region', None), ('aws_key_name', 'InvalidKeyName'), ('production', False), ('directory', '.')])
 
     >>> OrderedDict(parse_command_line(['-c', 'none']))
-    OrderedDict([('aws_secret', 'NoSecret'), ('production', False), ('ssh_keyfile_path',\
- 'InvalidPath'), ('mongo_download_url',\
- 'https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.2.3.tgz'),\
- ('directory', '.'), ('cluster_type', 'none'), ('region', None),\
- ('aws_key_name', 'InvalidKeyName')])
+    OrderedDict([('aws_secret', 'NoSecret'), ('ssh_keyfile_path', 'InvalidPath'), ('cluster_type', 'none'), ('region', None), ('aws_key_name', 'InvalidKeyName'), ('production', False), ('directory', '.')])
 
     >>> OrderedDict(parse_command_line(['-c', 'none', '--mongo-download-url', "URL",\
  "--aws-key-name", "key_name", "--ssh-keyfile-path", "keyfile", "--region", "AWS Region",\
  "--aws-secret-file", "newsecret.json"]))
-    OrderedDict([('aws_secret', 'NoSecret'), ('production', False), ('ssh_keyfile_path',\
- 'keyfile'), ('mongo_download_url', 'URL'), ('directory', '.'), ('cluster_type', 'none'),\
- ('region', 'AWS Region'), ('aws_key_name', 'key_name'), ('aws_secret_file', 'newsecret.json')])
+    OrderedDict([('aws_secret', 'NoSecret'), ('ssh_keyfile_path', 'keyfile'), ('cluster_type', 'none'), ('region', 'AWS Region'), ('aws_key_name', 'key_name'), ('aws_secret_file', 'newsecret.json'), ('production', False), ('directory', '.')])
 
     '''
 
@@ -98,7 +89,7 @@ def parse_command_line(args=None):
                         help='path to log file')
     parser.add_argument('-m',
                         '--mongo-download-url',
-                        help='URL to download mongodb binaries from')
+                        help='Ignored. (Backward compatibility.)')
     parser.add_argument('-r',
                         '--region',
                         help='AWS Region')
@@ -117,8 +108,6 @@ def parse_command_line(args=None):
 
     # To be replaced by system map
     config = {'cluster_type': 'single',
-              'mongo_download_url':
-              "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.2.3.tgz",
               'aws_key_name': "InvalidKeyName",
               'ssh_keyfile_path': "InvalidPath",
               'aws_secret': "NoSecret",
@@ -134,8 +123,6 @@ def parse_command_line(args=None):
             config.update(yaml.load(open(conf)))
     if args.cluster_type:
         config['cluster_type'] = args.cluster_type
-    if args.mongo_download_url:
-        config['mongo_download_url'] = args.mongo_download_url
     if args.aws_key_name:
         config['aws_key_name'] = args.aws_key_name
     if args.ssh_keyfile_path:
@@ -157,6 +144,7 @@ def main():
 
     config = parse_command_line()
     directory = os.path.abspath(os.path.expanduser(config['directory']))
+    LOGGER.info('Creating work directory in: %s', directory)
 
     if os.path.exists(os.path.join(directory, 'dsienv.sh')):
         print ("It looks like you have already setup "
@@ -232,12 +220,12 @@ def main():
     # json, we can replace the call to make_terraform_env.sh with
     # reading the json file, updating the appropriate values, and
     # re-writing the file.
-    LOGGER.info("Calling make_terraform_env with keyname=%s, secret=XXXX, and url=%s",
-                config['aws_key_name'], config['mongo_download_url'])
+    LOGGER.info("Calling make_terraform_env with keyname=%s, secret=XXXX",
+                config['aws_key_name'])
     subprocess.call([os.path.join(dsipath, 'bin', 'make_terraform_env.sh'),
                      config['aws_key_name'],
-                     config['aws_secret'],
-                     config['mongo_download_url']], cwd=directory)
+                     config['aws_secret']],
+                    cwd=directory)
 
     # The following section goes away when we start using and updating
     # infrastructure_provisioning.yml.

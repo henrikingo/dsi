@@ -1,15 +1,6 @@
 #!/bin/bash
 
-MONGOURL=$1
-
 sudo yum -y -q install tmux git wget sysstat dstat perf
-mkdir mongodb; curl --retry 10 "${MONGOURL}" | tar zxv -C mongodb
-cd mongodb || exit 1
-mv ./*/bin .
-echo "Downloaded MongoDB build: ${MONGOURL}"
-mkdir -p ~/bin
-ln -s ~/mongodb/bin/mongo ~/bin/mongo
-cd ~ || exit 1
 
 dev=/dev/xvdc; sudo umount $dev; sudo mkfs.xfs -f $dev; sudo mount $dev
 sudo chmod 777 /media/ephemeral0

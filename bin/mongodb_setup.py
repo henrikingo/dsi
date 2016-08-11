@@ -14,7 +14,8 @@ import argparse
 import yaml
 
 # pylint does not like relative imports but "from bin.common" does not work
-# pylint: disable=relative-import,fixme,too-many-instance-attributes
+# pylint: disable=relative-import,too-many-instance-attributes
+from common.download_mongodb import DownloadMongodb
 from common.host import RemoteHost, LocalHost
 from common.log import setup_logging
 from common.settings import source
@@ -107,9 +108,6 @@ class MongoNode(object):
     run_locally = False
     """True if launching mongodb locally"""
 
-    default_mongodb_binary_archive = ''
-    """Default mongodb archive."""
-
     def __init__(self, opts, is_mongos=False):
         """
         :param opts: Read-only options for mongo[ds], example:
@@ -129,8 +127,6 @@ class MongoNode(object):
         self.mongo_program = 'mongos' if is_mongos else 'mongod'
         self.public_ip = opts['public_ip']
         self.private_ip = opts.get('private_ip', self.public_ip)
-        self.mongodb_binary_archive = opts.get(
-            'mongodb_binary_archive', self.default_mongodb_binary_archive)
         self.bin_dir = os.path.join(opts.get('mongo_dir', self.default_mongo_dir), 'bin')
         self.add_to_replica = opts.get('add_to_replica', True)
         self.clean_logs = opts.get('clean_logs', True)
@@ -180,17 +176,6 @@ class MongoNode(object):
             self.host.kill_mongo_procs()
         # limit max processes and enable core files
         commands = []
-        # Download the mongodb binaries for this run
-        if self.mongodb_binary_archive:
-            mongo_dir = os.path.dirname(self.bin_dir)
-            commands.extend([
-                ['rm', '-rf', mongo_dir],
-                ['mkdir', mongo_dir],
-                ['curl', '--retry', '10', self.mongodb_binary_archive, '|',
-                 'tar', 'zxv', '-C', mongo_dir],
-                ['mv', mongo_dir + '/*/bin', mongo_dir],
-                [mongo_dir + '/bin/mongod', '--version']
-            ])
 
         # Clean the data/logs directories
         if self.clean_logs:
@@ -657,27 +642,19 @@ def create_cluster(topology):
 class MongodbSetup(object):
     """Parse the mongodb_setup config"""
 
-    def __init__(self, config):
+    def __init__(self, config, args):
         self.config = config
         self.mongodb_setup = config['mongodb_setup']
-        self.mongodb_binary_archive = self.mongodb_setup.get('mongodb_binary_archive',
-                                      MongoNode.default_mongodb_binary_archive)
         journal_dir = self.mongodb_setup.get('journal_dir')
         if journal_dir:
             MongoNode.journal_dir = journal_dir
         MongoNode.ssh_user = config['infrastructure_provisioning']['tfvars']['ssh_user']
         MongoNode.ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
         self.clusters = []
+        self.downloader = DownloadMongodb(config,
+                                          args.mongodb_binary_archive,
+                                          args.run_locally)
         self.parse_topologies()
-        # Download mongo shell to workload clients
-        # This is a quick fix, see: PERF-648
-        # Since all nodes need at least the mongo shell, this is a bit out of
-        # place here. This part of the code is based on iterating over
-        # config[mongodb_setup][topology], but it turns out for downloading
-        # mongodb, it would make sense to simply do it for all nodes in
-        # infrastructure_provisioning.yml.
-        # TODO: refactor
-        self.parse_workload_clients()
 
     def parse_topologies(self):
         """Create cluster for each topology"""
@@ -686,11 +663,10 @@ class MongodbSetup(object):
 
     def start(self):
         """Start all clusters"""
-        LOG.info('mongodb_binary_archive: %s', self.mongodb_binary_archive)
-        if self.mongodb_binary_archive:
-            self.download_mongodb_binary()
         self.shutdown()
         self.destroy()
+        if not self.downloader.download_and_extract():
+            return False
         if not all(self.start_cluster(cluster) for cluster in self.clusters):
             self.shutdown()
             return False
@@ -722,49 +698,6 @@ class MongodbSetup(object):
         """Close connections to all hosts."""
         for cluster in self.clusters:
             cluster.close()
-
-    def parse_workload_clients(self):
-        """Parse workload clients from infrastructure_provisioning section"""
-        # Use of MongoNode is ok for now, we use it to run(commands) only.
-        # When refactoring should create new class / use RemoteHost directly
-        self.workload_clients = []
-        out = self.config["infrastructure_provisioning"]["out"]
-        fake_mongo_config = {'systemLog' : {'path' : ''},
-                             'storage' : {'dbPath' : ''},
-                             'net' : {'port' : 0}}
-        for client in out["workload_client"]:
-            opt = client.as_dict()
-            opt['mongo_dir'] = self.config["mongodb_setup"]["mongo_dir"]
-            opt['config_file'] = fake_mongo_config
-            self.workload_clients.append(MongoNode(opt))
-
-    def download_mongodb_binary(self):
-        """Download and untar mongodb_binary_archive."""
-        # Note: Currently used for workload_clients only, see TODO comment above
-        # Note: Since we misuse MongoNode for this purpose, code is directly
-        # here instead of in a class, since the class doesn't exist yet.
-        LOG.info('Download mongodb_binary_archive for workload_client')
-        client = self.workload_clients[0]
-        commands = []
-        if self.mongodb_binary_archive:
-            mongo_dir = self.config["mongodb_setup"]["mongo_dir"]
-            commands.extend([
-                ['echo', 'Downloading {} to workload client.'.format(self.mongodb_binary_archive)],
-                ['rm', '-rf', mongo_dir],
-                ['rm', '-rf', 'bin'],
-                ['rm', '-rf', 'jstests'],
-                ['mkdir', mongo_dir],
-                ['curl', '--retry', '10', self.mongodb_binary_archive, '|',
-                 'tar', 'zxv', '-C', mongo_dir],
-                ['mv', mongo_dir + '/*/*/', mongo_dir],
-                ['mkdir', '-p', '~/bin'],
-                ['mkdir', '~/jstests'],
-                ['ln', '-s', '~/mongodb/bin/mongo', '~/bin/mongo'],
-                ['ln', '-s', '~/mongodb/jstests', '~/jstests'],
-                ['bin/mongo --version']
-            ])
-            commands.append(['ls', '-la'])
-        return client.host.run(commands)
 
 def parse_command_line():
     """Parse command line arguments."""
@@ -826,8 +759,6 @@ def main():
     args = parse_command_line()
     setup_logging(args.debug, args.log_file)
 
-    if args.mongodb_binary_archive is not None:
-        MongoNode.default_mongodb_binary_archive = args.mongodb_binary_archive
     if args.mongo_dir is not None:
         MongoNode.default_mongo_dir = args.mongo_dir
     MongoNode.run_locally = args.run_locally
@@ -836,8 +767,9 @@ def main():
         # start a mongodb configuration using config module
         config = ConfigDict('mongodb_setup')
         config.load()
-        mongo = MongodbSetup(config)
-        mongo.start()
+        mongo = MongodbSetup(config, args)
+        if not mongo.start():
+            exit(1)
     else:
         # start a mongodb configuration using legacy interface.
         # import the ips.py file from the current working directory.

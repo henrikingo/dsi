@@ -3,7 +3,6 @@ key_file                = "../../../keys/aws.pem"
 mongod_instance_count   = "1"
 workload_instance_count = "1"
 
-mongourl    = "%%MONGO_URL%%"
 owner       = "rui.zhang"
 
 mongod_instance_type    = "c3.2xlarge"
