@@ -763,8 +763,6 @@ class MongodbSetup(object):
             commands.append(['ls', '-la'])
         return client.host.run(commands)
 
-
-
 def parse_command_line():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(

@@ -34,7 +34,8 @@ class TestPostRunCheck(unittest.TestCase):
         Runs the full post run check with FTDC resource checks.
         """
         arg_string = \
-            "--rev 0ff97139df609ae1847da9bfb25c35d209e0936e -f {0}core_workloads_wt.history.json "\
+            "--rev 0ff97139df609ae1847da9bfb25c35d209e0936e -f " \
+            "{0}delayed_trigger_core_workloads_wt.history.json " \
             "-t {0}linux-standalone.core_workloads_WT.tags.json --refTag 3.2.1-Baseline " \
             "--overrideFile {0}system_perf_override.json " \
             "--log-analysis {0}core_workloads_reports " \
@@ -52,7 +53,8 @@ class TestPostRunCheck(unittest.TestCase):
         Runs the full post run check without FTDC resource checks.
         """
         arg_string = \
-            "--rev 0ff97139df609ae1847da9bfb25c35d209e0936e -f {0}core_workloads_wt.history.json "\
+            "--rev 0ff97139df609ae1847da9bfb25c35d209e0936e -f " \
+            "{0}delayed_trigger_core_workloads_wt.history.json " \
             "-t {0}linux-standalone.core_workloads_WT.tags.json --refTag 3.2.1-Baseline " \
             "--overrideFile {0}system_perf_override.json " \
             "--project_id sys-perf --task_name core_workloads_WT --variant linux-standalone " \

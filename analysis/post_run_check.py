@@ -69,33 +69,75 @@ def compare_to_previous(test, threshold, thread_threshold):
         return {'PreviousCompare': compare_throughputs(
             test, previous, 'Previous', threshold, thread_threshold)}
 
-def compare_to_n_days(test, threshold, thread_threshold, ndays=7):
-    """check if there is a regression in the last week"""
-
-    daysprevious = history.series_at_n_days_before(test['name'], test['revision'], ndays)
-    if not daysprevious:
-        print('        no reference data for test {} with NDays'.format(test['name']))
+def compare_n_days_delayed_trigger(test, threshold, thread_threshold, ndays=7):
+    """NDays case with delayed trigger"""
+    test_name = test['name']
+    test_revision = test['revision']
+    previous = history.series_at_n_before(test_name, test_revision, 1)
+    target = history.series_at_n_days_before(test_name, test_revision, ndays)
+    if not target:
+        print('        no reference data for test {} with NDays'.format(test_name))
         return {}
     using_override = []
-    if test['name'] in overrides['ndays']:
+    if test_name in overrides['ndays']:
         try:
-            override_time = date_parser.parse(overrides['ndays'][test['name']]['create_time'])
+            override_time = date_parser.parse(overrides['ndays'][test_name]['create_time'])
             this_time = date_parser.parse(test['create_time'])
             if (override_time < this_time) and ((override_time + timedelta(days=ndays))
                                                 >= this_time):
-                daysprevious = overrides['ndays'][test['name']]
-                using_override.append('reference')
+                target = overrides['ndays'][test_name]
+                using_override.append('ndays')
             else:
-                print('Out of date override found for ndays. Not using')
+                print('Out of date override found for ndays. Not using.')
         except KeyError as err:
             err_msg = ('Key error accessing overrides for ndays. '
-                       'Key {0} does not exist for test {1}').format(str(err), test['name'])
+                       'Key {0} does not exist for test {1}').format(str(err), test_name)
             print(err_msg, file=sys.stderr)
+    return _delayed_trigger_analysis(
+        test, target, previous, 'NDays', threshold, thread_threshold, using_override)
 
-    return {'NDayCompare': compare_throughputs(test, daysprevious,
-                                               'NDays', threshold,
-                                               thread_threshold,
-                                               using_override)}
+def compare_tag_delayed_trigger(test, threshold, thread_threshold):
+    """Baseline case with delayed trigger"""
+    if tag_history:
+        test_name = test['name']
+        previous = history.series_at_n_before(test_name, test['revision'], 1)
+        target = tag_history.series_at_tag(test_name, test['ref_tag'])
+        if not target:
+            print('        no reference data for test {0} with baseline'.format(test_name))
+            return {}
+        using_override = []
+        if test_name in overrides['reference']:
+            using_override.append('reference')
+            target = overrides['reference'][test_name]
+        return _delayed_trigger_analysis(
+            test, target, previous, 'Baseline', threshold, thread_threshold, using_override)
+    else:
+        return {}
+
+def _delayed_trigger_analysis(  # pylint: disable=too-many-arguments
+        test, target, previous, label, threshold, thread_threshold, using_override):
+    """Implement a delayed trigger based on the previous commit to reduce false alarms"""
+    previous_status = compare_throughputs(
+        previous, target, 'silent', threshold, thread_threshold, using_override)
+    check_name = label + 'Compare'
+    if previous_status is 'fail':
+        return {check_name: compare_throughputs(test, target,
+                                                label, threshold,
+                                                thread_threshold,
+                                                using_override)}
+    else:
+        # because of the 'silent' label, the log raw output isn't updated by this
+        must_fail = compare_throughputs(
+            test, target, 'silent', threshold * 1.5, thread_threshold * 1.5, using_override)
+        # only log the results for comparison to the standard threshold and thread_threshold.
+        this_status = compare_throughputs(
+            test, target, label, threshold, thread_threshold, using_override)
+        if must_fail is 'fail':
+            print('  {} check failed because of drop greater than 1.5 x threshold'.format(label))
+            return {check_name: 'fail'}
+        if this_status is 'fail':
+            print('  {} check considered passed as this is the first drop'.format(label))
+        return {check_name: 'pass'}
 
 def compare_to_tag(test, threshold, thread_threshold):
     """Compare against the tagged performance data in `tag_history`."""
@@ -175,7 +217,7 @@ def resource_rules(dir_path, project, variant, constant_values=None):
     :param dict constant_values: some rules take in constants to compare current values against
     """
     result = {
-        'end': 1, 'exit_code': 0, 'start': 0
+        'end': 1, 'start': 0
     }
     if not constant_values:
         constant_values = {}
@@ -198,8 +240,10 @@ def resource_rules(dir_path, project, variant, constant_values=None):
                 full_log_raw += log_raw
         if full_log_raw:
             result['status'] = 'fail'
+            result['exit_code'] = 1
         else:
             result['status'] = 'pass'
+            result['exit_code'] = 0
             full_log_raw = '\nPassed resource sanity checks.'
         result['log_raw'] = full_log_raw
     result['test_file'] = 'resource_sanity_checks'
@@ -389,7 +433,8 @@ def compare_one_throughput( # pylint: disable=too-many-arguments
     (passed, log) = compare_one_result(this_one, reference, label,
                                        thread_level, default_threshold=threshold,
                                        using_override=using_override)
-    print(log)
+    if label is not 'silent':
+        print(log)
     return passed
 
 def compare_throughputs( # pylint: disable=too-many-arguments
@@ -488,7 +533,7 @@ QUARANTINED_RULES = [
 # we do during the PERF-580 perf_regression_check and post_run_check merge; right now they remain
 # in post_run_check because they currently access some number of global variables.
 
-REGRESSION_RULES = [compare_to_previous, compare_to_n_days, compare_to_tag]
+REGRESSION_RULES = [compare_to_previous, compare_n_days_delayed_trigger, compare_to_tag]
 REGRESSION_AND_REPL_LAG_RULES = REGRESSION_RULES + [replica_lag_check]
 
 PROJECT_TEST_RULES = {

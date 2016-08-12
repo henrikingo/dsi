@@ -20,6 +20,7 @@ import log_analysis
 import arg_parsing
 
 logging.basicConfig(level=logging.INFO)
+LOGGER = logging.getLogger(__name__)
 
 def compare_results(this_one, reference, threshold, label, # pylint: disable=too-many-arguments,too-many-locals
                     noise_levels=None, noise_multiple=1,
@@ -131,7 +132,7 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
         result['log_raw'] = log_header(test)
 
         if not this_one:
-            print("\tno data at this revision, skipping")
+            LOGGER.info("\tno data at this revision, skipping")
             continue
 
         # Handle threshold overrides
@@ -139,10 +140,9 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
             test, args.threshold,
             args.thread_threshold, overrides)
 
-
         previous = history.series_at_n_before(test, args.rev, 1)
         if not previous:
-            print("\tno previous data, skipping")
+            LOGGER.info("\tno previous data, skipping")
             continue
 
         using_override = []
@@ -158,40 +158,62 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
         if cresult[0]:
             test_failed = True
 
-        daysprevious = history.series_at_n_days_before(test, args.rev, args.ndays)
-        if daysprevious:
-            using_override = []
-            if threshold_override:
-                using_override.append("threshold")
+        target = history.series_at_n_days_before(test, args.rev, args.ndays)
+        if not target:
+            LOGGER.warning('        no reference data for test %s with NDays', test)
+            continue
+        using_override = []
+        if threshold_override:
+            using_override.append('threshold')
+        if test in overrides['ndays']:
             try:
-                if test in overrides['ndays']:
-                    override_time = parser.parse(overrides['ndays'][test]['create_time'])
-                    this_time = parser.parse(this_one['create_time'])
-                    if (override_time < this_time) and ((override_time
-                                                         +
-                                                         timedelta(days=args.ndays))
-                                                        >= this_time):
-                        daysprevious = overrides['ndays'][test]
-                        using_override.append("reference")
-                        print("Override in ndays for test %s" % test)
-                    else:
-                        print("Out of date override found for ndays. Not using")
-            except KeyError as exception:
-                print("Key error accessing overrides for ndays."\
-                    " Key {0} doesn't exist for test {1}".format(str(exception), test))
+                override_time = parser.parse(overrides['ndays'][test]['create_time'])
+                this_time = parser.parse(this_one['create_time'])
+                if (override_time < this_time) and ((override_time + timedelta(days=args.ndays))
+                                                    >= this_time):
+                    target = overrides['ndays'][test]
+                    using_override.append('ndays')
+                    LOGGER.info('Override in NDays for test %s', test)
+                else:
+                    LOGGER.info('Out of date override found for ndays. Not using.')
+            except KeyError as err:
+                err_msg = ('Key error accessing overrides for ndays. '
+                           'Key {0} does not exist for test {1}').format(str(err), test)
+                LOGGER.warning(err_msg, file=sys.stderr)
 
-            cresult = compare_results(this_one, daysprevious,
-                                      threshold, "NDays",
-                                      history.noise_levels(test),
-                                      args.noise, thread_threshold,
-                                      args.threadNoise,
-                                      using_override=using_override)
-            result['NDayCompare'] = cresult[0]
-            result['log_raw'] += cresult[1] + '\n'
-            if cresult[0]:
-                test_failed = True
+        prev_failed, _ = compare_results(previous, target,
+                                         threshold, 'silent',
+                                         history.noise_levels(test),
+                                         args.noise, thread_threshold,
+                                         args.threadNoise,
+                                         using_override=using_override)
+        check_name = 'NDaysCompare'
+        current_failed, current_log = compare_results(this_one, target,
+                                                      threshold, 'NDays',
+                                                      history.noise_levels(test),
+                                                      args.noise, thread_threshold,
+                                                      args.threadNoise,
+                                                      using_override=using_override)
+        result['log_raw'] += current_log + '\n'
+        if prev_failed:
+            result[check_name] = current_failed
         else:
-            print("\tWARNING: no nday data, skipping")
+            strict_failed, _ = compare_results(this_one, target,
+                                               threshold * 1.5, 'silent',
+                                               history.noise_levels(test),
+                                               args.noise, thread_threshold * 1.5,
+                                               args.threadNoise,
+                                               using_override=using_override)
+            if strict_failed:
+                fail_info = '  NDays check failed because of drop greater than 1.5 x threshold'
+                result[check_name] = True
+                result['log_raw'] += fail_info + '\n'
+            elif current_failed:
+                first_drop_pass_info = '  NDays check considered passed as this is the first drop'
+                result['log_raw'] += first_drop_pass_info + '\n'
+                result[check_name] = False
+            else:
+                result[check_name] = False
 
         if tag_history:
             reference = tag_history.series_at_tag(test, args.reference)
@@ -199,9 +221,10 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
             if threshold_override:
                 using_override.append("threshold")
             if not reference:
-                print("Didn't get any data for test %s with baseline %s" % (test, args.reference))
+                LOGGER.info(
+                    "Didn't get any data for test %s with baseline %s", test, args.reference)
             if test in overrides['reference']:
-                print("Override in references for test %s" % test)
+                LOGGER.info("Override in references for test %s", test)
                 using_override.append("reference")
                 reference = overrides['reference'][test]
             cresult = compare_results(this_one, reference, threshold,
@@ -215,7 +238,7 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
             if cresult[0]:
                 test_failed = True
         else:
-            print("\tWARNING: no reference data, skipping")
+            LOGGER.warning("\tNo reference data, skipping")
 
         if args.out_file is None:
             print(result['log_raw'])
