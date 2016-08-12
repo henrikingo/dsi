@@ -6,19 +6,17 @@ duplication.
 def add_args(arg_parser, *args):
     """
     Set up `arg_parser` (an `argparse.ArgumentParser`) with the arguments corresponding to each of
-    the arguments in *args. For instance, `add_args(parser, "log analysis")` will set up `parser`
-    with the argument(s) that log analysis requires.
+    the arguments in *args. For instance, `add_args(parser, "reports analysis")` will set up
+    `parser` with the argument(s) that reports analysis requires.
     """
 
     for arg in args:
-        if arg == "log analysis":
+        if arg == "reports analysis":
             arg_parser.add_argument(
-                "--log-analysis",
+                "--reports-analysis",
                 help=(
-                    "Analyze mongod.log files from the performance test runs for suspect "
-                    "messages.  The argument to this flag should be a directory that'll be "
-                    "recursively searched for `mongod.log` files; in evergreen this is most "
-                    "likely the 'reports/' directory."))
+                    "The argument to this flag should be the reports directory that is recursively"
+                    "searched for FTDC, `mongod.log`, etc. files collected from a test runner."))
 
             arg_parser.add_argument(
                 "--perf-file",

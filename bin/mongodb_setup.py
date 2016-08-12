@@ -752,12 +752,15 @@ class MongodbSetup(object):
                 ['echo', 'Downloading {} to workload client.'.format(self.mongodb_binary_archive)],
                 ['rm', '-rf', mongo_dir],
                 ['rm', '-rf', 'bin'],
+                ['rm', '-rf', 'jstests'],
                 ['mkdir', mongo_dir],
                 ['curl', '--retry', '10', self.mongodb_binary_archive, '|',
                  'tar', 'zxv', '-C', mongo_dir],
-                ['mv', mongo_dir + '/*/bin', mongo_dir],
+                ['mv', mongo_dir + '/*/*/', mongo_dir],
                 ['mkdir', '-p', '~/bin'],
+                ['mkdir', '~/jstests'],
                 ['ln', '-s', '~/mongodb/bin/mongo', '~/bin/mongo'],
+                ['ln', '-s', '~/mongodb/jstests', '~/jstests'],
                 ['bin/mongo --version']
             ])
             commands.append(['ls', '-la'])

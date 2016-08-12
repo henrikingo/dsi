@@ -2,7 +2,7 @@
 """
 Example usage:
 post_run_check.py -f history_file.json --rev 18808cd923789a34abd7f13d62e7a73fafd5ce5f
-        --project_id $pr_id --variant $variant --log-analysis ..
+        --project_id $pr_id --variant $variant --reports-analysis reports
 Loads the history json file, and looks for regressions at the revision 18808cd...
 Evergreen project_id and variant are used to uniquely identify the rule set to use.
 Additionally, runs resource sanity checks and detects anomalous messages in the mongod.log.
@@ -14,18 +14,17 @@ import argparse
 import inspect
 import json
 import logging
-import os
 import StringIO
 import sys
-import warnings
 
 from datetime import timedelta
 import re
 from dateutil import parser as date_parser
 
-import readers
 import rules
-from util import read_histories, compare_one_result, log_header, read_threshold_overrides
+from util import read_histories, compare_one_result, log_header, \
+                 read_threshold_overrides, get_project_variant_rules
+import ftdc_analysis
 import log_analysis
 import ycsb_throughput_analysis
 import arg_parsing
@@ -42,7 +41,7 @@ def project_test_rules(project, variant, test):
     :rtype: dict
     """
     to_return = {}
-    regression_rules = _get_project_variant_rules(project, variant, PROJECT_TEST_RULES)
+    regression_rules = get_project_variant_rules(project, variant, PROJECT_TEST_RULES)
 
     for regression_rule_function in regression_rules:
         build_args = {'test': test}
@@ -205,222 +204,6 @@ def replica_lag_check(test, lag_threshold=10):
         print('        replica_lag under threshold ({}) seconds'.format(lag_threshold))
     return {'Replica_lag_check': status}
 
-# FTDC resource check
-
-def resource_rules(dir_path, project, variant, constant_values=None):
-    """Implemented for variants in sys-perf: given the FTDC metrics for a variant's task, check the
-    resource rules available to the variant.
-
-    :param str dir_path: path to the directory we recursively search for FTDC diagnostic data files
-    :param str project: Evergreen project ID
-    :param str variant: build variant to check
-    :param dict constant_values: some rules take in constants to compare current values against
-    """
-    result = {
-        'end': 1, 'start': 0
-    }
-    if not constant_values:
-        constant_values = {}
-    ftdc_files_dict = _get_ftdc_file_paths(dir_path)
-    if not ftdc_files_dict:
-        result['status'] = 'pass'
-        result['log_raw'] = '\nNo FTDC metrics files found. Skipping resource sanity checks.'
-    else:
-        # depending on variant, there can be multiple hosts and therefore multiple FTDC data files
-        full_log_raw = ''
-        for (host_name, public_ip), full_path in ftdc_files_dict.iteritems():
-            print('Reading {0}'.format(full_path))
-            (passed_checks, log_raw) = _process_ftdc_file(full_path,
-                                                          project,
-                                                          variant,
-                                                          constant_values)
-            if not passed_checks:
-                full_log_raw += ('Failed resource sanity checks for host {0} ({1})').format(
-                    host_name, public_ip)
-                full_log_raw += log_raw
-        if full_log_raw:
-            result['status'] = 'fail'
-            result['exit_code'] = 1
-        else:
-            result['status'] = 'pass'
-            result['exit_code'] = 0
-            full_log_raw = '\nPassed resource sanity checks.'
-        result['log_raw'] = full_log_raw
-    result['test_file'] = 'resource_sanity_checks'
-    return result
-
-def _process_ftdc_file(path_to_ftdc_file, project, variant, constant_values):
-    """Iterates through chunks in a single FTDC metrics file and checks the resource rules
-
-    :param str path_to_ftdc_file: path to a FTDC metrics file
-    :param str project: Evergreen project ID
-    :param str variant: build variant to check
-    :param dict constant_values: some rules take in constants to compare current values against
-    :rtype: tuple(bool, str)
-            bool: whether the checks passed/failed for a host
-            str: raw log information
-    """
-    failures_per_chunk = {}
-    task_run_time = 0
-
-    for chunk in readers.read_ftdc(path_to_ftdc_file):
-        # a couple of asserts to make sure the chunk is not malformed
-        assert all(len(chunk.values()[0]) == len(v) for v in chunk.values()), \
-            ('Metrics from file {0} do not all have same number of collected '
-             'samples in the chunk').format(os.path.basename(path_to_ftdc_file))
-        assert len(chunk.values()[0]) != 0, \
-            ('No data captured in chunk from file {0}').format(
-                os.path.basename(path_to_ftdc_file))
-        assert rules.FTDC_KEYS['time'] in chunk, \
-            ('No time information in chunk from file {0}').format(
-                os.path.basename(path_to_ftdc_file))
-
-        # proceed with rule-checking.
-        times = chunk[rules.FTDC_KEYS['time']]
-        task_run_time += len(times)
-        for chunk_rule in _get_project_variant_rules(project, variant, RESOURCE_RULES_FTDC_CHUNK):
-            build_args = {'chunk': chunk, 'times': times}
-            arguments_needed = inspect.getargspec(chunk_rule).args
-
-            # gather any missing arguments
-            (build_args, constant_values) = _fetch_constant_arguments(chunk,
-                                                                      arguments_needed,
-                                                                      build_args,
-                                                                      constant_values)
-            if len(build_args) < len(arguments_needed):
-                continue  # could not find all the necessary metrics in this chunk
-            else:
-                output = chunk_rule(**build_args)
-                if output:
-                    rule_name = chunk_rule.__name__
-                    if rule_name not in failures_per_chunk:
-                        failures_per_chunk[rule_name] = []
-                    failures_per_chunk[rule_name].append(output)
-
-    # check rules that require data from the whole FTDC run (rather than by chunk)
-    file_rule_failures = _ftdc_file_rule_evaluation(path_to_ftdc_file, project, variant)
-
-    if not failures_per_chunk and not file_rule_failures:
-        return (True, '\nPassed resource sanity checks.')
-    else:
-        log_raw = _ftdc_log_raw(file_rule_failures,
-                                rules.unify_chunk_failures(failures_per_chunk),
-                                task_run_time)
-        return (False, log_raw)
-
-def _fetch_constant_arguments(chunk, arguments_needed, arguments_present, constant_values):
-    """Helper to update arguments_present and constant_values. Uses mapping in rules.FETCH_CONSTANTS
-    to retrieve needed values from the FTDC metrics. These configured values, such as oplog maxSize,
-    are known to be stored in the FTDC data and so do not need to be manually passed in.
-
-    :param collections.OrderedDict chunk:
-    :param list[str] arguments_needed: from inspecting the function
-    :param dict arguments_present: the arguments & values that we currently have
-    :param dict constant_values: the constants we currently have
-    :rtype: tuple(dict, dict) updated dictionaries for arguments_present and constant_values
-    """
-    for parameter in arguments_needed:
-        if parameter not in arguments_present:
-            if parameter not in constant_values:
-                found_constant = rules.FETCH_CONSTANTS[parameter](chunk)
-                if found_constant:
-                    constant_values[parameter] = found_constant
-                    arguments_present[parameter] = found_constant
-            else:
-                arguments_present[parameter] = constant_values[parameter]
-    return (arguments_present, constant_values)
-
-def _ftdc_log_raw(file_rule_failures, chunk_rule_failures, task_run_time):
-    """Produce the raw log output for failures from a single FTDC file
-
-    :param dict file_rule_failures: failure info gathered from checks run on the whole FTDC file
-    :param dict chunk_rule_failures: failure info gathered from checks run per-chunk
-    :param int task_run_time: how long did this task run?
-    :rtype: str
-    """
-    log_raw = ''
-    for rule_name, rule_failure_info in chunk_rule_failures.iteritems():
-        log_raw += '\nRULE {0}'.format(rule_name)
-        log_raw += rules.failure_message(rule_failure_info, task_run_time)
-    if file_rule_failures:
-        log_raw += _ftdc_file_failure_raw(file_rule_failures, task_run_time)
-    log_raw += '\n'
-    print(log_raw)
-    return log_raw
-
-def _ftdc_file_rule_evaluation(path_to_ftdc_file, project, variant):
-    """Some rules require data from the entire FTDC run.
-
-    :type path_to_ftdc_file: str
-    :type project: str
-    :type variant: str
-    :rtype: dict
-    """
-    file_rules = _get_project_variant_rules(project, variant, RESOURCE_RULES_FTDC_FILE)
-    file_rule_failures = {}
-    for resource_rule in file_rules:
-        check_failed = resource_rule(path_to_ftdc_file)
-        if check_failed:
-            file_rule_failures[resource_rule.__name__] = check_failed
-    return file_rule_failures
-
-def _ftdc_file_failure_raw(failures_dict, task_run_time):
-    """Helper to output log raw message for rules checked across the whole FTDC file, rather than
-    by chunk. This only really applies to replica lag failure collection right now. Potentially
-    useful if resource rule checks grow more complex in the future.
-
-    :param dict failures_dict: key: rule name, value: failure info. currently a list because the
-           repl lag rule gathers new failure information for each change in primary member.
-    :param int task_run_time: how long in seconds did the task run?
-    :rtype: str
-    """
-    log_raw = ''
-    for rule_name, failures_list in failures_dict.iteritems():
-        log_raw = '\nRULE {0}'.format(rule_name)
-        for failure in failures_list:
-            lag_failure_message = rules.failure_message(failure, task_run_time)
-            log_raw += lag_failure_message
-    return log_raw
-
-# Functions for fetching FTDC diagnostic data. Used to facilitate resource sanity checks during
-# a sys-perf task. We might consider moving resource check functions
-# into a separate module similar to the way we import mongod.log parsing functions (PERF-329)
-
-def _get_ftdc_file_paths(dir_path):
-    """Recursively search `dir_path` for diagnostic.data directories and return a list of fully
-    qualified FTDC metrics file paths.
-
-    :type dir_path: str
-    :rtype: dict with key: (host name, ip address) tuple and value: full path to FTDC metrics file
-    """
-    find_directory = 'diagnostic.data'
-    ftdc_metrics_paths = {}
-    for dir_path, sub_folder, _ in os.walk(dir_path):
-        if find_directory in sub_folder:
-            parent_directory_name = os.path.basename(dir_path)
-            host_identification = _get_host_ip_info(parent_directory_name)
-            ftdc_files = os.listdir(os.path.join(dir_path, find_directory))
-            files = [fi for fi in ftdc_files if not fi.endswith(".interim")]
-            if len(files) != 1:
-                warnings.warn('{0} FTDC metrics files in {1}. Skipping.'.format(
-                    len(files), parent_directory_name))
-            else:
-                full_path = os.path.join(dir_path, find_directory, files[0])
-                ftdc_metrics_paths[host_identification] = full_path
-    return ftdc_metrics_paths
-
-def _get_host_ip_info(diagnostic_dir_name):
-    """Directory names follow the naming convention: diag-p<INDEX>-<PUBLIC_IP> where INDEX is
-    between 1 and (# of mongod instances). Could also use reports/ips.py if the variables there
-    were imported.
-
-    :param str diagnostic_dir_name: dash-separated directory name, parent directory enclosing the
-               diagnostic.data directory containing FTDC files
-    :rtype: tuple(str, str) host name and public IP address
-    """
-    naming_convention = diagnostic_dir_name.split('-')
-    return (naming_convention[1], naming_convention[2])
-
 # Utility functions and classes - these are functions and classes that load and manipulate
 # test results for various checks
 
@@ -475,24 +258,6 @@ def compare_throughputs( # pylint: disable=too-many-arguments
         return 'pass'
     return 'fail'
 
-def _get_project_variant_rules(project, variant, rules_dict):
-    """The rules we want to check are specified in nested dictionaries. They all follow the same
-       structure, so this is a short helper to fetch a list of functions, corresponding to the
-       rules evaluated for a given project and variant.
-
-    :type project: str
-    :type variant: str
-    :type rules_dict: dict
-    :rtype: list[functions]
-    """
-    if project not in rules_dict:
-        return []
-    project_rules = rules_dict[project]
-    if variant not in project_rules:
-        return project_rules['default']
-    else:
-        return project_rules[variant]
-
 def _lookup_constant_value(project, variant, constant_name):
     """Looks in the rules.CONSTANTS dictionary for default or variant-specific constant values
 
@@ -517,7 +282,6 @@ def _lookup_constant_value(project, variant, constant_name):
 history = None
 tag_history = None
 overrides = None
-regression_line = None
 replica_lag_line = None
 # pylint: enable=invalid-name
 
@@ -525,7 +289,8 @@ replica_lag_line = None
 # The report.json `test_file` regex value of these checks are listed here; will not increment the
 # number of failures in the report for tests specified in this variable.
 QUARANTINED_RULES = [
-    r'mongod\.log\.([0-9])+', r'resource_sanity_checks', r'ycsb-throughput-analysis']
+    r'mongod\.log\.([0-9])+', r'resource_sanity_checks', r'ycsb-throughput-analysis',
+    r'db-hash-check', r'validate-indexes-and-collections']
 
 # These rules are run for every test.
 # TODO: it is best practice to declare all constants at the top of a Python file. This can be done
@@ -545,24 +310,6 @@ PROJECT_TEST_RULES = {
     },
     'mongo-longevity': {
         'default': [compare_to_previous, compare_to_tag, replica_lag_check]
-    }
-}
-
-RESOURCE_RULES_FTDC_FILE = {
-    'sys-perf': {
-        # TODO: commenting out until this rule has been revised some more.
-        # 'default': [rules.ftdc_replica_lag_check],
-        'default': [],
-        'linux-3-node-replSet-initialsync': []
-    }
-}
-
-RESOURCE_RULES_FTDC_CHUNK = {
-    'sys-perf': {
-        'default': [rules.below_configured_cache_size, rules.compare_heap_cache_sizes,
-                    rules.max_connections, rules.below_configured_oplog_size],
-        'linux-3-shard': [rules.below_configured_cache_size, rules.compare_heap_cache_sizes,
-                          rules.below_configured_oplog_size]
     }
 }
 
@@ -598,8 +345,13 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
         help=(
             "Analyze the throughput-over-time data from YCSB log files. The argument to this "
             "flag should be the directory to recursively search for the files."))
+    # TODO: PERF-675 to remove this. Present for backwards compatibility right now.
+    parser.add_argument(
+        "--log-analysis",
+        help=(
+            "This argument is only present for backwards compatibility. To be removed."))
 
-    arg_parsing.add_args(parser, "log analysis")
+    arg_parsing.add_args(parser, "reports analysis")
     args = parser.parse_args(args)
 
     # Set up result histories from various files:
@@ -608,14 +360,11 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
     # overrides - this series has the override data to avoid false alarm or fatigues
     # The result histories are stored in global variables within this module as they
     # are accessed across many rules.
-    global history, tag_history, overrides, regression_line, replica_lag_line # pylint: disable=invalid-name,global-statement
+    global history, tag_history, overrides, replica_lag_line # pylint: disable=invalid-name,global-statement
     (history, tag_history, overrides) = read_histories(args.variant,
                                                        args.hfile, args.tfile, args.ofile)
     task_max_thread_level = 0
     results = []
-
-    # regression summary table lines
-    regression_line = []
 
     # replication lag table lines
     replica_lag_line = []
@@ -700,12 +449,12 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
                 print_line = print_line + formatted
             print(print_line, file=sys.stderr)
 
-    if args.log_analysis is not None:
-        log_analysis_results, _ = log_analysis.analyze_logs(args.log_analysis, args.perf_file)
+    if args.reports_analysis is not None:
+        log_analysis_results, _ = log_analysis.analyze_logs(args.reports_analysis, args.perf_file)
         report['results'].extend(log_analysis_results)
         # are there resource rules to check for this project?
-        if (args.project_id in RESOURCE_RULES_FTDC_FILE
-                and args.project_id in RESOURCE_RULES_FTDC_CHUNK):
+        if (args.project_id in ftdc_analysis.RESOURCE_RULES_FTDC_FILE
+                and args.project_id in ftdc_analysis.RESOURCE_RULES_FTDC_CHUNK):
             # Maximum thread level is passed in to the '# of connections' rule
             # we are currently using.
             max_thread_level = _lookup_constant_value(
@@ -715,11 +464,16 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
             resource_constant_values = {
                 'max_thread_level': max_thread_level
             }
-            resource_rule_outcome = resource_rules(
-                args.log_analysis, args.project_id, args.variant, resource_constant_values)
+            resource_rule_outcome = ftdc_analysis.resource_rules(
+                args.reports_analysis, args.project_id, args.variant,
+                resource_constant_values, args.perf_file)
             report['results'] += [resource_rule_outcome]
+
+        db_correctness_results = rules.db_correctness_analysis(
+            args.reports_analysis)
+        report['results'].extend(db_correctness_results)
     else:
-        print('Did not specify a value for parameter --log-analysis. Skipping mongod.log and '
+        print('Did not specify a value for parameter --reports-analysis. Skipping mongod.log and '
               'FTDC resource sanity checks.')
 
     if args.ycsb_throughput_analysis is not None:

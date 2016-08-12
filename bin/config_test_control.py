@@ -31,6 +31,9 @@ def generate_mc_json():
     ssh_user = os.environ['SSHUSER']
     mc_conf['PemFile'] = os.environ['PEMFILE']
 
+    # Path to DB correctness JS tests, to be run at the end of a task by MC.
+    mc_conf['js_tests_dir'] = os.path.join(os.path.join('~', 'jstests'), 'hooks')
+
     # New path for reading in the ssh_user and ssh_key_file values
     if 'tfvars' in conf['infrastructure_provisioning']:
         mc_conf['PemFile'] = conf['infrastructure_provisioning']['tfvars']['ssh_key_file']

@@ -150,6 +150,20 @@
             "exit_code": 0,
             "start": 0,
             "test_file": "resource_sanity_checks"
+        },
+        {
+            "status": "pass",
+            "start": 0,
+            "log_raw": "\nPassed db-hash-check JS test.",
+            "test_file": "db-hash-check",
+            "exit_code": 0
+        },
+        {
+            "status": "pass",
+            "start": 0,
+            "log_raw": "\nPassed validate-indexes-and-collections JS test.",
+            "test_file": "validate-indexes-and-collections",
+            "exit_code": 0
         }
     ]
 }

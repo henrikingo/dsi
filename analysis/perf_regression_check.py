@@ -113,7 +113,13 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
     arg_parser.add_argument(
         "--report-file", help='File to write the report JSON file to. Defaults to "report.json".',
         default="report.json")
-    arg_parsing.add_args(arg_parser, "log analysis")
+    # TODO: PERF-675 to remove this. Present for backwards compatibility right now.
+    arg_parser.add_argument(
+        "--log-analysis",
+        help=(
+            "This argument is only present for backwards compatibility. To be removed."))
+
+    arg_parsing.add_args(arg_parser, "reports analysis")
 
     args = arg_parser.parse_args(args)
     (history, tag_history, overrides) = read_histories(args.variant, args.file, args.tfile,
@@ -250,8 +256,8 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
             result['status'] = 'pass'
         results.append(result)
 
-    if args.log_analysis is not None:
-        log_analysis_results, _ = log_analysis.analyze_logs(args.log_analysis, args.perf_file)
+    if args.reports_analysis is not None:
+        log_analysis_results, _ = log_analysis.analyze_logs(args.reports_analysis, args.perf_file)
         results.extend(log_analysis_results)
 
     if args.out_file is not None:

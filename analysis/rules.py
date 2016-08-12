@@ -1,15 +1,83 @@
 """Module of constants and rules used in our resource sanity checks. Used in post_run_check.py.
 """
 
-import datetime
+import logging
+import os
 import re
 from dateutil import parser as date_parser
 
 import readers
+import util
+
+LOGGER = logging.getLogger(__name__)
 
 # TODO: currently lots of globals in here. PERF-580 (unify post_run_check and perf_regression_check)
 # will likely involve refactoring to address this global constants vs. config file issue.
-# Discussion with the team during PERF-193 has given me a good idea of what our options are.
+
+CONSTANTS = {
+    'sys-perf': {
+        'default': {
+            'threshold': 0.08,
+            'thread_threshold': 0.12,
+            'lag_threshold': 10.0,
+            'ndays': 7.0
+        },
+        'linux-oplog-compare': {
+            'threshold': 0.1,
+            'thread_threshold': 0.2
+        },
+        'linux-3-node-replSet-initialsync': {
+            # from Judah: initial sync uses 16 threads to put data into the database
+            'max_thread_level': 32.0
+        }
+    },
+    'mongo-longevity': {
+        'default': {
+            'threshold': 0.25,
+            'thread_threshold': 0.25
+        }
+    }
+}
+
+# mongod.log analysis rules
+
+BAD_LOG_TYPES = ["F", "E"] # See https://docs.mongodb.com/manual/reference/log-messages/
+BAD_MESSAGES = [msg.lower() for msg in [
+    "starting an election", "election succeeded", "transition to primary"]]
+MESSAGE_WHITELIST = [msg.lower() for msg in [
+    "ttl query execution for index"]]
+
+def is_log_line_bad(log_line, test_times=None):
+    """
+    Return whether or not `log_line`, a line from a log file, is suspect (see `BAD_LOG_TYPES` and
+    `BAD_MESSAGES`). Only messages that were printed during the time a test was run (as specified in
+    `test_times`) are considered, unless `test_times` is None.
+    """
+
+    log_line = log_line.strip()
+    line_components = log_line.split(" ", 3)
+    if len(line_components) != 4:
+        LOGGER.warning("Couldn't parse log line: `%s`", log_line)
+        return False
+
+    timestamp, err_type_char, _, log_msg = line_components
+
+    try:
+        log_ts = date_parser.parse(timestamp)
+    except ValueError as err:
+        LOGGER.warning("Failed to parse timestamp from line `%s` with error `%s`", log_line, err)
+        return False
+
+    if test_times is not None and not any(start <= log_ts <= end for start, end in test_times):
+        return False
+
+    log_msg = log_msg.lower()
+    if any(whitelist_msg in log_msg for whitelist_msg in MESSAGE_WHITELIST):
+        return False
+
+    return err_type_char in ["F", "E"] or any(bad_msg in log_msg for bad_msg in BAD_MESSAGES)
+
+# Resource sanity check rules
 
 FTDC_KEYS = {
     'cache_size': ('serverStatus', 'wiredTiger', 'cache', 'bytes currently in the cache'),
@@ -21,8 +89,6 @@ FTDC_KEYS = {
     'time': ('start',),
     'repl_set_status': ('replSetGetStatus', 'members', '([0-9])+')
 }
-
-# Constants used during rule checks.
 
 INITIAL_TIME = date_parser.parse('1970-01-01T00:00:00Z')  # for formatting log failure messages
 
@@ -40,30 +106,31 @@ MS = 1000.0
 REPL_MEMBER_LAG_THRESHOLD_S = 10.0
 REPL_MEMBER_LAG_THRESHOLD_MS = REPL_MEMBER_LAG_THRESHOLD_S * MS
 
-CONSTANTS = {
-    'sys-perf': {
-        'default': {
-            'threshold': 0.08,
-            'thread_threshold': 0.12,
-            'lag_threshold': REPL_MEMBER_LAG_THRESHOLD_S,
-            'ndays': 7.0
-        },
-        'linux-oplog-compare': {
-            'threshold': 0.1,
-            'thread_threshold': 0.2
-        },
-        'linux-3-node-replSet-initialsync': {
-            # from Judah: initial sync uses 16 threads to put data into the database
-            'max_thread_level': 16.0
-        }
-    },
-    'mongo-longevity': {
-        'default': {
-            'threshold': 0.25,
-            'thread_threshold': 0.25
-        }
-    }
-}
+def failure_collection(failure_times, compared_values, labels, other_rule_info=None):
+    """Helper function to standardize the dictionary data structure that stores failure information.
+    TODO: Each rule currently needs to initialize variables to collect the following parameters.
+          Currently, this means any modification to the structure requires code updates in
+          every rule function. I've thought about designing a general "rule framework" function
+          where you pass in a custom comparison function, but wanted to hold off in case
+          there were other suggestions for improving this design.
+
+    :param list[int] failure_times: times (in ms) where failures occurred.
+    :param list[tuple(*int)] compared_values: values that failed the resource check
+    :param tuple labels: values in each tuple need to have labels to generate informative failure
+                         messages
+    :param dict other_rule_info: a dict containing any additional information we need to include
+                                 in a failure message.
+    :rtype: dict
+    """
+    if not failure_times:
+        return {}
+    rule_info = {}
+    rule_info['times'] = failure_times
+    rule_info['compared_values'] = compared_values
+    rule_info['labels'] = labels
+    if other_rule_info:
+        rule_info['additional'] = other_rule_info
+    return rule_info
 
 def _fetch_constant(chunk, key):
     if key in chunk:
@@ -108,134 +175,11 @@ def get_repl_members(chunk):
 
 # Map each of the helper functions to the parameter their return values will correspond to in the
 # resource rules.
-# Note: Still thinking about the best way to approach this mapping. The dictionary, considered a
-# constant, should be located above all functions in this file. However, the helper functions
-# in FETCH_CONSTANTS need to be declared before they are stored. Calls into question whether this
-# was the right design choice or not.
 FETCH_CONSTANTS = {
     'configured_cache_size': get_configured_cache_size,
     'configured_oplog_size': get_configured_oplog_size,
     'repl_member_list': get_repl_members
 }
-
-# Functions related to failure output formatting
-
-def ftdc_date_parse(time_in_s):
-    """Helper to convert timestamps in s to human-readable format. Matches formatting in the
-    timeseries web tool
-
-    :type time_in_s: int
-    :rtype: str
-    """
-    time_offset = INITIAL_TIME + datetime.timedelta(seconds=time_in_s)
-    return time_offset.strftime('%Y-%m-%d %H:%M:%SZ')
-
-def failure_message(rule_info, task_run_time):
-    """Standardize the way that we return a failure message.
-
-    :param dict rule_info: every resource rule, upon failure, must return a dictionary in
-    accordance with the key-value mapping specified in the failure_collection function defined
-    below.
-      Exception: If a single resource rule handles checks over multiple members, the dictionary
-      will contain the attribute 'members' with a list[dict], where each dict follows the standard
-      format.
-    :param int task_run_time: how long did the task itself run? Assess relative duration of failure
-    """
-    failure_msg = ''
-    if 'members' in rule_info and rule_info['members']:
-        if 'additional' in rule_info:
-            for key, value in rule_info['additional'].iteritems():
-                failure_msg += '\t| {0}: {1}'.format(key, value)
-        for _, member_info in rule_info['members'].iteritems():
-            failure_msg += failure_message(member_info, task_run_time)
-        return failure_msg
-
-    first_failure_time = ftdc_date_parse(rule_info['times'][0]/MS)
-    failure_msg += '\n  First failure occurred at time {0}'.format(first_failure_time)
-
-    first_failure_values = rule_info['compared_values'][0]
-    for index in xrange(len(first_failure_values)):
-        failure_msg += '\n\t{0}: {1}'.format(
-            rule_info['labels'][index], first_failure_values[index])
-
-    if 'additional' in rule_info:
-        for key, value in rule_info['additional'].iteritems():
-            failure_msg += '\n\t{0}: {1}'.format(key, value)
-
-    duration_failure = len(rule_info['times'])
-    if float(duration_failure)/task_run_time > 0.10:  # proportion of time in failing state
-        failure_msg += '\nFailure detected {0}s out of the {1}s it took to run this task'.format(
-            duration_failure, task_run_time)
-    else:
-        times = [ftdc_date_parse(ts/MS) for ts in rule_info['times']]
-        failure_msg += '\n\tFailures seen at times: {0}'.format(str(times))
-
-    return failure_msg
-
-def failure_collection(failure_times, compared_values, labels, other_rule_info=None):
-    """Helper function to standardize the dictionary data structure that stores failure information.
-    TODO: Each rule currently needs to initialize variables to collect the following parameters.
-          Currently, this means any modification to the structure requires code updates in
-          every rule function. I've thought about designing a general "rule framework" function
-          where you pass in a custom comparison function, but wanted to hold off in case
-          there were other suggestions for improving this design.
-
-    :param list[int] failure_times: times (in ms) where failures occurred.
-    :param list[tuple(*int)] compared_values: values that failed the resource check
-    :param tuple labels: values in each tuple need to have labels to generate informative failure
-                         messages
-    :param dict other_rule_info: a dict containing any additional information we need to include
-                                 in a failure message.
-    :rtype: dict
-    """
-    if not failure_times:
-        return {}
-    rule_info = {}
-    rule_info['times'] = failure_times
-    rule_info['compared_values'] = compared_values
-    rule_info['labels'] = labels
-    if other_rule_info:
-        rule_info['additional'] = other_rule_info
-    return rule_info
-
-def unify_chunk_failures(chunk_failure_info):
-    """Failures are collected for each FTDC chunk. Though this may be an unnecessary step to take
-    for our current resource rule output (reporting 1st occurrence of failure), if we ever want to
-    return 'smarter' failure messages, we might want to go through all the timestamps and values
-    compared in a rule. Rather than divide failures by chunk, this function collects the results
-    into a single dictionary for each resource rule.
-
-    :param dict chunk_failure_info: a dictionary of resource rules mapped to a list of
-       the failures that occurred in different FTDC chunks.
-       (key: resource rule) -> (value: list of failure info dicts)
-    :rtype: dict (key: resource rule) -> (value: single failure info dict)
-    """
-    all_failure_instances = {}
-    for rule_name, failure_info_list in chunk_failure_info.iteritems():
-        if 'members' in failure_info_list[0]:
-            add_to = failure_info_list[0]['members']
-            for index in xrange(1, len(failure_info_list)):
-                current = failure_info_list[index]['members']
-                all_members = set(current.keys()) | set(add_to.keys())
-                for member in all_members:
-                    if member not in add_to:
-                        add_to[member] = {}
-                        add_to[member]['times'] = current[member]['times']
-                        add_to[member]['compared_values'] = current[member]['compared_values']
-                    elif member in current:
-                        add_to[member]['times'] += current[member]['times']
-                        add_to[member]['compared_values'] += current[member]['compared_values']
-            all_failure_instances[rule_name] = {'members': add_to}
-        else:
-            add_to = failure_info_list[0]
-            for index in xrange(1, len(failure_info_list)):
-                current = failure_info_list[index]
-                add_to['times'] += current['times']
-                add_to['compared_values'] += current['compared_values']
-            all_failure_instances[rule_name] = add_to
-    return all_failure_instances
-
-# Resource sanity check rules
 
 def below_configured_cache_size(chunk, times, configured_cache_size):
     """Is the current cache size below (1+CACHE_ALLOCATOR_OVERHEAD) * WT configured cache size?
@@ -350,17 +294,20 @@ def below_configured_oplog_size(chunk, times, configured_oplog_size):
             compared_values.append((oplog_size,))
     return failure_collection(failure_times, compared_values, labels, additional)
 
-# NOTE: NONE OF THESE RULES ARE BEING CHECKED AS OF 7/18/2016. See line 490 in post_run_check.py
-# for the list of active resource sanity checks.
-
-def repl_member_state(chunk, times, repl_member_list):
+def repl_member_state(chunk, times, repl_member_list, test_times=None):
     """Do any of the members ever go into a "bad" state? (i.e. RECOVERING; see FLAG_MEMBER_STATES.)
 
     :param collection.OrderedDict chunk: FTDC JSON chunk
     :param list[int] times: the time at which each metric value was collected
     :param list[str] repl_member_list: list of replica set members in this variant
+    :param list[(datetime, datetime)] test_times: list of (start, end) test times.
+        Use this to ignore problematic member states if it doesn't occur during a test run.
     :rtype: dict
     """
+    # We want to disregard FTDC data collected when a test is not being run.
+    # This whitelists the indices where metrics were collected for a test workload.
+    test_run_indices = _get_whitelist_from_test_times(chunk, test_times)
+
     member_states = {}
     for member in repl_member_list:
         member_state_key = ('replSetGetStatus', 'members', member, 'state')
@@ -371,7 +318,9 @@ def repl_member_state(chunk, times, repl_member_list):
         failure_times = []
         labels = ('member ' + member + ' state',)
         compared_values = []
-        for index, state in enumerate(member_state_values):
+
+        for index in test_run_indices:
+            state = member_state_values[index]
             if state in FLAG_MEMBER_STATES:
                 failure_times.append(times[index])
                 compared_values.append((FLAG_MEMBER_STATES[state],))
@@ -404,11 +353,13 @@ def find_primary(chunk, repl_member_list):
             return member
     return None
 
-def ftdc_replica_lag_check(path_to_ftdc_file):
+def ftdc_replica_lag_check(path_to_ftdc_file, test_times=None):
     """Replica set lag computation requires some knowledge of the lag times over entire chunks,
     so the standard structure of our resource checks (in the rules module) will not apply.
 
     :param str path_to_file: path to a FTDC metrics file
+    :param list[(datetime, datetime)] test_times: list of (start, end) test times.
+        Use this to ignore problematic lag value if it doesn't occur during a test run.
     :rtype: list[dict] each dict corresponds to failure info for a different primary member.
             (accounts for possible election in the middle of a task)
     """
@@ -423,11 +374,9 @@ def ftdc_replica_lag_check(path_to_ftdc_file):
             repl_member_list = get_repl_members(chunk)  # is there member info in this chunk?
             if not repl_member_list:
                 continue
-
         primary = find_primary(chunk, repl_member_list)
         if not primary:  # skip if no primary
             continue
-
         # a primary member has been identified. check the newly fetched primary against our
         # currently declared primary
         if not current_primary:
@@ -444,7 +393,7 @@ def ftdc_replica_lag_check(path_to_ftdc_file):
         if primary_optimedate_key not in chunk:  # skip if no optimeDate data for primary
             continue
 
-        secondary_members = repl_member_list
+        secondary_members = list(repl_member_list)
         secondary_members.remove(current_primary)
         # add the members as keys to the lag info dict if we are collecting lag info for the first
         # time with this primary.
@@ -452,16 +401,18 @@ def ftdc_replica_lag_check(path_to_ftdc_file):
             if member not in lag_info_dict:
                 lag_info_dict[member] = []
 
-        collect_lag = _chunk_member_lag(chunk, secondary_members, chunk[primary_optimedate_key])
+        test_run_indices = _get_whitelist_from_test_times(chunk, test_times)
+        collect_lag = _chunk_member_lag(
+            chunk, secondary_members, chunk[primary_optimedate_key], test_run_indices)
+
         # the two lengths may not be equivalent if, for whatever reason, optimeDate data for some
         # member is missing for this chunk. shouldn't happen, but if it does, we want to ignore
         # the data from this chunk.
         if len(collect_lag.keys()) == len(secondary_members):
             # `times` is an array of timestamps corresponding to when each sample was collected.
             # note that each chunk contains samples collected over some duration.
-            times = chunk[FTDC_KEYS['time']]
             lag_info_dict['primary'] = current_primary
-            lag_info_dict['times'] += times
+            lag_info_dict['times'] += [chunk[FTDC_KEYS['time']][i] for i in test_run_indices]
             for member, member_lag in collect_lag.iteritems():
                 lag_info_dict[member] += member_lag
 
@@ -470,7 +421,7 @@ def ftdc_replica_lag_check(path_to_ftdc_file):
 
     return _lag_failures_per_primary(collect_by_primary, repl_member_list)
 
-def _chunk_member_lag(chunk, repl_member_list, primary_optimedates):
+def _chunk_member_lag(chunk, repl_member_list, primary_optimedates, test_run_indices):
     """Helper function to compute secondary lag from values in a chunk
 
     :param collection.OrderedDict chunk: FTDC JSON chunk
@@ -487,7 +438,8 @@ def _chunk_member_lag(chunk, repl_member_list, primary_optimedates):
         else:
             member_optimedate_values = chunk[member_optimedate_key]
             member_lag = []
-            for index, secondary_optimedate in enumerate(member_optimedate_values):
+            for index in test_run_indices:
+                secondary_optimedate = member_optimedate_values[index]
                 lag = primary_optimedates[index] - secondary_optimedate
                 member_lag.append(lag)
             collect_chunk_lag[member] = member_lag
@@ -572,3 +524,97 @@ def _flag_unacceptable_lag(lag_info_dict, repl_member_list):  # pylint: disable=
                }
     else:
         return {}
+
+def _get_whitelist_from_test_times(chunk, test_times=None):
+    """FTDC data is stored in chunks. Each chunk is a key-value mapping from some FTDC_KEY
+    to a list of values collected over a period of time. This is a quick way to whitelist
+    the list indices during which a test is being executed.
+    If test_times is not specified (i.e. no perf.json parameter passed in),
+    we just return the full range across the chunk time metric.
+
+    :param collection.OrderedDict chunk: FTDC JSON chunk
+    :param list[(datetime, datetime)] test_times: list of (start, end) test times.
+        Use this to ignore problematic lag value if it doesn't occur during a test run.
+    :rtype: list[int]
+    """
+    test_run_indices = []
+    times = chunk[FTDC_KEYS['time']]
+    if not test_times:
+        test_run_indices = range(len(times))
+    else:
+        chunk_times_in_s = [time_in_ms/MS for time_in_ms in times]
+        for index, time_in_s in enumerate(chunk_times_in_s):
+            if any(start <= util.num_or_str_to_date(time_in_s) <= end
+                   for start, end in test_times):
+                test_run_indices.append(index)
+    return test_run_indices
+
+# DB correctness jstest rules
+
+def db_correctness_analysis(dir_path):
+    """Recursively search `dir_path` for db-correctness directory. MC is responsible for running
+    these JS tests if the relevant scripts are present. As a result of the JS tests being run,
+    MC will create the db-correctness directory in addition to the db-hash-check &
+    validate-indexes-and-collections sub-directories to hold the resulting log files.
+    If such log files exist, this function finds and parses them.
+    TODO: For PERF-659, we might do a regex match on directories pre/suffixed with db-correctness.
+          This would occur if we ran db hash & validate after every test. We currently only do it
+          one time at the end of a whole task.
+
+    :type dir_path: str
+    :rtype: list[dict], a list of result dictionaries to be written to report.json
+    """
+    find_directory = 'db-correctness'
+    # The directories in db-correctness. Same as the name of the test on Evergreen.
+    db_correctness_log_directories = ['db-hash-check', 'validate-indexes-and-collections']
+    for dir_path, sub_directory, _ in os.walk(dir_path):
+        if find_directory in sub_directory:
+            path_to_target = os.path.join(dir_path, find_directory)
+            report_results = []
+            for log_directory in db_correctness_log_directories:
+                path_to_directory = os.path.join(path_to_target, log_directory)
+                if os.path.exists(path_to_directory):
+                    log_files = os.listdir(path_to_directory)
+                    if log_files:
+                        log_results = _report_js_test_result(
+                            log_directory, path_to_directory, log_files)
+                        report_results.append(log_results)
+            return report_results
+    return []
+
+def _report_js_test_result(test_name, path_to_file, filename_list):
+    """Helper function to parse the JS test log file. Last line should be an exit code, 0 or 1,
+    denoting whether or not the checks passed.
+
+    :type test_name: str
+    :type path_to_file: str
+    :type filename_list: list[str]
+    :rtype: dict
+    """
+    js_test_failure_output = ''
+    for filename in filename_list:
+        path_to_logfile = os.path.join(path_to_file, filename)
+        log_output = ''
+        last_line = None
+        with open(path_to_logfile) as file_handle:
+            for line in file_handle:
+                log_output += line
+                last_line = line.strip()
+        try:
+            exit_status = int(last_line)
+            if exit_status:
+                js_test_failure_output += '\nFAILURE: (logfile `{0}`)\n'.format(filename)
+                js_test_failure_output += log_output
+        except ValueError:
+            js_test_failure_output = ('\nFAILURE: logfile `{0}` did not record a valid exit '
+                                      'code. Output:\n {1}').format(filename, log_output)
+    result = {'test_file': test_name, 'start': 0}
+    if js_test_failure_output:
+        result['status'] = 'fail'
+        result['log_raw'] = js_test_failure_output
+        result['exit_code'] = 1
+    else:
+        result['status'] = 'pass'
+        result['log_raw'] = '\nPassed {0} JS test.'.format(test_name)
+        result['exit_code'] = 0
+    return result

@@ -8,7 +8,72 @@ import doctest
 import json
 import sys
 
+import datetime
+from dateutil import tz, parser as date_parser
+
 from evergreen.history import History
+
+def get_project_variant_rules(project, variant, rules_dict):
+    """The rules we want to check are specified in nested dictionaries. They all follow the same
+       structure, so this is a short helper to fetch a list of functions, corresponding to the
+       rules evaluated for a given project and variant.
+
+    :type project: str
+    :type variant: str
+    :type rules_dict: dict
+    :rtype: list[functions]
+    """
+    if project not in rules_dict:
+        return []
+    project_rules = rules_dict[project]
+    if variant not in project_rules:
+        return project_rules['default']
+    else:
+        return project_rules[variant]
+
+def get_test_times(perf_json_or_path):
+    """
+    Read the performance report file at `perf_file_path` (usually called "perf.json") and return a
+    `(start, end)` tuple of its "start" and "end" timestamps, represented as UTC `datetime`s.
+    """
+
+    if isinstance(perf_json_or_path, dict):
+        perf_json = perf_json_or_path
+
+    else:
+        perf_file_path = perf_json_or_path
+        try:
+            perf_json = get_json(perf_file_path)
+
+        except IOError:
+            return None
+
+    try:
+        return [(num_or_str_to_date(perf_json["start"]), num_or_str_to_date(perf_json["end"]))]
+
+    except KeyError:
+        return [
+            (num_or_str_to_date(test["start"]), num_or_str_to_date(test["end"]))
+            for test in perf_json["results"] if "start" in test and "end" in test]
+
+def num_or_str_to_date(ts_or_date_str):
+    """
+    Convert `ts_or_date_str`, which is either a seconds-since-epoch `float` or a formatted date
+    string, to a `datetime` object.
+    """
+
+    conv_func = date_parser.parse if isinstance(ts_or_date_str, basestring) else \
+        _unix_ts_to_utc_datetime
+    return conv_func(ts_or_date_str)
+
+def _unix_ts_to_utc_datetime(unix_ts):
+    """
+    Convert `unix_ts` (a seconds-since-epoch `float`) to a UTC `datetime` object with
+    `tzinfo=tzutc()`.
+    """
+
+    datetime_ts = datetime.datetime.utcfromtimestamp(unix_ts)
+    return datetime_ts.replace(tzinfo=tz.tzutc())
 
 def get_json(filename):
     """ Load a file and parse it as json """
@@ -112,8 +177,6 @@ def log_header(testname):
     log += "-"*11 + "+"
     log += "-"*12 + "\n"
     return log
-
-
 
 def compare_one_result_values(current, reference, label="Baseline",
                               thread_level="max", noise_level=0,
@@ -230,7 +293,6 @@ def compare_one_result(this_one, reference, label, thread_level="max",
                                      noise_multiple, default_threshold,
                                      using_override, compared_to))
 
-
 def read_threshold_overrides(test_name, base_threshold, base_thread_threshold, overrides):
     '''
     Read in the overrides file and return thresholds to use for a given test.
@@ -263,14 +325,12 @@ def read_threshold_overrides(test_name, base_threshold, base_thread_threshold, o
 
     return(threshold, thread_threshold, threshold_override)
 
-
 def get_override(test_name, override_type, overrides):
     """Return the overrides of type `override_type` belonging to the test named `test_name`."""
 
     if test_name in overrides[override_type]:
         return overrides[override_type][test_name]
     return None
-
 
 if __name__ == "__main__":
     doctest.testmod()

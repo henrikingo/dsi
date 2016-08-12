@@ -11,24 +11,6 @@ from tests import test_utils
 class TestPostRunCheck(unittest.TestCase):
     """Test suite."""
 
-    def test_resource_rules_pass(self):
-        """ Specifically test that we get the expected report info for resource sanity checks
-        """
-        dir_path = '{0}core_workloads_reports'.format(test_utils.FIXTURE_DIR_PATH)
-        project = 'sys-perf'
-        variant = 'linux-standalone'
-        constant_values = {'max_thread_level': 64}
-        observed_result = post_run_check.resource_rules(dir_path, project, variant, constant_values)
-        expected_result = {
-            'status': 'pass',
-            'end': 1,
-            'log_raw': '\nPassed resource sanity checks.',
-            'exit_code': 0,
-            'start': 0,
-            'test_file': "resource_sanity_checks"
-        }
-        self.assertEqual(observed_result, expected_result)
-
     def test_post_run_check_ftdc(self):
         """
         Runs the full post run check with FTDC resource checks.
@@ -38,7 +20,7 @@ class TestPostRunCheck(unittest.TestCase):
             "{0}delayed_trigger_core_workloads_wt.history.json " \
             "-t {0}linux-standalone.core_workloads_WT.tags.json --refTag 3.2.1-Baseline " \
             "--overrideFile {0}system_perf_override.json " \
-            "--log-analysis {0}core_workloads_reports " \
+            "--reports-analysis {0}core_workloads_reports " \
             "--project_id sys-perf --task_name core_workloads_WT --variant linux-standalone " \
             "--report-file {0}report_ftdc.json --out-file /dev/null".format(
                 test_utils.FIXTURE_DIR_PATH)

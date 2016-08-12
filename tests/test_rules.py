@@ -1,12 +1,16 @@
 """Unit tests for the rules module. Run using nosetests."""
 
+import os
 import unittest
+
+from dateutil import parser as date_parser
 
 import readers
 import rules
 from tests import test_utils
+import util
 
-class TestRules(unittest.TestCase):
+class TestResourceRules(unittest.TestCase):
     """Test class evaluates correctness of resource sanity check rules.
     """
 
@@ -25,6 +29,9 @@ class TestRules(unittest.TestCase):
             test_utils.FIXTURE_DIR_PATH)
         self.single_chunk_standalone = self._first_chunk(path_ftdc_standalone)
         self.times_standalone = self.single_chunk_standalone[rules.FTDC_KEYS['time']]
+
+        self.path_3shard_directory = '{0}test_replset_resource_rules'.format(
+            test_utils.FIXTURE_DIR_PATH)
 
     @staticmethod
     def _first_chunk(ftdc_filepath):
@@ -186,7 +193,8 @@ class TestRules(unittest.TestCase):
         """
         observed = rules.repl_member_state(self.single_chunk_3node,
                                            self.times_3node,
-                                           self.members_3node)
+                                           self.members_3node,
+                                           None)  # no test times
         expected = {}
         print observed
         self.assertEqual(observed, expected)
@@ -197,7 +205,8 @@ class TestRules(unittest.TestCase):
         rules.FLAG_MEMBER_STATES[2] = 'SECONDARY'
         observed = rules.repl_member_state(self.single_chunk_3node,
                                            self.times_3node,
-                                           self.members_3node)
+                                           self.members_3node,
+                                           None)  # no test times
         expected = {
             'members':
                 {'0': {'times': self.times_3node,
@@ -227,14 +236,37 @@ class TestRules(unittest.TestCase):
                 self.assertIsNone(primary)
             chunks_until_primary -= 1
 
-    def test_fail_collection_empty(self):
-        """Test expected output in _failure_collection when no failures detected
+    def test_lag_success(self):
+        """Test expected success for repl set secondary member lag check
         """
-        labels = ('label1', 'label2')
-        observed = rules.failure_collection([], [], labels)
-        expected = {}
+        path_ftdc_3shard = os.path.join(self.path_3shard_directory, 'metrics.3shard_p1_repl')
+        path_perf_file_3shard = os.path.join(self.path_3shard_directory, 'perf.json.ok')
+        test_times_3shard = util.get_test_times(path_perf_file_3shard)
+        observed = rules.ftdc_replica_lag_check(path_ftdc_3shard, test_times_3shard)
+        expected = []
         self.assertEqual(observed, expected)
 
+    def test_lag_no_perf_file(self):
+        """Test expected failure when no test times are specified
+        """
+        path_ftdc_3shard = os.path.join(self.path_3shard_directory, 'metrics.3shard_p1_repl')
+        observed = rules.ftdc_replica_lag_check(path_ftdc_3shard, None)
+        expected = [
+            {'additional': {'using lag threshold (s)': 10.0, 'primary member': '0'},
+             'members': {'1': {'labels': ('member 1 lag (s)',),
+                               'compared_values': [(11.0,), (11.0,), (11.0,)],
+                               'times': [1470669404000, 1470669405000, 1470669406000]},
+                         '2': {'labels': ('member 2 lag (s)',),
+                               'compared_values': [(11.0,)],
+                               'times': [1470669404000]}
+                        }
+            }
+        ]
+        self.assertEqual(observed, expected)
+
+class TestFailureOutputFormatting(unittest.TestCase):
+    """Test class checks resource sanity rules' error message formatting
+    """
     def test_fail_collection_info(self):
         """Test expected output in _failure_collection when failure is detected
         """
@@ -250,6 +282,141 @@ class TestRules(unittest.TestCase):
             'additional': additional
         }
         self.assertEqual(observed, expected)
+
+    def test_fail_collection_empty(self):
+        """Test expected output in _failure_collection when no failures detected
+        """
+        labels = ('label1', 'label2')
+        observed = rules.failure_collection([], [], labels)
+        expected = {}
+        self.assertEqual(observed, expected)
+
+
+class TestLogAnalysisRules(unittest.TestCase):
+    """Test class evaluates correctness of mongod.log check rules
+    """
+
+    def test_is_log_line_bad(self):
+        """Test `_is_log_line_bad()`."""
+
+        bad_lines = [
+            "2016-07-14T01:00:04.000+0000 F err-type foo bar baz",
+            "2016-07-14T01:00:04.000+0000 E err-type foo bar baz",
+            "2016-07-14T01:00:04.000+0000 L err-type elecTIon suCCEeded",
+            "2016-07-14T01:00:04.000+0000 D err-type transition TO PRIMARY"]
+
+        good_lines = [
+            "2016-07-14T01:00:04.000+0000 L err-type nothing bad here",
+            "2016-07-14T01:00:04.000+0000 L err-type or here",
+            "2016-07-14T01:00:04.000+0000 E err-type ttl query execution for index"]
+
+        for line in bad_lines:
+            self.assertTrue(rules.is_log_line_bad(line))
+
+        for line in good_lines:
+            self.assertFalse(rules.is_log_line_bad(line))
+
+    def test_is_log_line_bad_time(self):
+        """Test `_is_log_line_bad()` when test times are specified."""
+
+        test_times = [
+            (date_parser.parse("2016-07-14T01:00:00.000+0000"),
+             date_parser.parse("2016-07-14T01:10:00.000+0000")),
+            (date_parser.parse("2016-07-14T03:00:00.000+0000"),
+             date_parser.parse("2016-07-14T03:10:00.000+0000"))]
+
+        bad_lines = [
+            "2016-07-14T01:00:04.000+0000 F err-type message",
+            "2016-07-14T01:09:00.000+0000 F err-type message",
+            "2016-07-14T03:05:00.000+0000 F err-type message"]
+
+        bad_lines_to_ignore = [
+            "2016-07-14T00:05:00.000+0000 F err-type message",
+            "2016-07-14T02:00:00.000+0000 F err-type message",
+            "2016-07-14T03:25:00.000+0000 F err-type message"]
+
+        for line in bad_lines:
+            self.assertTrue(rules.is_log_line_bad(line, test_times))
+
+        for line in bad_lines_to_ignore:
+            self.assertFalse(rules.is_log_line_bad(line, test_times))
+
+class TestDBCorrectnessRules(unittest.TestCase):
+    """Test class evaluates correctness of DB correctness check rules.
+    """
+
+    def test_dbcorrect_success(self):
+        """Test expected success in db correctness test log file parsing
+        """
+        log_dir = test_utils.fixture_file_path('core_workloads_reports')
+        expected_results = [
+            {
+                'status': 'pass',
+                'start': 0,
+                'log_raw': '\nPassed db-hash-check JS test.',
+                'test_file': 'db-hash-check',
+                'exit_code': 0
+            },
+            {
+                'status': 'pass',
+                'start': 0,
+                'log_raw': '\nPassed validate-indexes-and-collections JS test.',
+                'test_file': 'validate-indexes-and-collections',
+                'exit_code': 0
+            }
+        ]
+        observed_results = rules.db_correctness_analysis(log_dir)
+        self.assertEqual(expected_results, observed_results)
+
+    def test_dbcorrect_fail(self):
+        """Test expected failure in db correctness test log file parsing
+        """
+        log_dir = test_utils.fixture_file_path('test_db_correctness')
+        raw_failure = ('\nFAILURE: (logfile `localhost--localhost`)\n'
+                       '2016-08-03T15:04:55.395-0400 E QUERY    [thread1] '
+                       'Error: Collection validation failed :\n@(shell eval):1:20\n'
+                       '@(shell eval):1:2\n\nFailed to run JS test on server [localhost], '
+                       'host [localhost]\n1')
+        expected_results = [
+            {
+                'status': 'fail',
+                'start': 0,
+                'log_raw': raw_failure,
+                'test_file': 'validate-indexes-and-collections',
+                'exit_code': 1
+            }
+        ]
+        observed_results = rules.db_correctness_analysis(log_dir)
+        self.assertEqual(expected_results, observed_results)
+
+    def test_dbcorrect_no_exit_code(self):
+        """Test expected failure in db correctness test log file missing integer exit status
+        """
+        log_dir = test_utils.fixture_file_path('test_db_correctness_exit_fail')
+        raw_failure = ('\nFAILURE: logfile `localhost--localhost` did not record a valid exit '
+                       'code. Output:\n 2016-08-03T15:04:55.395-0400 E QUERY    [thread1] '
+                       'Error: Collection validation failed :\n@(shell eval):1:20\n'
+                       '@(shell eval):1:2\n\nFailed to run JS test on server [localhost], '
+                       'host [localhost]')
+        expected_results = [
+            {
+                'status': 'fail',
+                'start': 0,
+                'log_raw': raw_failure,
+                'test_file': 'validate-indexes-and-collections',
+                'exit_code': 1
+            }
+        ]
+        observed_results = rules.db_correctness_analysis(log_dir)
+        self.assertEqual(expected_results, observed_results)
+
+    def test_no_jstests_run(self):
+        """Test expected empty result when no db correctness checks are made
+        """
+        log_dir = test_utils.fixture_file_path('test_log_analysis')
+        expected_results = []
+        observed_results = rules.db_correctness_analysis(log_dir)
+        self.assertEqual(expected_results, observed_results)
 
 if __name__ == '__main__':
     unittest.main()
