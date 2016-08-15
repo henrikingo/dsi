@@ -2,6 +2,8 @@
 mongod_config_file:
     storage:
         engine: wiredTiger
+    sharding:
+        clusterRole: shardsvr
 
 topology:
   - id: mycluster
