@@ -305,9 +305,16 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                 match = helpers.matches_any(task_name, tasks)
                 if not match:
                     continue
-                for test_name, _ in self.evg.tests_from_task(task_info['task_id']):
-                    if test_name in variant_tests[variant]:
-                        variant_tests_remaining[variant].remove(test_name)
+                try:
+                    for test_name, _ in self.evg.tests_from_task(task_info['task_id']):
+                        if test_name in variant_tests[variant]:
+                            variant_tests_remaining[variant].remove(test_name)
+                except evergreen_client.Empty:
+                    LOGGER.warning("Caught evergreen_client. Empty exception in "
+                                   "_processing_revision in call to tests_from_task for "
+                                   "task_id {0}. ".format(task_info['task_id']) +
+                                   "Supressing error. This indicates something is wrong, "
+                                   "but the current operation can still complete correctly.")
             tests_remain = variant_tests_remaining[variant]
             num_tests_missing_data += len(tests_remain)
             for test in tests_remain:

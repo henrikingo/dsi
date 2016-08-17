@@ -176,7 +176,7 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
                     override_time = parser.parse(overrides['ndays'][test]['create_time'])
                     this_time = parser.parse(this_one['create_time'])
                     if (override_time < this_time) and ((override_time + timedelta(days=args.ndays))
-                                                    >= this_time):
+                                                        >= this_time):
                         target = overrides['ndays'][test]
                         using_override.append('ndays')
                         LOGGER.info('Override in NDays for test %s', test)
