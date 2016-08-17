@@ -2325,7 +2325,9 @@
                     "4",
                     "8"
                 ],
-                "ticket":[]
+                "ticket":[
+                    "BF-3182"
+                ]
             },
             "Commands.DistinctWithIndexAndQuery":{
                 "create_time":"2016-08-16T19:15:42.117Z",
@@ -2412,7 +2414,9 @@
                     "4",
                     "8"
                 ],
-                "ticket":[]
+                "ticket":[
+                    "BF-3182"
+                ]
             },
             "Commands.FindAndModifySortedDelete":{
                 "create_time":"2016-03-25T21:13:55.588Z",
