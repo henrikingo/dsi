@@ -10,6 +10,8 @@ import json
 import datetime
 import logging
 
+from common.config import ConfigDict
+
 LOG = logging.getLogger(__name__)
 
 # Constant to define instance classes with placement group support
@@ -71,23 +73,28 @@ class TerraformConfiguration(object):
         "i2.xlarge"
         ]
 
-    INSTANCE_ROLES = ["mongod", "mongos", "workload", "configserver"]
+    INSTANCE_ROLES = ["mongod", "mongos", "workload", "configsvr"]
 
-    def __init__(self, topology=None, region=None, availability_zone=None, now=None, day_delta=2):
+    def __init__(self, topology=None, region=None, availability_zone=None, now=None, day_delta=2,
+                 use_config=True):
         if topology is not None:
             self.topology = topology
         if region is not None:
             self.region = region
         if availability_zone is not None:
             self.availability_zone = availability_zone
+        self.now = now
+        self.define_day_delta(day_delta)
 
         # always update expire-on
-        self.expire_on = generate_expire_on_tag(now, day_delta)
+        self.expire_on = generate_expire_on_tag(now, self.day_delta)
+        if use_config:
+            self._update_from_config()
 
     def _define_instance(self, role, count, instance_type):
         """
         A private function to dynamically define parameters for an instance type.
-        This can be used to configure mongod/mongos/workload/configserver.
+        This can be used to configure mongod/mongos/workload/configsvr.
         """
         instance_type = instance_type.lower()
 
@@ -125,29 +132,86 @@ class TerraformConfiguration(object):
 
         self._define_instance("workload", count, instance_type)
 
-    def define_configserver_instance(self, count, instance_type):
+    def define_configsvr_instance(self, count, instance_type):
         """To define workload instances."""
         assert_value(isinstance(count, int) and count > 0,
-                     "Count for configserver instance must > 0")
+                     "Count for configsvr instance must > 0")
 
-        self._define_instance("configserver", count, instance_type)
+        self._define_instance("configsvr", count, instance_type)
 
-    def define_mongoodb_url(self, url):
+    def define_mongodb_url(self, url):
         """
         Define a url to download mongodb.tar.gz, may move this out of here in the future.
         """
         self.mongourl = url
 
+    def define_day_delta(self, day_delta):
+        """To define how many days in the future to adjust expire_on"""
+        assert_value(day_delta > 0,
+                     "expire_on must be tomorrow of beyond, received {}".format(day_delta))
+        self.day_delta = day_delta
+        self.expire_on = generate_expire_on_tag(self.now, self.day_delta)
+
+    def _update_from_config(self):
+        """Update terraform configuration based on provisioning file."""
+
+        config_obj = ConfigDict("infrastructure_provisioning")
+        config_obj.load()
+
+        dsi_config = config_obj['infrastructure_provisioning']
+
+        for role in self.INSTANCE_ROLES:
+            # update instance definition if they present in the provisioning file
+            if role + "_instance_count" in dsi_config["tfvars"].keys():
+                assert_value(role + "_instance_type" in dsi_config["tfvars"].keys(),
+                             "Should define both count and type for {}".format(role))
+
+                # update both count and type
+                update_function = getattr(self, "define_" + role + "_instance")
+                update_function(dsi_config["tfvars"][role + "_instance_count"],
+                                dsi_config["tfvars"][role + "_instance_type"])
+
+        # update ssh key name (must match AWS' name)
+        if "ssh_key" in dsi_config["tfvars"].keys():
+            self.key_name = dsi_config["tfvars"]["ssh_key"]
+
+        # update ssh key file location
+        if "ssh_key_file" in dsi_config["tfvars"].keys():
+            self.key_file = dsi_config["tfvars"]["ssh_key_file"]
+
+        # update region file
+        if "region" in dsi_config["tfvars"].keys():
+            self.region = dsi_config["tfvars"]["region"]
+
+        # update availability_zone file
+        if "availability_zone" in dsi_config["tfvars"].keys():
+            self.availability_zone = dsi_config["tfvars"]["availability_zone"]
+
+        # update day delta value
+        if "expire-on-delta" in dsi_config["tfvars"]["tags"].keys():
+            self.define_day_delta(dsi_config["tfvars"]["tags"]["expire-on-delta"])
+
+        # update owner tag
+        if "owner" in dsi_config["tfvars"]["tags"].keys():
+            self.owner = dsi_config["tfvars"]["tags"]["owner"]
+
     def to_json(self, compact=False, file_name=None):
         """To create JSON configuration string."""
         json_str = ""
+        json_dict = self.__dict__.copy()
+
+        # need remove some of the field, such as day_delta which is not used by Terraform
+        json_dict.pop("day_delta", None)
+        json_dict.pop("now", None)
+
         if compact:
-            json_str = json.dumps(self, default=lambda o: o.__dict__,
+            json_str = json.dumps(self, default=lambda o: json_dict,
                                   separators=(',', ':'), sort_keys=True)
         else:
-            json_str = json.dumps(self, default=lambda o: o.__dict__,
+            json_str = json.dumps(self, default=lambda o: json_dict,
                                   sort_keys=True, indent=4)
 
+        LOG.info(json_str)
         if file_name is not None:
             # write to file as well
             with open(file_name, 'w') as fwrite:

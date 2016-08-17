@@ -18,9 +18,6 @@ def parse_command_line():
     parser = argparse.ArgumentParser(
         description='Generate terraform environment from configuration file')
     parser.add_argument(
-        '--config-file',
-        help='name of the test configuration file, must in YML')
-    parser.add_argument(
         '-d',
         '--debug',
         action='store_true',
@@ -41,8 +38,6 @@ def main():
     setup_logging(args.debug, args.log_file)  # pylint: disable=no-member
 
     tf_config = TerraformConfiguration()
-
-    # placeholder, read YML file here and update configuration
 
     # write to file
     tf_config.to_json(file_name=args.out_file)  # pylint: disable=no-member

@@ -34,7 +34,7 @@ done
 popd
 pwd
 
-# Explicit list of files in bin to lint until all files pass lint. 
+# Explicit list of files in bin to lint until all files pass lint.
 python_to_lint=(
     bin/common/config.py
     bin/common/download_mongodb.py
@@ -44,6 +44,8 @@ python_to_lint=(
     bin/mongodb_setup.py
     bin/update_test_list.py
     bin/setup_work_env.py
+    bin/common/terraform_config.py
+    bin/common/terraform_output_parser.py
 )
 
 run_test pylint --rcfile=pylintrc $(find analysis tests -name "*.py" ! -name "readers.py") ${python_to_lint[*]}

@@ -5,24 +5,24 @@ variable topology                       {}
 variable mongod_instance_type           {}
 variable mongos_instance_type           { default = "c3.4xlarge" }
 variable workload_instance_type         {}
-variable configserver_instance_type     { default = "m3.2xlarge" }
+variable configsvr_instance_type        { default = "m3.2xlarge" }
 
 # define instance count
 variable mongod_instance_count          { default = 0 }
 variable mongos_instance_count          { default = 0 }
 variable workload_instance_count        { default = 0 }
-variable configserver_instance_count    { default = 0 }
+variable configsvr_instance_count       { default = 0 }
 
 # define whether to use placement_group
 variable mongod_instance_placement_group        { default="yes" }
 variable mongos_instance_placement_group        { default="yes" }
 variable workload_instance_placement_group      { default="yes" }
-variable configserver_instance_placement_group  { default="no" }
+variable configsvr_instance_placement_group     { default="no" }
 
 # AWS details
 variable region                         {}
 variable availability_zone              {}
-variable key_path                       {}
+variable key_file                       {}
 variable key_name                       {}
 
 variable expire_on                      { default = "2016-12-31" }
@@ -45,7 +45,7 @@ module "mongod_instance" {
     instance_type       = "${var.mongod_instance_type}"
     count               = "${var.mongod_instance_count}"
     subnet_id           = "${module.VPC.aws_subnet_id}"
-    key_file            = "${var.key_path}"
+    key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
     placement_group     = "${var.mongod_instance_placement_group}"
@@ -65,7 +65,7 @@ module "mongos_instance" {
     instance_type       = "${var.mongos_instance_type}"
     count               = "${var.mongos_instance_count}"
     subnet_id           = "${module.VPC.aws_subnet_id}"
-    key_file            = "${var.key_path}"
+    key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
     placement_group     = "${var.mongos_instance_placement_group}"
@@ -78,17 +78,17 @@ module "mongos_instance" {
 }
 
 # AWS instance with placement group for config server
-module "configserver_instance" {
+module "configsvr_instance" {
     source = "../ec2_instance"
 
     # parameters for module
-    instance_type       = "${var.configserver_instance_type}"
-    count               = "${var.configserver_instance_count}"
+    instance_type       = "${var.configsvr_instance_type}"
+    count               = "${var.configsvr_instance_count}"
     subnet_id           = "${module.VPC.aws_subnet_id}"
-    key_file            = "${var.key_path}"
+    key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
-    placement_group     = "${var.configserver_instance_placement_group}"
+    placement_group     = "${var.configsvr_instance_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     expire_on           = "${var.expire_on}"
@@ -105,7 +105,7 @@ module "workload_instance" {
     instance_type       = "${var.workload_instance_type}"
     count               = "${var.workload_instance_count}"
     subnet_id           = "${module.VPC.aws_subnet_id}"
-    key_file            = "${var.key_path}"
+    key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
     placement_group     = "${var.workload_instance_placement_group}"

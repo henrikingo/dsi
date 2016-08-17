@@ -34,6 +34,6 @@ module "cluster" {
 
     owner               = "${var.owner}"
 
-    key_path            = "${var.key_path}"
+    key_file            = "${var.key_file}"
     key_name            = "${var.key_name}"
 }

@@ -67,9 +67,9 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
             LOG.error("Mongod: public and private IP address counts mismatch!")
             raise ValueError("Mongod: public and private IP address counts mismatch!")
 
-        for i in range(len(self._ips["private_member_ip"])):
-            yml_data["out"]["mongod"].append({"public_ip": self._ips["public_member_ip"][i],
-                                              "private_ip": self._ips["private_member_ip"][i]})
+        for index in range(len(self._ips["private_member_ip"])):
+            yml_data["out"]["mongod"].append({"public_ip": self._ips["public_member_ip"][index],
+                                              "private_ip": self._ips["private_member_ip"][index]})
 
         # workload_client IP addresses
         if len(self._ips["public_ip_mc"]) == 0:
@@ -78,8 +78,9 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
 
         yml_data["out"]["workload_client"] = []
 
-        for i in range(len(self._ips["public_ip_mc"])):
-            yml_data["out"]["workload_client"].append({"public_ip": self._ips["public_ip_mc"][i]})
+        for index in range(len(self._ips["public_ip_mc"])):
+            yml_data["out"]["workload_client"].append(
+                {"public_ip": self._ips["public_ip_mc"][index]})
 
         # mongos IP addresses
         if "public_mongos_ip" in self._ips:
@@ -89,9 +90,10 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
                 LOG.error("Mongos: public and private IP address counts mismatch!")
                 raise ValueError('Mongos: public and private IP address counts mismatch!')
 
-            for i in range(len(self._ips["private_mongos_ip"])):
-                yml_data["out"]["mongos"].append({"public_ip": self._ips["public_mongos_ip"][i],
-                                                  "private_ip": self._ips["private_mongos_ip"][i]})
+            for index in range(len(self._ips["private_mongos_ip"])):
+                yml_data["out"]["mongos"].append(
+                    {"public_ip": self._ips["public_mongos_ip"][index],
+                     "private_ip": self._ips["private_mongos_ip"][index]})
 
         # configsvr IP addresses
         if "public_config_ip" in self._ips:
@@ -101,10 +103,10 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
                 LOG.error("Configsvr: public and private IP address counts mismatch!")
                 raise ValueError('Configsvr: public and private IP address counts mismatch!')
 
-            for i in range(len(self._ips["private_config_ip"])):
+            for index in range(len(self._ips["private_config_ip"])):
                 yml_data["out"]["configsvr"].append({
-                    "public_ip": self._ips["public_config_ip"][i],
-                    "private_ip": self._ips["private_config_ip"][i]
+                    "public_ip": self._ips["public_config_ip"][index],
+                    "private_ip": self._ips["private_config_ip"][index]
                     })
 
         return yaml.dump(yml_data, default_flow_style=False)

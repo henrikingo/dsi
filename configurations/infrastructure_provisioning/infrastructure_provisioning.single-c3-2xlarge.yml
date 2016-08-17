@@ -1,0 +1,10 @@
+tfvars:      # Contents of this is transformed into input JSON to override terraform default values
+             # Note that all tfvars values have defaults, and are therefore optional
+    mongod_instance_count: 1
+    mongod_instance_type: c3.2xlarge
+
+    workload_instance_count: 1
+    workload_instance_type: c3.2xlarge
+
+    region: us-west-2
+    availability_zone: us-west-2a

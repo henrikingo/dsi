@@ -18,12 +18,12 @@ output "public_mongos_ip" {
   value = "${module.mongos_instance.public_ips}"
 }
 
-output "private_configserver_ip" {
-  value = "${module.configserver_instance.private_ips}"
+output "private_configsvr_ip" {
+  value = "${module.configsvr_instance.private_ips}"
 }
 
-output "public_configserver_ip" {
-  value = "${module.configserver_instance.public_ips}"
+output "public_configsvr_ip" {
+  value = "${module.configsvr_instance.public_ips}"
 }
 
 output "total_count" {

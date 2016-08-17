@@ -23,9 +23,9 @@ output "public_mongos_ip" {
 }
 
 output "private_config_ip" {
-  value = "${module.cluster.private_configserver_ip}"
+  value = "${module.cluster.private_configsvr_ip}"
 }
 
 output "public_config_ip" {
-  value = "${module.cluster.public_configserver_ip}"
+  value = "${module.cluster.public_configsvr_ip}"
 }

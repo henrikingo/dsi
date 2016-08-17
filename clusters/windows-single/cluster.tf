@@ -95,7 +95,7 @@ resource "aws_instance" "member" {
         user = "ec2-user"
 
         # The path to your keyfile
-        key_file = "${var.key_path}"
+        key_file = "${var.key_file}"
 
         # set timeout longer to 10min for Windows
         timeout = "10m"
@@ -155,7 +155,7 @@ resource "aws_instance" "master" {
         user = "ec2-user"
 
         # The path to your keyfile
-        key_file = "${var.key_path}"
+        key_file = "${var.key_file}"
     }
 
     security_groups = ["${aws_security_group.default.id}"]

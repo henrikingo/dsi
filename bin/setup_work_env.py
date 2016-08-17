@@ -32,6 +32,7 @@ from common.log import setup_logging
 
 LOGGER = logging.getLogger(__name__)
 
+
 def parse_command_line(args=None):
     #pylint: disable=line-too-long
     '''
@@ -138,6 +139,33 @@ def parse_command_line(args=None):
 
     return config
 
+
+def copy_config_files(dsipath, config):
+    '''
+    Copy all related config files to the current directory
+
+    Following files are copied:
+        - infrastructure_provision.yml
+    '''
+
+    # Move the proper infrastructure_provisioning file to the current directory
+    provisioning_file = os.path.join(dsipath,
+                                     "configurations/infrastructure_provisioning",
+                                     "infrastructure_provisioning." +
+                                     config["cluster_type"] + ".yml")
+    try:
+        shutil.copyfile(provisioning_file, "infrastructure_provisioning.yml")
+        LOGGER.info("Copied " + provisioning_file + " to work directory.")
+    except Exception as error:
+        # We must have infrastructure provisioning file
+        LOGGER.critical("Failed to copy infrastructure_provisioning.yml from %s.\nError: %s",
+                        provisioning_file, str(error))
+        raise
+
+    # Copy other config files here
+    return
+
+
 def main():
     ''' Main function for setting up working directory
     '''
@@ -172,7 +200,7 @@ def main():
         # Read in the secret
         config['aws_secret'] = open(config['aws_secret_file']).read().rstrip()
 
-    #Todo: This section should be replaced by code to select infrastructure.yml
+    # Todo: This section should be replaced by code to select infrastructure.yml
     cluster_path = os.path.join(dsipath, 'clusters', config['cluster_type'])
     remote_scripts_path = os.path.join(dsipath, 'clusters', 'remote-scripts')
     # Copy over all files from cluster directory
@@ -209,8 +237,8 @@ def main():
     with open(os.path.join(directory, 'setting.sh'), 'a') as settings:
         settings.write('export PEMFILE={0}\n'.format(config['ssh_keyfile_path']))
 
-    # In the long term this code should change to update the config
-    # file infrastructure.yml, or to generate it.
+    # copy necessary config files to the current directory
+    copy_config_files(dsipath, config)
 
     # make_terraform_env.sh replaces values in various tf and tfvar
     # files for the cluster. Ideally all these changes should be in
@@ -242,13 +270,6 @@ def main():
                       {'tfvars': {'ssh_key_file': config['ssh_keyfile_path']}}})
     with open(override_path, 'w') as override_file:
         override_file.write(yaml.dump(overrides, default_flow_style=False))
-
-    # This should be replaced by json manipulation. However the
-    # special characters in the json files for templating keep python
-    # from being able to parse them
-    LOGGER.info("Calling update_pem_file_path.sh with %s", config['ssh_keyfile_path'])
-    subprocess.call([os.path.join(dsipath, 'bin', 'update_pem_file_path.sh'),
-                     config['ssh_keyfile_path']], cwd=directory)
 
     # Long term everything that needs to be specified in the config
     # files is handled above, and the following warning can be

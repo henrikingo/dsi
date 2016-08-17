@@ -24,7 +24,7 @@ variable \"key_name\" {
     default = \"rui-aws-cap\"
 }
 
-variable \"key_path\" {
+variable \"key_file\" {
     default = \"${PEMFILE}\"
 }" > security.tf
 

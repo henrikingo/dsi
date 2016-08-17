@@ -4,26 +4,25 @@
 infrastructure_provisioning:
     tfvars:
         mongod_instance_count      : 1
-        mongos_instance_count      : 0
-        configsvr_instance_count   : 0
         workload_instance_count    : 1
 
         mongod_instance_type       : c3.8xlarge
-        configsvr_instance_type    : m3.4xlarge
-        mongos_instance_type       : c3.8xlarge
         workload_instance_type     : c3.8xlarge
 
         region                     : us-west-2
         availability_zone          : us-west-2a
+
+        aws_access_key             : $RUNTIME_VALUE
+        aws_secret_key             : $RUNTIME_VALUE
+
         ssh_user                   : ec2-user
-        ssh_key_file               : ../../keys/aws.pem       # Likely to be changed by PERF-526
+        ssh_key                    : rui-aws-cap
+        ssh_key_file               : ../keys/aws.pem
+
         tags:
-            Name: server-perf-defaultvariant
-            owner: perf@10gen.com               # valid email address.
-            expire-on-delta: 1                  # Set expire-on tag used by reaper script. Note: must be lower case.
-                                                # delta is days added to current date.
-            Variant: Linux 3-shard cluster
-            Project: sys-perf
+            expire-on-delta        : 2    # adjust expire_on to today + expire-on-delta days
+            owner                  : perf@10gen.com
+            Project                : sys-perf
 
 mongodb_setup:
     mongo_dir: mongodb

@@ -1,0 +1,23 @@
+tfvars:                # Contents of this is transformed into input JSON to override terraform default values
+                       # Note that all tfvars values have defaults, and are therefore optional
+    mongod_instance_count: 15
+    mongos_instance_count: 3
+    configsvr_instance_count: 5
+    workload_instance_count: 1
+
+    mongod_instance_type: c3.8xlarge
+    configsvr_instance_type: m3.4xlarge
+    mongos_instance_type: c3.8xlarge
+    workload_instance_type: c3.8xlarge
+
+    region: us-west-2
+    availability_zone: us-west-2b
+    aws_access_key: $RUNTIME_VALUE
+    aws_secret_key: $RUNTIME_VALUE
+    ssh_user: server-perf-team
+    ssh_key: server-perf-team-ssh-key
+    ssh_key_file: ../../keys/aws.pem
+    tags:                               # List of supported tags (at this point, you cannot add your own)
+        expire-on-delta: 3              # Set expire-on tag used by reaper script. Note: must be lower case.
+                                        # delta is days added to current date. Default: 1
+        Project: sys-perf
