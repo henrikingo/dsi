@@ -71,7 +71,7 @@ then
     >&2 echo "Error: Prequalify failed for setup-cluster.sh. Exiting and not running tests"
 else
     # Check that all the nodes in the cluster are properly up
-    good_line_count=$(./terraform plan | egrep "Plan" | egrep -c "0 to add")
+    good_line_count=$(./terraform plan $VAR_FILE | egrep "Plan" | egrep -c "0 to add")
     if [ $good_line_count != 1 ]
     then
         >&2 echo "Error: Past pre-qualify, but something wrong with provisioning. Still need to add node(s)."
