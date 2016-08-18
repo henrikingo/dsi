@@ -7,7 +7,7 @@ post:
   - command: shell.cleanup
 
 functions:
-  run_tests:
+  setup_tests:
     - command: git.get_project
       params:
         directory: src
@@ -35,15 +35,49 @@ functions:
             }
           }
           END_OF_CREDS
-          perf_jira_user="${perf_jira_user}" perf_jira_pw="${perf_jira_pw}" bash testscripts/runtests.sh
 
+  lint:
+    - command: shell.exec
+      type : test
+      params:
+        working_dir: src
+        script: |
+          source ./venv/bin/activate
+          bash testscripts/lint-scripts.sh
+
+  nosetests:
+    - command: shell.exec
+      type : test
+      params:
+        working_dir: src
+        script: |
+          source ./venv/bin/activate
+          bash testscripts/run-nosetest.sh
+
+  validate_overrides:
+    - command: shell.exec
+      type : test
+      params:
+        working_dir: src
+        script: |
+          source ./venv/bin/activate
+          perf_jira_user="${perf_jira_user}" perf_jira_pw="${perf_jira_pw}" bash testscripts/validate-overrides.sh
 #######################################
 #               Tasks                 #
 #######################################
 tasks:
-- name: tests
+- name: lint
   commands:
-    - func: run_tests
+    - func: setup_tests
+    - func: lint
+- name: nosetests
+  commands:
+    - func: setup_tests
+    - func: nosetests
+- name: validate_overrides
+  commands:
+    - func: setup_tests
+    - func: validate_overrides
 
 
 #######################################
@@ -56,4 +90,6 @@ buildvariants:
   run_on:
       - "rhel70-perf-standalone"
   tasks:
-    - name: tests
+    - name: lint
+    - name: nosetests
+    - name: validate_overrides
