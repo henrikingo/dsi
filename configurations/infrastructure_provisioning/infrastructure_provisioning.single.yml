@@ -7,4 +7,4 @@ tfvars:      # Contents of this is transformed into input JSON to override terra
     workload_instance_type: c3.8xlarge
 
     region: us-west-2
-    availability_zone: us-west-2b
+    availability_zone: us-west-2a
