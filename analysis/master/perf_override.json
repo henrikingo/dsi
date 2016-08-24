@@ -204,8 +204,8 @@
                 ]
             },
             "Commands.FindAndModifyInserts":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.3,
+                "threshold":0.25,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -443,8 +443,8 @@
                 ]
             },
             "Commands.FindAndModifyInserts":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.3,
+                "threshold":0.25,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -1430,8 +1430,8 @@
                 ]
             },
             "Commands.FindAndModifyInserts":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.3,
+                "threshold":0.25,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -1869,8 +1869,8 @@
                 ]
             },
             "Commands.FindAndModifyInserts":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.3,
+                "threshold":0.25,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -2417,8 +2417,8 @@
                 ]
             },
             "Commands.FindAndModifyInserts":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.3,
+                "threshold":0.25,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -3319,8 +3319,8 @@
                 ]
             },
             "Commands.FindAndModifyInserts":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.3,
+                "threshold":0.25,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -3646,8 +3646,8 @@
                 ]
             },
             "Commands.FindAndModifyInserts":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.3,
+                "threshold":0.25,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -5251,8 +5251,8 @@
                 ]
             },
             "Commands.FindAndModifyInserts":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.3,
+                "threshold":0.25,
                 "ticket":[
                     "PERF-444"
                 ]
