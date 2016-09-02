@@ -28,6 +28,8 @@ run:
               - mongos_insert_single.js
               - mongos_50read_50write.js
               - move_chunk_with_load.js
+            test:
+              - # Empty list. Put new workloads here for testing
             short: # Just does Hello World
               - hello.js:
                   parameter1: foo

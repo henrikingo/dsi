@@ -13,3 +13,4 @@ tests:
   - hello.js:
       parameter1: foo
       parameter2: [true, false]
+  test: [null]
