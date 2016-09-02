@@ -192,40 +192,47 @@ def _process_ftdc_file(path_to_ftdc_file, project, variant, constant_values):  #
     failures_per_chunk = {}
     task_run_time = 0
 
-    for chunk in readers.read_ftdc(path_to_ftdc_file):
-        # a couple of asserts to make sure the chunk is not malformed
-        assert all(len(chunk.values()[0]) == len(v) for v in chunk.values()), \
-            ('Metrics from file {0} do not all have same number of collected '
-             'samples in the chunk').format(os.path.basename(path_to_ftdc_file))
-        assert len(chunk.values()[0]) != 0, \
-            ('No data captured in chunk from file {0}').format(
-                os.path.basename(path_to_ftdc_file))
-        assert rules.FTDC_KEYS['time'] in chunk, \
-            ('No time information in chunk from file {0}').format(
-                os.path.basename(path_to_ftdc_file))
+    try: #pylint: disable=too-many-nested-blocks
+        for chunk in readers.read_ftdc(path_to_ftdc_file):
+            # a couple of asserts to make sure the chunk is not malformed
+            assert all(len(chunk.values()[0]) == len(v) for v in chunk.values()), \
+                ('Metrics from file {0} do not all have same number of collected '
+                 'samples in the chunk').format(os.path.basename(path_to_ftdc_file))
+            assert len(chunk.values()[0]) != 0, \
+                                             ('No data captured in chunk from file {0}').format(
+                                                 os.path.basename(path_to_ftdc_file))
+            assert rules.FTDC_KEYS['time'] in chunk, \
+                ('No time information in chunk from file {0}').format(
+                    os.path.basename(path_to_ftdc_file))
 
-        # proceed with rule-checking.
-        times = chunk[rules.FTDC_KEYS['time']]
-        task_run_time += len(times)
-        for chunk_rule in util.get_project_variant_rules(
-                project, variant, RESOURCE_RULES_FTDC_CHUNK):
-            build_args = {'chunk': chunk, 'times': times}
-            arguments_needed = inspect.getargspec(chunk_rule).args
+            # proceed with rule-checking.
+            times = chunk[rules.FTDC_KEYS['time']]
+            task_run_time += len(times)
+            for chunk_rule in util.get_project_variant_rules(
+                    project, variant, RESOURCE_RULES_FTDC_CHUNK):
+                build_args = {'chunk': chunk, 'times': times}
+                arguments_needed = inspect.getargspec(chunk_rule).args
 
-            # gather any missing arguments
-            (build_args, constant_values) = _fetch_constant_arguments(chunk,
-                                                                      arguments_needed,
-                                                                      build_args,
-                                                                      constant_values)
-            if len(build_args) < len(arguments_needed):
-                continue  # could not find all the necessary metrics in this chunk
-            else:
-                output = chunk_rule(**build_args)
-                if output:
-                    rule_name = chunk_rule.__name__
-                    if rule_name not in failures_per_chunk:
-                        failures_per_chunk[rule_name] = []
-                    failures_per_chunk[rule_name].append(output)
+                # gather any missing arguments
+                (build_args, constant_values) = _fetch_constant_arguments(chunk,
+                                                                          arguments_needed,
+                                                                          build_args,
+                                                                          constant_values)
+                if len(build_args) < len(arguments_needed):
+                    continue  # could not find all the necessary metrics in this chunk
+                else:
+                    output = chunk_rule(**build_args)
+                    if output:
+                        rule_name = chunk_rule.__name__
+                        if rule_name not in failures_per_chunk:
+                            failures_per_chunk[rule_name] = []
+                            failures_per_chunk[rule_name].append(output)
+
+    # reader.py throws a general exception
+    except Exception: #pylint: disable=broad-except
+        LOGGER.warning("Caught exception when trying to read FTDC data for path=%s",
+                       path_to_ftdc_file)
+        return(False, '\nFailed to read FTDC data for {0}'.format(path_to_ftdc_file))
 
     # check rules that require data from the whole FTDC run (rather than by chunk)
     file_rule_failures = _ftdc_file_rule_evaluation(
