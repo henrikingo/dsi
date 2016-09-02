@@ -93,6 +93,9 @@ def _read_bson_doc(buf, at, ftdc=False):
         elif bson_type==18: # _int64
             v = int(_int64.unpack_from(buf, at)[0])
             l = 8
+        elif bson_type==0xff or bson_type==0x7f: # minkey, maxkey
+            v = None # xxx always ignore for now
+            l = 0
         else:
             raise Exception('unknown type %d(%x) at %d(%x)' % (bson_type, bson_type, at, at))
         if v != None:
@@ -101,7 +104,7 @@ def _read_bson_doc(buf, at, ftdc=False):
     assert(not 'eoo not found') # should have seen an eoo and returned
 
 
-def _decode_chunk(chunk_doc):
+def _decode_chunk(chunk_doc, first_only):
     
     # our result is a map from metric keys to list of values for each metric key
     # a metric key is a path through the sample document represented as a tuple
@@ -109,6 +112,7 @@ def _decode_chunk(chunk_doc):
 
     # decompress chunk data field
     data = chunk_doc['data']
+    metrics.chunk_len = len(data)
     data = data[4:] # skip uncompressed length, we don't need it
     data = zlib.decompress(data)
 
@@ -136,6 +140,11 @@ def _decode_chunk(chunk_doc):
         _msg('ignoring bad chunk: nmetrics=%d, len(metrics)=%d' % (
             nmetrics, len(metrics)))
         return None
+    metrics.nsamples = nsamples
+
+    # only want first value in every chunk?
+    if first_only:
+        return metrics
 
     # unpacks ftdc packed ints
     def unpack(data, at):
@@ -171,7 +180,7 @@ def _decode_chunk(chunk_doc):
     return metrics
 
 
-def read_ftdc(fn):
+def read_ftdc(fn, first_only = False):
 
     """
     Read an ftdc file. fn may be either a single metrics file, or a
@@ -188,6 +197,7 @@ def read_ftdc(fn):
     else:
 
         # open and map file
+        _msg('reading', fn)
         f = open(fn)
         buf = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
         at = 0
@@ -198,7 +208,7 @@ def read_ftdc(fn):
                 chunk_doc = _read_bson_doc(buf, at)
                 at += chunk_doc.bson_len
                 if chunk_doc['type']==1:
-                    yield _decode_chunk(chunk_doc)
+                    yield _decode_chunk(chunk_doc, first_only)
             except Exception as e:
                 raise Exception('bad bson doc: ' + str(e))
 
@@ -248,3 +258,15 @@ def read(fn):
                 break
         except Exception as e:
             print >>sys.stderr, 'does not appear to be %s: %s' % (name, str(e))
+
+#
+# sniff test
+#
+
+if __name__ == '__main__':
+    for chunk in read(sys.argv[1]):
+        values = chunk.values()
+        assert(all(len(values[0])==len(v) for v in values))
+        print 'chunk, %d keys, %d values, key 0: %s, key 0 value 0: %d' % (
+            len(chunk.keys()), len(values[0]), chunk.keys()[0], chunk[chunk.keys()[0]][0]
+        )
