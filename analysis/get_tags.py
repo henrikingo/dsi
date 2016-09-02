@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+import yaml
 
 from evergreen import evergreen_client, helpers
 
@@ -84,11 +85,18 @@ def main(args):
         LOGGER.setLevel(logging.INFO)
 
     # Pass the rest of the command-line arguments
+    configuration = {}
+    try:
+        with open(args.config) as config_file:
+            configuration = yaml.load(config_file)
+    except IOError:
+        LOGGER.warning("Unable to read in configuration file")
+
     get_tagged_data(args.project,
                     args.variants,
                     args.tasks,
                     args.format,
-                    evergreen_client.Client(args.config))
+                    evergreen_client.Client(configuration))
 
 if __name__ == '__main__':
     main(sys.argv[1:])

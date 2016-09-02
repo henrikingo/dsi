@@ -47,6 +47,7 @@ class Client(object):
             }
             self.base_url = configuration['ui_server_host']
         except (TypeError, KeyError):
+            self.logger.warning("Using default evergreen credentials.")
             self.base_url = DEFAULT_EVERGREEN_URL
             self.headers = {}
 
