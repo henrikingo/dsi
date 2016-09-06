@@ -5,7 +5,8 @@ import sys
 import unittest
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
-from download_mongodb import DownloadMongodb
+
+from download_mongodb import DownloadMongodb #pylint: disable=wrong-import-position
 
 class DownloadMongodbTestCase(unittest.TestCase):
     """Unit tests for DownloadMongodb library."""

@@ -46,4 +46,3 @@ class TestUtilFunctions(unittest.TestCase):
         times = util.get_test_times(perf_json)
         self.assertEqual(len(times), 3)
         assert_instancesof_datetime(times)
-

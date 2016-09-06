@@ -145,7 +145,7 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         if len(self.summary) == 0:
             WARNER.critical('No overrides have changed.')
         else:
-            for rule in self.summary.keys():
+            for rule in self.summary:
                 if len(rule) == 0:
                     WARNER.critical('No overrides for rule {0} have changed.'.format(rule))
                 for variant in self.summary[rule].keys():

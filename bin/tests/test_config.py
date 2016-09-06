@@ -9,7 +9,8 @@ import yaml
 
 # TODO: Learn how to do this correctly without complaint from pylint
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
-from config import ConfigDict
+
+from config import ConfigDict #pylint: disable=wrong-import-position,wrong-import-order
 
 class ConfigDictTestCase(unittest.TestCase):
     """Unit tests for ConfigDict library."""

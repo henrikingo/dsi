@@ -11,7 +11,7 @@ import yaml
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import config_test_control #pylint: disable=import-error
+import config_test_control #pylint: disable=wrong-import-position
 
 def load_json(filename, directory=None):
     ''' Convenience method to read in a json file '''

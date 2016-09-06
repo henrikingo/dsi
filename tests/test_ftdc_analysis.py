@@ -25,4 +25,3 @@ class TestFtdcAnalysis(unittest.TestCase):
             'test_file': "resource_sanity_checks"
         }
         self.assertEqual(observed_result, expected_result)
-
