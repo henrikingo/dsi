@@ -27,12 +27,6 @@ rm -f ../../reports.tgz
 
 source ${BINDIR}/setup-workloads.sh
 
-# Copy over the test_control.yml from repo if we don't already have one.
-if [ ! -e test_control.yml ]
-then
-    cp $DSI_PATH/test_control/test_control.benchRun.yml test_control.yml
-fi
-
 # PERF-531. Generating config file for mission control.
 python $BINDIR/config_test_control.py
 echo "Generated mc.json"
