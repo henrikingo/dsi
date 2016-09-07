@@ -4468,6 +4468,13 @@
             }
         },
         "threshold":{
+            "Aggregation.Match":{
+                "thread_threshold":0.25,
+                "threshold":0.2,
+                "ticket":[
+                    "BF-3422"
+                ]
+            },
             "Commands.CountsFullCollection":{
                 "thread_threshold":0.2,
                 "threshold":0.15,
@@ -5481,6 +5488,13 @@
             }
         },
         "threshold":{
+            "Aggregation.Match":{
+                "thread_threshold":0.25,
+                "threshold":0.2,
+                "ticket":[
+                    "BF-3422"
+                ]
+            },
             "Commands.CountsFullCollection":{
                 "thread_threshold":0.2,
                 "threshold":0.15,
@@ -8350,6 +8364,13 @@
             }
         },
         "threshold":{
+            "Aggregation.Match":{
+                "thread_threshold":0.25,
+                "threshold":0.2,
+                "ticket":[
+                    "BF-3422"
+                ]
+            },
             "Commands.CountsFullCollection":{
                 "thread_threshold":0.2,
                 "threshold":0.15,
