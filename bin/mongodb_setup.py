@@ -8,7 +8,6 @@ MongoDB cluster topology and brings up a cluster on the remote machines.
 import json
 import logging
 import os
-import sys
 
 import argparse
 import yaml
@@ -18,48 +17,15 @@ import yaml
 from common.download_mongodb import DownloadMongodb
 from common.host import RemoteHost, LocalHost
 from common.log import setup_logging
-from common.settings import source
 from common.config import ConfigDict, copy_obj
 
 LOG = logging.getLogger(__name__)
 
 # Remote files that need to be created.
-DEFAULT_LOG_DIR = 'data/logs'
-MONGOS_LOG = os.path.join(DEFAULT_LOG_DIR, 'mongos.log')
-MONGOD_LOG = os.path.join(DEFAULT_LOG_DIR, 'mongod.log')
-DB_DIR = 'data/dbs'
 DEFAULT_JOURNAL_DIR = '/media/ephemeral1/journal'
 DEFAULT_MONGO_DIR = 'mongodb'
 DEFAULT_MEMBER_PRIORITY = 1
 DEFAULT_CSRS_NAME = 'configSvrRS'
-DEFAULT_MONGOD_YAML = {
-    'net': {'port': 27017},
-    'processManagement': {'fork': True},
-    'storage': {
-        'dbPath': DB_DIR,
-        'engine': 'wiredTiger'
-    },
-    'systemLog': {
-        'path': MONGOD_LOG,
-        'destination': 'file'
-    },
-    'setParameter': {'enableTestCommands': True},
-    'replication': {'oplogSizeMB': 150 * 1024}  # 150 GB
-}
-
-DEFAULT_MONGOS_YAML = {
-    'net': {'port': 27017},
-    'processManagement': {'fork': True},
-    'systemLog': {
-        'path': MONGOS_LOG,
-        'destination': 'file'
-    },
-    'setParameter': {'enableTestCommands': True}
-}
-
-DEFAULT_MONGO_OPTS = {
-    'verbose': ''
-}
 
 
 def args_list(opts):
@@ -541,89 +507,6 @@ class ShardedCluster(object):
         return '\n'.join(description)
 
 
-# NOTE: this is for compatibility with old shell scripts, these will go away
-# in favor of reading configuration files.
-def get_standalone_opts(ip_config, storage_engine, host_num=0):
-    """Returns a standalone mongod config."""
-    return {
-        'cluster_type': 'standalone',
-        'public_ip': ip_config.PUBLIC_IPS[host_num],
-        'private_ip': ip_config.PRIVATE_IPS[host_num],
-        'config_file': merge_dicts(DEFAULT_MONGOD_YAML,
-                                   {'storage': {'engine': storage_engine}})
-    }
-
-
-def get_replica_opts(ip_config, storage_engine, name='rs0', num_nodes=3):
-    """Returns replica set config."""
-    opts = {
-        'cluster_type': 'replset',
-        'id': name,
-        'mongod': []
-    }
-    for i in range(num_nodes):
-        opts['mongod'].append(get_standalone_opts(ip_config, storage_engine, i))
-    return opts
-
-
-def get_sharded_opts(ip_config, storage_engine, num_shards=3, nodes_per_shard=3):
-    """Returns a sharded cluster config."""
-    cluster_opts = {
-        'cluster_type': 'sharded_cluster',
-        'mongos': [{
-            'public_ip': ip_config.MONGOS_PUBLIC_IP,
-            'private_ip': ip_config.MONGOS_PRIVATE_IP,
-            'config_file': DEFAULT_MONGOS_YAML
-        }],
-        'configsvr': [],
-        'configsvr_type': 'csrs',
-        'shard': []
-    }
-    for i in range(3):
-        cluster_opts['configsvr'].append({
-            'public_ip': ip_config.CONFIG_PUBLIC_IPS[i],
-            'private_ip': ip_config.CONFIG_PRIVATE_IPS[i],
-            'config_file': DEFAULT_MONGOD_YAML
-        })
-    for i in range(num_shards):
-        shard_opts = {
-            'cluster_type': 'replset',
-            'mongod': []
-        }
-        for j in range(nodes_per_shard):
-            node_num = nodes_per_shard * i + j
-            shard_opts['mongod'].append({
-                'public_ip': ip_config.PUBLIC_IPS[node_num],
-                'private_ip': ip_config.PRIVATE_IPS[node_num],
-                'config_file': merge_dicts(
-                    DEFAULT_MONGOD_YAML,
-                    {'storage': {'engine': storage_engine}})
-            })
-        cluster_opts['shard'].append(shard_opts)
-    return cluster_opts
-
-
-def create_cluster_config(ip_config, cluster_type, storage_engine):
-    """Start one of the predefined cluster configurations."""
-    if cluster_type == 'standalone':
-        return get_standalone_opts(ip_config, storage_engine)
-    elif cluster_type == 'single-replica':
-        return get_replica_opts(ip_config, storage_engine, num_nodes=1)
-    elif cluster_type == 'replica':
-        return get_replica_opts(ip_config, storage_engine)
-    elif cluster_type == 'replica-2node':
-        # 2 node replica set is the same as 'replica' except the third member
-        # is not initially added to the set.
-        replica_2node_opts = get_replica_opts(ip_config, storage_engine)
-        replica_2node_opts['mongod'][2]['add_to_replica'] = False
-        return replica_2node_opts
-    elif cluster_type == 'shard':
-        return get_sharded_opts(ip_config, storage_engine)
-    else:
-        LOG.fatal('unknown cluster_type: %s', cluster_type)
-        exit(1)
-
-
 def create_cluster(topology):
     """Create MongoNode, ReplSet, or ShardCluster from topology config"""
     cluster_type = topology['cluster_type']
@@ -704,18 +587,9 @@ def parse_command_line():
     parser = argparse.ArgumentParser(
         description='Start a MongoDB cluster in a distributed environment')
     parser.add_argument(
-        'cluster_type',
-        nargs='?',
-        choices=['standalone', 'single-replica', 'replica', 'replica-2node', 'shard'],
-        help='type of cluster to setup')
-    parser.add_argument(
-        'storage_engine',
-        nargs='?',
-        help='storage engine to use')
-    parser.add_argument(
         '--config',
         action='store_true',
-        help='use config files')
+        help='Ignored. (backward compatibility)')
     parser.add_argument(
         '-l',
         '--run-locally',
@@ -736,16 +610,7 @@ def parse_command_line():
         '--log-file',
         help='path to log file')
     args = parser.parse_args()
-    # validate args
-    if args.cluster_type:
-        if not args.storage_engine:
-            exit('cluster_type requires a storage_engine')
-        if args.config:
-            exit('--config is incompatible with cluster_type')
-    elif args.storage_engine:
-        exit('storage_engine requires the cluster_type flag')
-    elif not args.config:
-        exit('--config or (cluster_type and storage_engine) must be set')
+
     # --mongo-dir must have a bin/ sub-directory
     if args.mongo_dir and not args.mongodb_binary_archive:
         bin_dir = os.path.join(args.mongo_dir, 'bin')
@@ -763,32 +628,12 @@ def main():
         MongoNode.default_mongo_dir = args.mongo_dir
     MongoNode.run_locally = args.run_locally
 
-    if args.config:
-        # start a mongodb configuration using config module
-        config = ConfigDict('mongodb_setup')
-        config.load()
-        mongo = MongodbSetup(config, args)
-        if not mongo.start():
-            exit(1)
-    else:
-        # start a mongodb configuration using legacy interface.
-        # import the ips.py file from the current working directory.
-        # TODO: Remove this code path once provisioning uses config
-        # ips.py defines PUBLIC_IPS, PRIVATE_IPS, MC_IP, MONGOS_PUBLIC_IP,
-        # MONGOS_PRIVATE_IP, CONFIG_PUBLIC_IPS, and CONFIG_PRIVATE_IPS
-        sys.path.append(os.getcwd())
-        import ips as ip_config  # pylint: disable=import-error
-        if not source('setting.sh'):
-            exit(1)
-        MongoNode.ssh_user = os.environ['SSHUSER']
-        MongoNode.ssh_key_file = os.environ['PEMFILE']
-        cluster_config = create_cluster_config(
-            ip_config, args.cluster_type, args.storage_engine)
-        cluster = create_cluster(cluster_config)
-        if not (cluster.setup_host() and cluster.launch()):
-            cluster.shutdown()
-            exit(1)
-        LOG.info('started topology: %s', cluster)
+    # start a mongodb configuration using config module
+    config = ConfigDict('mongodb_setup')
+    config.load()
+    mongo = MongodbSetup(config, args)
+    if not mongo.start():
+        exit(1)
 
 if __name__ == '__main__':
     main()
