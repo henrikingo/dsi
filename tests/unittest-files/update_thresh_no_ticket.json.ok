@@ -8389,18 +8389,6 @@
                     "8"
                 ]
             }
-        },
-        "threshold":{
-            "Queries.FindProjectionDottedField":{
-                "thread_threshold":0.77,
-                "threshold":0.66,
-                "ticket":[]
-            },
-            "Queries.FindProjectionThreeFields":{
-                "thread_threshold":0.77,
-                "threshold":0.66,
-                "ticket":[]
-            }
         }
     },
     "linux-wt-mmap-repl-compare":{
@@ -8658,18 +8646,6 @@
                 "ticket":[
                     "noise"
                 ]
-            }
-        },
-        "threshold":{
-            "Queries.FindProjectionDottedField":{
-                "thread_threshold":0.77,
-                "threshold":0.66,
-                "ticket":[]
-            },
-            "Queries.FindProjectionThreeFields":{
-                "thread_threshold":0.77,
-                "threshold":0.66,
-                "ticket":[]
             }
         }
     },
@@ -20619,16 +20595,6 @@
             }
         },
         "threshold":{
-            "Queries.FindProjectionDottedField":{
-                "thread_threshold":0.77,
-                "threshold":0.66,
-                "ticket":[]
-            },
-            "Queries.FindProjectionThreeFields":{
-                "thread_threshold":0.77,
-                "threshold":0.66,
-                "ticket":[]
-            },
             "Queries.UniqueIdx.MultipleUniqueIndices":{
                 "thread_threshold":0.7,
                 "threshold":0.5,

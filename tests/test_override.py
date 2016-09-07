@@ -88,6 +88,30 @@ class TestOverride(unittest.TestCase):
         update_obj.update_override_threshold(threshold, thread_threshold, ticket=ticket)
         self.assertEqual(update_obj.overrides, updated_override)
 
+    def test_update_no_ticket(self):
+        """ Test Override.update_override with new override but no ticket.
+
+        Added as part of PERF-681. This checks the reported error case.
+        """
+
+        variants = 'linux-wt-repl$'
+        tasks = 'misc'
+        ticket = None
+        tests_to_update = 'Commands.DistinctWithIndex'
+        override_file = test_utils.fixture_file_path('perf_override.json')
+
+        update_obj = Override(self.project,
+                              override_info=override_file,
+                              config_file=self.config_file,
+                              reference=self.git_hash,
+                              variants=variants.split('|'),
+                              tasks=tasks.split('|'),
+                              tests=tests_to_update.split('|'),
+                              verbose=self.verbose)
+
+        with self.assertRaises(UserWarning):
+            update_obj.update_override('reference', ticket=ticket)
+
     def test_delete_and_update(self):
         """Test Override.delete_overrides_by_ticket
         """

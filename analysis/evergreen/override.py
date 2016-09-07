@@ -476,9 +476,9 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
             rule_ovr[test]['ticket'].append(ticket)
         # ticket array is still empty
         elif not rule_ovr[test]['ticket']:
-            WARNER.warn('Override rule for test {} under rule {} and build variant {} is '
-                        'not associated with any tickets. Resulting file will be '
-                        'considered invalid.'.format(test, rule, build_variant))
+            raise UserWarning('Override rule for test {} under rule {} and build variant {} is '
+                              'not associated with any tickets. Resulting file would be '
+                              'considered invalid. Quitting'.format(test, rule, build_variant))
         return previous_data
 
     def get_tickets(self, rule='reference'):

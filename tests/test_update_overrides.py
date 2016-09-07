@@ -74,8 +74,9 @@ class TestUpdateOverrides(unittest.TestCase):
         Test override values are still found and updated.
         """
         git_hash = 'c2af7ab'
-        reference_args = [git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'query',
-                          '-f', self.override_file, '-d', self.output_file, '--verbose', '-t',
+        reference_args = [git_hash, '-c', self.config_file, '-p', 'performance', '-v',
+                          'linux-*-standalone', '-k', 'query', '-f', self.override_file, '-d',
+                          self.output_file, '--verbose', '-t',
                           'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$']
         update_overrides.main(reference_args)
 
@@ -94,7 +95,8 @@ class TestUpdateOverrides(unittest.TestCase):
         threshold_args = [git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'query',
                           '-f', override_file, '-d', self.output_file, '--verbose', '-t',
                           'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$',
-                          '--threshold', '0.66', '--thread-threshold', '0.77']
+                          '--threshold', '0.66', '--thread-threshold', '0.77', '-v',
+                          'linux-*-standalone']
         update_overrides.main(threshold_args)
 
         expected_json = test_utils.fixture_file_path('update_thresh_no_ticket.json.ok')
