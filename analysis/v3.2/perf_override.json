@@ -5944,6 +5944,13 @@
                     "PERF-444"
                 ]
             },
+            "Geo.geoJSON.nearSphere.2dsphere.withFilter.find30":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "BF-3423"
+                ]
+            },
             "Geo.near.2d.find100":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
@@ -8015,6 +8022,13 @@
                 "threshold":0.2,
                 "ticket":[
                     "PERF-444"
+                ]
+            },
+            "Geo.geoJSON.nearSphere.2dsphere.withFilter.find30":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "BF-3423"
                 ]
             },
             "Geo.near.2d.find100":{
@@ -16213,6 +16227,13 @@
                 "threshold":0.2,
                 "ticket":[
                     "PERF-444"
+                ]
+            },
+            "Geo.geoJSON.nearSphere.2dsphere.withFilter.find30":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "BF-3423"
                 ]
             },
             "Geo.near.2d.find100":{
