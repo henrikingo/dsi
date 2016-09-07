@@ -137,7 +137,7 @@ class TestTerraformConfiguration(unittest.TestCase):
                                  '"mongos_instance_count":3,'
                                  '"mongos_instance_placement_group":"yes",'
                                  '"mongos_instance_type":"c3.8xlarge",'
-                                 '"owner":"perf@10gen.com",'
+                                 '"owner":"serverteam-perf@10gen.com",'
                                  '"region":"us-west-2",'
                                  '"topology":"test-cluster",'
                                  '"workload_instance_count":1,'
