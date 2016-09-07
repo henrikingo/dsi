@@ -1,4 +1,4 @@
-variable owner                          {}
+variable owner                          { default = "serverteam-perf@10gen.com" }
 variable topology                       {}
 
 # define instance types
