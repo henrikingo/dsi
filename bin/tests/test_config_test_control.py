@@ -41,8 +41,6 @@ class TestConfigTestControl(unittest.TestCase):
         for filename in glob.glob(os.path.join(self.artifact_dir, '*.yml')):
             shutil.copy(filename, '.')
             self.copied_files.append(os.path.basename(filename))
-        shutil.copy(os.path.join(self.artifact_dir, "setting.sh"), '.')
-        self.copied_files.append('setting.sh')
 
     def tearDown(self):
         ''' Delete temporary files from run '''

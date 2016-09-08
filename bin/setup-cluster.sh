@@ -11,8 +11,9 @@ then
 fi
 
 cp ${TERRAFORM_DIR}/* .
-
 ./terraform get --update
+
+$BINDIR/make_terraform_env.py --out-file cluster.json
 
 VAR_FILE=""
 if [ -e "cluster.json" ]; then

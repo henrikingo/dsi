@@ -4,7 +4,7 @@ STORAGE_ENGINE=$1
 CLUSTER=$3
 
 BINDIR=$(dirname $0)
-source setting.sh
+source $BINDIR/setting.sh
 
 rm -rf ./reports
 rm -f ../../reports.tgz

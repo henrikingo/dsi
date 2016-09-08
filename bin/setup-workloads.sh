@@ -1,7 +1,6 @@
 #!/bin/bash
 
 BINDIR=$(dirname $0)
-source setting.sh
 export DSI_PATH=${DSI_PATH:-${BINDIR}/..}
 export WORKLOADS_DIR=${WORKLOADS_DIR:-${DSI_PATH}/../../workloads/workloads}
 echo DSI PATH is $DSI_PATH

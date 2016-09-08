@@ -13,7 +13,6 @@ import yaml
 # pylint: disable=relative-import
 from common.config import ConfigDict
 from common.log import setup_logging
-from common.settings import source
 
 LOG = logging.getLogger(__name__)
 
@@ -25,19 +24,11 @@ def generate_mc_json():
     conf.load()
     mc_conf = {}
 
-    # Legacy support. Read in the settings.sh until tfvars is properly populated
-    if not source('setting.sh'):
-        exit(1)
-    ssh_user = os.environ['SSHUSER']
-    mc_conf['PemFile'] = os.environ['PEMFILE']
-
+    # New path for reading in the ssh_user and ssh_key_file values
     # Path to DB correctness JS tests, to be run at the end of a task by MC.
     mc_conf['js_tests_dir'] = os.path.join(os.path.join('~', 'jstests'), 'hooks')
-
-    # New path for reading in the ssh_user and ssh_key_file values
-    if 'tfvars' in conf['infrastructure_provisioning']:
-        mc_conf['PemFile'] = conf['infrastructure_provisioning']['tfvars']['ssh_key_file']
-        ssh_user = conf['infrastructure_provisioning']['tfvars']['ssh_user']
+    mc_conf['PemFile'] = conf['infrastructure_provisioning']['tfvars']['ssh_key_file']
+    ssh_user = conf['infrastructure_provisioning']['tfvars']['ssh_user']
 
     clients = [ssh_user + '@' + client['public_ip'] for client in
                conf['infrastructure_provisioning']['out']['workload_client']]

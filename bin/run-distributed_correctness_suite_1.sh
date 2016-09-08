@@ -1,13 +1,13 @@
 #!/bin/bash
 
 BINDIR=$(dirname $0)
-source setting.sh
+source $BINDIR/setting.sh
 
 source ${BINDIR}/setup-workloads.sh
 
-cat ips.sh
-cat run-benchRun.json
-./update_run_config.sh
+echo "This script should no longer used or should be updated to follow same form as run-benchRun.sh"
+exit 1
+
 cat run-benchRun.json
 rm -rf ./reports
 rm -f ../../reports.tgz

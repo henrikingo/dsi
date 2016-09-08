@@ -4,7 +4,7 @@ STORAGE_ENGINE=$1
 CLUSTER=$3
 
 BINDIR=$(dirname $0)
-source setting.sh
+source $BINDIR/setting.sh
 
 # Bridging a historical inconsistency: prior to refactoring, the test name for
 # MMAPv1 engine was "benchRun-mmap". However, the parameter ${storageEngine}

@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source ./setting.sh
+BINDIR=$(dirname $0)
+source $BINDIR/setting.sh
 
 echo "Connecting to ${!1}"
 
