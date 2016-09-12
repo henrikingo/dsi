@@ -36,8 +36,8 @@ TEST_STATE = {
 THRESHOLDS = {
     'sys-perf': {
         'linux-oplog-compare': {
-            'undesired': 0.1, 'thread_undesired': 0.2,
-            'unacceptable': 0.15, 'thread_unacceptable': 0.23
+            'undesired': 0.25, 'thread_undesired': 0.38,
+            'unacceptable': 0.38, 'thread_unacceptable': 0.57
             }
         },
     'performance': {

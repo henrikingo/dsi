@@ -11,18 +11,14 @@
                     "perf_ratio": 0.8954780838186703
                 },
                 {
-                    "ticket": [
-                        "PERF-335"
-                    ],
+                    "ticket": [],
                     "state": "unacceptable",
                     "test_file": "insert_jtrue-wiredTiger",
                     "notes": "Max throughput unacceptable (<0.88 of baseline)\nThroughput at 32 undesired (<0.88 of baseline)\n",
                     "perf_ratio": 0.8736567758274275
                 },
                 {
-                    "ticket": [
-                        "PERF-335"
-                    ],
+                    "ticket": [],
                     "state": "pass",
                     "test_file": "removemulti_jtrue-wiredTiger",
                     "notes": "",
@@ -71,9 +67,7 @@
                     "perf_ratio": 0.8663892791236775
                 },
                 {
-                    "ticket": [
-                        "PERF-335"
-                    ],
+                    "ticket": [],
                     "state": "pass",
                     "test_file": "updatemulti_jtrue-wiredTiger",
                     "notes": "",
@@ -87,9 +81,7 @@
                     "perf_ratio": 0.8663940919696419
                 },
                 {
-                    "ticket": [
-                        "SERVER-21092"
-                    ],
+                    "ticket": [],
                     "state": "pass",
                     "test_file": "contended_update-wiredTiger",
                     "notes": "",
