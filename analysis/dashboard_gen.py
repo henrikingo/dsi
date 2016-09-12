@@ -219,7 +219,7 @@ def use_override(ticket_list, jira_user, jira_password):
     base_url = 'https://jira.mongodb.org/rest/api/latest/issue/'
     for ticket in ticket_list:
         url = base_url + ticket
-        req = requests.get(url, auth=(jira_user, jira_password))
+        req = requests.get(url, auth=(jira_user, jira_password), verify=False)
         # Don't use override if any ticket is in a non-terminal state
         if req.status_code != 200:
             return False
