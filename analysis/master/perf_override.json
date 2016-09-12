@@ -4629,6 +4629,13 @@
                     "PERF-444"
                 ]
             },
+            "Queries.IntIDRange":{
+                "thread_threshold":20.0,
+                "threshold":15.0,
+                "ticket":[
+                    "BF-3257"
+                ]
+            },
             "Queries.IntNonIdFindProjectionCovered":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
@@ -8441,6 +8448,13 @@
                 "threshold":0.2,
                 "ticket":[
                     "PERF-444"
+                ]
+            },
+            "Queries.IntIDRange":{
+                "thread_threshold":20.0,
+                "threshold":15.0,
+                "ticket":[
+                    "BF-3257"
                 ]
             },
             "Queries.IntNonIdFindProjectionCovered":{
