@@ -57,8 +57,8 @@ THRESHOLDS = {
             }
         },
     'default': {
-        'undesired': 0.08, 'thread_undesired': 0.12,
-        'unacceptable': 0.12, 'thread_unacceptable': 0.18
+        'undesired': 0.1, 'thread_undesired': 0.15,
+        'unacceptable': 0.15, 'thread_unacceptable': 0.23
         }
     }
 # if only one threshold is defined, such as in the case of

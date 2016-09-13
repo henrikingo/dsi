@@ -7,18 +7,22 @@
                     "ticket": [],
                     "state": "undesired",
                     "test_file": "insert_ttl-wiredTiger",
-                    "notes": "Max throughput undesired (<0.92 of baseline)\n",
+                    "notes": "Max throughput undesired (<0.90 of baseline)\n",
                     "perf_ratio": 0.8954780838186703
                 },
                 {
-                    "ticket": [],
-                    "state": "unacceptable",
+                    "ticket": [
+                        "PERF-335"
+                    ],
+                    "state": "undesired",
                     "test_file": "insert_jtrue-wiredTiger",
-                    "notes": "Max throughput unacceptable (<0.88 of baseline)\nThroughput at 32 undesired (<0.88 of baseline)\n",
+                    "notes": "Max throughput undesired (<0.90 of baseline)\n",
                     "perf_ratio": 0.8736567758274275
                 },
                 {
-                    "ticket": [],
+                    "ticket": [
+                        "PERF-335"
+                    ],
                     "state": "pass",
                     "test_file": "removemulti_jtrue-wiredTiger",
                     "notes": "",
@@ -47,9 +51,9 @@
                 },
                 {
                     "ticket": [],
-                    "state": "undesired",
+                    "state": "pass",
                     "test_file": "word_count_1M_doc-wiredTiger",
-                    "notes": "Max throughput undesired (<0.92 of baseline)\n",
+                    "notes": "",
                     "perf_ratio": 0.917709419534237
                 },
                 {
@@ -61,13 +65,15 @@
                 },
                 {
                     "ticket": [],
-                    "state": "unacceptable",
+                    "state": "undesired",
                     "test_file": "insert_vector_secondary_overall-wiredTiger",
-                    "notes": "Max throughput unacceptable (<0.88 of baseline)\nThroughput at 32 undesired (<0.88 of baseline)\n",
+                    "notes": "Max throughput undesired (<0.90 of baseline)\n",
                     "perf_ratio": 0.8663892791236775
                 },
                 {
-                    "ticket": [],
+                    "ticket": [
+                        "PERF-335"
+                    ],
                     "state": "pass",
                     "test_file": "updatemulti_jtrue-wiredTiger",
                     "notes": "",
@@ -75,13 +81,15 @@
                 },
                 {
                     "ticket": [],
-                    "state": "unacceptable",
+                    "state": "undesired",
                     "test_file": "insert_vector_secondary_load_phase-wiredTiger",
-                    "notes": "Max throughput unacceptable (<0.88 of baseline)\nThroughput at 32 undesired (<0.88 of baseline)\n",
+                    "notes": "Max throughput undesired (<0.90 of baseline)\n",
                     "perf_ratio": 0.8663940919696419
                 },
                 {
-                    "ticket": [],
+                    "ticket": [
+                        "SERVER-21092"
+                    ],
                     "state": "pass",
                     "test_file": "contended_update-wiredTiger",
                     "notes": "",
@@ -89,9 +97,9 @@
                 },
                 {
                     "ticket": [],
-                    "state": "unacceptable",
+                    "state": "undesired",
                     "test_file": "insert_vector_primary-wiredTiger",
-                    "notes": "Max throughput unacceptable (<0.88 of baseline)\nThroughput at 32 undesired (<0.88 of baseline)\n",
+                    "notes": "Max throughput undesired (<0.90 of baseline)\n",
                     "perf_ratio": 0.8663940919696419
                 }
             ]
