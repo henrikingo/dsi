@@ -111,7 +111,58 @@
     },
     "linux-3-shard":{
         "ndays":{},
-        "reference":{},
+        "reference":{
+            "ycsb_load-mmapv1":{
+                "create_time":"2016-09-08T16:01:56.008Z",
+                "end":1473358561.0,
+                "max":25249.2096997364,
+                "name":"ycsb_load-mmapv1",
+                "order":4742,
+                "results":{
+                    "32":{
+                        "ops_per_sec":25249.2096997364,
+                        "replica_avg_lag":0.5414551607445008,
+                        "replica_end_of_test_lag":1,
+                        "replica_max_lag":2
+                    }
+                },
+                "revision":"6c2169cc938d4ef1797782be934e6ce7c97fc21a",
+                "start":1473358361.0,
+                "tag":"",
+                "threads":[
+                    "32"
+                ],
+                "ticket":[
+                    "BF-3452"
+                ],
+                "workload":"ycsb"
+            },
+            "ycsb_load-wiredTiger":{
+                "create_time":"2016-09-08T16:01:56.008Z",
+                "end":1473355550.0,
+                "max":39536.005440154346,
+                "name":"ycsb_load-wiredTiger",
+                "order":4742,
+                "results":{
+                    "32":{
+                        "ops_per_sec":39536.005440154346,
+                        "replica_avg_lag":1.3740053050397878,
+                        "replica_end_of_test_lag":2,
+                        "replica_max_lag":2
+                    }
+                },
+                "revision":"6c2169cc938d4ef1797782be934e6ce7c97fc21a",
+                "start":1473355421.0,
+                "tag":"",
+                "threads":[
+                    "32"
+                ],
+                "ticket":[
+                    "BF-3452"
+                ],
+                "workload":"ycsb"
+            }
+        },
         "threshold":{
             "moveChunk_secondaryThrottle_true_waitForDelete_false-wiredTiger":{
                 "thread_threshold":0.45,
