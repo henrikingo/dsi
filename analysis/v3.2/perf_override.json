@@ -2116,6 +2116,13 @@
                     "PERF-444"
                 ]
             },
+            "Insert.LargeDocVector":{
+                "thread_threshold":0.25,
+                "threshold":0.2,
+                "ticket":[
+                    "BF-3461"
+                ]
+            },
             "Remove.IntNonIdNoIndex":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
@@ -6681,6 +6688,13 @@
                     "PERF-444"
                 ]
             },
+            "Insert.LargeDocVector":{
+                "thread_threshold":0.25,
+                "threshold":0.2,
+                "ticket":[
+                    "BF-3461"
+                ]
+            },
             "Remove.IntNonIdNoIndex":{
                 "thread_threshold":0.25,
                 "threshold":0.2,
@@ -8078,6 +8092,13 @@
                 "threshold":0.15,
                 "ticket":[
                     "PERF-444"
+                ]
+            },
+            "Insert.LargeDocVector":{
+                "thread_threshold":0.25,
+                "threshold":0.2,
+                "ticket":[
+                    "BF-3461"
                 ]
             },
             "Queries.Empty":{
@@ -11528,6 +11549,13 @@
                 "threshold":0.15,
                 "ticket":[
                     "PERF-444"
+                ]
+            },
+            "Insert.LargeDocVector":{
+                "thread_threshold":0.25,
+                "threshold":0.2,
+                "ticket":[
+                    "BF-3461"
                 ]
             },
             "Remove.IntNonIdNoIndex":{
