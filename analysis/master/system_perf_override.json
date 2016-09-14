@@ -180,6 +180,39 @@
             }
         }
     },
+    "linux-oplog-compare":{
+        "ndays":{},
+        "reference":{
+            "insert_ttl-wiredTiger":{
+                "create_time":"2016-09-12T22:51:20.255Z",
+                "max":70.73168150639066,
+                "name":"insert_ttl-wiredTiger",
+                "order":4796,
+                "results":{
+                    "1":{
+                        "ops_per_sec":70.73168150639066
+                    },
+                    "16":{
+                        "ops_per_sec":65.39673406447591
+                    },
+                    "32":{
+                        "ops_per_sec":53.42046290392206
+                    }
+                },
+                "revision":"8df25ced3de7c6951e8cfb39087eb247f54692ca",
+                "tag":"",
+                "threads":[
+                    "1",
+                    "32",
+                    "16"
+                ],
+                "ticket":[
+                    "PERF-715"
+                ]
+            }
+        },
+        "threshold":{}
+    },
     "linux-standalone":{
         "ndays":{},
         "reference":{},
