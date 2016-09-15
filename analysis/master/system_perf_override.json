@@ -106,6 +106,13 @@
                 "ticket":[
                     "PERF-335"
                 ]
+            },
+            "map_reduce_1M_doc-wiredTiger":{
+                "thread_threshold":0.15,
+                "threshold":0.23,
+                "ticket":[
+                    "PERF-719"
+                ]
             }
         }
     },
