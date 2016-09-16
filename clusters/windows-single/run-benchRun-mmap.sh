@@ -19,7 +19,8 @@ ssh -oStrictHostKeyChecking=no -T -i $PEMFILE $SSHUSER@$mc "tar zxvf workloads.t
 # see comment in run-benchrun.sh
 # ssh -T -i $PEMFILE $SSHUSER@$mc  "rm -rf 3.1.7; rm -rf bin; mkdir -p 3.1.7; mkdir -p bin; curl https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.1.7.tgz | tar zxv -C 3.1.7; cd 3.1.7; mv */bin .; cd ../bin; ln -s ../3.1.7/bin/mongo mongo"
 
-MC_MONITOR_INTERVAL=1 ../../bin/mc -config run-benchRun-mmap.json -run benchRun-mmap-run -o perf.json
+MC=${MC:-"../../bin/mc"}
+MC_MONITOR_INTERVAL=1 $MC -config run-benchRun-mmap.json -run benchRun-mmap-run -o perf.json
 
 rm -f ../perf.json
 chmod 766 perf.json

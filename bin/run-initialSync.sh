@@ -27,8 +27,8 @@ function runInitialSyncTest {
     else
         TEST="$TEST_NAME"
     fi
-
-    MC_MONITOR_INTERVAL=1 ${BINDIR}/mc -config mc.json -run $TEST-run -o perf.json
+    MC=${MC:-"${BINDIR}/mc"}
+    MC_MONITOR_INTERVAL=1 $MC -config mc.json -run $TEST-run -o perf.json
 }
 
 # Initial sync tests run multiple times, each with a different test

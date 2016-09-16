@@ -66,12 +66,12 @@ echo "Generated mc.json"
 
 cat mc.json
 
-
+MC=${MC:-"${BINDIR}/mc"}
 if [ $CLUSTER == "longevity" ]
 then
-    MC_PER_THREAD_STATS="no" MC_MONITOR_INTERVAL=10 ${BINDIR}/mc -config mc.json -run ycsb-run-longevity -o perf.json
+    MC_PER_THREAD_STATS="no" MC_MONITOR_INTERVAL=10 $MC -config mc.json -run ycsb-run-longevity -o perf.json
 else
-    MC_MONITOR_INTERVAL=1 ${BINDIR}/mc -config mc.json -run $TEST-run -o perf.json
+    MC_MONITOR_INTERVAL=1 $MC -config mc.json -run $TEST-run -o perf.json
 fi
 
 rm -f ../perf.json

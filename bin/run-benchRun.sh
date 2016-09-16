@@ -34,7 +34,8 @@ scp -oStrictHostKeyChecking=no -i $PEMFILE  workloads.yml $SSHUSER@$mc:./workloa
 
 cat mc.json
 
-MC_MONITOR_INTERVAL=1 ${BINDIR}/mc -config mc.json -run $TEST-run -o perf.json
+MC=${MC:-"${BINDIR}/mc"}
+MC_MONITOR_INTERVAL=1 $MC -config mc.json -run $TEST-run -o perf.json
 
 chmod 777 perf.json
 

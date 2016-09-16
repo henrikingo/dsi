@@ -1,3 +1,4 @@
 #!/bin/bash
 
-MC_MONITOR_INTERVAL=1 ../../bin/mc -config run-ycsb.json -run ycsb-run -o perf.json
+MC=${MC:-"../../bin/mc"}
+MC_MONITOR_INTERVAL=1 $MC -config run-ycsb.json -run ycsb-run -o perf.json

@@ -27,6 +27,7 @@ import logging
 import os
 import os.path
 import shutil
+import subprocess
 import yaml
 
 from common.log import setup_logging
@@ -148,6 +149,9 @@ def parse_command_line(config, args=None):
     parser.add_argument('-m',
                         '--mongo-download-url',
                         help='Ignored. (Backward compatibility.)')
+    parser.add_argument('--mc',
+                        help='The path of the mc executable. Defaults to $(which mc) if mc is \
+                        in the PATH, and to $DSI_PATH/bin/mc if not.')
     parser.add_argument('--owner',
                         help='Owner tag for AWS resources')
     parser.add_argument('-p',
@@ -186,6 +190,8 @@ def parse_command_line(config, args=None):
         config['aws_secret_file'] = args.aws_secret_file
     if args.production:
         config['production'] = True
+    if args.mc:
+        config['mc'] = args.mc
     return config
 
 
@@ -275,6 +281,23 @@ def main():
     dsipath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     LOGGER.info('dsipath is %s', dsipath)
 
+    try:
+        system_mc = subprocess.check_output(['which', 'mc']).strip()
+    except subprocess.CalledProcessError:
+        system_mc = None
+
+    if 'mc' in config:
+        mission_control = os.path.abspath(os.path.expanduser(config['mc']))
+        LOGGER.debug('Using mission-control binary specified by --mc %s', config['mc'])
+    elif system_mc is not None:
+        mission_control = os.path.abspath(system_mc)
+        LOGGER.debug('Using mission-control binary specified by $(which mc)')
+    else:
+        mission_control = os.path.join(dsipath, "bin/mc")
+        LOGGER.debug('Using mission-control binary in default location')
+
+    LOGGER.info('Path to mission-control binary is %s', mission_control)
+
     # Create directory if it doesn't exist
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -287,6 +310,7 @@ def main():
     with open(os.path.join(directory, 'dsienv.sh'), 'w') as dsienv:
         dsienv.write('export DSI_PATH={0}\n'.format(dsipath))
         dsienv.write('export PATH=$PATH:{0}/bin\n'.format(dsipath))
+        dsienv.write('export MC={0}\n'.format(mission_control))
 
     # if we specified a secret file, use its contents as the aws secret
     if 'aws_secret_file' in config:
