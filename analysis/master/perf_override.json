@@ -1436,8 +1436,8 @@
                 ]
             },
             "Commands.DistinctWithoutIndex":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.26,
+                "threshold":0.21,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -1499,8 +1499,8 @@
                 ]
             },
             "Remove.IntNonIdNoIndex":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.26,
+                "threshold":0.21,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -2116,8 +2116,8 @@
                 ]
             },
             "Commands.DistinctWithoutIndex":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.26,
+                "threshold":0.21,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -2179,8 +2179,8 @@
                 ]
             },
             "Remove.IntNonIdNoIndex":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.26,
+                "threshold":0.21,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -4490,8 +4490,8 @@
                 ]
             },
             "Commands.DistinctWithoutIndex":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.26,
+                "threshold":0.21,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -4665,8 +4665,8 @@
                 ]
             },
             "Remove.IntNonIdNoIndex":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.26,
+                "threshold":0.21,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -4950,8 +4950,8 @@
                 ]
             },
             "Commands.DistinctWithoutIndex":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.26,
+                "threshold":0.21,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -5013,8 +5013,8 @@
                 ]
             },
             "Remove.IntNonIdNoIndex":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.26,
+                "threshold":0.21,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -5531,8 +5531,8 @@
                 ]
             },
             "Commands.DistinctWithoutIndex":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.26,
+                "threshold":0.21,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -5699,8 +5699,8 @@
                 ]
             },
             "Remove.IntNonIdNoIndex":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.26,
+                "threshold":0.21,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -6536,8 +6536,8 @@
                 ]
             },
             "Commands.DistinctWithoutIndex":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.26,
+                "threshold":0.21,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -6592,8 +6592,8 @@
                 ]
             },
             "Remove.IntNonIdNoIndex":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.26,
+                "threshold":0.21,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -6863,8 +6863,8 @@
                 ]
             },
             "Commands.DistinctWithoutIndex":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.26,
+                "threshold":0.21,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -6926,8 +6926,8 @@
                 ]
             },
             "Remove.IntNonIdNoIndex":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.26,
+                "threshold":0.21,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -8339,8 +8339,8 @@
                 ]
             },
             "Commands.DistinctWithoutIndex":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.26,
+                "threshold":0.21,
                 "ticket":[
                     "PERF-444"
                 ]
@@ -8507,8 +8507,8 @@
                 ]
             },
             "Remove.IntNonIdNoIndex":{
-                "thread_threshold":0.25,
-                "threshold":0.2,
+                "thread_threshold":0.26,
+                "threshold":0.21,
                 "ticket":[
                     "PERF-444"
                 ]
