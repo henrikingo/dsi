@@ -18,8 +18,10 @@ towards the long term intention.
 '''
 
 from __future__ import print_function
+import ConfigParser
 import sys
 import argparse
+import copy
 import glob
 import logging
 import os
@@ -31,27 +33,78 @@ from common.log import setup_logging
 
 LOGGER = logging.getLogger(__name__)
 
+DEFAULT_CONFIG = {'cluster_type': 'single',
+                  'aws_key_name': 'NoKeyName',
+                  'aws_secret': "NoSecret",
+                  'directory': '.',
+                  'production': False,
+                 }
 
-def parse_command_line(args=None):
+
+def build_config(args=None):
+    '''
+    Build a config file, including the specified arguments
+    '''
+    # default values for config
+    config = copy.copy(DEFAULT_CONFIG)
+
+    # if we can read variables out of the ~/.aws/credentials file, do so
+    read_aws_creds(config)
+
+    # environment variables should supersede config file reading
+    read_env_vars(config)
+
+    # command-line options should supersede env vars and cred file
+    parse_command_line(config, args)
+
+    return config
+
+
+def read_aws_creds(config):
+    '''
+    Read AWS credentials from the 'default' field of ~/.aws/credentials, if it exists
+    '''
+    defaults = {}
+    credential_path = os.path.expanduser('~/.aws/credentials')
+    section = 'default'
+    config_parser = ConfigParser.ConfigParser(defaults=defaults)
+    config_parser.read(credential_path)
+    if config_parser.has_section(section):
+        config['aws_key_name'] = config_parser.get('default', 'aws_access_key_id')
+        config['aws_secret'] = config_parser.get('default', 'aws_secret_access_key')
+    return config
+
+
+def read_env_vars(config):
+    '''
+    Read AWS access key id and and secret access key from environment variables
+    '''
+    if 'AWS_ACCESS_KEY_ID' in os.environ:
+        config['aws_key_name'] = os.environ.get('AWS_ACCESS_KEY_ID', 'NoKeyName')
+    if 'AWS_SECRET_ACCESS_KEY' in os.environ:
+        config['aws_secret'] = os.environ.get('AWS_SECRET_ACCESS_KEY', 'NoSecret')
+    return config
+
+
+def parse_command_line(config, args=None):
     #pylint: disable=line-too-long
     '''
     Parse the command line options for setting up a working directory
 
     >>> from collections import OrderedDict
-    >>> OrderedDict(parse_command_line([]))
+    >>> OrderedDict(parse_command_line(copy.copy(DEFAULT_CONFIG), []))
     OrderedDict([('aws_secret', 'NoSecret'), ('cluster_type', 'single'), ('aws_key_name', 'NoKeyName'), ('directory', '.'), ('production', False)])
 
-    >>> OrderedDict(parse_command_line(['-c', 'none']))
+    >>> OrderedDict(parse_command_line(copy.copy(DEFAULT_CONFIG), ['-c', 'none']))
     OrderedDict([('aws_secret', 'NoSecret'), ('cluster_type', 'none'), ('aws_key_name', 'NoKeyName'), ('directory', '.'), ('production', False)])
 
-    >>> OrderedDict(parse_command_line(['-c', 'none', '--mongo-download-url', "URL",\
- "--aws-key-name", "key_name", "--ssh-keyfile-path", "keyfile",\
- "--aws-secret-file", "newsecret.json"]))
+    >>> OrderedDict(parse_command_line(copy.copy(DEFAULT_CONFIG), ['-c', 'none', '--mongo-download-url', "URL", "--aws-key-name", "key_name", "--ssh-keyfile-path", "keyfile", "--aws-secret-file", "newsecret.json"]))
     OrderedDict([('aws_secret', 'NoSecret'), ('ssh_keyfile_path', 'keyfile'), ('cluster_type', 'none'), ('aws_key_name', 'key_name'), ('aws_secret_file', 'newsecret.json'), ('production', False), ('directory', '.')])
-
     '''
 
-    parser = argparse.ArgumentParser(description='Setup DSI working environment')
+    parser = argparse.ArgumentParser(description='Setup DSI working environment. For instructions \
+                    on setting up dsi locally, see \
+                    https://drive.google.com/open?id=14QXOmo-ia8w72pW5zqQ2fCWfXEwiVQ8_1EoMCkB4baY')
 
     # These command line options support current configuration. It
     # should eventually support selecting the appropriate files for
@@ -67,10 +120,15 @@ def parse_command_line(args=None):
     # options and mongodb setup options.
     parser.add_argument('-k',
                         '--aws-key-name',
-                        help='AWS key name')
+                        help='AWS key name. If this flag is not used, the key name will default \
+                        to the key name specified in the [default] section of ~/.aws/credentials, \
+                        then to $AWS_ACCESS_KEY_ID if set, and to \'NoKeyName\' otherwise.')
     parser.add_argument('-s',
                         '--aws-secret-file',
-                        help='File containing AWS secret')
+                        help='File containing AWS secret. If this flag is not used, the secret \
+                        will default to the secret specified in the [default] section of \
+                        ~/.aws/credentials, then to $AWS_SECRET_ACCESS_KEY if set, and to \
+                        \'NoSecret\' otherwise.')
     # To be replaced by infrastructure.yml selection option
     parser.add_argument('-c',
                         '--cluster-type',
@@ -107,14 +165,6 @@ def parse_command_line(args=None):
                         help='Enable verbose output')
     args = parser.parse_args(args)
 
-    # To be replaced by system map
-    config = {'cluster_type': 'single',
-              'aws_key_name': 'NoKeyName',
-              'aws_secret': "NoSecret",
-              'directory': '.',
-              'production': False,
-             }
-
     setup_logging(args.debug, args.log_file)  # pylint: disable=no-member
 
     if args.config:
@@ -136,7 +186,6 @@ def parse_command_line(args=None):
         config['aws_secret_file'] = args.aws_secret_file
     if args.production:
         config['production'] = True
-
     return config
 
 
@@ -213,7 +262,7 @@ def main():
     ''' Main function for setting up working directory
     '''
 
-    config = parse_command_line()
+    config = build_config()
     directory = os.path.abspath(os.path.expanduser(config['directory']))
     LOGGER.info('Creating work directory in: %s', directory)
 
@@ -239,6 +288,7 @@ def main():
         dsienv.write('export DSI_PATH={0}\n'.format(dsipath))
         dsienv.write('export PATH=$PATH:{0}/bin\n'.format(dsipath))
 
+    # if we specified a secret file, use its contents as the aws secret
     if 'aws_secret_file' in config:
         # Read in the secret
         config['aws_secret'] = open(config['aws_secret_file']).read().rstrip()
