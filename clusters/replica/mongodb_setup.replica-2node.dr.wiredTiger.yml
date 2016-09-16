@@ -4,8 +4,6 @@ mongod_config_file:
         engine: wiredTiger
     replication:
         replSetName: initialsyncrs
-    setParameter:
-        use3dot2InitialSync: False
 
 topology:
   - id: initialsyncrs
