@@ -3,6 +3,7 @@
 cp terraform.log post-check.log
 REDO_INSTANCE=false
 DIR=$(dirname "$0")
+TERRAFORM="${TERRAFORM:-./terraform}"
 
 VAR_FILE=""
 if [ -e "cluster.json" ]; then
@@ -22,13 +23,13 @@ do
     IFS=$'\n'
     for i in $(grep " clat (" post-check.log | $DIR/filter_bad_instance.py )
     do
-        eval ./terraform taint $i
+        eval $TERRAFORM taint $i
         echo "Recreate instance $i"
         REDO_INSTANCE=true
     done
 
     if $REDO_INSTANCE; then
-        ./terraform apply $VAR_FILE | tee post-check.log
+        $TERRAFORM apply $VAR_FILE | tee post-check.log
     fi
 done
 

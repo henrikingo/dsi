@@ -2,7 +2,7 @@
 
 export CLUSTER=$1
 BINDIR=$(dirname $0)
-export TERRAFORM_DIR=${2:-${BINDIR}/../terraform}
+TERRAFORM="${TERRAFORM:-./terraform}"
 
 if [ ! "$CLUSTER" ]
 then
@@ -10,8 +10,7 @@ then
     exit -1
 fi
 
-cp ${TERRAFORM_DIR}/* .
-./terraform get --update
+$TERRAFORM get --update
 
 $BINDIR/make_terraform_env.py --out-file cluster.json
 
@@ -27,13 +26,13 @@ echo "Create AWS cluster for $CLUSTER"
 if [ $CLUSTER == "shard" -o $CLUSTER == "longevity" ]
 then
     # Shard cluster
-    ./terraform apply $VAR_FILE -var="mongod_instance_count=3"  | tee terraform.log
+    $TERRAFORM apply $VAR_FILE -var="mongod_instance_count=3"  | tee terraform.log
 
     # workaround for failure to bring up all at the same time
-    ./terraform apply $VAR_FILE -var="mongod_instance_count=9" | tee -a terraform.log
+    $TERRAFORM apply $VAR_FILE -var="mongod_instance_count=9" | tee -a terraform.log
 else
     # Most cluster types
-    ./terraform apply $VAR_FILE | tee terraform.log
+    $TERRAFORM apply $VAR_FILE | tee terraform.log
 fi
 
 # just to print out disk i/o information
@@ -72,11 +71,11 @@ then
     >&2 echo "Error: Prequalify failed for setup-cluster.sh. Exiting and not running tests"
 else
     # Check that all the nodes in the cluster are properly up
-    good_line_count=$(./terraform plan $VAR_FILE | egrep "Plan" | egrep -c "0 to add")
+    good_line_count=$($TERRAFORM plan $VAR_FILE | egrep "Plan" | egrep -c "0 to add")
     if [ $good_line_count != 1 ]
     then
         >&2 echo "Error: Past pre-qualify, but something wrong with provisioning. Still need to add node(s)."
-        ./terraform plan
+        $TERRAFORM plan
         rc=1
     fi
 fi

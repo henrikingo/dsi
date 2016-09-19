@@ -159,6 +159,11 @@ def parse_command_line(config, args=None):
                         help="Path to AWS ssh key file (pem)")
     parser.add_argument('--ssh-key',
                         help="Key to use with SSH access")
+    parser.add_argument('--terraform',
+                        help='The path of the terraform executable. Defaults to $(which terraform) \
+                        if terraform is in the path, and to <directory>/terraform if not. For \
+                        terraform <=0.6.x, the terraform provider binaries are expected to be in \
+                        the same directory.')
     parser.add_argument('--production',
                         action='store_true',
                         help='Indicate the script is being called as part of a production run. '
@@ -192,6 +197,8 @@ def parse_command_line(config, args=None):
         config['production'] = True
     if args.mc:
         config['mc'] = args.mc
+    if args.terraform:
+        config['terraform'] = args.terraform
     return config
 
 
@@ -264,6 +271,52 @@ def setup_security_tf(config, directory):
         security.write('}')
 
 
+def find_terraform(config, directory):
+    '''
+    Returns the location of the terraform binary to use
+    '''
+    try:
+        system_tf = subprocess.check_output(['which', 'terraform']).strip()
+    except subprocess.CalledProcessError:
+        system_tf = None
+
+    if 'terraform' in config:
+        terraform = os.path.abspath(os.path.expanduser(config['terraform']))
+        LOGGER.debug('Using terraform binary specified by --terraform %s', config['terraform'])
+    elif system_tf is not None:
+        terraform = os.path.abspath(system_tf)
+        LOGGER.debug('Using terraform binary specified by $(which terraform)')
+    else:
+        terraform = os.path.join(directory, 'terraform')
+        LOGGER.debug('Using terraform binary in default location')
+
+    LOGGER.info('Path to terraform binary is %s', terraform)
+    return terraform
+
+
+def find_mission_control(config, dsipath):
+    '''
+    Returns the location of the mission_control binary to use.
+    '''
+    try:
+        system_mc = subprocess.check_output(['which', 'mc']).strip()
+    except subprocess.CalledProcessError:
+        system_mc = None
+
+    if 'mc' in config:
+        mission_control = os.path.abspath(os.path.expanduser(config['mc']))
+        LOGGER.debug('Using mission-control binary specified by --mc %s', config['mc'])
+    elif system_mc is not None:
+        mission_control = os.path.abspath(system_mc)
+        LOGGER.debug('Using mission-control binary specified by $(which mc)')
+    else:
+        mission_control = os.path.join(dsipath, "bin/mc")
+        LOGGER.debug('Using mission-control binary in default location')
+
+    LOGGER.info('Path to mission-control binary is %s', mission_control)
+    return mission_control
+
+
 def main():
     ''' Main function for setting up working directory
     '''
@@ -281,22 +334,8 @@ def main():
     dsipath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     LOGGER.info('dsipath is %s', dsipath)
 
-    try:
-        system_mc = subprocess.check_output(['which', 'mc']).strip()
-    except subprocess.CalledProcessError:
-        system_mc = None
-
-    if 'mc' in config:
-        mission_control = os.path.abspath(os.path.expanduser(config['mc']))
-        LOGGER.debug('Using mission-control binary specified by --mc %s', config['mc'])
-    elif system_mc is not None:
-        mission_control = os.path.abspath(system_mc)
-        LOGGER.debug('Using mission-control binary specified by $(which mc)')
-    else:
-        mission_control = os.path.join(dsipath, "bin/mc")
-        LOGGER.debug('Using mission-control binary in default location')
-
-    LOGGER.info('Path to mission-control binary is %s', mission_control)
+    mission_control = find_mission_control(config, dsipath)
+    terraform = find_terraform(config, directory)
 
     # Create directory if it doesn't exist
     if not os.path.exists(directory):
@@ -311,6 +350,7 @@ def main():
         dsienv.write('export DSI_PATH={0}\n'.format(dsipath))
         dsienv.write('export PATH=$PATH:{0}/bin\n'.format(dsipath))
         dsienv.write('export MC={0}\n'.format(mission_control))
+        dsienv.write('export TERRAFORM={0}'.format(terraform))
 
     # if we specified a secret file, use its contents as the aws secret
     if 'aws_secret_file' in config:

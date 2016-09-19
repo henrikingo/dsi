@@ -1,11 +1,12 @@
 #!/bin/bash
 
-# To destroy a cluster in the current folder. Require terraform installed under the same folder
+# To destroy a cluster in the current folder.
 cd `dirname $0`
-yes yes | ./terraform destroy
+TERRAFORM="${TERRAFORM:-./terraform}"
+yes yes | $TERRAFORM destroy
 
 if [ $? != 0 ]
 then
     # Something maybe wrong, try again
-    yes yes | ./terraform destroy
+    yes yes | $TERRAFORM destroy
 fi

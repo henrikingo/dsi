@@ -14,6 +14,8 @@ curl  -O --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/terrafor
 unzip terraform_0.6.16_linux_amd64.zip
 cd ..
 
+cp terraform/* work
+
 # install workload wrapper
 pushd .
 cd ${DSI_PATH}/bin
