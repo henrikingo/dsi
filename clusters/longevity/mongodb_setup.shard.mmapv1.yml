@@ -2,6 +2,8 @@
 mongod_config_file:
     storage:
         engine: mmapv1
+    sharding:
+        clusterRole: shardsvr
 
 topology:
   - id: mycluster
