@@ -125,6 +125,10 @@ def compare_one_result_base(current, reference, noise_level=0,
     '(True, -0.5000, 0.0500)'
     >>> "({0}, {1:.10f}, {2:.10f})".format(*compare_one_result_base(1, 3))
     '(True, -0.6666666667, 0.0500000000)'
+    >>> "({0}, {1:.4f}, {2:.4f})".format(*compare_one_result_base(-1, -2))
+    '(False, 0.5000, 0.0500)'
+    >>> "({0}, {1:.4f}, {2:.4f})".format(*compare_one_result_base(-1, -0.5))
+    '(True, -1.0000, 0.0500)'
 
     >>> "({0}, {1:.10f}, {2:.10f})".format(*compare_one_result_base(10, 11, default_threshold=0.08))
     '(True, -0.0909090909, 0.0800000000)'
@@ -139,7 +143,7 @@ def compare_one_result_base(current, reference, noise_level=0,
     '''
     failed = False
     noise = noise_level * noise_multiple
-    delta = default_threshold * reference
+    delta = abs(default_threshold * reference)
     if delta < noise:
         delta = noise
     # Do the check
@@ -149,8 +153,8 @@ def compare_one_result_base(current, reference, noise_level=0,
     if reference == 0:
         percent_delta = percent_threshold = 0
     else:
-        percent_delta = (current - reference)/reference
-        percent_threshold = delta/reference
+        percent_delta = (current - reference)/(abs(reference))
+        percent_threshold = delta/(abs(reference))
     return (failed, percent_delta, percent_threshold)
 
 def log_header(testname):
