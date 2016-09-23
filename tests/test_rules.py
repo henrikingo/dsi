@@ -247,21 +247,11 @@ class TestResourceRules(unittest.TestCase):
         self.assertEqual(observed, expected)
 
     def test_lag_no_perf_file(self):
-        """Test expected failure when no test times are specified
+        """Test expected success when no test times are specified
         """
         path_ftdc_3shard = os.path.join(self.path_3shard_directory, 'metrics.3shard_p1_repl')
         observed = rules.ftdc_replica_lag_check(path_ftdc_3shard, None)
-        expected = [
-            {'additional': {'using lag threshold (s)': 10.0, 'primary member': '0'},
-             'members': {'1': {'labels': ('member 1 lag (s)',),
-                               'compared_values': [(11.0,), (11.0,), (11.0,)],
-                               'times': [1470669404000, 1470669405000, 1470669406000]},
-                         '2': {'labels': ('member 2 lag (s)',),
-                               'compared_values': [(11.0,)],
-                               'times': [1470669404000]}
-                        }
-            }
-        ]
+        expected = []
         self.assertEqual(observed, expected)
 
 class TestFailureOutputFormatting(unittest.TestCase):

@@ -162,7 +162,7 @@ def compare_to_tag(test, threshold, thread_threshold):
 
 # Failure & other condition checks
 
-def replica_lag_check(test, lag_threshold=10):
+def replica_lag_check(test, lag_threshold=15):
     """
     Iterate through all thread levels and flag a test if its max replication lag is higher
     than the threshold.

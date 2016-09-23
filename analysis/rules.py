@@ -19,7 +19,7 @@ CONSTANTS = {
         'default': {
             'threshold': 0.1,
             'thread_threshold': 0.15,
-            'lag_threshold': 10.0,
+            'lag_threshold': 15.0,
             'ndays': 7.0
         },
         'linux-oplog-compare': {
@@ -34,7 +34,8 @@ CONSTANTS = {
     'mongo-longevity': {
         'default': {
             'threshold': 0.25,
-            'thread_threshold': 0.25
+            'thread_threshold': 0.25,
+            'lag_threshold': 15.0
         }
     }
 }
@@ -103,7 +104,7 @@ WT_OPLOG_BUFFER = .10
 
 # in seconds, when is the member lag too large?
 MS = 1000.0
-REPL_MEMBER_LAG_THRESHOLD_S = 10.0
+REPL_MEMBER_LAG_THRESHOLD_S = 15.0
 REPL_MEMBER_LAG_THRESHOLD_MS = REPL_MEMBER_LAG_THRESHOLD_S * MS
 
 def failure_collection(failure_times, compared_values, labels, other_rule_info=None):
