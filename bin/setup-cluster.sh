@@ -75,7 +75,7 @@ else
     if [ $good_line_count != 1 ]
     then
         >&2 echo "Error: Past pre-qualify, but something wrong with provisioning. Still need to add node(s)."
-        $TERRAFORM plan
+        $TERRAFORM $VAR_FILE plan
         rc=1
     fi
 fi
