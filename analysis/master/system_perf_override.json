@@ -7086,10 +7086,31 @@
         "reference":{},
         "threshold":{
             "moveChunk_secondaryThrottle_true_waitForDelete_false-wiredTiger":{
-                "thread_threshold":0.45,
-                "threshold":0.3,
+                "thread_threshold":0.75,
+                "threshold":0.5,
                 "ticket":[
-                    "PERF-335"
+                    "PERF-737"
+                ]
+            },
+            "moveChunkWithLoad_secondaryThrottle_true-wiredTiger":{
+                "thread_threshold":0.3,
+                "threshold":0.2,
+                "ticket":[
+                    "PERF-737"
+                ]
+            },
+            "moveChunk_secondaryThrottle_true_waitForDelete_true-mmapv1":{
+                "thread_threshold":0.75,
+                "threshold":0.5,
+                "ticket":[
+                    "PERF-737"
+                ]
+            },
+            "moveChunkWithLoad_secondaryThrottle_true-mmapv1":{
+                "thread_threshold":0.6,
+                "threshold":0.4,
+                "ticket":[
+                    "PERF-737"
                 ]
             },
             "ycsb_50read50update_w_majority-wiredTiger":{
