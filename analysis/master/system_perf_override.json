@@ -7099,7 +7099,7 @@
                     "PERF-737"
                 ]
             },
-            "moveChunk_secondaryThrottle_true_waitForDelete_true-mmapv1":{
+            "moveChunk_secondaryThrottle_true_waitForDelete_false-mmapv1":{
                 "thread_threshold":0.75,
                 "threshold":0.5,
                 "ticket":[
