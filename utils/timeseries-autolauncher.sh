@@ -6,16 +6,7 @@
 # the reports.tgz. It will do nothing if run from a dsi repo.
 
 cd $(dirname $0)
-IPS=ips.sh
 
-if [ ! -f $IPS ]
-then
-    echo "This script is intended to be run from inside a reports.tgz archive."
-    echo "This does not appear to be a reports.tgz archive directory. No $IPS file found."
-    exit
-fi
-
-source $IPS
 PORT=8889
 
 echo "Launching timeseries.py $NUM_MONGOD times, once for each diagnostics.data/ in"
@@ -27,10 +18,14 @@ virtualenv ./venv
 source ./venv/bin/activate
 pip install argparse python-dateutil pytz
 
-for i in "${ALL_HOST[@]}"
+FILES=(diag*)
+for file in "${FILES[@]}"
 do
+    parts=(${file//-/ })
+    i=${parts[1]}
+    ip=${parts[2]}
     # iostat logs are not available on Windows
-    iostat_log=$(compgen -G "*/*/iostat.log--ec2-user@${!i}")
+    iostat_log=$(compgen -G "*/*/iostat.log--ec2-user@${ip}")
 
     # Include timestamp information from workloads if it exists
     timestamps=""
@@ -40,8 +35,8 @@ do
     fi
 
     python $(dirname $0)/timeseries.py --itz 0 --port $PORT \
-                                       diag-$i-${!i}/diagnostic.data \
-                                       diag-$i-${!i}/mongod.log $iostat_log \
+                                       diag-$i-${ip}/diagnostic.data \
+                                       diag-$i-${ip}/mongod.log $iostat_log \
                                        $timestamps
     PORT=$(($PORT+1))
 done

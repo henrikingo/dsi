@@ -2,8 +2,6 @@
 
 source $(dirname $0)/utils.bash
 
-source reports/ips.sh
-
 echo Generate timeseries graphs from FTDC, mongod.log and iostat data.
 
 echo Install python modules needed by timeseries.py into a python virtualenv.
@@ -14,10 +12,15 @@ pip install argparse python-dateutil pytz
 
 echo Generate one html file for each host in cluster.
 mkdir -p reports/graphs
-for i in "${ALL_HOST[@]}"
+FILES=(reports/diag*)
+for file in "${FILES[@]}"
 do
+    file=${file##*/} # Strip reports/
+    parts=(${file//-/ })
+    i=${parts[1]}
+    ip=${parts[2]}
     # iostat logs are not available on Windows
-    iostat_log=$(compgen -G "reports/*/*/iostat.log--ec2-user@${!i}")
+    iostat_log=$(compgen -G "reports/*/*/iostat.log--ec2-user@${ip}")
 
     # Include timestamp information from workloads if it exists
     timestamps=""
@@ -27,8 +30,8 @@ do
     fi
 
     python $(dirname $0)/timeseries.py --itz 0 --overview all \
-                                       reports/diag-$i-${!i}/diagnostic.data \
-                                       reports/diag-$i-${!i}/mongod.log $iostat_log \
+                                       reports/diag-$i-${ip}/diagnostic.data \
+                                       reports/diag-$i-${ip}/mongod.log $iostat_log \
                                        $timestamps \
                                        --html reports/graphs/timeseries-$i.html
 done
