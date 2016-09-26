@@ -69,8 +69,11 @@ def is_log_line_bad(log_line, test_times=None):
         LOGGER.warning("Failed to parse timestamp from line `%s` with error `%s`", log_line, err)
         return False
 
-    if test_times is not None and not any(start <= log_ts <= end for start, end in test_times):
-        return False
+    try:
+        if test_times is not None and not any(start <= log_ts <= end for start, end in test_times):
+            return False
+    except TypeError as err:
+        LOGGER.warning("Failed timestamp comparison. Log_line is %s", log_line)
 
     log_msg = log_msg.lower()
     if any(whitelist_msg in log_msg for whitelist_msg in MESSAGE_WHITELIST):
