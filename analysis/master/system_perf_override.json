@@ -33,6 +33,13 @@
                     "PERF-335"
                 ]
             },
+            "insert_ttl-wiredTiger":{
+                "thread_threshold":0.3,
+                "threshold":0.2,
+                "ticket":[
+                    "PERF-738"
+                ]
+            },
             "removemulti_jtrue-wiredTiger":{
                 "thread_threshold":0.45,
                 "threshold":0.3,
@@ -45,6 +52,13 @@
                 "threshold":0.3,
                 "ticket":[
                     "PERF-335"
+                ]
+            },
+            "insert_ttl-mmapv1":{
+                "thread_threshold":0.3,
+                "threshold":0.2,
+                "ticket":[
+                    "PERF-738"
                 ]
             }
         }
@@ -86,6 +100,13 @@
                     "PERF-335"
                 ]
             },
+            "insert_ttl-wiredTiger":{
+                "thread_threshold":0.6,
+                "threshold":0.4,
+                "ticket":[
+                    "PERF-738"
+                ]
+            },
             "map_reduce_1M_doc-wiredTiger":{
                 "thread_threshold":0.15,
                 "threshold":0.23,
@@ -112,6 +133,13 @@
                 "threshold":0.4,
                 "ticket":[
                     "PERF-335"
+                ]
+            },
+            "insert_ttl-mmapv1":{
+                "thread_threshold":0.6,
+                "threshold":0.4,
+                "ticket":[
+                    "PERF-738"
                 ]
             }
         }
