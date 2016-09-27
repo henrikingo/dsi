@@ -4,6 +4,8 @@ mongod_config_file:
         engine: wiredTiger
     sharding:
         clusterRole: shardsvr
+    replication:
+      oplogSizeMB: 30000  # 30GB oplog
 
 topology:
   - id: mycluster
