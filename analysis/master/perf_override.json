@@ -7846,6 +7846,76 @@
                     "BF-3233"
                 ]
             },
+            "Aggregation.Group.TenGroups":{
+                "create_time":"2016-09-27T18:25:40.042Z",
+                "max":2883.0516959671695,
+                "name":"Aggregation.Group.TenGroups",
+                "order":5862,
+                "results":{
+                    "1":{
+                        "error_values":[
+                            0,
+                            0,
+                            0,
+                            0,
+                            0
+                        ],
+                        "ops_per_sec":2883.0516959671695,
+                        "ops_per_sec_values":[
+                            2848.2828529213593,
+                            2867.9837718185404,
+                            2878.2760733804453,
+                            2927.148785133283,
+                            2893.5669965822203
+                        ]
+                    },
+                    "end":"2016-09-27T19:03:02.097Z",
+                    "start":"2016-09-27T19:02:36.975Z"
+                },
+                "revision":"3e826bda825b663533ae5791b338ec3b21698789",
+                "tag":"",
+                "threads":[
+                    "1"
+                ],
+                "ticket":[
+                    "BF-3653"
+                ]
+            },
+            "Aggregation.Group.TenGroupsWithAvg":{
+                "create_time":"2016-09-27T18:25:40.042Z",
+                "max":2600.626706284782,
+                "name":"Aggregation.Group.TenGroupsWithAvg",
+                "order":5862,
+                "results":{
+                    "1":{
+                        "error_values":[
+                            0,
+                            0,
+                            0,
+                            0,
+                            0
+                        ],
+                        "ops_per_sec":2600.626706284782,
+                        "ops_per_sec_values":[
+                            2612.696529540085,
+                            2607.2791090186947,
+                            2601.986618982906,
+                            2579.8619621905473,
+                            2601.3093116916766
+                        ]
+                    },
+                    "end":"2016-09-27T19:03:27.215Z",
+                    "start":"2016-09-27T19:03:02.097Z"
+                },
+                "revision":"3e826bda825b663533ae5791b338ec3b21698789",
+                "tag":"",
+                "threads":[
+                    "1"
+                ],
+                "ticket":[
+                    "BF-3653"
+                ]
+            },
             "Aggregation.Lookup":{
                 "create_time":"2016-08-19T16:38:39.195Z",
                 "max":42.51642876902677,
