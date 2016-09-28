@@ -56,6 +56,10 @@ mongodb_setup:
             destination: file
             path: data/logs/mongos.log
 
+    rs_conf:
+        settings:
+            chainingAllowed: false
+
     configsvr_config_file:
         net:
             port: 27017
