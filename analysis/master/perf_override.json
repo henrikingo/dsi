@@ -7485,11 +7485,25 @@
                     "PERF-444"
                 ]
             },
+            "Insert.IntIDUpsert":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "BF-3554"
+                ]
+            },
             "Insert.IntVector":{
                 "thread_threshold":0.2,
                 "threshold":0.15,
                 "ticket":[
                     "PERF-444"
+                ]
+            },
+            "Insert.JustNumIndexed":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "BF-3554"
                 ]
             },
             "Remove.IntNonIdNoIndex":{
@@ -7874,11 +7888,25 @@
                     "PERF-444"
                 ]
             },
+            "Insert.IntIDUpsert":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "BF-3554"
+                ]
+            },
             "Insert.IntVector":{
                 "thread_threshold":0.2,
                 "threshold":0.15,
                 "ticket":[
                     "PERF-444"
+                ]
+            },
+            "Insert.JustNumIndexed":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "BF-3554"
                 ]
             },
             "Insert.LargeDocVector":{
