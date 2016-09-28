@@ -7506,6 +7506,13 @@
                     "BF-3554"
                 ]
             },
+            "Insert.SeqIntID.Indexed":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "BF-3554"
+                ]
+            },
             "Remove.IntNonIdNoIndex":{
                 "thread_threshold":0.26,
                 "threshold":0.21,
@@ -7914,6 +7921,13 @@
                 "threshold":0.2,
                 "ticket":[
                     "BF-3461"
+                ]
+            },
+            "Insert.SeqIntID.Indexed":{
+                "thread_threshold":0.2,
+                "threshold":0.15,
+                "ticket":[
+                    "BF-3554"
                 ]
             },
             "Remove.IntNonIdNoIndex":{
