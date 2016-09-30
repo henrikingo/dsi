@@ -47,6 +47,27 @@
                     "PERF-738"
                 ]
             },
+            "insert_vector_primary-mmapv1":{
+                "thread_threshold":0.45,
+                "threshold":0.3,
+                "ticket":[
+                    "PERF-750"
+                ]
+            },
+            "insert_vector_secondary_load_phase-mmapv1":{
+                "thread_threshold":0.45,
+                "threshold":0.3,
+                "ticket":[
+                    "PERF-750"
+                ]
+            },
+            "insert_vector_secondary_overall-mmapv1":{
+                "thread_threshold":0.45,
+                "threshold":0.3,
+                "ticket":[
+                    "PERF-750"
+                ]
+            },
             "removemulti_jtrue-wiredTiger":{
                 "thread_threshold":0.45,
                 "threshold":0.3,
@@ -112,6 +133,48 @@
                 "threshold":0.4,
                 "ticket":[
                     "PERF-738"
+                ]
+            },
+            "insert_vector_primary-mmapv1":{
+                "thread_threshold":0.45,
+                "threshold":0.3,
+                "ticket":[
+                    "PERF-750"
+                ]
+            },
+            "insert_vector_primary-wiredTiger":{
+                "thread_threshold":0.6,
+                "threshold":0.4,
+                "ticket":[
+                    "PERF-750"
+                ]
+            },
+            "insert_vector_secondary_load_phase-mmapv1":{
+                "thread_threshold":0.45,
+                "threshold":0.3,
+                "ticket":[
+                    "PERF-750"
+                ]
+            },
+            "insert_vector_secondary_load_phase-wiredTiger":{
+                "thread_threshold":0.6,
+                "threshold":0.4,
+                "ticket":[
+                    "PERF-750"
+                ]
+            },
+            "insert_vector_secondary_overall-mmapv1":{
+                "thread_threshold":0.45,
+                "threshold":0.3,
+                "ticket":[
+                    "PERF-750"
+                ]
+            },
+            "insert_vector_secondary_overall-wiredTiger":{
+                "thread_threshold":0.6,
+                "threshold":0.4,
+                "ticket":[
+                    "PERF-750"
                 ]
             },
             "map_reduce_1M_doc-wiredTiger":{
