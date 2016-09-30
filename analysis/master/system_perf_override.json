@@ -7342,7 +7342,30 @@
     },
     "linux-3-shard":{
         "ndays":{},
-        "reference":{},
+        "reference":{
+            "moveChunk_secondaryThrottle_false_waitForDelete_true-wiredTiger":{
+                "create_time":"2016-09-16T06:27:58.672Z",
+                "end":1474025608.0,
+                "max":3872.366790582404,
+                "name":"moveChunk_secondaryThrottle_false_waitForDelete_true-wiredTiger",
+                "order":4854,
+                "results":{
+                    "1":{
+                        "ops_per_sec":3872.366790582404
+                    }
+                },
+                "revision":"7693fa59c4470db729d85af99fb9cc3b264fa8c8",
+                "start":1474011327.0,
+                "tag":"",
+                "threads":[
+                    "1"
+                ],
+                "ticket":[
+                    "BF-3667"
+                ],
+                "workload":"shell/benchrun"
+            }
+        },
         "threshold":{
             "moveChunkWithLoad_secondaryThrottle_true-mmapv1":{
                 "thread_threshold":0.6,
