@@ -113,6 +113,9 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
     arg_parser.add_argument(
         "--report-file", help='File to write the report JSON file to. Defaults to "report.json".',
         default="report.json")
+    arg_parser.add_argument(
+        "--is-patch", action='store_true', default=False, dest='is_patch',
+        help='If true, will skip NDays comparison (see PERF-386).')
     # TODO: PERF-675 to remove this. Present for backwards compatibility right now.
     arg_parser.add_argument(
         "--log-analysis",
@@ -164,63 +167,66 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
         if cresult[0]:
             test_failed = True
 
-        target = history.series_at_n_days_before(test, args.rev, args.ndays)
-        if not target:
-            LOGGER.warning('        no reference data for test %s with NDays', test)
+        if args.is_patch:
+            LOGGER.info("This is a patchbuild; skipping NDays comparison.")
         else:
-            using_override = []
-            if threshold_override:
-                using_override.append('threshold')
-            if test in overrides['ndays']:
-                try:
-                    override_time = parser.parse(overrides['ndays'][test]['create_time'])
-                    this_time = parser.parse(this_one['create_time'])
-                    if (override_time < this_time) and ((override_time + timedelta(days=args.ndays))
-                                                        >= this_time):
-                        target = overrides['ndays'][test]
-                        using_override.append('ndays')
-                        LOGGER.info('Override in NDays for test %s', test)
-                    else:
-                        LOGGER.info('Out of date override found for ndays. Not using.')
-                except KeyError as err:
-                    err_msg = ('Key error accessing overrides for ndays. '
-                               'Key {0} does not exist for test {1}').format(str(err), test)
-                    LOGGER.warning(err_msg, file=sys.stderr)
-
-            prev_failed, _ = compare_results(previous, target,
-                                             threshold, 'silent',
-                                             history.noise_levels(test),
-                                             args.noise, thread_threshold,
-                                             args.threadNoise,
-                                             using_override=using_override)
-            check_name = 'NDaysCompare'
-            current_failed, current_log = compare_results(this_one, target,
-                                                          threshold, 'NDays',
-                                                          history.noise_levels(test),
-                                                          args.noise, thread_threshold,
-                                                          args.threadNoise,
-                                                          using_override=using_override)
-            result['log_raw'] += current_log + '\n'
-            if prev_failed:
-                result[check_name] = current_failed
+            target = history.series_at_n_days_before(test, args.rev, args.ndays)
+            if not target:
+                LOGGER.warning('        no reference data for test %s with NDays', test)
             else:
-                strict_failed, _ = compare_results(this_one, target,
-                                                   threshold * 1.5, 'silent',
-                                                   history.noise_levels(test),
-                                                   args.noise, thread_threshold * 1.5,
-                                                   args.threadNoise,
-                                                   using_override=using_override)
-                if strict_failed:
-                    fail_info = '  NDays check failed because of drop greater than 1.5 x threshold'
-                    result[check_name] = True
-                    result['log_raw'] += fail_info + '\n'
-                elif current_failed:
-                    first_drop_pass_info = \
-                                    '  NDays check considered passed as this is the first drop'
-                    result['log_raw'] += first_drop_pass_info + '\n'
-                    result[check_name] = False
+                using_override = []
+                if threshold_override:
+                    using_override.append('threshold')
+                if test in overrides['ndays']:
+                    try:
+                        override_time = parser.parse(overrides['ndays'][test]['create_time'])
+                        this_time = parser.parse(this_one['create_time'])
+                        if (override_time < this_time) and ((override_time + timedelta(days=args.ndays))
+                                                            >= this_time):
+                            target = overrides['ndays'][test]
+                            using_override.append('ndays')
+                            LOGGER.info('Override in NDays for test %s', test)
+                        else:
+                            LOGGER.info('Out of date override found for ndays. Not using.')
+                    except KeyError as err:
+                        err_msg = ('Key error accessing overrides for ndays. '
+                                   'Key {0} does not exist for test {1}').format(str(err), test)
+                        LOGGER.warning(err_msg, file=sys.stderr)
+
+                prev_failed, _ = compare_results(previous, target,
+                                                 threshold, 'silent',
+                                                 history.noise_levels(test),
+                                                 args.noise, thread_threshold,
+                                                 args.threadNoise,
+                                                 using_override=using_override)
+                check_name = 'NDaysCompare'
+                current_failed, current_log = compare_results(this_one, target,
+                                                              threshold, 'NDays',
+                                                              history.noise_levels(test),
+                                                              args.noise, thread_threshold,
+                                                              args.threadNoise,
+                                                              using_override=using_override)
+                result['log_raw'] += current_log + '\n'
+                if prev_failed:
+                    result[check_name] = current_failed
                 else:
-                    result[check_name] = False
+                    strict_failed, _ = compare_results(this_one, target,
+                                                       threshold * 1.5, 'silent',
+                                                       history.noise_levels(test),
+                                                       args.noise, thread_threshold * 1.5,
+                                                       args.threadNoise,
+                                                       using_override=using_override)
+                    if strict_failed:
+                        fail_info = '  NDays check failed because of drop greater than 1.5 x threshold'
+                        result[check_name] = True
+                        result['log_raw'] += fail_info + '\n'
+                    elif current_failed:
+                        first_drop_pass_info = \
+                                        '  NDays check considered passed as this is the first drop'
+                        result['log_raw'] += first_drop_pass_info + '\n'
+                        result[check_name] = False
+                    else:
+                        result[check_name] = False
 
         if tag_history:
             reference = tag_history.series_at_tag(test, args.reference)

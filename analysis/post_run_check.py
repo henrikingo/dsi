@@ -31,7 +31,7 @@ import arg_parsing
 
 logging.basicConfig(level=logging.INFO)
 
-def project_test_rules(project, variant, test):
+def project_test_rules(project, variant, is_patch, test):
     """For each test, run the specified regression rules listed in PROJECT_TEST_RULES and return
     a dictionary with rules as keys and pass/fail information as values.
 
@@ -44,6 +44,9 @@ def project_test_rules(project, variant, test):
     regression_rules = get_project_variant_rules(project, variant, PROJECT_TEST_RULES)
 
     for regression_rule_function in regression_rules:
+        if is_patch:
+            if regression_rule_function.__name__ == "compare_n_days_delayed_trigger":
+                continue
         build_args = {'test': test}
         arguments_needed = inspect.getargspec(regression_rule_function).args
         for parameter in arguments_needed:
@@ -347,6 +350,9 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
             "flag should be the directory to recursively search for the files."))
     # TODO: PERF-675 to remove this. Present for backwards compatibility right now.
     parser.add_argument(
+        "--is-patch", action='store_true', default=False, dest='is_patch',
+        help='If true, will skip NDays comparison (see PERF-386).')
+    parser.add_argument(
         "--log-analysis",
         help=(
             "This argument is only present for backwards compatibility. To be removed."))
@@ -389,7 +395,7 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
                 real_stdout = sys.stdout
                 log_stdout = StringIO.StringIO()
                 sys.stdout = log_stdout
-                result.update(project_test_rules(args.project_id, args.variant, to_test))
+                result.update(project_test_rules(args.project_id, args.variant, args.is_patch, to_test))
                 # Store log_stdout in log_raw
                 test_log = log_stdout.getvalue()
                 result['log_raw'] += log_header(test)
