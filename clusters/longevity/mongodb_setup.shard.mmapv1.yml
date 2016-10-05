@@ -5,7 +5,7 @@ mongod_config_file:
     sharding:
         clusterRole: shardsvr
     replication:
-      oplogSizeMB: 30000  # 30GB oplog
+      oplogSizeMB: 4000  # 4GB oplog
 
 topology:
   - id: mycluster
