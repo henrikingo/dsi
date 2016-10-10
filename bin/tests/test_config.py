@@ -113,6 +113,24 @@ class ConfigDictTestCase(unittest.TestCase):
         self.assertTrue('config_file' in self.conf['mongodb_setup']['topology'][2].keys())
         self.assertFalse('config_file' in self.conf['mongodb_setup']['topology'][0].keys())
 
+    def test_replset_rs_conf(self):
+        """Test magic rs_conf for a replset"""
+        mycluster = self.conf['mongodb_setup']['topology'][0]
+        rs_conf = mycluster['shard'][2]['rs_conf']
+        self.assertEqual(rs_conf['protocolVersion'], 1)
+        myreplset = self.conf['mongodb_setup']['topology'][1]
+        rs_conf = myreplset['rs_conf']
+        self.assertEqual(rs_conf['settings']['chainingAllowed'], False)
+        self.assertEqual(rs_conf['protocolVersion'], 1)
+
+        # conf.keys() should return a 'config_file' key for replsets, not otherwise
+        self.assertTrue('rs_conf' in mycluster['shard'][0].keys())
+        self.assertTrue('rs_conf' in mycluster['shard'][2].keys())
+        self.assertTrue('rs_conf' in myreplset.keys())
+        self.assertFalse('rs_conf' in mycluster.keys())
+        self.assertFalse('rs_conf' in self.conf['mongodb_setup']['topology'][2].keys())
+        self.assertFalse('rs_conf' in self.conf['infrastructure_provisioning'].keys())
+
     def test_set_some_values(self):
         """Set some values and write out file"""
         self.conf['mongodb_setup']['out'] = {'foo' : 'bar'}

@@ -155,13 +155,14 @@ class ConfigDict(dict):
         # Magic key: In a mongodb_setup.topology, if this is a mongod/mongos/configsvr node
         # always return a config_file key.
         config_file_key = set(['config_file']) if self.is_topology_node() else set()
+        rs_conf_key = set(['rs_conf']) if self.is_topology_replset() else set()
         if isinstance(self.raw, dict):
             raw_keys = set(self.raw.keys())
         if isinstance(self.overrides, dict):
             overrides_keys = set(self.overrides.keys())
         if isinstance(self.defaults, dict):
             defaults_keys = set(self.defaults.keys())
-        return list(raw_keys | overrides_keys | defaults_keys | config_file_key)
+        return list(raw_keys | overrides_keys | defaults_keys | config_file_key | rs_conf_key)
 
     def iteritems(self):
         """Iterator over the key, values"""
@@ -345,7 +346,9 @@ class ConfigDict(dict):
 
            we need to magically return the common mongod/s_config merged with contents of this key.
            Some non-default options like fork are needed for anything to work. The below code will
-           not raise exception if no config exists."""
+           not raise exception if no config exists.
+
+           This function does a similar merge for the rs_conf value for replsets."""
         # pylint: disable=too-many-boolean-expressions
 
         value = None
@@ -360,7 +363,22 @@ class ConfigDict(dict):
             helper.overrides = {key : node_specific_config}
             value = helper[key]
 
+        if self.is_topology_replset() and key == ('rs_conf'):
+            # Note: In the below 2 lines, overrides and ${variables} are already applied
+            common_rs_conf = self.root['mongodb_setup'].get('rs_conf')
+            replset_rs_conf = self.raw.get('rs_conf', {})
+            value = self.get_merged_config_dict_value(common_rs_conf, replset_rs_conf, key)
+
         return value
+
+    def get_merged_config_dict_value(self, config_dict1, config_dict2, key):
+        """Merge config_dict1[key] and config_dict2[key] into a single ConfigDict object."""
+        # Technically this works the same as if config_dict1 was the raw value
+        # and config_dict2 is a dict with overrides. So let's reuse some code...
+        helper = ConfigDict('_internal')
+        helper.raw = {key : config_dict1}
+        helper.overrides = {key : config_dict2}
+        return helper[key]
 
     def is_topology_node(self):
         '''Returns true if self.path is a mongod/s/configsvr node under mongodb_setup.topology.
@@ -411,6 +429,33 @@ class ConfigDict(dict):
         else:
             return None
 
+
+    def is_topology_replset(self):
+        '''Returns true if self.path is a cluster_type: replset node under mongodb_setup.topology.
+
+        Note: We cannot call self['cluster_type'] or self.get('cluster_type') in this function, as
+        that would cause recursion. This causes a small restriction on defining topologies in the
+        Yaml files: For a standalone node, the 'cluster_type' value must be a literal word, it
+        cannot be a ${variable.reference}. It can however be defined in any of defaults.yml,
+        mongodb_setup.yml or overrides.yml.'''
+        # pylint: disable=too-many-boolean-expressions
+        # replset and sharded_cluster topologies
+        if len(self.path) >= 3 and \
+           self.path[0] == 'mongodb_setup' and \
+           self.path[1] == 'topology' and \
+           isinstance(self.path[2], int) and \
+           ((isinstance(self.raw, dict) and \
+             self.raw.get('cluster_type') == 'replset') \
+            or \
+            (isinstance(self.defaults, dict) and \
+             self.defaults.get('cluster_type') == 'replset') \
+            or \
+            (isinstance(self.overrides, dict) and \
+             self.overrides.get('cluster_type') == 'replset')):
+
+            return True
+
+        return False
 
     ### __setitem__() helpers
     def assert_writeable_path(self, key):
