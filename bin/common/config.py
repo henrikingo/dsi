@@ -371,7 +371,8 @@ class ConfigDict(dict):
 
         return value
 
-    def get_merged_config_dict_value(self, config_dict1, config_dict2, key):
+    @staticmethod
+    def get_merged_config_dict_value(config_dict1, config_dict2, key):
         """Merge config_dict1[key] and config_dict2[key] into a single ConfigDict object."""
         # Technically this works the same as if config_dict1 was the raw value
         # and config_dict2 is a dict with overrides. So let's reuse some code...
