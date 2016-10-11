@@ -26,11 +26,14 @@ class TestPerfRegressionCheck(unittest.TestCase):
 
                 reference_file_path = test_utils.fixture_file_path(
                     "tickets.{}.{}.out.ok".format(override_type, rule))
+
                 with open(reference_file_path) as reference_file:
                     reference_str = reference_file.read()
 
                 err_msg = 'Incorrect script output for rule "{}" and type "{}".'.format(
                     rule, override_type)
+                print "Test result:\n{}\n\nExpected:\n{}".format(script_output_str.getvalue(),
+                                                                 reference_str)
                 self.assertEqual(script_output_str.getvalue(), reference_str, err_msg)
 
 if __name__ == "__main__":

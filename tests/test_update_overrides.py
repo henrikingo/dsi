@@ -2,6 +2,7 @@
 
 import json
 import os
+import shutil
 import unittest
 
 # TODO: once all shell script tests are moved to python unittests, analysis can be
@@ -26,6 +27,7 @@ class TestUpdateOverrides(unittest.TestCase):
         self.output_file = test_utils.fixture_file_path('update_override_test.json')
         self.config_file = test_utils.repo_root_file_path('config.yml')
         self.override_file = test_utils.fixture_file_path('perf_override.json')
+        self.regenerate_output_files = False #Note: causes all tests to pass
 
     def _update_overrides_compare(self, git_hash):
         """General comparison function used for hash-related test cases"""
@@ -46,6 +48,10 @@ class TestUpdateOverrides(unittest.TestCase):
         os.remove(self.intermed_file)
 
         expected_json = test_utils.fixture_file_path('update_overrides.json.ok')
+
+        if self.regenerate_output_files:
+            shutil.copyfile(self.output_file, expected_json)
+
         with open(expected_json) as exp_file_handle, open(self.output_file) as obs_file_handle:
             exp_updated_override = json.load(exp_file_handle)
             obs_updated_override = json.load(obs_file_handle)
@@ -81,6 +87,10 @@ class TestUpdateOverrides(unittest.TestCase):
         update_overrides.main(reference_args)
 
         expected_json = test_utils.fixture_file_path('update_ref_no_ticket.json.ok')
+
+        if self.regenerate_output_files:
+            shutil.copyfile(self.output_file, expected_json)
+
         with open(expected_json) as exp_file_handle, open(self.output_file) as obs_file_handle:
             exp_updated_override = json.load(exp_file_handle)
             obs_updated_override = json.load(obs_file_handle)

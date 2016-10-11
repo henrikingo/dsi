@@ -2,6 +2,7 @@
 
 import json
 import os
+import shutil
 import unittest
 
 import delete_overrides
@@ -17,6 +18,7 @@ class TestDeleteOverrides(unittest.TestCase):
         """
         self.output_file = test_utils.fixture_file_path('delete_override_test.json')
         self.config_file = test_utils.repo_root_file_path('config.yml')
+        self.regenerate_output_files = False #Note: causes all tests that compare a file to pass
 
     @staticmethod
     def _path_to_reference(prefix, rule, ticket):
@@ -29,6 +31,9 @@ class TestDeleteOverrides(unittest.TestCase):
         args = [ticket, '-f', override_file, '-d', self.output_file, '-r', rule,
                 '-c', self.config_file, '--verbose']
         delete_overrides.main(args)
+
+        if self.regenerate_output_files:
+            shutil.copyfile(self.output_file, expected_json)
 
         with open(expected_json) as exp_file_handle, open(self.output_file) as obs_file_handle:
             exp_updated_override = json.load(exp_file_handle)
@@ -54,12 +59,12 @@ class TestDeleteOverrides(unittest.TestCase):
         self._delete_overrides_compare(override_file, ticket, rule, compare_against)
 
     def test_perf_all_deleted(self):
-        """Test deletion for ticket 'noise' in all rules. 'noise' is the only
+        """Test deletion for ticket 'PERF-755' in all rules. 'PERf-755' is the only
         ticket associated with each test override, so a clean deletion without
         updates can be made.
         """
         override_file = test_utils.fixture_file_path('perf_override.json')
-        ticket = 'noise'
+        ticket = 'PERF-755'
         rule = 'all'
         compare_against = self._path_to_reference('delete.perf', rule, ticket)
         self._delete_overrides_compare(override_file, ticket, rule, compare_against)
@@ -83,7 +88,7 @@ class TestDeleteOverrides(unittest.TestCase):
         self._delete_overrides_compare(override_file, ticket, rule, compare_against)
 
     def test_sysperf_all_deleted(self):
-        """Test deletion for ticket 'noise' in all rules. 'BF-1418' is the only
+        """Test deletion for ticket 'BF-1418' in all rules. 'BF-1418' is the only
         ticket associated with each test override, so a clean deletion without
         updates can be made.
         """

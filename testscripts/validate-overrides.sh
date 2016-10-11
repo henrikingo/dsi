@@ -8,7 +8,20 @@ source ${BUILDIR}/test-common.sh
 cd ${BASEDIR}/analysis
 
 failed=0
-for file in v3.2/*.json v3.0/*.json master/*.json; do
+
+# Actual override files
+testfiles=$(ls */*.json)
+
+# Also validate files used for unittests
+
+# This validates both input and output override files. Unfortunately output files still require
+# more work. See PERF-755 for tracking.
+#testfiles+=" $(ls ../tests/unittest-files/*.json*| grep -v dashboard | grep -v tags | grep -v history | grep -v revisions | grep -v report)"
+
+# This only validates the input override files
+testfiles+=" $(ls ../tests/unittest-files/*.json| grep -v dashboard | grep -v tags | grep -v history | grep -v revisions | grep -v report)"
+
+for file in $testfiles; do
     cmd_str="python validate_override_file.py $file"
     if [ "$perf_jira_user" != "" ] && [ "$perf_jira_pw" != "" ]; then
         echo "Using Jira credentials."

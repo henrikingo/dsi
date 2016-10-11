@@ -21,6 +21,7 @@ class TestOverride(unittest.TestCase):
         self.git_hash = 'c2af7ab'
         self.config_file = test_utils.repo_root_file_path('config.yml')
         self.verbose = True
+        self.regenerate_output_files = False #Note: causes all tests to pass
 
     def test_update_reference(self):
         """Test Override.update_override with rule reference
@@ -41,6 +42,9 @@ class TestOverride(unittest.TestCase):
                               verbose=self.verbose)
 
         update_obj.update_override('reference', ticket=ticket)
+
+        if self.regenerate_output_files:
+            update_obj.save_to_file(test_utils.fixture_file_path('update_override_exp.json.ok'))
 
         updated_override = test_utils.read_fixture_json_file('update_override_exp.json.ok')
 
@@ -77,6 +81,10 @@ class TestOverride(unittest.TestCase):
         update_obj.update_override('threshold',
                                    new_override_val=new_override_val,
                                    ticket=ticket)
+
+        if self.regenerate_output_files:
+            update_obj.save_to_file(
+                test_utils.fixture_file_path('update_override_threshold_exp.json.ok'))
 
         updated_override = test_utils.read_fixture_json_file(
             'update_override_threshold_exp.json.ok')
@@ -126,6 +134,9 @@ class TestOverride(unittest.TestCase):
                               verbose=self.verbose)
         update_obj.delete_overrides_by_ticket(ticket, rules)
 
+        if self.regenerate_output_files:
+            update_obj.save_to_file(test_utils.fixture_file_path('delete_update_override.json.ok'))
+
         expected_overrides = test_utils.read_fixture_json_file('delete_update_override.json.ok')
         self.assertEqual(update_obj.overrides, expected_overrides)
 
@@ -144,6 +155,9 @@ class TestOverride(unittest.TestCase):
                               config_file=self.config_file,
                               verbose=self.verbose)
         update_obj.delete_overrides_by_ticket(ticket, rules)
+
+        if self.regenerate_output_files:
+            update_obj.save_to_file(test_utils.fixture_file_path('delete_update_latest.json.ok'))
 
         expected_overrides = test_utils.read_fixture_json_file('delete_update_latest.json.ok')
         self.assertEqual(update_obj.overrides, expected_overrides)
@@ -173,7 +187,7 @@ class TestOverride(unittest.TestCase):
         override_obj = Override(self.project, override_info=override_file)
         expected_ref_tickets = set([u'BF-1262', u'BF-1449', u'BF-1461', u'SERVER-19901',
                                     u'SERVER-20623', u'SERVER-21263', u'BF-1169', u'SERVER-20018',
-                                    u'mmapspedup', u'geo', u'SERVER-21080'])
+                                    u'PERF-755', u'SERVER-21080', u'SERVER-20786'])
         self.assertEqual(override_obj.get_tickets(), expected_ref_tickets)
 
     def test_get_tickets_rule_threshold(self):
