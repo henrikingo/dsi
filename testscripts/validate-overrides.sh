@@ -27,7 +27,7 @@ done
 #testfiles+=" $(ls ../tests/unittest-files/*.json*| grep -v dashboard | grep -v tags | grep -v history | grep -v revisions | grep -v report)"
 
 # This only validates the input override files
-testfiles+=" $(ls ../tests/unittest-files/*.json| grep -v dashboard | grep -v tags | grep -v history | grep -v revisions | grep -v report)"
+testfiles=" $(ls ../tests/unittest-files/*.json| grep -v dashboard | grep -v tags | grep -v history | grep -v revisions | grep -v report)"
 
 # Echo: Tickets in the unittest files don't need to actually exist in Jira
 for file in $testfiles; do
