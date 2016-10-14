@@ -395,7 +395,8 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
                 real_stdout = sys.stdout
                 log_stdout = StringIO.StringIO()
                 sys.stdout = log_stdout
-                result.update(project_test_rules(args.project_id, args.variant, args.is_patch, to_test))
+                result.update(project_test_rules(args.project_id, args.variant,
+                                                 args.is_patch, to_test))
                 # Store log_stdout in log_raw
                 test_log = log_stdout.getvalue()
                 result['log_raw'] += log_header(test)

@@ -132,7 +132,7 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
 
     results = []
 
-    for test in testnames:
+    for test in testnames: # pylint: disable=too-many-nested-blocks
         # The first entry is valid. The rest is dummy data to match the existing format
         result = {'test_file' : test, 'exit_code' : 0, 'elapsed' : 5, 'start': 1441227291.9624,
                   'end': 1441227293.4287, 'log_raw' : ''}
@@ -181,8 +181,8 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
                     try:
                         override_time = parser.parse(overrides['ndays'][test]['create_time'])
                         this_time = parser.parse(this_one['create_time'])
-                        if (override_time < this_time) and ((override_time + timedelta(days=args.ndays))
-                                                            >= this_time):
+                        if ((override_time < this_time) and
+                                ((override_time + timedelta(days=args.ndays)) >= this_time)):
                             target = overrides['ndays'][test]
                             using_override.append('ndays')
                             LOGGER.info('Override in NDays for test %s', test)
@@ -217,7 +217,8 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
                                                        args.threadNoise,
                                                        using_override=using_override)
                     if strict_failed:
-                        fail_info = '  NDays check failed because of drop greater than 1.5 x threshold'
+                        fail_info = ('  NDays check failed because of drop greater'
+                                     ' than 1.5 x threshold')
                         result[check_name] = True
                         result['log_raw'] += fail_info + '\n'
                     elif current_failed:
