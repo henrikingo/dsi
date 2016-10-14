@@ -108,6 +108,7 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
         help="File to read for comparison override information")
     arg_parser.add_argument(
         "--variant", dest="variant", help="Variant to lookup in the override file")
+    arg_parser.add_argument('--task', dest='task', help='task_name for the test in Evergreen')
     arg_parser.add_argument(
         "--out-file", help="File to write the results table to. Defaults to stdout.")
     arg_parser.add_argument(
@@ -125,8 +126,8 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
     arg_parsing.add_args(arg_parser, "reports analysis")
 
     args = arg_parser.parse_args(args)
-    (history, tag_history, overrides) = read_histories(args.variant, args.file, args.tfile,
-                                                       args.overrideFile)
+    (history, tag_history, overrides) = read_histories(args.variant, args.task,
+                                                       args.file, args.tfile, args.overrideFile)
     testnames = history.testnames()
     failed = 0
 

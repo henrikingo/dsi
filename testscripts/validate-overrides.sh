@@ -5,9 +5,11 @@ BASEDIR=$(dirname $(dirname $0))
 
 source ${BUILDIR}/test-common.sh
 
-cd ${BASEDIR}/analysis
-
 failed=0
+cmd_str="${BUILDIR}/validate_json_sorted.py"
+run_test $cmd_str
+
+cd ${BASEDIR}/analysis
 
 # Actual override files
 testfiles=$(ls */*.json)

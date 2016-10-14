@@ -12,36 +12,38 @@ class TestValidate(unittest.TestCase):
 
         self.override = {
             "variant": {
-                "reference": {
-                    "test": {
-                        "results": {
-                            "1": {
-                                "ops_per_sec": 1
-                            }
-                        },
-                        "threads": None,
-                        "ticket": ["SERVER-1"],
-                        "revision": None
-                    }
-                },
-                "ndays": {
-                    "test": {
-                        "create_time": "foo",
-                        "results": {
-                            "1": {
-                                "ops_per_sec": 1
-                            }
-                        },
-                        "threads": None,
-                        "ticket": ["PERF-2"],
-                        "revision": None
-                    }
-                },
-                "threshold": {
-                    "test": {
-                        "thread_threshold": 1,
-                        "ticket": ["BF-3"],
-                        "threshold": 1
+                "task": {
+                    "reference": {
+                        "test": {
+                            "results": {
+                                "1": {
+                                    "ops_per_sec": 1
+                                }
+                            },
+                            "threads": None,
+                            "ticket": ["SERVER-1"],
+                            "revision": None
+                        }
+                    },
+                    "ndays": {
+                        "test": {
+                            "create_time": "foo",
+                            "results": {
+                                "1": {
+                                    "ops_per_sec": 1
+                                }
+                            },
+                            "threads": None,
+                            "ticket": ["PERF-2"],
+                            "revision": None
+                        }
+                    },
+                    "threshold": {
+                        "test": {
+                            "thread_threshold": 1,
+                            "ticket": ["BF-3"],
+                            "threshold": 1
+                        }
                     }
                 }
             }
@@ -59,45 +61,47 @@ class TestValidate(unittest.TestCase):
                     err))
 
     def test_empty_override(self):
-        """Fail validation when missing a variant override."""
+        """Fail validation when a variant or task is empty."""
 
         self.override["variant"] = {}
+        self._test_validation_fail()
+        self.override["variant"]["task"] = {}
         self._test_validation_fail()
 
     def test_missing_override_type(self):
         """Fail validation when missing an override_type."""
 
-        del self.override["variant"]["reference"]
+        del self.override["variant"]["task"]["reference"]
         self._test_validation_fail()
 
     def test_missing_test_override_key(self):
         """Fail validation when missing a required key in an override."""
 
-        del self.override["variant"]["reference"]["test"]["ticket"]
+        del self.override["variant"]["task"]["reference"]["test"]["ticket"]
         self._test_validation_fail()
         self.setUp()
-        del self.override["variant"]["ndays"]["test"]["create_time"]
+        del self.override["variant"]["task"]["ndays"]["test"]["create_time"]
         self._test_validation_fail()
 
     def test_missing_thread_override(self):
         """Fail validation when \"results\" is empty."""
 
-        self.override["variant"]["reference"]["test"]["results"] = {}
+        self.override["variant"]["task"]["reference"]["test"]["results"] = {}
         self._test_validation_fail()
 
     def test_bad_ticket_name(self):
         """Fail when an invalid ticket name is found."""
 
-        self.override["variant"]["reference"]["test"]["ticket"] = ["bad-ticket-name"]
+        self.override["variant"]["task"]["reference"]["test"]["ticket"] = ["bad-ticket-name"]
         self._test_validation_fail()
 
     def test_bad_threshold(self):
         """Fail validation when \"threshold\" overrides are missing required keys."""
 
-        del self.override["variant"]["threshold"]["test"]["thread_threshold"]
+        del self.override["variant"]["task"]["threshold"]["test"]["thread_threshold"]
         self._test_validation_fail()
         self.setUp()
-        del self.override["variant"]["threshold"]["test"]["ticket"]
+        del self.override["variant"]["task"]["threshold"]["test"]["ticket"]
         self._test_validation_fail()
 
     def _test_validation_fail(self):

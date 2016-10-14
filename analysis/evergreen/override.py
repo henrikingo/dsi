@@ -256,7 +256,8 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                                 )
 
                     # Finally, update the old override rule
-                    self.update_test(build_variant_name, test_name, rule, new_override_val, ticket)
+                    self.update_test(build_variant_name, task_name, test_name, rule,
+                                     new_override_val, ticket)
         self._log_final_checks()
 
     def update_override_threshold(self, threshold, thread_threshold, ticket=None):
@@ -307,18 +308,22 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                     continue
                 try:
                     for test_name, _ in self.evg.tests_from_task(task_info['task_id']):
-                        if test_name in variant_tests[variant]:
-                            variant_tests_remaining[variant].remove(test_name)
+                        if task_name in variant_tests[variant]:
+                            if test_name in variant_tests[variant][task_name]:
+                                variant_tests_remaining[variant][task_name].remove(test_name)
                 except evergreen_client.Empty:
-                    LOGGER.warning("Caught evergreen_client. Empty exception in "
+                    LOGGER.warning("Caught evergreen_client.Empty exception in "
                                    "_processing_revision in call to tests_from_task for "
                                    "task_id {0}. ".format(task_info['task_id']) +
                                    "Supressing error. This indicates something is wrong, "
                                    "but the current operation can still complete correctly.")
-            tests_remain = variant_tests_remaining[variant]
-            num_tests_missing_data += len(tests_remain)
-            for test in tests_remain:
-                LOGGER.debug('\tNo result for test {} in variant {}'.format(test, variant))
+            LOGGER.debug(variant_tests_remaining)
+            LOGGER.debug(variant)
+            for remaining_task in variant_tests_remaining[variant].keys():
+                tests_remain = variant_tests_remaining[variant][remaining_task]
+                num_tests_missing_data += len(tests_remain)
+                for test in tests_remain:
+                    LOGGER.debug('\tNo result for test {} in variant {}'.format(test, variant))
         return num_tests_missing_data
 
     def _get_recent_commit(self, overrides_to_update, tasks):
@@ -331,15 +336,20 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         :raises: TestDataNotFound if no such reference is found within the 10 most recent revisions.
         """
         # get tests by variant (regardless of whether the rule is reference or ndays)
+        LOGGER.debug(overrides_to_update)
+        LOGGER.debug(tasks)
         if not self.evg:
             creds = helpers.create_credentials_config()
             self.evg = evergreen_client.Client(creds['evergreen'])
         variant_tests = {}
-        for _, build_variant_tests in overrides_to_update.iteritems():
-            for build_variant, test_list in build_variant_tests.iteritems():
-                if build_variant not in variant_tests:
-                    variant_tests[build_variant] = set()
-                variant_tests[build_variant].update(test_list)
+        for rule_name, rule_tasks in overrides_to_update.iteritems():
+            for task_name, task_variants in rule_tasks.iteritems():
+                for build_variant, test_list in task_variants.iteritems():
+                    if build_variant not in variant_tests:
+                        variant_tests[build_variant] = {}
+                    if task_name not in variant_tests[build_variant]:
+                        variant_tests[build_variant][task_name] = set()
+                    variant_tests[build_variant][task_name].update(test_list)
 
         revision_case_count = []  # does the revision cover all variant-test cases?
         for revision_info in self.evg.get_recent_revisions(self.project):
@@ -361,7 +371,7 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         # Could not find a revision with the necessary test data. Output an error message with some
         # details about the 'closest' most recent revision.
         (min_revision, min_count) = min(revision_case_count, key=lambda x: x[1])
-        raise TestDataNotFound('Could not find test data for all the variant-test updates '
+        raise TestDataNotFound('Could not find test data for all the variant-task-test updates '
                                'needed within the 10 most recent revisions of project {}. '
                                'Revision {} comes closest with {} case(s) of missing test '
                                'data. Please re-run this operation with a commit reference '
@@ -376,61 +386,65 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
 
         :param dict overrides_to_update: structured so that for every rule, we know the build
         variants and the corresponding list of tests that need to be updated
-            i.e. {rule -> {build_variant -> [tests]}}
+            i.e. {rule -> {build_variant -> {task -> [tests]}}}
         :param str|list[str] tasks: as of right now, the user must specify which tasks we should
         look at during the update operation. This will likely not be necessary after PERF-504 (adds
         task attribute to the override file) is implemented.
         """
+        # pylint: disable=too-many-locals,too-many-nested-blocks
         if not self.commit:
             self._get_recent_commit(overrides_to_update, tasks)
-        for rule, build_variant_tests in overrides_to_update.iteritems():
-            LOGGER.debug('Updating overrides for rule: {0}'.format(rule))
-            self.summary[rule] = {}
-            for build_variant_name, build_variant_id in self.evg.build_variants_from_git_commit(
-                    self.project, self.commit):
-                if build_variant_name not in build_variant_tests.keys():
-                    LOGGER.debug('Skipping build variant: {0}'.format(build_variant_name))
-                    continue
-                self.summary[rule][build_variant_name] = {}
-                LOGGER.debug('Processing build variant: {0}'.format(build_variant_name))
-
-                tests = overrides_to_update[rule][build_variant_name]
-                for task_name, task_id in self.evg.tasks_from_build_variant(build_variant_id):
-                    if 'compile' in task_name:
-                        LOGGER.debug('\tSkipping compilation stage')
+        for rule, task_tests in overrides_to_update.iteritems():
+            for task_name1, build_variant_tests in task_tests.iteritems():
+                LOGGER.debug('Updating overrides for rule {0}, task {1}'.format(rule, task_name1))
+                self.summary[rule] = {}
+                for build_variant_name, build_variant_id in self.evg.build_variants_from_git_commit(
+                        self.project, self.commit):
+                    if build_variant_name not in build_variant_tests.keys():
+                        LOGGER.debug('Skipping build variant: {0}'.format(build_variant_name))
                         continue
-                    match = helpers.matches_any(task_name, tasks)
-                    if not match:
-                        LOGGER.debug('\tSkipping task: {0}'.format(task_name))
-                        continue
-                    self.summary[rule][build_variant_name][task_name] = []
-                    LOGGER.debug('\tProcessing task: {0}'.format(task_name))
+                    self.summary[rule][build_variant_name] = {}
+                    LOGGER.debug('Processing build variant: {0}'.format(build_variant_name))
 
-                    history = self._get_task_history(task_name, task_id)
-                    try:
-                        for test_name, _ in self.evg.tests_from_task(task_id):
-                            if test_name not in tests:
-                                LOGGER.debug('\t\tSkipping test: {0}'.format(test_name))
-                                continue
+                    tests = overrides_to_update[rule][task_name1][build_variant_name]
+                    for task_name, task_id in self.evg.tasks_from_build_variant(build_variant_id):
+                        if 'compile' in task_name:
+                            LOGGER.debug('\tSkipping compilation stage')
+                            continue
+                        match = helpers.matches_any(task_name, tasks)
+                        if not match:
+                            LOGGER.debug('\tSkipping task: {0}'.format(task_name))
+                            continue
+                        self.summary[rule][build_variant_name][task_name] = []
+                        LOGGER.debug('\tProcessing task: {0}'.format(task_name))
 
-                            self.summary[rule][build_variant_name][task_name].append(test_name)
-                            LOGGER.debug('\t\tProcessing test: {0}'.format(test_name))
+                        history = self._get_task_history(task_name, task_id)
+                        try:
+                            for test_name, _ in self.evg.tests_from_task(task_id):
+                                if test_name not in tests:
+                                    LOGGER.debug('\t\tSkipping test: {0}'.format(test_name))
+                                    continue
 
-                            # Get the reference data we want to use as the override value
-                            test_reference = self._get_test_reference_data(history, test_name)
+                                self.summary[rule][build_variant_name][task_name].append(test_name)
+                                LOGGER.debug('\t\tProcessing test: {0}'.format(test_name))
 
-                            # Finally, update the old override rule
-                            self.update_test(build_variant_name, test_name, rule, test_reference)
-                    except evergreen_client.Empty:
-                        # _log_summary() will account for the case where we've skipped a task
-                        # with no test results. (Hence no additional log message here.)
-                        continue
+                                # Get the reference data we want to use as the override value
+                                test_reference = self._get_test_reference_data(history, test_name)
+
+                                # Finally, update the old override rule
+                                self.update_test(build_variant_name, task_name, test_name,
+                                                 rule, test_reference)
+                        except evergreen_client.Empty:
+                            # _log_summary() will account for the case where we've skipped a task
+                            # with no test results. (Hence no additional log message here.)
+                            continue
         self._log_summary()
 
-    def update_test(self, build_variant, test, rule, new_data, ticket=None):  # pylint: disable=too-many-arguments
+    def update_test(self, build_variant, task, test, rule, new_data, ticket=None):  # pylint: disable=too-many-arguments
         """Update the override reference data for the given test.
 
         :param str build_variant: The Evergreen name of the build variant
+        :param str task: The Evergreen task
         :param str test: The Evergreen name of the test within that build variant
         :param str rule: The regression analysis rule (e.g. "reference", "ndays")
         :param dict new_data: The raw data for this test to use as a new reference point
@@ -440,22 +454,22 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         :rtype: dict
         """
         # Find the overrides for this build variant...
-        try:
-            variant_ovr = self.overrides[build_variant]
-        except KeyError:
-            self.overrides[build_variant] = {
+        if build_variant not in self.overrides:
+            LOGGER.debug("Adding variant: {}".format(build_variant))
+            self.overrides[build_variant] = {}
+        if task not in self.overrides[build_variant]:
+            LOGGER.debug("Adding task: {}".format(task))
+            self.overrides[build_variant][task] = {
                 'reference': {},
                 'ndays': {},
                 'threshold': {}
             }
-            variant_ovr = self.overrides[build_variant]
+        task_ovr = self.overrides[build_variant][task]
 
         # ...then, for this regression rule (e.g. 'reference', 'ndays')...
-        try:
-            rule_ovr = variant_ovr[rule]
-        except KeyError:
-            variant_ovr[rule] = {}
-            rule_ovr = variant_ovr[rule]
+        if rule not in task_ovr:
+            task_ovr[rule] = {}
+        rule_ovr = task_ovr[rule]
 
         # ...and lastly, the raw data for the test
         try:
@@ -489,12 +503,13 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         """
         tickets = set()
         for variant_value in self.overrides.values():
-            if rule in variant_value:
-                ref = variant_value[rule]
-                tickets = tickets.union(set(itertools.chain(*[test['ticket'] for test in
-                                                              ref.values() if 'ticket' in
-                                                              test.keys() and isinstance(
-                                                                  test['ticket'], list)])))
+            for task_value in variant_value.values():
+                if rule in task_value:
+                    ref = task_value[rule]
+                    tickets = tickets.union(set(itertools.chain(*[test['ticket'] for test in
+                                                                ref.values() if 'ticket' in
+                                                                test.keys() and isinstance(
+                                                                    test['ticket'], list)])))
         return tickets
 
     def rename_ticket(self, old_ticket, new_ticket):
@@ -523,15 +538,16 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
 
         return overrides
 
-    def _ticket_variant_rule_deletion(self, build_variant, rule, ticket, to_update, to_remove):  # pylint: disable=too-many-arguments
-        """Given a ticket, build variant, and rule, figure out what can be completely removed
+    def _ticket_variant_rule_deletion(self, variant, task, rule, ticket, to_update, to_remove):  # pylint: disable=too-many-arguments
+        """Given a ticket, build variant, task, and rule, figure out what can be completely removed
         and what tests will need to be updated.
 
-        :type build_variant: str
+        :type variant: str
+        :type task: str
         :type rule: str
         :type ticket: str
         :param dict to_update: for every rule, record the build variants and corresponding list of
-            tests that need to be updated, i.e. {rule -> {build variant -> [tests]}}
+            tests that need to be updated, i.e. {rule -> {build variant -> { task -> [tests]}}}
         :param list[(str, str, str)] to_remove: record the build variant, rule, and test where the
             'ticket' key of a test was not a list. Presumably, this is a single ticket (str) and so
             we append it to a list to be removed as well. (Will not be needed when JSON validation
@@ -539,32 +555,35 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         :rtype: (dict, list[(str, str, str)])
         """
         # Remove anything that can be blanket removed.
-        self.overrides[build_variant][rule] = {name: test for (name, test) in
-                                               self.overrides[build_variant][rule].items()
+        self.overrides[variant][task][rule] = {name: test for (name, test) in
+                                               self.overrides[variant][task][rule].items()
                                                if 'ticket' in test and
                                                test['ticket'].count(ticket) != len(test['ticket'])}
-        #build_variant_rule = self.overrides[build_variant][rule]
-        for test in self.overrides[build_variant][rule]:
+
+        #variant_rule = self.overrides[variant][task][rule]
+        for test in self.overrides[variant][task][rule]:
             # Look to see if it should be pulled from the ticket list
-            check_tickets = self.overrides[build_variant][rule][test]['ticket']
+            check_tickets = self.overrides[variant][task][rule][test]['ticket']
             if ticket in check_tickets:
                 if isinstance(check_tickets, list):
                     check_tickets.remove(ticket)
-                    LOGGER.info('Deleting test {} from variant {} and rule {}, but '
-                                'override remains'.format(test, build_variant, rule))
+                    LOGGER.info('Deleting test {} from variant {}, task {} and rule {}, but '
+                                'override remains'.format(test, variant, task, rule))
                     LOGGER.info('Remaining tickets are {}'.format(str(check_tickets)))
                     if rule is 'threshold':
-                        WARNER.warn('Threshold override for {} from variant {} '
+                        WARNER.warn('Threshold override for {} from variant {} and task {} '
                                     'remains due to other outstanding '
-                                    'tickets.'.format(test, build_variant))
+                                    'tickets.'.format(test, variant, task))
                     else:
                         if rule not in to_update:
                             to_update[rule] = {}
-                        if build_variant not in to_update[rule]:
-                            to_update[rule][build_variant] = []
-                        to_update[rule][build_variant].append(test)
+                        if task not in to_update[rule]:
+                            to_update[rule][task] = {}
+                        if variant not in to_update[rule][task]:
+                            to_update[rule][task][variant] = []
+                        to_update[rule][task][variant].append(test)
                 else:
-                    to_remove.append((build_variant, rule, test))
+                    to_remove.append((variant, task, rule, test))
         return (to_update, to_remove)
 
     def delete_overrides_by_ticket(self, ticket, rules, tasks='.*'):
@@ -581,18 +600,28 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         to_update = {}
         to_remove = []
         for build_variant in self.overrides.keys():
-            for rule in rules:
-                if rule in self.overrides[build_variant]:
-                    (to_update, to_remove) = self._ticket_variant_rule_deletion(build_variant,
-                                                                                rule,
-                                                                                ticket,
-                                                                                to_update,
-                                                                                to_remove)
+            for task in self.overrides[build_variant].keys():
+                for rule in rules:
+                    if rule in self.overrides[build_variant][task]:
+                        (to_update, to_remove) = self._ticket_variant_rule_deletion(
+                            build_variant, task, rule, ticket, to_update, to_remove)
 
-        # This is used to account for cases where the 'ticket' key has a str value.
+                # Sometimes the above returns with a struct that just has empty leaves. If so
+                # prune them.
+                check_task = self.overrides[build_variant][task]
+                if not check_task['ndays']\
+                    and not check_task['reference']\
+                    and not check_task['threshold']:
+
+                    del self.overrides[build_variant][task]
+
+            if not self.overrides[build_variant]:
+                del self.overrides[build_variant]
+
+        # This is used to account for cases where the 'ticket' key has a single value.
         # Can be removed after merge with JSON validation precursor check.
-        for (build_variant, rule, test) in to_remove:
-            del self.overrides[build_variant][rule][test]
+        for (build_variant, task, rule, test) in to_remove:
+            del self.overrides[build_variant][task][rule][test]
 
         self._update_multiple_overrides(to_update, tasks)
 
@@ -646,32 +675,36 @@ def validate(overrides_dict, jira_api_auth=None):
     query_jira_for_tickets = jira_api_auth is not None
 
     for variant_name, variant_override in overrides_dict.items():
-        for override_type in ["reference", "ndays", "threshold"]:
-            assert override_type in variant_override, \
-                'Required override type "{}" missing from override["{}"]'.format(
-                    override_type, variant_name)
+        assert len(variant_override) > 0, "No tasks specified in variant {}.".format(variant_name)
+        for task_name, task_override in variant_override.items():
+            for override_type in ["reference", "ndays", "threshold"]:
+                assert override_type in task_override, \
+                    'Required override type "{}" missing from override["{}"]["{}"]'.format(
+                        override_type, variant_name, task_name)
 
-            required_keys = expected_keys_per_type[override_type]
-            for test_name, test_override in variant_override[override_type].items():
-                for key in required_keys:
-                    assert key in test_override, \
-                        ('Required key "{}" not present in override["{}"]'
-                         '["{}"]["{}"]').format(key, variant_name, override_type, test_name)
+                required_keys = expected_keys_per_type[override_type]
+                for test_name, test_override in task_override[override_type].items():
+                    for key in required_keys:
+                        assert key in test_override, \
+                            ('Required key "{}" not present in override["{}"]["{}"]["{}"]'
+                             '["{}"]').format(
+                                 key, variant_name, task_name, override_type, test_name)
 
-                if override_type in ["reference", "ndays"]:
-                    _validate_results_dict(
-                        variant_name, override_type, test_name, test_override["results"])
+                    if override_type in ["reference", "ndays"]:
+                        _validate_results_dict(variant_name, task_name, override_type,
+                                               test_name, test_override["results"])
 
-                ticket_list = test_override["ticket"]
-                _validate_ticket_list(variant_name, override_type, test_name, ticket_list)
+                    ticket_list = test_override["ticket"]
+                    _validate_ticket_list(variant_name, task_name, override_type,
+                                          test_name, ticket_list)
 
-                if query_jira_for_tickets:
-                    all_tickets.update(ticket_list)
+                    if query_jira_for_tickets:
+                        all_tickets.update(ticket_list)
 
     if query_jira_for_tickets and all_tickets:
         _check_tickets_exist(all_tickets, jira_api_auth)
 
-def _validate_results_dict(variant_name, override_type, test_name, result_dict):
+def _validate_results_dict(variant_name, task_name, override_type, test_name, result_dict):
     """
     Validate `result_dict`, a "results" dictionary from an override configuration, throwing an
     `AssertionError` if a problem is detected.
@@ -686,23 +719,22 @@ def _validate_results_dict(variant_name, override_type, test_name, result_dict):
 
         thread_specific_override = True
         assert "ops_per_sec" in thread_override, \
-            ('"ops_per_sec" key missing in override["{}"]["{}"]'
-             '["{}"]["{}"].').format(variant_name, override_type, test_name, num_threads)
+            ('"ops_per_sec" key missing in override["{}"]["{}"]["{}"]'
+             '["{}"]["{}"].').format(variant_name, task_name, override_type, test_name, num_threads)
 
     assert thread_specific_override, \
-        ('No override data found in override["{}"]["{}"]'
-         '["{}"]["results"]').format(variant_name, override_type, test_name)
+        ('No override data found in override["{}"]["{}"]["{}"]'
+         '["{}"]["results"]').format(variant_name, task_name, override_type, test_name)
 
-def _validate_ticket_list(
-        variant_name, override_type, test_name, ticket_list):
+def _validate_ticket_list(variant_name, task_name, override_type, test_name, ticket_list):
     """
     Validate `ticket_list`, a list of tickets from an override configuration, throwing an
     `AssertionError` if a problem is detected.
     """
 
     ticket_name_regex = r"^(PERF|SERVER|BF)-\d+$"
-    err_msg_ticket_path = 'override["{}"]["{}"]["{}"]["ticket"]'.format(
-        variant_name, override_type, test_name)
+    err_msg_ticket_path = 'override["{}"]["{}"]["{}"]["{}"]["ticket"]'.format(
+        variant_name, task_name, override_type, test_name)
     assert isinstance(ticket_list, list), err_msg_ticket_path + " is not a list."
     assert ticket_list, err_msg_ticket_path + " is empty."
 
@@ -713,8 +745,8 @@ def _validate_ticket_list(
 
         valid_ticket_name = re.match(ticket_name_regex, ticket_name) is not None
         assert valid_ticket_name, \
-            'Ticket name "{}" in {} is invalid; it must satisfy the following ' \
-            'regex: "{}"'.format(ticket_name, err_msg_ticket_path, ticket_name_regex)
+            ('Ticket name "{}" in {} is invalid; it must satisfy the following ' \
+            'regex: "{}"').format(ticket_name, err_msg_ticket_path, ticket_name_regex)
 
 def _check_tickets_exist(ticket_names, jira_api_auth):
     """

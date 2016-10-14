@@ -2,8 +2,8 @@
 Unit tests for `dashboard_gen.py`.
 """
 
-import unittest
 import os
+import unittest
 
 import dashboard_gen
 from tests import test_utils

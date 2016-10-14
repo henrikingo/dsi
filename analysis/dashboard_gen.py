@@ -265,6 +265,8 @@ def main(args):
                         help="File to read override information")
     parser.add_argument("--variant", dest="variant", help="Variant to lookup"
                         " in the override file")
+    parser.add_argument("--task", dest="task", help="Task to lookup"
+                        " in the override file")
     parser.add_argument("--jira-user", dest="jira_user", required=True, help=
                         "Jira account used to check ticket states. Incorrect"
                         "user/password may result in override information not"
@@ -285,8 +287,8 @@ def main(args):
     # The result histories are stored in global variables within this module as they
     # are accessed across many rules.
     global HISTORY, TAG_HISTORY, OVERRIDE_INFO # pylint: disable=global-statement
-    (HISTORY, TAG_HISTORY, OVERRIDE_INFO) = read_histories(ARGS.variant, \
-        ARGS.hfile, ARGS.tfile, ARGS.ofile)
+    (HISTORY, TAG_HISTORY, OVERRIDE_INFO) = read_histories(ARGS.variant, ARGS.task,\
+                                                           ARGS.hfile, ARGS.tfile, ARGS.ofile)
 
     report = {'baselines':[]}
     for baseline in ARGS.reference:

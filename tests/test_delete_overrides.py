@@ -99,7 +99,7 @@ class TestDeleteOverrides(unittest.TestCase):
         self._delete_overrides_compare(override_file, ticket, rule, compare_against)
 
     def test_delete_and_update(self):
-        """Test deletion for ticket 'PERF-REMOVE' in all rules, where some test
+        """Test deletion for ticket 'PERF-002' in all rules, where some test
         overrides cannot be deleted (other tickets associated with them)--update
         based on the given reference commit.
         """

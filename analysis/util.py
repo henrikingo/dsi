@@ -6,6 +6,7 @@ from __future__ import absolute_import
 from __future__ import division
 import doctest
 import json
+import os
 import sys
 
 import datetime
@@ -80,7 +81,7 @@ def get_json(filename):
     with open(filename) as json_file:
         return json.load(json_file)
 
-def read_histories(variant, hfile, tfile, ofile):
+def read_histories(variant, task, hfile, tfile, ofile):
     ''' Set up result histories from various files and returns the
     tuple (history, tag_history, overrides):
      history - this series include the run to be checked, and previous or NDays
@@ -90,16 +91,22 @@ def read_histories(variant, hfile, tfile, ofile):
 
     tag_history = None
     history = History(get_json(hfile))
+
+    # Backward compatibility: If task was not given, read it from the history file instead
+    if task is None:
+        task = history.task()
+
     if tfile:
         tag_history = History(get_json(tfile))
     # Default empty override structure
     overrides = {'ndays': {}, 'reference': {}, 'threshold': {}}
-    if ofile:
+    if ofile and os.path.isfile(ofile):
         # Read the overrides file
         foverrides = get_json(ofile)
         # Is this variant in the overrides file?
         if variant in foverrides:
-            overrides = foverrides[variant]
+            if task in foverrides[variant]:
+                overrides = foverrides[variant][task]
     return(history, tag_history, overrides)
 
 def compare_one_result_base(current, reference, noise_level=0,

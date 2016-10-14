@@ -19,6 +19,10 @@ class History(object):
         return set(list(itertools.chain.from_iterable([[z["name"] for z in c["data"]["results"]]
                                                        for c in self._raw])))
 
+    def task(self):
+        """Get the task that this history belongs to (as recorded in the history.json file)."""
+        return self._raw[0]['task_name']
+
     def series_at_revision(self, testname, revision):
         """Get history data for specificied revision"""
         test_series = self.series(testname)
