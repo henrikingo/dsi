@@ -87,9 +87,6 @@ class TestOverride(unittest.TestCase):
             update_obj.save_to_file(
                 test_utils.fixture_file_path('update_override_threshold_exp.json.ok'))
 
-        with open(test_utils.fixture_file_path('update_override_threshold_exp.json.out.henrik'), "w") as file_handle:
-            json.dump(update_obj.overrides, file_handle, indent=4, separators=[',', ':'], sort_keys=True)
-
         updated_override = test_utils.read_fixture_json_file(
             'update_override_threshold_exp.json.ok')
         self.assertEqual(update_obj.overrides, updated_override)

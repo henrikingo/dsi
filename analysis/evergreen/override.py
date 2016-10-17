@@ -317,8 +317,7 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                                    "task_id {0}. ".format(task_info['task_id']) +
                                    "Supressing error. This indicates something is wrong, "
                                    "but the current operation can still complete correctly.")
-            LOGGER.debug(variant_tests_remaining)
-            LOGGER.debug(variant)
+
             for remaining_task in variant_tests_remaining[variant].keys():
                 tests_remain = variant_tests_remaining[variant][remaining_task]
                 num_tests_missing_data += len(tests_remain)
@@ -336,8 +335,6 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         :raises: TestDataNotFound if no such reference is found within the 10 most recent revisions.
         """
         # get tests by variant (regardless of whether the rule is reference or ndays)
-        LOGGER.debug(overrides_to_update)
-        LOGGER.debug(tasks)
         if not self.evg:
             creds = helpers.create_credentials_config()
             self.evg = evergreen_client.Client(creds['evergreen'])
