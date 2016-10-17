@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export CLUSTER=$1
+export EXISTING="${2:-false}"
 BINDIR=$(dirname $0)
 TERRAFORM="${TERRAFORM:-./terraform}"
 
@@ -20,10 +21,15 @@ if [ -e "cluster.json" ]; then
     echo "Using var_file ${VAR_FILE}"
 fi
 
-echo "Create AWS cluster for $CLUSTER"
+echo "EXISTING IS $EXISTING"
+if [ $EXISTING == "true" ]; then
+    echo "Reusing AWS cluster for $CLUSTER"
+else
+    echo "Create AWS cluster for $CLUSTER"
+fi
 
 # create all resources and instances
-if [ $CLUSTER == "shard" -o $CLUSTER == "longevity" ]
+if [[ $EXISTING != "true"  && ( $CLUSTER == "shard" || $CLUSTER == "longevity" ) ]]
 then
     # Shard cluster
     $TERRAFORM apply $VAR_FILE -var="mongod_instance_count=3"  | tee terraform.log
