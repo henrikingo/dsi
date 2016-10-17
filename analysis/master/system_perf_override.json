@@ -7472,7 +7472,7 @@
         }
     },
     "linux-oplog-compare":{
-        "core_workloads_WT":{
+        "core_workloads_WT_oplog_comp":{
             "ndays":{},
             "reference":{
                 "insert_ttl-wiredTiger":{
