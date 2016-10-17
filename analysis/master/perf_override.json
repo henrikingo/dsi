@@ -1855,99 +1855,6 @@
                         "BF-3491"
                     ]
                 },
-                "Commands.DistinctWithoutIndex":{
-                    "create_time":"2016-02-19T22:11:20.02Z",
-                    "max":104.56996813502919,
-                    "name":"Commands.DistinctWithoutIndex",
-                    "order":3091,
-                    "results":{
-                        "1":{
-                            "ops_per_sec":98.53092186689122
-                        },
-                        "2":{
-                            "ops_per_sec":100.95290689753489
-                        },
-                        "4":{
-                            "ops_per_sec":104.56996813502919
-                        },
-                        "8":{
-                            "ops_per_sec":97.65358041775556
-                        }
-                    },
-                    "revision":"a048ec78eac1c7e2ab5f6656cfa61c42bf3656a4",
-                    "tag":"",
-                    "threads":[
-                        "1",
-                        "8",
-                        "2",
-                        "4"
-                    ],
-                    "ticket":[
-                        "BF-2618"
-                    ]
-                },
-                "Commands.FindAndModifySortedDelete":{
-                    "create_time":"2016-03-18T22:00:50.43Z",
-                    "max":98.29102769356943,
-                    "name":"Commands.FindAndModifySortedDelete",
-                    "order":3360,
-                    "results":{
-                        "1":{
-                            "ops_per_sec":97.56086997650733
-                        },
-                        "2":{
-                            "ops_per_sec":97.45314720218823
-                        },
-                        "4":{
-                            "ops_per_sec":97.93848030831977
-                        },
-                        "8":{
-                            "ops_per_sec":98.29102769356943
-                        }
-                    },
-                    "revision":"c2af7abae8d09d290d7457ab77f5a7529806b75a",
-                    "tag":"",
-                    "threads":[
-                        "1",
-                        "8",
-                        "2",
-                        "4"
-                    ],
-                    "ticket":[
-                        "BF-2618"
-                    ]
-                },
-                "Commands.FindAndModifySortedUpdate":{
-                    "create_time":"2016-03-18T22:00:50.43Z",
-                    "max":99.47858476501348,
-                    "name":"Commands.FindAndModifySortedUpdate",
-                    "order":3360,
-                    "results":{
-                        "1":{
-                            "ops_per_sec":99.47858476501348
-                        },
-                        "2":{
-                            "ops_per_sec":99.22639941353152
-                        },
-                        "4":{
-                            "ops_per_sec":99.17167118745394
-                        },
-                        "8":{
-                            "ops_per_sec":99.22238560137788
-                        }
-                    },
-                    "revision":"c2af7abae8d09d290d7457ab77f5a7529806b75a",
-                    "tag":"",
-                    "threads":[
-                        "1",
-                        "8",
-                        "2",
-                        "4"
-                    ],
-                    "ticket":[
-                        "BF-2618"
-                    ]
-                },
                 "Remove.IntNonIdIndex":{
                     "create_time":"2016-04-26T19:43:01.958Z",
                     "max":91.31873521149873,
@@ -6294,57 +6201,26 @@
                         "BF-3491"
                     ]
                 },
-                "Commands.DistinctWithoutIndex":{
-                    "create_time":"2016-02-19T22:11:20.02Z",
-                    "max":100.74130925528785,
-                    "name":"Commands.DistinctWithoutIndex",
-                    "order":3091,
-                    "results":{
-                        "1":{
-                            "ops_per_sec":99.43919711371929
-                        },
-                        "2":{
-                            "ops_per_sec":99.40195279958601
-                        },
-                        "4":{
-                            "ops_per_sec":98.56684260913066
-                        },
-                        "8":{
-                            "ops_per_sec":100.74130925528785
-                        }
-                    },
-                    "revision":"a048ec78eac1c7e2ab5f6656cfa61c42bf3656a4",
-                    "tag":"",
-                    "threads":[
-                        "1",
-                        "8",
-                        "2",
-                        "4"
-                    ],
-                    "ticket":[
-                        "BF-2618"
-                    ]
-                },
                 "Commands.FindAndModifySortedDelete":{
-                    "create_time":"2016-03-25T21:13:55.588Z",
-                    "max":101.1051052991678,
+                    "create_time":"2016-10-13T00:21:43.661Z",
+                    "max":100.5179343895015,
                     "name":"Commands.FindAndModifySortedDelete",
-                    "order":3430,
+                    "order":6004,
                     "results":{
                         "1":{
-                            "ops_per_sec":100.10262012684345
+                            "ops_per_sec":97.69740083718628
                         },
                         "2":{
-                            "ops_per_sec":99.29616236462812
+                            "ops_per_sec":99.65578252860037
                         },
                         "4":{
-                            "ops_per_sec":99.75681532704286
+                            "ops_per_sec":99.91650084718415
                         },
                         "8":{
-                            "ops_per_sec":101.1051052991678
+                            "ops_per_sec":100.5179343895015
                         }
                     },
-                    "revision":"9be485ea5e262d7d69a5486cc60fce247b5ae57f",
+                    "revision":"8794dd4bdcab131a4ecf0963505e7fb2a34bf5e6",
                     "tag":"",
                     "threads":[
                         "1",
@@ -6353,7 +6229,6 @@
                         "4"
                     ],
                     "ticket":[
-                        "BF-2618",
                         "BF-2104"
                     ]
                 },
@@ -6386,37 +6261,6 @@
                     ],
                     "ticket":[
                         "BF-2104"
-                    ]
-                },
-                "Commands.FindAndModifySortedUpdate":{
-                    "create_time":"2016-03-18T22:00:50.43Z",
-                    "max":100.29278920378214,
-                    "name":"Commands.FindAndModifySortedUpdate",
-                    "order":3360,
-                    "results":{
-                        "1":{
-                            "ops_per_sec":100.08408240073484
-                        },
-                        "2":{
-                            "ops_per_sec":100.29278920378214
-                        },
-                        "4":{
-                            "ops_per_sec":100.21075559067107
-                        },
-                        "8":{
-                            "ops_per_sec":99.81009256743961
-                        }
-                    },
-                    "revision":"c2af7abae8d09d290d7457ab77f5a7529806b75a",
-                    "tag":"",
-                    "threads":[
-                        "1",
-                        "8",
-                        "2",
-                        "4"
-                    ],
-                    "ticket":[
-                        "BF-2618"
                     ]
                 },
                 "Commands.FindAndModifySortedUpdateIndexed":{
