@@ -294,6 +294,7 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         :type tasks: str|list[str]
         :rtype: int
         """
+        # pylint: disable=too-many-locals,too-many-nested-blocks
         num_tests_missing_data = 0
         variant_tests_remaining = copy.deepcopy(variant_tests)
         for variant in variant_tests.keys():
@@ -335,10 +336,12 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         :raises: TestDataNotFound if no such reference is found within the 10 most recent revisions.
         """
         # get tests by variant (regardless of whether the rule is reference or ndays)
+        # pylint: disable=too-many-locals
         if not self.evg:
             creds = helpers.create_credentials_config()
             self.evg = evergreen_client.Client(creds['evergreen'])
         variant_tests = {}
+        # pylint: disable=unused-variable
         for rule_name, rule_tasks in overrides_to_update.iteritems():
             for task_name, task_variants in rule_tasks.iteritems():
                 for build_variant, test_list in task_variants.iteritems():
@@ -347,6 +350,7 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                     if task_name not in variant_tests[build_variant]:
                         variant_tests[build_variant][task_name] = set()
                     variant_tests[build_variant][task_name].update(test_list)
+        # pylint: enable=unused-variable
 
         revision_case_count = []  # does the revision cover all variant-test cases?
         for revision_info in self.evg.get_recent_revisions(self.project):
@@ -504,9 +508,9 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                 if rule in task_value:
                     ref = task_value[rule]
                     tickets = tickets.union(set(itertools.chain(*[test['ticket'] for test in
-                                                                ref.values() if 'ticket' in
-                                                                test.keys() and isinstance(
-                                                                    test['ticket'], list)])))
+                                                                  ref.values() if 'ticket' in
+                                                                  test.keys() and isinstance(
+                                                                      test['ticket'], list)])))
         return tickets
 
     def rename_ticket(self, old_ticket, new_ticket):

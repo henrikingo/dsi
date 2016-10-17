@@ -3,7 +3,6 @@
 import unittest
 from mock import patch
 
-import json
 from tests import test_utils
 import util
 from evergreen.override import Override, TestDataNotFound # pylint: disable=import-error
@@ -121,7 +120,7 @@ class TestOverride(unittest.TestCase):
         with self.assertRaises(UserWarning):
             update_obj.update_override('reference', ticket=ticket)
 
-    def test_delete_and_update(self):   
+    def test_delete_and_update(self):
         """Test Override.delete_overrides_by_ticket
         """
         override_file = test_utils.fixture_file_path('perf_delete.json')
