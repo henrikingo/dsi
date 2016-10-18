@@ -7,7 +7,7 @@ $TERRAFORM output public_member_ip  | awk '{for (i=1;i<=NF;i++) print("export+p"
 $TERRAFORM output private_member_ip  | awk '{for (i=1;i<=NF;i++) print("export+i",i,"=",$i)} {printf("export+ALL_HOST_PRIVATE=(")}  {for (i=1;i<=NF;i++) printf("i%d+", i)} {print(")")}' | sed "s/ //g" | sed "s/+/ /g" | tee -a ips.sh
 $TERRAFORM output public_ip_mc  | awk '{for (i=1;i<=NF;i++) print("export+mc","=",$i)}' | sed "s/ //g" | sed "s/+/ /g" | tee -a ips.sh
 
-if [ $CLUSTER == "shard" -o $CLUSTER == "longevity" ]
+if [[ $CLUSTER == "shard" || $CLUSTER == "longevity" ]]
 then
     # mongos
     $TERRAFORM output public_mongos_ip  | awk '{for (i=1;i<=NF;i++) print("export+ms","=",$i)}' | sed "s/ //g" | sed "s/+/ /g" | tee -a ips.sh
