@@ -327,7 +327,7 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--project_id', dest='project_id', help='project_id for the test in Evergreen')
-    parser.add_argument('--task_name', dest='task_name', help='task_name for the test in Evergreen')
+    parser.add_argument('--task_name', dest='task_name', help='Deprecated. See --task.')
     parser.add_argument('-f', '--file', dest='hfile', help='path to json file containing '
                         'history data')
     parser.add_argument('-t', '--tagFile', dest='tfile', help='path to json file containing '
@@ -338,6 +338,7 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
     parser.add_argument(
         '--overrideFile', dest='ofile', help='File to read for comparison override information')
     parser.add_argument('--variant', dest='variant', help='Variant to lookup in the override file')
+    parser.add_argument('--task', dest='task', help='Evergreen task name for the test')
     parser.add_argument(
         "--report-file", help='File to write the report JSON file to. Defaults to "report.json".',
         default="report.json")
@@ -359,6 +360,8 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
 
     arg_parsing.add_args(parser, "reports analysis")
     args = parser.parse_args(args)
+    if args.task_name and not args.task:
+        args.task = args.task_name
 
     # Set up result histories from various files:
     # history - this series include the run to be checked, and previous or NDays
