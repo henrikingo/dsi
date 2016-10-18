@@ -1,3 +1,4 @@
 paramiko
+pycparser==2.14
 pyyaml
 -r analysis.txt
