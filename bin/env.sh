@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# explicity set the errexit so that we can catch conditions that
+# terraform provisioning has failed
+set -e
+
 BINDIR=$(dirname $0)
 TERRAFORM="${TERRAFORM:-./terraform}"
 

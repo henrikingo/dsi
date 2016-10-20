@@ -40,6 +40,8 @@ else
     # Most cluster types
     $TERRAFORM apply $VAR_FILE | tee terraform.log
 fi
+# repeat terraform apply to work around some timing issue between AWS/terraform
+$TERRAFORM apply $VAR_FILE | tee -a terraform.log
 
 # just to print out disk i/o information
 cat terraform.log | grep "  clat ("
@@ -68,21 +70,32 @@ else
     fi
 fi
 
-# this will extract all public and private IP address information into a file ips.sh
-${BINDIR}/env.sh
-
 # Use the return code from pre-qualify-cluster.sh if there was one
 if [[ $rc != 0 ]]
 then
     >&2 echo "Error: Prequalify failed for setup-cluster.sh. Exiting and not running tests"
 else
+    $TERRAFORM refresh
+    # Use terraform detailed exit code to catch terraform errors
+    $TERRAFORM plan -detailed-exitcode $VAR_FILE
+    if [[ $? == 1 ]]
+    then
+        exit 1
+    fi
     # Check that all the nodes in the cluster are properly up
     good_line_count=$($TERRAFORM plan $VAR_FILE | egrep "Plan" | egrep -c "0 to add")
     if [ $good_line_count != 1 ]
     then
         >&2 echo "Error: Past pre-qualify, but something wrong with provisioning. Still need to add node(s)."
-        $TERRAFORM $VAR_FILE plan
         rc=1
     fi
+fi
+
+if [[ $rc == 0 ]]
+then
+    # this will extract all public and private IP address information into a file ips.sh
+    # env.sh has to be called after the terraform pln check (see PERF-702 for details)
+    ${BINDIR}/env.sh
+    rc=$?
 fi
 exit $rc
