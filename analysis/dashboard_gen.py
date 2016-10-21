@@ -87,6 +87,9 @@ def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_passwor
      over reference. Classify a test into a result['state'] based on the ratios.
      Use different thresholds for max throughput, and per-thread comparisons. '''
     # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
+
+    # start the state as 'pass', if any override is used move it to 'forced accept'
+    # after comparison to reference, move it to unacceptable or undesired if needed
     check_result = {'state': 'pass', 'notes': '', 'ticket': [],
                     'perf_ratio': 1}
 
@@ -100,9 +103,12 @@ def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_passwor
         # throughput override and ticket handling
         override = get_override(test['name'], 'reference', OVERRIDE_INFO)
         if override:
-            check_result['ticket'].extend(override['ticket'])
-            if use_override(override['ticket'], jira_user, jira_password):
-                check_result['notes'] += 'Override used for thresholds'
+            (use_override_for_reference, ticket_list) = \
+                check_ticket_state(override['ticket'], jira_user, jira_password)
+            check_result['ticket'].extend(ticket_list)
+            if use_override_for_reference:
+                check_result['state'] = 'forced accept'
+                check_result['notes'] += 'Override used for baseline throughput.'
                 reference = override
 
     # get the thresholds to use using project/variant
@@ -129,14 +135,20 @@ def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_passwor
     # again, whether we use this override depends on the state of the ticket(s)
     override = get_override(test['name'], 'threshold', OVERRIDE_INFO)
     if override:
-        check_result['ticket'].extend(override['ticket'])
-        if use_override(override['ticket'], jira_user, jira_password):
-            check_result['notes'] += 'Override used for thresholds'
+        #check_result['ticket'].extend(override['ticket'])
+        (use_override_for_threshold, ticket_list) = \
+            check_ticket_state(override['ticket'], jira_user, jira_password)
+        check_result['ticket'].extend(ticket_list)
+        if use_override_for_threshold:
+            check_result['state'] = 'forced accept'
+            check_result['notes'] += 'Override used for thresholds.'
             undesired_threshold = 1 - override['threshold']
             unacceptable_threshold = 1 - THRESHOLD_MULTIPLIER * override['threshold']
             thread_undesired_threshold = 1 - override['thread_threshold']
             thread_unacceptable_threshold = 1 - THRESHOLD_MULTIPLIER * override['thread_threshold']
 
+    # we now have all the references and thresholds set up, as well moving the default
+    # state to 'forced accept' when override is used, we can start the comparison
     # if noise data is available, take that into account for comparison
     # use the larger of threshold or noise to avoid false positive
     # when fixing PERF-595, we need to review noise-handling in all analysis scripts
@@ -212,24 +224,31 @@ def repl_lag_check(test, threshold):
 
 # Other utility functions
 
-def use_override(ticket_list, jira_user, jira_password):
+def check_ticket_state(ticket_list, jira_user, jira_password):
     ''' Determine if we want to use override based on the states of the
     assoicated tickets. Use overrride if all tickets are in a terminal state
     (closed/resolved/won't fix). '''
     base_url = 'https://jira.mongodb.org/rest/api/latest/issue/'
+    use_override = True
+    ticket_display_list = []
     for ticket in ticket_list:
         url = base_url + ticket
+        ticket_obj = {'name': ticket, 'status': ''}
         req = requests.get(url, auth=(jira_user, jira_password), verify=False)
         # Don't use override if any ticket is in a non-terminal state
         if req.status_code != 200:
-            return False
+            ticket_obj['status'] = 'failed jira query'
+            use_override = False
         else:
             req_json = req.json()
             if 'fields' in req_json:
-                if req_json['fields']['status']['name'] not in \
-                        ('closed', 'resolved', 'wont fix'):
-                    return False
-    return True
+                ticket_status = req_json['fields']['status']['name']
+                ticket_obj['status'] = ticket_status
+                if ticket_status not in \
+                        ('Closed', 'Resolved'):
+                    use_override = False
+        ticket_display_list.append(ticket_obj)
+    return use_override, ticket_display_list
 
 
 def update_state(current, new_data):

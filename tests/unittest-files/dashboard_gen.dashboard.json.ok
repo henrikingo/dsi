@@ -12,7 +12,10 @@
                 },
                 {
                     "ticket": [
-                        "PERF-335"
+                        {
+                            "status": "failed jira query",
+                            "name": "PERF-335"
+                        }
                     ],
                     "state": "undesired",
                     "test_file": "insert_jtrue-wiredTiger",
@@ -21,7 +24,10 @@
                 },
                 {
                     "ticket": [
-                        "PERF-335"
+                        {
+                            "status": "failed jira query",
+                            "name": "PERF-335"
+                        }
                     ],
                     "state": "pass",
                     "test_file": "removemulti_jtrue-wiredTiger",
@@ -72,7 +78,10 @@
                 },
                 {
                     "ticket": [
-                        "PERF-335"
+                        {
+                            "status": "failed jira query",
+                            "name": "PERF-335"
+                        }
                     ],
                     "state": "pass",
                     "test_file": "updatemulti_jtrue-wiredTiger",
@@ -88,7 +97,10 @@
                 },
                 {
                     "ticket": [
-                        "SERVER-21092"
+                        {
+                            "status": "failed jira query",
+                            "name": "SERVER-21092"
+                        }
                     ],
                     "state": "pass",
                     "test_file": "contended_update-wiredTiger",
