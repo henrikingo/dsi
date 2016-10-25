@@ -1091,7 +1091,7 @@
                     "ticket":[
                         "PERF-723"
                     ]
-                },
+                }
             }
         },
         "initialsync_WT":{
