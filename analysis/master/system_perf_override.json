@@ -70,30 +70,7 @@
         },
         "industry_benchmarks_WT":{
             "ndays":{},
-            "reference":{
-                "ycsb_50read50update-wiredTiger":{
-                    "create_time":"2016-08-27T13:34:34.927Z",
-                    "end":1472320206.0,
-                    "max":68327.71337890792,
-                    "name":"ycsb_50read50update-wiredTiger",
-                    "order":4602,
-                    "results":{
-                        "64":{
-                            "ops_per_sec":68327.71337890792
-                        }
-                    },
-                    "revision":"76a32a783ca4328e9b01555fb05d02ff635d8c19",
-                    "start":1472319911.0,
-                    "tag":"",
-                    "threads":[
-                        "64"
-                    ],
-                    "ticket":[
-                        "BF-3362"
-                    ],
-                    "workload":"ycsb"
-                }
-            },
+            "reference":{},
             "threshold":{}
         }
     },
@@ -196,33 +173,7 @@
         },
         "industry_benchmarks_WT":{
             "ndays":{},
-            "reference":{
-                "ycsb_50read50update-wiredTiger":{
-                    "create_time":"2016-08-27T13:34:34.927Z",
-                    "end":1472321670.0,
-                    "max":69128.08743320499,
-                    "name":"ycsb_50read50update-wiredTiger",
-                    "order":4602,
-                    "results":{
-                        "64":{
-                            "ops_per_sec":69128.08743320499,
-                            "replica_avg_lag":381.0618181818182,
-                            "replica_end_of_test_lag":446,
-                            "replica_max_lag":585
-                        }
-                    },
-                    "revision":"76a32a783ca4328e9b01555fb05d02ff635d8c19",
-                    "start":1472321379.0,
-                    "tag":"",
-                    "threads":[
-                        "64"
-                    ],
-                    "ticket":[
-                        "BF-3362"
-                    ],
-                    "workload":"ycsb"
-                }
-            },
+            "reference":{},
             "threshold":{
                 "ycsb_50read50update_w_majority-wiredTiger":{
                     "thread_threshold":0.65,
