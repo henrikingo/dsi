@@ -1540,6 +1540,13 @@
                         "PERF-723"
                     ]
                 },
+                "oplog2_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "PERF-723"
+                    ]
+                },
                 "oplog2_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
                     "thread_threshold":15.0,
                     "threshold":10.0,
