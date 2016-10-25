@@ -191,309 +191,225 @@
             "reference":{},
             "threshold":{
                 "buildIndexes_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.25,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "buildIndexes_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.25,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "buildIndexes_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.25,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "buildIndexes_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.25,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "buildIndexes_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.25,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "buildIndexes_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.25,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "buildIndexes_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.25,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "buildIndexes_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.25,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "createIndex_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "createIndex_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "createIndex_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "createIndex_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "createIndex_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "createIndex_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "createIndex_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "createIndex_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "dropDBs_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "dropDBs_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "dropDBs_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "dropDBs_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":25.0,
+                    "threshold":20.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":25.0,
+                    "threshold":20.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":25.0,
+                    "threshold":20.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":25.0,
+                    "threshold":20.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":25.0,
+                    "threshold":20.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":25.0,
+                    "threshold":20.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":25.0,
+                    "threshold":20.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":25.0,
+                    "threshold":20.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
@@ -714,226 +630,170 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "buildIndexes_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "buildIndexes_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "buildIndexes_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "buildIndexes_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "buildIndexes_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "buildIndexes_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "buildIndexes_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "buildIndexes_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
                 "cloneDBs_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.2,
+                    "threshold":0.3,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "createIndex_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "createIndex_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "createIndex_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "createIndex_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "createIndex_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "createIndex_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "createIndex_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "createIndex_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
@@ -1023,57 +883,57 @@
                     ]
                 },
                 "initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
@@ -1232,62 +1092,6 @@
                         "PERF-723"
                     ]
                 },
-                "start_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "start_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "start_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "start_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "start_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "start_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "start_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "start_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                }
             }
         },
         "initialsync_WT":{
@@ -1295,197 +1099,113 @@
             "reference":{},
             "threshold":{
                 "buildIndexes_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":3.0,
+                    "threshold":2.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "buildIndexes_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":3.0,
+                    "threshold":2.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "buildIndexes_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":3.0,
+                    "threshold":2.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "buildIndexes_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":3.0,
+                    "threshold":2.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "buildIndexes_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":3.0,
+                    "threshold":2.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "buildIndexes_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":3.0,
+                    "threshold":2.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "buildIndexes_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":3.0,
+                    "threshold":2.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "buildIndexes_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":3.0,
+                    "threshold":2.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.4,
+                    "threshold":0.3,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.4,
+                    "threshold":0.3,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.4,
+                    "threshold":0.3,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.4,
+                    "threshold":0.3,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.4,
+                    "threshold":0.3,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.4,
+                    "threshold":0.3,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.4,
+                    "threshold":0.3,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "createIndex_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "createIndex_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "createIndex_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "createIndex_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "createIndex_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "createIndex_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "createIndex_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "createIndex_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "dropDBs_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "dropDBs_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "dropDBs_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "dropDBs_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.4,
+                    "threshold":0.3,
                     "ticket":[
                         "PERF-723"
                     ]
@@ -1547,113 +1267,113 @@
                     ]
                 },
                 "initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "oplog1_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "oplog1_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "oplog1_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "oplog1_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "oplog1_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "oplog1_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "oplog1_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "oplog1_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
@@ -1811,254 +1531,170 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "buildIndexes_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "buildIndexes_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "buildIndexes_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "buildIndexes_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "buildIndexes_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "buildIndexes_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "buildIndexes_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "buildIndexes_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
                 "cloneDBs_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.8,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":0.8,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "createIndex_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":4.0,
+                    "threshold":3.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "createIndex_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":4.0,
+                    "threshold":3.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "createIndex_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":4.0,
+                    "threshold":3.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "createIndex_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":4.0,
+                    "threshold":3.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "createIndex_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":4.0,
+                    "threshold":3.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "createIndex_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":4.0,
+                    "threshold":3.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "createIndex_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":4.0,
+                    "threshold":3.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "createIndex_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "dropDBs_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "dropDBs_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "dropDBs_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
-                    "ticket":[
-                        "PERF-723"
-                    ]
-                },
-                "dropDBs_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":4.0,
+                    "threshold":3.0,
                     "ticket":[
                         "PERF-723"
                     ]
@@ -2120,57 +1756,57 @@
                     ]
                 },
                 "initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.5,
+                    "threshold":0.4,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.5,
+                    "threshold":0.4,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.5,
+                    "threshold":0.4,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.5,
+                    "threshold":0.4,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.5,
+                    "threshold":0.4,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.5,
+                    "threshold":0.4,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.5,
+                    "threshold":0.4,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.5,
+                    "threshold":0.4,
                     "ticket":[
                         "PERF-723"
                     ]
