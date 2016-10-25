@@ -69,6 +69,9 @@ THRESHOLD_MULTIPLIER = 1.5
 NOISE_MULTIPLE = 1
 THREAD_NOISE_MULTIPLE = 2
 
+# default repl lag threshold check to 15 seconds
+REPL_LAG_THRESHOLD = 15
+
 # test data series
 HISTORY = None
 TAG_HISTORY = None
@@ -325,7 +328,7 @@ def main(args):
                                               ARGS.project_id, ARGS.variant,
                                               ARGS.jira_user,
                                               ARGS.jira_password))
-                update_state(result, repl_lag_check(to_check, 10))
+                update_state(result, repl_lag_check(to_check, REPL_LAG_THRESHOLD))
             else:
                 result['state'] = 'no data'
                 result['notes'] = 'No test results\n'
