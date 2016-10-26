@@ -309,9 +309,8 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                     continue
                 try:
                     for test_name, _ in self.evg.tests_from_task(task_info['task_id']):
-                        if task_name in variant_tests[variant]:
-                            if test_name in variant_tests[variant][task_name]:
-                                variant_tests_remaining[variant][task_name].remove(test_name)
+                        if test_name in variant_tests[variant]:
+                            variant_tests_remaining[variant].remove(test_name)
                 except evergreen_client.Empty:
                     LOGGER.warning("Caught evergreen_client.Empty exception in "
                                    "_processing_revision in call to tests_from_task for "
@@ -319,11 +318,10 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                                    "Supressing error. This indicates something is wrong, "
                                    "but the current operation can still complete correctly.")
 
-            for remaining_task in variant_tests_remaining[variant].keys():
-                tests_remain = variant_tests_remaining[variant][remaining_task]
-                num_tests_missing_data += len(tests_remain)
-                for test in tests_remain:
-                    LOGGER.debug('\tNo result for test {} in variant {}'.format(test, variant))
+            tests_remain = variant_tests_remaining[variant]
+            num_tests_missing_data += len(tests_remain)
+            for test in tests_remain:
+                LOGGER.debug('\tNo result for test {} in variant {}'.format(test, variant))
         return num_tests_missing_data
 
     def _get_recent_commit(self, overrides_to_update, tasks):
@@ -342,14 +340,11 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
             self.evg = evergreen_client.Client(creds['evergreen'])
         variant_tests = {}
         # pylint: disable=unused-variable
-        for rule_name, rule_tasks in overrides_to_update.iteritems():
-            for task_name, task_variants in rule_tasks.iteritems():
-                for build_variant, test_list in task_variants.iteritems():
-                    if build_variant not in variant_tests:
-                        variant_tests[build_variant] = {}
-                    if task_name not in variant_tests[build_variant]:
-                        variant_tests[build_variant][task_name] = set()
-                    variant_tests[build_variant][task_name].update(test_list)
+        for rule_name, rule_variants in overrides_to_update.iteritems():
+            for build_variant, test_list in rule_variants.iteritems():
+                if build_variant not in variant_tests:
+                    variant_tests[build_variant] = set()
+                variant_tests[build_variant].update(test_list)
         # pylint: enable=unused-variable
 
         revision_case_count = []  # does the revision cover all variant-test cases?
@@ -395,50 +390,49 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         # pylint: disable=too-many-locals,too-many-nested-blocks
         if not self.commit:
             self._get_recent_commit(overrides_to_update, tasks)
-        for rule, task_tests in overrides_to_update.iteritems():
-            for task_name1, build_variant_tests in task_tests.iteritems():
-                LOGGER.debug('Updating overrides for rule {0}, task {1}'.format(rule, task_name1))
-                self.summary[rule] = {}
-                for build_variant_name, build_variant_id in self.evg.build_variants_from_git_commit(
-                        self.project, self.commit):
-                    if build_variant_name not in build_variant_tests.keys():
-                        LOGGER.debug('Skipping build variant: {0}'.format(build_variant_name))
+        for rule, build_variant_tests in overrides_to_update.iteritems():
+            LOGGER.debug('Updating overrides for rule {0}'.format(rule))
+            self.summary[rule] = {}
+            for build_variant_name, build_variant_id in self.evg.build_variants_from_git_commit(
+                    self.project, self.commit):
+                if build_variant_name not in build_variant_tests.keys():
+                    LOGGER.debug('Skipping build variant: {0}'.format(build_variant_name))
+                    continue
+                self.summary[rule][build_variant_name] = {}
+                LOGGER.debug('Processing build variant: {0}'.format(build_variant_name))
+
+                tests = overrides_to_update[rule][build_variant_name]
+                for task_name, task_id in self.evg.tasks_from_build_variant(build_variant_id):
+                    if 'compile' in task_name:
+                        LOGGER.debug('\tSkipping compilation stage')
                         continue
-                    self.summary[rule][build_variant_name] = {}
-                    LOGGER.debug('Processing build variant: {0}'.format(build_variant_name))
+                    match = helpers.matches_any(task_name, tasks)
+                    if not match:
+                        LOGGER.debug('\tSkipping task: {0}'.format(task_name))
+                        continue
+                    self.summary[rule][build_variant_name][task_name] = []
+                    LOGGER.debug('\tProcessing task: {0}'.format(task_name))
 
-                    tests = overrides_to_update[rule][task_name1][build_variant_name]
-                    for task_name, task_id in self.evg.tasks_from_build_variant(build_variant_id):
-                        if 'compile' in task_name:
-                            LOGGER.debug('\tSkipping compilation stage')
-                            continue
-                        match = helpers.matches_any(task_name, tasks)
-                        if not match:
-                            LOGGER.debug('\tSkipping task: {0}'.format(task_name))
-                            continue
-                        self.summary[rule][build_variant_name][task_name] = []
-                        LOGGER.debug('\tProcessing task: {0}'.format(task_name))
+                    history = self._get_task_history(task_name, task_id)
+                    try:
+                        for test_name, _ in self.evg.tests_from_task(task_id):
+                            if test_name not in tests:
+                                LOGGER.debug('\t\tSkipping test: {0}'.format(test_name))
+                                continue
 
-                        history = self._get_task_history(task_name, task_id)
-                        try:
-                            for test_name, _ in self.evg.tests_from_task(task_id):
-                                if test_name not in tests:
-                                    LOGGER.debug('\t\tSkipping test: {0}'.format(test_name))
-                                    continue
+                            self.summary[rule][build_variant_name][task_name].append(test_name)
+                            LOGGER.debug('\t\tProcessing test: {0}'.format(test_name))
 
-                                self.summary[rule][build_variant_name][task_name].append(test_name)
-                                LOGGER.debug('\t\tProcessing test: {0}'.format(test_name))
+                            # Get the reference data we want to use as the override value
+                            test_reference = self._get_test_reference_data(history, test_name)
 
-                                # Get the reference data we want to use as the override value
-                                test_reference = self._get_test_reference_data(history, test_name)
-
-                                # Finally, update the old override rule
-                                self.update_test(build_variant_name, task_name, test_name,
-                                                 rule, test_reference)
-                        except evergreen_client.Empty:
-                            # _log_summary() will account for the case where we've skipped a task
-                            # with no test results. (Hence no additional log message here.)
-                            continue
+                            # Finally, update the old override rule
+                            self.update_test(build_variant_name, task_name, test_name,
+                                             rule, test_reference)
+                    except evergreen_client.Empty:
+                        # _log_summary() will account for the case where we've skipped a task
+                        # with no test results. (Hence no additional log message here.)
+                        continue
         self._log_summary()
 
     def update_test(self, build_variant, task, test, rule, new_data, ticket=None):  # pylint: disable=too-many-arguments
@@ -576,13 +570,13 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                                     'remains due to other outstanding '
                                     'tickets.'.format(test, variant, task))
                     else:
+                        # Note: task to update is passed in separately, and may be a regex even
+                        # There's no need to include it in this hierarchy
                         if rule not in to_update:
                             to_update[rule] = {}
-                        if task not in to_update[rule]:
-                            to_update[rule][task] = {}
-                        if variant not in to_update[rule][task]:
-                            to_update[rule][task][variant] = []
-                        to_update[rule][task][variant].append(test)
+                        if variant not in to_update[rule]:
+                            to_update[rule][variant] = []
+                        to_update[rule][variant].append(test)
                 else:
                     to_remove.append((variant, task, rule, test))
         return (to_update, to_remove)

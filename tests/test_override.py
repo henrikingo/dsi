@@ -140,6 +140,28 @@ class TestOverride(unittest.TestCase):
         expected_overrides = test_utils.read_fixture_json_file('delete_update_override.json.ok')
         self.assertEqual(update_obj.overrides, expected_overrides)
 
+    @unittest.skip("Doesn't work, but should. Will file Jira ticket.")
+    def test_delete_with_task(self):
+        """Test Override.delete_overrides_by_ticket for a specific task
+        """
+        override_file = test_utils.fixture_file_path('perf_delete.json')
+        rules = ['reference', 'ndays', 'threshold']
+        ticket = 'PERF-002'
+        task = "misc"
+
+        update_obj = Override(self.project,
+                              override_info=override_file,
+                              config_file=self.config_file,
+                              reference=self.git_hash,
+                              verbose=self.verbose)
+        update_obj.delete_overrides_by_ticket(ticket, rules, task)
+
+        if self.regenerate_output_files:
+            update_obj.save_to_file(test_utils.fixture_file_path('delete_update_task.json.ok'))
+
+        expected_overrides = test_utils.read_fixture_json_file('delete_update_task.json.ok')
+        self.assertEqual(update_obj.overrides, expected_overrides)
+
     @patch('evergreen.evergreen_client.Client.get_recent_revisions')
     def test_delete_latest_update(self, mock_get_revisions):
         """Test Override.delete_overrides_by_ticket with no revision specified.
