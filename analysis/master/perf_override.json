@@ -2692,6 +2692,20 @@
                 }
             },
             "threshold":{
+                "Aggregation.Group.TenGroups":{
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-3653"
+                    ]
+                },
+                "Aggregation.Group.TenGroupsWithAvg":{
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-3653"
+                    ]
+                },
                 "Aggregation.Match":{
                     "thread_threshold":0.25,
                     "threshold":0.2,
