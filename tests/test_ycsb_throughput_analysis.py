@@ -82,11 +82,10 @@ class TestYCSBThroughputAnalysis(unittest.TestCase):
 
             results = ycsb_throughput._analyze_long_term_degradation(
                 throughputs, *args, **kwargs)
-
             return not results
 
         throughputs = tuples_to_throughputs(
-            [(0, 10)] + [(time, 5) for time in range(1, 10 * 60 + 3)])
+            [(time, 10) for time in range(600)] + [(time, 5) for time in range(601, 20 * 60 + 3)])
         self.assertFalse(analyze(), "Detects long-term throughput degradation")
         self.assertTrue(
             analyze(duration_seconds=10 * 100),
@@ -95,8 +94,12 @@ class TestYCSBThroughputAnalysis(unittest.TestCase):
         self.assertTrue(analyze(max_drop=0.4), "Ignores degradation higher than `max_drop`")
         self.assertFalse(analyze(max_drop=0.51), "Flags degradation lower than `max_drop`")
 
-        times = range(10 * 61)
-        ops = [100] + [75] * (10 * 30) + [25] * (10 * 30)
+        times = range(10 * 79)
+        ops = [100] * (10 * 60) + [0] * (10 * 19)
         throughputs = tuples_to_throughputs(zip(times, ops))
+        # With a 600 second period, the max average throughput is 100,
+        # and the last window has an average just under 70.
         self.assertFalse(analyze())
+        # With a 700 second period, the max period troughput is < 100,
+        # and the last window has an average over 70
         self.assertTrue(analyze(duration_seconds=10 * 70))

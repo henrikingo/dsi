@@ -164,44 +164,51 @@ def _analyze_spiky_throughput(throughputs, max_drop=0.5, min_duration=10, skip_i
     return err_messages
 
 def _analyze_long_term_degradation(throughputs, duration_seconds=10 * 60, max_drop=0.7):
-    """
-    Analyze `throughputs`, a list of `Throughput`s, for long term degradation in throughput. The
-    `throughputs` are looked at in `duration_seconds` chunks (so every single sequence of
-    consecutive `Throughput`s that take up a chunk of time equal to `duration_seconds`), and the
-    average throughput of each chunk is computed. If the average throughput is less than the maximum
-    throughput of the entire run multiplied by `max_drop`, it's flagged as a long-term degradation.
-    The function returns a list of detailed `string` error messages, which is empty if no problems
-    were detected in the throughput data.
+    """Analyze `throughputs`, a list of `Throughput`s, for long term
+    degradation in throughput. The `throughputs` are looked at in
+    `duration_seconds` chunks (so every single sequence of consecutive
+    `Throughput`s that take up a chunk of time equal to
+    `duration_seconds`), and the average throughput of each chunk is
+    computed. If the average throughput is less than the maximum
+    throughput of the entire run multiplied by `max_drop`, it's
+    flagged as a long-term degradation.  The maximum throughput is
+    computed with the same length of time as the sliding windows. The
+    function returns a list of detailed `string` error messages, which
+
+    is empty if no problems were detected in the throughput data.
 
     The differences between `_analyze_long_term_degradation()` and `_analyze_spiky_throughput()` are
     that: `_analyze_long_term_degradation()` uses the maximum throughput of the run, and not the
     average throughput, as its comparison point. Also, for each chunk that it compares against the
     maximum throughput, it uses the chunk's average throughput instead of comparing every single
     throughput datapoint inside it.
+
     """
 
     err_messages = []
-    max_throughput = max(throughput.ops for throughput in throughputs)
-    min_acceptable_throughput = max_throughput * max_drop
 
     reporting_interval = throughputs[1].time - throughputs[0].time
     data_window_width = int(math.ceil(float(duration_seconds) / reporting_interval))
 
-    for window_start_ind in range(len(throughputs) - data_window_width + 1):
-        window_throughputs = throughputs[window_start_ind:window_start_ind + data_window_width]
-        avg_throughput = average_throughput(window_throughputs)
-        if avg_throughput < min_acceptable_throughput:
-            low_throughputs = "\n".join(
-                "    {0} sec: {1} ops/sec".format(time, ops) for time, ops in window_throughputs)
-            start_time = window_throughputs[0].time
-            end_time = window_throughputs[-1].time
+    # Only do the calculation if there is enough data.
+    if len(throughputs) > data_window_width:
+    # This computes the max throughput over any data_window_width period of time
+        max_throughput = max(average_throughput(throughputs[x:x + data_window_width]) for x in
+                             range(len(throughputs) - data_window_width))
+        min_acceptable_throughput = max_throughput * max_drop
+        failures = [x for x in range(len(throughputs) - data_window_width) if
+                    average_throughput(throughputs[x:x+data_window_width]) <
+                    min_acceptable_throughput]
+        for failure in failures:
+            avg_throughput = average_throughput(throughputs[failure:failure+data_window_width])
+            start_time = throughputs[failure].time
+            end_time = throughputs[failure+data_window_width].time
             err_message = (
                 "long term throughput degradation: Detected a low average throughput of {0} "
                 "starting at {1} and ending at {2} (total duration of {3} seconds). The maximum "
-                "throughput of the run was {4}, so the minimum acceptable throughput was {5}. The "
-                "throughputs during this time were: \n{6}\n").format(
-                    avg_throughput, start_time, end_time, start_time - end_time, max_throughput,
-                    min_acceptable_throughput, low_throughputs)
+                "throughput of the run was {4}, so the minimum acceptable throughput was "
+                "{5}.\n").format(avg_throughput, start_time, end_time, end_time - start_time,
+                                 max_throughput, min_acceptable_throughput)
             err_messages.append(err_message)
 
     return err_messages
