@@ -1,9 +1,0 @@
-export p1=52.27.232.35
-export p2=52.89.224.14
-export p3=54.191.46.79
-export ALL_HOST=("p1" "p2" "p3" )
-export i1=10.2.0.100
-export i2=10.2.0.101
-export i3=10.2.0.102
-export ALL_HOST_PRIVATE=(i1 i2 i3 )
-export mc=52.11.212.64
