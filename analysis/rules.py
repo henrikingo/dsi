@@ -571,20 +571,21 @@ def db_correctness_analysis(dir_path):
     find_directory = 'db-correctness'
     # The directories in db-correctness. Same as the name of the test on Evergreen.
     db_correctness_log_directories = ['db-hash-check', 'validate-indexes-and-collections']
+    report_results = []
     for dir_path, sub_directory, _ in os.walk(dir_path):
         if find_directory in sub_directory:
             path_to_target = os.path.join(dir_path, find_directory)
-            report_results = []
             for log_directory in db_correctness_log_directories:
                 path_to_directory = os.path.join(path_to_target, log_directory)
+                log_name = log_directory + '.' + os.path.basename(dir_path) + '.'
+                log_name = log_name + os.path.basename(os.path.dirname(dir_path))
                 if os.path.exists(path_to_directory):
                     log_files = os.listdir(path_to_directory)
                     if log_files:
                         log_results = _report_js_test_result(
-                            log_directory, path_to_directory, log_files)
+                            log_name, path_to_directory, log_files)
                         report_results.append(log_results)
-            return report_results
-    return []
+    return report_results
 
 def _report_js_test_result(test_name, path_to_file, filename_list):
     """Helper function to parse the JS test log file. Last line should be an exit code, 0 or 1,

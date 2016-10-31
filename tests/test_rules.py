@@ -342,15 +342,18 @@ class TestDBCorrectnessRules(unittest.TestCase):
             {
                 'status': 'pass',
                 'start': 0,
-                'log_raw': '\nPassed db-hash-check JS test.',
-                'test_file': 'db-hash-check',
+                'log_raw': ('\nPassed db-hash-check.core_workloads_reports.'
+                            'unittest-files JS test.'),
+                'test_file': 'db-hash-check.core_workloads_reports.unittest-files',
                 'exit_code': 0
             },
             {
                 'status': 'pass',
                 'start': 0,
-                'log_raw': '\nPassed validate-indexes-and-collections JS test.',
-                'test_file': 'validate-indexes-and-collections',
+                'log_raw': ('\nPassed validate-indexes-and-collections.core_workloads_reports.'
+                            'unittest-files JS test.'),
+                'test_file': ('validate-indexes-and-collections.core_workloads_reports.'
+                              'unittest-files'),
                 'exit_code': 0
             }
         ]
@@ -371,7 +374,7 @@ class TestDBCorrectnessRules(unittest.TestCase):
                 'status': 'fail',
                 'start': 0,
                 'log_raw': raw_failure,
-                'test_file': 'validate-indexes-and-collections',
+                'test_file': 'validate-indexes-and-collections.test_db_correctness.unittest-files',
                 'exit_code': 1
             }
         ]
@@ -393,7 +396,8 @@ class TestDBCorrectnessRules(unittest.TestCase):
                 'status': 'fail',
                 'start': 0,
                 'log_raw': raw_failure,
-                'test_file': 'validate-indexes-and-collections',
+                'test_file': ('validate-indexes-and-collections.test_db_correctness_exit_fail.'
+                              'unittest-files'),
                 'exit_code': 1
             }
         ]

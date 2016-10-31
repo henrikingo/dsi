@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 STORAGE_ENGINE=$1
 CLUSTER=$3
 

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 BINDIR=$(dirname $0)
 source $BINDIR/setting.sh
 
