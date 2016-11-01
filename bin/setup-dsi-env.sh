@@ -22,6 +22,10 @@ cd ${DSI_PATH}/bin
 curl --retry 10 https://s3.amazonaws.com/mciuploads/mission-control/linux/a7be618e77af34471e77d6a82ec4c37d1433c473/mc-mission_control_linux_a7be618e77af34471e77d6a82ec4c37d1433c473_16_10_28_17_55_06.tar.gz | tar -xvz
 popd
 
+sysctl vm.overcommit_memory
+sysctl -w vm.overcommit_memory=1
+sysctl vm.overcommit_memory
+
 ls
 
 # Install pip modules with virtualenv
