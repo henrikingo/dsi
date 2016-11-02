@@ -5625,10 +5625,11 @@
                     ]
                 },
                 "Commands.FindAndModifySortedDeleteIndexed":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.35,
+                    "threshold":0.25,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-3971"
                     ]
                 },
                 "Commands.FindAndModifySortedUpdate":{
@@ -6082,10 +6083,11 @@
                     ]
                 },
                 "Commands.FindAndModifySortedDeleteIndexed":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.35,
+                    "threshold":0.25,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-3971"
                     ]
                 },
                 "Commands.FindAndModifySortedUpdate":{
