@@ -2693,15 +2693,15 @@
             },
             "threshold":{
                 "Aggregation.Group.TenGroups":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
                     "ticket":[
                         "BF-3653"
                     ]
                 },
                 "Aggregation.Group.TenGroupsWithAvg":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
                     "ticket":[
                         "BF-3653"
                     ]
@@ -2711,6 +2711,13 @@
                     "threshold":0.2,
                     "ticket":[
                         "BF-3422"
+                    ]
+                },
+                "Aggregation.Project":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-3653"
                     ]
                 }
             }
@@ -6427,15 +6434,15 @@
             },
             "threshold":{
                 "Aggregation.Group.TenGroups":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
                     "ticket":[
                         "BF-3653"
                     ]
                 },
                 "Aggregation.Group.TenGroupsWithAvg":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
                     "ticket":[
                         "BF-3653"
                     ]
@@ -6445,6 +6452,13 @@
                     "threshold":0.2,
                     "ticket":[
                         "BF-3422"
+                    ]
+                },
+                "Aggregation.Project":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-3653"
                     ]
                 }
             }
