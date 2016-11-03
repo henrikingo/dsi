@@ -426,6 +426,8 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
                 print('The (project_id, variant) combination is not supported ' \
                     'in post_run_check.py: {0}'.format(str(err)))
                 print(sys.exc_info()[0])
+                print(sys.exc_info()[1])
+                print(sys.exc_info()[2])
                 sys.exit(1)
             if any(val == 'fail' for val in result.itervalues()):
                 result['status'] = 'fail'
