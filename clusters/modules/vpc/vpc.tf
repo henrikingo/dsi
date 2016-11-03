@@ -12,6 +12,7 @@ resource "aws_vpc" "main" {
         Name = "dsi-${var.topology}-vpc"
         TestSetup = "dsi"
         TestTopology = "${var.topology}"
+        Owner = "${var.owner}"
     }
 }
 
@@ -43,6 +44,7 @@ resource "aws_route_table" "r" {
         Name = "dsi-dsi-routing"
         TestSetup = "dsi"
         TestTopology = "${topology}"
+        Owner = "${var.owner}"
     }
 }
 
