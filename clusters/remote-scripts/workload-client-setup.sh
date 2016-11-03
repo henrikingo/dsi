@@ -1,6 +1,13 @@
 #!/bin/bash
 
-sudo yum -y -q install tmux git wget sysstat dstat perf
+sudo yum -y -q install tmux git wget sysstat dstat perf xfsprogs
+
+# format and mount ephemeral0 to ~/data
+dev=/dev/xvdc; sudo umount $dev; sudo mkfs.xfs -f $dev; sudo mount $dev
+sudo chmod 777 /media/ephemeral0
+sudo chown ec2-user /media/ephemeral0
+
+ln -s /media/ephemeral0 ~/data
 
 curl -O --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/java/jdk-7u71-linux-x64.rpm; sudo rpm -i jdk-7u71-linux-x64.rpm;
 sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.7.0_71/bin/java 20000
