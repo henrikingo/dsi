@@ -73,7 +73,10 @@ class TerraformConfiguration(object):
         "i2.xlarge"
         ]
 
-    INSTANCE_ROLES = ["mongod", "mongos", "workload", "configsvr"]
+    INSTANCE_ROLES = ["mongod", "mongos", "workload", "configsvr",
+                      "mongod_ebs", "mongod_seeded_ebs"]
+
+    MONGOD_ROLES = ["mongod", "mongod_ebs", "mongod_seeded_ebs"]
 
     def __init__(self, topology=None, region=None, availability_zone=None, now=None, day_delta=2,
                  use_config=True):
@@ -91,16 +94,32 @@ class TerraformConfiguration(object):
         if use_config:
             self._update_from_config()
 
-    def _define_instance(self, role, count, instance_type):
+    def define_instance(self, role, count, instance_type):
         """
-        A private function to dynamically define parameters for an instance type.
+        A function to dynamically define parameters for an instance type.
         This can be used to configure mongod/mongos/workload/configsvr.
+
+        :param str role: role of the instance, must in predefined list
+        :param int count: number of instances
+        :param str instance_type: AWS instance type, must in predefined list
         """
         instance_type = instance_type.lower()
 
         assert_value(role in self.INSTANCE_ROLES,
                      "Instance role must be in {}, got {} instead"
                      .format(str(self.INSTANCE_ROLES), role))
+
+        if role in self.MONGOD_ROLES:
+            # this is mongod type of instance, raise exception in case of wrong type
+            assert_value(instance_type in self.MONGOD_INSTANCE_TYPE,
+                         "Instance type must be in {}, got {} instead"
+                         .format(str(self.MONGOD_INSTANCE_TYPE), instance_type))
+
+        if role == "workload":
+            # must have at least one workload client
+            assert_value(count > 0,
+                         "Must have at least one workload instance, got {} instead"
+                         .format(count))
 
         setattr(self, role + "_instance_count", count)
         setattr(self, role + "_instance_type", instance_type)
@@ -109,35 +128,6 @@ class TerraformConfiguration(object):
             setattr(self, role + "_instance_placement_group", 'yes')
         else:
             setattr(self, role + "_instance_placement_group", "no")  # default to no placement group
-
-    def define_mongod_instance(self, count, instance_type):
-        """To define mongod instances."""
-        assert_value(isinstance(count, int) and count > 0, "Count for mongod instance must > 0")
-        assert_value(instance_type in self.MONGOD_INSTANCE_TYPE,
-                     "Monogd instance type must be in " + str(self.MONGOD_INSTANCE_TYPE) + " class")
-
-        self._define_instance("mongod", count, instance_type)
-
-    def define_mongos_instance(self, count, instance_type):
-        """To define mongos instances."""
-        assert_value(isinstance(count, int) and count >= 0, "Count for mongos instance must >= 0")
-
-        self._define_instance("mongos", count, instance_type)
-
-    def define_workload_instance(self, count, instance_type):
-        """To define workload instances."""
-        assert_value(isinstance(count, int) and count > 0, "Count for workload instance must > 0")
-        assert_value(support_placement_group(instance_type),
-                     "Workload generator must support placement group")
-
-        self._define_instance("workload", count, instance_type)
-
-    def define_configsvr_instance(self, count, instance_type):
-        """To define workload instances."""
-        assert_value(isinstance(count, int) and count > 0,
-                     "Count for configsvr instance must > 0")
-
-        self._define_instance("configsvr", count, instance_type)
 
     def define_mongodb_url(self, url):
         """
@@ -167,9 +157,9 @@ class TerraformConfiguration(object):
                              "Should define both count and type for {}".format(role))
 
                 # update both count and type
-                update_function = getattr(self, "define_" + role + "_instance")
-                update_function(dsi_config["tfvars"][role + "_instance_count"],
-                                dsi_config["tfvars"][role + "_instance_type"])
+                self.define_instance(role,
+                                     dsi_config["tfvars"][role + "_instance_count"],
+                                     dsi_config["tfvars"][role + "_instance_type"])
 
         # update ssh key name (must match AWS' name)
         if "ssh_key" in dsi_config["tfvars"].keys():

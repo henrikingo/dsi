@@ -1,24 +1,42 @@
 #!/bin/bash
 
+# To also partition EBS partition
+WITH_EBS=$1
+
+// to format a partition to xfs, and mount it
+prepare_disk() {
+    disk=$1;  shift;
+    mount_path=$1
+
+    sudo mkdir -p $mount_path
+    sudo umount $disk
+    sudo mkfs.xfs -f $disk
+    sudo mount $disk $mount_path
+    sudo chmod 777 $mount_path
+    sudo chown -R ec2-user:ec2-user $mount_path
+}
+
 sudo yum -y -q install git fio wget sysstat dstat perf xfsprogs
 
-# provision ephermeral1 for journal
-dev=/dev/xvdc; sudo umount $dev; sudo mkfs.xfs -f $dev; sudo mount $dev
-sudo chmod 777 /media/ephemeral0
-sudo chown ec2-user /media/ephemeral0
+prepare_disk "/dev/xvdc" "/media/ephemeral0"
+prepare_disk "/dev/xvdd" "/media/ephemeral1"
 
-# provision ephermeral1 for journal
-dev=/dev/xvdd
-readonly dpath=/media/ephemeral1
-sudo mkdir -p ${dpath}
-sudo umount $dev
-sudo mkfs.xfs -f $dev
-sudo mount $dev $dpath
-sudo chmod 777 /media/ephemeral1
-sudo chown ec2-user /media/ephemeral1
-
-ln -s /media/ephemeral0 ~/data
-ln -s /media/ephemeral1 ~/journal
+if [ "${WITH_EBS}" == "with_ebs" ]; then
+    # Prepare empty EBS volume
+    prepare_disk "/dev/xvde" "/media/ebs"
+    ln -s /media/ebs ~/data
+elif [ "${WITH_EBS}" == "with_seeded_ebs" ]; then
+    # Will not format disk for seeded EBS partition.
+    sudo mkdir -p /media/ebs
+    sudo mount /dev/xvde /media/ebs
+    sudo chmod 777 /media/ebs
+    sudo chown -R ec2-user:ec2-user /media/ebs
+    ln -s /media/ebs ~/data
+else
+    # Default to SSD only instance
+    ln -s /media/ephemeral0 ~/data
+    ln -s /media/ephemeral1 ~/journal
+fi
 
 echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled
 echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag

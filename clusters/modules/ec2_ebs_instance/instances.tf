@@ -12,9 +12,12 @@ variable "expire_on"            {}
 variable "provisioner_file"     {}
 variable "topology"             {}
 variable "type"                 {}
+variable "ebs_type"             { default = "io1" }
+variable "ebs_iops"             { default = "10000" }
+variable "ebs_size"             { default = 100 }
 
 # AWS instance with placement group for mongod
-resource "aws_instance" "member" {
+resource "aws_instance" "ebs_member" {
     ami                 = "${lookup(var.amis, var.availability_zone)}"
     instance_type       = "${var.instance_type}"
     count               = "${var.count}"
@@ -53,6 +56,14 @@ resource "aws_instance" "member" {
         virtual_name    = "ephemeral1"
     }
 
+    ebs_block_device {
+        device_name             = "/dev/sde"
+        volume_type             = "${var.ebs_type}"
+        iops                    = "${var.ebs_iops}"
+        volume_size             = "${var.ebs_size}"
+        delete_on_termination   = true
+    }
+
     associate_public_ip_address = 1
 
     # We run a remote provisioner on the instance after creating it.
@@ -70,7 +81,7 @@ resource "aws_instance" "member" {
         }
         inline = [
             "chmod +x /tmp/provision.sh",
-            "/tmp/provision.sh"
+            "/tmp/provision.sh with_ebs"
         ]
     }
 }

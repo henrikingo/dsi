@@ -29,3 +29,22 @@ output "public_configsvr_ip" {
 output "total_count" {
   value = "${var.mongod_instance_count}"
 }
+
+# EBS instance support
+output "private_mongod_ebs_ip" {
+  value = "${module.mongod_ebs_instance.private_ips}"
+}
+
+output "public_mongod_ebs_ip" {
+  value = "${module.mongod_ebs_instance.public_ips}"
+}
+
+# Seeded EBS instance support
+output "private_mongod_seeded_ebs_ip" {
+  value = "${module.mongod_seeded_ebs_instance.private_ips}"
+}
+
+output "public_mongod_seeded_ebs_ip" {
+  value = "${module.mongod_seeded_ebs_instance.public_ips}"
+}
+

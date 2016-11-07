@@ -1,0 +1,13 @@
+out:
+  mongod:
+  - private_ip: 10.2.0.100
+    public_ip: 52.41.40.0
+  - private_ip: 10.2.0.101
+    public_ip: 52.37.52.162
+  mongod_ebs:
+  - private_ip: 10.2.0.200
+    public_ip: 52.25.102.16
+  - private_ip: 10.2.0.201
+    public_ip: 52.25.102.17
+  workload_client:
+  - public_ip: 52.33.30.1

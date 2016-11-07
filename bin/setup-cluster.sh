@@ -49,6 +49,7 @@ cat terraform.log | grep "  clat ("
 # Use rc 0 unless set otherwise
 rc=0
 if [ $CLUSTER == "longevity" ] || \
+   [ $CLUSTER == "replica-initialsync_1tb" ] || \
    [ $CLUSTER == "single-correctness" ] || \
    [ $CLUSTER == "replica-correctness" ]
 then
