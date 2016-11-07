@@ -8,6 +8,7 @@ MongoDB cluster topology and brings up a cluster on the remote machines.
 import json
 import logging
 import os
+import time
 
 import argparse
 import yaml
@@ -136,6 +137,24 @@ class MongoNode(object):
             return RemoteHost(self.public_ip, self.ssh_user,
                               self.ssh_key_file)
 
+    def wait_until_up(self):
+        """ Checks to make sure node is up and accessible"""
+        js_string = '''
+            i = 0
+            while (db.serverStatus().ok != 1 && i < 20) {{
+                print ("Waiting for node {} to come up");
+                sleep(1000);
+                i += 1; }}
+            assert(db.serverStatus().ok == 1)'''
+        i = 0
+        while not self.run_mongo_shell(js_string.format(self.public_ip)) and i < 10:
+            i += 1
+            time.sleep(1)
+        if i == 10:
+            LOG.error("Node %s not up at end of wait_until_up", self.public_ip)
+            return False
+        return True
+
     def setup_host(self):
         """Ensures necessary files are setup."""
         if not self.run_locally:
@@ -179,7 +198,7 @@ class MongoNode(object):
             self.dump_mongo_log()
             return False
         self.started = True
-        return True
+        return self.wait_until_up()
 
     def mongo_shell_cmd(self, js_file_path):
         """
@@ -307,6 +326,37 @@ class ReplSet(object):
                 max_priority = member['priority']
         return max_node
 
+    def wait_until_up(self):
+        """ Checks and waits for all nodes in replica set to be either PRIMARY or SECONDARY"""
+        primary_js_string = '''
+            i = 0;
+            while (!rs.isMaster().ismaster && i < 20) {{
+                print("Waiting for expected primary to become master...");
+                sleep(1000);
+            }}
+            assert(rs.isMaster().ismaster);
+            rs.slaveOk();
+            print("rs.status(): " + tojson(rs.status()));
+            print("rs.config(): " + tojson(rs.config()));'''
+        # Wait for Primary to be up
+        primary = self.highest_priority_node()
+        if not primary.run_mongo_shell(primary_js_string):
+            LOG.error("RS Node %s not up as primary", primary.public_ip)
+            return False
+
+        js_string = '''
+            i = 0
+            while(!rs.isMaster().ismaster && !rs.isMaster().secondary && i < 20) {{
+                print ("Waiting for node {} to come up");
+                sleep(1000);
+                i += 1; }}'''
+        # Make sure all nodes are primary or secondary
+        for node in self.nodes:
+            if not node.run_mongo_shell(js_string.format(node.public_ip)):
+                LOG.error("RS Node %s not up at end of wait_until_up", node.public_ip)
+                return False
+        return True
+
     def setup_host(self):
         """Ensures necessary files are setup."""
         return all(node.setup_host() for node in self.nodes)
@@ -324,7 +374,8 @@ class ReplSet(object):
         primary = self.highest_priority_node()
         if not primary.run_mongo_shell(self._init_replica_set()):
             return False
-        return True
+        # Wait for all nodes to be up
+        return self.wait_until_up()
 
     def _init_replica_set(self):
         """Return the JavaScript code to configure the replica set."""
@@ -347,13 +398,6 @@ class ReplSet(object):
             config = {0};
             assert.commandWorked(rs.initiate(config),
                                  "Failed to initiate replica set!");
-            while (!rs.isMaster().ismaster) {{
-                print("Waiting for expected primary to become master...");
-                sleep(1000);
-            }}
-            rs.slaveOk();
-            print("rs.status(): " + tojson(rs.status()));
-            print("rs.config(): " + tojson(rs.config()));
             '''.format(json_config)
         return js_string
 
@@ -440,6 +484,26 @@ class ShardedCluster(object):
             '''.format(db_name, coll_name)
         return self.mongoses[0].run_mongo_shell(js_shard_coll)
 
+    def wait_until_up(self):
+        """Checks to make sure sharded cluster is up and
+        accessible. Specifically checking that the mognos's are up"""
+        num_shards = len(self.shards)
+        js_string = '''
+            db = db.getSiblingDB("config");
+            i = 0;
+            while (db.shards.count() < {0} && i < 10) {{
+                print ("Waiting for mongos {1} to see {0} shards");
+                sleep(1000);
+                i += 1; }}
+            assert (db.shards.count() == {0}) '''
+        for mongos in self.mongoses:
+            if not mongos.run_mongo_shell(js_string.format(num_shards, mongos.public_ip)):
+                LOG.error("Mongos %s does not see right number of shards at end of wait_until_up",
+                          mongos.public_ip)
+                return False
+        return True
+
+
     def setup_host(self):
         """Ensures necessary files are setup."""
         return (self.config.setup_host() and
@@ -457,7 +521,7 @@ class ShardedCluster(object):
             return False
         if self.disable_balancer and not self.mongoses[0].run_mongo_shell('sh.stopBalancer();'):
             return False
-        return True
+        return self.wait_until_up()
 
     def _add_shards(self):
         """Adds each shard to the cluster."""
