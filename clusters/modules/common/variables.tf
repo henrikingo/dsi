@@ -114,7 +114,3 @@ variable "placement_groups" {
 }
 
 
-# output variables
-output "private_ips" { value = "${var.private_ips}" }
-output "amis" { value = "${var.amis}" }
-output "placement_groups" { value = "${var.placement_groups}" }

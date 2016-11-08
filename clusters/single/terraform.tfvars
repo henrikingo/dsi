@@ -1,5 +1,5 @@
 key_name                = "rui-aws-cap"
-key_file                = "../../../keys/aws.pem"
+key_file                = "../../keys/aws.pem"
 mongod_instance_count   = "1"
 workload_instance_count = "1"
 
