@@ -2695,8 +2695,8 @@
             },
             "threshold":{
                 "Aggregation.Group.TenGroups":{
-                    "thread_threshold":0.21,
-                    "threshold":0.16,
+                    "thread_threshold":0.22,
+                    "threshold":0.17,
                     "ticket":[
                         "BF-3653"
                     ]
@@ -2718,6 +2718,20 @@
                 "Aggregation.Project":{
                     "thread_threshold":0.21,
                     "threshold":0.16,
+                    "ticket":[
+                        "BF-3653"
+                    ]
+                },
+                "Aggregation.Redact":{
+                    "thread_threshold":0.16,
+                    "threshold":0.11,
+                    "ticket":[
+                        "BF-3653"
+                    ]
+                },
+                "Aggregation.SortWithLimit":{
+                    "thread_threshold":0.16,
+                    "threshold":0.11,
                     "ticket":[
                         "BF-3653"
                     ]
@@ -11890,8 +11904,8 @@
             },
             "threshold":{
                 "Aggregation.Group.TenGroups":{
-                    "thread_threshold":0.21,
-                    "threshold":0.16,
+                    "thread_threshold":0.22,
+                    "threshold":0.17,
                     "ticket":[
                         "BF-3653"
                     ]
@@ -11913,6 +11927,20 @@
                 "Aggregation.Project":{
                     "thread_threshold":0.21,
                     "threshold":0.16,
+                    "ticket":[
+                        "BF-3653"
+                    ]
+                },
+                "Aggregation.Redact":{
+                    "thread_threshold":0.16,
+                    "threshold":0.11,
+                    "ticket":[
+                        "BF-3653"
+                    ]
+                },
+                "Aggregation.SortWithLimit":{
+                    "thread_threshold":0.16,
+                    "threshold":0.11,
                     "ticket":[
                         "BF-3653"
                     ]
