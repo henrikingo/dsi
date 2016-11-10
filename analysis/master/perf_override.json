@@ -527,10 +527,11 @@
                     ]
                 },
                 "Remove.IntNonIdNoIndex":{
-                    "thread_threshold":0.26,
-                    "threshold":0.21,
+                    "thread_threshold":0.36,
+                    "threshold":0.31,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-3976"
                     ]
                 }
             }
@@ -1945,10 +1946,11 @@
                     ]
                 },
                 "Remove.IntNonIdNoIndex":{
-                    "thread_threshold":0.26,
-                    "threshold":0.21,
+                    "thread_threshold":0.36,
+                    "threshold":0.31,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-3976"
                     ]
                 }
             }
@@ -3290,10 +3292,11 @@
                     ]
                 },
                 "Remove.IntNonIdNoIndex":{
-                    "thread_threshold":0.26,
-                    "threshold":0.21,
+                    "thread_threshold":0.36,
+                    "threshold":0.31,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-3976"
                     ]
                 }
             }
@@ -7874,10 +7877,11 @@
                     ]
                 },
                 "Remove.IntNonIdNoIndex":{
-                    "thread_threshold":0.26,
-                    "threshold":0.21,
+                    "thread_threshold":0.36,
+                    "threshold":0.31,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-3976"
                     ]
                 }
             }
@@ -10897,10 +10901,11 @@
                     ]
                 },
                 "Remove.IntNonIdNoIndex":{
-                    "thread_threshold":0.26,
-                    "threshold":0.21,
+                    "thread_threshold":0.36,
+                    "threshold":0.31,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-3976"
                     ]
                 }
             }
@@ -12743,10 +12748,11 @@
                     ]
                 },
                 "Remove.IntNonIdNoIndex":{
-                    "thread_threshold":0.26,
-                    "threshold":0.21,
+                    "thread_threshold":0.36,
+                    "threshold":0.31,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-3976"
                     ]
                 }
             }
