@@ -1726,6 +1726,27 @@
                     "ticket":[
                         "BF-3461"
                     ]
+                },
+                "Insert.SingleIndex.Contested.Rnd":{
+                    "thread_threshold":0.16,
+                    "threshold":0.11,
+                    "ticket":[
+                        "BF-3975"
+                    ]
+                },
+                "Insert.SingleIndex.Seq":{
+                    "thread_threshold":0.16,
+                    "threshold":0.11,
+                    "ticket":[
+                        "BF-3975"
+                    ]
+                },
+                "Insert.SingleIndex.Uncontested.Rnd":{
+                    "thread_threshold":0.16,
+                    "threshold":0.11,
+                    "ticket":[
+                        "BF-3975"
+                    ]
                 }
             }
         },
