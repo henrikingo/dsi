@@ -33,6 +33,22 @@ function runInitialSyncTest {
     MC_MONITOR_INTERVAL=1 $MC -config mc.json -run $TEST-run -o perf.json
 }
 
+# We will rerun mongodb_setup.py between each test. However, we want to keep
+# mongod.log and diagnostic.data for all of them
+cat <<END >> overrides.yml
+mongodb_setup:
+    mongod_config_file:
+        systemLog:
+            logAppend: True
+
+    clean_logs: False
+END
+# Note that mongodb_setup.py was already run once from system_perf.yml and
+# that run will have deleted logs from any previous tests that may have used
+# the same instances.
+echo "overrides.yml:"
+cat overrides.yml
+
 # Initial sync tests run multiple times, each with a different test
 # list. This line copies the starting config file to a copy that will
 # only be read. A succession of test_control.yml files will be made

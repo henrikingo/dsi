@@ -75,6 +75,12 @@ class MongoNode(object):
     run_locally = False
     """True if launching mongodb locally"""
 
+    clean_logs = True
+    """Delete mongod.log and diagnostic.data before startup"""
+
+    clean_db_dir = True
+    """Delete data directory before startup"""
+
     def __init__(self, opts, is_mongos=False):
         """
         :param opts: Read-only options for mongo[ds], example:
@@ -84,7 +90,6 @@ class MongoNode(object):
             'config_file': {},
             'mongo_dir': '/usr/bin',
             'priority': 10,
-            'add_to_replica': True,
             'clean_logs': True,
             'clean_db_dir': True,
             'use_journal_mnt': True
@@ -95,9 +100,10 @@ class MongoNode(object):
         self.public_ip = opts['public_ip']
         self.private_ip = opts.get('private_ip', self.public_ip)
         self.bin_dir = os.path.join(opts.get('mongo_dir', self.default_mongo_dir), 'bin')
-        self.add_to_replica = opts.get('add_to_replica', True)
-        self.clean_logs = opts.get('clean_logs', True)
-        self.clean_data = opts.get('clean_db_dir', not is_mongos)
+        self.clean_logs = opts.get('clean_logs', MongoNode.clean_logs)
+        self.clean_diagnostic_data = opts.get('clean_logs',
+                                              (not is_mongos) and MongoNode.clean_logs)
+        self.clean_db_dir = opts.get('clean_db_dir', (not is_mongos) and MongoNode.clean_db_dir)
         self.use_journal_mnt = opts.get('use_journal_mnt', not is_mongos)
         self.mongo_config_file = copy_obj(opts.get('config_file', {}))
         self.logdir = os.path.dirname(self.mongo_config_file['systemLog']['path'])
@@ -165,14 +171,29 @@ class MongoNode(object):
         # Clean the data/logs directories
         if self.clean_logs:
             commands.append(['rm', '-rf', os.path.join(self.logdir, '*.log')])
+        if self.clean_diagnostic_data:
+            commands.append(['rm', '-rf', os.path.join(self.dbdir, 'diagnostic.data', '*')])
         # Create the data/logs directories
         commands.append(['mkdir', '-p', self.logdir])
+
         if self.dbdir:
-            if self.clean_data:
+            if self.clean_db_dir:
+                # Deleting diagnostic.data is governed by clean_logs. Don't delete it here.
+                # When diagnostic.data doesn't exist, just create an empty one to avoid errors
+                commands.append(['mkdir', '-p', os.path.join(self.dbdir, 'diagnostic.data')])
+                commands.append(['rm', '-rf', os.path.join(self.logdir, 'diagnostic.data')])
+                commands.append(['mv', os.path.join(self.dbdir, 'diagnostic.data'), self.logdir])
+
                 commands.append(['rm', '-rf', self.dbdir])
+
                 if self.use_journal_mnt:
                     commands.append(['rm', '-rf', self.journal_dir])
+
             commands.append(['mkdir', '-p', self.dbdir])
+
+            if self.clean_db_dir:
+                commands.append(['mv', os.path.join(self.logdir, 'diagnostic.data'), self.dbdir])
+
             # Create separate journal directory and link to the database
             if self.use_journal_mnt:
                 commands.append(['mkdir', '-p', self.journal_dir])
@@ -387,12 +408,11 @@ class ReplSet(object):
         if self.configsvr:
             config['configsvr'] = True
         for i, node in enumerate(self.nodes):
-            if node.add_to_replica:
-                member_conf = merge_dicts(self.rs_conf_members[i], {
-                    '_id': i,
-                    'host': node.hostport_private()
-                })
-                config['members'].append(member_conf)
+            member_conf = merge_dicts(self.rs_conf_members[i], {
+                '_id': i,
+                'host': node.hostport_private()
+            })
+            config['members'].append(member_conf)
         json_config = json.dumps(config)
         js_string = '''
             config = {0};
@@ -695,6 +715,9 @@ def main():
     # start a mongodb configuration using config module
     config = ConfigDict('mongodb_setup')
     config.load()
+    # Global settings, can be overriden on a per-node basis in MongoNode.__init__()
+    MongoNode.clean_logs = config['mongodb_setup'].get('clean_logs', True)
+    MongoNode.clean_db_dir = config['mongodb_setup'].get('clean_db_dir', True)
     mongo = MongodbSetup(config, args)
     if not mongo.start():
         exit(1)
