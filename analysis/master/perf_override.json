@@ -478,10 +478,11 @@
                     ]
                 },
                 "Commands.DistinctWithoutIndexAndQuery":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.35,
+                    "threshold":0.3,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-4047"
                     ]
                 },
                 "Commands.FindAndModifyInserts":{
@@ -1925,10 +1926,11 @@
                     ]
                 },
                 "Commands.DistinctWithoutIndexAndQuery":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.35,
+                    "threshold":0.3,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-4047"
                     ]
                 },
                 "Commands.FindAndModifyInserts":{
@@ -3278,10 +3280,11 @@
                     ]
                 },
                 "Commands.DistinctWithoutIndexAndQuery":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.35,
+                    "threshold":0.3,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-4047"
                     ]
                 },
                 "Commands.FindAndModifyInserts":{
@@ -7869,10 +7872,11 @@
                     ]
                 },
                 "Commands.DistinctWithoutIndexAndQuery":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.35,
+                    "threshold":0.3,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-4047"
                     ]
                 },
                 "Commands.FindAndModifyInserts":{
@@ -10893,10 +10897,11 @@
                     ]
                 },
                 "Commands.DistinctWithoutIndexAndQuery":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.35,
+                    "threshold":0.3,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-4047"
                     ]
                 },
                 "Commands.FindAndModifyInserts":{
@@ -12755,10 +12760,11 @@
                     ]
                 },
                 "Commands.DistinctWithoutIndexAndQuery":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.35,
+                    "threshold":0.3,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-4047"
                     ]
                 },
                 "Commands.FindAndModifyInserts":{
