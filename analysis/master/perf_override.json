@@ -2812,6 +2812,13 @@
                     "ticket":[
                         "PERF-444"
                     ]
+                },
+                "Inserts.PartialIndex.FilteredRange":{
+                    "thread_threshold":0.16,
+                    "threshold":0.11,
+                    "ticket":[
+                        "BF-4047"
+                    ]
                 }
             }
         },
