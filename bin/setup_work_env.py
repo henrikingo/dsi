@@ -361,6 +361,8 @@ def main():
     cluster_path = os.path.join(dsipath, 'clusters', config['cluster_type'])
     remote_scripts_path = os.path.join(dsipath, 'clusters', 'remote-scripts')
     # Copy over all files from cluster directory
+    if not os.path.isdir(cluster_path):
+        cluster_path = os.path.join(dsipath, 'clusters', 'default')
     for filename in glob.glob(os.path.join(cluster_path, '*')):
         shutil.copy(filename, directory)
 
