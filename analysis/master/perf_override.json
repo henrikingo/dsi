@@ -3339,6 +3339,13 @@
                         "PERF-444"
                     ]
                 },
+                "Insert.SingleIndex.Seq":{
+                    "thread_threshold":0.17,
+                    "threshold":0.12,
+                    "ticket":[
+                        "BF-4058"
+                    ]
+                },
                 "Inserts.PartialIndex.FilteredRange":{
                     "thread_threshold":0.16,
                     "threshold":0.11,
