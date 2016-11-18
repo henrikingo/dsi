@@ -706,51 +706,51 @@
                     ]
                 },
                 "start_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":1500.0,
-                    "threshold":1000.0,
+                    "thread_threshold":5500.0,
+                    "threshold":5050.0,
                     "ticket":[
                         "PERF-723",
-                        "PERF-772"
+                        "BF-4154"
                     ]
                 },
                 "start_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":1500.0,
-                    "threshold":1000.0,
+                    "thread_threshold":5500.0,
+                    "threshold":5050.0,
                     "ticket":[
                         "PERF-723",
-                        "PERF-772"
+                        "BF-4154"
                     ]
                 },
                 "start_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":1500.0,
-                    "threshold":1000.0,
+                    "thread_threshold":5500.0,
+                    "threshold":5050.0,
                     "ticket":[
                         "PERF-723",
-                        "PERF-772"
+                        "BF-4154"
                     ]
                 },
                 "start_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":1500.0,
-                    "threshold":1000.0,
+                    "thread_threshold":5500.0,
+                    "threshold":5050.0,
                     "ticket":[
                         "PERF-723",
-                        "PERF-772"
+                        "BF-4154"
                     ]
                 },
                 "start_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":1500.0,
-                    "threshold":1000.0,
+                    "thread_threshold":5500.0,
+                    "threshold":5050.0,
                     "ticket":[
                         "PERF-723",
-                        "PERF-772"
+                        "BF-4154"
                     ]
                 },
                 "start_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":1500.0,
-                    "threshold":1000.0,
+                    "thread_threshold":5500.0,
+                    "threshold":5050.0,
                     "ticket":[
                         "PERF-723",
-                        "PERF-772"
+                        "BF-4154"
                     ]
                 }
             }
@@ -1807,67 +1807,67 @@
                     ]
                 },
                 "start_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":1500.0,
-                    "threshold":1000.0,
+                    "thread_threshold":5500.0,
+                    "threshold":5050.0,
                     "ticket":[
                         "PERF-723",
-                        "PERF-772"
+                        "BF-4154"
                     ]
                 },
                 "start_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":1500.0,
-                    "threshold":1000.0,
+                    "thread_threshold":5500.0,
+                    "threshold":5050.0,
                     "ticket":[
                         "PERF-723",
-                        "PERF-772"
+                        "BF-4154"
                     ]
                 },
                 "start_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":1500.0,
-                    "threshold":1000.0,
+                    "thread_threshold":5500.0,
+                    "threshold":5050.0,
                     "ticket":[
                         "PERF-723",
-                        "PERF-772"
+                        "BF-4154"
                     ]
                 },
                 "start_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":1500.0,
-                    "threshold":1000.0,
+                    "thread_threshold":5500.0,
+                    "threshold":5050.0,
                     "ticket":[
                         "PERF-723",
-                        "PERF-772"
+                        "BF-4154"
                     ]
                 },
                 "start_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":1500.0,
-                    "threshold":1000.0,
+                    "thread_threshold":5500.0,
+                    "threshold":5050.0,
                     "ticket":[
                         "PERF-723",
-                        "PERF-772"
+                        "BF-4154"
                     ]
                 },
                 "start_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":1500.0,
-                    "threshold":1000.0,
+                    "thread_threshold":5500.0,
+                    "threshold":5050.0,
                     "ticket":[
                         "PERF-723",
-                        "PERF-772"
+                        "BF-4154"
                     ]
                 },
                 "start_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":1500.0,
-                    "threshold":1000.0,
+                    "thread_threshold":5500.0,
+                    "threshold":5050.0,
                     "ticket":[
                         "PERF-723",
-                        "PERF-772"
+                        "BF-4154"
                     ]
                 },
                 "start_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":1500.0,
-                    "threshold":1000.0,
+                    "thread_threshold":5500.0,
+                    "threshold":5050.0,
                     "ticket":[
                         "PERF-723",
-                        "PERF-772"
+                        "BF-4154"
                     ]
                 }
             }
