@@ -2,6 +2,9 @@ variable owner                          { default = "serverteam-perf@10gen.com" 
 variable topology                       {}
 variable key_file                       {}
 variable key_name                       {}
+variable runner                         { default = "missing" } # Hostname of the machine using it
+variable status                         { default = "idle" } #Idle, running
+variable task_id                        { default = "none" }
 
 # define instance types
 variable mongod_instance_type                   {}
@@ -53,6 +56,9 @@ module "VPC" {
     topology            = "${var.topology}"
     availability_zone   = "${var.availability_zone}"
     owner               = "${var.owner}"
+    runner              = "${var.runner}"
+    status              = "${var.status}"
+    task_id             = "${var.task_id}"
 }
 
 # AWS instance with placement group for mongod
@@ -74,6 +80,9 @@ module "mongod_instance" {
     topology            = "${var.topology}"
     type                = "mongod"
     run_fio             = "${var.run_fio}"
+    runner              = "${var.runner}"
+    status              = "${var.status}"
+    task_id             = "${var.task_id}"
 }
 
 # AWS instance with placement group, and EBS volume for mongod
@@ -94,6 +103,9 @@ module "mongod_ebs_instance" {
     provisioner_file    = "system-setup.sh"
     topology            = "${var.topology}"
     type                = "mongod_ebs"
+    runner              = "${var.runner}"
+    status              = "${var.status}"
+    task_id             = "${var.task_id}"
     ebs_size            = "${var.mongod_ebs_size}"
     ebs_iops            = "${var.mongod_ebs_iops}"
     run_fio             = "${var.run_fio}"
@@ -117,6 +129,9 @@ module "mongod_seeded_ebs_instance" {
     provisioner_file        = "system-setup.sh"
     topology                = "${var.topology}"
     type                    = "mongod_seeded_ebs"
+    runner                  = "${var.runner}"
+    status                  = "${var.status}"
+    task_id                 = "${var.task_id}"
     seeded_ebs_snapshot_id  = "${var.mongod_seeded_ebs_snapshot_id}"
     seeded_ebs_iops         = "${var.mongod_seeded_ebs_iops}"
     run_fio                 = "${var.run_fio}"
@@ -141,6 +156,9 @@ module "mongos_instance" {
     topology            = "${var.topology}"
     type                = "mongos"
     run_fio             = "false"
+    runner              = "${var.runner}"
+    status              = "${var.status}"
+    task_id             = "${var.task_id}"
 }
 
 # AWS instance with placement group for config server
@@ -162,6 +180,9 @@ module "configsvr_instance" {
     topology            = "${var.topology}"
     type                = "configsvr"
     run_fio             = "false"
+    runner              = "${var.runner}"
+    status              = "${var.status}"
+    task_id             = "${var.task_id}"
 }
 
 # AWS instance for workload generator
@@ -183,4 +204,7 @@ module "workload_instance" {
     topology            = "${var.topology}"
     type                = "workloadclient"
     run_fio             = "false"
+    runner              = "${var.runner}"
+    status              = "${var.status}"
+    task_id             = "${var.task_id}"
 }

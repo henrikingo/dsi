@@ -28,6 +28,11 @@ variable mongod_ebs_iops            { default = 240 }
 
 variable run_fio                    { default = "true" }
 
+variable runner                     { default = "missing" }
+variable status                     { default = "idle" }
+variable task_id                    { default = "none" }
+
+
 module "cluster" {
     source = "../modules/cluster"
 
@@ -68,4 +73,8 @@ module "cluster" {
     key_name            = "${var.key_name}"
 
     run_fio    = "${var.run_fio}"
+
+    runner              = "${var.runner}"
+    status              = "${var.status}"
+    task_id             = "${var.task_id}"
 }

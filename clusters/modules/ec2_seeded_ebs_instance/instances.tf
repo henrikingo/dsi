@@ -12,6 +12,9 @@ variable "expire_on"            {}
 variable "provisioner_file"     {}
 variable "topology"             {}
 variable "type"                 {}
+variable "runner"               {}
+variable "status"               {}
+variable "task_id"              {}
 
 variable "seeded_ebs_type"             { default = "io1" }
 variable "seeded_ebs_iops"             { default = "10000" }
@@ -47,6 +50,9 @@ resource "aws_instance" "seeded_ebs_member" {
         TestTopology    = "${var.topology}"
         owner           = "${var.owner}"
         expire-on       = "${var.expire_on}"
+        runner          = "${var.runner}"
+        status          = "${var.status}"
+        task_id         = "${var.task_id}"
     }
 
     ephemeral_block_device {

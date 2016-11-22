@@ -24,10 +24,19 @@ else
     $DSI_PATH/bin/generate-timeseries-html.sh || true
 
 
-    # IMPORTANT!
-    rm runtime_secret.yml || true
-    rm security.tf || true
-    rm aws_ssh_key.pem || true
+    # The long term plan is to tar the complete work directory, and
+    # upload it. Currently we only save the reports directory. It is
+    # very important to not include the following files when we save
+    # the complete work directory:
+    #
+    # runtime_secret.yml
+    # security.tf
+    # aws_ssh_key.pem.
+    #
+    # Those files may be required after the end of this script. If
+    # they are deleted for the call to tar, they need to be restored
+    # afterwards. Alternatively, we can use the --exclude flag to tar. Can use the following string:
+    # TAR_EXCLUDE="--exclude runtime_secret.yml --exclude security.tf --exclude aws_ssh_key.pem"
 
     tar -zvcf reports.tgz reports
 fi

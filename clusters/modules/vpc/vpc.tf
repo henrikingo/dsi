@@ -2,6 +2,9 @@
 variable topology           {}
 variable availability_zone  {}
 variable owner              {}
+variable runner             {} # Hostname of the machine using it
+variable status             {} # Idle, Running
+variable task_id            {}
 
 # resource definition
 resource "aws_vpc" "main" {
@@ -13,6 +16,9 @@ resource "aws_vpc" "main" {
         TestSetup = "dsi"
         TestTopology = "${var.topology}"
         Owner = "${var.owner}"
+        runner = "${var.runner}"
+        status = "${var.status}"
+        task_id         = "${var.task_id}"
     }
 }
 
@@ -30,6 +36,9 @@ resource "aws_subnet" "main" {
         TestSetup = "dsi"
         TestTopology = "${var.topology}"
         Owner = "${var.owner}"
+        runner          = "${var.runner}"
+        status          = "${var.status}"
+        task_id         = "${var.task_id}"
     }
 }
 
@@ -45,6 +54,9 @@ resource "aws_route_table" "r" {
         TestSetup = "dsi"
         TestTopology = "${topology}"
         Owner = "${var.owner}"
+        runner          = "${var.runner}"
+        status          = "${var.status}"
+        task_id         = "${var.task_id}"
     }
 }
 

@@ -9,6 +9,9 @@ from __future__ import print_function
 import json
 import datetime
 import logging
+import socket
+import requests
+from requests.exceptions import ConnectionError
 
 from common.config import ConfigDict
 
@@ -45,6 +48,31 @@ def support_placement_group(instance_type):
     """
 
     return instance_type.split(".")[0] in INSTANCE_CLASSES_SUPPORT_PLACEMENT_GROUP
+
+def generate_runner():
+    """Get the IP address of the (evergreen) runner for labelling cluster
+
+    Will try to get the public IP from AWS metadata first, then from
+    reverse lookup, and then fall back to using the hostname
+
+    """
+
+    try:
+        response = requests.get('http://169.254.169.254/latest/meta-data/public-hostname',
+                                timeout=0.01)
+        return response.text
+    except ConnectionError:
+        LOG.warning("Terraform_config.py generate_runner could not access AWS"
+                    "meta-data. Falling back to other methods")
+
+    try:
+        response = requests.get('http://ip.42.pl/raw', timeout=1)
+        return response.text
+    except ConnectionError:
+        LOG.warning("Terraform_config.py generate_runner could not access ip.42.pl"
+                    "to get public IP. Falling back to gethostname")
+
+    return socket.gethostname()
 
 
 class TerraformConfiguration(object):
@@ -88,7 +116,8 @@ class TerraformConfiguration(object):
             self.availability_zone = availability_zone
         self.now = now
         self.define_day_delta(day_delta)
-
+        self.runner = generate_runner()
+        self.status = "running"
         # always update expire-on
         self.expire_on = generate_expire_on_tag(now, self.day_delta)
         if use_config:
@@ -184,6 +213,10 @@ class TerraformConfiguration(object):
         # update owner tag
         if "owner" in dsi_config["tfvars"]["tags"].keys():
             self.owner = dsi_config["tfvars"]["tags"]["owner"]
+
+        # update task id tag
+        if "runtime" in dsi_config.keys() and "task_id" in dsi_config["runtime"].keys():
+            self.task_id = dsi_config["runtime"]["task_id"]
 
     def to_json(self, compact=False, file_name=None):
         """To create JSON configuration string."""

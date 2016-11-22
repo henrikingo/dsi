@@ -13,6 +13,9 @@ variable "provisioner_file"     {}
 variable "topology"             {}
 variable "type"                 {}
 variable "run_fio"              { default = "true" }
+variable "runner"               {}
+variable "status"               {}
+variable "task_id"              {}
 
 # AWS instance with placement group for mongod
 resource "aws_instance" "member" {
@@ -43,7 +46,10 @@ resource "aws_instance" "member" {
         TestTopology    = "${var.topology}"
         owner           = "${var.owner}"
         expire-on       = "${var.expire_on}"
-    }
+        runner          = "${var.runner}"
+        status          = "${var.status}"
+        task_id         = "${var.task_id}"
+}
 
     ephemeral_block_device {
         device_name     = "/dev/sdc"
