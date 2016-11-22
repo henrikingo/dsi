@@ -26,6 +26,8 @@ variable mongod_seeded_ebs_iops            { default = 240 }
 variable mongod_ebs_size            { default = 100 }
 variable mongod_ebs_iops            { default = 240 }
 
+variable run_fio                    { default = "true" }
+
 module "cluster" {
     source = "../modules/cluster"
 
@@ -64,4 +66,6 @@ module "cluster" {
 
     key_file            = "${var.key_file}"
     key_name            = "${var.key_name}"
+
+    run_fio    = "${var.run_fio}"
 }

@@ -16,6 +16,7 @@ variable "type"                 {}
 variable "seeded_ebs_type"             { default = "io1" }
 variable "seeded_ebs_iops"             { default = "10000" }
 variable "seeded_ebs_snapshot_id"      {}
+variable "run_fio"                     { default = "true" }
 
 # AWS instance with placement group for mongod
 resource "aws_instance" "seeded_ebs_member" {
@@ -82,7 +83,7 @@ resource "aws_instance" "seeded_ebs_member" {
         }
         inline = [
             "chmod +x /tmp/provision.sh",
-            "/tmp/provision.sh with_seeded_ebs"
+            "/tmp/provision.sh ${var.type} with_seeded_ebs ${var.run_fio}"
         ]
     }
 }

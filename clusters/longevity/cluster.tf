@@ -20,6 +20,8 @@ variable availability_zone          {}
 variable region                     {}
 variable expire_on                  { default = "2016-12-31" }
 
+variable run_fio                    { default = "false" }
+
 module "cluster" {
     source = "../modules/cluster"
 
@@ -51,4 +53,6 @@ module "cluster" {
 
     key_file            = "${var.key_file}"
     key_name            = "${var.key_name}"
+
+    run_fio    = "${var.run_fio}"
 }

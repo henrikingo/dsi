@@ -43,6 +43,8 @@ variable mongod_ebs_iops                       { default = 1500 }
 variable mongod_seeded_ebs_snapshot_id         { default = "" }
 variable mongod_seeded_ebs_iops                { default = 1500 }
 
+variable run_fio                               { default = "true" }
+
 # define VPC and related network resources
 module "VPC" {
     source = "../vpc"
@@ -68,9 +70,10 @@ module "mongod_instance" {
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     expire_on           = "${var.expire_on}"
-    provisioner_file    = "mongod-instance-setup.sh"
+    provisioner_file    = "system-setup.sh"
     topology            = "${var.topology}"
     type                = "mongod"
+    run_fio             = "${var.run_fio}"
 }
 
 # AWS instance with placement group, and EBS volume for mongod
@@ -88,11 +91,12 @@ module "mongod_ebs_instance" {
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     expire_on           = "${var.expire_on}"
-    provisioner_file    = "mongod-instance-setup.sh"
+    provisioner_file    = "system-setup.sh"
     topology            = "${var.topology}"
     type                = "mongod_ebs"
     ebs_size            = "${var.mongod_ebs_size}"
     ebs_iops            = "${var.mongod_ebs_iops}"
+    run_fio             = "${var.run_fio}"
 }
 
 # AWS instance with placement group, and seeded EBS volume for mongod
@@ -110,11 +114,12 @@ module "mongod_seeded_ebs_instance" {
     key_name                = "${var.key_name}"
     owner                   = "${var.owner}"
     expire_on               = "${var.expire_on}"
-    provisioner_file        = "mongod-instance-setup.sh"
+    provisioner_file        = "system-setup.sh"
     topology                = "${var.topology}"
     type                    = "mongod_seeded_ebs"
     seeded_ebs_snapshot_id  = "${var.mongod_seeded_ebs_snapshot_id}"
     seeded_ebs_iops         = "${var.mongod_seeded_ebs_iops}"
+    run_fio                 = "${var.run_fio}"
 }
 
 # AWS instance with placement group for mongos
@@ -132,9 +137,10 @@ module "mongos_instance" {
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     expire_on           = "${var.expire_on}"
-    provisioner_file    = "generic-mongo-instance-setup.sh"
+    provisioner_file    = "system-setup.sh"
     topology            = "${var.topology}"
     type                = "mongos"
+    run_fio             = "false"
 }
 
 # AWS instance with placement group for config server
@@ -152,9 +158,10 @@ module "configsvr_instance" {
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     expire_on           = "${var.expire_on}"
-    provisioner_file    = "generic-mongo-instance-setup.sh"
+    provisioner_file    = "system-setup.sh"
     topology            = "${var.topology}"
     type                = "configsvr"
+    run_fio             = "false"
 }
 
 # AWS instance for workload generator
@@ -172,7 +179,8 @@ module "workload_instance" {
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     expire_on           = "${var.expire_on}"
-    provisioner_file    = "workload-client-setup.sh"
+    provisioner_file    = "system-setup.sh"
     topology            = "${var.topology}"
     type                = "workloadclient"
+    run_fio             = "false"
 }

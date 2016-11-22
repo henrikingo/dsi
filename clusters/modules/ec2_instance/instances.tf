@@ -12,6 +12,7 @@ variable "expire_on"            {}
 variable "provisioner_file"     {}
 variable "topology"             {}
 variable "type"                 {}
+variable "run_fio"              { default = "true" }
 
 # AWS instance with placement group for mongod
 resource "aws_instance" "member" {
@@ -70,7 +71,7 @@ resource "aws_instance" "member" {
         }
         inline = [
             "chmod +x /tmp/provision.sh",
-            "/tmp/provision.sh"
+            "/tmp/provision.sh ${var.type} false ${var.run_fio}"
         ]
     }
 }
