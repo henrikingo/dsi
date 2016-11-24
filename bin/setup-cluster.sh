@@ -2,12 +2,13 @@
 
 export CLUSTER=$1
 export EXISTING="${2:-false}"
+SKIP_FIO=$3
 BINDIR=$(dirname $0)
 TERRAFORM="${TERRAFORM:-./terraform}"
 
 if [ ! "$CLUSTER" ]
 then
-    echo "Usage: $0 single|replica|shard|longevity|<cluster type>"
+    echo "Usage: $0 single|replica|shard|longevity|<cluster type> [EXISTING=true|false] [--skip-fio]"
     exit -1
 fi
 
@@ -21,6 +22,15 @@ if [ -e "cluster.json" ]; then
     echo "Using var_file ${VAR_FILE}"
 fi
 
+VAR=""
+if [ "$SKIP_FIO" == "--skip-fio" ]
+then
+    echo "Not running fio as specified by --skip-fio."
+    VAR='-var run_fio=false'
+    echo "Using -var option: $VAR"
+fi
+
+
 echo "EXISTING IS $EXISTING"
 if [ $EXISTING == "true" ]; then
     echo "Reusing AWS cluster for $CLUSTER"
@@ -32,16 +42,16 @@ fi
 if [[ $EXISTING != "true"  && ( $CLUSTER == "shard" || $CLUSTER == "longevity" ) ]]
 then
     # Shard cluster
-    $TERRAFORM apply $VAR_FILE -var="mongod_instance_count=3"  | tee terraform.log
+    $TERRAFORM apply $VAR $VAR_FILE -var="mongod_instance_count=3"  | tee terraform.log
 
     # workaround for failure to bring up all at the same time
-    $TERRAFORM apply $VAR_FILE -var="mongod_instance_count=9" | tee -a terraform.log
+    $TERRAFORM apply $VAR $VAR_FILE -var="mongod_instance_count=9" | tee -a terraform.log
 else
     # Most cluster types
-    $TERRAFORM apply $VAR_FILE | tee terraform.log
+    $TERRAFORM apply $VAR $VAR_FILE | tee terraform.log
 fi
 # repeat terraform apply to work around some timing issue between AWS/terraform
-$TERRAFORM apply $VAR_FILE | tee -a terraform.log
+$TERRAFORM apply $VAR $VAR_FILE | tee -a terraform.log
 
 # just to print out disk i/o information
 cat terraform.log | grep "  clat ("
@@ -54,6 +64,9 @@ if [ $CLUSTER == "longevity" ] || \
    [ $CLUSTER == "replica-correctness" ]
 then
     echo "Skipping pre-qualify-cluster.sh for $CLUSTER"
+elif [ "$SKIP_FIO" == "--skip-fio" ]
+then
+    echo "Skipping pre-qualify-cluster.sh because of --skip-fio."
 else
     # check performance and re-done the mongod instance if necessary
     ${BINDIR}/pre-qualify-cluster.sh
@@ -78,13 +91,13 @@ then
 else
     $TERRAFORM refresh
     # Use terraform detailed exit code to catch terraform errors
-    $TERRAFORM plan -detailed-exitcode $VAR_FILE
+    $TERRAFORM plan -detailed-exitcode $VAR $VAR_FILE
     if [[ $? == 1 ]]
     then
         exit 1
     fi
     # Check that all the nodes in the cluster are properly up
-    good_line_count=$($TERRAFORM plan $VAR_FILE | egrep "Plan" | egrep -c "0 to add")
+    good_line_count=$($TERRAFORM plan $VAR $VAR_FILE | egrep "Plan" | egrep -c "0 to add")
     if [ $good_line_count != 1 ]
     then
         >&2 echo "Error: Past pre-qualify, but something wrong with provisioning. Still need to add node(s)."
