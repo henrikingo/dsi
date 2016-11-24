@@ -805,57 +805,57 @@
                     ]
                 },
                 "compact_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":75.0,
-                    "threshold":50.0,
+                    "thread_threshold":750.0,
+                    "threshold":500.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
                 "compact_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":75.0,
-                    "threshold":50.0,
+                    "thread_threshold":750.0,
+                    "threshold":500.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
                 "compact_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":75.0,
-                    "threshold":50.0,
+                    "thread_threshold":750.0,
+                    "threshold":500.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
                 "compact_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":75.0,
-                    "threshold":50.0,
+                    "thread_threshold":750.0,
+                    "threshold":500.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
                 "compact_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":75.0,
-                    "threshold":50.0,
+                    "thread_threshold":750.0,
+                    "threshold":500.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
                 "compact_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":75.0,
-                    "threshold":50.0,
+                    "thread_threshold":750.0,
+                    "threshold":500.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
                 "compact_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":75.0,
-                    "threshold":50.0,
+                    "thread_threshold":750.0,
+                    "threshold":500.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
                 "compact_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":75.0,
-                    "threshold":50.0,
+                    "thread_threshold":750.0,
+                    "threshold":500.0,
                     "ticket":[
                         "PERF-767"
                     ]
