@@ -15,8 +15,13 @@ class DownloadMongodb(object):
         self.run_locally = run_locally
 
         self.config = config
-        self.mongodb_binary_archive = config['mongodb_setup'].get('mongodb_binary_archive',
-                                                                  cli_mongodb_binary_archive)
+
+        self.mongodb_binary_archive = cli_mongodb_binary_archive
+        if 'runtime' in config.keys():
+            self.mongodb_binary_archive = config['runtime'].get('mongodb_binary_archive',
+                                                                cli_mongodb_binary_archive)
+        LOG.info("Download url is %s", self.mongodb_binary_archive)
+
         tfvars = config['infrastructure_provisioning']['tfvars']
         self.ssh_user = tfvars['ssh_user']
         self.ssh_key_file = tfvars['ssh_key_file']

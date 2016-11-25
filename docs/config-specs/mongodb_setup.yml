@@ -1,5 +1,3 @@
-mongodb_binary_archive: $RUNTIME_VALUE  # This is a tar file containing bin/mongo(d/s/). Usually filled in by environment.
-                                        # URL or local file path.
 mongo_dir: mongodb                      # String that will be used in the path of the installation directory
                                         # Useful to test multiple versions of MongoDB on same infrastructure (manual 
                                         # runs for analysing build failures)

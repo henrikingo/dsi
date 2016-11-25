@@ -21,10 +21,6 @@ process when deploying mongodb.
 **Conventions:**
 * Keys and values are generally the values mandated by this spec.
 * Some values are examples only. For example the prefix "my" is used for user defined values: "myrs0".
-* $RUNTIME_VALUE refers to a value provided at runtime by the environment.
-  This is used for secret aws keys, or build/runtime specific info like mongodb binaries.
-  You can usually omit such fields in real config files, they will be added by environment.
-  If such a field is specified, that value will prevail, runtime value will not be added.
 * ${module_name.key_name} are variables that can reference the value of another key in the 
   configuration. The library that reads the config files will automatically substitute the
   variables for their values.

@@ -30,13 +30,14 @@ import shutil
 import subprocess
 import yaml
 
+from common.config import ConfigDict
 from common.log import setup_logging
 
 LOGGER = logging.getLogger(__name__)
 
 DEFAULT_CONFIG = {'cluster_type': 'single',
-                  'aws_key_name': 'NoKeyName',
-                  'aws_secret': "NoSecret",
+                  'aws_access_key': 'NoAccessKey',
+                  'aws_secret_key': "NoSecretKey",
                   'directory': '.',
                   'production': False,
                  }
@@ -44,13 +45,16 @@ DEFAULT_CONFIG = {'cluster_type': 'single',
 
 def build_config(args=None):
     '''
-    Build a config file, including the specified arguments
+    Build a config object, including the specified arguments
     '''
     # default values for config
     config = copy.copy(DEFAULT_CONFIG)
 
     # if we can read variables out of the ~/.aws/credentials file, do so
     read_aws_creds(config)
+
+    # if we are running this on evergreen, use the runtime values as defaults
+    read_runtime_values(config)
 
     # environment variables should supersede config file reading
     read_env_vars(config)
@@ -60,6 +64,21 @@ def build_config(args=None):
 
     return config
 
+def read_runtime_values(config):
+    '''
+    Read default config values from the 'bootstrap' and 'runtime' ConfigDict modules
+    '''
+    config_dict = ConfigDict('bootstrap')
+    config_dict.load()
+
+    for key in config_dict['bootstrap'].keys():
+        config[key] = config_dict['bootstrap'][key]
+
+    if 'runtime_secret' in config_dict:
+        if 'aws_access_key' in config_dict['runtime_secret']:
+            config['aws_access_key'] = config_dict['runtime_secret']['aws_access_key']
+        if 'aws_secret_key' in config_dict['runtime_secret']:
+            config['aws_secret_key'] = config_dict['runtime_secret']['aws_secret_key']
 
 def read_aws_creds(config):
     '''
@@ -71,8 +90,8 @@ def read_aws_creds(config):
     config_parser = ConfigParser.ConfigParser(defaults=defaults)
     config_parser.read(credential_path)
     if config_parser.has_section(section):
-        config['aws_key_name'] = config_parser.get('default', 'aws_access_key_id')
-        config['aws_secret'] = config_parser.get('default', 'aws_secret_access_key')
+        config['aws_access_key'] = config_parser.get('default', 'aws_access_key_id')
+        config['aws_secret_key'] = config_parser.get('default', 'aws_secret_access_key')
     return config
 
 
@@ -81,26 +100,28 @@ def read_env_vars(config):
     Read AWS access key id and and secret access key from environment variables
     '''
     if 'AWS_ACCESS_KEY_ID' in os.environ:
-        config['aws_key_name'] = os.environ.get('AWS_ACCESS_KEY_ID', 'NoKeyName')
+        config['aws_access_key'] = os.environ.get('AWS_ACCESS_KEY_ID',
+                                                  DEFAULT_CONFIG['aws_access_key'])
     if 'AWS_SECRET_ACCESS_KEY' in os.environ:
-        config['aws_secret'] = os.environ.get('AWS_SECRET_ACCESS_KEY', 'NoSecret')
+        config['aws_secret_key'] = os.environ.get('AWS_SECRET_ACCESS_KEY',
+                                                  DEFAULT_CONFIG['aws_access_key'])
     return config
 
 
 def parse_command_line(config, args=None):
-    #pylint: disable=line-too-long
+    #pylint: disable=line-too-long,too-many-branches
     '''
     Parse the command line options for setting up a working directory
 
     >>> from collections import OrderedDict
     >>> OrderedDict(parse_command_line(copy.copy(DEFAULT_CONFIG), []))
-    OrderedDict([('aws_secret', 'NoSecret'), ('cluster_type', 'single'), ('aws_key_name', 'NoKeyName'), ('directory', '.'), ('production', False)])
+    OrderedDict([('aws_secret_key', 'NoSecretKey'), ('cluster_type', 'single'), ('aws_access_key', 'NoAccessKey'), ('production', False), ('directory', '.')])
 
     >>> OrderedDict(parse_command_line(copy.copy(DEFAULT_CONFIG), ['-c', 'none']))
-    OrderedDict([('aws_secret', 'NoSecret'), ('cluster_type', 'none'), ('aws_key_name', 'NoKeyName'), ('directory', '.'), ('production', False)])
+    OrderedDict([('aws_secret_key', 'NoSecretKey'), ('cluster_type', 'none'), ('aws_access_key', 'NoAccessKey'), ('production', False), ('directory', '.')])
 
-    >>> OrderedDict(parse_command_line(copy.copy(DEFAULT_CONFIG), ['-c', 'none', '--mongo-download-url', "URL", "--aws-key-name", "key_name", "--ssh-keyfile-path", "keyfile", "--aws-secret-file", "newsecret.json"]))
-    OrderedDict([('aws_secret', 'NoSecret'), ('ssh_keyfile_path', 'keyfile'), ('cluster_type', 'none'), ('aws_key_name', 'key_name'), ('aws_secret_file', 'newsecret.json'), ('production', False), ('directory', '.')])
+    >>> OrderedDict(parse_command_line(copy.copy(DEFAULT_CONFIG), ['-c', 'none', "--aws-access-key", "key_name", "--ssh-keyfile-path", "keyfile", "--aws-secret-file", "newsecret.json"]))
+    OrderedDict([('aws_secret_key', 'NoSecretKey'), ('aws_access_key', 'key_name'), ('cluster_type', 'none'), ('aws_secret_file', 'newsecret.json'), ('production', False), ('directory', '.'), ('ssh_key_file', 'keyfile')])
     '''
 
     parser = argparse.ArgumentParser(description='Setup DSI working environment. For instructions \
@@ -120,20 +141,25 @@ def parse_command_line(config, args=None):
     # with distinct options for selecting infrastructure provisioning
     # options and mongodb setup options.
     parser.add_argument('-k',
-                        '--aws-key-name',
-                        help='AWS key name. If this flag is not used, the key name will default \
-                        to the key name specified in the [default] section of ~/.aws/credentials, \
-                        then to $AWS_ACCESS_KEY_ID if set, and to \'NoKeyName\' otherwise.')
+                        '--aws-access-key',
+                        help="AWS api access key. If this flag is not used, the key name will \
+                        default to $AWS_ACCESS_KEY_ID if set, then to the evergreen expansion \
+                        ${aws_access_key} if set in runtime.yml, then to the access key specified \
+                        in [default] section of ~/.aws/credentials, and 'NoAccessKey' otherwise.")
+    parser.add_argument('--aws-key-name',
+                        help='Synonym for --aws-access-key. (Deprecated)')
     parser.add_argument('-s',
                         '--aws-secret-file',
-                        help='File containing AWS secret. If this flag is not used, the secret \
-                        will default to the secret specified in the [default] section of \
-                        ~/.aws/credentials, then to $AWS_SECRET_ACCESS_KEY if set, and to \
-                        \'NoSecret\' otherwise.')
+                        help="File containing AWS secret. If this flag is not used, the secret \
+                        will default to $AWS_SECRET_ACCESS_KEY if set, then to the \
+                        evergreen expansion ${aws_secret_key} if set in runtime.yml, then to the \
+                        secret specified in the [default] section of ~/.aws/credentials, and \
+                        'NoSecret' otherwise.")
     # To be replaced by infrastructure.yml selection option
     parser.add_argument('-c',
                         '--cluster-type',
-                        help='Set the cluster type')
+                        help='Set the cluster type. Defaults to the evergreen expansion ${cluster} \
+                        if set in runtime.yml, and to \'single\' otherwise.')
     parser.add_argument('--config',
                         action='append',
                         help='Config file to load. Can be called multiple times and combined.'\
@@ -146,19 +172,20 @@ def parse_command_line(config, args=None):
                         help="Directory to setup. Defaults to current directory")
     parser.add_argument('--log-file',
                         help='path to log file')
-    parser.add_argument('-m',
-                        '--mongo-download-url',
-                        help='Ignored. (Backward compatibility.)')
     parser.add_argument('--mc',
                         help='The path of the mc executable. Defaults to $(which mc) if mc is \
                         in the PATH, and to $DSI_PATH/bin/mc if not.')
     parser.add_argument('--owner',
                         help='Owner tag for AWS resources')
+    parser.add_argument('--ssh-keyfile-path',
+                        help="Synonym to --ssh-key-file")
     parser.add_argument('-p',
-                        '--ssh-keyfile-path',
+                        '--ssh-key-file',
                         help="Path to AWS ssh key file (pem)")
     parser.add_argument('--ssh-key',
-                        help="Key to use with SSH access")
+                        help="Synonym for --ssh-key-name. (Deprecated)")
+    parser.add_argument('--ssh-key-name',
+                        help="The name (in EC2) of the SSH key to use.")
     parser.add_argument('--terraform',
                         help='The path of the terraform executable. Defaults to $(which terraform) \
                         if terraform is in the path, and to <directory>/terraform if not. For \
@@ -174,6 +201,7 @@ def parse_command_line(config, args=None):
                         help='Enable verbose output')
     args = parser.parse_args(args)
 
+    # TODO: This is now very late in the execution, needs to be moved earlier.
     setup_logging(args.debug, args.log_file)  # pylint: disable=no-member
 
     if args.config:
@@ -182,11 +210,17 @@ def parse_command_line(config, args=None):
     if args.cluster_type:
         config['cluster_type'] = args.cluster_type
     if args.aws_key_name:
-        config['aws_key_name'] = args.aws_key_name
+        config['aws_access_key'] = args.aws_key_name
+    if args.aws_access_key:
+        config['aws_access_key'] = args.aws_access_key
     if args.ssh_keyfile_path:
-        config['ssh_keyfile_path'] = args.ssh_keyfile_path
+        config['ssh_key_file'] = args.ssh_keyfile_path
+    if args.ssh_key_file:
+        config['ssh_key_file'] = args.ssh_key_file
     if args.ssh_key:
-        config['ssh_key'] = args.ssh_key
+        config['ssh_key_name'] = args.ssh_key
+    if args.ssh_key_name:
+        config['ssh_key_name'] = args.ssh_key_name
     if args.directory:
         config['directory'] = args.directory
     if args.owner:
@@ -200,7 +234,6 @@ def parse_command_line(config, args=None):
     if args.terraform:
         config['terraform'] = args.terraform
     return config
-
 
 def copy_config_files(dsipath, config, directory):
     '''
@@ -231,15 +264,19 @@ def copy_config_files(dsipath, config, directory):
 def setup_overrides(config, directory):
     '''
     Generate the overrides.yml file
+
+    Note: this only happens when running locally, outside of evergreen. In evergreen runs,
+    the relevant variables are set in infrastructure_provisioning.yml and should not be present in
+    config at this point.
     '''
 
     overrides = {}
     override_path = os.path.join(directory, 'overrides.yml')
     tfvars = {}
-    if 'ssh_keyfile_path' in config:
-        tfvars['ssh_key_file'] = config['ssh_keyfile_path']
-    if 'ssh_key' in config:
-        tfvars['ssh_key'] = config['ssh_key']
+    if 'ssh_key_file' in config:
+        tfvars['ssh_key_file'] = config['ssh_key_file']
+    if 'ssh_key_name' in config:
+        tfvars['ssh_key_name'] = config['ssh_key_name']
     if 'owner' in config:
         tfvars['tags'] = {'owner': config['owner']}
     if os.path.exists(override_path):
@@ -259,8 +296,8 @@ def setup_security_tf(config, directory):
     # Write security.tf. Used to be done by make_terraform_env.sh
     with open(os.path.join(directory, 'security.tf'), 'w') as security:
         security.write('provider "aws" {\n')
-        security.write('    access_key = "{0}"\n'.format(config['aws_key_name']))
-        security.write('    secret_key = "{0}"\n'.format(config['aws_secret']))
+        security.write('    access_key = "{0}"\n'.format(config['aws_access_key']))
+        security.write('    secret_key = "{0}"\n'.format(config['aws_secret_key']))
         security.write('    region = "${var.region}"\n')
         security.write('}\n')
         security.write('variable "key_name" {\n')

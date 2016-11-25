@@ -125,7 +125,7 @@ class TestTerraformConfiguration(unittest.TestCase):
                                  '"configsvr_instance_type":"m3.4xlarge",'
                                  '"expire_on":"2016-5-28",'
                                  '"key_file":"../../keys/aws.pem",'
-                                 '"key_name":"server-perf-team-ssh-key",'
+                                 '"key_name":"rui-aws-cap",'
                                  '"mongod_instance_count":15,'
                                  '"mongod_instance_placement_group":"yes",'
                                  '"mongod_instance_type":"c3.8xlarge",'

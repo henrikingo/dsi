@@ -26,7 +26,10 @@ class ConfigDict(dict):
     defaults.yml
     raise KeyError"""
 
-    modules = ['infrastructure_provisioning',
+    modules = ['bootstrap',
+               'runtime',
+               'runtime_secret',
+               'infrastructure_provisioning',
                'system_setup',
                'workload_preparation',
                'mongodb_setup',
@@ -108,7 +111,7 @@ class ConfigDict(dict):
         return self
 
     def save(self):
-        """Write contents of self.raw[self.module]['out'] to module_name.out.yaml"""
+        """Write contents of self.raw[self.module]['out'] to module_name.out.yml"""
         file_name = self.module + '.out.yml'
         file_handle = open(file_name, 'w')
         out = {'out' : self.raw[self.module]['out']}
@@ -140,6 +143,9 @@ class ConfigDict(dict):
             i += 1
         str_representation += '}'
         return str_representation
+
+    def __contains__(self, key):
+        return key in self.keys()
 
     def get(self, key, default=None):
         try:

@@ -35,7 +35,7 @@ class DownloadMongodbTestCase(unittest.TestCase):
                              {'public_ip' : '10.2.3.15', 'private_ip' : '10.0.0.12'}]
                         }
                        },
-                       'mongodb_setup' :
+                       'runtime' :
                            {'mongodb_binary_archive' : 'http://foo.tgz'}
                       }
         self.config_no_binary = {'infrastructure_provisioning' :
@@ -48,7 +48,7 @@ class DownloadMongodbTestCase(unittest.TestCase):
                                        {'public_ip' : '10.2.3.15', 'private_ip' : '10.0.0.12'}]
                                   }
                                  },
-                                 'mongodb_setup' :  {}
+                                 'runtime' :  {}
                                 }
         self.cli_mongodb_binary_archive = 'http://bar.tgz'
         self.downloader = None
@@ -56,12 +56,12 @@ class DownloadMongodbTestCase(unittest.TestCase):
 
     def test_basic_use(self):
         """Init DownloadMongodb with ConfigDict structure."""
-        mongodb = self.config['mongodb_setup']
+        runtime = self.config['runtime']
         infrastructure = self.config['infrastructure_provisioning']
         # Must use run_locally=True for testing. RemoteHost opens connections already in __init__.
         self.downloader = DownloadMongodb(self.config, None, True)
         self.assertTrue(self.downloader)
-        self.assertEqual(self.downloader.mongodb_binary_archive, mongodb['mongodb_binary_archive'])
+        self.assertEqual(self.downloader.mongodb_binary_archive, runtime['mongodb_binary_archive'])
         self.assertEqual(self.downloader.ssh_key_file, infrastructure['tfvars']['ssh_key_file'])
         self.assertEqual(self.downloader.ssh_user, infrastructure['tfvars']['ssh_user'])
         # TODO: Can't really unit test anything that uses RemoteHost for now, so can't assert the
@@ -69,10 +69,10 @@ class DownloadMongodbTestCase(unittest.TestCase):
 
     def test_cli_binary_with_config(self):
         """Pass mongodb_binary_archive as command line option. Note: The one in config wins."""
-        mongodb = self.config['mongodb_setup']
+        runtime = self.config['runtime']
         # Must use run_locally=True for testing. RemoteHost opens connections already in __init__.
         self.downloader = DownloadMongodb(self.config, self.cli_mongodb_binary_archive, True)
-        self.assertEqual(self.downloader.mongodb_binary_archive, mongodb['mongodb_binary_archive'])
+        self.assertEqual(self.downloader.mongodb_binary_archive, runtime['mongodb_binary_archive'])
 
     def test_cli_binary_only(self):
         """Pass mongodb_binary_archive as command line option without any specified in config."""

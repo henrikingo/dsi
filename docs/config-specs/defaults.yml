@@ -1,6 +1,14 @@
 # Defaults for all config values used by Distributed Performance 2.0 modules.
 # Note: This file is read by dsi/bin/commmon/config.py. Don't mess with it.
 
+bootstrap:
+    cluster_type: single
+    platform: linux
+    setup: standalone
+    storageEngine: wiredTiger
+    test: benchRun
+    production: false
+
 infrastructure_provisioning:
     tfvars:
         mongod_instance_count      : 1
@@ -12,12 +20,9 @@ infrastructure_provisioning:
         region                     : us-west-2
         availability_zone          : us-west-2a
 
-        aws_access_key             : $RUNTIME_VALUE
-        aws_secret_key             : $RUNTIME_VALUE
-
         ssh_user                   : ec2-user
-        ssh_key                    : rui-aws-cap
-        ssh_key_file               : ../keys/aws.pem
+        ssh_key_name               : rui-aws-cap
+        ssh_key_file               : aws_ssh_key.pem
 
         tags:
             expire-on-delta        : 2    # adjust expire_on to today + expire-on-delta days

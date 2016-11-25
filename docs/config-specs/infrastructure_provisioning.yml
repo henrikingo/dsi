@@ -12,11 +12,10 @@ tfvars:                # Contents of this is transformed into input JSON to over
 
     region: us-west-2
     availability_zone: us-west-2a
-    aws_access_key: $RUNTIME_VALUE
-    aws_secret_key: $RUNTIME_VALUE
-    ssh_user: server-perf-team
-    ssh_key: server-perf-team-ssh-key
-    ssh_key_file: ../../keys/aws.pem
+
+    ssh_user: ec2-user
+    ssh_key_name: server-perf-team-ssh-key # The name of the SSH key as known to EC2 (e.g. rui.zhang)
+    ssh_key_file: aws_ssh_key.pem          # The actual SSH key, the .pem file downloaded from EC2
     tags:                               # List of supported tags (at this point, you cannot add your own)
         Name: server-perf-myvariant
         owner: perf@10gen.com           # valid email address.
@@ -24,7 +23,6 @@ tfvars:                # Contents of this is transformed into input JSON to over
                                         # delta is days added to current date. Default: 1
         Variant: Linux 3-shard cluster
         Project: sys-perf
-        # etc...                          Note that implementation should also add runtime info, such as build_id.
 
 custom_terraform: |                                     # Longer term, I would hope to see a mechanism where user can add
     resource "aws_ebs_volume" "my_ebs_volume" {         # custom terraform code. Probably depends on how using a separate

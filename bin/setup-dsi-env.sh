@@ -6,7 +6,6 @@ set -v
 export DSI_PATH=${DSI_PATH:-.}
 
 # install terraform
-mkdir -p keys
 mkdir terraform
 
 cd terraform

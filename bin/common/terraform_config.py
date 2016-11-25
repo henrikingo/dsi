@@ -162,8 +162,8 @@ class TerraformConfiguration(object):
                                      dsi_config["tfvars"][role + "_instance_type"])
 
         # update ssh key name (must match AWS' name)
-        if "ssh_key" in dsi_config["tfvars"].keys():
-            self.key_name = dsi_config["tfvars"]["ssh_key"]
+        if "ssh_key_name" in dsi_config["tfvars"].keys():
+            self.key_name = dsi_config["tfvars"]["ssh_key_name"]
 
         # update ssh key file location
         if "ssh_key_file" in dsi_config["tfvars"].keys():

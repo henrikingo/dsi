@@ -12,8 +12,6 @@ tfvars:                # Contents of this is transformed into input JSON to over
 
     region: us-west-2
     availability_zone: us-west-2b
-    aws_access_key: $RUNTIME_VALUE
-    aws_secret_key: $RUNTIME_VALUE
     ssh_user: server-perf-team
     ssh_key: server-perf-team-ssh-key
     ssh_key_file: ../../keys/aws.pem
