@@ -10751,9 +10751,10 @@
                 },
                 "Commands.DistinctWithoutIndex":{
                     "thread_threshold":0.26,
-                    "threshold":0.21,
+                    "threshold":0.23,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-3965"
                     ]
                 },
                 "Commands.DistinctWithoutIndexAndQuery":{
