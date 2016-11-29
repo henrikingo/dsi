@@ -314,57 +314,57 @@
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
@@ -760,113 +760,113 @@
             "reference":{},
             "threshold":{
                 "cloneDBs_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "cloneOneDB_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":0.6,
-                    "threshold":0.5,
+                    "thread_threshold":0.7,
+                    "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
@@ -1878,7 +1878,7 @@
             "threshold":{
                 "cloneDBs_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
                     "thread_threshold":0.8,
-                    "threshold":0.6,
+                    "threshold":0.7,
                     "ticket":[
                         "PERF-723"
                     ]
