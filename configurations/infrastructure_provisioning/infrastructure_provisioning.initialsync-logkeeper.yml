@@ -5,12 +5,18 @@ tfvars:      # Contents of this is transformed into input JSON to override terra
 
     mongod_seeded_ebs_instance_count: 1
     mongod_seeded_ebs_instance_type: c3.8xlarge
+    mongod_seeded_ebs_snapshot_id : snap-ca4c4079
+    mongod_seeded_ebs_iops : 5500
 
     mongod_ebs_instance_count: 1
     mongod_ebs_instance_type: c3.8xlarge
+    mongod_ebs_size : 1700
+    mongod_ebs_iops : 5500
 
     workload_instance_count: 1
     workload_instance_type: c3.8xlarge
 
     region: us-east-1
     availability_zone: us-east-1a
+
+    cluster_name: initialsync-logkeeper

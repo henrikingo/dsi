@@ -15,7 +15,7 @@ variable mongod_instance_placement_group        { default = "yes" }
 variable mongod_ebs_instance_placement_group    { default = "yes" }
 variable mongod_seeded_ebs_instance_placement_group    { default = "yes" }
 
-variable topology                   {}
+variable cluster_name               { default="default" }
 variable availability_zone          {}
 variable region                     {}
 variable expire_on                  { default = "2016-12-31" }
@@ -60,7 +60,7 @@ module "cluster" {
     mongod_ebs_instance_placement_group = "${var.mongod_ebs_instance_placement_group}"
     mongod_seeded_ebs_instance_placement_group = "${var.mongod_seeded_ebs_instance_placement_group}"
 
-    topology            = "${var.topology}"
+    topology            = "${var.cluster_name}"
 
     # AWS details
     availability_zone   = "${var.availability_zone}"

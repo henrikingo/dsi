@@ -32,7 +32,7 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
     INSTANCE_CATEGORY = {
         "private_config_ip": "configsvr",
         "private_member_ip": "mongod",
-        "private_mongos_ip": "mongod",
+        "private_mongos_ip": "mongos",
         "public_config_ip": "configsvr",
         "public_ip_mc": "workload_client",
         "public_mongod_ebs_ip": "mongod_ebs",
@@ -69,7 +69,9 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
                 LOG.error(category + ": public and private IP address counts mismatch!")
                 raise ValueError(category + ": public and private IP address counts mismatch!")
 
-            if len(self._ips[pub]) > 0:
+            if len(self._ips[pub]) > 0 and self._ips[pub][0]:
+                # found category and IP address is not empty
+                # IP address could be empty if category instance count is set to 0
                 yml_data["out"][category] = []
             else:
                 # no ip address for this category, return the same back

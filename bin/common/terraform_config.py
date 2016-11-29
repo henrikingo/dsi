@@ -49,6 +49,7 @@ def support_placement_group(instance_type):
 
     return instance_type.split(".")[0] in INSTANCE_CLASSES_SUPPORT_PLACEMENT_GROUP
 
+
 def generate_runner():
     """Get the IP address of the (evergreen) runner for labelling cluster
 
@@ -123,11 +124,12 @@ class TerraformConfiguration(object):
         if use_config:
             self._update_from_config()
 
-    def define_instance(self, role, count, instance_type):
+    def define_instance(self, dsi_config, role, count, instance_type):
         """
         A function to dynamically define parameters for an instance type.
         This can be used to configure mongod/mongos/workload/configsvr.
 
+        :param object dsi_config config object for DSI
         :param str role: role of the instance, must in predefined list
         :param int count: number of instances
         :param str instance_type: AWS instance type, must in predefined list
@@ -158,6 +160,21 @@ class TerraformConfiguration(object):
         else:
             setattr(self, role + "_instance_placement_group", "no")  # default to no placement group
 
+        if role == "mongod_ebs":
+            # user must define ebs related details, such as:
+            #       "mongod_ebs_size" : 200
+            #       "mongod_ebs_iops" : 1500
+            self.mongod_ebs_size = dsi_config["tfvars"]["mongod_ebs_size"]
+            self.mongod_ebs_iops = dsi_config["tfvars"]["mongod_ebs_iops"]
+
+        if role == "mongod_seeded_ebs":
+            # user must define seeded ebs related details, such as:
+            #       mongod_seeded_ebs_snapshot_id : "snap-bf69915c"
+            #       mongod_seeded_ebs_iops        : 1500
+            self.mongod_seeded_ebs_snapshot_id =\
+                dsi_config["tfvars"]["mongod_seeded_ebs_snapshot_id"]
+            self.mongod_seeded_ebs_iops = dsi_config["tfvars"]["mongod_seeded_ebs_iops"]
+
     def define_mongodb_url(self, url):
         """
         Define a url to download mongodb.tar.gz, may move this out of here in the future.
@@ -186,7 +203,8 @@ class TerraformConfiguration(object):
                              "Should define both count and type for {}".format(role))
 
                 # update both count and type
-                self.define_instance(role,
+                self.define_instance(dsi_config,
+                                     role,
                                      dsi_config["tfvars"][role + "_instance_count"],
                                      dsi_config["tfvars"][role + "_instance_type"])
 
@@ -219,6 +237,10 @@ class TerraformConfiguration(object):
             self.task_id = config_obj["runtime"]["task_id"]
         else:
             LOG.info("Couldn't find runtime or task_id in config")
+
+        # update cluster_name tag
+        if "cluster_name" in dsi_config["tfvars"]["tags"].keys():
+            self.cluster_name = dsi_config["tfvars"]["tags"]["cluster_name"]
 
     def to_json(self, compact=False, file_name=None):
         """To create JSON configuration string."""

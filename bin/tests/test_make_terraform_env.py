@@ -36,7 +36,7 @@ class TestTerraformConfiguration(unittest.TestCase):
             topology="test-cluster",
             use_config=False,
             now=datetime.datetime(2016, 5, 25, 7, 11, 49, 131998))
-        tf_config.define_instance("mongod", 10, "c3.8xlarge")
+        tf_config.define_instance(None, "mongod", 10, "c3.8xlarge")
         self._test_configuration(tf_config,
                                  '{"expire_on":"2016-5-27",'
                                  '"mongod_instance_count":10,'
@@ -55,9 +55,9 @@ class TestTerraformConfiguration(unittest.TestCase):
             use_config=False,
             now=datetime.datetime(2016, 5, 25, 7, 11, 49, 131998))
 
-        tf_config.define_instance("mongos", 1, "m3.2xlarge")
-        tf_config.define_instance("mongod", 10, "c3.2xlarge")
-        tf_config.define_instance("configsvr", 3, "m3.xlarge")
+        tf_config.define_instance(None, "mongos", 1, "m3.2xlarge")
+        tf_config.define_instance(None, "mongod", 10, "c3.2xlarge")
+        tf_config.define_instance(None, "configsvr", 3, "m3.xlarge")
         self._test_configuration(tf_config,
                                  '{"configsvr_instance_count":3,'
                                  '"configsvr_instance_placement_group":"no",'
@@ -82,7 +82,7 @@ class TestTerraformConfiguration(unittest.TestCase):
             use_config=False,
             now=datetime.datetime(2016, 5, 25, 7, 11, 49, 131998))
 
-        tf_config.define_instance("mongos", 10, "m3.2xlarge")
+        tf_config.define_instance(None, "mongos", 10, "m3.2xlarge")
         self._test_configuration(tf_config,
                                  '{"expire_on":"2016-5-27",'
                                  '"mongos_instance_count":10,'
@@ -98,10 +98,10 @@ class TestTerraformConfiguration(unittest.TestCase):
 
         # test exception for wrong instance type
         with self.assertRaises(ValueError):
-            tf_config.define_instance("mongod", 10, "m4.2xlarge")
+            tf_config.define_instance(None, "mongod", 10, "m4.2xlarge")
 
         with self.assertRaises(ValueError):
-            tf_config.define_instance("workload", 0, "c3.8xlarge")
+            tf_config.define_instance(None, "workload", 0, "c3.8xlarge")
 
     def test_generate_expire_on_tag(self):
         """Test expire-on tag generator."""
