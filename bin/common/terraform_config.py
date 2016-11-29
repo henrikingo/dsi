@@ -215,8 +215,10 @@ class TerraformConfiguration(object):
             self.owner = dsi_config["tfvars"]["tags"]["owner"]
 
         # update task id tag
-        if "runtime" in dsi_config.keys() and "task_id" in dsi_config["runtime"].keys():
-            self.task_id = dsi_config["runtime"]["task_id"]
+        if "runtime" in config_obj.keys() and "task_id" in config_obj["runtime"].keys():
+            self.task_id = config_obj["runtime"]["task_id"]
+        else:
+            LOG.info("Couldn't find runtime or task_id in config")
 
     def to_json(self, compact=False, file_name=None):
         """To create JSON configuration string."""

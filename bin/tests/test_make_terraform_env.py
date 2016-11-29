@@ -4,6 +4,7 @@ from __future__ import print_function
 import unittest
 import datetime
 import os
+from mock import patch
 
 from common import terraform_config  # pylint: disable=import-error
 
@@ -15,17 +16,22 @@ class TestTerraformConfiguration(unittest.TestCase):
         json_string = tf_config.to_json(compact=True)
         self.assertEqual(json_string, expected_output_string)
 
-    def test_default(self):
+    @patch('common.terraform_config.generate_runner')
+    def test_default(self, mock_generate_runner):
         """Test default terraform configuration, that is to update expire-on only."""
+        mock_generate_runner.return_value = '111.111.111.111'
         tf_config = terraform_config.TerraformConfiguration(
             use_config=False,
             now=datetime.datetime(2016, 5, 25, 7, 11, 49, 131998))
         json_string = tf_config.to_json(compact=True)
 
-        self.assertEqual(json_string, '{"expire_on":"2016-5-27"}')
+        self.assertEqual(json_string,
+                         '{"expire_on":"2016-5-27","runner":"111.111.111.111","status":"running"}')
 
-    def test_mongod_instance(self):
+    @patch('common.terraform_config.generate_runner')
+    def test_mongod_instance(self, mock_generate_runner):
         """Test mongod instance parameters."""
+        mock_generate_runner.return_value = '111.111.111.111'
         tf_config = terraform_config.TerraformConfiguration(
             topology="test-cluster",
             use_config=False,
@@ -36,10 +42,14 @@ class TestTerraformConfiguration(unittest.TestCase):
                                  '"mongod_instance_count":10,'
                                  '"mongod_instance_placement_group":"yes",'
                                  '"mongod_instance_type":"c3.8xlarge",'
+                                 '"runner":"111.111.111.111",'
+                                 '"status":"running",'
                                  '"topology":"test-cluster"}')
 
-    def test_large_cluster(self):
+    @patch('common.terraform_config.generate_runner')
+    def test_large_cluster(self, mock_generate_runner):
         """Test cluster with mixed instances."""
+        mock_generate_runner.return_value = '111.111.111.111'
         tf_config = terraform_config.TerraformConfiguration(
             topology="test-cluster",
             use_config=False,
@@ -59,10 +69,14 @@ class TestTerraformConfiguration(unittest.TestCase):
                                  '"mongos_instance_count":1,'
                                  '"mongos_instance_placement_group":"no",'
                                  '"mongos_instance_type":"m3.2xlarge",'
+                                 '"runner":"111.111.111.111",'
+                                 '"status":"running",'
                                  '"topology":"test-cluster"}')
 
-    def test_no_placement_group(self):
+    @patch('common.terraform_config.generate_runner')
+    def test_no_placement_group(self, mock_generate_runner):
         """Test cluster with placement group."""
+        mock_generate_runner.return_value = '111.111.111.111'
         tf_config = terraform_config.TerraformConfiguration(
             topology="test-cluster",
             use_config=False,
@@ -74,6 +88,8 @@ class TestTerraformConfiguration(unittest.TestCase):
                                  '"mongos_instance_count":10,'
                                  '"mongos_instance_placement_group":"no",'
                                  '"mongos_instance_type":"m3.2xlarge",'
+                                 '"runner":"111.111.111.111",'
+                                 '"status":"running",'
                                  '"topology":"test-cluster"}')
 
     def test_count_exception(self):
@@ -109,8 +125,10 @@ class TestTerraformConfiguration(unittest.TestCase):
 
         self.assertEqual(False, terraform_config.support_placement_group("m3.2xlarege"))
 
-    def test_provisioning_file(self):
+    @patch('common.terraform_config.generate_runner')
+    def test_provisioning_file(self, mock_generate_runner):
         """Test cluster with provisioning file overwrite."""
+        mock_generate_runner.return_value = '111.111.111.111'
         old_dir = os.getcwd()
         os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/artifacts')
 
@@ -134,6 +152,8 @@ class TestTerraformConfiguration(unittest.TestCase):
                                  '"mongos_instance_type":"c3.8xlarge",'
                                  '"owner":"serverteam-perf@10gen.com",'
                                  '"region":"us-west-2",'
+                                 '"runner":"111.111.111.111",'
+                                 '"status":"running",'
                                  '"topology":"test-cluster",'
                                  '"workload_instance_count":1,'
                                  '"workload_instance_placement_group":"yes",'
