@@ -5,10 +5,11 @@
             "reference":{},
             "threshold":{
                 "insert_ttl-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.5,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-738"
+                        "PERF-738",
+                        "BF-4144"
                     ]
                 },
                 "insert_vector_primary-mmapv1":{
@@ -2532,6 +2533,19 @@
         }
     },
     "linux-standalone":{
+        "core_workloads_MMAPv1":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "insert_ttl-mmapv1":{
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-4146"
+                    ]
+                }
+            }
+        },
         "core_workloads_WT":{
             "ndays":{},
             "reference":{},
