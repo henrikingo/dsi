@@ -46,6 +46,14 @@ then
 
     # workaround for failure to bring up all at the same time
     $TERRAFORM apply $VAR $VAR_FILE -var="mongod_instance_count=9" | tee -a terraform.log
+elif [[ $EXISTING != "true"  && ( $CLUSTER == "initialsync-logkeeper" ) ]]
+then
+    # For initialsync-logkeeper cluster, create seeded_ebs instance first which could take many
+    # hours due to EBS warm up, no reason to create other instance and wait.
+    $TERRAFORM apply $VAR $VAR_FILE -var="mongod_ebs_instance_count=0" -var="workload_instance_count=0" | tee terraform.log
+
+    # Create rest of the instanc when mongod_seeded_instance is created.
+    $TERRAFORM apply $VAR $VAR_FILE | tee -a terraform.log
 else
     # Most cluster types
     $TERRAFORM apply $VAR $VAR_FILE | tee terraform.log
