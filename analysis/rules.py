@@ -45,8 +45,9 @@ CONSTANTS = {
 BAD_LOG_TYPES = ["F", "E"] # See https://docs.mongodb.com/manual/reference/log-messages/
 BAD_MESSAGES = [msg.lower() for msg in [
     "starting an election", "election succeeded", "transition to primary"]]
+# Whitelisting message "Not starting an election": BF-4019
 MESSAGE_WHITELIST = [msg.lower() for msg in [
-    "ttl query execution for index"]]
+    "ttl query execution for index", "not starting an election"]]
 
 def is_log_line_bad(log_line, test_times=None):
     """
