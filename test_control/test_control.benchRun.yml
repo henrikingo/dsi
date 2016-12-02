@@ -30,6 +30,19 @@ run:
               - move_chunk_with_load.js
             initialsync-logkeeper:
                 - large_initialsync.js
+            secondary_performance:
+              - secondary_performance.js:
+                  size: 1
+                  count: 10000000 # 10M
+              - secondary_performance.js:
+                  size: 100
+                  count: 10000000 # 10M
+              - secondary_performance.js:
+                  size: 1000
+                  count: 10000000 # 10M
+              - secondary_performance.js:
+                  size: 10000
+                  count: 1000000 # 1M
             test:
               - # Empty list. Put new workloads here for testing
             short: # Just does Hello World
