@@ -36,8 +36,8 @@ class Host(object):
 
     def kill_remote_procs(self, name):
         """Kills all processes on the remote host by name."""
-        while self.run(['pgrep', name]):
-            self.run(['pkill', '-9', name])
+        while self.run(['pgrep', '-f', name]):
+            self.run(['pkill', '-9', '-f', name])
             time.sleep(1)
 
     def kill_mongo_procs(self):
