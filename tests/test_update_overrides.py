@@ -60,7 +60,7 @@ class TestUpdateOverrides(unittest.TestCase):
     def test_update_hash_min_prefix(self):
         """Testing update_overrides with the minimum required len 7-character hash prefix.
         """
-        git_hash = 'c2af7ab'
+        git_hash = 'c2af7aba'
         self._update_overrides_compare(git_hash)
 
     def test_update_hash_mid_prefix(self):
@@ -79,7 +79,7 @@ class TestUpdateOverrides(unittest.TestCase):
         """Testing update_overrides with no ticket parameter & rule reference.
         Test override values are still found and updated.
         """
-        git_hash = 'c2af7ab'
+        git_hash = 'c2af7aba'
         reference_args = [git_hash, '-c', self.config_file, '-p', 'performance', '-v',
                           'linux-*-standalone', '-k', 'query', '-f', self.override_file, '-d',
                           self.output_file, '--verbose', '-t',
@@ -100,7 +100,7 @@ class TestUpdateOverrides(unittest.TestCase):
         """Testing update_overrides with no ticket parameter & rule threshold.
         Test override values are still found and updated.
         """
-        git_hash = 'c2af7ab'
+        git_hash = 'c2af7aba'
         override_file = test_utils.fixture_file_path('update_override_reference.json.ok')
         threshold_args = [git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'query',
                           '-f', override_file, '-d', self.output_file, '--verbose', '-t',
@@ -119,7 +119,7 @@ class TestUpdateOverrides(unittest.TestCase):
         """Testing update_overrides with no ticket parameter and no relevant overrides found.
         Output file should be identical to the input file.
         """
-        git_hash = 'c2af7ab'
+        git_hash = 'c2af7aba'
         reference_args = [git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'misc',
                           '-f', self.override_file, '-d', self.output_file, '--verbose', '-t',
                           'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$']

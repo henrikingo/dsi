@@ -18,7 +18,7 @@ class TestOverride(unittest.TestCase):
         """
         # parameters used in test cases
         self.project = 'performance'
-        self.git_hash = 'c2af7ab'
+        self.git_hash = 'c2af7aba'
         self.config_file = test_utils.repo_root_file_path('config.yml')
         self.verbose = True
         self.regenerate_output_files = False #Note: causes all tests to pass

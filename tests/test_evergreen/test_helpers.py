@@ -57,7 +57,7 @@ class TestEvergreenHelpers(unittest.TestCase):
 
     def test_git_hash_success(self):
         """Test for an input that is a prefix of a valid git hash"""
-        retrieved = helpers.get_full_git_commit_hash(self.expected_full_hash[:7],
+        retrieved = helpers.get_full_git_commit_hash(self.expected_full_hash[:8],
                                                      self.creds['github']['token'])
         self.assertEqual(retrieved, self.expected_full_hash)
 

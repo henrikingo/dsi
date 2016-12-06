@@ -104,7 +104,7 @@ class TestDeleteOverrides(unittest.TestCase):
         based on the given reference commit.
         """
         override_file = test_utils.fixture_file_path('perf_delete.json')
-        use_reference = 'c2af7ab'
+        use_reference = 'c2af7aba'
         ticket = 'PERF-002'
         rule = 'all'
         args = [ticket, '-n', use_reference, '-f', override_file, '-d', self.output_file,
