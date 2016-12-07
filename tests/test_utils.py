@@ -20,6 +20,11 @@ def fixture_file_path(file_path):
 
     return os.path.join(FIXTURE_DIR_PATH, file_path)
 
+def read_fixture_yaml_file(file_path):
+    """Return the yaml data from the file at `file_path` inside the fixtures files directory. """
+
+    return util.get_yaml(fixture_file_path(file_path))
+
 def read_fixture_json_file(file_path):
     """Return the JSON data from the file at `file_path` inside the fixtures files directory. """
 
@@ -33,6 +38,15 @@ def eq_fixture_json_files(path1, path2):
 
     json1, json2 = (util.get_json(fixture_file_path(path)) for path in (path1, path2))
     return json1 == json2
+
+def eq_fixture_yaml_files(path1, path2):
+    """
+    Check whether the YAML files at paths `path1` and `path2` inside the fixtures directory are
+    equal.
+    """
+
+    yaml1, yaml2 = (util.get_yaml(fixture_file_path(path)) for path in (path1, path2))
+    return yaml1 == yaml2
 
 @contextlib.contextmanager
 def redirect_stdout(file_handle):

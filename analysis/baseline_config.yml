@@ -1,0 +1,41 @@
+# This yaml file is for controlling the mongo-perf baseline
+# process. It contains information that needs to be updated when
+# running the baseline patch builds. This file will need to be updated
+# as new releases come out.
+#
+# mongod_links: This is the mongod builds to use. The baselines skip
+# the compile phase and directly download an existing binary.
+#
+# mongod_flags: Flags that need to be changed for older projects (not
+# supported, changed)
+#
+# mongo_shells: Fixed mongo shells to use when baselining. They should
+# be updated to recent shells on each branch before running new
+# baselines.
+
+
+# list of paths to builds to use for baselines. 3.2 and later must be enterprise builds to support inMemory
+# Note: links have to be shortened to start with perf or perf-??. If
+# you have https:// in your link, you need to remove the leading
+# characters
+mongod_links:
+  3.4.0: perf-3.4/585163183ff122031e0003e5/f4240c60f005be757399042dc12f6addbc3170c1/mongod-585163183ff122031e0003e5
+  3.2.10: perf-3.2/5825260c3ff1227828006b38/79d9b3ab5ce20f51c272b4411202710a082d0317/mongod-5825260c3ff1227828006b38
+  3.2.11: perf-3.2/585147523ff122031e000295/009580ad490190ba33d1c6253ebd8d91808923e4/mongod-585147523ff122031e000295 # Patch build
+  3.0.14: perf-3.0/582526d23ff1227828006b48/08352afcca24bfc145240a0fac9d28b978ab77f3/mongod-582526d23ff1227828006b48
+
+mongod_flags:
+  '3.0': # Need to quote version if only one period
+    - pattern: --setParameter diagnosticDataCollectionEnabled=false
+      replace: ""
+    - pattern: --storageEngine=inMemory
+      replace: --storageEngine=wiredTiger
+    - pattern: --inMemorySizeGB
+      replace: --wiredTigerCacheSizeGB
+
+# These shell versions should be updated to something recent when reused.
+mongo_shells:
+  performance: perf/performance_21a6f07d859c132154166bd3d83bbed238d5d719/21a6f07d859c132154166bd3d83bbed238d5d719/mongo-performance_21a6f07d859c132154166bd3d83bbed238d5d719
+  performance-3.4: perf-3.4/performance_3.4_743aaabc8aa4600599a79f6ef056a8e9e02e0fc6/743aaabc8aa4600599a79f6ef056a8e9e02e0fc6/mongo-performance_3.4_743aaabc8aa4600599a79f6ef056a8e9e02e0fc6
+  performance-3.2: perf-3.2/performance_3.2_03f702f59d7d09a76f3c16944ae1ec48c4b25046/03f702f59d7d09a76f3c16944ae1ec48c4b25046/mongo-performance_3.2_03f702f59d7d09a76f3c16944ae1ec48c4b25046
+  performance-3.0: perf-3.0/performance_3.0_80775cd49db61ec792313da630158a2904faa75f/80775cd49db61ec792313da630158a2904faa75f/mongo-performance_3.0_80775cd49db61ec792313da630158a2904faa75f
