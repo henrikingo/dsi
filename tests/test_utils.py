@@ -4,6 +4,7 @@ import os
 import contextlib
 import sys
 import util
+import yaml
 
 # Useful absolute directory paths.
 TESTS_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -20,10 +21,15 @@ def fixture_file_path(file_path):
 
     return os.path.join(FIXTURE_DIR_PATH, file_path)
 
+def get_yaml(filename):
+    """ Load a file and parse it as yaml """
+    with open(filename) as yaml_file:
+        return yaml.load(yaml_file)
+
 def read_fixture_yaml_file(file_path):
     """Return the yaml data from the file at `file_path` inside the fixtures files directory. """
 
-    return util.get_yaml(fixture_file_path(file_path))
+    return get_yaml(fixture_file_path(file_path))
 
 def read_fixture_json_file(file_path):
     """Return the JSON data from the file at `file_path` inside the fixtures files directory. """
@@ -45,7 +51,7 @@ def eq_fixture_yaml_files(path1, path2):
     equal.
     """
 
-    yaml1, yaml2 = (util.get_yaml(fixture_file_path(path)) for path in (path1, path2))
+    yaml1, yaml2 = (get_yaml(fixture_file_path(path)) for path in (path1, path2))
     return yaml1 == yaml2
 
 @contextlib.contextmanager

@@ -11,7 +11,6 @@ import sys
 
 import datetime
 from dateutil import tz, parser as date_parser
-import yaml
 
 from evergreen.history import History
 
@@ -76,11 +75,6 @@ def _unix_ts_to_utc_datetime(unix_ts):
 
     datetime_ts = datetime.datetime.utcfromtimestamp(unix_ts)
     return datetime_ts.replace(tzinfo=tz.tzutc())
-
-def get_yaml(filename):
-    """ Load a file and parse it as yaml """
-    with open(filename) as yaml_file:
-        return yaml.load(yaml_file)
 
 def get_json(filename):
     """ Load a file and parse it as json """
