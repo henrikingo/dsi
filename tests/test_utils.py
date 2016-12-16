@@ -3,8 +3,10 @@
 import os
 import contextlib
 import sys
-import util
 import yaml
+
+import util
+
 
 # Useful absolute directory paths.
 TESTS_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
