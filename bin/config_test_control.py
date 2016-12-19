@@ -54,6 +54,11 @@ def generate_mc_json():
         mc_run['run_id'] = run['id']
         mc_run['type'] = run['type']
         mc_run['cmd'] = run['cmd']
+
+        if 'background_tasks' in run:
+            # Background task defined
+            mc_run['background_tasks'] = run['background_tasks'].as_dict()
+
         mc_conf['runs'].append(mc_run)
 
         # Create the per run config files

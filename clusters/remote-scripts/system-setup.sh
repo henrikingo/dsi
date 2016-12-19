@@ -44,6 +44,11 @@ elif [ "${WITH_EBS}" == "with_seeded_ebs" ]; then
     # Will not format disk for seeded EBS partition.
     prepare_disk "/dev/xvde" "/media/ebs" "no"
     ln -s /media/ebs data
+
+    # Warm up EBS partition in order to get better read performance. This is due to this EBS
+    # is created via snapshot.
+    # See doc: http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-initialize.html
+    sudo fio --filename=/dev/xvde --rw=randread --bs=128k --iodepth=32 --ioengine=libaio --direct=1 --name=volume-initialize --status-interval=300
 else
     # Default to SSD only instance
     ln -s /media/ephemeral0 data
@@ -56,8 +61,8 @@ echo f | sudo tee /sys/class/net/eth0/queues/rx-0/rps_cpus
 echo f0 | sudo tee /sys/class/net/eth0/queues/tx-0/xps_cpus
 
 # set ulimit nofile for ec2-user
-echo "ec2-user           soft    nofile          10000" | sudo tee -a /etc/security/limits.conf
-echo "ec2-user           hard    nofile          63536" | sudo tee -a /etc/security/limits.conf
+echo "ec2-user           soft    nofile          65535" | sudo tee -a /etc/security/limits.conf
+echo "ec2-user           hard    nofile          65535" | sudo tee -a /etc/security/limits.conf
 
 echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCmHUZLsuGvNUlCiaZ83jS9f49S0plAtCH19Z2iATOYPH1XE2T8ULcHdFX2GkYiaEqI+fCf1J1opif45sW/5yeDtIp4BfRAdOu2tOvkKvzlnGZndnLzFKuFfBPcysKyrGxkqBvdupOdUROiSIMwPcFgEzyLHk3pQ8lzURiJNtplQ82g3aDi4wneLDK+zuIVCl+QdP/jCc0kpYyrsWKSbxi0YrdpG3E25Q4Rn9uom58c66/3h6MVlk22w7/lMYXWc5fXmyMLwyv4KndH2u3lV45UAb6cuJ6vn6wowiD9N9J1GS57m8jAKaQC1ZVgcZBbDXMR8fbGdc9AH044JVtXe3lT shardtest@test.mongo' | tee -a ~/.ssh/authorized_keys
 

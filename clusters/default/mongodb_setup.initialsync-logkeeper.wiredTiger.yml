@@ -29,9 +29,9 @@ topology:
 # Meta data about this mongodb setup
 meta:
     # The list of hosts that can be used in a mongodb connection string
-    hosts: ${mongodb_setup.topology.0.private_ip}:27017
-    hostname: ${mongodb_setup.topology.0.private_ip}
+    hosts: ${infrastructure_provisioning.out.mongod_seeded_ebs.0.private_ip}:27017
+    hostname: ${infrastructure_provisioning.out.mongod_seeded_ebs.0.private_ip}
     port: 27017
-    secondary: ${mongodb_setup.topology.1.private_ip}
+    secondary: ${infrastructure_provisioning.out.mongod_ebs.0.private_ip}
     is_sharded: false
     is_replset: true

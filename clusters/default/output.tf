@@ -30,3 +30,10 @@ output "public_mongod_seeded_ebs_ip" {
   value = "${module.cluster.public_mongod_seeded_ebs_ip}"
 }
 
+output "public_all_host_ip" {
+  value = "${module.cluster.public_mongod_seeded_ebs_ip} ${module.cluster.public_mongod_ebs_ip} ${module.cluster.public_member_ip}"
+}
+
+output "private_all_host_ip" {
+  value = "${module.cluster.private_mongod_seeded_ebs_ip} ${module.cluster.private_mongod_ebs_ip} ${module.cluster.private_member_ip}"
+}

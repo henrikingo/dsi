@@ -332,7 +332,7 @@ class ConfigDict(dict):
                 else:
                     value = between_values.pop(0)
                     while len(values) > 0:
-                        value += values.pop(0)
+                        value += str(values.pop(0))
                         value += between_values.pop(0)
         return value
 

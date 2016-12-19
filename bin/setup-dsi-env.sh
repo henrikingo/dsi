@@ -18,7 +18,8 @@ cp terraform/* work
 # install workload wrapper
 pushd .
 cd ${DSI_PATH}/bin
-curl --retry 10 https://s3.amazonaws.com/mciuploads/mission-control/linux/fbe18428a4b0c1055c7a847427d09bcec1d9b75b/mc-mission_control_linux_fbe18428a4b0c1055c7a847427d09bcec1d9b75b_16_11_01_15_36_42.tar.gz | tar -xvz
+curl --retry 10 -o mc.tar.gz https://s3.amazonaws.com/mciuploads/mission-control/linux/8e5d248249720dfc37c2a4267bc5019697c000c2/mc-mission_control_linux_8e5d248249720dfc37c2a4267bc5019697c000c2_16_12_13_16_53_39.tar.gz
+tar zxvf mc.tar.gz
 popd
 
 sysctl vm.overcommit_memory
