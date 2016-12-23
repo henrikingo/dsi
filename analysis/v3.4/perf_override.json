@@ -2642,6 +2642,41 @@
         "aggregation":{
             "ndays":{},
             "reference":{
+                "Aggregation.ExpressionObject":{
+                    "create_time":"2016-12-22T21:40:34.737Z",
+                    "max":107.59140482461922,
+                    "name":"Aggregation.ExpressionObject",
+                    "order":111,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":107.59140482461922,
+                            "ops_per_sec_values":[
+                                109.51210558405825,
+                                107.98672621572395,
+                                106.88544018520949,
+                                106.86812473407815,
+                                106.70462740402627
+                            ]
+                        },
+                        "end":"2016-12-22T22:14:26.990Z",
+                        "start":"2016-12-22T22:13:59.273Z"
+                    },
+                    "revision":"0443f495ddf3f54ec1b9eb91718935ff20cd01f1",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-4440"
+                    ]
+                },
                 "Aggregation.GeoNear2dSphere":{
                     "create_time":"2016-08-19T16:38:39.195Z",
                     "max":485.142690810918,
@@ -9326,6 +9361,41 @@
         "aggregation":{
             "ndays":{},
             "reference":{
+                "Aggregation.ExpressionObject":{
+                    "create_time":"2016-12-22T21:40:34.737Z",
+                    "max":107.26137495677153,
+                    "name":"Aggregation.ExpressionObject",
+                    "order":111,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":107.26137495677153,
+                            "ops_per_sec_values":[
+                                108.56528186061735,
+                                108.09292315032728,
+                                106.44754582486962,
+                                107.12991560920845,
+                                106.07120833883498
+                            ]
+                        },
+                        "end":"2016-12-22T22:14:30.027Z",
+                        "start":"2016-12-22T22:14:02.336Z"
+                    },
+                    "revision":"0443f495ddf3f54ec1b9eb91718935ff20cd01f1",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-4440"
+                    ]
+                },
                 "Aggregation.GeoNear2dSphere":{
                     "create_time":"2016-08-19T16:38:39.195Z",
                     "max":389.7396627529188,
