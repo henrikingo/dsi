@@ -120,8 +120,11 @@ def compare_tag_delayed_trigger(test, threshold, thread_threshold):
 def _delayed_trigger_analysis(  # pylint: disable=too-many-arguments
         test, target, previous, label, threshold, thread_threshold, using_override):
     """Implement a delayed trigger based on the previous commit to reduce false alarms"""
-    previous_status = compare_throughputs(
-        previous, target, 'silent', threshold, thread_threshold, using_override)
+    previous_status = 'fail'
+    if previous is not None:
+        previous_status = compare_throughputs(
+            previous, target, 'silent', threshold, thread_threshold, using_override)
+
     check_name = label + 'Compare'
     if previous_status is 'fail':
         return {check_name: compare_throughputs(test, target,
