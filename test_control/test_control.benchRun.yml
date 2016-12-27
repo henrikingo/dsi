@@ -28,6 +28,7 @@ run:
               - mongos_insert_single.js
               - mongos_50read_50write.js
               - move_chunk_with_load.js
+              - index_build.js
             initialsync-logkeeper:
                 - large_initialsync.js
             secondary_performance:
