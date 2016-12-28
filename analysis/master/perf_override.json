@@ -602,7 +602,97 @@
         },
         "misc":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "Remove.IntNonIdIndex":{
+                    "create_time":"2016-11-28T16:15:31.779Z",
+                    "max":63302.924619250756,
+                    "name":"Remove.IntNonIdIndex",
+                    "order":6365,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":14987.970624852387,
+                            "ops_per_sec_values":[
+                                14902.96725706024,
+                                15062.613766871087,
+                                14951.204691963436,
+                                15070.465734054886,
+                                14952.601674312287
+                            ]
+                        },
+                        "2":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":29333.998666956126,
+                            "ops_per_sec_values":[
+                                29410.171099145613,
+                                28881.38092069508,
+                                29312.901463235972,
+                                29570.55408525739,
+                                29494.985766446564
+                            ]
+                        },
+                        "4":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":57918.41997973392,
+                            "ops_per_sec_values":[
+                                58249.01961568135,
+                                57640.537134622435,
+                                58166.6020395518,
+                                58205.74316173912,
+                                57330.19794707487
+                            ]
+                        },
+                        "8":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":63302.924619250756,
+                            "ops_per_sec_values":[
+                                63636.66144782349,
+                                64322.23201716826,
+                                63697.72834008558,
+                                61469.04619779415,
+                                63388.95509338228
+                            ]
+                        },
+                        "end":"2016-11-28T18:08:02.967Z",
+                        "start":"2016-11-28T18:06:21.335Z"
+                    },
+                    "revision":"2068c42aa2179902d4a96941fcfc7cd577a4c2a9",
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "2",
+                        "4",
+                        "8"
+                    ],
+                    "ticket":[
+                        "BF-4192"
+                    ]
+                }
+            },
             "threshold":{
                 "Commands.CountsFullCollection":{
                     "thread_threshold":0.2,
@@ -2600,7 +2690,39 @@
         },
         "misc-wt-repl-comp":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "Remove.IntNonIdIndex":{
+                    "create_time":"2016-11-28T16:15:31.779Z",
+                    "max":87.89012057832487,
+                    "name":"Remove.IntNonIdIndex",
+                    "order":6365,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":87.89012057832487
+                        },
+                        "2":{
+                            "ops_per_sec":87.23503210299441
+                        },
+                        "4":{
+                            "ops_per_sec":85.04355398455627
+                        },
+                        "8":{
+                            "ops_per_sec":79.34848374658112
+                        }
+                    },
+                    "revision":"2068c42aa2179902d4a96941fcfc7cd577a4c2a9",
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "8",
+                        "2",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-4192"
+                    ]
+                }
+            },
             "threshold":{
                 "Commands.CountsFullCollection":{
                     "thread_threshold":0.2,
