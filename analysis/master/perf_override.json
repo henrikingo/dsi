@@ -237,6 +237,13 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "Aggregation.Group.All":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4442"
+                    ]
+                },
                 "Aggregation.Group.TenGroups":{
                     "thread_threshold":0.22,
                     "threshold":0.17,
@@ -248,7 +255,14 @@
                     "thread_threshold":0.21,
                     "threshold":0.16,
                     "ticket":[
-                        "BF-3653"
+                        "BF-4442"
+                    ]
+                },
+                "Aggregation.Limit":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4442"
                     ]
                 },
                 "Aggregation.Match":{
@@ -258,25 +272,39 @@
                         "BF-3422"
                     ]
                 },
+                "Aggregation.MatchOneFieldFromBigDocument":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4442"
+                    ]
+                },
                 "Aggregation.Project":{
                     "thread_threshold":0.21,
                     "threshold":0.16,
                     "ticket":[
-                        "BF-3653"
+                        "BF-4442"
                     ]
                 },
                 "Aggregation.Redact":{
-                    "thread_threshold":0.16,
-                    "threshold":0.11,
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
                     "ticket":[
-                        "BF-3653"
+                        "BF-4442"
+                    ]
+                },
+                "Aggregation.Sort":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4442"
                     ]
                 },
                 "Aggregation.SortWithLimit":{
-                    "thread_threshold":0.16,
-                    "threshold":0.11,
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
                     "ticket":[
-                        "BF-3653"
+                        "BF-4442"
                     ]
                 }
             }
@@ -3305,6 +3333,13 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "Aggregation.Group.All":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4442"
+                    ]
+                },
                 "Aggregation.Group.TenGroups":{
                     "thread_threshold":0.22,
                     "threshold":0.17,
@@ -3316,7 +3351,14 @@
                     "thread_threshold":0.21,
                     "threshold":0.16,
                     "ticket":[
-                        "BF-3653"
+                        "BF-4442"
+                    ]
+                },
+                "Aggregation.Limit":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4442"
                     ]
                 },
                 "Aggregation.Match":{
@@ -3326,25 +3368,39 @@
                         "BF-3422"
                     ]
                 },
+                "Aggregation.MatchOneFieldFromBigDocument":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4442"
+                    ]
+                },
                 "Aggregation.Project":{
                     "thread_threshold":0.21,
                     "threshold":0.16,
                     "ticket":[
-                        "BF-3653"
+                        "BF-4442"
                     ]
                 },
                 "Aggregation.Redact":{
-                    "thread_threshold":0.16,
-                    "threshold":0.11,
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
                     "ticket":[
-                        "BF-3653"
+                        "BF-4442"
+                    ]
+                },
+                "Aggregation.Sort":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4442"
                     ]
                 },
                 "Aggregation.SortWithLimit":{
-                    "thread_threshold":0.16,
-                    "threshold":0.11,
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
                     "ticket":[
-                        "BF-3653"
+                        "BF-4442"
                     ]
                 }
             }
