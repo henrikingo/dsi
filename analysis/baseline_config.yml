@@ -40,3 +40,12 @@ mongo_shells:
   performance-3.4: perf-3.4/performance_3.4_743aaabc8aa4600599a79f6ef056a8e9e02e0fc6/743aaabc8aa4600599a79f6ef056a8e9e02e0fc6/mongo-performance_3.4_743aaabc8aa4600599a79f6ef056a8e9e02e0fc6
   performance-3.2: perf-3.2/performance_3.2_03f702f59d7d09a76f3c16944ae1ec48c4b25046/03f702f59d7d09a76f3c16944ae1ec48c4b25046/mongo-performance_3.2_03f702f59d7d09a76f3c16944ae1ec48c4b25046
   performance-3.0: perf-3.0/performance_3.0_80775cd49db61ec792313da630158a2904faa75f/80775cd49db61ec792313da630158a2904faa75f/mongo-performance_3.0_80775cd49db61ec792313da630158a2904faa75f
+
+# Tasks not to run on old versions
+disabled_tasks:
+  '3.2':
+    - views-aggregation
+    - views-query
+  '3.0':
+    - views-aggregation
+    - views-query

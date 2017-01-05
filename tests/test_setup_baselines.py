@@ -48,6 +48,15 @@ class TestSetupBaselines(unittest.TestCase):
         # Length should be 1, because compile dependency was removed.
         self.assertEqual(len(output_object['tasks'][0]['depends_on']), 1)
 
+    def test_get_base_version(self):
+        '''
+        Test get_base_version
+        '''
+
+        self.assertEqual(setup_baselines.get_base_version('3.2.1'), '3.2')
+        self.assertEqual(setup_baselines.get_base_version('3.2'), '3.2')
+        self.assertEqual(setup_baselines.get_base_version('3.4.2'), '3.4')
+
     def test_patchstringwithfile(self):
         '''
         Test patch_perf_yam_strings with input from file
@@ -116,7 +125,28 @@ class TestSetupBaselines(unittest.TestCase):
         ''' Test get_tasks
         '''
 
-        tasks = setup_baselines.get_tasks(self.perfyaml)
+        updater = setup_baselines.BaselineUpdater()
+        # This test removes the views tasks
+        tasks = updater.get_tasks(self.perfyaml, '3.2')
+        reference = ['compile',
+                     'query',
+                     'where',
+                     'update',
+                     'insert',
+                     'geo',
+                     'misc',
+                     'singleThreaded',
+                     'singleThreaded-wt-repl-comp',
+                     'insert-wt-repl-comp',
+                     'update-wt-repl-comp',
+                     'misc-wt-repl-comp',
+                     'singleThreaded-mmap-repl-comp',
+                     'insert-mmap-repl-comp',
+                     'update-mmap-repl-comp',
+                     'misc-mmap-repl-comp',
+                     'aggregation']
+        self.assertEqual(tasks, reference)
+        tasks = updater.get_tasks(self.perfyaml, '3.4')
         reference = ['compile',
                      'query',
                      'views-query',
@@ -156,8 +186,21 @@ class TestSetupBaselines(unittest.TestCase):
 
         '''
 
-        cmd_args = setup_baselines.prepare_patch_cmd(self.perfyaml, '3.2.11', 'performance')
+        updater = setup_baselines.BaselineUpdater()
+        cmd_args = updater.prepare_patch_cmd(self.perfyaml, '3.2.11', 'performance')
         reference = ['patch', '-p', 'performance', '-d', '3.2.11 baseline for project performance',
+                     '-y', '-f', '-v', 'linux-wt-standalone', '-v', 'linux-mmap-standalone', '-v',
+                     'linux-wt-repl', '-v', 'linux-mmap-repl', '-v', 'linux-wt-repl-compare', '-v',
+                     'linux-mmap-repl-compare', '-t', 'query', '-t', 'where', '-t', 'update', '-t',
+                     'insert', '-t', 'geo', '-t', 'misc', '-t', 'singleThreaded', '-t',
+                     'singleThreaded-wt-repl-comp', '-t', 'insert-wt-repl-comp', '-t',
+                     'update-wt-repl-comp', '-t', 'misc-wt-repl-comp', '-t',
+                     'singleThreaded-mmap-repl-comp', '-t', 'insert-mmap-repl-comp', '-t',
+                     'update-mmap-repl-comp', '-t', 'misc-mmap-repl-comp', '-t', 'aggregation']
+        # The first entry is the evergreen binary. Remove that.
+        self.assertEqual(cmd_args[1:], reference, 'arguments to evergreen Popen call for 3.2.11')
+        cmd_args = updater.prepare_patch_cmd(self.perfyaml, '3.4.1', 'performance')
+        reference = ['patch', '-p', 'performance', '-d', '3.4.1 baseline for project performance',
                      '-y', '-f', '-v', 'linux-wt-standalone', '-v', 'linux-mmap-standalone', '-v',
                      'linux-wt-repl', '-v', 'linux-mmap-repl', '-v', 'linux-wt-repl-compare', '-v',
                      'linux-mmap-repl-compare', '-t', 'query', '-t', 'views-query', '-t',
@@ -168,7 +211,7 @@ class TestSetupBaselines(unittest.TestCase):
                      'singleThreaded-mmap-repl-comp', '-t', 'insert-mmap-repl-comp', '-t',
                      'update-mmap-repl-comp', '-t', 'misc-mmap-repl-comp', '-t', 'aggregation']
         # The first entry is the evergreen binary. Remove that.
-        self.assertEqual(cmd_args[1:], reference, 'arguments to evergreen Popen call')
+        self.assertEqual(cmd_args[1:], reference, 'arguments to evergreen Popen call for 3.4.1')
 
 if __name__ == '__main__':
     unittest.main()

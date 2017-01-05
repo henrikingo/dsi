@@ -50,27 +50,16 @@ def patch_perf_yaml_strings(perfyaml, version_link, shell_link):
     return outyaml
 
 
-def prepare_patch_cmd(perfyaml, version, project):
+def get_base_version(version):
     '''
-    Construct command line call for evergreen to start the patch.
+    Given a version string, return the first two places.
 
-    :param dict perfyaml: The current existing perf.yml to update
-    :param str version: The version string of the mongod to use
-    :param str project: The project to run against (.e.g., performance)
-    :rtype list: The arguments to popen for evergreen call
+    Ex: '3.2.1' --> '3.2'
+
+    :param str version: The version string
     '''
 
-    # Want all variants and all tasks except compile
-    variants = format_repeated_args('-v', get_variants(perfyaml))
-    tasks = get_tasks(perfyaml)
-    # Don't run the compile task
-    tasks.remove('compile')
-    tasks = format_repeated_args('-t', tasks)
-    LOGGER.debug('Tasks are %s', tasks)
-
-    description = '{0} baseline for project {1}'.format(version, project)
-    return ([get_evergreen(), 'patch', '-p', project, '-d', description, '-y', '-f'] +
-            variants + tasks)
+    return '.'.join(version.split('.')[0:2])
 
 
 class BaselineUpdater(object):
@@ -96,7 +85,7 @@ class BaselineUpdater(object):
         outyaml = copy.deepcopy(perfyaml)  # Don't change the input dictionary
 
         # Get the base version
-        base_version = '.'.join(version.split('.')[0:2])
+        base_version = get_base_version(version)
 
         # Any flags that need to be changed?
         if base_version in mongod_flag_replacements:
@@ -129,6 +118,44 @@ class BaselineUpdater(object):
                                                    shell_link)
         return perfyaml_updated
 
+    def get_tasks(self, perfyaml, version):
+        '''Return a list of strings with the task names for the
+        project. Skips tasks explicitly listed in disabled_tasks in
+        the config.
+
+        :param dict perfyaml: Input perf.yml file
+        :param str version: The version string of the mongod to use
+        :rtype list: List of task names
+
+        '''
+
+        # Get tasks to skip if anything.
+        base_version = get_base_version(version)
+        skip_tasks = self.config['disabled_tasks'].get(base_version, dict())
+        return [task['name'] for task in perfyaml['tasks'] if task['name'] not in skip_tasks]
+
+    def prepare_patch_cmd(self, perfyaml, version, project):
+        '''
+        Construct command line call for evergreen to start the patch.
+
+        :param dict perfyaml: The current existing perf.yml to update
+        :param str version: The version string of the mongod to use
+        :param str project: The project to run against (.e.g., performance)
+        :rtype list: The arguments to popen for evergreen call
+        '''
+
+        # Want all variants and all tasks except compile
+        variants = format_repeated_args('-v', get_variants(perfyaml))
+        tasks = self.get_tasks(perfyaml, version)
+        # Don't run the compile task
+        tasks.remove('compile')
+        tasks = format_repeated_args('-t', tasks)
+        LOGGER.debug('Tasks are %s', tasks)
+
+        description = '{0} baseline for project {1}'.format(version, project)
+        return ([get_evergreen(), 'patch', '-p', project, '-d', description, '-y', '-f'] +
+                variants + tasks)
+
     def run_patch(self, version, project):
         '''Updated perf.yml and start a patch build. Assumes it is run in the
         mongo/etc directory
@@ -145,7 +172,7 @@ class BaselineUpdater(object):
         with open('perf.yml', 'w') as perf_file:
             yaml.dump(self.patch_perf_yaml(perfyaml, version, project), perf_file)
 
-        cmdline_args = prepare_patch_cmd(perfyaml, version, project)
+        cmdline_args = self.prepare_patch_cmd(perfyaml, version, project)
         LOGGER.debug("Calling %s", cmdline_args)
         subprocess.Popen(cmdline_args)
 
@@ -170,16 +197,6 @@ def get_variants(perfyaml):
     :rtype list: List of variant names
     '''
     return [variant['name'] for variant in perfyaml['buildvariants']]
-
-
-def get_tasks(perfyaml):
-    '''
-    Return a list of strings with the task names for the project
-
-    :param dict perfyaml: Input perf.yml file
-    :rtype list: List of task names
-    '''
-    return [task['name'] for task in perfyaml['tasks']]
 
 
 def format_repeated_args(flag, arglist):
