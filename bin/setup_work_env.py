@@ -40,6 +40,12 @@ DEFAULT_CONFIG = {'cluster_type': 'single',
                   'aws_secret_key': "NoSecretKey",
                   'directory': '.',
                   'production': False,
+                  # FIXME: Chicken egg problem: ssh_key_name and ssh_key_file are in 
+                  # infrastructure_provisioning.yml, which doesn't exist when we start this script.
+                  # Hard coding will make this work for production. Running manually you can add
+                  # your ssh key to bootstrap.yml
+                  'ssh_key_name': 'serverteam-perf-ssh-key',
+                  'ssh_key_file': 'aws-ssh-key.pem',
                  }
 
 
@@ -301,10 +307,10 @@ def setup_security_tf(config, directory):
         security.write('    region = "${var.region}"\n')
         security.write('}\n')
         security.write('variable "key_name" {\n')
-        security.write('    default = "rui-aws-cap"\n')
+        security.write('    default = "{0}"\n'.format(config['ssh_key_name']))
         security.write('}\n')
         security.write('variable "key_file" {\n')
-        security.write('    default = "missing"\n')
+        security.write('    default = "{0}"\n'.format(config['ssh_key_file']))
         security.write('}')
 
 
