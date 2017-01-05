@@ -17,11 +17,11 @@ tfvars:                # Contents of this is transformed into input JSON to over
     ssh_key_name: serverteam-perf-ssh-key  # The name of the SSH key as known to EC2 (e.g. rui.zhang)
     ssh_key_file: aws_ssh_key.pem          # The actual SSH key, the .pem file downloaded from EC2
 
-    tags:                               # List of supported tags (at this point, you cannot add your own)
-                                        # Note: Name is generated per instance, cannot be set in config file
-        owner: serverteam-perf@10gen.com# valid email address.
-        expire-on-delta: 1              # Set expire-on tag used by reaper script. Note: must be lower case.
-                                        # delta is days added to current date. Default: 1
+    tags:                                # List of supported tags (at this point, you cannot add your own)
+                                         # Note: Name is generated per instance, cannot be set in config file
+        owner: serverteam-perf@10gen.com # valid email address.
+        expire-on-delta: 1               # Set expire-on tag used by reaper script. Note: must be lower case.
+                                         # delta is days added to current date. Default: 1
         Variant: Linux 3-shard cluster
         Project: sys-perf
 
