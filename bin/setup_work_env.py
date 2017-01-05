@@ -45,7 +45,7 @@ DEFAULT_CONFIG = {'cluster_type': 'single',
                   # Hard coding will make this work for production. Running manually you can add
                   # your ssh key to bootstrap.yml
                   'ssh_key_name': 'serverteam-perf-ssh-key',
-                  'ssh_key_file': 'aws-ssh-key.pem',
+                  'ssh_key_file': 'aws_ssh_key.pem',
                  }
 
 
