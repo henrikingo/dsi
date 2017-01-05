@@ -21,7 +21,7 @@ infrastructure_provisioning:
         availability_zone          : us-west-2a
 
         ssh_user                   : ec2-user
-        ssh_key_name               : rui-aws-cap
+        ssh_key_name               : serverteam-perf-ssh-key
         ssh_key_file               : aws_ssh_key.pem
 
         tags:
