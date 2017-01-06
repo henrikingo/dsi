@@ -40,7 +40,7 @@ DEFAULT_CONFIG = {'cluster_type': 'single',
                   'aws_secret_key': "NoSecretKey",
                   'directory': '.',
                   'production': False,
-                  # FIXME: Chicken egg problem: ssh_key_name and ssh_key_file are in 
+                  # FIXME: Chicken egg problem: ssh_key_name and ssh_key_file are in
                   # infrastructure_provisioning.yml, which doesn't exist when we start this script.
                   # Hard coding will make this work for production. Running manually you can add
                   # your ssh key to bootstrap.yml
@@ -121,13 +121,13 @@ def parse_command_line(config, args=None):
 
     >>> from collections import OrderedDict
     >>> OrderedDict(parse_command_line(copy.copy(DEFAULT_CONFIG), []))
-    OrderedDict([('aws_secret_key', 'NoSecretKey'), ('cluster_type', 'single'), ('aws_access_key', 'NoAccessKey'), ('production', False), ('directory', '.')])
+    OrderedDict([('aws_secret_key', 'NoSecretKey'), ('aws_access_key', 'NoAccessKey'), ('production', False), ('ssh_key_name', 'serverteam-perf-ssh-key'), ('directory', '.'), ('cluster_type', 'single'), ('ssh_key_file', 'aws_ssh_key.pem')])
 
     >>> OrderedDict(parse_command_line(copy.copy(DEFAULT_CONFIG), ['-c', 'none']))
-    OrderedDict([('aws_secret_key', 'NoSecretKey'), ('cluster_type', 'none'), ('aws_access_key', 'NoAccessKey'), ('production', False), ('directory', '.')])
+    OrderedDict([('aws_secret_key', 'NoSecretKey'), ('aws_access_key', 'NoAccessKey'), ('production', False), ('ssh_key_name', 'serverteam-perf-ssh-key'), ('directory', '.'), ('cluster_type', 'none'), ('ssh_key_file', 'aws_ssh_key.pem')])
 
     >>> OrderedDict(parse_command_line(copy.copy(DEFAULT_CONFIG), ['-c', 'none', "--aws-access-key", "key_name", "--ssh-keyfile-path", "keyfile", "--aws-secret-file", "newsecret.json"]))
-    OrderedDict([('aws_secret_key', 'NoSecretKey'), ('aws_access_key', 'key_name'), ('cluster_type', 'none'), ('aws_secret_file', 'newsecret.json'), ('production', False), ('directory', '.'), ('ssh_key_file', 'keyfile')])
+    OrderedDict([('aws_secret_key', 'NoSecretKey'), ('aws_secret_file', 'newsecret.json'), ('aws_access_key', 'key_name'), ('production', False), ('ssh_key_name', 'serverteam-perf-ssh-key'), ('directory', '.'), ('cluster_type', 'none'), ('ssh_key_file', 'keyfile')])
     '''
 
     parser = argparse.ArgumentParser(description='Setup DSI working environment. For instructions \
