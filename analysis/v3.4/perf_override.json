@@ -3141,6 +3141,13 @@
                         "BF-4442"
                     ]
                 },
+                "Aggregation.Group.OneFieldReferencedOutOfMany":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
                 "Aggregation.Group.TenGroups":{
                     "thread_threshold":0.22,
                     "threshold":0.17,
@@ -6643,7 +6650,78 @@
                     ]
                 }
             },
-            "threshold":{}
+            "threshold":{
+                "Aggregation.IdentityView.Group.OneFieldReferencedOutOfMany":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Group.TenGroups":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Group.TenGroupsWithAvg":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Match":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.MatchManyFieldsFromBigDocument":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.MatchOneFieldFromBigDocument":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Project":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Redact":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Sort":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.SortWithLimit":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                }
+            }
         },
         "views-query":{
             "ndays":{},
@@ -12531,6 +12609,13 @@
                         "BF-4442"
                     ]
                 },
+                "Aggregation.Group.OneFieldReferencedOutOfMany":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
                 "Aggregation.Group.TenGroups":{
                     "thread_threshold":0.22,
                     "threshold":0.17,
@@ -15554,7 +15639,78 @@
                     ]
                 }
             },
-            "threshold":{}
+            "threshold":{
+                "Aggregation.IdentityView.Group.OneFieldReferencedOutOfMany":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Group.TenGroups":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Group.TenGroupsWithAvg":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Match":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.MatchManyFieldsFromBigDocument":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.MatchOneFieldFromBigDocument":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Project":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Redact":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Sort":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.SortWithLimit":{
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                }
+            }
         },
         "views-query":{
             "ndays":{},
