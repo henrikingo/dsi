@@ -40,10 +40,8 @@ DEFAULT_CONFIG = {'cluster_type': 'single',
                   'aws_secret_key': "NoSecretKey",
                   'directory': '.',
                   'production': False,
-                  # FIXME: Chicken egg problem: ssh_key_name and ssh_key_file are in
-                  # infrastructure_provisioning.yml, which doesn't exist when we start this script.
-                  # Hard coding will make this work for production. Running manually you can add
-                  # your ssh key to bootstrap.yml
+                  # These are just used as the default values for security.tf file, overriden at
+                  # runtime in infrastructure_provisioning.yml -> cluster.json
                   'ssh_key_name': 'serverteam-perf-ssh-key',
                   'ssh_key_file': 'aws_ssh_key.pem',
                  }
