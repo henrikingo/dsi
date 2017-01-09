@@ -18,7 +18,7 @@ cp terraform/* work
 # install workload wrapper
 pushd .
 cd ${DSI_PATH}/bin
-curl --retry 10 -o mc.tar.gz https://s3.amazonaws.com/mciuploads/mission-control/linux/8e5d248249720dfc37c2a4267bc5019697c000c2/mc-mission_control_linux_8e5d248249720dfc37c2a4267bc5019697c000c2_16_12_13_16_53_39.tar.gz
+curl --retry 10 -o mc.tar.gz https://s3.amazonaws.com/mciuploads/mission-control/linux/1935911a5d280721dbc117006e48b1f4f30c34fd/mc-mission_control_linux_1935911a5d280721dbc117006e48b1f4f30c34fd_17_01_09_13_15_32.tar.gz
 tar zxvf mc.tar.gz
 popd
 
