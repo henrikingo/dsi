@@ -3,6 +3,8 @@
 BUILDIR=$(dirname $0)
 source ${BUILDIR}/test-common.sh
 
+CMD="pylint --rcfile=pylintrc $(find analysis tests bin -name '*.py' ! -name 'readers.py' ! -name 'timeseries.py')"
+
 echo "Linting scripts"
-echo pylint --rcfile=pylintrc $(find analysis tests bin -name "*.py" ! -name "readers.py" ! -name "timeseries.py")
-pylint --rcfile=pylintrc $(find analysis tests bin -name "*.py" ! -name "readers.py" ! -name "timeseries.py")
+echo $CMD
+$CMD
