@@ -2006,6 +2006,68 @@
                     "ticket":[
                         "BF-2231"
                     ]
+                },
+                "Mixed.FindOneUpdateIntId-50-50":{
+                    "create_time":"2017-01-10T23:43:43.825Z",
+                    "max":92.366770226804,
+                    "name":"Mixed.FindOneUpdateIntId-50-50",
+                    "order":849,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":92.14152751379389
+                        },
+                        "2":{
+                            "ops_per_sec":92.366770226804
+                        },
+                        "4":{
+                            "ops_per_sec":81.42697774882897
+                        },
+                        "8":{
+                            "ops_per_sec":81.05722078294475
+                        }
+                    },
+                    "revision":"0addb5906136dd9e6b0510c659c446751bfab680",
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "8",
+                        "2",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-4580"
+                    ]
+                },
+                "Mixed.FindThenUpdate-50-50":{
+                    "create_time":"2017-01-10T23:43:43.825Z",
+                    "max":93.00877844482116,
+                    "name":"Mixed.FindThenUpdate-50-50",
+                    "order":849,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":93.00877844482116
+                        },
+                        "2":{
+                            "ops_per_sec":90.91255150334277
+                        },
+                        "4":{
+                            "ops_per_sec":82.48408057972021
+                        },
+                        "8":{
+                            "ops_per_sec":82.24963871951668
+                        }
+                    },
+                    "revision":"0addb5906136dd9e6b0510c659c446751bfab680",
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "8",
+                        "2",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-4580"
+                    ]
                 }
             },
             "threshold":{
@@ -9814,6 +9876,68 @@
                     ],
                     "ticket":[
                         "BF-2231"
+                    ]
+                },
+                "Mixed.FindOneUpdateIntId-50-50":{
+                    "create_time":"2017-01-10T23:43:43.825Z",
+                    "max":92.18138468796181,
+                    "name":"Mixed.FindOneUpdateIntId-50-50",
+                    "order":849,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":92.18138468796181
+                        },
+                        "2":{
+                            "ops_per_sec":91.99447819436132
+                        },
+                        "4":{
+                            "ops_per_sec":91.20201098271218
+                        },
+                        "8":{
+                            "ops_per_sec":89.396122189712
+                        }
+                    },
+                    "revision":"0addb5906136dd9e6b0510c659c446751bfab680",
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "8",
+                        "2",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-4580"
+                    ]
+                },
+                "Mixed.FindThenUpdate-50-50":{
+                    "create_time":"2017-01-10T23:43:43.825Z",
+                    "max":93.00935901064297,
+                    "name":"Mixed.FindThenUpdate-50-50",
+                    "order":849,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":93.00935901064297
+                        },
+                        "2":{
+                            "ops_per_sec":92.17305920724345
+                        },
+                        "4":{
+                            "ops_per_sec":91.86945307641759
+                        },
+                        "8":{
+                            "ops_per_sec":91.57548142741969
+                        }
+                    },
+                    "revision":"0addb5906136dd9e6b0510c659c446751bfab680",
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "8",
+                        "2",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-4580"
                     ]
                 }
             },
