@@ -6616,6 +6616,13 @@
                 }
             },
             "threshold":{
+                "Aggregation.IdentityView.Group.All":{
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
                 "Aggregation.IdentityView.Group.OneFieldReferencedOutOfMany":{
                     "thread_threshold":0.21,
                     "threshold":0.16,
@@ -6633,6 +6640,13 @@
                 "Aggregation.IdentityView.Group.TenGroupsWithAvg":{
                     "thread_threshold":0.21,
                     "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Limit":{
+                    "thread_threshold":0.25,
+                    "threshold":0.2,
                     "ticket":[
                         "BF-4530"
                     ]
@@ -6668,6 +6682,13 @@
                 "Aggregation.IdentityView.Redact":{
                     "thread_threshold":0.21,
                     "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Sample.SmallSample":{
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
                     "ticket":[
                         "BF-4530"
                     ]
@@ -15570,6 +15591,13 @@
                 }
             },
             "threshold":{
+                "Aggregation.IdentityView.Group.All":{
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
                 "Aggregation.IdentityView.Group.OneFieldReferencedOutOfMany":{
                     "thread_threshold":0.21,
                     "threshold":0.16,
@@ -15587,6 +15615,13 @@
                 "Aggregation.IdentityView.Group.TenGroupsWithAvg":{
                     "thread_threshold":0.21,
                     "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Limit":{
+                    "thread_threshold":0.25,
+                    "threshold":0.2,
                     "ticket":[
                         "BF-4530"
                     ]
@@ -15622,6 +15657,13 @@
                 "Aggregation.IdentityView.Redact":{
                     "thread_threshold":0.21,
                     "threshold":0.16,
+                    "ticket":[
+                        "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Sample.SmallSample":{
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
                     "ticket":[
                         "BF-4530"
                     ]
