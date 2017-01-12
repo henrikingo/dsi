@@ -297,13 +297,13 @@ class MultiEvergreen(object):
             result_urls = []
             version_obj = self.evergreen_client.query_revision(build['ID'])
             for build_variant_id in version_obj['builds']:
-                build_variant_ids.append(build_variant_id)
+                build_variant_ids.append(str(build_variant_id))
                 build_variant_obj = self.evergreen_client.query_build_variant(build_variant_id)
                 for task_name, task_obj in build_variant_obj['tasks'].iteritems():
                     if task_name == 'compile':
                         continue
-                    task_ids.append(task_obj['task_id'])
-                    result_urls.append(self.results_url_template.format(task_obj['task_id']))
+                    task_ids.append(str(task_obj['task_id']))
+                    result_urls.append(self.results_url_template.format(str(task_obj['task_id'])))
 
             build['build_variant_ids'] = build_variant_ids
             build['task_ids'] = task_ids
