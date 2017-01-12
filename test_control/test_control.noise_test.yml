@@ -1,0 +1,163 @@
+run:
+  - id: fio-${mongodb_setup.mongod_config_file.storage.engine}
+    type: shell
+
+    # The output-format and output options apparently cannot be moved into the configuration file
+    cmd: fio --output-format=json --output=fio.json fio.ini && python process_fio_results.py mc
+    # We can pass in fio config file to do multiple runs, etc. Or we
+    # can just enter it multiple times here.
+    config_filename: fio.ini
+    workload_config: &config |
+      [global]
+      directory=/media/ephemeral0
+
+      [prequal_check]
+      description=This is the test we used for prequal
+      stonewall
+      direct=1
+      rw=randwrite
+      bs=16k
+      size=1G
+      numjobs=16
+      runtime=60
+      time_based
+      group_reporting
+      norandommap
+
+      [latency_test]
+      description=This is for random read and write latency. 1 at a time
+      stonewall
+      rw=randrw
+      size=1G
+      numjobs=1
+      runtime=60
+      time_based
+      group_reporting
+      bs=1
+      ioengine=sync
+
+      [iops__test]
+       description=How many iops can I sustain in parallel
+      stonewall
+      rw=randrw
+      size=1G
+      numjobs=32
+      runtime=60
+      time_based
+      group_reporting
+      bs=4k
+      iodepth=32
+      ioengine=libaio
+      direct=1
+
+      [streaming_bandwidth_test]
+      description=Measure streaming bandwidth
+      stonewall
+      rw=rw
+      size=1G
+      numjobs=16
+      runtime=60
+      time_based
+      group_reporting
+      bs=16k
+      iodepth=32
+      ioengine=libaio
+      direct=1
+
+      [streaming_bandwidth_test]
+      description=Measure streaming bandwidth
+      stonewall
+      rw=rw
+      size=1G
+      numjobs=16
+      runtime=60
+      time_based
+      group_reporting
+      bs=16k
+      iodepth=32
+      ioengine=libaio
+      direct=1
+
+  # I'd like to run this on the primary also, but mc only allows you
+  # to run commands on the mc node, and I cannot ssh from the mc
+  # node to the server nodes.
+
+  # - id: fio-${mongodb_setup.mongod_config_file.storage.engine}.primary
+  #   type: shell
+
+  #   # The output-format and output options apparently cannot be moved into the configuration file
+  #    cmd: scp fio.ini ec2-user@${mongodb_setup.meta.hostname}:./ && ssh ec2-user@${mongodb_setup.meta.hostname} fio --output-format=json --output=fio.json fio.ini && scp ec2-user@${mongodb_setup.meta.hostname}:./fio.json . && python process_fio_results.py
+  #   # We can pass in fio config file to do multiple runs, etc. Or we
+  #   # can just enter it multiple times here.
+  #   config_filename: fio2.ini
+  #   workload_config: *config
+  - id: benchRun-${mongodb_setup.mongod_config_file.storage.engine}
+    type: shell
+
+    # This line to be shortened after the config file is copied from below into the production server.
+    cmd: cd workloads && ./run_workloads.py -c workloads.yml
+    config_filename: workloads.yml # The name used in previous row
+    workload_config:
+        ########################################################################
+        # Test lists. Command line will indicate which list of tests to execute.
+        # The 'default' list is the default.
+        # When testing new test workloads, please put your tests in the
+        # tests.test list, and remove the existing hello.js
+        ########################################################################
+        tests:
+            default:
+              - contended_update.js
+              - map_reduce.js
+              - insert_capped.js
+              - insert_ttl.js
+              - insert_capped_indexes.js
+              - insert_vector.js
+              - word_count.js
+              - jtrue.js
+              - move_chunk.js
+              - mongos_read_single.js
+              - mongos_insert_vector.js
+              - mongos_insert_single.js
+              - mongos_50read_50write.js
+              - move_chunk_with_load.js
+              - index_build.js
+            initialsync-logkeeper:
+                - large_initialsync.js
+            secondary_performance:
+              - secondary_performance.js:
+                  size: 1
+                  count: 10000000 # 10M
+              - secondary_performance.js:
+                  size: 100
+                  count: 10000000 # 10M
+              - secondary_performance.js:
+                  size: 1000
+                  count: 10000000 # 10M
+              - secondary_performance.js:
+                  size: 10000
+                  count: 1000000 # 1M
+            test:
+              - # Empty list. Put new workloads here for testing
+            short: # Just does Hello World
+              - hello.js:
+                  parameter1: foo
+                  parameter2: [true, false]
+
+        # These next five lines match existing
+        # workloads.yml. Workloads needs to be updated to consume from
+        # mongo entry.
+        target: ${mongodb_setup.meta.hostname}
+        port: ${mongodb_setup.meta.port}
+        # Hard coding for now. These aren't working right now
+        sharded: ${mongodb_setup.meta.is_sharded}
+        replica: ${mongodb_setup.meta.is_replset}
+        storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
+        test_list: default
+        mongo:
+            # It turns out the shell supports connection strings, but
+            # benchRun itself does not.
+            uri: ${mongodb_setup.meta.hosts}
+            # Hard coding for now. These aren't working right now
+            sharded: ${mongodb_setup.meta.is_sharded}
+            replica: ${mongodb_setup.meta.is_replset}
+            storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}

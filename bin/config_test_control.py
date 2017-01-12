@@ -68,6 +68,8 @@ def generate_mc_json():
             with open(run['config_filename'], 'w') as workloads_file:
                 if isinstance(run['workload_config'], dict):
                     workloads_file.write(yaml.dump(run['workload_config'].as_dict()))
+                elif isinstance(run['workload_config'], str):
+                    workloads_file.write(run['workload_config'])
         except KeyError:
             LOG.warn("No workload config in test control")
 

@@ -28,8 +28,10 @@ def testlist_update(new_target, input_filename=None, output_filename=None):
         test_control = yaml.load(yaml_file)
 
     # Only update the test_list if there is a workload_config
-    if 'workload_config' in test_control['run'][0]:
-        test_control['run'][0]['workload_config']['test_list'] = new_target
+    for run in test_control['run']:
+        if 'workload_config' in run:
+            if isinstance(run['workload_config'], dict):
+                run['workload_config']['test_list'] = new_target
 
     with open(output_filename, 'w') as yaml_file:
         yaml_file.write(yaml.dump(test_control))
