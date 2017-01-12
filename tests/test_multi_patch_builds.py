@@ -29,7 +29,7 @@ class TestMultiEvergreen(unittest.TestCase):
                     'finalize': False,
                     'variants': ['linux-standalone', 'linux-1-node-replSet'],
                     'mongo_repo': '.',
-                    'evergreen_config': '~/.evergreen.yml',
+                    'evergreen_config': test_utils.repo_root_file_path('config.yml'),
                     'n': 2,
                     'result_urls': False}
         args = ['--description', 'PERF-814 Unit test, please ignore',
@@ -39,6 +39,7 @@ class TestMultiEvergreen(unittest.TestCase):
                 '--tasks', 'core_workloads_WT',
                 '--tasks', 'core_workloads_MMAPv1']
         client = MultiEvergreen(args)
+        client.config['evergreen_config'] = test_utils.repo_root_file_path('config.yml')
         client.parse_options()
         self.assertEqual(client.config, expected)
 
@@ -62,7 +63,7 @@ class TestMultiEvergreen(unittest.TestCase):
                          'finalize': False,
                          'variants': ['linux-standalone', 'linux-1-node-replSet'],
                          'mongo_repo': '.',
-                         'evergreen_config': '~/.evergreen.yml',
+                         'evergreen_config': test_utils.repo_root_file_path('config.yml'),
                          'n': 2}
         #pylint: disable=protected-access
         cmd1 = client._evergreen_patch_compile_cmd(1)
@@ -100,6 +101,7 @@ class TestMultiEvergreen(unittest.TestCase):
                 '-n', '2']
         client = MultiEvergreen(args)
         # Needed to initialize evergreen REST client
+        client.config['evergreen_config'] = test_utils.repo_root_file_path('config.yml')
         client.parse_options()
         client.builds = [{'ID': '586582573ff1224524001e99'},
                          {'ID': '586582553ff1224524001e96'}]
@@ -113,6 +115,7 @@ class TestMultiEvergreen(unittest.TestCase):
         input_file = test_utils.fixture_file_path('multi_patch_builds.yml')
         args = ['--continue', input_file]
         client = MultiEvergreen(args)
+        client.config['evergreen_config'] = test_utils.repo_root_file_path('config.yml')
         client.parse_options()
         # Note that here serialize() overwrites input_file with the identical contents
         client.execute()

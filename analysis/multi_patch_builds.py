@@ -152,6 +152,11 @@ class MultiEvergreen(object):
         path = os.path.expanduser(self.config['evergreen_config'])
         with open(path) as config_file:
             self.evergreen_config.update(yaml.load(config_file))
+            # We have 2 different config files around. Rest of analysis uses a config.yml in
+            # repo root, where the evergreen config is under the key "evergreen".
+            # Unit tests must use this config file, so we need to support it
+            if 'evergreen' in self.evergreen_config:
+                self.evergreen_config = self.evergreen_config['evergreen']
         self.evergreen_client = evergreen_client.Client(self.evergreen_config)
 
     def execute(self):
