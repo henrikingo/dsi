@@ -133,7 +133,7 @@ class MultiEvergreen(object):
         # If one or more config files was specified, they have lowest precedence
         if args.config:
             for conf in args.config:
-                self.config.update(yaml.load(open(conf)))
+                self.config.update(yaml.load(open(os.path.expanduser(conf))))
         # Options given on command line have highest precedence
         for key, val in vars(args).iteritems():
             if val is not None:
@@ -209,7 +209,7 @@ class MultiEvergreen(object):
             print(" ".join(cmd))
             print("")
 
-            process = subprocess.Popen(cmd, cwd=self.config['mongo_repo'],
+            process = subprocess.Popen(cmd, cwd=os.path.expanduser(self.config['mongo_repo']),
                                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             build_data = _parse_evg_output(process.stdout)
             # Self-referential, but could be useful. And can help readability of a 20 item list!
@@ -231,7 +231,7 @@ class MultiEvergreen(object):
                 if repo in self.config:
                     cmd = ['evergreen', 'set-module', '-m', project, '-i', build['ID'], '--yes']
                     print(" ".join(cmd))
-                    process = subprocess.Popen(cmd, cwd=self.config[repo],
+                    process = subprocess.Popen(cmd, cwd=os.path.expanduser(self.config[repo]),
                                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                     for line in iter(process.stdout.readline, b''):
                         # pass thru
