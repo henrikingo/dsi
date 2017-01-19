@@ -232,6 +232,21 @@ class Client(object):
             headers=self.headers
         )
 
+    def query_perf_results(self, task_id):
+        """Get the 'perf.json' performance results for given task_id
+
+        Evergreen endpoint: /plugin/json/task/{task_id}/perf/
+
+        (Tested on sys-perf, but mongo-perf should be the same.)
+
+        :param str project: task_id of a specific build+variant
+        :rtype: dict
+        """
+        return helpers.get_as_json(
+            '{}/plugin/json/task/{}/perf/'.format(self.base_url, task_id),
+            headers=self.headers
+        )
+
     def build_variants_from_git_commit(self, project, commit_sha):
         """Generates the names and Evergreen IDs of build variants.
 
