@@ -3027,41 +3027,6 @@
                         "BF-3233"
                     ]
                 },
-                "Aggregation.Unwind":{
-                    "create_time":"2016-09-01T18:26:43.551Z",
-                    "max":869.3941217516018,
-                    "name":"Aggregation.Unwind",
-                    "order":5501,
-                    "results":{
-                        "1":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":869.3941217516018,
-                            "ops_per_sec_values":[
-                                864.9797928166496,
-                                874.6781184524095,
-                                871.386091606487,
-                                869.3096505767074,
-                                866.6169553057549
-                            ]
-                        },
-                        "end":"2016-09-01T19:36:58.293Z",
-                        "start":"2016-09-01T19:36:33.103Z"
-                    },
-                    "revision":"698cd2555dabf2ab6c1ed4c504d1e2546da0f57a",
-                    "tag":"",
-                    "threads":[
-                        "1"
-                    ],
-                    "ticket":[
-                        "BF-3403"
-                    ]
-                },
                 "Aggregation.UnwindThenGroup":{
                     "create_time":"2016-08-19T16:38:39.195Z",
                     "max":6.023272654271524,
@@ -12479,41 +12444,6 @@
                     ],
                     "ticket":[
                         "BF-3233"
-                    ]
-                },
-                "Aggregation.Unwind":{
-                    "create_time":"2016-09-01T18:26:43.551Z",
-                    "max":829.9625097735072,
-                    "name":"Aggregation.Unwind",
-                    "order":5501,
-                    "results":{
-                        "1":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":829.9625097735072,
-                            "ops_per_sec_values":[
-                                828.5393415231568,
-                                827.0589209010205,
-                                833.0179779553097,
-                                830.9929796385729,
-                                830.2033288494757
-                            ]
-                        },
-                        "end":"2016-09-01T19:18:38.245Z",
-                        "start":"2016-09-01T19:18:12.999Z"
-                    },
-                    "revision":"698cd2555dabf2ab6c1ed4c504d1e2546da0f57a",
-                    "tag":"",
-                    "threads":[
-                        "1"
-                    ],
-                    "ticket":[
-                        "BF-3403"
                     ]
                 },
                 "Aggregation.UnwindThenGroup":{
