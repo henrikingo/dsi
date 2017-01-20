@@ -90,7 +90,7 @@ class MultiEvergreenAnalysis(object):
                                  action='store_true',
                                  help="Ouput in yml format")
         self.parser.add_argument('--out',
-                                 help="File name to write output (default: stdout)")
+                                 help="File name to write output (print to stdout if omitted)")
         self.parser.add_argument('--graph-dir',
                                  help="Directory to save pyplot graphs in (default: no pyplot)")
 
