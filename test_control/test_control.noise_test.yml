@@ -3,94 +3,70 @@ run:
     type: shell
 
     # The output-format and output options apparently cannot be moved into the configuration file
-    cmd: fio --output-format=json --output=fio.json fio.ini && python process_fio_results.py mc
-    # We can pass in fio config file to do multiple runs, etc. Or we
-    # can just enter it multiple times here.
+    cmd: for i in `seq 1 5`; do fio --output-format=json --output=fio.json fio.ini && python process_fio_results.py mc && mv fio.json fio.json.$i; done; rm data/fiofile*
     config_filename: fio.ini
     workload_config: &config |
       [global]
       directory=/media/ephemeral0
-
-      [prequal_check]
-      description=This is the test we used for prequal
-      stonewall
-      direct=1
-      rw=randwrite
-      bs=16k
+      filename_format=fiofile.$jobnum.$filenum
       size=1G
-      numjobs=16
-      runtime=60
+      runtime=120
       time_based
       group_reporting
+      ioengine=libaio
+      direct=1
+
+      [setupfiles]
+      stonewall
+      filesize=1G
+      nrfiles=16
+      filename_format=fiofile.$filenum.0
+      rw=randrw
+      numjobs=1
+      runtime=1
+
+      [prequal_check]
+      stonewall
+      description=This is the test we used for prequal
+      rw=randwrite
+      bs=16k
+      numjobs=16
       norandommap
 
       [latency_test]
-      description=This is for random read and write latency. 1 at a time
       stonewall
+      description=This is for random read and write latency. 1 at a time
       rw=randrw
-      size=1G
       numjobs=1
-      runtime=60
-      time_based
-      group_reporting
       bs=1
       ioengine=sync
+      direct=0
+      filesize=1G
+      nrfiles=16
+      filename_format=fiofile.$filenum.0
 
       [iops__test]
-       description=How many iops can I sustain in parallel
       stonewall
+      description=How many iops can I sustain in parallel
       rw=randrw
-      size=1G
       numjobs=32
-      runtime=60
-      time_based
-      group_reporting
       bs=4k
       iodepth=32
-      ioengine=libaio
-      direct=1
 
       [streaming_bandwidth_test]
-      description=Measure streaming bandwidth
       stonewall
+      description=Measure streaming bandwidth
       rw=rw
-      size=1G
       numjobs=16
-      runtime=60
-      time_based
-      group_reporting
       bs=16k
       iodepth=32
-      ioengine=libaio
-      direct=1
 
-      [streaming_bandwidth_test]
-      description=Measure streaming bandwidth
-      stonewall
-      rw=rw
-      size=1G
-      numjobs=16
-      runtime=60
-      time_based
-      group_reporting
-      bs=16k
-      iodepth=32
-      ioengine=libaio
-      direct=1
-
-  # I'd like to run this on the primary also, but mc only allows you
-  # to run commands on the mc node, and I cannot ssh from the mc
-  # node to the server nodes.
-
-  # - id: fio-${mongodb_setup.mongod_config_file.storage.engine}.primary
-  #   type: shell
-
-  #   # The output-format and output options apparently cannot be moved into the configuration file
-  #    cmd: scp fio.ini ec2-user@${mongodb_setup.meta.hostname}:./ && ssh ec2-user@${mongodb_setup.meta.hostname} fio --output-format=json --output=fio.json fio.ini && scp ec2-user@${mongodb_setup.meta.hostname}:./fio.json . && python process_fio_results.py
-  #   # We can pass in fio config file to do multiple runs, etc. Or we
-  #   # can just enter it multiple times here.
-  #   config_filename: fio2.ini
-  #   workload_config: *config
+  - id: fio-${mongodb_setup.mongod_config_file.storage.engine}.primary
+    type: shell
+    cmd: 'scp -o StrictHostKeyChecking=no fio.ini ${mongodb_setup.meta.hostname}:./; for i in `seq 1 5`; do ssh -A  ${mongodb_setup.meta.hostname} "fio --output-format=json --output=fio.json fio.ini" && scp ${mongodb_setup.meta.hostname}:./fio.json . && python process_fio_results.py mc && mv fio.json fio.json.p.$i; done;  ssh -A  ${mongodb_setup.meta.hostname} "rm data/fiofile*"'
+    # Note we don't copy fio2.ini up. This script uses thefio.ini used in the previous step
+    config_filename: fio.ini
+    workload_config: *config
   - id: benchRun-${mongodb_setup.mongod_config_file.storage.engine}
     type: shell
 

@@ -56,7 +56,8 @@ chmod 777 perf.json
 scp -oStrictHostKeyChecking=no -i $PEMFILE  $SSHUSER@$mc:./workloads/workload_timestamps.csv reports || true
 
 # Copy back over fio output file if it exists
-scp -oStrictHostKeyChecking=no -i $PEMFILE  $SSHUSER@$mc:./fio.json reports || true
+scp -oStrictHostKeyChecking=no -i $PEMFILE  '$SSHUSER@$mc:./fio.json.[0-9]' reports || true
+scp -oStrictHostKeyChecking=no -i $PEMFILE  '$SSHUSER@$mc:./fio.json.p.[0-9]' reports || true
 
 rm -f ../perf.json
 chmod 766 perf.json
