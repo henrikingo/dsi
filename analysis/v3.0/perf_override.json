@@ -46,17 +46,19 @@
                     ]
                 },
                 "Commands.FindAndModifySortedDelete":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-4620"
                     ]
                 },
                 "Commands.FindAndModifySortedDeleteIndexed":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-4620"
                     ]
                 },
                 "Commands.FindAndModifySortedUpdate":{
@@ -177,17 +179,19 @@
                     ]
                 },
                 "Commands.FindAndModifySortedDelete":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-4620"
                     ]
                 },
                 "Commands.FindAndModifySortedDeleteIndexed":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-4620"
                     ]
                 },
                 "Commands.FindAndModifySortedUpdate":{
@@ -363,17 +367,19 @@
                     ]
                 },
                 "Commands.FindAndModifySortedDelete":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-4620"
                     ]
                 },
                 "Commands.FindAndModifySortedDeleteIndexed":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-4620"
                     ]
                 },
                 "Commands.FindAndModifySortedUpdate":{
@@ -481,17 +487,19 @@
                     ]
                 },
                 "Commands.FindAndModifySortedDelete":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-4620"
                     ]
                 },
                 "Commands.FindAndModifySortedDeleteIndexed":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-4620"
                     ]
                 },
                 "Commands.FindAndModifySortedUpdate":{
