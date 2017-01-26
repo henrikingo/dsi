@@ -3,10 +3,10 @@
 import unittest
 
 from tests import test_utils
-from multi_analysis import MultiEvergreenAnalysis, main, deep_dict_iterate
+from multi_analysis import MultiEvergreenAnalysis, main
 
 
-class TestMultiEvergreen(unittest.TestCase):
+class TestMultiEvergreenAnalysis(unittest.TestCase):
     """
     Test the MultiEvergreen client class.
     """
@@ -34,11 +34,10 @@ class TestMultiEvergreen(unittest.TestCase):
             'json': True,
             'yml': False,
             'out': 'outfile.json',
-            'graph_dir': 'graphs',
             'id': [],
             'continue': input_file
         }
-        args = ['--json', '--out', 'outfile.json', '--graph-dir', 'graphs',
+        args = ['--json', '--out', 'outfile.json',
                 '--continue', input_file]
         client = MultiEvergreenAnalysis(args)
         client.parse_options()
@@ -103,27 +102,12 @@ class TestMultiEvergreen(unittest.TestCase):
         client.aggregate_results()
         self.assertEqual(client.agg_results, expected)
 
-    def test_deep_dict_iterate(self):
-        """MultiEvergreenAnalysis: deep_dict_iterate()"""
-        data = {'a': {'aa': {'aaa': 1, 'aab': 2}, 'ab': {'aba': 3, 'abb': 4}},
-                'b': {'ba': {'baa': 5, 'bab': 6}, 'bb': {'bba': 7, 'bbb': 8}}}
-        expected = [(['a', 'aa', 'aaa'], 1),
-                    (['a', 'aa', 'aab'], 2),
-                    (['a', 'ab', 'aba'], 3),
-                    (['a', 'ab', 'abb'], 4),
-                    (['b', 'ba', 'baa'], 5),
-                    (['b', 'ba', 'bab'], 6),
-                    (['b', 'bb', 'bba'], 7),
-                    (['b', 'bb', 'bbb'], 8)]
-
-        self.assertEqual(deep_dict_iterate(data), expected)
-
     def test_main(self):
         """MultiEvergreenAnalysis: Fetch real Evergreen results and write output files."""
         #pylint: disable=no-self-use
         evergreen_config = test_utils.repo_root_file_path('config.yml')
         args = ['--evergreen-config', evergreen_config,
-                '--json', '--out', 'test_outfile.json', '--graph-dir', 'test_graphs',
+                '--json', '--out', 'test_outfile.json',
                 '587773af3ff1220ab9000946', '587773b03ff1220ab900094a']
         main(args)
         # Intentionally not checking output files, just testing that we run without exceptions.

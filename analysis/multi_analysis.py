@@ -13,11 +13,10 @@ import json
 import os
 import sys
 
-import matplotlib.pyplot as pyplot
 import numpy
 import yaml
 
-
+import deep_dict
 from evergreen import evergreen_client
 
 class OptionError(Exception):
@@ -91,8 +90,6 @@ class MultiEvergreenAnalysis(object):
                                  help="Ouput in yml format")
         self.parser.add_argument('--out',
                                  help="File name to write output (print to stdout if omitted)")
-        self.parser.add_argument('--graph-dir',
-                                 help="Directory to save pyplot graphs in (default: no pyplot)")
 
         self.parser.add_argument('id',
                                  nargs='*',
@@ -227,9 +224,9 @@ class MultiEvergreenAnalysis(object):
 
     def compute_aggregates(self):
         """Compute aggregates (average, variance,...) of the values in self.agg_results"""
-        for path, val in deep_dict_iterate(self.agg_results):
+        for path, val in deep_dict.iterate(self.agg_results):
             if path[-1] == 'ops_per_sec' and isinstance(val, list):
-                parent_obj = deep_dict_get(self.agg_results, path[0:-1])
+                parent_obj = deep_dict.get_value(self.agg_results, path[0:-1])
                 parent_obj['average'] = float(numpy.average(val))
                 parent_obj['median'] = float(numpy.median(val))
                 parent_obj['variance'] = float(numpy.var(val))
@@ -257,22 +254,20 @@ class MultiEvergreenAnalysis(object):
             file_handle.write(self.yml_str())
 
         if 'out' in self.config:
+            file_handle.close()
             print("Wrote aggregated results to {}.".format(self.config['out']))
-
-        if 'graph_dir' in self.config:
-            self.graphs(self.config['graph_dir'])
 
     def csv_str(self):
         """Return self.agg_results as a CSV formatted string"""
-        csv = ("Variant,Test,Thread level,Var/Mean,Variance,Average,Median,Min,Max,Range,"
+        csv = ("Variant,Task,Test,Thread level,Var/Mean,Variance,Average,Median,Min,Max,Range,"
                "Range/Median\n")
 
-        for variant_name, variant_obj in sorted_iter(self.agg_results):
-            for _, task_obj in sorted_iter(variant_obj):
-                for test_name, test_obj in sorted_iter(task_obj):
-                    for thread_level, thread_obj in sorted_iter(test_obj):
-                        csv += "{},{},{},{},{},{},{},{},{},{},{}\n".format(
-                            variant_name, test_name, thread_level,
+        for variant_name, variant_obj in deep_dict.sorted_iter(self.agg_results):
+            for task_name, task_obj in deep_dict.sorted_iter(variant_obj):
+                for test_name, test_obj in deep_dict.sorted_iter(task_obj):
+                    for thread_level, thread_obj in deep_dict.sorted_iter(test_obj):
+                        csv += "{},{},{},{},{},{},{},{},{},{},{},{}\n".format(
+                            variant_name, task_name, test_name, thread_level,
                             thread_obj['variance_to_mean'],
                             thread_obj['variance'],
                             thread_obj['average'],
@@ -290,92 +285,6 @@ class MultiEvergreenAnalysis(object):
     def yml_str(self):
         """Return self.agg_results as JSON"""
         return yaml.dump(self.agg_results, default_flow_style=False)
-
-    def graphs(self, directory):
-        """Write some pyplot graphs into sub-directory"""
-        if not os.path.isdir(directory):
-            os.makedirs(directory)
-
-        pyplot.style.use("ggplot")
-
-        # Each variant is a separate graph
-        metrics = ['variance_to_mean', 'average']
-        for metric in metrics:
-            for variant_name, variant_obj in self.agg_results.iteritems():
-                # Get variance for each test
-                variances = []
-                test_names = []
-                for path, val in deep_dict_iterate(variant_obj):
-                    if path[-1] == metric:
-                        variances.append(val)
-                        test_names.append(path[1] + "." + str(path[2])) # test_name.thread_level
-
-                axis = pyplot.subplot(111)
-                pyplot.subplots_adjust(bottom=0.3)
-                width = 0.8
-                axis.bar(range(len(test_names)), variances, width=width)
-                axis.set_xticks(numpy.arange(len(test_names)) + width/2)
-                axis.set_xticklabels(test_names, rotation=90)
-                axis.tick_params(axis='both', which='major', labelsize=5)
-                axis.tick_params(axis='both', which='minor', labelsize=5)
-                pyplot.title(variant_name + ' : ' + metric)
-                # Save to file
-                file_name = variant_name + '--' + metric + '.png'
-                path = os.path.join(directory, file_name)
-                pyplot.savefig(path)
-        print("Wrote graphs to {}{}.".format(directory, os.sep))
-
-def deep_dict_iterate(deep_dict, path=None, to_return=None):
-    """
-    Iterate over the lowest level (the leaves) of self.agg_results,
-
-    without needing a for loop for each level separately.
-    Returns [ ([key1, key2, key3], value), (...), ... )]
-    """
-    if path is None:
-        path = []
-    if to_return is None:
-        to_return = []
-    if isinstance(deep_dict, dict):
-        #pylint: disable=unused-variable
-        for key in sorted_keys(deep_dict):
-            pair = deep_dict_iterate(deep_dict[key], path + [key], to_return)
-            # Avoid circular references on the way back
-            if pair != to_return:
-                to_return.append(pair)
-        return to_return
-    else:
-        return path, deep_dict
-
-def deep_dict_get(deep_dict, path):
-    """Return deep_dict[path[0]][path[1]..."""
-    value = deep_dict
-    for key in path:
-        value = value[key]
-    return value
-
-def deep_dict_set(deep_dict, path, value):
-    """Set deep_dict[path[0]][path[1]]... = value"""
-    obj = deep_dict
-    for key in path[0:-1]:
-        obj = obj[key]
-    key = path[-1]
-    obj[key] = value
-
-def sorted_iter(a_dict):
-    """Like dict.iteritems(), but sorts keys first."""
-    keys = a_dict.keys()
-    keys.sort()
-    for key in keys:
-        yield key, a_dict[key]
-
-def sorted_keys(a_dict):
-    """Like dict.keys(), but sorts keys first."""
-    keys = a_dict.keys()
-    keys.sort()
-    for key in keys:
-        yield key
-
 
 def main(cli_args=None):
     """Main function"""
