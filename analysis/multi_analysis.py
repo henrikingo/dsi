@@ -225,7 +225,6 @@ class MultiEvergreenAnalysis(object):
                             agg_thread_level['ops_per_sec_values'].append(thread_result['ops_per_sec_values'])
         self.compute_aggregates()
 
-
     def compute_aggregates(self):
         """Compute aggregates (average, variance,...) of the values in self.agg_results"""
         for path, val in deep_dict_iterate(self.agg_results):
