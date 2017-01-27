@@ -149,8 +149,9 @@ Create pyplot graphs from data that was output from multi_analysis.py.
 
         return mongodb_tests, fio_tests
 
-    def graphs(self):
+    def bar_graphs(self):
         """Write some pyplot graphs into sub-directory"""
+        #pylint: disable=too-many-locals,too-many-nested-blocks,too-many-statements
         directory = os.path.expanduser(self.config['graph_dir'])
         if not os.path.isdir(directory):
             os.makedirs(directory)
@@ -163,7 +164,12 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                    ('range_to_median', False),
                    ('average', False),
                    ('max', False),
-                   ('max', True)]
+                   ('max', True),
+                   ('all_variance_to_mean', False),
+                   ('all_range_to_median', False),
+                   ('all_average', False),
+                   ('all_max', False),
+                   ('all_max', True)]
 
         # Strings used in filenames for output files
         dataset_names = ["", "--fio"]
@@ -192,6 +198,15 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                                 min_key = [path[0], path[1], path[2], 'min']
                                 min_val = deep_dict.get_value(variant_obj, min_key)
                                 yvalues_min.append(min_val)
+                            if metric == 'all_max':
+                                # For the 'max' graph we actually print a stacked bar chart with
+                                # min-median-max
+                                median_key = [path[0], path[1], path[2], 'all_median']
+                                median_val = deep_dict.get_value(variant_obj, median_key)
+                                yvalues_median.append(median_val)
+                                min_key = [path[0], path[1], path[2], 'all_min']
+                                min_val = deep_dict.get_value(variant_obj, min_key)
+                                yvalues_min.append(min_val)
 
                     pyplot.figure() # Reset canvas between loops
                     axis = pyplot.subplot(111)
@@ -200,7 +215,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                     xvalues = range(len(test_names))
 
                     axis.bar(xvalues, yvalues, width=width, log=log)
-                    if metric == 'max':
+                    if metric in ['max', 'all_max']:
                         # pyplot is stupid and just draws these on top of each other.
                         # So one must start with the max value and go downward from there.
                         axis.bar(xvalues, yvalues_median, width=width, color='#0055ff', log=log)
@@ -221,7 +236,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                     file_name = variant_name + '--' + metric + file_name_postfix + '.png'
                     path = os.path.join(directory, file_name)
                     pyplot.savefig(path, dpi=500, format='png')
-        print("Wrote graphs to {}{}.".format(directory, os.sep))
+        print("Wrote bar graphs to {}{}.".format(directory, os.sep))
 
 def main(cli_args=None):
     """Main function"""
@@ -239,7 +254,7 @@ def main(cli_args=None):
         exit(1)
 
     multi_graphs.read_agg_results()
-    multi_graphs.graphs()
+    multi_graphs.bar_graphs()
 
 if __name__ == '__main__':
     main()

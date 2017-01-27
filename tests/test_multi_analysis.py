@@ -10,7 +10,6 @@ class TestMultiEvergreenAnalysis(unittest.TestCase):
     """
     Test the MultiEvergreen client class.
     """
-
     def test_parse_options(self):
         """MultiEvergreenAnalysis: parse options."""
         expected = {
@@ -76,29 +75,65 @@ class TestMultiEvergreenAnalysis(unittest.TestCase):
                           }
                      }
                 }]
-        expected = {'a_variant': {'a_task': {'a_test': {32: {'range_to_median': 0.10145948924283386,
-                                                             'min': 111.123,
-                                                             'max': 123,
-                                                             'average': 117.0615,
-                                                             'median': 117.0615,
-                                                             'ops_per_sec': [111.123, 123],
-                                                             'range': 11.876999999999995,
-                                                             'variance': 35.26578224999997,
-                                                             'variance_to_mean': 0.3012585884342843,
-                                                             'ops_per_sec_values': [[111.123],
-                                                                                    [123]]},
-                                                        64: {'range_to_median': 0.05157879509199222,
-                                                             'min': 222.234,
-                                                             'max': 234,
-                                                             'average': 228.11700000000002,
-                                                             'median': 228.11700000000002,
-                                                             'ops_per_sec': [222.234, 234],
-                                                             'range': 11.765999999999991,
-                                                             'variance': 34.609688999999946,
-                                                             'variance_to_mean': 0.151719025763095,
-                                                             'ops_per_sec_values': [[222.234],
-                                                                                    [234]]}}}}}
-
+        expected = {'a_variant':
+                        {'a_task':
+                             {'a_test':
+                                  {32:
+                                       {'all_variance_to_mean': 0.3012585884342843,
+                                        'it_range_to_median': [0.0, 0.0],
+                                        'it_max': [111.123, 123.0],
+                                        'it_variance': [0.0, 0.0],
+                                        'it_range': [0.0, 0.0],
+                                        'all_min': 111.123,
+                                        'all_median': 117.0615,
+                                        'it_median': [111.123, 123.0],
+                                        'min': 111.123,
+                                        'all_variance': 35.26578224999997,
+                                        'all_range_to_median': 0.10145948924283386,
+                                        'max': 123, 'all_range': 11.876999999999995,
+                                        'variance': 35.26578224999997,
+                                        'variance_to_mean': 0.3012585884342843,
+                                        'it_min': [111.123, 123.0],
+                                        'all_max': 123.0,
+                                        'it_variance_to_mean': [0.0, 0.0],
+                                        'average': 117.0615,
+                                        'median': 117.0615,
+                                        'ops_per_sec': [111.123, 123],
+                                        'ops_per_sec_values': [[111.123], [123]],
+                                        'range': 11.876999999999995,
+                                        'it_average': [111.123, 123.0],
+                                        'range_to_median': 0.10145948924283386,
+                                        'all_average': 117.0615},
+                                   64: {'all_variance_to_mean': 0.151719025763095,
+                                        'it_range_to_median': [0.0, 0.0],
+                                        'it_max': [222.234, 234.0],
+                                        'it_variance': [0.0, 0.0],
+                                        'it_range': [0.0, 0.0],
+                                        'all_min': 222.234,
+                                        'all_median': 228.11700000000002,
+                                        'it_median': [222.234, 234.0],
+                                        'min': 222.234,
+                                        'all_variance': 34.609688999999946,
+                                        'all_range_to_median': 0.05157879509199222,
+                                        'max': 234,
+                                        'all_range': 11.765999999999991,
+                                        'variance': 34.609688999999946,
+                                        'variance_to_mean': 0.151719025763095,
+                                        'it_min': [222.234, 234.0],
+                                        'all_max': 234.0,
+                                        'it_variance_to_mean': [0.0, 0.0],
+                                        'average': 228.11700000000002,
+                                        'median': 228.11700000000002,
+                                        'ops_per_sec': [222.234, 234],
+                                        'ops_per_sec_values': [[222.234], [234]],
+                                        'range': 11.765999999999991,
+                                        'it_average': [222.234, 234.0],
+                                        'range_to_median': 0.05157879509199222,
+                                        'all_average': 228.11700000000002}
+                                  }
+                             }
+                        }
+                   }
         client = MultiEvergreenAnalysis()
         client.results = data
         client.aggregate_results()

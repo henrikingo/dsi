@@ -226,6 +226,7 @@ class MultiEvergreenAnalysis(object):
         """Compute aggregates (average, variance,...) of the values in self.agg_results"""
         for path, val in deep_dict.iterate(self.agg_results):
             if path[-1] == 'ops_per_sec' and isinstance(val, list):
+                # Compute aggregates for the ops_per_sec value over builds
                 parent_obj = deep_dict.get_value(self.agg_results, path[0:-1])
                 parent_obj['average'] = float(numpy.average(val))
                 parent_obj['median'] = float(numpy.median(val))
@@ -237,7 +238,49 @@ class MultiEvergreenAnalysis(object):
                 parent_obj['range'] = parent_obj['max'] - parent_obj['min']
                 parent_obj['range_to_median'] = (float(parent_obj['range']) /
                                                  float(parent_obj['median']))
-
+            elif path[-1] == 'ops_per_sec_values' and isinstance(val, list):
+                # Compute aggregates over the iterations inside each build, and pack result back
+                # into an array that contains the result for each build
+                parent_obj = deep_dict.get_value(self.agg_results, path[0:-1])
+                parent_obj['it_average'] = [] # Equal to ops_per_sec
+                parent_obj['it_median'] = []
+                parent_obj['it_variance'] = []
+                parent_obj['it_variance_to_mean'] = []
+                parent_obj['it_min'] = []
+                parent_obj['it_max'] = []
+                parent_obj['it_range'] = []
+                parent_obj['it_range_to_median'] = []
+                for per_build_iterations in val:
+                    parent_obj['it_average'].append(float(numpy.average(per_build_iterations)))
+                    parent_obj['it_median'].append(float(numpy.median(per_build_iterations)))
+                    parent_obj['it_variance'].append(float(numpy.var(per_build_iterations)))
+                    parent_obj['it_variance_to_mean'].append(
+                        float(numpy.var(per_build_iterations)) /
+                        float(numpy.average(per_build_iterations)))
+                    parent_obj['it_min'].append(float(min(per_build_iterations)))
+                    parent_obj['it_max'].append(float(max(per_build_iterations)))
+                    parent_obj['it_range'].append(
+                        float(max(per_build_iterations)) - float(min(per_build_iterations)))
+                    parent_obj['it_range_to_median'].append(
+                        (float(max(per_build_iterations)) - float(min(per_build_iterations))) /
+                        float(numpy.median(per_build_iterations)))
+                # Flatten the ops_per_sec_values array and compute aggregates over all values, that
+                # is, over all iterations in all builds
+                flat_array = []
+                for arr in val:
+                    for value in arr:
+                        flat_array.append(value)
+                parent_obj['all_average'] = float(numpy.average(flat_array))
+                parent_obj['all_median'] = float(numpy.median(flat_array))
+                parent_obj['all_variance'] = float(numpy.var(flat_array))
+                parent_obj['all_variance_to_mean'] = (float(numpy.var(flat_array)) /
+                                                      float(numpy.average(flat_array)))
+                parent_obj['all_min'] = float(min(flat_array))
+                parent_obj['all_max'] = float(max(flat_array))
+                parent_obj['all_range'] = (float(max(flat_array)) - float(min(flat_array)))
+                parent_obj['all_range_to_median'] = ((float(max(flat_array)) -
+                                                      float(min(flat_array))) /
+                                                     float(numpy.median(flat_array)))
 
     def write_results(self):
         """Print or write to file csv or json or yaml, depending on options"""
