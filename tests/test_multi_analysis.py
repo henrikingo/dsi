@@ -14,13 +14,14 @@ class TestMultiEvergreenAnalysis(unittest.TestCase):
     def test_parse_options(self):
         """MultiEvergreenAnalysis: parse options."""
         expected = {
-            'evergreen_config': '~/.evergreen.yml',
+            'evergreen_config': test_utils.repo_root_file_path('config.yml'),
             'csv': True,
             'json': False,
             'yml': False,
             'id': ['587773af3ff120ab9000946', '587773b03ff1220ab900094a']
         }
-        args = ['587773af3ff120ab9000946', '587773b03ff1220ab900094a']
+        args = ['587773af3ff120ab9000946', '587773b03ff1220ab900094a',
+                '--evergreen-config', test_utils.repo_root_file_path('config.yml')]
         client = MultiEvergreenAnalysis(args)
         client.parse_options()
         self.assertEqual(client.config, expected)
@@ -29,7 +30,7 @@ class TestMultiEvergreenAnalysis(unittest.TestCase):
         """MultiEvergreenAnalysis: parse more advanced options."""
         input_file = test_utils.fixture_file_path('multi_patch_builds.yml')
         expected_config = {
-            'evergreen_config': '~/.evergreen.yml',
+            'evergreen_config': test_utils.repo_root_file_path('config.yml'),
             'csv': False,
             'json': True,
             'yml': False,
@@ -38,7 +39,8 @@ class TestMultiEvergreenAnalysis(unittest.TestCase):
             'continue': input_file
         }
         args = ['--json', '--out', 'outfile.json',
-                '--continue', input_file]
+                '--continue', input_file,
+                '--evergreen-config', test_utils.repo_root_file_path('config.yml')]
         client = MultiEvergreenAnalysis(args)
         client.parse_options()
         self.assertEqual(client.config, expected_config)
