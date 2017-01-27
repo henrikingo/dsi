@@ -208,7 +208,6 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                                 min_val = deep_dict.get_value(variant_obj, min_key)
                                 yvalues_min.append(min_val)
 
-                    pyplot.figure() # Reset canvas between loops
                     axis = pyplot.subplot(111)
                     pyplot.subplots_adjust(bottom=0.3)
                     width = 0.8
@@ -236,7 +235,88 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                     file_name = variant_name + '--' + metric + file_name_postfix + '.png'
                     path = os.path.join(directory, file_name)
                     pyplot.savefig(path, dpi=500, format='png')
+                    pyplot.clf() # Reset canvas between loops
         print("Wrote bar graphs to {}{}.".format(directory, os.sep))
+
+    def scatter_graphs(self):
+        """Write some pyplot graphs into sub-directory"""
+        #pylint: disable=too-many-locals,too-many-nested-blocks,too-many-statements
+        #pylint: disable=too-many-branches
+        directory = os.path.expanduser(self.config['graph_dir'])
+        if not os.path.isdir(directory):
+            os.makedirs(directory)
+
+        pyplot.style.use("ggplot")
+
+        # Each variant is a separate graph
+        # Second value is whether to use logarithmic y-axis
+        metrics = [('ops_per_sec_values', False)]
+
+        # Strings used in filenames for output files
+        dataset_names = ["", "--fio"]
+
+        for metric, log in metrics:
+            dataset_index = -1
+            for dataset in self.separate_fio_tests():
+                dataset_index += 1
+                # Separate set of graphs for each variant
+                for variant_name, variant_obj in dataset.iteritems():
+                    # yvalues[build_index][iteration_index][test_index] = 123.456
+                    # In other words, the innermost array corresponds to test_names
+                    yvalues = []
+                    test_names = []
+                    for path, ops_per_sec_values in deep_dict.iterate(variant_obj):
+                        if path[-1] == metric:
+                            test_names.append(path[1] + "." + str(path[2])) # test_name.thread_level
+                            for build_index, build_values in enumerate(ops_per_sec_values):
+                                for iteration_index, iteration_values in enumerate(build_values):
+
+                                    while len(yvalues) <= build_index:
+                                        yvalues.append([])
+                                    while len(yvalues[build_index]) <= iteration_index:
+                                        yvalues[build_index].append([])
+
+                                    # This is what we're really here for
+                                    value = ops_per_sec_values[build_index][iteration_index]
+                                    yvalues[build_index][iteration_index].append(value)
+
+                    axis = pyplot.subplot(111)
+                    pyplot.subplots_adjust(bottom=0.3)
+                    xvalues = range(len(test_names))
+                    # Each build gets its shade of blue
+                    colors = numpy.array(range(len(yvalues))) / float(len(yvalues))
+                    markers = ['+', 'x', '1', '2', '3', '4', '8', 's', 'p', '*', 'h', 'H', 'D',
+                               'd', '|', '_']
+
+                    for build_index, build_values in enumerate(yvalues):
+                        for iteration_index, iteration_values in enumerate(build_values):
+                            axis.scatter(xvalues,
+                                         iteration_values,
+                                         marker=markers[build_index],
+                                         alpha=0.5,
+                                         edgecolors="none",
+                                         c=[[1-colors[build_index],
+                                             0,
+                                             colors[build_index]]])
+
+                    axis.set_xticks(numpy.arange(len(test_names)) + 0.5)
+                    axis.set_xticklabels(test_names, rotation=90)
+                    axis.tick_params(axis='both', which='major', labelsize=5)
+                    axis.tick_params(axis='both', which='minor', labelsize=5)
+                    pyplot.title(variant_name + ' : ' + metric)
+
+                    # Save to file
+                    file_name_postfix = ""
+                    if log:
+                        file_name_postfix += '--log'
+                    file_name_postfix += dataset_names[dataset_index]
+                    file_name_postfix += '--scatter'
+
+                    file_name = variant_name + '--' + metric + file_name_postfix + '.png'
+                    path = os.path.join(directory, file_name)
+                    pyplot.savefig(path, dpi=500, format='png')
+                    pyplot.clf() # Reset canvas between loops
+        print("Wrote scatter graphs to {}{}.".format(directory, os.sep))
 
 def main(cli_args=None):
     """Main function"""
@@ -255,6 +335,7 @@ def main(cli_args=None):
 
     multi_graphs.read_agg_results()
     multi_graphs.bar_graphs()
+    multi_graphs.scatter_graphs()
 
 if __name__ == '__main__':
     main()
