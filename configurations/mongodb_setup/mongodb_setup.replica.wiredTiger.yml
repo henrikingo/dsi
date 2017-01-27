@@ -1,4 +1,5 @@
 # Shared by all mongods
+journal_dir: /media/ebs2/journal
 mongod_config_file:
     storage:
         engine: wiredTiger
@@ -9,12 +10,12 @@ topology:
   - cluster_type: replset
     id: rs0
     mongod:
-      - public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
-        private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
-      - public_ip: ${infrastructure_provisioning.out.mongod.1.public_ip}
-        private_ip: ${infrastructure_provisioning.out.mongod.1.private_ip}
-      - public_ip: ${infrastructure_provisioning.out.mongod.2.public_ip}
-        private_ip: ${infrastructure_provisioning.out.mongod.2.private_ip}
+      - public_ip: ${infrastructure_provisioning.out.mongod_all.0.public_ip}
+        private_ip: ${infrastructure_provisioning.out.mongod_all.0.private_ip}
+      - public_ip: ${infrastructure_provisioning.out.mongod_all.1.public_ip}
+        private_ip: ${infrastructure_provisioning.out.mongod_all.1.private_ip}
+      - public_ip: ${infrastructure_provisioning.out.mongod_all.2.public_ip}
+        private_ip: ${infrastructure_provisioning.out.mongod_all.2.private_ip}
 
 # Meta data about this mongodb setup
 meta:

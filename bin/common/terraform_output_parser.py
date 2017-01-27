@@ -101,6 +101,11 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
         yml_data = self._get_ips("public_mongod_seeded_ebs_ip", "private_mongod_seeded_ebs_ip",
                                  "mongod_seeded_ebs", yml_data)
 
+        # Create aggregate list of all mongods
+        yml_data['out']['mongod_all'] = (yml_data['out'].get('mongod', list())
+                                         + yml_data['out'].get('mongod_ebs', list())
+                                         + yml_data['out'].get('mongod_seeded_ebs', list()))
+
         # workload_client IP addresses
         if len(self._ips["public_ip_mc"]) == 0:
             LOG.error("Workload client: public and private IP address counts mismatch!")

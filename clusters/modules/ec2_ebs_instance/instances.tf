@@ -71,6 +71,14 @@ resource "aws_instance" "ebs_member" {
         delete_on_termination   = true
     }
 
+    ebs_block_device {
+        device_name             = "/dev/sdf"
+        volume_type             = "${var.ebs_type}"
+        iops                    = "${var.ebs_iops}"
+        volume_size             = "${var.ebs_size}"
+        delete_on_termination   = true
+    }
+
     associate_public_ip_address = 1
 
     # We run a remote provisioner on the instance after creating it.

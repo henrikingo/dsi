@@ -39,7 +39,9 @@ prepare_disk "/dev/xvdd" "/media/ephemeral1"
 if [ "${WITH_EBS}" == "with_ebs" ]; then
     # Prepare empty EBS volume
     prepare_disk "/dev/xvde" "/media/ebs"
+    prepare_disk "/dev/xvdf" "/media/ebs2"
     ln -s /media/ebs data
+    ln -s /media/ebs2 journal
 elif [ "${WITH_EBS}" == "with_seeded_ebs" ]; then
     # Will not format disk for seeded EBS partition.
     prepare_disk "/dev/xvde" "/media/ebs" "no"
