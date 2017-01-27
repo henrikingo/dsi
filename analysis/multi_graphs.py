@@ -134,6 +134,21 @@ Create pyplot graphs from data that was output from multi_analysis.py.
         """Parse yaml input_data into self.agg_results"""
         self.agg_results = yaml.load(file_handle)
 
+    def separate_fio_tests(self):
+        """Separate fio tests to separate graphs for readability"""
+        fio_tests = {}
+        mongodb_tests = {}
+        for variant_name, variant_obj in self.agg_results.iteritems():
+            for task_name, task_obj in variant_obj.iteritems():
+                for test_name, test_obj in task_obj.iteritems():
+                    key = [variant_name, task_name, test_name]
+                    if test_name[0:3] == 'mc_':
+                        deep_dict.set_value(fio_tests, key, test_obj)
+                    else:
+                        deep_dict.set_value(mongodb_tests, key, test_obj)
+
+        return mongodb_tests, fio_tests
+
     def graphs(self):
         """Write some pyplot graphs into sub-directory"""
         directory = os.path.expanduser(self.config['graph_dir'])
@@ -143,30 +158,69 @@ Create pyplot graphs from data that was output from multi_analysis.py.
         pyplot.style.use("ggplot")
 
         # Each variant is a separate graph
-        metrics = ['variance_to_mean', 'average']
-        for metric in metrics:
-            for variant_name, variant_obj in self.agg_results.iteritems():
-                # Get variance for each test
-                variances = []
-                test_names = []
-                for path, val in deep_dict.iterate(variant_obj):
-                    if path[-1] == metric:
-                        variances.append(val)
-                        test_names.append(path[1] + "." + str(path[2])) # test_name.thread_level
+        # Second value is whether to use logarithmic y-axis
+        metrics = [('variance_to_mean', False),
+                   ('range_to_median', False),
+                   ('average', False),
+                   ('max', False),
+                   ('max', True)]
 
-                axis = pyplot.subplot(111)
-                pyplot.subplots_adjust(bottom=0.3)
-                width = 0.8
-                axis.bar(range(len(test_names)), variances, width=width)
-                axis.set_xticks(numpy.arange(len(test_names)) + width/2)
-                axis.set_xticklabels(test_names, rotation=90)
-                axis.tick_params(axis='both', which='major', labelsize=5)
-                axis.tick_params(axis='both', which='minor', labelsize=5)
-                pyplot.title(variant_name + ' : ' + metric)
-                # Save to file
-                file_name = variant_name + '--' + metric + '.png'
-                path = os.path.join(directory, file_name)
-                pyplot.savefig(path)
+        # Strings used in filenames for output files
+        dataset_names = ["", "--fio"]
+
+        for metric, log in metrics:
+            dataset_index = -1
+            for dataset in self.separate_fio_tests():
+                dataset_index += 1
+                # Separate set of graphs for each variant
+                for variant_name, variant_obj in dataset.iteritems():
+                    # Get variance for each test
+                    yvalues = []
+                    yvalues_median = []
+                    yvalues_min = []
+                    test_names = []
+                    for path, val in deep_dict.iterate(variant_obj):
+                        if path[-1] == metric:
+                            yvalues.append(val)
+                            test_names.append(path[1] + "." + str(path[2])) # test_name.thread_level
+                            if metric == 'max':
+                                # For the 'max' graph we actually print a stacked bar chart with
+                                # min-median-max
+                                median_key = [path[0], path[1], path[2], 'median']
+                                median_val = deep_dict.get_value(variant_obj, median_key)
+                                yvalues_median.append(median_val)
+                                min_key = [path[0], path[1], path[2], 'min']
+                                min_val = deep_dict.get_value(variant_obj, min_key)
+                                yvalues_min.append(min_val)
+
+                    pyplot.figure() # Reset canvas between loops
+                    axis = pyplot.subplot(111)
+                    pyplot.subplots_adjust(bottom=0.3)
+                    width = 0.8
+                    xvalues = range(len(test_names))
+
+                    axis.bar(xvalues, yvalues, width=width, log=log)
+                    if metric == 'max':
+                        # pyplot is stupid and just draws these on top of each other.
+                        # So one must start with the max value and go downward from there.
+                        axis.bar(xvalues, yvalues_median, width=width, color='#0055ff', log=log)
+                        axis.bar(xvalues, yvalues_min, width=width, color='#0000ff', log=log)
+
+                    axis.set_xticks(numpy.arange(len(test_names)) + width/2)
+                    axis.set_xticklabels(test_names, rotation=90)
+                    axis.tick_params(axis='both', which='major', labelsize=5)
+                    axis.tick_params(axis='both', which='minor', labelsize=5)
+                    pyplot.title(variant_name + ' : ' + metric)
+
+                    # Save to file
+                    file_name_postfix = ""
+                    if log:
+                        file_name_postfix += '--log'
+                    file_name_postfix += dataset_names[dataset_index]
+
+                    file_name = variant_name + '--' + metric + file_name_postfix + '.png'
+                    path = os.path.join(directory, file_name)
+                    pyplot.savefig(path, dpi=500, format='png')
         print("Wrote graphs to {}{}.".format(directory, os.sep))
 
 def main(cli_args=None):
