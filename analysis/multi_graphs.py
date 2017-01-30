@@ -164,12 +164,10 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                    ('range_to_median', False),
                    ('average', False),
                    ('max', False),
-                   ('max', True),
                    ('all_variance_to_mean', False),
                    ('all_range_to_median', False),
                    ('all_average', False),
-                   ('all_max', False),
-                   ('all_max', True)]
+                   ('all_max', False)]
 
         # Strings used in filenames for output files
         dataset_names = ["", "--fio"]
@@ -227,14 +225,22 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                     pyplot.title(variant_name + ' : ' + metric)
 
                     # Save to file
-                    file_name_postfix = ""
+                    postfix = ""
                     if log:
-                        file_name_postfix += '--log'
-                    file_name_postfix += dataset_names[dataset_index]
+                        postfix += '--log'
+                    postfix += dataset_names[dataset_index]
 
-                    file_name = variant_name + '--' + metric + file_name_postfix + '.png'
+                    file_name = variant_name + '--' + metric + postfix + '.png'
                     path = os.path.join(directory, file_name)
                     pyplot.savefig(path, dpi=500, format='png')
+
+                    if metric[-3:] == 'max':
+                        # Save another version of the same graph, zooming y-axis to 200k
+                        axis.set_ylim([0.0, 200000])
+                        file_name = variant_name + '--' + metric + postfix + '--medium.png'
+                        path = os.path.join(directory, file_name)
+                        pyplot.savefig(path, dpi=500, format='png')
+
                     pyplot.clf() # Reset canvas between loops
         print("Wrote bar graphs to {}{}.".format(directory, os.sep))
 
@@ -306,15 +312,120 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                     pyplot.title(variant_name + ' : ' + metric)
 
                     # Save to file
-                    file_name_postfix = ""
+                    postfix = ""
                     if log:
-                        file_name_postfix += '--log'
-                    file_name_postfix += dataset_names[dataset_index]
-                    file_name_postfix += '--scatter'
+                        postfix += '--log'
+                    postfix += dataset_names[dataset_index]
+                    postfix += '--scatter'
 
-                    file_name = variant_name + '--' + metric + file_name_postfix + '.png'
+                    file_name = variant_name + '--' + metric + postfix + '.png'
                     path = os.path.join(directory, file_name)
                     pyplot.savefig(path, dpi=500, format='png')
+
+                    # Save another version of the same graph, zooming y-axis to 20k
+                    axis.set_ylim([0.0, 20000])
+                    file_name = variant_name + '--' + metric + postfix + '--medium.png'
+                    path = os.path.join(directory, file_name)
+                    pyplot.savefig(path, dpi=500, format='png')
+
+                    # Save another version of the same graph, zooming y-axis to 10k
+                    axis.set_ylim([0.0, 10000])
+                    file_name = variant_name + '--' + metric + postfix + '--small.png'
+                    path = os.path.join(directory, file_name)
+                    pyplot.savefig(path, dpi=500, format='png')
+
+                    pyplot.clf() # Reset canvas between loops
+        print("Wrote scatter graphs to {}{}.".format(directory, os.sep))
+
+    def line_graphs(self):
+        """Write some pyplot graphs into sub-directory"""
+        #pylint: disable=too-many-locals,too-many-nested-blocks,too-many-statements
+        #pylint: disable=too-many-branches
+        directory = os.path.expanduser(self.config['graph_dir'])
+        if not os.path.isdir(directory):
+            os.makedirs(directory)
+
+        pyplot.style.use("ggplot")
+
+        # Each variant is a separate graph
+        # Second value is whether to use logarithmic y-axis
+        metrics = [('ops_per_sec_values', False)]
+
+        # Strings used in filenames for output files
+        dataset_names = ["", "--fio"]
+
+        for metric, log in metrics:
+            dataset_index = -1
+            for dataset in self.separate_fio_tests():
+                dataset_index += 1
+                # Separate set of graphs for each variant
+                for variant_name, variant_obj in dataset.iteritems():
+                    # test_results[test_index] = [123.456, 123.111, ...]
+                    # Is a flat per-test array, containing all test_iterations over all builds
+                    test_results = {}
+                    test_names = []
+                    for path, ops_per_sec_values in deep_dict.iterate(variant_obj):
+                        if path[-1] == metric:
+                            test_name = path[1] + "." + str(path[2]) # test_name.thread_level
+                            test_names.append(test_name)
+                            for build_index, build_values in enumerate(ops_per_sec_values):
+                                for iteration_index, iteration_values in enumerate(build_values):
+                                    if test_name not in test_results:
+                                        test_results[test_name] = []
+                                    # This is what we're really here for
+                                    test_results[test_name].append(
+                                        ops_per_sec_values[build_index][iteration_index])
+
+                    axis = pyplot.subplot(111)
+                    pyplot.subplots_adjust(bottom=0.4)
+                    if log:
+                        axis.set_yscale('log')
+                    for test_name, test_result_array in test_results.iteritems():
+                        axis.plot(test_result_array, label=test_name)
+                    axis.legend(test_names, loc='upper left', bbox_to_anchor=(-0.15, -0.07), ncol=4,
+                                fontsize='xx-small')
+
+                    #axis.set_xticks(numpy.arange(len(test_names)) + 0.5)
+                    #axis.set_xticklabels(test_names, rotation=90)
+                    #axis.tick_params(axis='both', which='major', labelsize=5)
+                    #axis.tick_params(axis='both', which='minor', labelsize=5)
+                    pyplot.title(variant_name + ' : ' + metric)
+
+                    # Save to file
+                    postfix = ""
+                    if log:
+                        postfix += '--log'
+                    postfix += dataset_names[dataset_index]
+                    postfix += '--line'
+
+                    file_name = variant_name + '--' + metric + postfix + '.png'
+                    path = os.path.join(directory, file_name)
+                    pyplot.savefig(path, dpi=500, format='png')
+
+                    # Save another version of the same graph, zooming y-axis to 200k
+                    axis.set_ylim([0.0, 200000])
+                    file_name = variant_name + '--' + metric + postfix + '--medium.png'
+                    path = os.path.join(directory, file_name)
+                    pyplot.savefig(path, dpi=500, format='png')
+
+                    # Save another version of the same graph, zooming y-axis to 50k
+                    axis.set_ylim([0.0, 50000])
+                    file_name = variant_name + '--' + metric + postfix + '--small.png'
+                    path = os.path.join(directory, file_name)
+                    pyplot.savefig(path, dpi=500, format='png')
+
+                    # Save another version of the same graph, zooming y-axis to 10k
+                    axis.set_ylim([0.0, 10000])
+                    file_name = variant_name + '--' + metric + postfix + '--xsmall.png'
+                    path = os.path.join(directory, file_name)
+                    pyplot.savefig(path, dpi=500, format='png')
+
+                    # Save another version of the same graph, zooming y-axis to 250
+                    axis.set_ylim([0.0, 250])
+                    file_name = variant_name + '--' + metric + postfix + '--xxsmall.png'
+                    path = os.path.join(directory, file_name)
+                    pyplot.savefig(path, dpi=500, format='png')
+
                     pyplot.clf() # Reset canvas between loops
         print("Wrote scatter graphs to {}{}.".format(directory, os.sep))
 
@@ -336,6 +447,7 @@ def main(cli_args=None):
     multi_graphs.read_agg_results()
     multi_graphs.bar_graphs()
     multi_graphs.scatter_graphs()
+    multi_graphs.line_graphs()
 
 if __name__ == '__main__':
     main()
