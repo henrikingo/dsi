@@ -136,18 +136,21 @@ Create pyplot graphs from data that was output from multi_analysis.py.
 
     def separate_fio_tests(self):
         """Separate fio tests to separate graphs for readability"""
-        fio_tests = {}
+        fio_mc = {}
+        fio_primary = {}
         mongodb_tests = {}
         for variant_name, variant_obj in self.agg_results.iteritems():
             for task_name, task_obj in variant_obj.iteritems():
                 for test_name, test_obj in task_obj.iteritems():
                     key = [variant_name, task_name, test_name]
                     if test_name[0:3] == 'mc_':
-                        deep_dict.set_value(fio_tests, key, test_obj)
+                        deep_dict.set_value(fio_mc, key, test_obj)
+                    elif test_name[0:8] == 'primary_':
+                        deep_dict.set_value(fio_primary, key, test_obj)
                     else:
                         deep_dict.set_value(mongodb_tests, key, test_obj)
 
-        return mongodb_tests, fio_tests
+        return mongodb_tests, fio_mc, fio_primary
 
     def bar_graphs(self):
         """Write some pyplot graphs into sub-directory"""
@@ -170,7 +173,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                    ('all_max', False)]
 
         # Strings used in filenames for output files
-        dataset_names = ["", "--fio"]
+        dataset_names = ["", "--mc", "--pri"]
 
         for metric, log in metrics:
             dataset_index = -1
@@ -259,7 +262,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
         metrics = [('ops_per_sec_values', False)]
 
         # Strings used in filenames for output files
-        dataset_names = ["", "--fio"]
+        dataset_names = ["", "--mc", "--pri"]
 
         for metric, log in metrics:
             dataset_index = -1
@@ -352,7 +355,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
         metrics = [('ops_per_sec_values', False)]
 
         # Strings used in filenames for output files
-        dataset_names = ["", "--fio"]
+        dataset_names = ["", "--mc", "--pri"]
 
         for metric, log in metrics:
             dataset_index = -1
