@@ -230,7 +230,7 @@ class MultiEvergreenAnalysis(object):
                 parent_obj = deep_dict.get_value(self.agg_results, path[0:-1])
                 parent_obj['average'] = float(numpy.average(val))
                 parent_obj['median'] = float(numpy.median(val))
-                parent_obj['variance'] = float(numpy.var(val))
+                parent_obj['variance'] = float(numpy.var(val, ddof=1))
                 parent_obj['variance_to_mean'] = (float(parent_obj['variance']) /
                                                   float(parent_obj['average']))
                 parent_obj['min'] = min(val)
@@ -253,9 +253,9 @@ class MultiEvergreenAnalysis(object):
                 for per_build_iterations in val:
                     parent_obj['it_average'].append(float(numpy.average(per_build_iterations)))
                     parent_obj['it_median'].append(float(numpy.median(per_build_iterations)))
-                    parent_obj['it_variance'].append(float(numpy.var(per_build_iterations)))
+                    parent_obj['it_variance'].append(float(numpy.var(per_build_iterations, ddof=1)))
                     parent_obj['it_variance_to_mean'].append(
-                        float(numpy.var(per_build_iterations)) /
+                        float(numpy.var(per_build_iterations, ddof=1)) /
                         float(numpy.average(per_build_iterations)))
                     parent_obj['it_min'].append(float(min(per_build_iterations)))
                     parent_obj['it_max'].append(float(max(per_build_iterations)))
@@ -272,8 +272,8 @@ class MultiEvergreenAnalysis(object):
                         flat_array.append(value)
                 parent_obj['all_average'] = float(numpy.average(flat_array))
                 parent_obj['all_median'] = float(numpy.median(flat_array))
-                parent_obj['all_variance'] = float(numpy.var(flat_array))
-                parent_obj['all_variance_to_mean'] = (float(numpy.var(flat_array)) /
+                parent_obj['all_variance'] = float(numpy.var(flat_array, ddof=1))
+                parent_obj['all_variance_to_mean'] = (float(numpy.var(flat_array, ddof=1)) /
                                                       float(numpy.average(flat_array)))
                 parent_obj['all_min'] = float(min(flat_array))
                 parent_obj['all_max'] = float(max(flat_array))
