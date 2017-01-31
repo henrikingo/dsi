@@ -378,19 +378,21 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                                     # This is what we're really here for
                                     test_results[test_name].append(iteration_values)
 
+                    markers = ['+', 'x', '1', '2', '3', '4', '8', 's', 'p', '*', 'h', 'H', 'D',
+                               'd', '|', '_']
+                    marker_index = 0
                     axis = pyplot.subplot(111)
                     pyplot.subplots_adjust(bottom=0.4)
                     if log:
                         axis.set_yscale('log')
                     for test_name, test_result_array in test_results.iteritems():
-                        axis.plot(test_result_array, label=test_name)
+                        axis.plot(test_result_array, label=test_name, marker=markers[marker_index],
+                                  markersize=4)
+                        marker_index += 1
+                        marker_index = marker_index % len(markers)
                     axis.legend(test_names, loc='upper left', bbox_to_anchor=(-0.15, -0.07), ncol=4,
                                 fontsize='xx-small')
 
-                    #axis.set_xticks(numpy.arange(len(test_names)) + 0.5)
-                    #axis.set_xticklabels(test_names, rotation=90)
-                    #axis.tick_params(axis='both', which='major', labelsize=5)
-                    #axis.tick_params(axis='both', which='minor', labelsize=5)
                     pyplot.title(variant_name + ' : ' + metric)
 
                     # Save to file
