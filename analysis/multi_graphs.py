@@ -371,13 +371,12 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                         if path[-1] == metric:
                             test_name = path[1] + "." + str(path[2]) # test_name.thread_level
                             test_names.append(test_name)
-                            for build_index, build_values in enumerate(ops_per_sec_values):
-                                for iteration_index, iteration_values in enumerate(build_values):
+                            for build_values in ops_per_sec_values:
+                                for iteration_values in build_values:
                                     if test_name not in test_results:
                                         test_results[test_name] = []
                                     # This is what we're really here for
-                                    test_results[test_name].append(
-                                        ops_per_sec_values[build_index][iteration_index])
+                                    test_results[test_name].append(iteration_values)
 
                     axis = pyplot.subplot(111)
                     pyplot.subplots_adjust(bottom=0.4)
