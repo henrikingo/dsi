@@ -97,7 +97,7 @@ if [[ $rc != 0 ]]
 then
     >&2 echo "Error: Prequalify failed for setup-cluster.sh. Exiting and not running tests"
 else
-    $TERRAFORM refresh
+    $TERRAFORM refresh  $VAR $VAR_FILE
     # Use terraform detailed exit code to catch terraform errors
     $TERRAFORM plan -detailed-exitcode $VAR $VAR_FILE
     if [[ $? == 1 ]]
