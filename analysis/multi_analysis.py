@@ -9,6 +9,7 @@ write back to that file. This script only prints out a csv file (or optionally w
 from __future__ import print_function
 
 import argparse
+import copy
 import json
 import os
 import sys
@@ -19,12 +20,14 @@ import yaml
 import deep_dict
 from evergreen import evergreen_client
 
+
 class OptionError(Exception):
     """Exception raised for erroneous command line options."""
     pass
 
+
 class MultiEvergreenAnalysis(object):
-    #pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-instance-attributes
     """
     Fetch, analyze and visualize results from builds created with MultiEvergreen.
     """
@@ -39,6 +42,7 @@ class MultiEvergreenAnalysis(object):
             'evergreen_config': '~/.evergreen.yml',
             'csv': True,
             'json': False,
+            'json_array': False,
             'yml': False
         }
         # A list of builds, populated with --continue
@@ -57,6 +61,7 @@ class MultiEvergreenAnalysis(object):
         self.evergreen_client = None
 
     def parse_options(self):
+        # pylint: disable=too-many-branches
         """Parse options in self.cli_args with argparse and put them in self.config."""
         self.parser = argparse.ArgumentParser(description="Analyze results from evergreen builds "
                                                           "created with multi_patch_builds.py",
@@ -85,6 +90,9 @@ class MultiEvergreenAnalysis(object):
         self.parser.add_argument('--json',
                                  action='store_true',
                                  help="Output in json format")
+        self.parser.add_argument('--json-array',
+                                 action='store_true',
+                                 help="Output in json format as array of documents")
         self.parser.add_argument('--yml',
                                  action='store_true',
                                  help="Ouput in yml format")
@@ -109,17 +117,24 @@ class MultiEvergreenAnalysis(object):
             # issue: If you'd set a boolean option in config file, then argparse will provide
             # the value False and overwrite it.
             # This is still not general purpose, but sufficient for this script.
-            if val is not None and val != False:
+            if val is not None and val is not False:
                 self.config[key] = val
 
         if len(args.id) > 0 and 'continue' in self.config:
             raise OptionError('--continue and id on the command line are mutually exclusive.')
 
-        if self.config['json'] or self.config['yml']:
+        if self.config['json'] or self.config['json_array'] or self.config['yml']:
             # Disable the default
             self.config['csv'] = False
-        if self.config['json'] and self.config['yml']:
-            raise OptionError('--csv, --json and --yml are mutually exclusive.')
+            count = 0
+            if self.config['json']:
+                count += 1
+            if self.config['json_array']:
+                count += 1
+            if self.config['yml']:
+                count += 1
+            if count > 1:
+                raise OptionError('--csv, --json, --json-array, and --yml are mutually exclusive.')
 
         # If ids were given on the command line, build a "fake" list of builds out of them
         if 'id' in self.config and 'continue' not in self.config:
@@ -200,21 +215,21 @@ class MultiEvergreenAnalysis(object):
         self.agg_results = {}
         for result in self.results:
             for variant_name, variant_result in result.iteritems():
-                if not variant_name in self.agg_results:
+                if variant_name not in self.agg_results:
                     self.agg_results[variant_name] = {}
 
                 for task_name, task_result in variant_result.iteritems():
-                    if not task_name in self.agg_results[variant_name]:
+                    if task_name not in self.agg_results[variant_name]:
                         self.agg_results[variant_name][task_name] = {}
 
                     for test_result in task_result['data']['results']:
                         test_name = str(test_result['name'])
-                        if not test_name in self.agg_results[variant_name][task_name]:
+                        if test_name not in self.agg_results[variant_name][task_name]:
                             self.agg_results[variant_name][task_name][test_name] = {}
 
                         for thread_level, thread_result in test_result['results'].iteritems():
                             thread_level = int(thread_level)
-                            if not thread_level in self.agg_results[variant_name][task_name][test_name]:
+                            if thread_level not in self.agg_results[variant_name][task_name][test_name]:
                                 self.agg_results[variant_name][task_name][test_name][thread_level] = {'ops_per_sec': [], 'ops_per_sec_values': []}
 
                             agg_thread_level = self.agg_results[variant_name][task_name][test_name][thread_level]
@@ -242,7 +257,7 @@ class MultiEvergreenAnalysis(object):
                 # Compute aggregates over the iterations inside each build, and pack result back
                 # into an array that contains the result for each build
                 parent_obj = deep_dict.get_value(self.agg_results, path[0:-1])
-                parent_obj['it_average'] = [] # Equal to ops_per_sec
+                parent_obj['it_average'] = []  # Equal to ops_per_sec
                 parent_obj['it_median'] = []
                 parent_obj['it_variance'] = []
                 parent_obj['it_variance_to_mean'] = []
@@ -264,6 +279,13 @@ class MultiEvergreenAnalysis(object):
                     parent_obj['it_range_to_median'].append(
                         (float(max(per_build_iterations)) - float(min(per_build_iterations))) /
                         float(numpy.median(per_build_iterations)))
+
+                # Compute aggregate iteration stats
+                parent_obj['it_range_to_median_avg'] = numpy.average(
+                    parent_obj['it_range_to_median'])
+                parent_obj['it_range_to_median_max'] = max(parent_obj['it_range_to_median'])
+                parent_obj['it_range_to_median_min'] = min(parent_obj['it_range_to_median'])
+
                 # Flatten the ops_per_sec_values array and compute aggregates over all values, that
                 # is, over all iterations in all builds
                 flat_array = []
@@ -293,6 +315,8 @@ class MultiEvergreenAnalysis(object):
             file_handle.write(self.csv_str())
         if self.config['json']:
             file_handle.write(self.json_str())
+        if self.config['json_array']:
+            file_handle.write(self.json_array_str())
         if self.config['yml']:
             file_handle.write(self.yml_str())
 
@@ -325,9 +349,37 @@ class MultiEvergreenAnalysis(object):
         """Return self.agg_results as JSON"""
         return json.dumps(self.agg_results, indent=4, sort_keys=True)
 
+    def flat_results(self, labels=None):
+        '''Flatten the results into a list of documents. Assumes the results
+        have keys going variant, task, test, thread level.
+
+        :param: dict labels: Extra entries to include in each document
+
+        '''
+        if not labels:
+            labels = {}
+        flat_results = []
+        for variant_name, variant in self.agg_results.iteritems():
+            for task_name, task in variant.iteritems():
+                for test_name, test in task.iteritems():
+                    for thread_level, thread_results in test.iteritems():
+                        new_doc = copy.deepcopy(thread_results)
+                        new_doc['thread_level'] = thread_level
+                        new_doc['test_name'] = test_name
+                        new_doc['task_name'] = task_name
+                        new_doc['variant_name'] = variant_name
+                        new_doc.update(labels)
+                        flat_results.append(new_doc)
+        return flat_results
+
+    def json_array_str(self):
+        """Return self.agg_results as a flat array of JSON documents"""
+        return json.dumps(self.flat_results(), indent=4, sort_keys=True)
+
     def yml_str(self):
         """Return self.agg_results as JSON"""
         return yaml.dump(self.agg_results, default_flow_style=False)
+
 
 def main(cli_args=None):
     """Main function"""
