@@ -76,7 +76,7 @@ class ConfigDict(dict):
 
         # defaults.yml
         file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                 '..', '..', 'docs', 'config-specs', 'defaults.yml')
+                                 '..', '..', 'configurations', 'defaults.yml')
         with open(file_name) as file_handle:
             self.defaults = yaml.safe_load(file_handle)
             LOG.info('ConfigDict: Loaded: %s', file_name)

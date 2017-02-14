@@ -246,23 +246,45 @@ def copy_config_files(dsipath, config, directory):
     Following files are copied:
         - infrastructure_provision.yml
     '''
+    # Multi-node clusters need a slightly different list of tests for ycsb
+    # Hopefully this can be removed once mission-control is replaced with new test_control
+    ycsb_multinode = ""
+    if config.get("test") == "ycsb" and config.get("cluster") in ["shard", "replica"]:
+        ycsb_multinode = ".multi_node"
 
-    # Move the proper infrastructure_provisioning file to the target directory
-    provisioning_file = os.path.join(dsipath,
-                                     "configurations/infrastructure_provisioning",
-                                     "infrastructure_provisioning." +
-                                     config["cluster_type"] + ".yml")
-    try:
-        target = os.path.join(directory, "infrastructure_provisioning.yml")
-        shutil.copyfile(provisioning_file, target)
-        LOGGER.info("Copied " + provisioning_file + " to work directory %s.", target)
-    except Exception as error:
-        # We must have infrastructure provisioning file
-        LOGGER.critical("Failed to copy infrastructure_provisioning.yml from %s.\nError: %s",
-                        provisioning_file, str(error))
-        raise
+    # Pairs of ConfigDict module, and bootstrap.yml input.
+    # This is all the variable info needed to build the from and to file paths down below.
+    configs_to_copy = {"infrastructure_provisioning": config.get("cluster_type", ""),
+                       "mongodb_setup":
+                           config.get("setup", "") + "." + config.get("storageEngine", ""),
+                       "test_control": config.get("test", "") + ycsb_multinode}
 
-    # Copy other config files here
+    for config_module, bootstrap_variable in configs_to_copy.iteritems():
+        # Example: ./mongodb_setup.yml
+        target_file = os.path.join(directory, config_module + ".yml")
+        # Example: ../dsi/configurations/mongodb_setup/mongodb_setup.standalone.wiredTiger.yml
+        source_file = os.path.join(dsipath,
+                                   "configurations",
+                                   config_module,
+                                   config_module + "." + bootstrap_variable + ".yml")
+
+        #pylint: disable=broad-except
+        try:
+            shutil.copyfile(source_file, target_file)
+            LOGGER.info("Copied " + source_file + " to work directory %s.", target_file)
+        except Exception as error:
+            # If a source file doesn't exist, it's probably because a wrong or no option was
+            # provided in bootstrap.yml. When running manually, this is not fatal. For example,
+            # user may want to manually copy some files from somewhere else
+            error_str = "Failed to copy {} from {}.\nError: {}".format(target_file,
+                                                                       source_file,
+                                                                       str(error))
+            if config["production"]:
+                LOGGER.critical(error_str)
+                raise
+            else:
+                LOGGER.warn(error_str)
+
     return
 
 def setup_overrides(config, directory):
