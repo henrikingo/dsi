@@ -382,7 +382,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                                'd', '|', '_']
                     marker_index = 0
                     axis = pyplot.subplot(111)
-                    pyplot.subplots_adjust(bottom=0.4)
+                    pyplot.subplots_adjust(bottom=0.0)
                     if log:
                         axis.set_yscale('log')
                     for test_name, test_result_array in test_results.iteritems():
@@ -390,8 +390,10 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                                   markersize=4)
                         marker_index += 1
                         marker_index = marker_index % len(markers)
-                    axis.legend(test_names, loc='upper left', bbox_to_anchor=(-0.15, -0.07), ncol=4,
-                                fontsize='xx-small')
+                    # WARNING! The legend() function seems broken. The colors and markers
+                    # in the legend don't actually map to the right test names.
+                    #axis.legend(test_names, loc='upper left', bbox_to_anchor=(-0.15, -0.07),
+                    #ncol=4, fontsize='xx-small')
 
                     pyplot.title(variant_name + ' : ' + metric)
 
