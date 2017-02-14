@@ -29,6 +29,7 @@ run:
               - mongos_50read_50write.js
               - move_chunk_with_load.js
               - index_build.js
+              - mix.js
             secondary_performance:
               - secondary_performance.js:
                   size: 1
