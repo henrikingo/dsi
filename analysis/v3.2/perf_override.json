@@ -9777,7 +9777,7 @@
                     ]
                 },
                 "Insert.IntVector":{
-                    "thread_threshold":0.2,
+                    "thread_threshold":0.5,
                     "threshold":0.15,
                     "ticket":[
                         "PERF-444"
@@ -9798,8 +9798,8 @@
                     ]
                 },
                 "Insert.LargeDocVector":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.55,
+                    "threshold":0.5,
                     "ticket":[
                         "BF-3461"
                     ]
@@ -10135,6 +10135,37 @@
                     "ticket":[
                         "PERF-424",
                         "BF-4532"
+                    ]
+                },
+                "Update.FieldAtOffset":{
+                    "create_time":"2017-02-14T12:43:42.335Z",
+                    "max":86.6638147849192,
+                    "name":"Update.FieldAtOffset",
+                    "order":906,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":76.30323902188984
+                        },
+                        "2":{
+                            "ops_per_sec":76.2051570355722
+                        },
+                        "4":{
+                            "ops_per_sec":76.48022718905594
+                        },
+                        "8":{
+                            "ops_per_sec":86.6638147849192
+                        }
+                    },
+                    "revision":"006e6f8ed1a402f9e6d5f8fe1622a7b0a93766a2",
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "8",
+                        "2",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-2785"
                     ]
                 },
                 "Update.IncNoIndex":{
