@@ -271,7 +271,7 @@ def copy_config_files(dsipath, config, directory):
         #pylint: disable=broad-except
         try:
             shutil.copyfile(source_file, target_file)
-            LOGGER.info("Copied " + source_file + " to work directory %s.", target_file)
+            LOGGER.debug("Copied " + source_file + " to work directory %s.", target_file)
         except Exception as error:
             # If a source file doesn't exist, it's probably because a wrong or no option was
             # provided in bootstrap.yml. When running manually, this is not fatal. For example,
@@ -426,8 +426,10 @@ def main():
     # Copy over all files from cluster directory
     if not os.path.isdir(cluster_path):
         cluster_path = os.path.join(dsipath, 'clusters', 'default')
+    LOGGER.debug('Cluster path is %s', cluster_path)
     for filename in glob.glob(os.path.join(cluster_path, '*')):
         shutil.copy(filename, directory)
+        LOGGER.debug("Copied %s to work directory %s.", filename, directory)
 
     # Copy over all files from the remote scripts directory Note that
     # this is copying above the workload directory for now. This is
@@ -435,8 +437,8 @@ def main():
 
     # This should ideally go away when we go to infrastructure.yml
     remote_scripts_target = os.path.join(os.path.dirname(directory), 'remote-scripts')
-    print ("remote_scripts_target is {}".format(remote_scripts_target))
-    print ("remote_scripts_path is {}".format(remote_scripts_path))
+    LOGGER.debug("remote_scripts_target is %s", remote_scripts_target)
+    LOGGER.debug("remote_scripts_path is %s", remote_scripts_path)
     os.mkdir(remote_scripts_target)
     for filename in glob.glob(os.path.join(remote_scripts_path, '*')):
         shutil.copy(filename, remote_scripts_target)
@@ -459,7 +461,7 @@ def main():
 
     setup_security_tf(config, directory)
 
-    print("Local environment setup in {0}".format(directory))
+    LOGGER.info("Local environment setup in %s", directory)
 
 if __name__ == '__main__':
     main()

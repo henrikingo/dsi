@@ -1,4 +1,56 @@
 run:
+  - id: fio-${mongodb_setup.mongod_config_file.storage.engine}
+    type: shell
+    cmd: './fio-test.sh ${mongodb_setup.meta.hostname}'
+    config_filename: fio.ini
+    workload_config: |
+      [global]
+      directory=./data/fio
+      filename_format=fiofile.$jobnum.$filenum
+      size=1G
+      runtime=120
+      time_based
+      group_reporting
+      ioengine=libaio
+      direct=1
+
+      [setupfiles]
+      stonewall
+      filesize=1G
+      nrfiles=16
+      filename_format=fiofile.$filenum.0
+      rw=randrw
+      numjobs=1
+      runtime=1
+
+      [latency_test]
+      stonewall
+      description=This is for random read and write latency. 1 at a time
+      rw=randrw
+      numjobs=1
+      bs=1
+      ioengine=sync
+      direct=0
+      filesize=1G
+      nrfiles=16
+      filename_format=fiofile.$filenum.0
+
+      [iops_test]
+      stonewall
+      description=How many iops can I sustain in parallel
+      rw=randrw
+      numjobs=32
+      bs=4k
+      iodepth=32
+
+      [streaming_bandwidth_test]
+      stonewall
+      description=Measure streaming bandwidth
+      rw=rw
+      numjobs=16
+      bs=16k
+      iodepth=32
+
   - id: ycsb_load-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
     "cmd": "cd YCSB/ycsb-mongodb; ./bin/ycsb load mongodb -s -P workloads/workloadEvergreen -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32; sleep 1"

@@ -8,6 +8,9 @@ CLUSTER=$3
 BINDIR=$(dirname $0)
 source $BINDIR/setting.sh
 
+eval `ssh-agent -s`
+ssh-add $PEMFILE
+
 # Bridging a historical inconsistency: prior to refactoring, the test name for
 # MMAPv1 engine was "benchRun-mmap". However, the parameter ${storageEngine}
 # has the value "mmapv1" (which is the name of the engine in mongod config).
@@ -28,9 +31,6 @@ rm -rf ./reports
 rm -f ../../reports.tgz
 
 source ${BINDIR}/setup-workloads.sh
-
-# Copy up helper script
-scp -oStrictHostKeyChecking=no -i $PEMFILE $BINDIR/process_fio_results.py $SSHUSER@$mc:./
 
 # PERF-531. Generating config file for mission control.
 python $BINDIR/config_test_control.py
@@ -56,8 +56,9 @@ chmod 777 perf.json
 scp -oStrictHostKeyChecking=no -i $PEMFILE  $SSHUSER@$mc:./workloads/workload_timestamps.csv reports || true
 
 # Copy back over fio output file if it exists
-scp -oStrictHostKeyChecking=no -i $PEMFILE  '$SSHUSER@$mc:./fio.json.[0-9]' reports || true
-scp -oStrictHostKeyChecking=no -i $PEMFILE  '$SSHUSER@$mc:./fio.json.p.[0-9]' reports || true
+scp -oStrictHostKeyChecking=no -i $PEMFILE  $SSHUSER@$mc:./fio.json reports || true
+scp -oStrictHostKeyChecking=no -i $PEMFILE  $SSHUSER@$mc:./fio.json.[0-9] reports || true
+scp -oStrictHostKeyChecking=no -i $PEMFILE  $SSHUSER@$mc:./fio.json.p.[0-9] reports || true
 
 rm -f ../perf.json
 chmod 766 perf.json

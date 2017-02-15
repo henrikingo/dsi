@@ -8,6 +8,9 @@ CLUSTER=$3
 BINDIR=$(dirname $0)
 source $BINDIR/setting.sh
 
+eval `ssh-agent -s`
+ssh-add $PEMFILE
+
 # Bridging a historical inconsistency: prior to refactoring, the test name for
 # MMAPv1 engine was "ycsb-mmap". However, the parameter ${storageEngine}
 # has the value "mmapv1" (which is the name of the engine in mongod config).
@@ -57,6 +60,10 @@ scp -oStrictHostKeyChecking=no -i $PEMFILE  ./ycsb.tar.gz $SSHUSER@$mc:.
 
 ssh -oStrictHostKeyChecking=no -T -i $PEMFILE $SSHUSER@$mc "tar zxvf ycsb.tar.gz; pwd; ls YCSB/*; source /etc/profile.d/maven.sh; cd /home/ec2-user/YCSB/ycsb-mongodb || exit 1; ./setup.sh"
 
+# Copy up helper script
+scp -oStrictHostKeyChecking=no -i $PEMFILE $BINDIR/process_fio_results.py $SSHUSER@$mc:./
+scp -oStrictHostKeyChecking=no -i $PEMFILE $BINDIR/fio-test.sh $SSHUSER@$mc:./
+ssh -oStrictHostKeyChecking=no -T -A -i $PEMFILE $SSHUSER@$mc chmod 755 fio-test.sh
 
 cat ips.sh
 rm -rf ./reports
@@ -65,6 +72,10 @@ rm -f ../../reports.tgz
 # PERF-531. Generating config file for mission control.
 python $BINDIR/config_test_control.py
 echo "Generated mc.json"
+
+if [ -e fio.ini ]; then
+   scp -oStrictHostKeyChecking=no -i $PEMFILE  fio.ini $SSHUSER@$mc:./
+fi
 
 cat mc.json
 
@@ -75,6 +86,12 @@ then
 else
     MC_MONITOR_INTERVAL=1 $MC -config mc.json -run $TEST-run -o perf.json
 fi
+
+# Copy back over fio output file if it exists
+scp -oStrictHostKeyChecking=no -i $PEMFILE  $SSHUSER@$mc:./fio.json reports || true
+scp -oStrictHostKeyChecking=no -i $PEMFILE  $SSHUSER@$mc:./fio.json.[0-9] reports || true
+scp -oStrictHostKeyChecking=no -i $PEMFILE  $SSHUSER@$mc:./fio.json.p.[0-9] reports || true
+
 
 rm -f ../perf.json
 chmod 766 perf.json

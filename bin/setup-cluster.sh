@@ -50,7 +50,7 @@ fi
 if [[ $EXISTING != "true"  && $CLUSTER == "shard"  ]]
 then
     # Shard cluster
-    # Note: mongod and mongod_ebs are treated differently, so we need to special case here. 
+    # Note: mongod and mongod_ebs are treated differently, so we need to special case here.
     $TERRAFORM apply $VAR $VAR_FILE -var="mongod_ebs_instance_count=3"  | tee terraform.log
 
     # workaround for failure to bring up all at the same time

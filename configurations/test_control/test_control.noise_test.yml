@@ -1,11 +1,10 @@
 run:
-  - id: fio-${mongodb_setup.mongod_config_file.storage.engine}
+  - id: fio-${mongodb_setup.mongod_config_file.storage.engine}.primary_data
     type: shell
-
-    # The output-format and output options apparently cannot be moved into the configuration file
-    cmd: mkdir -p ./data/fio; for i in `seq 1 5`; do fio --output-format=json --output=fio.json fio.ini && python process_fio_results.py mc && mv fio.json fio.json.$i; done; rm -r data/fio
+    cmd: 'scp -o StrictHostKeyChecking=no fio.ini ${mongodb_setup.meta.hostname}:./; for i in `seq 1 5`; do ssh -A  ${mongodb_setup.meta.hostname} "mkdir -p ./data/fio && fio  --directory=$(readlink -f ./data) --output-format=json --output=fio.json fio.ini" && scp ${mongodb_setup.meta.hostname}:./fio.json . && python process_fio_results.py -l primary && mv fio.json fio.json.p1.$i; done;  ssh -A  ${mongodb_setup.meta.hostname} "rm -r data/fio"'
+    # Note we don't copy fio2.ini up. This script uses thefio.ini used in the previous step
     config_filename: fio.ini
-    workload_config: &config |
+    workload_config: |
       [global]
       directory=./data/fio
       filename_format=fiofile.$jobnum.$filenum
@@ -45,7 +44,7 @@ run:
       nrfiles=16
       filename_format=fiofile.$filenum.0
 
-      [iops__test]
+      [iops_test]
       stonewall
       description=How many iops can I sustain in parallel
       rw=randrw
@@ -61,12 +60,6 @@ run:
       bs=16k
       iodepth=32
 
-  - id: fio-${mongodb_setup.mongod_config_file.storage.engine}.primary
-    type: shell
-    cmd: 'scp -o StrictHostKeyChecking=no fio.ini ${mongodb_setup.meta.hostname}:./; for i in `seq 1 5`; do ssh -A  ${mongodb_setup.meta.hostname} "mkdir -p ./data/fio && fio  --directory=$(readlink -f ./data) --output-format=json --output=fio.json fio.ini" && scp ${mongodb_setup.meta.hostname}:./fio.json . && python process_fio_results.py primary && mv fio.json fio.json.p.$i; done;  ssh -A  ${mongodb_setup.meta.hostname} "rm -r data/fio"'
-    # Note we don't copy fio2.ini up. This script uses thefio.ini used in the previous step
-    config_filename: fio.ini
-    workload_config: *config
   - id: benchRun-${mongodb_setup.mongod_config_file.storage.engine}
     type: shell
 
