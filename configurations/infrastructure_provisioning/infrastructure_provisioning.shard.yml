@@ -1,5 +1,7 @@
 tfvars:      # Contents of this is transformed into input JSON to override terraform default values
              # Note that all tfvars values have defaults, and are therefore optional
+    cluster_name: shard
+
     mongod_instance_count: 9
     mongod_instance_type: c3.8xlarge
 

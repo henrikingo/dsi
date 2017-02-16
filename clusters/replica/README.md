@@ -1,3 +1,0 @@
-replica set cluster
-==========
-

@@ -7,8 +7,8 @@ set -e
 BINDIR=$(dirname $0)
 TERRAFORM="${TERRAFORM:-./terraform}"
 
-$TERRAFORM output public_member_ip  | awk '{for (i=1;i<=NF;i++) print("export+p",i,"=",$i)} {printf("export+ALL_HOST=(")}  {for (i=1;i<=NF;i++) printf("\"p%d\"+", i)} {print(")")}' | sed "s/ //g" | sed "s/+/ /g" | tee ips.sh
-$TERRAFORM output private_member_ip  | awk '{for (i=1;i<=NF;i++) print("export+i",i,"=",$i)} {printf("export+ALL_HOST_PRIVATE=(")}  {for (i=1;i<=NF;i++) printf("i%d+", i)} {print(")")}' | sed "s/ //g" | sed "s/+/ /g" | tee -a ips.sh
+$TERRAFORM output public_all_host_ip  | awk '{for (i=1;i<=NF;i++) print("export+p",i,"=",$i)} {printf("export+ALL_HOST=(")}  {for (i=1;i<=NF;i++) printf("\"p%d\"+", i)} {print(")")}' | sed "s/ //g" | sed "s/+/ /g" | tee ips.sh
+$TERRAFORM output private_all_host_ip  | awk '{for (i=1;i<=NF;i++) print("export+i",i,"=",$i)} {printf("export+ALL_HOST_PRIVATE=(")}  {for (i=1;i<=NF;i++) printf("i%d+", i)} {print(")")}' | sed "s/ //g" | sed "s/+/ /g" | tee -a ips.sh
 $TERRAFORM output public_ip_mc  | awk '{for (i=1;i<=NF;i++) print("export+mc","=",$i)}' | sed "s/ //g" | sed "s/+/ /g" | tee -a ips.sh
 
 if [[ $CLUSTER == "shard" || $CLUSTER == "longevity" ]]
@@ -24,13 +24,6 @@ then
     # config server
     $TERRAFORM output public_config_ip  | awk '{for (i=1;i<=NF;i++) print("export+config",i,"=",$i)}' | sed "s/ //g" | sed "s/+/ /g" | tee  -a ips.sh
     $TERRAFORM output private_config_ip  | awk '{for (i=1;i<=NF;i++) print("export+IPconfig",i,"=",$i)}' | sed "s/ //g" | sed "s/+/ /g" | tee -a ips.sh
-elif [[ $CLUSTER == "initialsync-logkeeper" ]]
-then
-    # For initialsync-logkeeper, we should overwrite ALL_HOST & ALL_HOST_PRIVATE
-    # Eventually, all clusters should migrate to this after they moved to the same default cluster.
-    $TERRAFORM output public_all_host_ip  | awk '{for (i=1;i<=NF;i++) print("export+p",i,"=",$i)} {printf("export+ALL_HOST=(")}  {for (i=1;i<=NF;i++) printf("\"p%d\"+", i)} {print(")")}' | sed "s/ //g" | sed "s/+/ /g" | tee ips.sh
-    $TERRAFORM output private_all_host_ip  | awk '{for (i=1;i<=NF;i++) print("export+i",i,"=",$i)} {printf("export+ALL_HOST_PRIVATE=(")}  {for (i=1;i<=NF;i++) printf("i%d+", i)} {print(")")}' | sed "s/ //g" | sed "s/+/ /g" | tee -a ips.sh
-    $TERRAFORM output public_ip_mc  | awk '{for (i=1;i<=NF;i++) print("export+mc","=",$i)}' | sed "s/ //g" | sed "s/+/ /g" | tee -a ips.sh
 fi
 
 # yaml file copies over ips.py. Touch it so the copy doesn't fail

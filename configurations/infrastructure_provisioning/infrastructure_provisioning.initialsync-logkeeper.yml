@@ -1,5 +1,8 @@
 tfvars:      # Contents of this is transformed into input JSON to override terraform default values
              # Note that all tfvars values have defaults, and are therefore optional
+
+    cluster_name: initialsync-logkeeper
+
     mongod_instance_count: 0
     mongod_instance_type: c3.8xlarge
 
@@ -18,5 +21,3 @@ tfvars:      # Contents of this is transformed into input JSON to override terra
 
     region: us-east-1
     availability_zone: us-east-1a
-
-    cluster_name: initialsync-logkeeper

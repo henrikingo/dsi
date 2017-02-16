@@ -239,8 +239,8 @@ class TerraformConfiguration(object):
             LOG.info("Couldn't find runtime or task_id in config")
 
         # update cluster_name tag
-        if "cluster_name" in dsi_config["tfvars"]["tags"].keys():
-            self.cluster_name = dsi_config["tfvars"]["tags"]["cluster_name"]
+        if "cluster_name" in dsi_config["tfvars"].keys():
+            self.cluster_name = dsi_config["tfvars"]["cluster_name"]
 
     def to_json(self, compact=False, file_name=None):
         """To create JSON configuration string."""

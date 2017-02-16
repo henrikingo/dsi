@@ -2,18 +2,24 @@ variable mongod_instance_count      { default = 3 }
 variable mongod_ebs_instance_count  { default = 0 }
 variable mongod_seeded_ebs_instance_count  { default = 0 }
 variable workload_instance_count    { default = 1 }
+variable mongos_instance_count          { default = 0 }
+variable configsvr_instance_count       { default = 0 }
 
 variable owner      {}
 
 variable workload_instance_type                 {}
-variable mongod_instance_type                   {}
+variable mongod_instance_type                   { default = "c3.8xlarge" }
 variable mongod_ebs_instance_type               { default = "c3.8xlarge" }
 variable mongod_seeded_ebs_instance_type        { default = "c3.8xlarge" }
+variable mongos_instance_type                   { default = "c3.8xlarge" }
+variable configsvr_instance_type                { default = "m3.xlarge" }
 
 variable workload_instance_placement_group      { default = "yes" }
 variable mongod_instance_placement_group        { default = "yes" }
 variable mongod_ebs_instance_placement_group    { default = "yes" }
 variable mongod_seeded_ebs_instance_placement_group    { default = "yes" }
+variable mongos_instance_placement_group        { default = "yes" }
+variable configsvr_instance_placement_group     { default = "no"}
 
 variable cluster_name               { default="default" }
 variable availability_zone          {}
@@ -42,7 +48,13 @@ module "cluster" {
     workload_instance_count = "${var.workload_instance_count}"
     workload_instance_type  = "${var.workload_instance_type}"
 
-    # Seeded EBS instance support
+    # shard special instances
+    mongos_instance_type        = "${var.mongos_instance_type}"
+    mongos_instance_count       = "${var.mongos_instance_count}"
+    configsvr_instance_type     = "${var.configsvr_instance_type}"
+    configsvr_instance_count    = "${var.configsvr_instance_count}"
+
+# Seeded EBS instance support
     mongod_ebs_instance_type    = "${var.mongod_ebs_instance_type}"
     mongod_ebs_instance_count   = "${var.mongod_ebs_instance_count}"
     mongod_ebs_iops             = "${var.mongod_ebs_iops}"
@@ -59,6 +71,8 @@ module "cluster" {
     workload_instance_placement_group   = "${var.workload_instance_placement_group}"
     mongod_ebs_instance_placement_group = "${var.mongod_ebs_instance_placement_group}"
     mongod_seeded_ebs_instance_placement_group = "${var.mongod_seeded_ebs_instance_placement_group}"
+    mongos_instance_placement_group         = "${var.mongos_instance_placement_group}"
+    configsvr_instance_placement_group      = "${var.configsvr_instance_placement_group}"
 
     topology            = "${var.cluster_name}"
 
