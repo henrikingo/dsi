@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.7
 
-""" Script to stage and run baselines for mongo-perf """
+""" Script to stage and run baselines for mongo-perf and sys-perf"""
 
 import argparse
 import copy
@@ -23,6 +23,41 @@ class UnsupportedBaselineError(Exception):
     '''
     pass
 
+def remove_dependenies(input_yaml):
+    '''Generates a new evergreen yaml file with dependency on the compile
+    task removed.
+
+    :param dict input_yaml: The existing yaml configuration file
+    :rtype dict: The updated configuration file
+
+    '''
+    outyaml = copy.deepcopy(input_yaml)  # Don't change the input dictionary
+    # Remove the depenencies on compile
+    for task in outyaml['tasks']:
+        if 'depends_on' in task:
+            task['depends_on'] = [dependency for dependency in task['depends_on']
+                                  if dependency['name'] != "compile"]
+            if len(task['depends_on']) == 0:  # Nothing left after removing compile dependency
+                task.pop('depends_on')
+    return outyaml
+
+def patch_sysperf_mongod_link(sysperf_yaml, version_link):
+    '''
+    Generates a system_perf.yml file for the baseline run.
+
+    :param dict sysperf_yaml: The current existing syste_perf.yml to update
+    :param str version_link: The URL for the mongod tarball
+    :rtype dict: The updated configuration file
+    '''
+    outyaml = copy.deepcopy(sysperf_yaml)  # Don't change the input dictionary
+    for item in outyaml['functions']["prepare environment"]:
+        if 'params' in item and 'script' in item['params']:
+            script = item["params"]["script"]
+            script = re.sub('mongodb_binary_archive: (.*)',
+                            'mongodb_binary_archive: {}'.format(version_link),
+                            script)
+            item["params"]["script"] = script
+    return remove_dependenies(outyaml)
 
 def patch_perf_yaml_strings(perfyaml, version_link, shell_link):
     '''
@@ -39,16 +74,7 @@ def patch_perf_yaml_strings(perfyaml, version_link, shell_link):
     outyaml['functions']['start server'][1]['params']['remote_file'] = version_link
     outyaml['functions']['start server'][2]['params']['remote_file'] = shell_link
 
-    # Remove the depenencies on compile
-    for task in outyaml['tasks']:
-        if 'depends_on' in task:
-            task['depends_on'] = [dependency for dependency in task['depends_on']
-                                  if dependency['name'] != "compile"]
-            if len(task['depends_on']) == 0:  # Nothing left after removing compile dependency
-                task.pop('depends_on')
-
-    return outyaml
-
+    return remove_dependenies(outyaml)
 
 def get_base_version(version):
     '''
@@ -74,7 +100,7 @@ class BaselineUpdater(object):
             self.config = yaml.load(config_file)
 
     def patch_perf_yaml_mongod_flags(self, perfyaml, version):
-        '''Patch the given yaml file to remove any mognod command line flags
+        '''Patch the given yaml file to remove any mongod command line flags
         that are inappropriate for the given version.
 
         :param dict perfyaml: The current existing perf.yml to update
@@ -118,6 +144,21 @@ class BaselineUpdater(object):
                                                    shell_link)
         return perfyaml_updated
 
+    def patch_sysperf_yaml(self, sysperf_yaml, version):
+        '''
+        Generates a systerm_perf.yml file for the baseline run.
+
+        :param dict sysperf_yaml: The current existing system_perf.yml to update
+        :param str version: The version string of the mongod to use
+        :rtype dict: The updated configuration file
+        '''
+
+        mongod_links = self.config['sysperf_mongod_links']
+        if version not in mongod_links:
+            raise UnsupportedBaselineError(version)
+        yaml_updated = patch_sysperf_mongod_link(sysperf_yaml, mongod_links[version])
+        return yaml_updated
+
     def get_tasks(self, perfyaml, version):
         '''Return a list of strings with the task names for the
         project. Skips tasks explicitly listed in disabled_tasks in
@@ -134,19 +175,19 @@ class BaselineUpdater(object):
         skip_tasks = self.config['disabled_tasks'].get(base_version, dict())
         return [task['name'] for task in perfyaml['tasks'] if task['name'] not in skip_tasks]
 
-    def prepare_patch_cmd(self, perfyaml, version, project):
+    def prepare_patch_cmd(self, input_yaml, version, project):
         '''
         Construct command line call for evergreen to start the patch.
 
-        :param dict perfyaml: The current existing perf.yml to update
+        :param dict input_yaml: The current existing yaml configuration file to update
         :param str version: The version string of the mongod to use
         :param str project: The project to run against (.e.g., performance)
         :rtype list: The arguments to popen for evergreen call
         '''
 
         # Want all variants and all tasks except compile
-        variants = format_repeated_args('-v', get_variants(perfyaml))
-        tasks = self.get_tasks(perfyaml, version)
+        variants = format_repeated_args('-v', get_variants(input_yaml))
+        tasks = self.get_tasks(input_yaml, version)
         # Don't run the compile task
         tasks.remove('compile')
         tasks = format_repeated_args('-t', tasks)
@@ -163,16 +204,21 @@ class BaselineUpdater(object):
         :param str version: The version string of the mongod to use
         :param str project: The project to run against (.e.g., performance)
         '''
-
+        base_project = self.config['base_projects'][project]
+        filename = self.config['project_files'][base_project]
         # Read in the existing YAML file
-        with open('perf.yml') as perf_file:
-            perfyaml = yaml.load(perf_file)
+        with open(filename) as input_file:
+            input_yaml = yaml.load(input_file)
 
         # Update the yaml file for this patch build.
-        with open('perf.yml', 'w') as perf_file:
-            yaml.dump(self.patch_perf_yaml(perfyaml, version, project), perf_file)
-
-        cmdline_args = self.prepare_patch_cmd(perfyaml, version, project)
+        with open(filename, 'w') as output_file:
+            if base_project == 'performance':
+                yaml.dump(self.patch_perf_yaml(input_yaml, version, project), output_file)
+            elif base_project == 'sys-perf':
+                yaml.dump(self.patch_sysperf_yaml(input_yaml, version), output_file)
+            else:
+                raise UnsupportedBaselineError("Unknown project")
+        cmdline_args = self.prepare_patch_cmd(input_yaml, version, project)
         LOGGER.debug("Calling %s", cmdline_args)
         subprocess.Popen(cmdline_args)
 

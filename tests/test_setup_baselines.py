@@ -2,7 +2,9 @@
 Unit tests for `setup_baselines.py`.
 """
 
+from __future__ import print_function
 import unittest
+import textwrap
 
 import setup_baselines
 from tests import test_utils
@@ -16,6 +18,76 @@ class TestSetupBaselines(unittest.TestCase):
         Setup perfyaml for each test
         '''
         self.perfyaml = test_utils.read_fixture_yaml_file('perf.yml')
+        self.sysperfyaml = test_utils.read_fixture_yaml_file('system_perf.yml')
+
+    def test_remove_depenencies(self):
+        ''' Test remove_dependencies with simple input '''
+
+        input_object = {'functions': {'start server':
+                                      [None,
+                                       {'params': {'remote_file': 'original_mongod'}},
+                                       {'params': {'remote_file': 'original_mongo'}}]},
+                        'tasks': [{'depends_on': [{'name': 'foo'}, {'name': 'compile'}]}]}
+        output_object = setup_baselines.remove_dependenies(input_object)
+        # Check output is correct
+        self.assertTrue('functions' in output_object)
+        self.assertTrue('start server' in output_object['functions'])
+        self.assertEqual(output_object['functions']['start server'][1]['params']['remote_file'],
+                         'original_mongod')
+        self.assertEqual(output_object['functions']['start server'][2]['params']['remote_file'],
+                         'original_mongo')
+        self.assertEqual(output_object['tasks'][0]['depends_on'][0]['name'], 'foo')
+        # Length should be 1, because compile dependency was removed.
+        self.assertEqual(len(output_object['tasks'][0]['depends_on']), 1)
+
+    def test_patch_sysperf_mongod_link(self):
+        '''
+        Test patch_sysperf_mongod_link
+        '''
+        # pylint: disable=line-too-long
+        input_object = {'tasks': [],
+                        'functions': {"prepare environment":
+                                      [{'command': 'shell.exec',
+                                        'params': {
+                                            'script':
+                                            '''
+                                            rm -rf ./*
+                                            mkdir src
+                                            mkdir work
+                                            mkdir bin
+                                            pwd
+                                            ls'''}},
+                                       {'command': 'manifest.load'},
+                                       {'command': 'git.get_project',
+                                        'params': {'directory': 'src',
+                                                   'revisions': 'shortened'}},
+                                       {'command': 'shell.exec',
+                                        'params':
+                                        {'working_dir': 'work',
+                                         'script':
+                                         '''
+                                         cat > runtime.yml <<EOF
+                                         # compositions of expansions
+                                         # Use 3.4.1 for noise tests
+                                         mongodb_binary_archive: "https://s3.amazonaws.com/mciuploads/dsi-v3.4/sys_perf_3.4_5e103c4f5583e2566a45d740225dc250baacfbd7/5e103c4f5583e2566a45d740225dc250baacfbd7/linux/mongod-sys_perf_3.4_5e103c4f5583e2566a45d740225dc250baacfbd7.tar.gz"
+                                         EOF
+                                         '''
+                                        }},
+                                       {'command': 'shell.exec'}]}}
+        # pylint: enable=line-too-long
+        output_yaml = setup_baselines.patch_sysperf_mongod_link(input_object, 'test_link')
+        script = output_yaml['functions']["prepare environment"][3]["params"]["script"]
+        script = textwrap.dedent(script)
+        expected = textwrap.dedent('''
+        cat > runtime.yml <<EOF
+        # compositions of expansions
+        # Use 3.4.1 for noise tests
+        mongodb_binary_archive: test_link
+        EOF
+        ''')
+        print(expected)
+        print(script)
+        self.assertEqual(script, expected)
 
     def test_patchperfyamlstringssimple(self):
         '''
@@ -37,7 +109,7 @@ class TestSetupBaselines(unittest.TestCase):
         self.assertEqual(input_object['tasks'][0]['depends_on'][0]['name'], 'foo')
         self.assertEqual(input_object['tasks'][0]['depends_on'][1]['name'], 'compile')
 
-        # Check otuptu is correct
+        # Check output is correct
         self.assertTrue('functions' in output_object)
         self.assertTrue('start server' in output_object['functions'])
         self.assertEqual(output_object['functions']['start server'][1]['params']['remote_file'],
@@ -111,6 +183,19 @@ class TestSetupBaselines(unittest.TestCase):
         modified = updater.patch_perf_yaml(self.perfyaml, '3.0.14', 'performance-3.2')
         reference = test_utils.read_fixture_yaml_file('perf.yml.perf-3.2.3.0.14.ok')
         self.assertEqual(modified, reference, 'Patch for 3.0.14 on perf-3.2')
+
+    def test_patch_sysperf_yaml(self):
+        '''
+        Test the patch_perf_yaml method on BaselineUpdater
+        '''
+        updater = setup_baselines.BaselineUpdater()
+
+        modified = updater.patch_sysperf_yaml(self.sysperfyaml, '3.2.12')
+        reference = test_utils.read_fixture_yaml_file('system_perf.yml.master.3.2.12.ok')
+        self.assertEqual(modified, reference, 'Patch for 3.2.12 on master')
+        modified = updater.patch_sysperf_yaml(self.sysperfyaml, '3.4.2')
+        reference = test_utils.read_fixture_yaml_file('system_perf.yml.master.3.4.2.ok')
+        self.assertEqual(modified, reference, 'Patch for 3.4.2 on master')
 
     def test_repeated_args(self):
         ''' Test format_repeated_args
