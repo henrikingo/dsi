@@ -5,6 +5,7 @@
 from __future__ import print_function
 import unittest
 import os
+import yaml
 
 from bin.common import terraform_output_parser as tf_output  # pylint: disable=E0401
 
@@ -14,12 +15,24 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 class TestTerraformOutputParser(unittest.TestCase):
     """To test terraform configuration"""
 
+    def setUp(self):
+        """Setup so config dict works properly"""
+        self.old_dir = os.getcwd() # Save the old path to restore Note
+        # that this chdir only works without breaking relative imports
+        # because it's at the same directory depth
+        os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/../../docs/config-specs/')
+
+    def tearDown(self):
+        """Restore working directory"""
+        os.chdir(self.old_dir)
+
     def test_single_cluster_value(self):
         """Test parsing single cluster value is correct."""
         output = tf_output.TerraformOutputParser(
-            input_file=DIR+"/artifacts/terraform_single_cluster_output.txt")
+            input_file=os.path.join(DIR, "artifacts/terraform_single_cluster_output.txt"))
 
-        print(output._generate_yml())
+        print(output._ips)
+
         self.assertEqual(["52.32.13.97"], output._ips["public_ip_mc"])
         self.assertEqual(["52.26.153.91"], output._ips["public_member_ip"])
         self.assertEqual(["10.2.0.100"], output._ips["private_member_ip"])
@@ -27,19 +40,23 @@ class TestTerraformOutputParser(unittest.TestCase):
     def test_replica_ebs_cluster_value(self):
         """Test parsing replica_ebs cluster."""
         output = tf_output.TerraformOutputParser(
-            input_file=DIR+"/artifacts/terraform_replica_with_ebs_output.txt")
+            input_file=os.path.join(DIR, "artifacts/terraform_replica_with_ebs_output.txt"))
 
-        print(output._generate_yml())
+        print(output._ips)
+
         self.assertEqual(["52.33.30.1"], output._ips["public_ip_mc"])
         self.assertEqual("52.41.40.0", output._ips["public_member_ip"][0])
+        self.assertEqual("52.37.52.162", output._ips["public_member_ip"][1])
+        self.assertEqual("52.25.102.16", output._ips["public_member_ip"][2])
+        self.assertEqual("52.25.102.17", output._ips["public_member_ip"][3])
         self.assertEqual("10.2.0.100", output._ips["private_member_ip"][0])
-        self.assertEqual("10.2.0.200", output._ips["private_mongod_ebs_ip"][0])
-        self.assertEqual("52.25.102.16", output._ips["public_mongod_ebs_ip"][0])
 
     def test_shard_cluster_value(self):
         """Test parsing shard cluster value is correct."""
         output = tf_output.TerraformOutputParser(
-            input_file=DIR+"/artifacts/terraform_shard_cluster_output.txt")
+            input_file=os.path.join(DIR, "artifacts/terraform_shard_cluster_output.txt"))
+
+        print(output._ips)
 
         # Test ip address is correct for different members
         self.assertEqual(["52.11.198.150"], output._ips["public_ip_mc"])
@@ -65,31 +82,27 @@ class TestTerraformOutputParser(unittest.TestCase):
         """Test parsing single cluster YML file is correct."""
         output = tf_output.TerraformOutputParser(
             input_file=DIR+"/artifacts/terraform_single_cluster_output.txt")
-
-        print(output._generate_yml())
+        output._generate_output()
+        reference = {}
         with open(DIR+"/artifacts/terraform_single.out.yml") as fread:
-            lines = fread.readlines()
-            print(''.join(lines))
-            self.assertEqual(''.join(lines), output._generate_yml())
+            reference = yaml.safe_load(fread)
 
-    def test_replica_ebs_cluster_yml(self):
-        """Test replica_ebs YML out file is correct."""
-        output = tf_output.TerraformOutputParser(
-            input_file=DIR+"/artifacts/terraform_replica_with_ebs_output.txt")
-
-        print(output._generate_yml())
-        with open(DIR+"/artifacts/terraform_replica_with_ebs.out.yml") as fread:
-            lines = fread.readlines()
-            print(''.join(lines))
-            self.assertEqual(''.join(lines), output._generate_yml())
+        print(reference['out'])
+        print(output.config_obj['infrastructure_provisioning']['out'])
+        self.assertEqual(output.config_obj['infrastructure_provisioning']['out'].as_dict(),
+                         reference['out'])
 
     def test_shard_cluster_yml(self):
         """Test parsing single cluster YML file is correct."""
         output = tf_output.TerraformOutputParser(
             input_file=DIR+"/artifacts/terraform_shard_cluster_output.txt")
 
-        print(output._generate_yml())
+        output._generate_output()
+        reference = {}
         with open(DIR+"/artifacts/terraform_shard.out.yml") as fread:
-            lines = fread.readlines()
-            print(''.join(lines))
-            self.assertEqual(''.join(lines), output._generate_yml())
+            reference = yaml.safe_load(fread)
+
+        print(reference['out'])
+        print(output.config_obj['infrastructure_provisioning']['out'])
+        self.assertEqual(output.config_obj['infrastructure_provisioning']['out'].as_dict(),
+                         reference['out'])

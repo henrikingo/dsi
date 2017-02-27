@@ -7,8 +7,8 @@ mongod_config_file:
 topology:
   - cluster_type: standalone
     id: myid1
-    public_ip: ${infrastructure_provisioning.out.mongod_all.0.public_ip}
-    private_ip: ${infrastructure_provisioning.out.mongod_all.0.private_ip}
+    public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
+    private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
 
 # Meta data about this mongodb setup
 meta:

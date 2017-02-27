@@ -1,9 +1,6 @@
 out:
   mongod:
-  - &id001
-    private_ip: 10.2.0.100
+  - private_ip: 10.2.0.100
     public_ip: 52.26.153.91
-  mongod_all:
-  - *id001
   workload_client:
   - public_ip: 52.32.13.97

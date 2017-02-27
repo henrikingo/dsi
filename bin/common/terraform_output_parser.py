@@ -7,7 +7,8 @@ private IP addresses. This file will generate the original ips.sh as well and YM
 from __future__ import print_function
 import logging
 import sys
-import yaml
+
+from common.config import ConfigDict
 
 LOG = logging.getLogger(__name__)
 
@@ -23,11 +24,7 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
                       "public_config_ip",
                       "public_ip_mc",
                       "public_member_ip",
-                      "public_mongos_ip",
-                      "public_mongod_ebs_ip",
-                      "private_mongod_ebs_ip",
-                      "public_mongod_seeded_ebs_ip",
-                      "private_mongod_seeded_ebs_ip"]
+                      "public_mongos_ip"]
 
     INSTANCE_CATEGORY = {
         "private_config_ip": "configsvr",
@@ -35,10 +32,6 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
         "private_mongos_ip": "mongos",
         "public_config_ip": "configsvr",
         "public_ip_mc": "workload_client",
-        "public_mongod_ebs_ip": "mongod_ebs",
-        "private_mongod_ebs_ip": "mongod_ebs",
-        "public_mongod_seeded_ebs_ip": "mongod_seeded_ebs",
-        "private_mongod_seeded_ebs_ip": "mongod_seeded_ebs",
         "public_member_ip": "mongod",
         "public_mongos_ip": "mongos"
         }
@@ -50,10 +43,6 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
         "public_config_ip": "public",
         "public_ip_mc": "public",
         "public_member_ip": "public",
-        "public_mongod_ebs_ip": "public",
-        "private_mongod_ebs_ip": "private",
-        "public_mongod_seeded_ebs_ip": "public",
-        "private_mongod_seeded_ebs_ip": "private",
         "public_mongos_ip": "public"
         }
 
@@ -61,9 +50,11 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
         self._file = input_file
         # Dict to hold IP addresses.
         self._ips = {}
+        self.config_obj = ConfigDict("infrastructure_provisioning")
+        self.config_obj.load()
         self._parse_terraform_output()
 
-    def _get_ips(self, pub, priv, category, yml_data):
+    def _get_ips(self, pub, priv, category, out_data):
         if pub in self._ips:
             if len(self._ips[pub]) != len(self._ips[priv]):
                 LOG.error(category + ": public and private IP address counts mismatch!")
@@ -72,60 +63,46 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
             if len(self._ips[pub]) > 0 and self._ips[pub][0]:
                 # found category and IP address is not empty
                 # IP address could be empty if category instance count is set to 0
-                yml_data["out"][category] = []
+                out_data[category] = []
+                LOG.debug('_get_ips and non-empty pub in self._ips for category %s', category)
             else:
                 # no ip address for this category, return the same back
-                return yml_data
+                return out_data
 
             for i in range(len(self._ips[priv])):
-                yml_data["out"][category].append(
+                out_data[category].append(
                     {"public_ip": self._ips[pub][i],
                      "private_ip": self._ips[priv][i]})
 
-        return yml_data
+        return out_data
 
-    def _generate_yml(self):
-        """To generate a string to represent output for infrastructure_provisioning.out.yml."""
-        yml_data = {}
-        yml_data["out"] = {}
-
+    def _generate_output(self):
+        """Update the configuration object for output from infrastructure_provisioning stage."""
+        out_data = {}
         # mongod IP address
-        yml_data = self._get_ips("public_member_ip", "private_member_ip",
-                                 "mongod", yml_data)
-
-        # mongod_ebs IP addresses
-        yml_data = self._get_ips("public_mongod_ebs_ip", "private_mongod_ebs_ip",
-                                 "mongod_ebs", yml_data)
-
-        # mongod_seeded_ebs IP addresses
-        yml_data = self._get_ips("public_mongod_seeded_ebs_ip", "private_mongod_seeded_ebs_ip",
-                                 "mongod_seeded_ebs", yml_data)
-
-        # Create aggregate list of all mongods
-        yml_data['out']['mongod_all'] = (yml_data['out'].get('mongod', list())
-                                         + yml_data['out'].get('mongod_ebs', list())
-                                         + yml_data['out'].get('mongod_seeded_ebs', list()))
+        out_data = self._get_ips("public_member_ip", "private_member_ip",
+                                 "mongod", out_data)
 
         # workload_client IP addresses
         if len(self._ips["public_ip_mc"]) == 0:
             LOG.error("Workload client: public and private IP address counts mismatch!")
             raise ValueError("Workload client: public and private IP address counts mismatch!")
 
-        yml_data["out"]["workload_client"] = []
+        out_data["workload_client"] = []
 
         for index in range(len(self._ips["public_ip_mc"])):
-            yml_data["out"]["workload_client"].append(
+            out_data["workload_client"].append(
                 {"public_ip": self._ips["public_ip_mc"][index]})
 
         # mongos IP addresses
-        yml_data = self._get_ips("public_mongos_ip", "private_mongos_ip",
-                                 "mongos", yml_data)
+        out_data = self._get_ips("public_mongos_ip", "private_mongos_ip",
+                                 "mongos", out_data)
 
         # configsvr IP addresses
-        yml_data = self._get_ips("public_config_ip", "private_config_ip",
-                                 "configsvr", yml_data)
+        out_data = self._get_ips("public_config_ip", "private_config_ip",
+                                 "configsvr", out_data)
 
-        return yaml.dump(yml_data, default_flow_style=False)
+        self.config_obj['infrastructure_provisioning']['out'] = out_data
 
     def _parse_terraform_output(self):
         """To parse terraform output, and extract proper IP address"""
@@ -134,7 +111,7 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
             LOG.info("Parse input file %s", self._file)
             fread = open(self._file, 'r')
         else:
-            LOG.info("Parse from stadin")
+            LOG.info("Parse from stdin")
             fread = sys.stdin
 
         # Read file and parse it.
@@ -143,12 +120,12 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
             if items[0] in self.INSTANCE_TYPES:
                 instance_type = items[0]
                 LOG.info("Found instance type %s", instance_type)
-                self._ips[instance_type] = items[2:]
+                self._ips[instance_type] = [item for item in items[2:] if item != '']
 
     def write_output_files(self):
         """
         Write details to infrastructure_provisioning.out.yml
         """
-        with open("infrastructure_provisioning.out.yml", 'w') as fwrite:
-            print(self._generate_yml(), file=fwrite)
-            LOG.info("Generate YML file as:\n%s", self._generate_yml())
+        self._generate_output()
+        self.config_obj.save()
+        LOG.info("Generate infrastructure_provisioning.out.yml")

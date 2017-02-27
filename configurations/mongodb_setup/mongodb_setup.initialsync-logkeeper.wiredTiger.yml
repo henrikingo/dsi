@@ -15,23 +15,23 @@ topology:
     # is standalone because it will skip replset initilization.
     # The global configuration "replSetName: logkeeper-rs0" will ensure this instance start with
     # proper mongod configuration file options.
-    public_ip: ${infrastructure_provisioning.out.mongod_seeded_ebs.0.public_ip}
-    private_ip: ${infrastructure_provisioning.out.mongod_seeded_ebs.0.private_ip}
+    public_ip: ${infrastructure_provisioning.out.mongod.1.public_ip}
+    private_ip: ${infrastructure_provisioning.out.1.private_ip}
     clean_db_dir: false
     use_journal_mnt: false
   - cluster_type: standalone
     # Secondary mongod instance, which is started from fresh DB files, and with proper replSetName
     # configured file options.
-    public_ip: ${infrastructure_provisioning.out.mongod_ebs.0.public_ip}
-    private_ip: ${infrastructure_provisioning.out.mongod_ebs.0.private_ip}
+    public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
+    private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
     use_journal_mnt: false
 
 # Meta data about this mongodb setup
 meta:
     # The list of hosts that can be used in a mongodb connection string
-    hosts: ${infrastructure_provisioning.out.mongod_seeded_ebs.0.private_ip}:27017
-    hostname: ${infrastructure_provisioning.out.mongod_seeded_ebs.0.private_ip}
+    hosts: ${mongodb.topology.0.private_ip}:27017
+    hostname: ${mongodb.topology.0.private_ip}
     port: 27017
-    secondary: ${infrastructure_provisioning.out.mongod_ebs.0.private_ip}
+    secondary: ${mongodb.topology.1.private_ip}
     is_sharded: false
     is_replset: true

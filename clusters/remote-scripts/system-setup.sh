@@ -41,7 +41,6 @@ if [ "${WITH_EBS}" == "with_ebs" ]; then
     prepare_disk "/dev/xvde" "/media/ebs"
     prepare_disk "/dev/xvdf" "/media/ebs2"
     ln -s /media/ebs data
-    ln -s /media/ebs2 journal
 elif [ "${WITH_EBS}" == "with_seeded_ebs" ]; then
     # Will not format disk for seeded EBS partition.
     prepare_disk "/dev/xvde" "/media/ebs" "no"
@@ -54,7 +53,6 @@ elif [ "${WITH_EBS}" == "with_seeded_ebs" ]; then
 else
     # Default to SSD only instance
     ln -s /media/ephemeral0 data
-    ln -s /media/ephemeral1 journal # Superfluous on the workload client, but does no harm either
 fi
 
 echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled

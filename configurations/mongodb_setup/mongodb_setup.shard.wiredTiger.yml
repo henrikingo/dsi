@@ -24,30 +24,30 @@ topology:
       - id: rs0
         cluster_type: replset
         mongod:
-          - public_ip: ${infrastructure_provisioning.out.mongod_all.0.public_ip}
-            private_ip: ${infrastructure_provisioning.out.mongod_all.0.private_ip}
-          - public_ip: ${infrastructure_provisioning.out.mongod_all.1.public_ip}
-            private_ip: ${infrastructure_provisioning.out.mongod_all.1.private_ip}
-          - public_ip: ${infrastructure_provisioning.out.mongod_all.2.public_ip}
-            private_ip: ${infrastructure_provisioning.out.mongod_all.2.private_ip}
+          - public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
+            private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
+          - public_ip: ${infrastructure_provisioning.out.mongod.1.public_ip}
+            private_ip: ${infrastructure_provisioning.out.mongod.1.private_ip}
+          - public_ip: ${infrastructure_provisioning.out.mongod.2.public_ip}
+            private_ip: ${infrastructure_provisioning.out.mongod.2.private_ip}
       - id: rs1
         cluster_type: replset
         mongod:
-          - public_ip: ${infrastructure_provisioning.out.mongod_all.3.public_ip}
-            private_ip: ${infrastructure_provisioning.out.mongod_all.3.private_ip}
-          - public_ip: ${infrastructure_provisioning.out.mongod_all.4.public_ip}
-            private_ip: ${infrastructure_provisioning.out.mongod_all.4.private_ip}
-          - public_ip: ${infrastructure_provisioning.out.mongod_all.5.public_ip}
-            private_ip: ${infrastructure_provisioning.out.mongod_all.5.private_ip}
+          - public_ip: ${infrastructure_provisioning.out.mongod.3.public_ip}
+            private_ip: ${infrastructure_provisioning.out.mongod.3.private_ip}
+          - public_ip: ${infrastructure_provisioning.out.mongod.4.public_ip}
+            private_ip: ${infrastructure_provisioning.out.mongod.4.private_ip}
+          - public_ip: ${infrastructure_provisioning.out.mongod.5.public_ip}
+            private_ip: ${infrastructure_provisioning.out.mongod.5.private_ip}
       - id: rs2
         cluster_type: replset
         mongod:
-          - public_ip: ${infrastructure_provisioning.out.mongod_all.6.public_ip}
-            private_ip: ${infrastructure_provisioning.out.mongod_all.6.private_ip}
-          - public_ip: ${infrastructure_provisioning.out.mongod_all.7.public_ip}
-            private_ip: ${infrastructure_provisioning.out.mongod_all.7.private_ip}
-          - public_ip: ${infrastructure_provisioning.out.mongod_all.8.public_ip}
-            private_ip: ${infrastructure_provisioning.out.mongod_all.8.private_ip}
+          - public_ip: ${infrastructure_provisioning.out.mongod.6.public_ip}
+            private_ip: ${infrastructure_provisioning.out.mongod.6.private_ip}
+          - public_ip: ${infrastructure_provisioning.out.mongod.7.public_ip}
+            private_ip: ${infrastructure_provisioning.out.mongod.7.private_ip}
+          - public_ip: ${infrastructure_provisioning.out.mongod.8.public_ip}
+            private_ip: ${infrastructure_provisioning.out.mongod.8.private_ip}
 
 # Meta data about this mongodb setup
 meta :

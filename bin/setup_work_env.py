@@ -411,7 +411,7 @@ def main():
     # Write out the dsienv.sh file. It saves the path to DSI repo
     with open(os.path.join(directory, 'dsienv.sh'), 'w') as dsienv:
         dsienv.write('export DSI_PATH={0}\n'.format(dsipath))
-        dsienv.write('export PATH=$PATH:{0}/bin\n'.format(dsipath))
+        dsienv.write('export PATH={0}/bin:$PATH\n'.format(dsipath))
         dsienv.write('export MC={0}\n'.format(mission_control))
         dsienv.write('export TERRAFORM={0}'.format(terraform))
 
