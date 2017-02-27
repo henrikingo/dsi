@@ -8,6 +8,9 @@ CLUSTER=$3
 BINDIR=$(dirname $0)
 source $BINDIR/setting.sh
 
+eval `ssh-agent -s`
+ssh-add $PEMFILE
+
 rm -rf ./reports
 rm -f ../../reports.tgz
 
@@ -76,7 +79,11 @@ do
     echo "Generated mc.json"
     cat mc.json
     scp -oStrictHostKeyChecking=no -i $PEMFILE  workloads.yml $SSHUSER@$mc:./workloads/
+    if [ -e fio.ini ]; then
+        scp -oStrictHostKeyChecking=no -i $PEMFILE  fio.ini $SSHUSER@$mc:./
+    fi
     runInitialSyncTest $i
+    scp -oStrictHostKeyChecking=no -i $PEMFILE  $SSHUSER@$mc:./fio.json reports/fio.json.$i || true
 done
 
 scp -oStrictHostKeyChecking=no -i $PEMFILE  $SSHUSER@$mc:./workloads/workload_timestamps.csv reports

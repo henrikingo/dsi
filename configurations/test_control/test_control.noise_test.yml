@@ -2,7 +2,6 @@ run:
   - id: fio-${mongodb_setup.mongod_config_file.storage.engine}.primary_data
     type: shell
     cmd: 'scp -o StrictHostKeyChecking=no fio.ini ${mongodb_setup.meta.hostname}:./; for i in `seq 1 5`; do ssh -A  ${mongodb_setup.meta.hostname} "mkdir -p ./data/fio && fio  --directory=$(readlink -f ./data) --output-format=json --output=fio.json fio.ini" && scp ${mongodb_setup.meta.hostname}:./fio.json . && python process_fio_results.py -l primary && mv fio.json fio.json.p1.$i; done;  ssh -A  ${mongodb_setup.meta.hostname} "rm -r data/fio"'
-    # Note we don't copy fio2.ini up. This script uses thefio.ini used in the previous step
     config_filename: fio.ini
     workload_config: |
       [global]

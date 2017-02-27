@@ -1,4 +1,9 @@
 run:
+  - id: fio-${mongodb_setup.mongod_config_file.storage.engine}
+    type: shell
+    cmd: './fio-test.sh ${mongodb_setup.meta.hostname}'
+    config_filename: fio.ini
+    workload_config: ${test_control.common_fio_config}
   - id: ycsb_load-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
     "cmd": "cd YCSB/ycsb-mongodb; ./bin/ycsb load mongodb -s -P workloads/workloadLongevity -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32; sleep 1"

@@ -3,7 +3,7 @@
 import os.path
 import unittest
 
-import process_fio_results as pr  # pylint: disable=wrong-import-position
+import process_fio_results as pr
 
 
 class TestProcessFIOResults(unittest.TestCase):
