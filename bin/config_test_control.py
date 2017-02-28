@@ -40,7 +40,7 @@ def generate_mc_json():
                conf['infrastructure_provisioning']['out']['workload_client']]
 
     servers = [ssh_user + '@' + server['public_ip'] for server in
-               conf['infrastructure_provisioning']['out']['mongod_all']]
+               conf['infrastructure_provisioning']['out']['mongod']]
     if 'mongos' in conf['infrastructure_provisioning']['out']:
         servers += [ssh_user + '@' + server['public_ip'] for server in
                     conf['infrastructure_provisioning']['out']['mongos']]
