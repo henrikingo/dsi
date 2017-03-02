@@ -1,5 +1,5 @@
 mongo_dir: mongodb                      # String that will be used in the path of the installation directory
-                                        # Useful to test multiple versions of MongoDB on same infrastructure (manual 
+                                        # Useful to test multiple versions of MongoDB on same infrastructure (manual
                                         # runs for analysing build failures)
                                         # Note: mongo_root is the directory where a mongodb.tar.gz was extracted.
 journal_dir: /media/ephemeral1/journal  # If specified, create a symlink to have journal at this path
@@ -19,40 +19,41 @@ rs_conf:                          # The top level settings for rs.conf() / rs.in
 mongos_config_file: ...
 configsvr_config_file: ...
 
-# Note on execution order for the on_* hooks in mongodb_setup:
-# 1. mongodb_setup: killall mongod/mongos (entire cluster)
-# 2. mongodb_setup: delete old files / directories (e.g. from previous task)
-# 3. download_files
-# 4. upload_files
-# 5. exec_remote (OS shell)
-# 6. mongodb_setup: start mongod/mongos (entire cluster)
-# 7. exec_mongo_shell (javascript in mongo shell)
-# 8. post_exec_remote (OS shell)
+# Ordered list of steps to take before starting the mongo
+# processes. Each item is guaranteed to complete before the next one
 #
-# Note: each step is guaranteed to execute in isolation. e.g. "on_mongos" would iterate over 
-# the list of mongos servers sequentially, it must not execute concurrently on all mongos servers.
-
-
-on_all_hosts:
-    download_files:
+# Keys in the list can be on_all_hosts, on_workload_client, on_mongod,
+# on_mongos, on_configsvr, on_host, on_servers
+pre_cluster_start:
+  - on_all_hosts:
+      download_files:
       - http://url1
       - http://url2
-    upload_files: # Anything? Could download/upload data set or a data directory
-      - remote-scripts/file1
-      - remote-scripts/file2
-    exec_remote: |
+  - on_all_hosts:
+      upload_files:
+        # Anything? Could download/upload data set or a data directory
+        - remote-scripts/file1
+        - remote-scripts/file2
+  - on_all_hosts:
+      exec_remote: |
         # This would execute in OS shell (before MongoDB cluster is running)
-    exec_mongo_shell: |
+  - on_workload_client:
+      exec_mongo_shell: |
         # JavaScript to be executed in mongo shell (when MongoDB cluster is running)
         # Note: You can also put .js files in upload_files, and use load() to execute them in mongo shell.
-    post_exec_remote: |
+  - on_servers: (see above)            # servers = union( mongod, mongos, configsvr) = all_hosts - workload_client
+  - on_mongod: (see above)
+  - on_mongos: (see above)
+  - on_configsvr: (see above)
+  - on_host: (see system_setup.yml)
+
+# Ordered list of steps to after starting the mongo processes
+post_cluster_start:
+  - on_all_hosts:
+      post_exec_remote: |
         # This would execute in OS shell (after MongoDB cluster is running)
-on_servers: (see above)            # servers = union( mongod, mongos, configsvr) = all_hosts - workload_client
-on_mongod: (see above)
-on_mongos: (see above)
-on_configsvr: (see above)
-on_workload_client: (see above)
-on_host: (see system_setup.yml)
+
+
 
 # This defines the cluster topology to deploy, and what to deploy on which IP address.
 # Note that it is also possible to override mongod/mongos config file entries on a per-node basis.
@@ -79,7 +80,7 @@ topology:
         private_ip: ${infrastructure_provisioning.out.mongos.1.private_ip}
       - public_ip: ${infrastructure_provisioning.out.mongos.2.public_ip}
         private_ip: ${infrastructure_provisioning.out.mongos.2.private_ip}
-    shard: 
+    shard:
       - id: myrs0                # If specified, used as shard name when deploying the cluster.
                                  # Note that replset name = config_file.replication.replSetName
         cluster_type: replset
@@ -109,7 +110,7 @@ topology:
         mongod:
           - mongodb_binary_archive: <another url>     # Testing a cluster where some nodes are of a different version
             config_file: &diff_mongod_config          # And a different config.
-              storage:                                # Note: These are merged (or "upserted") into the 
+              storage:                                # Note: These are merged (or "upserted") into the
                 engine: inMemory                      # global/common mongod_config_file specified above
             public_ip: ${infrastructure_provisioning.out.mongod.6.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.6.private_ip}
@@ -139,7 +140,7 @@ topology:
 
 
 # Meta data about this mongodb setup
-# It is possible to provide meta data that is not used by mongodb_setup itself, but that can be convenient to reference 
+# It is possible to provide meta data that is not used by mongodb_setup itself, but that can be convenient to reference
 # from the other modules. In particular, see the test_control module doing that in run.0.workload_config.mongo
 meta:
     # The list of hosts that can be used in a mongodb connection string

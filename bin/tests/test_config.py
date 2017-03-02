@@ -42,23 +42,23 @@ class ConfigDictTestCase(unittest.TestCase):
         # TODO: this doesn't actually work. Seems like a limitation of python when sub-classing
         # native type like dict: http://stackoverflow.com/questions/18317905/overloaded-iter-is-bypassed-when-deriving-from-dict
         complete_dict = dict(self.conf)
-        sub_dict = dict(self.conf['workload_preparation']['on_workload_client'])
-        self.assertEqual(complete_dict['workload_preparation']['on_workload_client']['download_files'][0],
+        sub_dict = dict(self.conf['workload_preparation']['tasks'][0]['on_workload_client'])
+        self.assertEqual(complete_dict['workload_preparation']['tasks'][0]['on_workload_client']['download_files'][0],
                          'http://url1')
         self.assertEqual(sub_dict['download_files'][0], 'http://url1')
 
     def test_convert_to_dict(self):
         """It is possible to convert a ConfigDict to a dict with self.as_dict()"""
         complete_dict = self.conf.as_dict()
-        sub_dict = self.conf['workload_preparation']['on_workload_client'].as_dict()
-        self.assertEqual(complete_dict['workload_preparation']['on_workload_client']['download_files'][0],
+        sub_dict = self.conf['workload_preparation']['tasks'][0]['on_workload_client'].as_dict()
+        self.assertEqual(complete_dict['workload_preparation']['tasks'][0]['on_workload_client']['download_files'][0],
                          'http://url1')
         self.assertEqual(sub_dict['download_files'][0], 'http://url1')
 
     def test_basic_checks(self):
         """Basic checks"""
-        self.assertEqual(self.conf['workload_preparation']['on_workload_client']['download_files'][0], 'http://url1')
-        self.assertEqual(self.conf['workload_preparation']['on_workload_client']['download_files'], ['http://url1'])
+        self.assertEqual(self.conf['workload_preparation']['tasks'][0]['on_workload_client']['download_files'][0], 'http://url1')
+        self.assertEqual(self.conf['workload_preparation']['tasks'][0]['on_workload_client']['download_files'], ['http://url1'])
         self.assertEqualDicts(self.conf['infrastructure_provisioning']['out']['mongos'][2], {'public_ip': '53.1.1.102', 'private_ip': '10.2.1.102'})
         self.assertEqual(self.conf['infrastructure_provisioning']['out']['workload_client'][0]['public_ip'], "53.1.1.101")
 
