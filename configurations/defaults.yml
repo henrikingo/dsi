@@ -28,6 +28,10 @@ infrastructure_provisioning:
             expire-on-delta        : 2    # adjust expire_on to today + expire-on-delta days
             owner                  : serverteam-perf@10gen.com
             Project                : sys-perf
+    numactl_prefix:
+      - numactl
+      - --interleave=all
+      - --cpunodebind=1
 
 mongodb_setup:
     mongo_dir: mongodb
@@ -96,6 +100,7 @@ test_control:
     mc:
       monitor_interval: 1
       per_thread_stats: "yes"
+    numactl: numactl --interleave=all --cpunodebind=1
     common_fio_config: |
       [global]
       directory=./data/fio

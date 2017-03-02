@@ -84,6 +84,7 @@ class TerraformConfiguration(object):
     # We limit mongod instance type based on the requirement to have at least
     # 2 SSD, and we need a known type so that we can carry out pre-qualification.
     MONGOD_INSTANCE_TYPE = [
+        "c4.8xlarge",
         "c3.8xlarge",
         "c3.4xlarge",
         "c3.2xlarge",

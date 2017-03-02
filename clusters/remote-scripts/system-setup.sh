@@ -14,6 +14,21 @@ RUN_FIO="${3:-true}"
 
 sudo yum -y -q install tmux git wget sysstat dstat perf fio xfsprogs
 
+# Disable hyperthreading.
+#
+# This involves turning off cpus tied to extra threads.  Cores is the
+# total number of real cores per socket in the system. Cpus is the
+# number of cpus linux thinks it has. We want to leave on one cpu per
+# real core.  On existing systems, cpus 0 through $total_cores all map
+# to different physical cores. We are turning off all cpus beyond
+# that.
+
+cores=$(lscpu | egrep Core | egrep socket | cut -d : -f 2)
+sockets=$(lscpu | egrep Socket |  cut -d : -f 2)
+cpus=$(lscpu | egrep "CPU\(s\)" | head -1 | cut -d : -f 2)
+total_cores=$(($cores*$sockets))
+for i in `seq $total_cores $cpus`; do echo 0 | sudo tee /sys/devices/system/cpu/cpu$i/online; done
+
 dev=/dev/xvdc; sudo umount $dev; sudo mkfs.xfs -f $dev; sudo mount $dev
 sudo chmod 777 /media/ephemeral0
 sudo chown ec2-user /media/ephemeral0

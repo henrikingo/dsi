@@ -1,12 +1,12 @@
 
 variable "amis" {
     default = {
-        "us-west-2a" = "ami-e7527ed7"
-        "us-west-2b" = "ami-e7527ed7"
-        "us-west-2c" = "ami-e7527ed7"
-        "us-west-2d" = "ami-e7527ed7"
+        "us-west-2a" = "ami-f173cc91" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
+        "us-west-2b" = "ami-f173cc91" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
+        "us-west-2c" = "ami-f173cc91" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
+        "us-west-2d" = "ami-f173cc91" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
 
-        "us-east-1a" = "ami-60b6c60a"   # Amazon Linux AMI 2015.09.1 (HVM), SSD Volume Type - ami-60b6c60a
+        "us-east-1a" = "ami-0b33d91d" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
     }
 }
 
@@ -163,5 +163,3 @@ variable "placement_groups" {
         "us-east-1a.no" = ""
    }
 }
-
-

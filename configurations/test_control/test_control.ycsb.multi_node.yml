@@ -1,24 +1,24 @@
 run:
   - id: fio-${mongodb_setup.mongod_config_file.storage.engine}
     type: shell
-    cmd: './fio-test.sh ${mongodb_setup.meta.hostname}'
+    cmd: '${test_control.numactl} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
     workload_config: ${test_control.common_fio_config}
   - id: ycsb_load-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
-    "cmd": "cd YCSB/ycsb-mongodb; ./bin/ycsb load mongodb -s -P workloads/workloadEvergreen -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32; sleep 1"
+    "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb load mongodb -s -P workloads/workloadEvergreen -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32; sleep 1"
   - id: ycsb_100read-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
-    "cmd": "cd YCSB/ycsb-mongodb; ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
+    "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
   - id: ycsb_95read5update-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
-    "cmd": "cd YCSB/ycsb-mongodb; ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen_95read5update -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
+    "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen_95read5update -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
   - id: ycsb_50read50update-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
-    "cmd": "cd YCSB/ycsb-mongodb; ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen_50read50update -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
+    "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen_50read50update -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
   - id: ycsb_50read50update_w_majority-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
-    "cmd": "cd YCSB/ycsb-mongodb; ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen_50read50update -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb?w=majority -threads 64 -p maxexecutiontime=600; sleep 1"
+    "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen_50read50update -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb?w=majority -threads 64 -p maxexecutiontime=600; sleep 1"
 
 
 pre_task:

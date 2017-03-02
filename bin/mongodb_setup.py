@@ -81,6 +81,8 @@ class MongoNode(object):
     clean_db_dir = True
     """Delete data directory before startup"""
 
+    numactl_prefix = []
+
     def __init__(self, opts, is_mongos=False):
         """
         :param opts: Read-only options for mongo[ds], example:
@@ -203,19 +205,25 @@ class MongoNode(object):
         commands.append(['ls', '-la'])
         return self.host.run(commands)
 
-    def launch_cmd(self):
+    def launch_cmd(self, numactl=True):
         """Returns the command to start this node."""
         remote_file_name = '/tmp/mongo_port_{0}.conf'.format(self.port)
         config_contents = yaml.dump(self.mongo_config_file, default_flow_style=False)
         self.host.create_file(remote_file_name, config_contents)
         self.host.run(['cat', remote_file_name])
-        argv = [os.path.join(self.bin_dir, self.mongo_program),
-                '--config', remote_file_name]
+        numactl_prefix = self.numactl_prefix
+        if not numactl:
+            LOG.debug("numactl evaluates to false. Use empty list")
+            numactl_prefix = []
+        LOG.debug("numactl_prefix is %s", str(numactl_prefix))
+        argv = numactl_prefix + [os.path.join(self.bin_dir, self.mongo_program),
+                                 '--config', remote_file_name]
+        LOG.debug("argv is %s", str(argv))
         return argv
 
-    def launch(self):
+    def launch(self, numactl=True):
         """Starts this node."""
-        if not self.host.run(self.launch_cmd()):
+        if not self.host.run(self.launch_cmd(numactl)):
             self.dump_mongo_log()
             return False
         self.started = True
@@ -382,9 +390,9 @@ class ReplSet(object):
         """Ensures necessary files are setup."""
         return all(node.setup_host() for node in self.nodes)
 
-    def launch(self):
+    def launch(self, numactl=True):
         """Starts the replica set."""
-        if not all(node.launch() for node in self.nodes):
+        if not all(node.launch(numactl) for node in self.nodes):
             return False
         # Give the first host the highest priority so it will become
         # primary. This is the default behavior.
@@ -533,7 +541,7 @@ class ShardedCluster(object):
     def launch(self):
         """Starts the sharded cluster."""
         LOG.info('Launching sharded cluster...')
-        if not (self.config.launch() and
+        if not (self.config.launch(numactl=False) and
                 all(shard.launch() for shard in self.shards) and
                 all(mongos.launch() for mongos in self.mongoses)):
             return False
@@ -617,6 +625,9 @@ class MongodbSetup(object):
             MongoNode.journal_dir = journal_dir
         MongoNode.ssh_user = config['infrastructure_provisioning']['tfvars']['ssh_user']
         MongoNode.ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+        MongoNode.numactl_prefix = config['infrastructure_provisioning']['numactl_prefix']
+        if MongoNode.numactl_prefix is None:
+            MongoNode.numactl_prefix = []
         self.clusters = []
         self.downloader = DownloadMongodb(config,
                                           args.mongodb_binary_archive,

@@ -103,6 +103,10 @@ class TestMongoNode(unittest.TestCase):
         """Test launch command uses proper config file."""
         expected_argv = ['/usr/bin/mongod', '--config', '/tmp/mongo_port_9999.conf']
         self.assertEqual(self.mongo_node.launch_cmd(), expected_argv)
+        self.mongo_node.numactl_prefix = ['numactl', '--interleave=all', '--cpunodebind=1']
+        expected_argv = ['numactl', '--interleave=all', '--cpunodebind=1', '/usr/bin/mongod',
+                         '--config', '/tmp/mongo_port_9999.conf']
+        self.assertEqual(self.mongo_node.launch_cmd(), expected_argv)
 
     def test_mongo_shell_cmd(self):
         """Test mongo_shell_cmd uses proper arguments."""

@@ -1,13 +1,12 @@
 run:
   - id: fio-${mongodb_setup.mongod_config_file.storage.engine}
     type: shell
-    cmd: './fio-test.sh ${mongodb_setup.meta.hostname}'
+    cmd: '${test_control.numactl} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
     workload_config: ${test_control.common_fio_config}
   - id: benchRun-${mongodb_setup.mongod_config_file.storage.engine}
     type: shell
-
-    cmd: cd workloads && ./run_workloads.py -c workloads.yml
+    cmd: cd workloads &&  ${test_control.numactl} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml # The name used in previous row
     workload_config:
         tests:
