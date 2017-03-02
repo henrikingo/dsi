@@ -16,7 +16,7 @@ topology:
     # The global configuration "replSetName: logkeeper-rs0" will ensure this instance start with
     # proper mongod configuration file options.
     public_ip: ${infrastructure_provisioning.out.mongod.1.public_ip}
-    private_ip: ${infrastructure_provisioning.out.1.private_ip}
+    private_ip: ${infrastructure_provisioning.out.mongod.1.private_ip}
     clean_db_dir: false
     use_journal_mnt: false
   - cluster_type: standalone
@@ -29,9 +29,9 @@ topology:
 # Meta data about this mongodb setup
 meta:
     # The list of hosts that can be used in a mongodb connection string
-    hosts: ${mongodb.topology.0.private_ip}:27017
-    hostname: ${mongodb.topology.0.private_ip}
+    hosts: ${mongodb_setup.topology.0.private_ip}:27017
+    hostname: ${mongodb_setup.topology.0.private_ip}
     port: 27017
-    secondary: ${mongodb.topology.1.private_ip}
+    secondary: ${mongodb_setup.topology.1.private_ip}
     is_sharded: false
     is_replset: true
