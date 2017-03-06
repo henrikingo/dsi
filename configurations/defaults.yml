@@ -42,7 +42,7 @@ mongodb_setup:
         replication:
             oplogSizeMB: 153600  # 150GB oplog
         setParameter:
-            enableTestCommands: true
+            enableTestCommands: 1
         storage:
             dbPath: data/dbs
             engine: wiredTiger
@@ -56,7 +56,7 @@ mongodb_setup:
         processManagement:
             fork: true
         setParameter:
-            enableTestCommands: true
+            enableTestCommands: 1
         systemLog:
             destination: file
             path: data/logs/mongos.log
@@ -71,7 +71,7 @@ mongodb_setup:
         processManagement:
             fork: true
         setParameter:
-            enableTestCommands: true
+            enableTestCommands: 1
         storage:
             dbPath: data/dbs
             engine: wiredTiger
