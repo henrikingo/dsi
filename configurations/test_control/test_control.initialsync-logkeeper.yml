@@ -14,21 +14,6 @@ run:
         # tests.test list, and remove the existing hello.js
         ########################################################################
         tests:
-            default:
-              - contended_update.js
-              - map_reduce.js
-              - insert_capped.js
-              - insert_ttl.js
-              - insert_capped_indexes.js
-              - insert_vector.js
-              - word_count.js
-              - jtrue.js
-              - move_chunk.js
-              - mongos_read_single.js
-              - mongos_insert_vector.js
-              - mongos_insert_single.js
-              - mongos_50read_50write.js
-              - move_chunk_with_load.js
             initialsync-logkeeper:
                 - large_initialsync.js
             test:
@@ -47,7 +32,7 @@ run:
         sharded: ${mongodb_setup.meta.is_sharded}
         replica: ${mongodb_setup.meta.is_replset}
         storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
-        test_list: default
+        test_list: initialsync-logkeeper
         mongo:
             # It turns out the shell supports connection strings, but
             # benchRun itself does not.
