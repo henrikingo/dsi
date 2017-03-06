@@ -4,6 +4,48 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
                 "insert_ttl-mmapv1":{
                     "thread_threshold":0.5,
                     "threshold":0.4,
@@ -39,6 +81,48 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
                 "insert_jtrue-wiredTiger":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
@@ -68,6 +152,102 @@
                     ]
                 }
             }
+        },
+        "industry_benchmarks_MMAPv1":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                }
+            }
+        },
+        "industry_benchmarks_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                }
+            }
         }
     },
     "linux-3-node-replSet":{
@@ -75,6 +255,48 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
                 "insert_ttl-mmapv1":{
                     "thread_threshold":0.6,
                     "threshold":0.4,
@@ -109,6 +331,48 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
                 "insert_jtrue-wiredTiger":{
                     "thread_threshold":0.75,
                     "threshold":0.6,
@@ -167,15 +431,201 @@
                 }
             }
         },
+        "industry_benchmarks_MMAPv1":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                }
+            }
+        },
         "industry_benchmarks_WT":{
             "ndays":{},
             "reference":{},
             "threshold":{
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
                 "ycsb_50read50update_w_majority-wiredTiger":{
                     "thread_threshold":0.65,
                     "threshold":0.4,
                     "ticket":[
                         "PERF-335"
+                    ]
+                }
+            }
+        },
+        "secondary_performance_MMAPv1":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                }
+            }
+        },
+        "secondary_performance_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
                     ]
                 }
             }
@@ -2474,6 +2924,48 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
                 "insert_ttl-mmapv1":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
@@ -2487,6 +2979,48 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
                 "insert_jtrue-wiredTiger":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
@@ -2506,6 +3040,102 @@
                     "threshold":0.3,
                     "ticket":[
                         "PERF-335"
+                    ]
+                }
+            }
+        },
+        "industry_benchmarks_MMAPv1":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                }
+            }
+        },
+        "industry_benchmarks_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
                     ]
                 }
             }
