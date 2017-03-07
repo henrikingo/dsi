@@ -242,9 +242,6 @@ def parse_command_line(config, args=None):
 def copy_config_files(dsipath, config, directory):
     '''
     Copy all related config files to the target directory
-
-    Following files are copied:
-        - infrastructure_provision.yml
     '''
     # Multi-node clusters need a slightly different list of tests for ycsb
     # Hopefully this can be removed once mission-control is replaced with new test_control
