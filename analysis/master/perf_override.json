@@ -11440,6 +11440,13 @@
                 }
             },
             "threshold":{
+                "Aggregation.GeoNear2dSphere":{
+                    "thread_threshold":0.12,
+                    "threshold":0.08,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Aggregation.Group.All":{
                     "thread_threshold":0.21,
                     "threshold":0.16,
@@ -11768,6 +11775,13 @@
                 }
             },
             "threshold":{
+                "Aggregation.IdentityView.GeoNear2dSphere":{
+                    "thread_threshold":0.12,
+                    "threshold":0.08,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Aggregation.IdentityView.Group.All":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
