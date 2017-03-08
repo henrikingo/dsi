@@ -1446,8 +1446,8 @@
             },
             "threshold":{
                 "Update.FieldAtOffset":{
-                    "thread_threshold":0.3,
-                    "threshold":0.25,
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
                     "ticket":[
                         "PERF-444"
                     ]
