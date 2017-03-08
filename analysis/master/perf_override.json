@@ -5160,6 +5160,13 @@
                     "ticket":[
                         "BF-4442"
                     ]
+                },
+                "Aggregation.UnwindThenGroup":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
                 }
             }
         },
@@ -5534,6 +5541,13 @@
                     "threshold":0.16,
                     "ticket":[
                         "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.UnwindThenGroup":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
                     ]
                 }
             }
@@ -11523,6 +11537,13 @@
                     "ticket":[
                         "BF-4442"
                     ]
+                },
+                "Aggregation.UnwindThenGroup":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
                 }
             }
         },
@@ -11871,6 +11892,13 @@
                     "threshold":0.16,
                     "ticket":[
                         "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.UnwindThenGroup":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
                     ]
                 }
             }
