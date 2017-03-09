@@ -22,23 +22,31 @@ def analyze_ycsb_throughput(reports_dir_path):
     LOGGER.info("Starting YCSB throughput analysis.")
     for num, path in enumerate(_get_ycsb_file_paths(reports_dir_path)):
         LOGGER.info("Reading file: " + path)
+        # Check that this is a ycsb output file
+        ycsb_in_file = True
         with open(path) as ycsb_file:
-            throughputs = _throughputs_from_lines(ycsb_file)
+            if max((line.find('YCSB Client') for line in ycsb_file)) == -1:
+                ycsb_in_file = False
+                LOGGER.warning(
+                    'YCSB Throughput analysis called on file without YCSB Call for file %s', path)
+        if ycsb_in_file:
+            with open(path) as ycsb_file:
+                throughputs = _throughputs_from_lines(ycsb_file)
 
-        if throughputs:
-            pass_test, result_message = _analyze_throughputs(throughputs)
-        else:
-            pass_test = False
-            result_message = "No throughput data found in: {0}".format(path)
-            LOGGER.error(result_message)
+            if throughputs:
+                pass_test, result_message = _analyze_throughputs(throughputs)
+            else:
+                pass_test = False
+                result_message = "No throughput data found in: {0}".format(path)
+                LOGGER.error(result_message)
 
-        results.append({
-            "status": "pass" if pass_test else "fail",
-            "log_raw": "File: {0}\n".format(path) + result_message,
-            "test_file": "ycsb-throughput-analysis." + str(num),
-            "start": 0,
-            "exit_code": 0 if pass_test else 1
-        })
+            results.append({
+                "status": "pass" if pass_test else "fail",
+                "log_raw": "File: {0}\n".format(path) + result_message,
+                "test_file": "ycsb-throughput-analysis." + str(num),
+                "start": 0,
+                "exit_code": 0 if pass_test else 1
+            })
 
     return results
 
