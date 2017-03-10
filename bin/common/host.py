@@ -16,6 +16,51 @@ def log_lines(level, lines):
         if line:
             LOG.log(level, line.rstrip())
 
+# pylint: disable=unused-argument
+def run_commands(host_list, command, config):
+    '''For each host in the list, make an appropriate RemoteHost or
+    LocalHost Object and run the set of commands
+
+    :param list host_list: List of ip addresses to connect to
+    :param map command: The command to execute. The key is the type.
+    :param ConfigDict config: The system configuration
+    '''
+
+    # Base code in mongodb_setup.py wrapping of host objects
+    raise NotImplementedError
+
+def execute_list(list_actions, config):
+    '''
+    Execute a list of actions on the appropriate hosts
+    '''
+
+    for item in list_actions:
+        # Item should be a map with one entry
+        assert isinstance(item, dict), 'item in list isn\'t a dict'
+        assert len(item.keys()) == 1, 'item has more than one entry'
+        for key, value in item.iteritems():
+            if key == 'on_workload_client':
+                clients = [client.public_ip for client in
+                           config['infrastructure_provisioning']['out']['workload_client']]
+                run_commands(clients, value, config)
+            elif key == 'on_workload_client_shell':
+                pass
+            elif key == 'on_mongos':
+                # This next line and ones like it can be pulled out into a simple helper
+                mongoses = [mongos.public_ip for mongos in
+                            config['infrastructure_provisioning']['out']['mongos']]
+                run_commands(mongoses, value, config)
+            elif key == 'on_mongod':
+                pass
+            elif key == 'on_configsvr':
+                pass
+            elif key == 'on_all_hosts':
+                pass
+            else:
+                LOG.error("Unknown key %s in action list", key)
+
+    raise NotImplementedError
+
 
 class Host(object):
     """Base class for hosts."""

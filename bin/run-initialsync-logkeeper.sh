@@ -29,9 +29,6 @@ rm -f ../../reports.tgz
 
 source ${BINDIR}/setup-workloads.sh
 
-# PERF-531. Generating config file for mission control.
-python $BINDIR/config_test_control.py
-echo "Generated mc.json"
 scp -oStrictHostKeyChecking=no -i $PEMFILE  workloads.yml $SSHUSER@$mc:./workloads/
 
 # Prepare workload for background traffic

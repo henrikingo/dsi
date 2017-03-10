@@ -35,26 +35,35 @@ run:
             sharded: ${mongodb_setup.meta.is_sharded}
             replica: ${mongodb_setup.meta.is_replset}
             storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
-    pre_task:  # Ordered list of things to do before the set of runs start
-      - on_workload_client: |
-        # to be executed on workload client (when MongoDB cluster is running)
-      - on_workload_client_shell: |
-        # JavaScript to be executed in mongo shell (when MongoDB cluster is running)
-      - on_mongos: |
-        # To be executed on all the mongos
-      - on_mongod: |
-        # To be executed on all the mongod
-      - on_configsvr: |
-        # To be executied on all the config servers
-    post_task: # Ordered list of things to do after all the runs
-      - on_workload_client: |
-    pre_run: # Ordered list of things to do before each run, after pre_task
-      - on_mongos: (see above)
-      - on_mongod: (see above)
-      - on_configscr: (see above)
-    post_run: # Ordered list of things to do after each run, before post_task
-      - on_mongod: (see above)
-      - on_all_hosts: (see above)
+
+# Ordered list of things to do before the set of runs start
+pre_task:
+  - on_workload_client: |
+    # to be executed on workload client (when MongoDB cluster is running)
+  - on_workload_client_shell: |
+    # JavaScript to be executed (once) in a mongo shell (when MongoDB cluster is running)
+  - on_mongos: |
+    # To be executed on all the mongos
+  - on_mongod: |
+    # To be executed on all the mongod
+  - on_configsvr: |
+    # To be executied on all the config servers
+
+# Ordered list of things to do after all the runs
+post_task:
+  - on_workload_client: |
+    # See above
+
+# Ordered list of things to do before each run, after pre_task
+pre_run:
+  - on_mongos: (see above)
+  - on_mongod: (see above)
+  - on_configsvr: (see above)
+
+# Ordered list of things to do after each run, before post_task
+post_run:
+  - on_mongod: (see above)
+  - on_all_hosts: (see above)
 
     # Note: This config doesn't include things like PemFile, or ip addresses,
     # rather test control module will find that info in the infrastructure_provisioning config

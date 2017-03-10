@@ -69,15 +69,9 @@ cat ips.sh
 rm -rf ./reports
 rm -f ../../reports.tgz
 
-# PERF-531. Generating config file for mission control.
-python $BINDIR/config_test_control.py
-echo "Generated mc.json"
-
 if [ -e fio.ini ]; then
    scp -oStrictHostKeyChecking=no -i $PEMFILE  fio.ini $SSHUSER@$mc:./
 fi
-
-cat mc.json
 
 MC=${MC:-"${BINDIR}/mc"}
 if [ $CLUSTER == "longevity" ]
