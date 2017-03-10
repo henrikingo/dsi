@@ -60,7 +60,7 @@ def main(argv):
         execute_list(test_control['pre_task'], conf)
 
     # Go through the existing scripts if necessary
-    if args.test in ['benchRun', 'secondary_performance', 'mongos', 'move_chunk']:
+    if args.test in ['core', 'non_sharded', 'secondary_performance', 'mongos', 'move_chunk']:
         subprocess.check_call([os.path.join(dsi_bin_path, 'run-benchRun.sh'),
                                args.storage_engine, args.test, args.cluster])
     elif args.test in ['ycsb']:

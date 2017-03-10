@@ -19,43 +19,10 @@ run:
         ########################################################################
         tests:
             default:
-              - contended_update.js
-              - map_reduce.js
-              - insert_capped.js
-              - insert_ttl.js
-              - insert_capped_indexes.js
-              - insert_vector.js
-              - word_count.js
-              - jtrue.js
-              - move_chunk.js
               - mongos_read_single.js
               - mongos_insert_vector.js
               - mongos_insert_single.js
               - mongos_50read_50write.js
-              - move_chunk_with_load.js
-              - index_build.js
-              - mix.js
-            secondary_performance:
-              - secondary_performance.js:
-                  size: 1
-                  count: 10000000 # 10M
-                  primary: ${mongodb_setup.meta.hostname}
-                  secondary: ${mongodb_setup.meta.secondary}
-              - secondary_performance.js:
-                  size: 100
-                  count: 10000000 # 10M
-                  primary: ${mongodb_setup.meta.hostname}
-                  secondary: ${mongodb_setup.meta.secondary}
-              - secondary_performance.js:
-                  size: 1000
-                  count: 10000000 # 10M
-                  primary: ${mongodb_setup.meta.hostname}
-                  secondary: ${mongodb_setup.meta.secondary}
-              - secondary_performance.js:
-                  size: 10000
-                  count: 1000000 # 1M
-                  primary: ${mongodb_setup.meta.hostname}
-                  secondary: ${mongodb_setup.meta.secondary}
             test:
               - # Empty list. Put new workloads here for testing
             short: # Just does Hello World
