@@ -138,6 +138,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
         """Separate fio tests to separate graphs for readability"""
         fio_mc = {}
         fio_primary = {}
+        canary = {}
         mongodb_tests = {}
         for variant_name, variant_obj in self.agg_results.iteritems():
             for task_name, task_obj in variant_obj.iteritems():
@@ -147,10 +148,12 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                         deep_dict.set_value(fio_mc, key, test_obj)
                     elif test_name[0:8] == 'primary_':
                         deep_dict.set_value(fio_primary, key, test_obj)
+                    elif test_name[0:7] == 'canary_':
+                        deep_dict.set_value(canary, key, test_obj)
                     else:
                         deep_dict.set_value(mongodb_tests, key, test_obj)
 
-        return mongodb_tests, fio_mc, fio_primary
+        return mongodb_tests, fio_mc, fio_primary, canary
 
     def bar_graphs(self):
         """Write some pyplot graphs into sub-directory"""
@@ -173,7 +176,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                    ('all_max', False)]
 
         # Strings used in filenames for output files
-        dataset_names = ["", "--mc", "--pri"]
+        dataset_names = ["", "--mc", "--pri", "--canary"]
 
         for metric, log in metrics:
             dataset_index = -1
@@ -262,7 +265,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
         metrics = [('ops_per_sec_values', False)]
 
         # Strings used in filenames for output files
-        dataset_names = ["", "--mc", "--pri"]
+        dataset_names = ["", "--mc", "--pri", "--canary"]
 
         for metric, log in metrics:
             dataset_index = -1
@@ -355,7 +358,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
         metrics = [('ops_per_sec_values', False)]
 
         # Strings used in filenames for output files
-        dataset_names = ["", "--mc", "--pri"]
+        dataset_names = ["", "--mc", "--pri", "--canary"]
 
         for metric, log in metrics:
             dataset_index = -1
