@@ -145,6 +145,7 @@ topology:
 meta:
     # The list of hosts that can be used in a mongodb connection string
     hosts: ${mongodb_setup.topology.0.mongos.0.private_ip}:27017,${mongodb_setup.topology.0.mongos.1.private_ip}:27017,${mongodb_setup.topology.0.mongos.2.private_ip}:27017
+    hostname: ${mongodb_setup.topology.0.mongos.0.private_ip}
     username: myusername
     password: mypassword
     is_sharded: true
