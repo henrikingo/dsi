@@ -39,6 +39,10 @@ fi
 if [ -e fio.ini ]; then
    scp -oStrictHostKeyChecking=no -i $PEMFILE  fio.ini $SSHUSER@$mc:./
 fi
+if [ -e fio-net.ini ]; then
+   scp -oStrictHostKeyChecking=no -i $PEMFILE  fio-net.ini $SSHUSER@$mc:./
+   scp -oStrictHostKeyChecking=no -i $PEMFILE  fio-net-listener.ini $SSHUSER@$mc:./
+fi
 
 
 cat mc.json

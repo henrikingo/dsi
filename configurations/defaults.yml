@@ -140,3 +140,33 @@ test_control:
       numjobs=16
       bs=16k
       iodepth=32
+
+    common_fio_net_config: |
+      [global]
+      ioengine=net
+      port=27019
+      protocol=tcp
+      bs=4k
+      size=1g
+      runtime=20
+      time_based
+      pingpong=1
+
+      [sender]
+      hostname=${mongodb_setup.meta.hostname}
+      rw=write
+
+    common_fio_net_config_listener: |
+      [global]
+      ioengine=net
+      port=27019
+      protocol=tcp
+      bs=4k
+      size=1g
+      runtime=40
+      time_based
+      pingpong=1
+
+      [receiver]
+      listen
+      rw=read

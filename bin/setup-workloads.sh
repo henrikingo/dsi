@@ -38,4 +38,6 @@ ssh -oStrictHostKeyChecking=no -T -i $PEMFILE $SSHUSER@$mc "tar zxvf workloads.t
 # Copy up helper script
 scp -oStrictHostKeyChecking=no -i $PEMFILE $BINDIR/process_fio_results.py $SSHUSER@$mc:./
 scp -oStrictHostKeyChecking=no -i $PEMFILE $BINDIR/fio-test.sh $SSHUSER@$mc:./
+scp -oStrictHostKeyChecking=no -i $PEMFILE $BINDIR/fio-net-test.sh $SSHUSER@$mc:./
 ssh -oStrictHostKeyChecking=no -T -A -i $PEMFILE $SSHUSER@$mc chmod 755 fio-test.sh
+ssh -oStrictHostKeyChecking=no -T -A -i $PEMFILE $SSHUSER@$mc chmod 755 fio-net-test.sh

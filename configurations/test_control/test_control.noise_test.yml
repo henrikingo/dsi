@@ -1,4 +1,16 @@
 run:
+    # Dummy entry to produce a fio-net-listener.ini file, which is used together with fio-net.ini
+    # in the following entry.
+  - id: fio-net-listener-${mongodb_setup.mongod_config_file.storage.engine}
+    type: shell
+    cmd: 'echo ">>> fio_net_dummy_entry :      1.0 1"'
+    config_filename: fio-net-listener.ini
+    workload_config: ${test_control.common_fio_net_config_listener}
+  - id: fio-net-${mongodb_setup.mongod_config_file.storage.engine}
+    type: shell
+    cmd: './fio-net-test.sh ${mongodb_setup.meta.hostname}'
+    config_filename: fio-net.ini
+    workload_config: ${test_control.common_fio_net_config}
   - id: fio-${mongodb_setup.mongod_config_file.storage.engine}.primary_data
     type: shell
     cmd: 'scp -o StrictHostKeyChecking=no fio.ini ${mongodb_setup.meta.hostname}:./; for i in `seq 1 5`; do ssh -A  ${mongodb_setup.meta.hostname} "mkdir -p ./data/fio && fio  --directory=$(readlink -f ./data) --output-format=json --output=fio.json fio.ini" && scp ${mongodb_setup.meta.hostname}:./fio.json . && python process_fio_results.py -l primary && mv fio.json fio.json.p1.$i; done;  ssh -A  ${mongodb_setup.meta.hostname} "rm -r data/fio"'

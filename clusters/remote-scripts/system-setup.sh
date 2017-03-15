@@ -73,6 +73,21 @@ if [ "${RUN_FIO}" != "false" ]; then
     fio --directory=/media/ephemeral1 --name fio_test_file --direct=1 --rw=randwrite --bs=16k --size=1G --numjobs=16 --time_based --runtime=60 --group_reporting --norandommap
 fi
 
+echo
+echo "Compile fio from source, because the stock fio on Amazon Linux didn't work with ioengine=net"
+
+sudo yum groupinstall -y --quiet "Development tools"
+sudo yum install -y --quiet zlib-devel
+git clone --quiet https://github.com/axboe/fio
+cd fio
+git checkout e8750877dcd5b748cc7100654f9d9dff770d0c83
+./configure
+make
+mv fio ../netfio
+cd ..
+echo
+echo
+
 # Workload setup
 if [ "$INSTANCE_TYPE" == "workloadclient" ]; then
     # TODO: For now we setup everything each time. Ideally we'd do the Java install for ycsb only and pip for custom workloads only.

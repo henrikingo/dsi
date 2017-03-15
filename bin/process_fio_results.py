@@ -73,12 +73,15 @@ def main(argv=None):
                         help="Print out brief results. If -l is also set, the last one wins")
     parser.add_argument('-l', '--long', action='store_false', dest='brief',
                         help="Print out all possible results. If -b is also set, the last one wins")
+    parser.add_argument('-i', '--input-file',
+                        default="fio.json",
+                        help="Input file (default: fio.json)")
     parser.add_argument('prefix', nargs='?', help='Prefix to prepend to all test results')
     args = parser.parse_args(argv)
     if args.brief:
-        print('\n'.join(filter_results(process_results_for_mc(args.prefix))))
+        print('\n'.join(filter_results(process_results_for_mc(args.prefix, args.input_file))))
     else:
-        print('\n'.join(process_results_for_mc(args.prefix)))
+        print('\n'.join(process_results_for_mc(args.prefix, args.input_file)))
 
 if __name__ == '__main__':
     main()
