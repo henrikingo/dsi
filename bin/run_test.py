@@ -69,8 +69,8 @@ def main(argv):
     elif args.test == 'initialSync':
         subprocess.check_call([os.path.join(dsi_bin_path, 'run-initialSync.sh'),
                                args.storage_engine, args.test, args.cluster])
-    elif args.test == 'initialSync-logkeeper':
-        subprocess.check_call([os.path.join(dsi_bin_path, 'run-initialSync-logkeepr.sh'),
+    elif args.test == 'initialsync-logkeeper':
+        subprocess.check_call([os.path.join(dsi_bin_path, 'run-initialsync-logkeeper.sh'),
                                args.storage_engine, args.test, args.cluster])
     else:
         # Everything should eventually come through this path
