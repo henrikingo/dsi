@@ -12784,6 +12784,26 @@
                 }
             }
         },
+        "views-query":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "Queries.IdentityView.IntNonIdFindProjectionCovered":{
+                    "thread_threshold":0.12,
+                    "threshold":0.08,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Queries.IdentityView.NoMatch":{
+                    "thread_threshold":0.12,
+                    "threshold":0.08,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                }
+            }
+        },
         "where":{
             "ndays":{},
             "reference":{},
