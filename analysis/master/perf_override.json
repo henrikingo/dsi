@@ -5459,6 +5459,27 @@
                 }
             },
             "threshold":{
+                "Aggregation.ExpressionObject":{
+                    "thread_threshold":0.17,
+                    "threshold":0.12,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Aggregation.GeoNear2d":{
+                    "thread_threshold":0.15,
+                    "threshold":0.09,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Aggregation.GeoNear2dSphere":{
+                    "thread_threshold":0.15,
+                    "threshold":0.09,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Aggregation.Group.All":{
                     "thread_threshold":0.21,
                     "threshold":0.16,
@@ -5539,6 +5560,13 @@
                 "Aggregation.UnwindThenGroup":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Aggregation.UnwindThenMatch":{
+                    "thread_threshold":0.3,
+                    "threshold":0.25,
                     "ticket":[
                         "PERF-875"
                     ]
@@ -5745,17 +5773,19 @@
             "reference":{},
             "threshold":{
                 "Queries.Empty":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "PERF-875"
                     ]
                 },
                 "Queries.FindProjection":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.12,
+                    "threshold":0.08,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "PERF-875"
                     ]
                 },
                 "Queries.FindProjectionDottedField":{
@@ -5876,6 +5906,27 @@
                 }
             },
             "threshold":{
+                "Aggregation.IdentityView.ExpressionObject":{
+                    "thread_threshold":0.17,
+                    "threshold":0.12,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Aggregation.IdentityView.GeoNear2d":{
+                    "thread_threshold":0.15,
+                    "threshold":0.09,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Aggregation.IdentityView.GeoNear2dSphere":{
+                    "thread_threshold":0.15,
+                    "threshold":0.09,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Aggregation.IdentityView.Group.All":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
@@ -5971,6 +6022,35 @@
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Aggregation.IdentityView.UnwindThenMatch":{
+                    "thread_threshold":0.3,
+                    "threshold":0.25,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                }
+            }
+        },
+        "views-query":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "Queries.IdentityView.Empty":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-444",
+                        "PERF-875"
+                    ]
+                },
+                "Queries.IdentityView.FindProjection":{
+                    "thread_threshold":0.12,
+                    "threshold":0.08,
+                    "ticket":[
+                        "PERF-444",
                         "PERF-875"
                     ]
                 }
@@ -12164,9 +12244,23 @@
                 }
             },
             "threshold":{
+                "Aggregation.ExpressionObject":{
+                    "thread_threshold":0.17,
+                    "threshold":0.12,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Aggregation.GeoNear2d":{
+                    "thread_threshold":0.15,
+                    "threshold":0.09,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Aggregation.GeoNear2dSphere":{
-                    "thread_threshold":0.12,
-                    "threshold":0.08,
+                    "thread_threshold":0.15,
+                    "threshold":0.09,
                     "ticket":[
                         "PERF-875"
                     ]
@@ -12251,6 +12345,13 @@
                 "Aggregation.UnwindThenGroup":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Aggregation.UnwindThenMatch":{
+                    "thread_threshold":0.3,
+                    "threshold":0.25,
                     "ticket":[
                         "PERF-875"
                     ]
@@ -12555,9 +12656,23 @@
                 }
             },
             "threshold":{
+                "Aggregation.IdentityView.ExpressionObject":{
+                    "thread_threshold":0.17,
+                    "threshold":0.12,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Aggregation.IdentityView.GeoNear2d":{
+                    "thread_threshold":0.15,
+                    "threshold":0.09,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Aggregation.IdentityView.GeoNear2dSphere":{
-                    "thread_threshold":0.12,
-                    "threshold":0.08,
+                    "thread_threshold":0.15,
+                    "threshold":0.09,
                     "ticket":[
                         "PERF-875"
                     ]
@@ -12656,6 +12771,13 @@
                 "Aggregation.IdentityView.UnwindThenGroup":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Aggregation.IdentityView.UnwindThenMatch":{
+                    "thread_threshold":0.3,
+                    "threshold":0.25,
                     "ticket":[
                         "PERF-875"
                     ]
