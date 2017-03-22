@@ -491,6 +491,28 @@
                         "BF-5009"
                     ],
                     "workload":"ycsb"
+                },
+                "ycsb_load-wiredTiger":{
+                    "create_time":"2017-03-17T23:35:48.456Z",
+                    "end":1489873375.0,
+                    "max":55702.85867070698,
+                    "name":"ycsb_load-wiredTiger",
+                    "order":6276,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":55702.85867070698
+                        }
+                    },
+                    "revision":"914bbbd26a686e032fdddec964b109ea78c6e6f6",
+                    "start":1489873283.0,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-5009"
+                    ],
+                    "workload":"ycsb"
                 }
             },
             "threshold":{
@@ -4200,6 +4222,28 @@
                     "tag":"",
                     "threads":[
                         "64"
+                    ],
+                    "ticket":[
+                        "BF-5009"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_load-wiredTiger":{
+                    "create_time":"2017-03-17T23:35:48.456Z",
+                    "end":1489873329.0,
+                    "max":71021.71844149941,
+                    "name":"ycsb_load-wiredTiger",
+                    "order":6276,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":71021.71844149941
+                        }
+                    },
+                    "revision":"914bbbd26a686e032fdddec964b109ea78c6e6f6",
+                    "start":1489873256.0,
+                    "tag":"",
+                    "threads":[
+                        "32"
                     ],
                     "ticket":[
                         "BF-5009"
