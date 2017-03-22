@@ -1,11 +1,30 @@
 """Download and install mongodb_binary_archive on all nodes."""
 
 import logging
+import os
+import re
+from uuid import uuid4
 
 #pylint: disable=relative-import,too-few-public-methods
 from host import RemoteHost, LocalHost
 
 LOG = logging.getLogger(__name__)
+
+
+def temp_file(path="mongodb.tgz", sanitize=lambda s: re.sub(r'[^A-Za-z0-9_\-.]', "", s)):
+    """ create a temp file name based using the path as a suffix.
+     The basename portion of the path will be sanitized and appended to a random UUID.
+     If no path is provided then a name is generated using a default path. Worst case, the code will
+     only return a random UUID.
+
+     :param str path: The resource location, it can be a uri a full or a relative path
+     :param lambda sanitize: a lambda to sanitize the path by removing unacceptable chars.
+     The default lambda removes all chars not matching alphanumerics, '-','_' and '.'.
+
+     :returns str a temp file based on this path
+    """
+    return "{}{}".format(str(uuid4()), sanitize(os.path.basename(path)))
+
 
 class DownloadMongodb(object):
     """Download and install mongodb_binary_archive on all nodes."""
@@ -73,6 +92,7 @@ class DownloadMongodb(object):
 
     def _remote_commands(self, host):
         mongo_dir = self.config["mongodb_setup"]["mongo_dir"]
+        tmp_file = temp_file(self.mongodb_binary_archive)
         return [
             ['echo', 'Downloading {} to {}.'.format(
                 self.mongodb_binary_archive, host.host)],
@@ -80,8 +100,8 @@ class DownloadMongodb(object):
             ['rm', '-rf', 'bin'],
             ['rm', '-rf', 'jstests'],
             ['mkdir', mongo_dir],
-            ['curl', '--retry', '10', self.mongodb_binary_archive, '|',
-             'tar', 'zxv', '-C', mongo_dir],
+            ['curl', '--retry', '10', self.mongodb_binary_archive, '-o', tmp_file],
+            ['tar', '-C', mongo_dir, '-zxvf', tmp_file],
             ['cd', '..'],
             ['mv', mongo_dir + '/*/*', mongo_dir],
             ['mkdir', '-p', 'bin'],

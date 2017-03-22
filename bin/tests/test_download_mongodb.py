@@ -3,10 +3,11 @@
 import os
 import sys
 import unittest
+import string
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 
-from download_mongodb import DownloadMongodb #pylint: disable=wrong-import-position
+from download_mongodb import DownloadMongodb, temp_file  # pylint: disable=wrong-import-position
 
 class DownloadMongodbTestCase(unittest.TestCase):
     """Unit tests for DownloadMongodb library."""
@@ -80,6 +81,32 @@ class DownloadMongodbTestCase(unittest.TestCase):
         self.downloader = DownloadMongodb(self.config_no_binary,
                                           self.cli_mongodb_binary_archive, True)
         self.assertEqual(self.downloader.mongodb_binary_archive, self.cli_mongodb_binary_archive)
+
+    def test_temp_file(self):
+        """Pass mongodb_binary_archive as command line option without any specified in config."""
+        # Must use run_locally=True for testing. RemoteHost opens connections already in __init__.
+
+        def _test_temp_file(test, filename, value, uuid_len=36):
+            test.assertTrue(filename.endswith(value))
+            test.assertTrue(len(filename) == len(value) + uuid_len)
+
+        _test_temp_file(self, temp_file(), "mongodb.tgz")
+        _test_temp_file(self, temp_file(path=self.cli_mongodb_binary_archive), "bar.tgz")
+        _test_temp_file(self, temp_file(path=self.cli_mongodb_binary_archive + "?test=ing"),
+                        "bar.tgztesting")
+        path = self.cli_mongodb_binary_archive + "?test=ing&second=param"
+        _test_temp_file(self, temp_file(path=path), "bar.tgztestingsecondparam")
+
+        # the '/' chars wouldn't have survived the basename, which is why they are removed
+        path = ''.join(sorted(string.printable.split())).replace("/", "")
+        _test_temp_file(self, temp_file(path=path),
+                        (string.digits + string.ascii_letters + "-._").replace("/", ""))
+
+        # test sanitize allows everything
+        path = self.cli_mongodb_binary_archive + "?test=ing"
+        _test_temp_file(self, temp_file(path=path, sanitize=lambda x: x),
+                        "bar.tgz?test=ing")
+
 
 if __name__ == '__main__':
     unittest.main()
