@@ -4573,6 +4573,13 @@
                     "ticket":[
                         "PERF-444"
                     ]
+                },
+                "Update.SetWithMultiIndex.Random":{
+                    "thread_threshold":0.09,
+                    "threshold":0.06,
+                    "ticket":[
+                        "BF-4890"
+                    ]
                 }
             }
         }
