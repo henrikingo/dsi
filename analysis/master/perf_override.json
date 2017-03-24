@@ -5427,7 +5427,43 @@
     },
     "linux-mmap-standalone":{
         "aggregation":{
-            "ndays":{},
+            "ndays":{
+                "Aggregation.Skip":{
+                    "create_time":"2017-03-24T13:45:04.227Z",
+                    "max":195.80165173293312,
+                    "name":"Aggregation.Skip",
+                    "order":7173,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":195.80165173293312,
+                            "ops_per_sec_values":[
+                                197.57358067654468,
+                                198.8505836714293,
+                                198.68933004316594,
+                                197.2074860521159,
+                                186.6872782214099
+                            ]
+                        },
+                        "end":"2017-03-24T15:44:42.527Z",
+                        "start":"2017-03-24T15:44:17.109Z"
+                    },
+                    "revision":"921f12c9aa005488ac93b672d74a63af51b93139",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5083"
+                    ]
+                }
+            },
             "reference":{
                 "Aggregation.GeoNear2d":{
                     "create_time":"2017-02-03T13:29:41.753Z",
@@ -5462,6 +5498,41 @@
                     ],
                     "ticket":[
                         "BF-4690"
+                    ]
+                },
+                "Aggregation.Skip":{
+                    "create_time":"2017-03-24T13:45:04.227Z",
+                    "max":195.80165173293312,
+                    "name":"Aggregation.Skip",
+                    "order":7173,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":195.80165173293312,
+                            "ops_per_sec_values":[
+                                197.57358067654468,
+                                198.8505836714293,
+                                198.68933004316594,
+                                197.2074860521159,
+                                186.6872782214099
+                            ]
+                        },
+                        "end":"2017-03-24T15:44:42.527Z",
+                        "start":"2017-03-24T15:44:17.109Z"
+                    },
+                    "revision":"921f12c9aa005488ac93b672d74a63af51b93139",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5083"
                     ]
                 }
             },
@@ -5874,7 +5945,43 @@
             }
         },
         "views-aggregation":{
-            "ndays":{},
+            "ndays":{
+                "Aggregation.IdentityView.Skip":{
+                    "create_time":"2017-03-24T13:45:04.227Z",
+                    "max":189.91996788365782,
+                    "name":"Aggregation.IdentityView.Skip",
+                    "order":7173,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":189.91996788365782,
+                            "ops_per_sec_values":[
+                                189.47506014534017,
+                                189.83526096053845,
+                                189.99154128090657,
+                                189.90459193301285,
+                                190.3933850984911
+                            ]
+                        },
+                        "end":"2017-03-24T17:12:16.932Z",
+                        "start":"2017-03-24T17:11:51.508Z"
+                    },
+                    "revision":"921f12c9aa005488ac93b672d74a63af51b93139",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5083"
+                    ]
+                }
+            },
             "reference":{
                 "Aggregation.IdentityView.GeoNear2d":{
                     "create_time":"2017-02-03T13:29:41.753Z",
@@ -5909,6 +6016,41 @@
                     ],
                     "ticket":[
                         "BF-4690"
+                    ]
+                },
+                "Aggregation.IdentityView.Skip":{
+                    "create_time":"2017-03-24T13:45:04.227Z",
+                    "max":189.91996788365782,
+                    "name":"Aggregation.IdentityView.Skip",
+                    "order":7173,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":189.91996788365782,
+                            "ops_per_sec_values":[
+                                189.47506014534017,
+                                189.83526096053845,
+                                189.99154128090657,
+                                189.90459193301285,
+                                190.3933850984911
+                            ]
+                        },
+                        "end":"2017-03-24T17:12:16.932Z",
+                        "start":"2017-03-24T17:11:51.508Z"
+                    },
+                    "revision":"921f12c9aa005488ac93b672d74a63af51b93139",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5083"
                     ]
                 }
             },
@@ -12212,7 +12354,43 @@
     },
     "linux-wt-standalone":{
         "aggregation":{
-            "ndays":{},
+            "ndays":{
+                "Aggregation.Skip":{
+                    "create_time":"2017-03-24T13:45:04.227Z",
+                    "max":179.90324353786826,
+                    "name":"Aggregation.Skip",
+                    "order":7173,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":179.90324353786826,
+                            "ops_per_sec_values":[
+                                178.5966498544757,
+                                180.02303735428075,
+                                180.42664607844782,
+                                180.39597215549213,
+                                180.0739122466449
+                            ]
+                        },
+                        "end":"2017-03-24T17:09:22.366Z",
+                        "start":"2017-03-24T17:08:56.950Z"
+                    },
+                    "revision":"921f12c9aa005488ac93b672d74a63af51b93139",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5083"
+                    ]
+                }
+            },
             "reference":{
                 "Aggregation.GeoNear2d":{
                     "create_time":"2017-02-03T13:29:41.753Z",
@@ -12247,6 +12425,41 @@
                     ],
                     "ticket":[
                         "BF-4690"
+                    ]
+                },
+                "Aggregation.Skip":{
+                    "create_time":"2017-03-24T13:45:04.227Z",
+                    "max":179.90324353786826,
+                    "name":"Aggregation.Skip",
+                    "order":7173,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":179.90324353786826,
+                            "ops_per_sec_values":[
+                                178.5966498544757,
+                                180.02303735428075,
+                                180.42664607844782,
+                                180.39597215549213,
+                                180.0739122466449
+                            ]
+                        },
+                        "end":"2017-03-24T17:09:22.366Z",
+                        "start":"2017-03-24T17:08:56.950Z"
+                    },
+                    "revision":"921f12c9aa005488ac93b672d74a63af51b93139",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5083"
                     ]
                 }
             },
@@ -12631,7 +12844,43 @@
             }
         },
         "views-aggregation":{
-            "ndays":{},
+            "ndays":{
+                "Aggregation.IdentityView.Skip":{
+                    "create_time":"2017-03-24T13:45:04.227Z",
+                    "max":176.24344596628734,
+                    "name":"Aggregation.IdentityView.Skip",
+                    "order":7173,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":176.24344596628734,
+                            "ops_per_sec_values":[
+                                174.5574349883402,
+                                176.9811451159496,
+                                176.6924649658218,
+                                176.66958251418802,
+                                176.3166022471371
+                            ]
+                        },
+                        "end":"2017-03-24T15:43:16.435Z",
+                        "start":"2017-03-24T15:42:51.016Z"
+                    },
+                    "revision":"921f12c9aa005488ac93b672d74a63af51b93139",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5083"
+                    ]
+                }
+            },
             "reference":{
                 "Aggregation.IdentityView.GeoNear2d":{
                     "create_time":"2017-02-03T13:29:41.753Z",
@@ -12666,6 +12915,41 @@
                     ],
                     "ticket":[
                         "BF-4690"
+                    ]
+                },
+                "Aggregation.IdentityView.Skip":{
+                    "create_time":"2017-03-24T13:45:04.227Z",
+                    "max":176.24344596628734,
+                    "name":"Aggregation.IdentityView.Skip",
+                    "order":7173,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":176.24344596628734,
+                            "ops_per_sec_values":[
+                                174.5574349883402,
+                                176.9811451159496,
+                                176.6924649658218,
+                                176.66958251418802,
+                                176.3166022471371
+                            ]
+                        },
+                        "end":"2017-03-24T15:43:16.435Z",
+                        "start":"2017-03-24T15:42:51.016Z"
+                    },
+                    "revision":"921f12c9aa005488ac93b672d74a63af51b93139",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5083"
                     ]
                 }
             },
