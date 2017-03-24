@@ -75,7 +75,7 @@ functions:
       params:
         aws_key: ${aws_key}
         aws_secret: ${aws_secret}
-        remote_file: perf-3.2/performance_3.2_03f702f59d7d09a76f3c16944ae1ec48c4b25046/03f702f59d7d09a76f3c16944ae1ec48c4b25046/mongo-performance_3.2_03f702f59d7d09a76f3c16944ae1ec48c4b25046
+        remote_file: perf-3.2/performance_3.2_30e047e7aa8097bda5d88c5676bdd3c825d8e4ca/30e047e7aa8097bda5d88c5676bdd3c825d8e4ca/mongo-performance_3.2_30e047e7aa8097bda5d88c5676bdd3c825d8e4ca
         bucket: mciuploads
         local_file: src/mongo
     - command: shell.exec
