@@ -35,6 +35,8 @@ mongod_flags:
       replace: --storageEngine=wiredTiger
     - pattern: --inMemorySizeGB
       replace: --wiredTigerCacheSizeGB
+    - pattern: "--inMemoryEngineConfigString"
+      replace: "--wiredTigerEngineConfigString"
 
 # These shell versions should be updated to something recent when reused.
 mongo_shells:
