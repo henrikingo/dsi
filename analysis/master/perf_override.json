@@ -12464,6 +12464,41 @@
                 }
             },
             "threshold":{
+                "Aggregation.CountsFullCollection":{
+                    "thread_threshold":0.22,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-5096"
+                    ]
+                },
+                "Aggregation.DistinctWithIndex":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5096"
+                    ]
+                },
+                "Aggregation.DistinctWithIndexAndQuery":{
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5096"
+                    ]
+                },
+                "Aggregation.DistinctWithoutIndex":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5096"
+                    ]
+                },
+                "Aggregation.DistinctWithoutIndexAndQuery":{
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5096"
+                    ]
+                },
                 "Aggregation.ExpressionObject":{
                     "thread_threshold":0.17,
                     "threshold":0.12,
@@ -12954,6 +12989,41 @@
                 }
             },
             "threshold":{
+                "Aggregation.IdentityView.CountsFullCollection":{
+                    "thread_threshold":0.22,
+                    "threshold":0.16,
+                    "ticket":[
+                        "BF-5096"
+                    ]
+                },
+                "Aggregation.IdentityView.DistinctWithIndex":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5096"
+                    ]
+                },
+                "Aggregation.IdentityView.DistinctWithIndexAndQuery":{
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5096"
+                    ]
+                },
+                "Aggregation.IdentityView.DistinctWithoutIndex":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5096"
+                    ]
+                },
+                "Aggregation.IdentityView.DistinctWithoutIndexAndQuery":{
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5096"
+                    ]
+                },
                 "Aggregation.IdentityView.ExpressionObject":{
                     "thread_threshold":0.17,
                     "threshold":0.12,
