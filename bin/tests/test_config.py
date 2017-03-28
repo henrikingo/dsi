@@ -1,5 +1,4 @@
 """Tests for bin/common/config.py"""
-
 # pylint: disable=fixme,line-too-long
 import os
 import sys
@@ -94,6 +93,9 @@ class ConfigDictTestCase(unittest.TestCase):
         self.assertEqual(self.conf['mongodb_setup']['topology'][0]['mongos'][0]['private_ip'], "10.2.1.100")
         self.assertEqual(self.conf['mongodb_setup']['meta']['hosts'], "10.2.1.100:27017,10.2.1.101:27017,10.2.1.102:27017")
 
+        # reference to reference
+        self.assertEqual(self.conf['mongodb_setup']['meta']['hostname'], '10.2.1.100')
+
     def test_per_node_mongod_config(self):
         """Test magic per_node_mongod_config() (merging the common mongod_config_file with per node config_file)"""
         mycluster = self.conf['mongodb_setup']['topology'][0]
@@ -160,6 +162,46 @@ class ConfigDictTestCase(unittest.TestCase):
         self.assertEqualLists(self.conf.keys(), ['workload_preparation', 'test_control', 'system_setup', 'runtime_secret', 'bootstrap', 'mongodb_setup', 'analysis', 'infrastructure_provisioning', 'runtime'])
         self.assertEqualLists(self.conf['infrastructure_provisioning']['tfvars'].values(), ['c3.8xlarge', 'us-west-2a', 1, 'us-west-2', 9, 3, 3, 'aws_ssh_key.pem', 'ec2-user', 'c3.8xlarge', 'serverteam-perf-ssh-key', 'c3.8xlarge', {'Project': 'sys-perf', 'owner': 'serverteam-perf@10gen.com', 'Variant': 'Linux 3-shard cluster', 'expire-on-delta': 1}, 't1.micro'])
         self.assertEqualLists(mycluster['shard'][2]['mongod'][0].values(), ['53.1.1.7', '<another url>', {'replication': {'oplogSizeMB': 153600, 'replSetName': 'override-rs'}, 'systemLog': {'path': 'data/logs/mongod.log', 'destination': 'file'}, 'setParameter': {'enableTestCommands': True, 'foo': True}, 'net': {'port': 27017}, 'processManagement': {'fork': True}, 'storage': {'engine': 'inMemory', 'dbPath': 'data/dbs'}}, '10.2.1.7'])
+
+    def test_lookup_path(self):
+        """check that the lookup_path works as expected."""
+
+        config = self.conf['infrastructure_provisioning']['out']
+
+        self.assertIsInstance(config.lookup_path('mongod'), list)
+        self.assertIsInstance(config.lookup_path('mongod.0'), ConfigDict)
+        self.assertIsInstance(config.lookup_path('mongod.0.public_ip'), str)
+
+        # hard coded but quick and easy
+        mongod = ['53.1.1.{}'.format(i) for i in range(1, 10)]
+        mongos = ['53.1.1.{}'.format(i) for i in range(100, 102)]
+        configsvr = ['53.1.1.{}'.format(i) for i in range(51, 54)]
+        workload_client = ['53.1.1.101']
+
+        self.assertEquals(config.lookup_path('mongod.0.public_ip'), mongod[0])
+
+        self.assertEquals(config.lookup_path('mongod.1.public_ip'), mongod[1])
+        self.assertEquals(config.lookup_path('mongod.4.public_ip'), mongod[4])
+
+        self.assertEquals(config.lookup_path('mongos.0.public_ip'), mongos[0])
+        self.assertEquals(config.lookup_path('configsvr.0.public_ip'), configsvr[0])
+        self.assertEquals(config.lookup_path('workload_client.0.public_ip'), workload_client[0])
+
+        # document that this is the current behavior
+        self.assertEquals(config.lookup_path('mongod.-1.public_ip'), mongod[-1])
+
+    def test_lookup_path_ex(self):
+        """check that lookup_path throws exceptions for the correct portion of the pathspec."""
+
+        config = self.conf['infrastructure_provisioning']['out']
+        self.assertRaisesRegexp(KeyError, "Key not found: MONGOD'$", config.lookup_path, 'MONGOD')
+        self.assertRaisesRegexp(KeyError, "MONGOD'$", config.lookup_path, 'MONGOD.50')
+        self.assertRaisesRegexp(KeyError, "list index out of range: mongod.50'$", config.lookup_path, 'mongod.50')
+        self.assertRaisesRegexp(KeyError, "mongod.50e-1'$", config.lookup_path, 'mongod.50e-1')
+        self.assertRaisesRegexp(KeyError, "mongod.50'$", config.lookup_path, 'mongod.50.public_ip')
+        self.assertRaisesRegexp(KeyError, "mongod.0.0'$", config.lookup_path, 'mongod.0.0')
+        self.assertRaisesRegexp(KeyError, "mongod.50'$", config.lookup_path, 'mongod.50.public_ip.0')
+
 
     # Helpers
     # pylint: disable=invalid-name

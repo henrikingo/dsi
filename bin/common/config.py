@@ -1,4 +1,5 @@
 """ConfigDict class reads yaml config files and presents a dict() get/set API to read configs."""
+# pylint: disable=too-many-public-methods
 
 import copy
 import logging
@@ -123,6 +124,40 @@ class ConfigDict(dict):
         """Check that module_name is one of Distributed Performance 2.0 modules, or _internal."""
         if module_name not in self.modules:
             raise ValueError('This is not a valid DSI module: ' + module_name)
+
+    def lookup_path(self, path):
+        """ lookup the path. This is a convenience method for converting
+        'a.path.0.like.this' to self['a']['path'][0]['like']['this'].
+        Note the conversion of the str '0' to  int 0. This is expected behaviour,
+        all integers in the path are treated this way.
+        Additionally, 'a.path.-1.like.this' will be converted to the following
+        equivalent call self['a']['path'][-1]['like']['this']
+
+        :param path str the name to lookup, it is of the form of 'a.path.0.like.this'.
+
+        :returns object the value at the path
+        :raises KeyError if the key or portion of the path does not exist. The
+        key error should reflect the level at which the unaliased name failed.
+
+
+        """
+
+        path = self.variable_path_as_list(path)
+
+        current = self
+        keys = ()
+        for key in path:
+            keys += (str(key),)
+            try:
+                current = current[key]
+            except TypeError:
+                raise KeyError("ConfigDict: Key not found: {}".format(".".join(keys)))
+            except KeyError:
+                raise KeyError("ConfigDict: Key not found: {}".format(".".join(keys)))
+            except IndexError:
+                raise KeyError("ConfigDict: list index out of range: {}".format(".".join(keys)))
+
+        return current
 
     ### Implementation of dict API
 
@@ -300,27 +335,23 @@ class ConfigDict(dict):
             matches = re.findall(r"\$\{(.*?)\}", value)
             if matches:
                 for path in matches:
-                    path_list = self.variable_path_as_list(path)
                     # Note that because self.root is itself a ConfigDict, if a referenced
                     # value would itself contain a ${variable.reference}, then it will
-                    # automatically be substituted too, as part of the descend_root[key].
+                    # automatically be substituted too.
                     # For example, in docs/config-specs/*.yml we have:
                     # mongodb_setup.meta.hosts ->
                     # mongodb_setup.topology.0.mongos.0.private_ip ->
                     # infrastructure_provisioning.out.mongos.0.private_ip
                     # and that resolves correctly via recursion.
-                    descend_root = self.root
-                    for path_element in path_list:
-                        try:
-                            descend_root = descend_root[path_element]
-                        except:
-                            path_from_root = copy.copy(self.path)
-                            path_from_root.append(key)
-                            raise ValueError("ConfigDict error at {}: Cannot resolve variable "
-                                             "reference '{}', error at '{}': {} {}"
-                                             .format(path_from_root, path, path_element,
-                                                     sys.exc_info()[0], sys.exc_info()[1]))
-                    values.append(descend_root)
+                    try:
+                        values.append(self.root.lookup_path(path))
+                    except:
+                        path_from_root = copy.copy(self.path)
+                        path_from_root.append(key)
+                        raise ValueError("ConfigDict error at {}: Cannot resolve variable "
+                                         "reference '{}', error at '{}': {} {}"
+                                         .format(path_from_root, path, path,
+                                                 sys.exc_info()[0], sys.exc_info()[1]))
                 between_values = re.split(r"\$\{.*?\}", value)
 
                 # If the variable reference is the entire value, then return the referenced value
