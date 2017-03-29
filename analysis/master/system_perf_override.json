@@ -74,6 +74,41 @@
                     "ticket":[
                         "PERF-750"
                     ]
+                },
+                "mixed_delete-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_findOne-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_insert-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_total-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_update-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
                 }
             }
         },
@@ -403,6 +438,41 @@
                         "PERF-738"
                     ]
                 },
+                "mixed_delete-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_findOne-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_insert-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_total-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_update-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
                 "removemulti_jtrue-wiredTiger":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
@@ -635,6 +705,41 @@
                     "ticket":[
                         "PERF-750"
                     ]
+                },
+                "mixed_delete-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_findOne-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_insert-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_total-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_update-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
                 }
             }
         },
@@ -724,6 +829,41 @@
                     "threshold":0.23,
                     "ticket":[
                         "PERF-719"
+                    ]
+                },
+                "mixed_delete-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_findOne-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_insert-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_total-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_update-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
                     ]
                 },
                 "removemulti_jtrue-wiredTiger":{
@@ -3390,6 +3530,41 @@
                         "PERF-873"
                     ]
                 },
+                "mixed_delete-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_findOne-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_insert-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_total-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_update-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
                 "moveChunkWithLoad_secondaryThrottle_true-mmapv1":{
                     "thread_threshold":0.6,
                     "threshold":0.4,
@@ -3450,6 +3625,41 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                },
+                "mixed_delete-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_findOne-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_insert-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_total-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_update-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
                     ]
                 },
                 "moveChunkWithLoad_secondaryThrottle_true-wiredTiger":{
@@ -3764,6 +3974,90 @@
             }
         }
     },
+    "linux-oplog-compare":{
+        "core_workloads_MMAPv1_oplog_comp":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "mixed_delete-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_findOne-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_insert-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_total-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_update-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                }
+            }
+        },
+        "core_workloads_WT_oplog_comp":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "mixed_delete-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_findOne-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_insert-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_total-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_update-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                }
+            }
+        }
+    },
     "linux-standalone":{
         "core_workloads_MMAPv1":{
             "ndays":{},
@@ -3816,6 +4110,41 @@
                     "threshold":0.15,
                     "ticket":[
                         "BF-4146"
+                    ]
+                },
+                "mixed_delete-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_findOne-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_insert-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_total-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_update-mmapv1":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
                     ]
                 }
             }
@@ -4137,6 +4466,41 @@
                     "threshold":0.3,
                     "ticket":[
                         "PERF-335"
+                    ]
+                },
+                "mixed_delete-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_findOne-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_insert-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_total-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
+                    ]
+                },
+                "mixed_update-wiredTiger":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5125"
                     ]
                 },
                 "removemulti_jtrue-wiredTiger":{
