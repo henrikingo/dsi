@@ -2936,6 +2936,13 @@
                     "ticket":[
                         "BF-4442"
                     ]
+                },
+                "Aggregation.UnwindThenMatch":{
+                    "thread_threshold":0.3,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-5123"
+                    ]
                 }
             }
         },
@@ -11918,6 +11925,13 @@
                     "threshold":0.16,
                     "ticket":[
                         "BF-4442"
+                    ]
+                },
+                "Aggregation.UnwindThenMatch":{
+                    "thread_threshold":0.3,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-5123"
                     ]
                 }
             }
