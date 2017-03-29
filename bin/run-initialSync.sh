@@ -8,14 +8,6 @@ CLUSTER=$3
 BINDIR=$(dirname $0)
 source $BINDIR/setting.sh
 
-eval `ssh-agent -s`
-ssh-add $PEMFILE
-
-rm -rf ./reports
-rm -f ../../reports.tgz
-
-source ${BINDIR}/setup-workloads.sh
-
 # Bridging a historical inconsistency: prior to refactoring, the test name for
 # MMAPv1 engine was "benchRun-mmap". However, the parameter ${storageEngine}
 # has the value "mmapv1" (which is the name of the engine in mongod config).
@@ -88,8 +80,3 @@ done
 
 scp -oStrictHostKeyChecking=no -i $PEMFILE  $SSHUSER@$mc:./workloads/workload_timestamps.csv reports
 
-rm -f ../perf.json
-chmod 766 perf.json
-cp ./perf.json ..
-pwd
-cat ../perf.json

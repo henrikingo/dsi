@@ -7,3 +7,30 @@ run:
     "cmd": "cd YCSB/ycsb-mongodb; ./bin/ycsb run mongodb -s -P workloads/workloadShort -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
 
 
+pre_task:
+  - on_localhost:
+      exec: $DSI_PATH/bin/setup-ycsb.sh
+  - on_workload_client:
+      exec: rm -rf ycsb*
+  - on_workload_client:
+      upload_files:
+        ycsb.tar.gz: ycsb.tar.gz
+      upload_repo_files:
+        bin/process_fio_results.py: process_fio_results.py
+        bin/fio-test.sh: fio-test.sh
+        bin/fio-net-test.sh: fio-net-test.sh
+  - on_workload_client:
+      exec: |
+        tar zxvf ycsb.tar.gz
+        source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && ./setup.sh"
+        chmod 755 fio-test.sh
+        chmod 755 fio-net-test.sh
+  - on_workload_client:
+      upload_files:
+        fio.ini: fio.ini
+post_task:
+  - on_workload_client:
+      retrieve_files:
+        workloads/workload_timestamps.csv: ./reports/workloads_timestamps.csv
+        fio.json: ./reports/fio.json
+

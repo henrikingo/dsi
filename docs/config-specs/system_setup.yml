@@ -3,12 +3,14 @@ custom_groups:
         - ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
         - ip: ${infrastructure_provisioning.out.mongod.1.public_ip}
 
+# NOTE: tasks below is not implemented. When implemented it should match behavior of test_control.yml
+
 # Ordered list of steps to take during system setup.
 # Each item is guaranteed to complete before the next one
 #
 # Keys in the list can be on_all_hosts, on_workload_client, on_mongod,
 # on_mongos, on_configsvr, on_host, on_servers
-Tasks:
+tasks:
   - on_all_hosts:
       download_files:             # Download a file from S3 or elsewhere
         - url1

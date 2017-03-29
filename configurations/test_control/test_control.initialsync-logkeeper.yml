@@ -44,3 +44,42 @@ run:
 
 # Disable jstest validations, it just takes too long to run it for this test.
 jstests_dir: ""
+mc:
+  monitor_interval: 60
+
+pre_task:
+  - on_localhost:
+      exec: $DSI_PATH/bin/setup-workloads.sh
+  - on_workload_client:
+      exec: rm -rf workloads*
+  - on_workload_client:
+      # no order is guaranteed between the two upload files. That is okay here
+      upload_files:
+        workloads.tar.gz: workloads.tar.gz
+      upload_repo_files:
+        bin/process_fio_results.py: process_fio_results.py
+        bin/fio-test.sh: fio-test.sh
+        bin/fio-net-test.sh: fio-net-test.sh
+  - on_workload_client:
+      exec: |
+        tar zxvf workloads.tar.gz
+        chmod 755 fio-test.sh
+        chmod 755 fio-net-test.sh
+        curl -O --retry 10 https://s3.amazonaws.com/mciuploads/mongo-tools/binaries/mongo_tools_ubuntu_b3187697d342563efd9b90bdd1aa574aec4d2e00_16_12_08_22_07_30/community/mongoreplay
+        chmod +x mongoreplay
+        curl -o /media/ephemeral0/initialsync.playback.tgz --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/initialsync.playback.tgz
+        curl -o /media/ephemeral0/libpcap.so.0.8  --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/libpcap/libpcap.so.0.8
+        cd /media/ephemeral0
+        tar zxvf initialsync.playback.tgz
+  - on_workload_client:
+      upload_files:
+        workloads.yml: workloads/workloads.yml
+        fio.ini: fio.ini
+post_task:
+  - on_workload_client:
+      exec: |
+        killall -9 mongoreplay
+        killall -9 mongoreplay
+  - on_workload_client:
+      retrieve_files:
+        workloads/workload_timestamps.csv: ./reports/workloads_timestamps.csv

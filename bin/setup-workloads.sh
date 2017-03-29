@@ -28,16 +28,3 @@ fi
 
 tar -cvf workloads.tar --exclude=.git* -C $(dirname $WORKLOADS_DIR) $(basename $WORKLOADS_DIR)
 gzip workloads.tar
-
-ssh -oStrictHostKeyChecking=no -T -A -i $PEMFILE $SSHUSER@$mc rm -rf workloads*
-
-scp -oStrictHostKeyChecking=no -i $PEMFILE  ./workloads.tar.gz $SSHUSER@$mc:.
-
-ssh -oStrictHostKeyChecking=no -T -i $PEMFILE $SSHUSER@$mc "tar zxvf workloads.tar.gz; pwd; ls workloads/*"
-
-# Copy up helper script
-scp -oStrictHostKeyChecking=no -i $PEMFILE $BINDIR/process_fio_results.py $SSHUSER@$mc:./
-scp -oStrictHostKeyChecking=no -i $PEMFILE $BINDIR/fio-test.sh $SSHUSER@$mc:./
-scp -oStrictHostKeyChecking=no -i $PEMFILE $BINDIR/fio-net-test.sh $SSHUSER@$mc:./
-ssh -oStrictHostKeyChecking=no -T -A -i $PEMFILE $SSHUSER@$mc chmod 755 fio-test.sh
-ssh -oStrictHostKeyChecking=no -T -A -i $PEMFILE $SSHUSER@$mc chmod 755 fio-net-test.sh

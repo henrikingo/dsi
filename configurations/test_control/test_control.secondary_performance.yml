@@ -64,3 +64,30 @@ run:
             sharded: ${mongodb_setup.meta.is_sharded}
             replica: ${mongodb_setup.meta.is_replset}
             storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
+
+pre_task:
+  - on_localhost:
+      exec: $DSI_PATH/bin/setup-workloads.sh
+  - on_workload_client:
+      exec: rm -rf workloads*
+  - on_workload_client:
+      upload_files:
+        workloads.tar.gz: workloads.tar.gz
+      upload_repo_files:
+        bin/process_fio_results.py: process_fio_results.py
+        bin/fio-test.sh: fio-test.sh
+        bin/fio-net-test.sh: fio-net-test.sh
+  - on_workload_client:
+      exec: |
+        tar zxvf workloads.tar.gz
+        chmod 755 fio-test.sh
+        chmod 755 fio-net-test.sh
+  - on_workload_client:
+      upload_files:
+        workloads.yml: workloads/workloads.yml
+        fio.ini: fio.ini
+post_task:
+  - on_workload_client:
+      retrieve_files:
+        workloads/workload_timestamps.csv: ./reports/workloads_timestamps.csv
+        fio.json: ./reports/fio.json

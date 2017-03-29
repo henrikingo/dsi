@@ -1,3 +1,5 @@
+# NOTE: this module is not implemented yet. The tasks should match the form implemented for test_control.
+
 # Things like install YCSB happen here. (To the extent they don't happen by default, without configuration needed.)
 
 custom_groups:

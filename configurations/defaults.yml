@@ -93,6 +93,9 @@ mongodb_setup:
 
 test_control:
     jstests_dir: ./jstests/hooks
+    mc:
+      monitor_interval: 1
+      per_thread_stats: "yes"
     common_fio_config: |
       [global]
       directory=./data/fio
