@@ -8255,6 +8255,26 @@
                 }
             }
         },
+        "singleThreaded":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "Update.MmsIncShallow1":{
+                    "thread_threshold":0.09,
+                    "threshold":0.06,
+                    "ticket":[
+                        "BF-5129"
+                    ]
+                },
+                "Update.MmsIncShallow2":{
+                    "thread_threshold":0.09,
+                    "threshold":0.06,
+                    "ticket":[
+                        "BF-5129"
+                    ]
+                }
+            }
+        },
         "update":{
             "ndays":{},
             "reference":{
