@@ -9024,6 +9024,95 @@
                     "ticket":[
                         "BF-5127"
                     ]
+                },
+                "Update.SetWithMultiIndex.String":{
+                    "create_time":"2017-04-02T18:32:19.601Z",
+                    "max":24504.848165033334,
+                    "name":"Update.SetWithMultiIndex.String",
+                    "order":7264,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":10377.22898028637,
+                            "ops_per_sec_values":[
+                                10354.31528776083,
+                                10397.922215024353,
+                                10329.743667768764,
+                                10371.205668654055,
+                                10432.95806222385
+                            ]
+                        },
+                        "2":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":20153.637858912793,
+                            "ops_per_sec_values":[
+                                20062.888215367446,
+                                20245.053496115874,
+                                20199.3826822333,
+                                20166.92711124049,
+                                20093.93778960686
+                            ]
+                        },
+                        "4":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":24504.848165033334,
+                            "ops_per_sec_values":[
+                                24541.77179971794,
+                                24358.594327314826,
+                                24473.884928668056,
+                                24585.802766724788,
+                                24564.18700274106
+                            ]
+                        },
+                        "8":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":24165.938449504803,
+                            "ops_per_sec_values":[
+                                24386.67264604447,
+                                24307.366810146334,
+                                23993.255237130557,
+                                23861.129326222046,
+                                24281.268227980603
+                            ]
+                        },
+                        "end":"2017-04-02T19:12:10.851Z",
+                        "start":"2017-04-02T19:10:23.130Z"
+                    },
+                    "revision":"576e157c2753b9bc61c36002e323421c09bc62dc",
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "2",
+                        "4",
+                        "8"
+                    ],
+                    "ticket":[
+                        "BF-5127"
+                    ]
                 }
             },
             "threshold":{
@@ -9102,6 +9191,41 @@
                         "start":"2017-03-28T18:43:00.237Z"
                     },
                     "revision":"8a988f7dfee2eaba686043cee9d7bca3366e0e8e",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5126"
+                    ]
+                },
+                "Aggregation.IdentityView.DistinctWithIndexAndQuery":{
+                    "create_time":"2017-04-02T18:32:19.601Z",
+                    "max":272.5907048051279,
+                    "name":"Aggregation.IdentityView.DistinctWithIndexAndQuery",
+                    "order":7264,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":272.5907048051279,
+                            "ops_per_sec_values":[
+                                272.8556048139325,
+                                272.90830281025575,
+                                271.68817314793233,
+                                273.98957600562767,
+                                271.5118672478913
+                            ]
+                        },
+                        "end":"2017-04-02T19:21:29.661Z",
+                        "start":"2017-04-02T19:21:03.804Z"
+                    },
+                    "revision":"576e157c2753b9bc61c36002e323421c09bc62dc",
                     "tag":"",
                     "threads":[
                         "1"
@@ -18214,6 +18338,13 @@
                     "threshold":0.1,
                     "ticket":[
                         "PERF-875"
+                    ]
+                },
+                "Insert.SingleIndex.Seq":{
+                    "thread_threshold":0.09,
+                    "threshold":0.06,
+                    "ticket":[
+                        "BF-5171"
                     ]
                 },
                 "Inserts.PartialIndex.FilteredRange":{
