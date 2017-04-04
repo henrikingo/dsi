@@ -8210,184 +8210,6 @@
         "query":{
             "ndays":{},
             "reference":{
-                "Queries.FindProjection":{
-                    "create_time":"2017-03-30T23:18:16.435Z",
-                    "max":46648.833289229755,
-                    "name":"Queries.FindProjection",
-                    "order":7249,
-                    "results":{
-                        "1":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":10858.948009842692,
-                            "ops_per_sec_values":[
-                                10898.882919485028,
-                                10870.251962395581,
-                                10853.051052305895,
-                                10843.911653960951,
-                                10828.64246106601
-                            ]
-                        },
-                        "2":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":21573.668671973643,
-                            "ops_per_sec_values":[
-                                21610.96700645332,
-                                21578.16847877591,
-                                21559.06826021952,
-                                21526.435610526463,
-                                21593.70400389301
-                            ]
-                        },
-                        "4":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":42824.943787858196,
-                            "ops_per_sec_values":[
-                                42800.86657873492,
-                                42822.47069919977,
-                                42693.45189316504,
-                                42901.91375605856,
-                                42906.01601213271
-                            ]
-                        },
-                        "8":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":46648.833289229755,
-                            "ops_per_sec_values":[
-                                46966.09184390496,
-                                45475.69283456849,
-                                46591.040548756544,
-                                47060.95523524684,
-                                47150.385983671964
-                            ]
-                        },
-                        "end":"2017-03-31T00:43:55.875Z",
-                        "start":"2017-03-31T00:42:15.476Z"
-                    },
-                    "revision":"ed80d2d3c5735c424e5c1cd58169077327976d2e",
-                    "tag":"",
-                    "threads":[
-                        "1",
-                        "2",
-                        "4",
-                        "8"
-                    ],
-                    "ticket":[
-                        "BF-5145"
-                    ]
-                },
-                "Queries.FindWideDocProjection":{
-                    "create_time":"2017-03-30T23:18:16.435Z",
-                    "max":22109.64270527013,
-                    "name":"Queries.FindWideDocProjection",
-                    "order":7249,
-                    "results":{
-                        "1":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":5330.415248101517,
-                            "ops_per_sec_values":[
-                                5322.161838586083,
-                                5325.3906669404505,
-                                5314.171550687176,
-                                5341.474474889972,
-                                5348.877709403903
-                            ]
-                        },
-                        "2":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":10642.107998363013,
-                            "ops_per_sec_values":[
-                                10647.639429374816,
-                                10664.30752775237,
-                                10637.451362139982,
-                                10625.034487777531,
-                                10636.107184770373
-                            ]
-                        },
-                        "4":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":21099.150579374942,
-                            "ops_per_sec_values":[
-                                21075.593596773924,
-                                21057.735683803774,
-                                21073.212383690287,
-                                21159.584823222078,
-                                21129.626409384637
-                            ]
-                        },
-                        "8":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":22109.64270527013,
-                            "ops_per_sec_values":[
-                                22065.05556863946,
-                                22169.645024014284,
-                                22091.601672079745,
-                                22147.623253276397,
-                                22074.288008340773
-                            ]
-                        },
-                        "end":"2017-03-31T00:45:36.318Z",
-                        "start":"2017-03-31T00:43:55.875Z"
-                    },
-                    "revision":"ed80d2d3c5735c424e5c1cd58169077327976d2e",
-                    "tag":"",
-                    "threads":[
-                        "1",
-                        "2",
-                        "4",
-                        "8"
-                    ],
-                    "ticket":[
-                        "BF-5145"
-                    ]
-                },
                 "Queries.IntNonIdFindOneProjection":{
                     "create_time":"2017-03-28T17:18:06.613Z",
                     "max":60869.486265151994,
@@ -8933,11 +8755,12 @@
                     ]
                 },
                 "Queries.FindProjection":{
-                    "thread_threshold":0.12,
-                    "threshold":0.08,
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
                     "ticket":[
                         "PERF-444",
-                        "PERF-875"
+                        "PERF-875",
+                        "BF-5145"
                     ]
                 },
                 "Queries.FindProjectionDottedField":{
@@ -8969,10 +8792,11 @@
                     ]
                 },
                 "Queries.FindWideDocProjection":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.4,
+                    "threshold":0.3,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-5145"
                     ]
                 },
                 "Queries.IntIDRange":{
@@ -20227,10 +20051,12 @@
                     ]
                 },
                 "Queries.FindProjection":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.21,
+                    "threshold":0.16,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "PERF-875",
+                        "BF-5145"
                     ]
                 },
                 "Queries.FindProjectionDottedField":{
@@ -20262,10 +20088,11 @@
                     ]
                 },
                 "Queries.FindWideDocProjection":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.4,
+                    "threshold":0.3,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-5145"
                     ]
                 },
                 "Queries.IntIDRange":{
