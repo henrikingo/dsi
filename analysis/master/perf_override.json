@@ -9482,10 +9482,11 @@
             },
             "threshold":{
                 "Aggregation.IdentityView.ExpressionObject":{
-                    "thread_threshold":0.17,
-                    "threshold":0.12,
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
                     "ticket":[
-                        "PERF-875"
+                        "PERF-875",
+                        "BF-5183"
                     ]
                 },
                 "Aggregation.IdentityView.GeoNear2d":{
@@ -20176,10 +20177,11 @@
                     ]
                 },
                 "Aggregation.IdentityView.ExpressionObject":{
-                    "thread_threshold":0.17,
-                    "threshold":0.12,
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
                     "ticket":[
-                        "PERF-875"
+                        "PERF-875",
+                        "BF-5183"
                     ]
                 },
                 "Aggregation.IdentityView.GeoNear2d":{
