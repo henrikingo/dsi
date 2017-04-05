@@ -7040,7 +7040,43 @@
                     ]
                 }
             },
-            "threshold":{}
+            "threshold":{
+                "Aggregation.DistinctWithIndexAndQuery":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5096"
+                    ]
+                },
+                "Aggregation.DistinctWithoutIndexAndQuery":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5096"
+                    ]
+                },
+                "Aggregation.IntIdFindOne":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5096"
+                    ]
+                },
+                "Aggregation.IntNonIdFindOne":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5096"
+                    ]
+                },
+                "Aggregation.NoMatch":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5096"
+                    ]
+                }
+            }
         },
         "aggregation":{
             "ndays":{
