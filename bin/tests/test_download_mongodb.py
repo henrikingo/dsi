@@ -1,9 +1,13 @@
 """Tests for bin/common/download_mongodb.py"""
-
+# pylint: disable=protected-access
 import os
+from collections import namedtuple
+
 import sys
 import unittest
 import string
+
+from mock import patch
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 
@@ -49,7 +53,8 @@ class DownloadMongodbTestCase(unittest.TestCase):
                                        {'public_ip' : '10.2.3.15', 'private_ip' : '10.0.0.12'}]
                                   }
                                  },
-                                 'runtime' :  {}
+                                 'runtime' :  {},
+                                 'mongodb_setup' : {'mongo_dir' : '/tmp'}
                                 }
         self.cli_mongodb_binary_archive = 'http://bar.tgz'
         self.downloader = None
@@ -107,6 +112,21 @@ class DownloadMongodbTestCase(unittest.TestCase):
         _test_temp_file(self, temp_file(path=path, sanitize=lambda x: x),
                         "bar.tgz?test=ing")
 
+    @patch('download_mongodb.temp_file')
+    def test_remove_temp_file(self, mock_temp_file):
+        """test that mongo_dir and tmp_file removal."""
+        # Must use run_locally=True for testing. RemoteHost opens connections already in __init__.
+
+        tmp_file = '/tmp/bar.tgz'
+        mock_temp_file.return_value = os.path.basename(tmp_file)
+        self.downloader = DownloadMongodb(self.config_no_binary,
+                                          self.cli_mongodb_binary_archive, True)
+        commands = self.downloader._remote_commands(namedtuple('Host', 'host')._make(['host']))
+        rm_mongo_dir = ['rm', '-rf', '/tmp']
+        rm_tmp_file = ['rm', '-f', tmp_file]
+        self.assertTrue(rm_mongo_dir in commands)
+        self.assertTrue(rm_tmp_file in commands)
+        self.assertTrue(commands.index(rm_mongo_dir) < commands.index(rm_tmp_file))
 
 if __name__ == '__main__':
     unittest.main()
