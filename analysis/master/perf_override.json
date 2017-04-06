@@ -18407,6 +18407,20 @@
                         "PERF-875"
                     ]
                 },
+                "Insert.MultiIndex.Contested.Rnd":{
+                    "thread_threshold":0.09,
+                    "threshold":0.06,
+                    "ticket":[
+                        "BF-5128"
+                    ]
+                },
+                "Insert.SingleIndex.Contested.Rnd":{
+                    "thread_threshold":0.09,
+                    "threshold":0.06,
+                    "ticket":[
+                        "BF-5128"
+                    ]
+                },
                 "Insert.SingleIndex.Seq":{
                     "thread_threshold":0.09,
                     "threshold":0.06,
