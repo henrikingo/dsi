@@ -113,8 +113,10 @@ def _extract_hosts(key, config):
     :param str key: The key to use (mongod, mongod, ...)
     :param ConfigDict config: The configugration
     '''
-    return [host_info['public_ip'] for host_info in
-            config['infrastructure_provisioning']['out'][key]]
+    if key in config['infrastructure_provisioning']['out']:
+        return [host_info['public_ip'] for host_info in
+                config['infrastructure_provisioning']['out'][key]]
+    return list()
 
 def extract_hosts(key, config):
     '''Extract a list of public IP addresses for hosts based off of the
