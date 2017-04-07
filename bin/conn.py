@@ -194,6 +194,7 @@ def remote_cmd(host, command, config, args):
     if not command:
         command = ""
     cmd = [args.ssh,
+           "-A",
            "-i",
            pemfile,
            "@".join(x for x in [sshuser, ip_address] if x),

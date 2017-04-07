@@ -149,6 +149,8 @@ pre_task:
       upload_files:
         workloads.yml: workloads/workloads.yml
         fio.ini: fio.ini
+        fio-net.ini: fio-net.ini
+        fio-net-listener.ini: fio-net-listener.ini
 post_task:
   - on_workload_client:
       retrieve_files:
