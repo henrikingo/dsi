@@ -1,0 +1,32 @@
+run:
+  - id: iperf
+    type: shell
+    cmd: 'for i in `seq 1 5`; do  sudo rm -f iperf.json; sudo /usr/local/bin/iperf3 -c 10.2.0.200 -i 2 -t 60 -V -p 27019 -J --logfile iperf.json &&  python ./process_iperf_results.py && mv iperf.json iperf.$i.json; done;'
+
+pre_task:
+  - on_workload_client:
+      upload_repo_files:
+        bin/process_iperf_results.py: process_iperf_results.py
+        bin/process_fio_results.py: process_fio_results.py
+        bin/fio-net-test.sh: fio-net-test.sh
+  - on_all_hosts:
+      exec: |
+        sudo killall iperf3
+        chmod 755 fio-net-test.sh
+        rm -rf iperf
+        git clone https://github.com/esnet/iperf
+        cd iperf/
+        ./configure
+        make
+        sudo make install
+  - on_mongod: # This could be in pre-run
+      exec: |
+        sudo /usr/local/bin/iperf3 -s -p 27019 -D
+post_task:
+  - on_workload_client:
+      retrieve_files:
+        iperf.1.json: ./reports/iperf.1.json
+        iperf.2.json: ./reports/iperf.2.json
+        iperf.3.json: ./reports/iperf.3.json
+        iperf.4.json: ./reports/iperf.4.json
+        iperf.5.json: ./reports/iperf.5.json
