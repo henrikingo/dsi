@@ -1,5 +1,6 @@
 """Unit tests for util/multi_analysis.py"""
 
+from __future__ import print_function
 import unittest
 
 from tests import test_utils
@@ -17,6 +18,7 @@ class TestMultiEvergreenAnalysis(unittest.TestCase):
             'csv': True,
             'json': False,
             'json_array': False,
+            'ycsbfix': False,
             'yml': False,
             'id': ['587773af3ff120ab9000946', '587773b03ff1220ab900094a']
         }
@@ -34,6 +36,7 @@ class TestMultiEvergreenAnalysis(unittest.TestCase):
             'csv': False,
             'json': True,
             'json_array': False,
+            'ycsbfix': False,
             'yml': False,
             'out': 'outfile.json',
             'id': [],
@@ -334,6 +337,59 @@ class TestMultiEvergreenAnalysis(unittest.TestCase):
 
         flat_results = client.flat_results({'added_label': 'added_label'})
         self.assertEqual(flat_results, expected)
+
+    def test_ycsb_fix(self):
+        """Test MultiEvergreenAnalysis._ycsb_fix()"""
+        client = MultiEvergreenAnalysis()
+        client.results = [
+            {u'a_variant':
+                 {u'a_task':
+                      {u'build_id': u'a_build_id',
+                       u'create_time': u'2017-04-05T20:14:53.193Z',
+                       u'data': {u'results': [{"end": 1491482988,
+                                               "name": "ycsb_load-wiredTiger",
+                                               "results": {
+                                                   "32": {
+                                                       "ops_per_sec": 50915.97845235792
+                                                   }
+                                               },
+                                               "start": 1491482887,
+                                               "workload": "ycsb"
+                                              },
+                                              {"end": 1491483185,
+                                               "name": "ycsb_load-wiredTiger",
+                                               "results": {
+                                                   "32": {
+                                                       "ops_per_sec": 50418.98173824482
+                                                   }
+                                               },
+                                               "start": 1491483084,
+                                               "workload": "ycsb"
+                                              }]
+                                }}}}]
+        client._ycsb_fix() #pylint: disable=protected-access
+        print(client.results)
+
+        expected_results = [
+            {u'a_variant':
+                 {u'a_task':
+                      {u'build_id': u'a_build_id',
+                       u'create_time': u'2017-04-05T20:14:53.193Z',
+                       u'data': {'results': [{
+                           'end': 1491482988,
+                           'name': 'ycsb_load-wiredTiger',
+                           'results': {
+                               '32': {
+                                   'ops_per_sec': 50667.480095301369,
+                                   'ops_per_sec_values': [50915.97845235792, 50418.98173824482]
+                               }
+                           },
+                           'start': 1491482887,
+                           'workload': 'ycsb'
+                           }]
+                                }}}}]
+        self.assertEqual(client.results, expected_results)
+
 
     def test_main(self):
         """MultiEvergreenAnalysis: Fetch real Evergreen results and write output files."""

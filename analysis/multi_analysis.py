@@ -43,7 +43,8 @@ class MultiEvergreenAnalysis(object):
             'csv': True,
             'json': False,
             'json_array': False,
-            'yml': False
+            'yml': False,
+            'ycsbfix': False
         }
         # A list of builds, populated with --continue
         self.builds = []
@@ -82,8 +83,7 @@ class MultiEvergreenAnalysis(object):
                                  '--continue',
                                  help="Read state serialized as yaml from CONTINUE, to continue "
                                       "operating on a series of submitted builds. Example: "
-                                      "'multi_analysis.py --continue 12345.yml "
-                                      "--analyze-results'")
+                                      "'multi_analysis.py --continue 12345.yml")
         self.parser.add_argument('--csv',
                                  action='store_true',
                                  help="Output in csv format (default)")
@@ -98,6 +98,14 @@ class MultiEvergreenAnalysis(object):
                                  help="Ouput in yml format")
         self.parser.add_argument('--out',
                                  help="File name to write output (print to stdout if omitted)")
+
+        self.parser.add_argument('--ycsbfix',
+                                 action='store_true',
+                                 help="The ycsb noise tests reports the iteration results in 5 "
+                                      "different entries, instead of packing all into a single "
+                                      "entry with individual results on ops_per_sec_values. "
+                                      "This option is needed when fetching ycsb test results to "
+                                      "preprocess the result json into the common format.")
 
         self.parser.add_argument('id',
                                  nargs='*',
@@ -192,6 +200,111 @@ class MultiEvergreenAnalysis(object):
                     result_doc = self.evergreen_client.query_perf_results(task_id)
                     build_results[variant_name][task_name] = result_doc
             self.results.append(build_results)
+
+        if self.config['ycsbfix']:
+            self._ycsb_fix()
+
+    def _ycsb_fix(self):
+        """When running the same test repeatedly (aka TEST_ITERATIONS) for ycsb, mission-control
+           doesn't combine the results into one ops_per_sec_values array, rather just adds
+           a new result object to the array of results in perf.json file.
+
+           Example:
+               {
+                   "end": 1491482988,
+                   "name": "ycsb_load-wiredTiger",
+                   "results": {
+                       "32": {
+                           "ops_per_sec": 50915.97845235792
+                       }
+                   },
+                   "start": 1491482887,
+                   "workload": "ycsb"
+               },
+               {
+                   "end": 1491483185,
+                   "name": "ycsb_load-wiredTiger",
+                   "results": {
+                       "32": {
+                           "ops_per_sec": 50418.98173824482
+                       }
+                   },
+                   "start": 1491483084,
+                   "workload": "ycsb"
+                },
+                ...
+
+           This method will find such "duplicates", add an ops_per_sec_values field, and collapse
+           them into a single entry. The ops_per_sec is the average of ops_per_sec_values:
+
+           {u'end': 1491482794,
+           u'name': u'ycsb_load-wiredTiger',
+           u'results': {u'32': {u'ops_per_sec': 50681.794483009711,
+                               'ops_per_sec_values': [50841.425593573644,
+                                                       50915.97845235792,
+                                                       50418.98173824482,
+                                                       50333.712513967606,
+                                                       50898.87411690453]}},
+           u'start': 1491482694,
+           u'workload': u'ycsb'},
+           """
+        # New self.results structure, rebuilt from the old one
+        fixed_results = []
+        fixed_result = {}
+        for result in self.results:
+            for variant_name, variant in result.iteritems():
+                if not variant_name in fixed_result:
+                    fixed_result[variant_name] = {}
+
+                for task_name, task in variant.iteritems():
+                    if not task_name in fixed_result[variant_name]:
+                        # We're going to skip a few levels next
+                        # Keep everything as is, except the 'data' key, which is what we're fixing
+                        fixed_result[variant_name][task_name] = copy.deepcopy(task)
+                        fixed_result[variant_name][task_name]['data'] = {}
+                        fixed_result[variant_name][task_name]['data']['results'] = []
+
+                    seen_test_name = ''
+                    seen_thread_level = ''
+                    fixed_obj = {}
+                    for result_obj in task['data']['results']:
+                        # fio results are fine, as is the ycsb_cleanup
+                        if ('1' in result_obj['results'] and
+                                'ops_per_sec_values' in result_obj['results']['1']):
+                            fixed_result[variant_name][task_name]['data']['results'].append(
+                                result_obj)
+                            continue
+
+                        # This is a ycsb test result
+
+                        # Get thread_level (there's only 1 in these)
+                        new_thread_level = ''
+                        for thr in result_obj['results']:
+                            new_thread_level = thr
+
+                        if (result_obj['name'] != seen_test_name or
+                                new_thread_level != seen_thread_level):
+                            # They do come in a sequence, so we initialize stuff on the first
+                            # occurence of a name+thread_level, then remember them until one of them
+                            # changes again.
+                            seen_test_name = result_obj['name']
+                            seen_thread_level = new_thread_level
+                            fixed_obj = copy.deepcopy(result_obj)
+                            fixed_obj['results'][seen_thread_level]['ops_per_sec_values'] = [
+                                fixed_obj['results'][seen_thread_level]['ops_per_sec']]
+                            fixed_result[variant_name][task_name]['data']['results'].append(
+                                fixed_obj)
+                        else:
+                            # Results 2 - N of the same test_name
+                            fixed_obj['results'][seen_thread_level]['ops_per_sec_values'].append(
+                                result_obj['results'][seen_thread_level]['ops_per_sec'])
+                            fixed_obj['results'][seen_thread_level]['ops_per_sec'] = numpy.average(
+                                fixed_obj['results'][seen_thread_level]['ops_per_sec_values'])
+
+            fixed_results.append(fixed_result)
+            fixed_result = {}
+
+        self.results = fixed_results
 
     def _test_names_iterator(self, variant_name, task_name):
         """
