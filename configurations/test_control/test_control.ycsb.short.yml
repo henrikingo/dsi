@@ -15,7 +15,6 @@ pre_task:
   - on_workload_client:
       upload_files:
         ycsb.tar.gz: ycsb.tar.gz
-      upload_repo_files:
   - on_workload_client:
       exec: |
         tar zxvf ycsb.tar.gz

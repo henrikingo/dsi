@@ -12,7 +12,7 @@ import sys
 
 # pylint: disable=relative-import
 from common.config import ConfigDict
-from common.host import execute_list
+from common.host import execute_list, extract_hosts
 from common.log import setup_logging
 import config_test_control
 
@@ -51,6 +51,67 @@ def copy_perf_output():
             LOG.info(line)
 
 
+def pre_tasks(config, task_list):
+    """ run the pre_tasks list for the given config dicts items. This code will *fail*
+    on error
+
+    :param dict(ConfigDict) config: The root config dict
+    :param list(ConfigDict) task_list: List of ConfigDict objects that may have
+    a pre_task key.
+    """
+    for task in task_list:
+        # Execute pre task steps
+        if 'pre_task' in task:
+            execute_list(task['pre_task'], config)
+
+
+def post_tasks(config, task_list):
+    """ run the post_tasks list in the opposite order for the given config dicts. This code will
+    *continue* on error
+
+    :param dict(ConfigDict) config: The system configuration
+    :param list(ConfigDict) task_list: List of ConfigDict objects that may
+    have a post_task key.
+
+    """
+    for task in reversed(task_list):
+        # Execute pre task steps
+        if 'post_task' in task:
+            try:  # We've run the test. Don't stop on error
+                execute_list(task['post_task'], config)
+            except Exception as exception:  # pylint: disable=broad-except
+                LOG.error("Caught an exception in post_task step. %s", str(exception))
+
+    copy_timeseries(config)
+
+def copy_timeseries(config):
+    """ copy the files required for timeseries analysis from
+    their legacy mission-control locations to the new locations used by host.py.
+
+    :param dict(ConfigDict) config: The system configuration
+
+    """
+    hosts = extract_hosts('all_servers', config)
+    for root, _, files in os.walk('./reports'):
+        for name in files:
+            # The following generator find the first host with an ip that matches
+            # the filename. The (.. for in if in ) generator will return 0 or more
+            # matches.
+            #
+            # In the non matching case, next would throw StopIteration . The
+            # None final param ensures that something 'Falsey' is returned instead.
+            host = next((host for host in hosts if name.endswith(host.ip_or_name)), None)
+            if host:
+                source = os.path.join(root, name)
+                alias = "{category}.{offset}".format(category=host.category,
+                                                     offset=host.offset)
+
+                destination = "{}-{}".format(os.path.basename(source).split('--')[0],
+                                             os.path.basename(root))
+                destination = os.path.join('reports', alias, destination)
+                shutil.copyfile(source, destination)
+
+
 def main(argv):
     ''' Main function. Parse command line options, and run tests '''
     parser = argparse.ArgumentParser(description='DSI Test runner')
@@ -74,6 +135,7 @@ def main(argv):
     config = ConfigDict('test_control')
     config.load()
     test_control = config['test_control']
+    mongodb_setup = config['mongodb_setup']
 
     dsi_bin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)))
 
@@ -92,8 +154,7 @@ def main(argv):
     cleanup_reports()
 
     # Execute pre task steps
-    if 'pre_task' in test_control:
-        execute_list(test_control['pre_task'], config)
+    pre_tasks(config, [test_control, mongodb_setup])
 
     # Go through the existing scripts if necessary
     if args.test == 'initialSync':
@@ -137,11 +198,8 @@ def main(argv):
         #         execute_list(test_control['post_run'], conf)
 
     # Execute post task steps
-    if 'post_task' in test_control:
-        try: # We've run the test. Don't stop on error
-            execute_list(test_control['post_task'], config)
-        except Exception as exception: #pylint: disable=broad-except
-            LOG.error("Caught an exception in post_task step. %s", str(exception))
+    post_tasks(config, [test_control, mongodb_setup])
+
     # Set perf.json to 555
     # Todo: replace with os.chmod call or remove in general
     # Previously this was set to 777. I can't come up with a good reason.

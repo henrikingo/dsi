@@ -25,8 +25,8 @@ pre_task:
 post_task:
   - on_workload_client:
       retrieve_files:
-        iperf.1.json: ./reports/iperf.1.json
-        iperf.2.json: ./reports/iperf.2.json
-        iperf.3.json: ./reports/iperf.3.json
-        iperf.4.json: ./reports/iperf.4.json
-        iperf.5.json: ./reports/iperf.5.json
+        iperf.1.json: ../iperf.1.json
+        iperf.2.json: ../iperf.2.json
+        iperf.3.json: ../iperf.3.json
+        iperf.4.json: ../iperf.4.json
+        iperf.5.json: ../iperf.5.json

@@ -18,14 +18,14 @@ virtualenv ./venv
 source ./venv/bin/activate
 pip install argparse python-dateutil pytz
 
-FILES=(diag*)
-for file in "${FILES[@]}"
+# list all the top level directories matching the patterns
+DIRECTORIES=( $(find . -maxdepth 1 -name 'mongo*' -o -name 'config*' -type d ) )
+for directory in "${DIRECTORIES[@]}"
 do
-    parts=(${file//-/ })
-    i=${parts[1]}
-    ip=${parts[2]}
+    name=$(basename ${directory})  # get the leaf level directory name
+
     # iostat logs are not available on Windows
-    iostat_log=$(compgen -G "*/*/iostat.log--ec2-user@${ip}")
+    iostat_log=$(compgen -G "${name}/iostat.log*")
 
     # Include timestamp information from workloads if it exists
     timestamps=""
@@ -35,8 +35,8 @@ do
     fi
 
     python $(dirname $0)/timeseries.py --itz 0 --port $PORT \
-                                       diag-$i-${ip}/diagnostic.data \
-                                       diag-$i-${ip}/mongod.log $iostat_log \
+                                       ${name}/diagnostic.data \
+                                       ${name}/mongod.log $iostat_log \
                                        $timestamps
     PORT=$(($PORT+1))
 done

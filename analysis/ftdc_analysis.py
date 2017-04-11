@@ -157,15 +157,15 @@ def resource_rules(dir_path, project, variant, constant_values=None, perf_file_p
     else:
         # depending on variant, there can be multiple hosts and therefore multiple FTDC data files
         full_log_raw = ''
-        for (host_name, public_ip), full_path in ftdc_files_dict.iteritems():
+        for host_alias, full_path in ftdc_files_dict.iteritems():
             LOGGER.info('Reading FTDC file `%s`', full_path)
             (passed_checks, log_raw) = _process_ftdc_file(full_path,
                                                           project,
                                                           variant,
                                                           constant_values)
             if not passed_checks:
-                full_log_raw += ('Failed resource sanity checks for host {0} ({1})').format(
-                    host_name, public_ip)
+                full_log_raw += ('Failed resource sanity checks for host {0}').format(
+                    host_alias)
                 full_log_raw += log_raw
         if full_log_raw:
             result['status'] = 'fail'
@@ -337,24 +337,33 @@ def _get_ftdc_file_paths(dir_path):
         if find_directory in sub_folder:
             parent_directory_name = os.path.basename(dir_path)
             host_identification = _get_host_ip_info(parent_directory_name)
-            ftdc_files = os.listdir(os.path.join(dir_path, find_directory))
-            files = [fi for fi in ftdc_files if not fi.endswith(".interim")]
-            if len(files) != 1:
-                LOGGER.info('%s FTDC metrics files in %s. Skipping.',
-                            len(files), parent_directory_name)
-            else:
-                full_path = os.path.join(dir_path, find_directory, files[0])
-                ftdc_metrics_paths[host_identification] = full_path
+            # in the short term, there are also diag-p*-*-* directories with
+            # diagnostic data.
+            # The previous line and the following check skips analysis
+            # for the diag-p* directories (this check can probably be removed later)
+            if host_identification:
+                ftdc_files = os.listdir(os.path.join(dir_path, find_directory))
+                files = [fi for fi in ftdc_files if not fi.endswith(".interim")]
+                if len(files) != 1:
+                    LOGGER.info('%s FTDC metrics files in %s. Skipping.',
+                                len(files), parent_directory_name)
+                else:
+                    full_path = os.path.join(dir_path, find_directory, files[0])
+                    ftdc_metrics_paths[host_identification] = full_path
     return ftdc_metrics_paths
 
 def _get_host_ip_info(diagnostic_dir_name):
-    """Directory names follow the naming convention: diag-p<INDEX>-<PUBLIC_IP> where INDEX is
-    between 1 and (# of mongod instances). Could also use reports/ips.py if the variables there
-    were imported.
+    """Directory names follow the naming convention: <CATEGORY>-<INDEX> where INDEX is
+    between 0 and (# of instances of that category) and CATEGORY is one of
+    'mongod', 'mongos', 'configsvr', or 'workload_client'. In this instance
+    only 'mongod' or 'configsvr' could be valid.
 
-    :param str diagnostic_dir_name: dash-separated directory name, parent directory enclosing the
+    :param str diagnostic_dir_name: directory name, parent directory enclosing the
                diagnostic.data directory containing FTDC files
-    :rtype: tuple(str, str) host name and public IP address
+    :rtype: str the diagnostic directory name if no '-' otherwise it is legacy and
+    None is returned for the moment.
     """
-    naming_convention = diagnostic_dir_name.split('-')
-    return (naming_convention[1], naming_convention[2])
+    if '-' in diagnostic_dir_name:
+        return None
+    else:
+        return diagnostic_dir_name

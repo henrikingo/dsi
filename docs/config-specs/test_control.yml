@@ -60,7 +60,18 @@ pre_task:
 # Ordered list of things to do after all the runs
 post_task:
   - on_workload_client:
-      See above
+      # All of the above, plus...
+      retrieve_files:
+        # Download remote path to ./reports/host_alias/local path
+        # host_alias: looks like "<category>.<index>" from ConfigDict['infrastructure']['.out']
+        # category: the key name from ConfigDict['infrastructure']['.out'], it is
+        # one of "mongod", "mongos", "configsvr" or "workload_client"
+        # index: the position in ConfigDict['infrastructure']['out']['category']
+        remote_path: local_path
+  - on_workload_client:
+      retrieve_files:
+        workloads/workload_timestamps.csv: ./workloads_timestamps.csv
+        fio.json: ./fio.json
 
 # Ordered list of things to do before each run, after pre_task
 pre_run:

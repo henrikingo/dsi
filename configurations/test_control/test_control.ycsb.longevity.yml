@@ -53,7 +53,7 @@ pre_task:
 post_task:
   - on_workload_client:
       retrieve_files:
-        fio.json: ./reports/fio.json
+        fio.json: ../fio.json
         iperf.json: ./reports/iperf.json
 
 numactl: ""

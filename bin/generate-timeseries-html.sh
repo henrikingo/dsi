@@ -12,15 +12,14 @@ pip install argparse python-dateutil pytz
 
 echo Generate one html file for each host in cluster.
 mkdir -p reports/graphs
-FILES=(reports/diag*)
-for file in "${FILES[@]}"
+# only list all the directories matching the pattern and ignoring errors / warnings
+DIRECTORIES=( $(find reports -maxdepth 1 -name 'mongo*' -o -name 'config*' -type d ) )
+for directory in "${DIRECTORIES[@]}"
 do
-    file=${file##*/} # Strip reports/
-    parts=(${file//-/ })
-    i=${parts[1]}
-    ip=${parts[2]}
+    name=$(basename ${directory}) # get the leaf level directory name
+
     # iostat logs are not available on Windows
-    iostat_log=$(compgen -G "reports/*/*/iostat.log--ec2-user@${ip}")
+    iostat_log=$(compgen -G "reports/${name}/iostat.log*")
 
     # Include timestamp information from workloads if it exists
     timestamps=""
@@ -30,10 +29,10 @@ do
     fi
 
     python $(dirname $0)/timeseries.py --itz 0 --overview all \
-                                       reports/diag-$i-${ip}/diagnostic.data \
-                                       reports/diag-$i-${ip}/mongod.log $iostat_log \
-                                       $timestamps \
-                                       --html reports/graphs/timeseries-$i.html
+           reports/${name}/diagnostic.data \
+           reports/${name}/mongod.log $iostat_log \
+           $timestamps \
+           --html reports/graphs/timeseries-${name}.html
 done
 
 echo

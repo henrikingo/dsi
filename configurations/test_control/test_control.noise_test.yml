@@ -156,9 +156,9 @@ pre_task:
 post_task:
   - on_workload_client:
       retrieve_files:
-        workloads/workload_timestamps.csv: ./reports/workloads_timestamps.csv
-        fio.p1.json: ./reports/fio.p1.json
-        fio.p2.json: ./reports/fio.p2.json
-        fio.p3.json: ./reports/fio.p3.json
-        fio.p4.json: ./reports/fio.p4.json
-        fio.p5.json: ./reports/fio.p5.json
+        workloads/workload_timestamps.csv: ../workloads_timestamps.csv
+        fio.p1.json: ../fio.p1.json
+        fio.p2.json: ../fio.p2.json
+        fio.p3.json: ../fio.p3.json
+        fio.p4.json: ../fio.p4.json
+        fio.p5.json: ../fio.p5.json

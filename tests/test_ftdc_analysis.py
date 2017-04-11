@@ -1,4 +1,5 @@
 """Unit tests for `ftdc_analysis.py`."""
+# pylint: disable=protected-access
 
 import unittest
 
@@ -25,3 +26,16 @@ class TestFtdcAnalysis(unittest.TestCase):
             'test_file': "resource_sanity_checks"
         }
         self.assertEqual(observed_result, expected_result)
+
+    def test__get_host_ip_info(self):
+        """ add tests for the new reports directory layout """
+
+        return_value = ftdc_analysis._get_host_ip_info('diag-p1-54.83.180.179')
+        self.assertTrue(return_value is None)
+
+        return_value = ftdc_analysis._get_host_ip_info('mongod.0')
+        expected = 'mongod.0'
+        self.assertEqual(return_value, expected)
+
+if __name__ == '__main__':
+    unittest.main()

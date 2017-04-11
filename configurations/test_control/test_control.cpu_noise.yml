@@ -52,11 +52,11 @@ pre_task:
 post_task:
   - on_workload_client:
       retrieve_files:
-        workloads/workload_timestamps.csv: ./reports/workloads_timestamps.csv
+        workloads/workload_timestamps.csv: ../workloads_timestamps.csv
     # For running cpu_noise.js on all servers:
   - on_workload_client:
       retrieve_files:
-        workloads/remote_workload_timestamps.csv: ./reports/remote_workloads_timestamps.csv
+        workloads/remote_workload_timestamps.csv: ../remote_workloads_timestamps.csv
 #    This will work after Jim's PERF-713 comes in. The retrieved files need to land in separate dirs.
 #  - on_mongod:
 #      retrieve_files:

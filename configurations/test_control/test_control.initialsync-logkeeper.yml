@@ -78,4 +78,4 @@ post_task:
         killall -9 mongoreplay
   - on_workload_client:
       retrieve_files:
-        workloads/workload_timestamps.csv: ./reports/workloads_timestamps.csv
+        workloads/workload_timestamps.csv: ../workloads_timestamps.csv

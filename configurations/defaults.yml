@@ -97,6 +97,16 @@ mongodb_setup:
         is_sharded: false
         is_replset: false
         secondary: None
+    post_task:
+        - on_all_servers:
+              retrieve_files:
+                  data/logs/: ./
+        - on_mongod:
+              retrieve_files:
+                  data/dbs/diagnostic.data: ./diagnostic.data
+        - on_configsvr:
+              retrieve_files:
+                  data/dbs/diagnostic.data: ./diagnostic.data
 
 test_control:
     jstests_dir: ./jstests/hooks

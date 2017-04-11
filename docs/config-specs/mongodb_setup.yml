@@ -56,6 +56,21 @@ post_cluster_start:
       exec: |
         # This would execute in OS shell (after MongoDB cluster is running)
 
+# These are the same as in test_control.yml. Use them here for mongodb related pre and post tasks.
+pre_task: (See example below)
+post_task:
+    - on_mongod:
+        retrieve_files:
+            data/logs/mongod.log: ./mongod.log
+            data/dbs/diagnostic.data: ./diagnostic.data
+    - on_mongos:
+        retrieve_files:
+            data/logs/mongos.log: ./mongos.log
+    - on_configsvr:
+        retrieve_files:
+            data/logs/mongod.log: ./mongod.log
+            data/dbs/diagnostic.data: ./diagnostic.data
+
 
 
 # This defines the cluster topology to deploy, and what to deploy on which IP address.
