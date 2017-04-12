@@ -4934,13 +4934,6 @@
                     "ticket":[
                         "PERF-444"
                     ]
-                },
-                "Update.SetWithMultiIndex.Random":{
-                    "thread_threshold":0.09,
-                    "threshold":0.06,
-                    "ticket":[
-                        "BF-4890"
-                    ]
                 }
             }
         }
@@ -6874,13 +6867,6 @@
                         "BF-5096"
                     ]
                 },
-                "Aggregation.FindWideDocProjection":{
-                    "thread_threshold":0.1,
-                    "threshold":0.07,
-                    "ticket":[
-                        "BF-5182"
-                    ]
-                },
                 "Aggregation.IntIdFindOne":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
@@ -7438,20 +7424,6 @@
                     "threshold":0.1,
                     "ticket":[
                         "PERF-875"
-                    ]
-                },
-                "Insert.MultiIndex.Contested.Rnd":{
-                    "thread_threshold":0.09,
-                    "threshold":0.06,
-                    "ticket":[
-                        "BF-5128"
-                    ]
-                },
-                "Insert.SingleIndex.Contested.Rnd":{
-                    "thread_threshold":0.09,
-                    "threshold":0.06,
-                    "ticket":[
-                        "BF-5128"
                     ]
                 },
                 "Insert.SingleIndex.Seq":{
@@ -9150,26 +9122,6 @@
                 }
             }
         },
-        "singleThreaded":{
-            "ndays":{},
-            "reference":{},
-            "threshold":{
-                "Update.MmsIncShallow1":{
-                    "thread_threshold":0.09,
-                    "threshold":0.06,
-                    "ticket":[
-                        "BF-5129"
-                    ]
-                },
-                "Update.MmsIncShallow2":{
-                    "thread_threshold":0.09,
-                    "threshold":0.06,
-                    "ticket":[
-                        "BF-5129"
-                    ]
-                }
-            }
-        },
         "update":{
             "ndays":{},
             "reference":{
@@ -10847,13 +10799,6 @@
                         "PERF-875"
                     ]
                 },
-                "Queries.IdentityView.FindWideDocProjection":{
-                    "thread_threshold":0.1,
-                    "threshold":0.07,
-                    "ticket":[
-                        "BF-5182"
-                    ]
-                }
             }
         },
         "where":{
@@ -17813,15 +17758,7 @@
                     ]
                 }
             },
-            "threshold":{
-                "Aggregation.DistinctWithoutIndexAndQuery":{
-                    "thread_threshold":0.09,
-                    "threshold":0.06,
-                    "ticket":[
-                        "BF-5096"
-                    ]
-                }
-            }
+            "threshold":{}
         },
         "aggregation":{
             "ndays":{
@@ -18858,34 +18795,6 @@
                     "threshold":0.1,
                     "ticket":[
                         "PERF-875"
-                    ]
-                },
-                "Insert.MultiIndex.Contested.Rnd":{
-                    "thread_threshold":0.09,
-                    "threshold":0.06,
-                    "ticket":[
-                        "BF-5128"
-                    ]
-                },
-                "Insert.SingleIndex.Contested.Rnd":{
-                    "thread_threshold":0.09,
-                    "threshold":0.06,
-                    "ticket":[
-                        "BF-5128"
-                    ]
-                },
-                "Insert.SingleIndex.Seq":{
-                    "thread_threshold":0.09,
-                    "threshold":0.06,
-                    "ticket":[
-                        "BF-5171"
-                    ]
-                },
-                "Inserts.PartialIndex.FilteredRange":{
-                    "thread_threshold":0.09,
-                    "threshold":0.06,
-                    "ticket":[
-                        "BF-5075"
                     ]
                 }
             }
