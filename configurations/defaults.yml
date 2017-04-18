@@ -41,6 +41,7 @@ mongodb_setup:
     mongod_config_file: # Note these defaults can be overridden by user, but not unset.
         net:
             port: 27017
+            bindIp: 0.0.0.0
         processManagement:
             fork: true
         replication:
@@ -57,6 +58,7 @@ mongodb_setup:
     mongos_config_file:
         net:
             port: 27017
+            bindIp: 0.0.0.0
         processManagement:
             fork: true
         setParameter:
@@ -72,6 +74,7 @@ mongodb_setup:
     configsvr_config_file:
         net:
             port: 27017
+            bindIp: 0.0.0.0
         processManagement:
             fork: true
         setParameter:
