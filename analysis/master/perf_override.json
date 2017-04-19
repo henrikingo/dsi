@@ -7232,6 +7232,13 @@
                         "PERF-875"
                     ]
                 },
+                "Aggregation.GraphLookupSocialite":{
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Aggregation.Group.All":{
                     "thread_threshold":0.21,
                     "threshold":0.16,
@@ -9866,6 +9873,13 @@
                 "Aggregation.IdentityView.GeoNear2dSphere":{
                     "thread_threshold":0.15,
                     "threshold":0.09,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Aggregation.IdentityView.GraphLookupSocialite":{
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
                     "ticket":[
                         "PERF-875"
                     ]
@@ -18067,6 +18081,13 @@
                         "PERF-875"
                     ]
                 },
+                "Aggregation.GraphLookupSocialite":{
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Aggregation.Group.All":{
                     "thread_threshold":0.21,
                     "threshold":0.16,
@@ -20639,6 +20660,13 @@
                 "Aggregation.IdentityView.GeoNear2dSphere":{
                     "thread_threshold":0.15,
                     "threshold":0.09,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Aggregation.IdentityView.GraphLookupSocialite":{
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
                     "ticket":[
                         "PERF-875"
                     ]
