@@ -30,7 +30,7 @@ pre_task:
   - on_workload_client:
       exec: |
         tar zxvf ycsb.tar.gz
-        source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && ./setup.sh"
+        source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && ./setup.sh
         chmod 755 fio-test.sh
         chmod 755 fio-net-test.sh
   - on_workload_client:
