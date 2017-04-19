@@ -7433,6 +7433,13 @@
                         "PERF-875"
                     ]
                 },
+                "Insert.SeqIntID.Indexed":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Insert.SingleIndex.Seq":{
                     "thread_threshold":0.17,
                     "threshold":0.12,
