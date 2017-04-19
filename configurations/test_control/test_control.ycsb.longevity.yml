@@ -13,7 +13,7 @@ run:
 
 mc:
   monitor_interval: 10
-  per_thread_stats: no
+  per_thread_stats: "no"
 
 pre_task:
   - on_localhost:
@@ -29,10 +29,10 @@ pre_task:
         bin/fio-net-test.sh: fio-net-test.sh
   - on_workload_client:
       exec: |
-        tar zxvf ycsb.tar.gz
-        source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && ./setup.sh
         chmod 755 fio-test.sh
         chmod 755 fio-net-test.sh
+        tar zxvf ycsb.tar.gz
+        source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && ./setup.sh
   - on_workload_client:
       upload_files:
         fio.ini: fio.ini
