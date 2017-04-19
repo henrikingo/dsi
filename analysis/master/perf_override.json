@@ -6854,10 +6854,10 @@
             },
             "threshold":{
                 "Aggregation.DistinctWithIndexAndQuery":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
                     "ticket":[
-                        "BF-5096"
+                        "PERF-875"
                     ]
                 },
                 "Aggregation.DistinctWithoutIndexAndQuery":{
@@ -9855,6 +9855,13 @@
                 }
             },
             "threshold":{
+                "Aggregation.IdentityView.DistinctWithIndexAndQuery":{
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Aggregation.IdentityView.ExpressionObject":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
@@ -17772,7 +17779,15 @@
                     ]
                 }
             },
-            "threshold":{}
+            "threshold":{
+                "Aggregation.DistinctWithIndexAndQuery":{
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                }
+            }
         },
         "aggregation":{
             "ndays":{
@@ -20622,10 +20637,10 @@
                     ]
                 },
                 "Aggregation.IdentityView.DistinctWithIndexAndQuery":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
                     "ticket":[
-                        "BF-5096"
+                        "PERF-875"
                     ]
                 },
                 "Aggregation.IdentityView.DistinctWithoutIndex":{
