@@ -7131,8 +7131,8 @@
                     ]
                 },
                 "Aggregation.DistinctWithoutIndexAndQuery":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
                     "ticket":[
                         "BF-5096"
                     ]
@@ -19043,6 +19043,13 @@
                     "threshold":0.12,
                     "ticket":[
                         "PERF-875"
+                    ]
+                },
+                "Aggregation.DistinctWithoutIndexAndQuery":{
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5096"
                     ]
                 }
             }
