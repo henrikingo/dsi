@@ -2052,11 +2052,25 @@
                 }
             },
             "threshold":{
+                "Insert.IntIDUpsert":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Insert.IntVector":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
                     "ticket":[
                         "PERF-444"
+                    ]
+                },
+                "Insert.JustNumIndexed":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
                     ]
                 }
             }
@@ -7676,6 +7690,13 @@
                     ]
                 },
                 "Insert.Empty":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Insert.IntIDUpsert":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
@@ -20120,6 +20141,13 @@
                     ]
                 },
                 "Insert.Empty":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Insert.IntIDUpsert":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
