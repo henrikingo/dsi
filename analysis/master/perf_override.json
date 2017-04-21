@@ -7151,6 +7151,13 @@
                         "BF-5096"
                     ]
                 },
+                "Aggregation.IntNonIdFindProjectionCovered":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5126"
+                    ]
+                },
                 "Aggregation.NoMatch":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
@@ -19092,6 +19099,13 @@
                     "threshold":0.15,
                     "ticket":[
                         "BF-5096"
+                    ]
+                },
+                "Aggregation.IntNonIdFindProjectionCovered":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5126"
                     ]
                 }
             }
