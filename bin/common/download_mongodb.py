@@ -106,7 +106,7 @@ class DownloadMongodb(object):
             ['cd', '..'],
             ['mv', mongo_dir + '/*/*', mongo_dir],
             ['mkdir', '-p', 'bin'],
-            ['ln', '-s', '../' + mongo_dir + '/bin/mongo', 'bin/mongo'],
+            ['ln', '-s', '${PWD}/' + mongo_dir + '/bin/*', 'bin/'],
             ['ln', '-s', mongo_dir + '/jstests', 'jstests'],
             ['bin/mongo', '--version'],
             [mongo_dir + '/bin/mongod', '--version'],
