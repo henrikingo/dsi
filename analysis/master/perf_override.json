@@ -9773,6 +9773,48 @@
                     "ticket":[
                         "PERF-444"
                     ]
+                },
+                "Update.IncNoIndex":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Update.IncNoIndexUpsert":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Update.IncWithIndex":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Update.IncWithIndexUpsert":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Update.SetWithIndex.Random":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Update.SetWithMultiIndex.Random":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
                 }
             }
         },
