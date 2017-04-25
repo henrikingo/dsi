@@ -7508,8 +7508,8 @@
             },
             "threshold":{
                 "Aggregation.ExpressionObject":{
-                    "thread_threshold":0.17,
-                    "threshold":0.12,
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
                     "ticket":[
                         "PERF-875"
                     ]
@@ -7620,8 +7620,8 @@
                     ]
                 },
                 "Aggregation.UnwindThenMatch":{
-                    "thread_threshold":0.3,
-                    "threshold":0.25,
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
                     "ticket":[
                         "PERF-875"
                     ]
@@ -14309,8 +14309,8 @@
                     ]
                 },
                 "Aggregation.IdentityView.Match":{
-                    "thread_threshold":0.21,
-                    "threshold":0.16,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "BF-4530"
                     ]
@@ -14372,8 +14372,8 @@
                     ]
                 },
                 "Aggregation.IdentityView.UnwindThenMatch":{
-                    "thread_threshold":0.3,
-                    "threshold":0.25,
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
                     "ticket":[
                         "PERF-875"
                     ]
@@ -23458,8 +23458,8 @@
                     ]
                 },
                 "Aggregation.ExpressionObject":{
-                    "thread_threshold":0.17,
-                    "threshold":0.12,
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
                     "ticket":[
                         "PERF-875"
                     ]
@@ -23570,8 +23570,8 @@
                     ]
                 },
                 "Aggregation.UnwindThenMatch":{
-                    "thread_threshold":0.3,
-                    "threshold":0.25,
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
                     "ticket":[
                         "PERF-875"
                     ]
@@ -29876,8 +29876,8 @@
                     ]
                 },
                 "Aggregation.IdentityView.Match":{
-                    "thread_threshold":0.21,
-                    "threshold":0.16,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "BF-4530"
                     ]
@@ -29939,8 +29939,8 @@
                     ]
                 },
                 "Aggregation.IdentityView.UnwindThenMatch":{
-                    "thread_threshold":0.3,
-                    "threshold":0.25,
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
                     "ticket":[
                         "PERF-875"
                     ]
