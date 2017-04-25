@@ -15642,8 +15642,8 @@
                     ]
                 },
                 "Queries.IdentityView.FindProjection":{
-                    "thread_threshold":0.12,
-                    "threshold":0.08,
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
                     "ticket":[
                         "PERF-444",
                         "PERF-875"
@@ -31022,15 +31022,15 @@
             },
             "threshold":{
                 "Queries.IdentityView.IntNonIdFindProjectionCovered":{
-                    "thread_threshold":0.12,
-                    "threshold":0.08,
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
                     "ticket":[
                         "PERF-875"
                     ]
                 },
                 "Queries.IdentityView.NoMatch":{
-                    "thread_threshold":0.12,
-                    "threshold":0.08,
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
                     "ticket":[
                         "PERF-875"
                     ]
