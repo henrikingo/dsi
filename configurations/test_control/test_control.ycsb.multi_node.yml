@@ -45,6 +45,5 @@ pre_task:
 post_task:
   - on_workload_client:
       retrieve_files:
-        workloads/workload_timestamps.csv: ./reports/workloads_timestamps.csv
         fio.json: ./reports/fio.json
 
