@@ -26,5 +26,4 @@ then
     rm workloads.tar.gz
 fi
 
-tar -cvf workloads.tar --exclude=.git* -C $(dirname $WORKLOADS_DIR) $(basename $WORKLOADS_DIR)
-gzip workloads.tar
+tar -czvf workloads.tar.gz --exclude=.git* -C $WORKLOADS_DIR .

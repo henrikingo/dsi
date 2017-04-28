@@ -79,7 +79,9 @@ pre_task:
         bin/fio-net-test.sh: fio-net-test.sh
   - on_workload_client:
       exec: |
-        tar zxvf workloads.tar.gz
+        rm -rf workloads
+        mkdir workloads
+        tar zxvf workloads.tar.gz -C workloads
         chmod 755 fio-test.sh
         chmod 755 fio-net-test.sh
   - on_workload_client:

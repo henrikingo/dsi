@@ -203,6 +203,7 @@ class RemoteHost(Host):
         super(RemoteHost, self).__init__()
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
+        LOG.debug('host: %s, user: %s, pem_file: %s', host, user, pem_file)
         try:
             ssh.connect(host, username=user, key_filename=pem_file)
             ftp = ssh.open_sftp()
