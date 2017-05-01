@@ -1,9 +1,4 @@
 run:
-  - id: fio-${mongodb_setup.mongod_config_file.storage.engine}
-    type: shell
-    cmd: '${test_control.numactl} ./fio-test.sh ${mongodb_setup.meta.hostname}'
-    config_filename: fio.ini
-    workload_config: ${test_control.common_fio_config}
   - id: benchRun-${mongodb_setup.mongod_config_file.storage.engine}
     type: shell
     cmd: cd workloads &&  ${test_control.numactl} ./run_workloads.py -c workloads.yml
@@ -79,6 +74,15 @@ run:
             sharded: ${mongodb_setup.meta.is_sharded}
             replica: ${mongodb_setup.meta.is_replset}
             storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
+  - id: fio-${mongodb_setup.mongod_config_file.storage.engine}
+    type: shell
+    cmd: '${test_control.numactl} ./fio-test.sh ${mongodb_setup.meta.hostname}'
+    config_filename: fio.ini
+    workload_config: ${test_control.common_fio_config}
+  - id: iperf
+    type: shell
+    cmd: '${test_control.numactl} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+
 pre_task:
   - on_localhost:
       exec: $DSI_PATH/bin/setup-workloads.sh
@@ -89,15 +93,26 @@ pre_task:
         workloads.tar.gz: workloads.tar.gz
       upload_repo_files:
         bin/process_fio_results.py: process_fio_results.py
+        bin/process_iperf_results.py: process_iperf_results.py
         bin/fio-test.sh: fio-test.sh
-        bin/fio-net-test.sh: fio-net-test.sh
+        bin/iperf-test.sh: iperf-test.sh
   - on_workload_client:
       exec: |
         rm -rf workloads
         mkdir workloads
         tar zxvf workloads.tar.gz -C workloads
         chmod 755 fio-test.sh
-        chmod 755 fio-net-test.sh
+        chmod 755 iperf-test.sh
+  - on_all_hosts:
+      # Install iperf. It isn't available in yum on AWS instances
+      exec: |
+        sudo killall iperf3
+        rm -rf iperf
+        git clone https://github.com/esnet/iperf
+        cd iperf/
+        ./configure
+        make
+        sudo make install
   - on_workload_client:
       upload_files:
         workloads.yml: workloads/workloads.yml # This is redundant with the run-initial sync script
@@ -107,3 +122,4 @@ post_task:
       retrieve_files:
         workloads/workload_timestamps.csv: ./reports/workloads_timestamps.csv
         fio.json: ./reports/fio.json
+        iperf.json: ./reports/iperf.json

@@ -80,7 +80,7 @@ resource "aws_security_group" "default" {
 
     # mongodb access from VPC
     ingress {
-        from_port = 27017
+        from_port = 27016
         to_port = 27019
         protocol = "tcp"
         cidr_blocks = ["10.2.0.0/16"]

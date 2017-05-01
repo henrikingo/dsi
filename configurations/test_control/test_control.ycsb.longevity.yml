@@ -1,15 +1,18 @@
 run:
-  - id: fio-${mongodb_setup.mongod_config_file.storage.engine}
-    type: shell
-    cmd: ' ${test_control.numactl} ./fio-test.sh ${mongodb_setup.meta.hostname}'
-    config_filename: fio.ini
-    workload_config: ${test_control.common_fio_config}
   - id: ycsb_load-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
     "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb load mongodb -s -P workloads/workloadLongevity -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32; sleep 1"
   - id: ycsb_50read50update-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
     "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb run mongodb -s -P workloads/workloadLongevity -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64 -p maxexecutiontime=86400; sleep 1"
+  - id: fio-${mongodb_setup.mongod_config_file.storage.engine}
+    type: shell
+    cmd: ' ${test_control.numactl} ./fio-test.sh ${mongodb_setup.meta.hostname}'
+    config_filename: fio.ini
+    workload_config: ${test_control.common_fio_config}
+  - id: iperf
+    type: shell
+    cmd: '${test_control.numactl} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
 
 mc:
   monitor_interval: 10
@@ -25,14 +28,25 @@ pre_task:
         ycsb.tar.gz: ycsb.tar.gz
       upload_repo_files:
         bin/process_fio_results.py: process_fio_results.py
+        bin/process_iperf_results.py: process_iperf_results.py
         bin/fio-test.sh: fio-test.sh
-        bin/fio-net-test.sh: fio-net-test.sh
+        bin/iperf-test.sh: iperf-test.sh
   - on_workload_client:
       exec: |
         chmod 755 fio-test.sh
-        chmod 755 fio-net-test.sh
+        chmod 755 iperf-test.sh
         tar zxvf ycsb.tar.gz
         source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && ./setup.sh
+  - on_all_hosts:
+      # Install iperf. It isn't available in yum on AWS instances
+      exec: |
+        sudo killall iperf3
+        rm -rf iperf
+        git clone https://github.com/esnet/iperf
+        cd iperf/
+        ./configure
+        make
+        sudo make install
   - on_workload_client:
       upload_files:
         fio.ini: fio.ini
@@ -40,5 +54,6 @@ post_task:
   - on_workload_client:
       retrieve_files:
         fio.json: ./reports/fio.json
+        iperf.json: ./reports/iperf.json
 
 numactl: ""
