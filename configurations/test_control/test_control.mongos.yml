@@ -18,6 +18,7 @@ run:
               - mongos_insert_vector.js
               - mongos_insert_single.js
               - mongos_50read_50write.js
+              - cpu_noise.js
             test:
               - # Empty list. Put new workloads here for testing
             short: # Just does Hello World

@@ -16,6 +16,7 @@ run:
             default:
               - insert_capped.js
               - insert_capped_indexes.js
+              - cpu_noise.js
             test:
               - # Empty list. Put new workloads here for testing
             short: # Just does Hello World

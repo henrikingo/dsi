@@ -55,6 +55,7 @@ run:
                 num_dbs: 32
                 write_load: true
                 third_node_addr: ${mongodb_setup.meta.third_node}
+            - cpu_noise.js
 
         # These next five lines match existing
         # workloads.yml. Workloads needs to be updated to consume from

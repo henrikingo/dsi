@@ -34,6 +34,7 @@ run:
                   count: 1000000 # 1M
                   primary: ${mongodb_setup.meta.hostname}
                   secondary: ${mongodb_setup.meta.secondary}
+              - cpu_noise.js
             test:
               - # Empty list. Put new workloads here for testing
             short: # Just does Hello World

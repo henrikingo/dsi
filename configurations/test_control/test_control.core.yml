@@ -22,6 +22,7 @@ run:
               - jtrue.js
               - index_build.js
               - mix.js
+              - cpu_noise.js
             test:
               - # Empty list. Put new workloads here for testing
             short: # Just does Hello World
