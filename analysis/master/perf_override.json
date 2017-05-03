@@ -7247,6 +7247,13 @@
                         "BF-5096"
                     ]
                 },
+                "Aggregation.IntIDRange":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Aggregation.IntIdFindOne":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
@@ -7273,6 +7280,13 @@
                     "threshold":0.1,
                     "ticket":[
                         "BF-5096"
+                    ]
+                },
+                "Aggregation.StringUnindexedInPredWithSimpleCollation":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
                     ]
                 }
             }
@@ -7635,8 +7649,8 @@
             },
             "threshold":{
                 "Aggregation.ExpressionObject":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-875"
                     ]
@@ -14410,8 +14424,8 @@
                     ]
                 },
                 "Aggregation.IdentityView.ExpressionObject":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-875",
                         "BF-5183"
@@ -23750,8 +23764,8 @@
                     ]
                 },
                 "Aggregation.ExpressionObject":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-875"
                     ]
@@ -30142,8 +30156,8 @@
                     ]
                 },
                 "Aggregation.IdentityView.ExpressionObject":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-875",
                         "BF-5183"
