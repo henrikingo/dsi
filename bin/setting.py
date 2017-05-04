@@ -4,7 +4,7 @@
 
 from __future__ import print_function
 
-from common.config import ConfigDict # pylint: disable=relative-import
+from common.config import ConfigDict
 
 def main():
     ''' Main '''

@@ -10,7 +10,6 @@ import sys
 import argparse
 import yaml
 
-# pylint: disable=relative-import
 from common.config import ConfigDict
 from common.log import setup_logging
 

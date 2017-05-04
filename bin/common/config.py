@@ -217,7 +217,7 @@ class ConfigDict(dict):
         """Iterator over the values"""
         return iter(self.values())
 
-    # pylint: disable=fixme,line-too-long
+    # pylint: disable=line-too-long
     # TODO: __iter__ isn't actually called if you do dict(instance_of_ConfigDict), so casting
     # to dict doesn't work. See http://stackoverflow.com/questions/18317905/overloaded-iter-is-bypassed-when-deriving-from-dict
     def __iter__(self):

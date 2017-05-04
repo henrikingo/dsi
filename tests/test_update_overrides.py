@@ -8,7 +8,7 @@ import unittest
 # TODO: once all shell script tests are moved to python unittests, analysis can be
 # made into its own module. This will allow these tests to use absolute imports
 # (i.e. import analysis.update_overrides)
-import update_overrides  # pylint: disable=import-error,wrong-import-position
+import update_overrides
 from tests import test_utils
 
 

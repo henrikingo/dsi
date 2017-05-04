@@ -5,7 +5,7 @@ from mock import patch
 
 from tests import test_utils
 import util
-from evergreen.override import Override, TestDataNotFound # pylint: disable=import-error
+from evergreen.override import Override, TestDataNotFound
 
 
 class TestOverride(unittest.TestCase):

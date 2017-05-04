@@ -6,7 +6,7 @@ import datetime
 import os
 from mock import patch
 
-from common import terraform_config  # pylint: disable=import-error
+from common import terraform_config
 
 
 class TestTerraformConfiguration(unittest.TestCase):

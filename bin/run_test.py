@@ -10,7 +10,6 @@ import shutil
 import subprocess
 import sys
 
-# pylint: disable=relative-import
 from common.config import ConfigDict
 from common.host import execute_list, extract_hosts
 from common.log import setup_logging

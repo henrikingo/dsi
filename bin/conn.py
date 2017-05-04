@@ -1,5 +1,4 @@
 #!/usr/bin/env python2.7
-# pylint: disable=relative-import
 """
 Thin wrapper around ssh. This script *should* allow ease of access to remote
 provisioned servers, either as full dotted names or shorter aliases.

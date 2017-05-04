@@ -14,7 +14,7 @@ import argparse
 import yaml
 
 # pylint does not like relative imports but "from bin.common" does not work
-# pylint: disable=relative-import,too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes
 from common.download_mongodb import DownloadMongodb
 from common.host import RemoteHost, LocalHost
 from common.log import setup_logging

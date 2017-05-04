@@ -1,5 +1,5 @@
 [MESSAGES CONTROL]
-disable=locally-disabled,locally-enabled,fixme,duplicate-code,import-error
+disable=locally-disabled,locally-enabled,fixme,duplicate-code,import-error,relative-import
 
 [REPORTS]
 reports=no

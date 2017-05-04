@@ -5,7 +5,7 @@ import os
 import re
 from uuid import uuid4
 
-#pylint: disable=relative-import,too-few-public-methods
+#pylint: disable=too-few-public-methods
 from host import RemoteHost, LocalHost
 
 LOG = logging.getLogger(__name__)

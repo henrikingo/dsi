@@ -1,5 +1,5 @@
 """Tests for bin/common/config.py"""
-# pylint: disable=fixme,line-too-long
+# pylint: disable=line-too-long
 import os
 import sys
 import unittest

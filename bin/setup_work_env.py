@@ -1,6 +1,4 @@
 #!/usr/bin/env python2.7
-# pylint: disable=relative-import,fixme
-
 '''Setup an work environment. Copy over the appropriate files.
 
 The long term intention is that this script sets up a working

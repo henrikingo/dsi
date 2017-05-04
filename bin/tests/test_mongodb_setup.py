@@ -8,7 +8,7 @@ import mock
 
 sys.path.insert(0, os.path.join(os.path.dirname(sys.path[0]), 'bin'))
 
-import mongodb_setup  # pylint: disable=import-error
+import mongodb_setup
 
 # Mock the remote host module.
 mongodb_setup.RemoteHost = mock.MagicMock()

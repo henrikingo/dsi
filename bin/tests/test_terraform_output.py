@@ -7,7 +7,7 @@ import unittest
 import os
 import yaml
 
-from bin.common import terraform_output_parser as tf_output  # pylint: disable=E0401
+from bin.common import terraform_output_parser as tf_output
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 

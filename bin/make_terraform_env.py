@@ -1,5 +1,4 @@
 #!/usr/bin/env python2.7
-# pylint: disable=relative-import
 
 """Read configureation and generate terraform configuration JSON file"""
 

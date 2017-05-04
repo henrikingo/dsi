@@ -2,7 +2,7 @@
 
 import unittest
 
-from evergreen import override # pylint: disable=import-error
+from evergreen import override
 
 class TestValidate(unittest.TestCase):
     """Test `validation()`."""
