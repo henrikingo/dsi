@@ -7255,10 +7255,10 @@
                     ]
                 },
                 "Aggregation.IntIdFindOne":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.17,
+                    "threshold":0.12,
                     "ticket":[
-                        "BF-5096"
+                        "BF-5478"
                     ]
                 },
                 "Aggregation.IntNonIdFindOne":{
@@ -7286,7 +7286,7 @@
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
-                        "PERF-875"
+                        "BF-5478"
                     ]
                 }
             }
@@ -11833,6 +11833,13 @@
                     "threshold":0.2,
                     "ticket":[
                         "PERF-444"
+                    ]
+                },
+                "Queries.StringUnindexedInPredWithSimpleCollation":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5478"
                     ]
                 },
                 "Queries.Text.FindSingleLargeDocuments":{
@@ -23502,11 +23509,25 @@
                         "BF-5096"
                     ]
                 },
+                "Aggregation.IntIdFindOne":{
+                    "thread_threshold":0.17,
+                    "threshold":0.12,
+                    "ticket":[
+                        "BF-5478"
+                    ]
+                },
                 "Aggregation.IntNonIdFindProjectionCovered":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
                         "BF-5126"
+                    ]
+                },
+                "Aggregation.StringUnindexedInPredWithSimpleCollation":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5478"
                     ]
                 }
             }
@@ -27728,6 +27749,13 @@
                     "threshold":0.2,
                     "ticket":[
                         "PERF-444"
+                    ]
+                },
+                "Queries.StringUnindexedInPredWithSimpleCollation":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5478"
                     ]
                 },
                 "Queries.Text.FindSingleLargeDocuments":{
