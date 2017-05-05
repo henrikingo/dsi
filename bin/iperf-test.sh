@@ -19,7 +19,7 @@ ssh -A ${HOSTNAME} "$LISTENER_CMD" &
 sleep 2
 
 # Run the client side process
-sudo /usr/local/bin/iperf3 -c 10.2.0.200 -i 2 -t 60 -V -p 27016 -J --logfile iperf.json
+sudo /usr/local/bin/iperf3 -c ${HOSTNAME} -i 2 -t 60 -V -p 27016 -J --logfile iperf.json
 
 echo "Clean up iperf processes"
 kill %1
