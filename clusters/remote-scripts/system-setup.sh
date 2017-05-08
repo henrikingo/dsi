@@ -44,7 +44,9 @@ prepare_disk() {
     if [ "$format" == "yes" ]; then
         sudo mkfs.xfs -f $disk
     fi
-    sudo mount $disk $mount_path
+    # Set noatime, readahead: https://docs.mongodb.com/manual/administration/production-notes/#recommended-configuration
+    sudo mount $disk $mount_path -o noatime
+    sudo blockdev --setra 32 $disk
     sudo chmod 777 $mount_path
     sudo chown -R ec2-user:ec2-user $mount_path
 }
