@@ -150,6 +150,8 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                         deep_dict.set_value(fio_primary, key, test_obj)
                     elif test_name[0:7] == 'canary_':
                         deep_dict.set_value(canary, key, test_obj)
+                    if test_name[0:4] == 'fio_':
+                        deep_dict.set_value(canary, key, test_obj)
                     else:
                         deep_dict.set_value(mongodb_tests, key, test_obj)
 
@@ -226,8 +228,8 @@ Create pyplot graphs from data that was output from multi_analysis.py.
 
                     axis.set_xticks(numpy.arange(len(test_names)) + width/2)
                     axis.set_xticklabels(test_names, rotation=90)
-                    axis.tick_params(axis='both', which='major', labelsize=5)
-                    axis.tick_params(axis='both', which='minor', labelsize=5)
+                    axis.tick_params(axis='both', which='major', labelsize=4)
+                    axis.tick_params(axis='both', which='minor', labelsize=4)
                     pyplot.title(variant_name + ' : ' + metric)
 
                     # Save to file
@@ -243,6 +245,12 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                     if metric[-3:] == 'max':
                         # Save another version of the same graph, zooming y-axis to 200k
                         axis.set_ylim([0.0, 200000])
+                        file_name = variant_name + '--' + metric + postfix + '--medium.png'
+                        path = os.path.join(directory, file_name)
+                        pyplot.savefig(path, dpi=500, format='png')
+                    if metric[-15:] == 'range_to_median':
+                        # Save another version of the same graph, zooming y-axis to 200k
+                        axis.set_ylim([0.0, 0.3])
                         file_name = variant_name + '--' + metric + postfix + '--medium.png'
                         path = os.path.join(directory, file_name)
                         pyplot.savefig(path, dpi=500, format='png')
