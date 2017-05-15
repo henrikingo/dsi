@@ -20,7 +20,7 @@ else
     cp ../perf.json .
     cd ..
     touch ./reports/graphs/timeseries-p1.html
-    $DSI_PATH/bin/retrieve-diag-data.sh
+
     $DSI_PATH/bin/generate-timeseries-html.sh || true
     cp ./reports/graphs/timeseries-mongod.0.html ./reports/graphs/timeseries-p1.html
 
