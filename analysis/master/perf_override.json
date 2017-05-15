@@ -7453,6 +7453,13 @@
                         "BF-5316"
                     ]
                 },
+                "Aggregation.FindWideDocProjection":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
                 "Aggregation.IntIDRange":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
@@ -22515,6 +22522,13 @@
                 "Aggregation.Empty":{
                     "thread_threshold":-0.3,
                     "threshold":0.2,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
+                "Aggregation.FindWideDocProjection":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
                     "ticket":[
                         "BF-5316"
                     ]
