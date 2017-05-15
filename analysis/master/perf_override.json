@@ -7509,6 +7509,13 @@
                         "BF-5096"
                     ]
                 },
+                "Aggregation.StringUnindexedInPredWithNonSimpleCollation":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5478"
+                    ]
+                },
                 "Aggregation.StringUnindexedInPredWithSimpleCollation":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
@@ -12159,6 +12166,13 @@
                     "threshold":0.2,
                     "ticket":[
                         "PERF-444"
+                    ]
+                },
+                "Queries.StringUnindexedInPredWithNonSimpleCollation":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5478"
                     ]
                 },
                 "Queries.StringUnindexedInPredWithSimpleCollation":{
@@ -23210,6 +23224,13 @@
                         "BF-5126"
                     ]
                 },
+                "Aggregation.StringUnindexedInPredWithNonSimpleCollation":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5478"
+                    ]
+                },
                 "Aggregation.StringUnindexedInPredWithSimpleCollation":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
@@ -28063,6 +28084,13 @@
                     "threshold":0.2,
                     "ticket":[
                         "PERF-444"
+                    ]
+                },
+                "Queries.StringUnindexedInPredWithNonSimpleCollation":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5478"
                     ]
                 },
                 "Queries.StringUnindexedInPredWithSimpleCollation":{
