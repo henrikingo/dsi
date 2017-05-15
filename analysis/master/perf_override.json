@@ -26972,6 +26972,13 @@
                         "PERF-444"
                     ]
                 },
+                "Commands.DistinctWithIndex":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5481"
+                    ]
+                },
                 "Commands.DistinctWithoutIndex":{
                     "thread_threshold":0.26,
                     "threshold":0.23,
