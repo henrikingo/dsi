@@ -4,6 +4,34 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "canary_client-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -403,6 +431,34 @@
                 }
             },
             "threshold":{
+                "canary_client-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -655,6 +711,34 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "canary_client-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -717,6 +801,34 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "canary_client-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -767,6 +879,34 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "canary_client-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -1144,6 +1284,34 @@
                 }
             },
             "threshold":{
+                "canary_client-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -1433,10 +1601,106 @@
                 }
             }
         },
+        "non_sharded_workloads_MMAPv1":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "canary_client-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                }
+            }
+        },
+        "non_sharded_workloads_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "canary_client-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                }
+            }
+        },
         "secondary_performance_MMAPv1":{
             "ndays":{},
             "reference":{},
             "threshold":{
+                "canary_client-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -1485,6 +1749,34 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "canary_client-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -1589,6 +1881,34 @@
                     "threshold":0.25,
                     "ticket":[
                         "PERF-723"
+                    ]
+                },
+                "canary_client-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "cloneDBs_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
@@ -2701,6 +3021,34 @@
                         "PERF-723"
                     ]
                 },
+                "canary_client-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "cloneDBs_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
                     "thread_threshold":0.4,
                     "threshold":0.3,
@@ -3780,6 +4128,34 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "canary_client-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -4143,6 +4519,34 @@
                 }
             },
             "threshold":{
+                "canary_client-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -4394,6 +4798,34 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "canary_client-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -4442,6 +4874,34 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "canary_client-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -4490,6 +4950,34 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "canary_client-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -4538,6 +5026,34 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "canary_client-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -4588,6 +5104,34 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "canary_client-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "mixed_delete-mmapv1":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
@@ -4805,6 +5349,34 @@
                 }
             },
             "threshold":{
+                "canary_client-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "mixed_delete-wiredTiger":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
@@ -4892,6 +5464,34 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "canary_client-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -5269,6 +5869,34 @@
                 }
             },
             "threshold":{
+                "canary_client-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -5514,6 +6142,34 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "canary_client-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -5576,6 +6232,34 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "canary_client-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_client-cpuloop-1x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-cpuloop-10x-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
