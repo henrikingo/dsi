@@ -1,4 +1,4 @@
-"""Tests for bin/conn.py"""
+"""Tests for bin/alias.py"""
 # pylint: disable=wrong-import-position
 
 import os
@@ -7,11 +7,11 @@ import unittest
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from conn import unalias, expand, ALIASES
+from aliases import unalias, expand, ALIASES
 
 
-class ConnTestCase(unittest.TestCase):
-    """Unit tests for DownloadMongodb library."""
+class AliasTestCase(unittest.TestCase):
+    """Unit tests for Alias utility functions."""
 
     def setUp(self):
         """Create the objects required for this set of tests"""
@@ -41,7 +41,7 @@ class ConnTestCase(unittest.TestCase):
                       }
 
     def test_unalias(self):
-        """check that the aliases work as expected."""
+        """check that the alias work as expected."""
 
         self.assertEquals(unalias('md'), 'mongod')
         self.assertEquals(unalias('ms'), 'mongos')
@@ -56,7 +56,7 @@ class ConnTestCase(unittest.TestCase):
         self.assertEquals(unalias('md', aliases), 'mongod')
 
         # do not do something like the following, as it will permanently add to
-        # ALIASES, either copy before the update or use a dict ctor as shown
+        # ALIASES, either copy before the update or use a dict constructor as shown
         # in the test
         #
         # aliases = ALIASES.update({'m': 'mongod'})

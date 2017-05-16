@@ -1,7 +1,5 @@
 #!/bin/bash
 
-source $(dirname $0)/utils.bash
-
 echo Generate timeseries graphs from FTDC, mongod.log and iostat data.
 
 echo Install python modules needed by timeseries.py into a python virtualenv.

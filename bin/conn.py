@@ -65,80 +65,12 @@ import os
 import sys
 import threading
 
+import alias
+
 from common.log import setup_logging
 from common.config import ConfigDict
 
 LOGGER = logging.getLogger(__name__)
-ALIASES = {'md': 'mongod',
-           'ms': 'mongos',
-           'cs': 'configsvr',
-           # I'm pretty sure I will transpose the following
-           'configsrv': 'configsvr',
-           'wc': 'workload_client'}
-
-
-def unalias(host, aliases=None):
-    """ unalias the first portion of the host (a single name or up to the first dot).
-    It should be possible to run the unalias or expand in either order and get the
-    same result.
-
-    For example, the default aliases are:
-       md        --> mongod
-       ms        --> mongos
-       cs        --> configsvr
-       configsrv --> configsvr
-       wc        --> workload_client
-
-    :param host str the (optionally) dotted host.
-    :param aliases dict a mapping of short names to long names
-
-    :returns str the expanded version of the dotted name
-    """
-
-    if aliases is None:
-        aliases = ALIASES
-    path = host
-    pos = host.find('.')
-    if pos != -1:
-        path = host[:pos]
-
-    unaliased = aliases.get(path, path)
-    if unaliased != path:
-        host = host.replace(path, unaliased)
-    return host
-
-
-def expand(host):
-    """ expand the host (be it a single name or a dotted field).
-    It should be possible to run the unalias or expand in either order and get the
-    same result.
-
-    For example:
-       mongod             --> mongod.0.public_ip
-       mongod.0           --> mongod.0.public_ip
-       mongod.0.public_ip --> mongod.0.public_ip
-
-       md                 --> md.0.public_ip
-       md.0               --> md.0.public_ip
-       md.0.public_ip     --> md.0.public_ip
-
-    :param host str the (optionally) dotted host spec.
-
-    :returns str the expanded version of the dotted name
-    :raises ValueError if there are more than 2 dot's
-    """
-
-    nesting = host.count('.') + 1
-    if nesting > 3:
-        raise ValueError("The max level of nesting is 3: '{}'".format(host))
-
-    if nesting == 1:
-        host += '.0.public_ip'
-    if nesting == 2:
-        host += '.public_ip'
-
-    return host
-
 
 def parse_args(args=sys.argv[1:]):
     """ create the parser, parse the arguments and set up logging
@@ -214,8 +146,8 @@ def main(argv=sys.argv[1:]):
     config = ConfigDict('infrastructure_provisioning').load()
 
     if len(args.host) == 1:
-        host = expand(args.host[0])
-        host = unalias(host)
+        host = alias.expand(args.host[0])
+        host = alias.unalias(host)
         cmd = ';'.join(args.command)
         remote_cmd(host, cmd, config, args)
     else:
@@ -228,8 +160,8 @@ def main(argv=sys.argv[1:]):
         cmd = ';'.join(args.command)
         threads = []
         for host in args.host:
-            host = expand(host)
-            host = unalias(host)
+            host = alias.expand(host)
+            host = alias.unalias(host)
             thread = threading.Thread(target=remote_cmd, args=(host, cmd, config, args,))
             threads.append(thread)
             thread.start()

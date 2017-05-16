@@ -1,7 +1,7 @@
 
 """
 Paser output from terraform and generate necessary cluster definition files to track public and
-private IP addresses. This file will generate the original ips.sh as well and YML file
+private IP addresses. This file will generate the file "infrastructure_provisioning.out.yml"
 """
 
 from __future__ import print_function
@@ -15,8 +15,8 @@ LOG = logging.getLogger(__name__)
 
 class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
     """
-    DSI Terraform output, this class take input from stdin or file, parses it and generate
-    YML and ips.sh files.
+    DSI Terraform output, this class takes input from stdin or file, parses it and generates
+    YML infrastructure_provisioning.out.yml.
     """
     INSTANCE_TYPES = ["private_config_ip",
                       "private_member_ip",

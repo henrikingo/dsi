@@ -131,9 +131,8 @@ fi
 
 if [[ $rc == 0 ]]
 then
-    # this will extract all public and private IP address information into a file ips.sh
-    # env.sh has to be called after the terraform pln check (see PERF-702 for details)
-    ${BINDIR}/env.sh
+    $TERRAFORM output | ${BINDIR}/generate_infrastructure.py
     rc=$?
+    cat infrastructure_provisioning.out.yml
 fi
 exit $rc

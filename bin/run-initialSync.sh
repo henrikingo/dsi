@@ -6,7 +6,7 @@ STORAGE_ENGINE=$1
 CLUSTER=$3
 
 BINDIR=$(dirname $0)
-source $BINDIR/setting.sh
+$(python ${BINDIR}/setting.py)
 
 # Bridging a historical inconsistency: prior to refactoring, the test name for
 # MMAPv1 engine was "benchRun-mmap". However, the parameter ${storageEngine}
@@ -70,13 +70,13 @@ do
     python $BINDIR/config_test_control.py
     echo "Generated mc.json"
     cat mc.json
-    scp -oStrictHostKeyChecking=no -i $PEMFILE  workloads.yml $SSHUSER@$mc:./workloads/
+    scp -oStrictHostKeyChecking=no -i $PEMFILE  workloads.yml $SSHUSER@${workload_client}:./workloads/
     if [ -e fio.ini ]; then
-        scp -oStrictHostKeyChecking=no -i $PEMFILE  fio.ini $SSHUSER@$mc:./
+        scp -oStrictHostKeyChecking=no -i $PEMFILE  fio.ini $SSHUSER@${workload_client}:./
     fi
     runInitialSyncTest $i
-    scp -oStrictHostKeyChecking=no -i $PEMFILE  $SSHUSER@$mc:./fio.json reports/fio.json.$i || true
+    scp -oStrictHostKeyChecking=no -i $PEMFILE  $SSHUSER@${workload_client}:./fio.json reports/fio.json.$i || true
 done
 
-scp -oStrictHostKeyChecking=no -i $PEMFILE  $SSHUSER@$mc:./workloads/workload_timestamps.csv reports
+scp -oStrictHostKeyChecking=no -i $PEMFILE  $SSHUSER@${workload_client}:./workloads/workload_timestamps.csv reports
 
