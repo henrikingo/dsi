@@ -255,16 +255,19 @@ def max_connections(chunk, times, max_thread_level, repl_member_list):
     if not repl_member_list:  # standalone
         upper_bound_factor = 0
     else:
-        upper_bound_factor = 2 * len(repl_member_list)
+        upper_bound_factor = 4 * len(repl_member_list)
 
+    fudge_factor = 20
     failure_times = []
     labels = ('number of current connections',)
     compared_values = []
     additional = {
         'max thread level for this task': max_thread_level,
-        'connections between members? (2 * N)': upper_bound_factor,
+        'connections between members? (4 * N)': upper_bound_factor,
         'connections to MC and shell': 2,
-        'rule': '# connections <= (2 * max thread level + 2 + {0})'.format(upper_bound_factor)
+        'fudge_factor': fudge_factor,
+        'rule': '# connections <= (2 * max thread level + 2 + {0} + {1})'.format(
+            upper_bound_factor, fudge_factor)
     }
     for index, num_connections in enumerate(curr_connection_values):
         if num_connections > (max_thread_level * 2) + 2 + upper_bound_factor:
