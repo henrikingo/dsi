@@ -949,6 +949,13 @@
                         "PERF-873"
                     ]
                 },
+                "index_build-mmapv1":{
+                    "thread_threshold":3.0,
+                    "threshold":2.0,
+                    "ticket":[
+                        "BF-5524"
+                    ]
+                },
                 "insert_ttl-mmapv1":{
                     "thread_threshold":0.6,
                     "threshold":0.4,
