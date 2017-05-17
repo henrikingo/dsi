@@ -7,7 +7,7 @@ import unittest
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from aliases import unalias, expand, ALIASES
+from alias import unalias, expand, ALIASES
 
 
 class AliasTestCase(unittest.TestCase):
