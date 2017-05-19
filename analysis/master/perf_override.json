@@ -7879,41 +7879,6 @@
                         "BF-5083",
                         "BF-5428"
                     ]
-                },
-                "Aggregation.UnwindThenGroup":{
-                    "create_time":"2017-05-03T16:05:00.867Z",
-                    "max":140.1592013168942,
-                    "name":"Aggregation.UnwindThenGroup",
-                    "order":7571,
-                    "results":{
-                        "1":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":140.1592013168942,
-                            "ops_per_sec_values":[
-                                139.9460538906101,
-                                141.0687496353393,
-                                140.9498422200279,
-                                139.12993416515442,
-                                139.70142667333928
-                            ]
-                        },
-                        "end":"2017-05-03T16:44:34.635Z",
-                        "start":"2017-05-03T16:43:52.527Z"
-                    },
-                    "revision":"f7942df347d738d1cbf1c0be527debbafea8dc17",
-                    "tag":"",
-                    "threads":[
-                        "1"
-                    ],
-                    "ticket":[
-                        "BF-5471"
-                    ]
                 }
             },
             "threshold":{
@@ -14148,41 +14113,6 @@
                     "ticket":[
                         "BF-5083",
                         "BF-5428"
-                    ]
-                },
-                "Aggregation.IdentityView.UnwindThenGroup":{
-                    "create_time":"2017-05-03T16:05:00.867Z",
-                    "max":136.630419065281,
-                    "name":"Aggregation.IdentityView.UnwindThenGroup",
-                    "order":7571,
-                    "results":{
-                        "1":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":136.630419065281,
-                            "ops_per_sec_values":[
-                                136.56625320102114,
-                                136.90206026608564,
-                                137.00788754009128,
-                                135.8175427131192,
-                                136.8583516060877
-                            ]
-                        },
-                        "end":"2017-05-03T16:44:34.157Z",
-                        "start":"2017-05-03T16:43:51.871Z"
-                    },
-                    "revision":"f7942df347d738d1cbf1c0be527debbafea8dc17",
-                    "tag":"",
-                    "threads":[
-                        "1"
-                    ],
-                    "ticket":[
-                        "BF-5471"
                     ]
                 }
             },
@@ -23775,41 +23705,6 @@
                         "BF-5083",
                         "BF-5428"
                     ]
-                },
-                "Aggregation.UnwindThenGroup":{
-                    "create_time":"2017-05-03T16:05:00.867Z",
-                    "max":139.64690990199227,
-                    "name":"Aggregation.UnwindThenGroup",
-                    "order":7571,
-                    "results":{
-                        "1":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":139.64690990199227,
-                            "ops_per_sec_values":[
-                                139.89449157445455,
-                                139.41020694426606,
-                                139.98741511141182,
-                                139.26752872667518,
-                                139.67490715315364
-                            ]
-                        },
-                        "end":"2017-05-03T16:43:50.662Z",
-                        "start":"2017-05-03T16:43:08.726Z"
-                    },
-                    "revision":"f7942df347d738d1cbf1c0be527debbafea8dc17",
-                    "tag":"",
-                    "threads":[
-                        "1"
-                    ],
-                    "ticket":[
-                        "BF-5471"
-                    ]
                 }
             },
             "threshold":{
@@ -30203,41 +30098,6 @@
                     "ticket":[
                         "BF-5083",
                         "BF-5428"
-                    ]
-                },
-                "Aggregation.IdentityView.UnwindThenGroup":{
-                    "create_time":"2017-05-03T16:05:00.867Z",
-                    "max":138.82087309510132,
-                    "name":"Aggregation.IdentityView.UnwindThenGroup",
-                    "order":7571,
-                    "results":{
-                        "1":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":138.82087309510132,
-                            "ops_per_sec_values":[
-                                138.66092309413656,
-                                138.90090809216704,
-                                138.90498898753253,
-                                138.65349871325955,
-                                138.98404658841093
-                            ]
-                        },
-                        "end":"2017-05-03T16:44:40.692Z",
-                        "start":"2017-05-03T16:43:59.103Z"
-                    },
-                    "revision":"f7942df347d738d1cbf1c0be527debbafea8dc17",
-                    "tag":"",
-                    "threads":[
-                        "1"
-                    ],
-                    "ticket":[
-                        "BF-5471"
                     ]
                 }
             },
