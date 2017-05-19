@@ -230,6 +230,10 @@ def main(args): # pylint: disable=too-many-branches,too-many-locals,too-many-sta
                     else:
                         result[check_name] = False
 
+                # if the check failed then the whole test failed: PERF-883
+                if result[check_name]:
+                    test_failed = True
+
         if tag_history:
             reference = tag_history.series_at_tag(test, args.reference)
             using_override = []
