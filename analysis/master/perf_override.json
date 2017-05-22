@@ -7910,11 +7910,18 @@
                         "PERF-875"
                     ]
                 },
-                "Aggregation.GraphLookupSocialite":{
-                    "thread_threshold":0.18,
-                    "threshold":0.12,
+                "Aggregation.GraphLookupNeighbors":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
                     "ticket":[
-                        "PERF-875"
+                        "BF-5513"
+                    ]
+                },
+                "Aggregation.GraphLookupSocialite":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5513"
                     ]
                 },
                 "Aggregation.Group.All":{
@@ -7950,6 +7957,27 @@
                     "threshold":0.16,
                     "ticket":[
                         "BF-4442"
+                    ]
+                },
+                "Aggregation.Lookup":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5513"
+                    ]
+                },
+                "Aggregation.LookupOrders":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5513"
+                    ]
+                },
+                "Aggregation.LookupViaGraphLookup":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5513"
                     ]
                 },
                 "Aggregation.Match":{
@@ -11310,11 +11338,18 @@
                         "PERF-875"
                     ]
                 },
-                "Aggregation.IdentityView.GraphLookupSocialite":{
-                    "thread_threshold":0.18,
-                    "threshold":0.12,
+                "Aggregation.IdentityView.GraphLookupNeighbors":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
                     "ticket":[
-                        "PERF-875"
+                        "BF-5513"
+                    ]
+                },
+                "Aggregation.IdentityView.GraphLookupSocialite":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5513"
                     ]
                 },
                 "Aggregation.IdentityView.Group.All":{
@@ -11350,6 +11385,27 @@
                     "threshold":0.2,
                     "ticket":[
                         "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Lookup":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5513"
+                    ]
+                },
+                "Aggregation.IdentityView.LookupOrders":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5513"
+                    ]
+                },
+                "Aggregation.IdentityView.LookupViaGraphLookup":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5513"
                     ]
                 },
                 "Aggregation.IdentityView.Match":{
@@ -20921,11 +20977,18 @@
                         "PERF-875"
                     ]
                 },
-                "Aggregation.GraphLookupSocialite":{
-                    "thread_threshold":0.18,
-                    "threshold":0.12,
+                "Aggregation.GraphLookupNeighbors":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
                     "ticket":[
-                        "PERF-875"
+                        "BF-5513"
+                    ]
+                },
+                "Aggregation.GraphLookupSocialite":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5513"
                     ]
                 },
                 "Aggregation.Group.All":{
@@ -20961,6 +21024,27 @@
                     "threshold":0.16,
                     "ticket":[
                         "BF-4442"
+                    ]
+                },
+                "Aggregation.Lookup":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5513"
+                    ]
+                },
+                "Aggregation.LookupOrders":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5513"
+                    ]
+                },
+                "Aggregation.LookupViaGraphLookup":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5513"
                     ]
                 },
                 "Aggregation.Match":{
@@ -24636,11 +24720,18 @@
                         "PERF-875"
                     ]
                 },
-                "Aggregation.IdentityView.GraphLookupSocialite":{
-                    "thread_threshold":0.18,
-                    "threshold":0.12,
+                "Aggregation.IdentityView.GraphLookupNeighbors":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
                     "ticket":[
-                        "PERF-875"
+                        "BF-5513"
+                    ]
+                },
+                "Aggregation.IdentityView.GraphLookupSocialite":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5513"
                     ]
                 },
                 "Aggregation.IdentityView.Group.All":{
@@ -24676,6 +24767,27 @@
                     "threshold":0.2,
                     "ticket":[
                         "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Lookup":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5513"
+                    ]
+                },
+                "Aggregation.IdentityView.LookupOrders":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5513"
+                    ]
+                },
+                "Aggregation.IdentityView.LookupViaGraphLookup":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5513"
                     ]
                 },
                 "Aggregation.IdentityView.Match":{
