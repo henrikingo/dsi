@@ -6871,6 +6871,95 @@
                         "BF-5126"
                     ]
                 },
+                "Aggregation.IntIdFindOne":{
+                    "create_time":"2017-05-23T01:05:54.724Z",
+                    "max":54831.00250865769,
+                    "name":"Aggregation.IntIdFindOne",
+                    "order":7738,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":11946.624881002008,
+                            "ops_per_sec_values":[
+                                11917.262326520231,
+                                11976.067060217236,
+                                11973.027248668997,
+                                11923.448255317498,
+                                11943.31951428608
+                            ]
+                        },
+                        "2":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":23550.349502775607,
+                            "ops_per_sec_values":[
+                                23586.498455482903,
+                                23341.68814346682,
+                                23652.233161149034,
+                                23660.085845833775,
+                                23511.241907945507
+                            ]
+                        },
+                        "4":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":46595.874633858555,
+                            "ops_per_sec_values":[
+                                46629.610058207065,
+                                46661.65141237901,
+                                46478.3620359189,
+                                46605.87153315541,
+                                46603.87812963238
+                            ]
+                        },
+                        "8":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":54831.00250865769,
+                            "ops_per_sec_values":[
+                                54711.61840563399,
+                                54974.295713741856,
+                                54897.05715477547,
+                                54629.773842756214,
+                                54942.26742638096
+                            ]
+                        },
+                        "end":"2017-05-23T02:38:48.033Z",
+                        "start":"2017-05-23T02:37:06.676Z"
+                    },
+                    "revision":"ada47e8940993914048de342e830324cf456f3fd",
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "2",
+                        "4",
+                        "8"
+                    ],
+                    "ticket":[
+                        "BF-5478"
+                    ]
+                },
                 "Aggregation.IntNonIdFindOne":{
                     "create_time":"2017-05-12T18:13:24.127Z",
                     "max":52888.63030748095,
@@ -7316,6 +7405,184 @@
                         "BF-5126"
                     ]
                 },
+                "Aggregation.StringUnindexedInPredWithNonSimpleCollation":{
+                    "create_time":"2017-05-23T01:05:54.724Z",
+                    "max":27723.305870436823,
+                    "name":"Aggregation.StringUnindexedInPredWithNonSimpleCollation",
+                    "order":7738,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":6548.740608064307,
+                            "ops_per_sec_values":[
+                                6562.784403985215,
+                                6540.142342863244,
+                                6554.631727824435,
+                                6533.988838235591,
+                                6552.155727413047
+                            ]
+                        },
+                        "2":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":13054.27639630714,
+                            "ops_per_sec_values":[
+                                13031.936481305178,
+                                13079.105798610159,
+                                13059.684334816375,
+                                13027.305579575046,
+                                13073.349787228939
+                            ]
+                        },
+                        "4":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":25678.977574978533,
+                            "ops_per_sec_values":[
+                                25702.17667975595,
+                                25719.39825514057,
+                                25793.223310494406,
+                                25486.41826274481,
+                                25693.67136675694
+                            ]
+                        },
+                        "8":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":27723.305870436823,
+                            "ops_per_sec_values":[
+                                27713.69276121533,
+                                27689.35895537998,
+                                27799.68119457539,
+                                27796.59757581471,
+                                27617.198865198716
+                            ]
+                        },
+                        "end":"2017-05-23T02:47:14.477Z",
+                        "start":"2017-05-23T02:45:34.077Z"
+                    },
+                    "revision":"ada47e8940993914048de342e830324cf456f3fd",
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "2",
+                        "4",
+                        "8"
+                    ],
+                    "ticket":[
+                        "BF-5478"
+                    ]
+                },
+                "Aggregation.StringUnindexedInPredWithSimpleCollation":{
+                    "create_time":"2017-05-23T01:05:54.724Z",
+                    "max":34067.960310576214,
+                    "name":"Aggregation.StringUnindexedInPredWithSimpleCollation",
+                    "order":7738,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":7930.94365282927,
+                            "ops_per_sec_values":[
+                                7940.2846130068465,
+                                7899.073239917581,
+                                7931.565258576585,
+                                7942.206219045579,
+                                7941.588933599759
+                            ]
+                        },
+                        "2":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":15771.739987225106,
+                            "ops_per_sec_values":[
+                                15794.294917468946,
+                                15761.393841912224,
+                                15767.517386733822,
+                                15782.415308115162,
+                                15753.078481895376
+                            ]
+                        },
+                        "4":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":31175.120534360147,
+                            "ops_per_sec_values":[
+                                31238.995322125033,
+                                31066.386696038797,
+                                31210.19579297825,
+                                31196.84230155109,
+                                31163.18255910757
+                            ]
+                        },
+                        "8":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":34067.960310576214,
+                            "ops_per_sec_values":[
+                                34079.392524624745,
+                                34121.777328317796,
+                                34019.202252433635,
+                                34019.87894266928,
+                                34099.55050483563
+                            ]
+                        },
+                        "end":"2017-05-23T02:48:54.841Z",
+                        "start":"2017-05-23T02:47:14.477Z"
+                    },
+                    "revision":"ada47e8940993914048de342e830324cf456f3fd",
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "2",
+                        "4",
+                        "8"
+                    ],
+                    "ticket":[
+                        "BF-5478"
+                    ]
+                },
                 "Aggregation.TwoInts":{
                     "create_time":"2017-05-12T18:13:24.127Z",
                     "max":37170.40816686309,
@@ -7470,13 +7737,6 @@
                         "PERF-875"
                     ]
                 },
-                "Aggregation.IntIdFindOne":{
-                    "thread_threshold":0.17,
-                    "threshold":0.12,
-                    "ticket":[
-                        "BF-5478"
-                    ]
-                },
                 "Aggregation.IntNonIdFindOne":{
                     "thread_threshold":-0.3,
                     "threshold":0.2,
@@ -7510,20 +7770,6 @@
                     "threshold":0.1,
                     "ticket":[
                         "BF-5096"
-                    ]
-                },
-                "Aggregation.StringUnindexedInPredWithNonSimpleCollation":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
-                    "ticket":[
-                        "BF-5478"
-                    ]
-                },
-                "Aggregation.StringUnindexedInPredWithSimpleCollation":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
-                    "ticket":[
-                        "BF-5478"
                     ]
                 }
             }
@@ -10558,20 +10804,6 @@
                     "threshold":0.2,
                     "ticket":[
                         "PERF-444"
-                    ]
-                },
-                "Queries.StringUnindexedInPredWithNonSimpleCollation":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
-                    "ticket":[
-                        "BF-5478"
-                    ]
-                },
-                "Queries.StringUnindexedInPredWithSimpleCollation":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
-                    "ticket":[
-                        "BF-5478"
                     ]
                 },
                 "Queries.Text.FindSingleLargeDocuments":{
@@ -20244,6 +20476,95 @@
                         "BF-5126"
                     ]
                 },
+                "Aggregation.IntIdFindOne":{
+                    "create_time":"2017-05-23T01:05:54.724Z",
+                    "max":51394.92935524151,
+                    "name":"Aggregation.IntIdFindOne",
+                    "order":7738,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":11312.637396281598,
+                            "ops_per_sec_values":[
+                                11333.543798770517,
+                                11354.168770197646,
+                                11256.573499026897,
+                                11310.197892473945,
+                                11308.703020938985
+                            ]
+                        },
+                        "2":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":22446.755196372746,
+                            "ops_per_sec_values":[
+                                22507.14694282386,
+                                22402.844135360338,
+                                22453.613086981437,
+                                22472.602007103535,
+                                22397.569809594566
+                            ]
+                        },
+                        "4":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":44091.0880035856,
+                            "ops_per_sec_values":[
+                                44182.55026903824,
+                                44077.236294766815,
+                                44081.406518133714,
+                                44115.04881108181,
+                                43999.19812490744
+                            ]
+                        },
+                        "8":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":51394.92935524151,
+                            "ops_per_sec_values":[
+                                51729.91268699835,
+                                51460.0507605798,
+                                51314.59764134409,
+                                51386.24386817949,
+                                51083.84181910585
+                            ]
+                        },
+                        "end":"2017-05-23T02:39:25.113Z",
+                        "start":"2017-05-23T02:37:43.701Z"
+                    },
+                    "revision":"ada47e8940993914048de342e830324cf456f3fd",
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "2",
+                        "4",
+                        "8"
+                    ],
+                    "ticket":[
+                        "BF-5478"
+                    ]
+                },
                 "Aggregation.IntNonIdFindOne":{
                     "create_time":"2017-05-12T18:13:24.127Z",
                     "max":49515.90752632495,
@@ -20600,6 +20921,184 @@
                         "BF-5126"
                     ]
                 },
+                "Aggregation.StringUnindexedInPredWithNonSimpleCollation":{
+                    "create_time":"2017-05-23T01:05:54.724Z",
+                    "max":26574.34066730698,
+                    "name":"Aggregation.StringUnindexedInPredWithNonSimpleCollation",
+                    "order":7738,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":6349.853826762208,
+                            "ops_per_sec_values":[
+                                6355.090110083452,
+                                6332.307805501063,
+                                6355.512412813395,
+                                6370.8989237611495,
+                                6335.459881651978
+                            ]
+                        },
+                        "2":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":12558.674503453836,
+                            "ops_per_sec_values":[
+                                12581.105949785533,
+                                12545.103113394345,
+                                12538.46859744888,
+                                12569.95917107404,
+                                12558.73568556638
+                            ]
+                        },
+                        "4":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":24763.462901459694,
+                            "ops_per_sec_values":[
+                                24713.552232124122,
+                                24764.682651351388,
+                                24789.10870133091,
+                                24725.64865079316,
+                                24824.3222716989
+                            ]
+                        },
+                        "8":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":26574.34066730698,
+                            "ops_per_sec_values":[
+                                26611.56252135026,
+                                26573.790656978697,
+                                26532.62014992833,
+                                26573.49585097463,
+                                26580.23415730301
+                            ]
+                        },
+                        "end":"2017-05-23T02:47:52.054Z",
+                        "start":"2017-05-23T02:46:11.664Z"
+                    },
+                    "revision":"ada47e8940993914048de342e830324cf456f3fd",
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "2",
+                        "4",
+                        "8"
+                    ],
+                    "ticket":[
+                        "BF-5478"
+                    ]
+                },
+                "Aggregation.StringUnindexedInPredWithSimpleCollation":{
+                    "create_time":"2017-05-23T01:05:54.724Z",
+                    "max":32476.730692896126,
+                    "name":"Aggregation.StringUnindexedInPredWithSimpleCollation",
+                    "order":7738,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":7610.93166966089,
+                            "ops_per_sec_values":[
+                                7604.712494604407,
+                                7624.114290535697,
+                                7612.1159679097145,
+                                7610.138881085856,
+                                7603.576714168777
+                            ]
+                        },
+                        "2":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":15155.139181188079,
+                            "ops_per_sec_values":[
+                                15147.304557906391,
+                                15151.294016835305,
+                                15186.42915692037,
+                                15132.188984324614,
+                                15158.479189953712
+                            ]
+                        },
+                        "4":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":29892.984114386014,
+                            "ops_per_sec_values":[
+                                29894.838920631926,
+                                29870.84573638236,
+                                30051.484797085628,
+                                29943.791435928553,
+                                29703.959681901604
+                            ]
+                        },
+                        "8":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":32476.730692896126,
+                            "ops_per_sec_values":[
+                                32406.19115876956,
+                                32548.116222040575,
+                                32261.40873699545,
+                                32698.2633697757,
+                                32469.673976899347
+                            ]
+                        },
+                        "end":"2017-05-23T02:49:32.441Z",
+                        "start":"2017-05-23T02:47:52.054Z"
+                    },
+                    "revision":"ada47e8940993914048de342e830324cf456f3fd",
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "2",
+                        "4",
+                        "8"
+                    ],
+                    "ticket":[
+                        "BF-5478"
+                    ]
+                },
                 "Aggregation.TwoInts":{
                     "create_time":"2017-05-12T18:13:24.127Z",
                     "max":34335.11193026156,
@@ -20747,13 +21246,6 @@
                         "BF-5316"
                     ]
                 },
-                "Aggregation.IntIdFindOne":{
-                    "thread_threshold":0.17,
-                    "threshold":0.12,
-                    "ticket":[
-                        "BF-5478"
-                    ]
-                },
                 "Aggregation.IntNonIdFindOne":{
                     "thread_threshold":-0.3,
                     "threshold":0.2,
@@ -20780,20 +21272,6 @@
                     "threshold":0.1,
                     "ticket":[
                         "BF-5126"
-                    ]
-                },
-                "Aggregation.StringUnindexedInPredWithNonSimpleCollation":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
-                    "ticket":[
-                        "BF-5478"
-                    ]
-                },
-                "Aggregation.StringUnindexedInPredWithSimpleCollation":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
-                    "ticket":[
-                        "BF-5478"
                     ]
                 }
             }
@@ -24303,20 +24781,6 @@
                     "threshold":0.2,
                     "ticket":[
                         "PERF-444"
-                    ]
-                },
-                "Queries.StringUnindexedInPredWithNonSimpleCollation":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
-                    "ticket":[
-                        "BF-5478"
-                    ]
-                },
-                "Queries.StringUnindexedInPredWithSimpleCollation":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
-                    "ticket":[
-                        "BF-5478"
                     ]
                 },
                 "Queries.Text.FindSingleLargeDocuments":{
