@@ -244,7 +244,9 @@ def copy_config_files(dsipath, config, directory):
     # Multi-node clusters need a slightly different list of tests for ycsb
     # Hopefully this can be removed once mission-control is replaced with new test_control
     ycsb_multinode = ""
-    if config.get("test") == "ycsb" and config.get("cluster") in ["shard", "replica"]:
+    if config.get("test") == "ycsb" and config.get("cluster_type") in ["shard", "replica"]:
+        LOGGER.debug("Adding .multi_node string for ycsb_multinode since cluster_type {} is" +
+                     "shard or replica", config.get("cluster_type"))
         ycsb_multinode = ".multi_node"
 
     # Pairs of ConfigDict module, and bootstrap.yml input.
