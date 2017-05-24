@@ -150,7 +150,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                         deep_dict.set_value(fio_primary, key, test_obj)
                     elif test_name[0:7] == 'canary_':
                         deep_dict.set_value(canary, key, test_obj)
-                    if test_name[0:4] == 'fio_':
+                    elif test_name[0:4] == 'fio_':
                         deep_dict.set_value(canary, key, test_obj)
                     else:
                         deep_dict.set_value(mongodb_tests, key, test_obj)
@@ -215,7 +215,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                                 yvalues_min.append(min_val)
 
                     axis = pyplot.subplot(111)
-                    pyplot.subplots_adjust(bottom=0.3)
+                    pyplot.subplots_adjust(bottom=0.4)
                     width = 0.8
                     xvalues = range(len(test_names))
 
@@ -301,7 +301,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                                     yvalues[build_index][iteration_index].append(value)
 
                     axis = pyplot.subplot(111)
-                    pyplot.subplots_adjust(bottom=0.3)
+                    pyplot.subplots_adjust(bottom=0.4)
                     xvalues = range(len(test_names))
                     # Each build gets its shade of blue
                     colors = numpy.array(range(len(yvalues))) / float(len(yvalues))

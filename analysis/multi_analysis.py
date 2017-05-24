@@ -13,6 +13,7 @@ import copy
 import json
 import os
 import sys
+from requests.exceptions import HTTPError
 
 import numpy
 import yaml
@@ -197,7 +198,12 @@ class MultiEvergreenAnalysis(object):
                 build_results[variant_name] = {}
                 for task_name, task_obj in tasks_in_variant.iteritems():
                     task_id = task_obj['task_id']
-                    result_doc = self.evergreen_client.query_perf_results(task_id)
+                    try:
+                        result_doc = self.evergreen_client.query_perf_results(task_id)
+                    except HTTPError as err:
+                        print("WARNING: HTTP error {} for {} {}".format(
+                            err.response.status_code, variant_name, task_name))
+                        continue
                     build_results[variant_name][task_name] = result_doc
             self.results.append(build_results)
 
@@ -352,12 +358,20 @@ class MultiEvergreenAnalysis(object):
 
     def compute_aggregates(self):
         """Compute aggregates (average, variance,...) of the values in self.agg_results"""
+        # pylint: disable=too-many-statements
         for path, val in deep_dict.iterate(self.agg_results):
             if path[-1] == 'ops_per_sec' and isinstance(val, list):
                 # Compute aggregates for the ops_per_sec value over builds
                 parent_obj = deep_dict.get_value(self.agg_results, path[0:-1])
                 parent_obj['average'] = float(numpy.average(val))
                 parent_obj['median'] = float(numpy.median(val))
+
+                # Sanity check for zero results
+                if parent_obj['average'] == 0 or parent_obj['median'] == 0:
+                    print("WARNING: Zero average or median, deleting {}".format(path))
+                    deep_dict.del_value(self.agg_results, path[0:-1])
+                    continue
+
                 parent_obj['variance'] = float(numpy.var(val, ddof=1))
                 parent_obj['variance_to_mean'] = (float(parent_obj['variance']) /
                                                   float(parent_obj['average']))
@@ -369,7 +383,12 @@ class MultiEvergreenAnalysis(object):
             elif path[-1] == 'ops_per_sec_values' and isinstance(val, list):
                 # Compute aggregates over the iterations inside each build, and pack result back
                 # into an array that contains the result for each build
-                parent_obj = deep_dict.get_value(self.agg_results, path[0:-1])
+                try:
+                    parent_obj = deep_dict.get_value(self.agg_results, path[0:-1])
+                except KeyError:
+                    # parent_obj has been deleted above, just skip this
+                    continue
+
                 parent_obj['it_average'] = []  # Equal to ops_per_sec
                 parent_obj['it_median'] = []
                 parent_obj['it_variance'] = []
@@ -381,6 +400,8 @@ class MultiEvergreenAnalysis(object):
                 for per_build_iterations in val:
                     parent_obj['it_average'].append(float(numpy.average(per_build_iterations)))
                     parent_obj['it_median'].append(float(numpy.median(per_build_iterations)))
+                    # TODO: May need to add sanity check here too to avoid divison with zero below.
+                    # For now, never had data where that would actually happen.
                     parent_obj['it_variance'].append(float(numpy.var(per_build_iterations, ddof=1)))
                     parent_obj['it_variance_to_mean'].append(
                         float(numpy.var(per_build_iterations, ddof=1)) /

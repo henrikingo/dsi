@@ -42,6 +42,14 @@ def set_value(deep_dict, path, value):
     key = path[-1]
     obj[key] = value
 
+def del_value(deep_dict, path):
+    """del() the value at path"""
+    obj = deep_dict
+    for key in path[0:-1]:
+        obj = obj[key]
+    key = path[-1]
+    del obj[key]
+
 def sorted_iter(a_dict):
     """Like dict.iteritems(), but sorts keys first."""
     keys = a_dict.keys()
