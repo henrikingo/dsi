@@ -48,7 +48,7 @@ class TestDeepDict(unittest.TestCase):
         deep_dict.del_value(data, ['a', 'aa', 'aab'])
         self.assertEqual(data, expected)
 
-        with self.assertRaises(KeyError) as context:
+        with self.assertRaises(KeyError):
             deep_dict.del_value(data, ['a', 'foo'])
 
 if __name__ == '__main__':
