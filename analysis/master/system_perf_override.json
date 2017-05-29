@@ -5107,7 +5107,56 @@
         },
         "industry_benchmarks_MMAPv1":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "ycsb_100read-mmapv1":{
+                    "create_time":"2017-05-27T11:08:32.266Z",
+                    "end":1496037868,
+                    "max":54499.92233761067,
+                    "name":"ycsb_100read-mmapv1",
+                    "order":6961,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":54499.92233761067,
+                            "replica_avg_lag":0.2807971014492754,
+                            "replica_max_lag":10
+                        }
+                    },
+                    "revision":"307b4f12c992b0d6470b893de059c9a105cf8124",
+                    "start":1496037499,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-5581"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_95read5update-mmapv1":{
+                    "create_time":"2017-05-27T11:08:32.266Z",
+                    "end":1496038633,
+                    "max":50435.25626153706,
+                    "name":"ycsb_95read5update-mmapv1",
+                    "order":6961,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":50435.25626153706,
+                            "replica_avg_lag":0.7884130982367759,
+                            "replica_max_lag":2
+                        }
+                    },
+                    "revision":"307b4f12c992b0d6470b893de059c9a105cf8124",
+                    "start":1496038234,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-5581"
+                    ],
+                    "workload":"ycsb"
+                }
+            },
             "threshold":{
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
