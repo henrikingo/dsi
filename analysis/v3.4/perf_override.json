@@ -6320,6 +6320,13 @@
                 }
             },
             "threshold":{
+                "Aggregation.IdentityView.DistinctWithoutIndexAndQuery":{
+                    "thread_threshold":0.26,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5575"
+                    ]
+                },
                 "Aggregation.IdentityView.Group.All":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
@@ -15006,6 +15013,13 @@
                 }
             },
             "threshold":{
+                "Aggregation.IdentityView.DistinctWithoutIndexAndQuery":{
+                    "thread_threshold":0.26,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5575"
+                    ]
+                },
                 "Aggregation.IdentityView.Group.All":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
