@@ -11052,6 +11052,13 @@
                         "PERF-444"
                     ]
                 },
+                "Queries.StringUnindexedInPredWithSimpleCollation":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5478"
+                    ]
+                },
                 "Queries.Text.FindSingleLargeDocuments":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
