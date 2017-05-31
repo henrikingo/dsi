@@ -236,8 +236,8 @@
                     ]
                 },
                 "Queries.FindProjectionDottedField":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.48,
+                    "threshold":0.32,
                     "ticket":[
                         "PERF-444"
                     ]
@@ -264,8 +264,8 @@
                     ]
                 },
                 "Queries.FindWideDocProjection":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
                     "ticket":[
                         "PERF-444"
                     ]
