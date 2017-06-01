@@ -10,6 +10,7 @@ run:
         # In this case, we want each mongo shell to connect to the mongod/s on its localhost
         target: localhost
         port: 27017
+        scale_factor: ${mongodb_setup.meta.primaries}
         test_list: default
         # Normally tests are run from a single workload_client (default, when below is missing).
         # In this case, we want run_workloads.py to ssh into each server and run the test locally

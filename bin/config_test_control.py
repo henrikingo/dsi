@@ -61,11 +61,19 @@ def generate_mc_json():
         # I tried testing for existence of the key, byt that did not work
         # properly, so using try catch block.
         try:
+            workload_config = run['workload_config']
             with open(run['config_filename'], 'w') as workloads_file:
-                if isinstance(run['workload_config'], dict):
-                    workloads_file.write(yaml.dump(run['workload_config'].as_dict()))
-                elif isinstance(run['workload_config'], str):
-                    workloads_file.write(run['workload_config'])
+                if isinstance(workload_config, dict):
+                    # Can't assign into config dict. Need an actual dictionary
+                    workload_config_dict = workload_config.as_dict()
+                    if 'scale_factor' in workload_config_dict:
+                        if isinstance(workload_config_dict['scale_factor'], str):
+                            #pylint: disable=eval-used
+                            workload_config_dict['scale_factor'] = eval(
+                                workload_config_dict['scale_factor'])
+                    workloads_file.write(yaml.dump(workload_config_dict))
+                elif isinstance(workload_config, str):
+                    workloads_file.write(workload_config)
         except KeyError:
             LOG.warn("No workload config in test control")
 

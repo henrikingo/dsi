@@ -97,6 +97,12 @@ mongodb_setup:
         is_sharded: false
         is_replset: false
         secondary: None
+
+        # Number of primaries in the cluster. For non-sharded this
+        # should be 1. For sharded will be the number of shards.
+        primaries: 1
+        secondaries: 0 # Secondaries per shard
+
     post_task:
         - on_all_servers:
               retrieve_files:

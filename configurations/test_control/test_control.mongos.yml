@@ -35,6 +35,7 @@ run:
         sharded: ${mongodb_setup.meta.is_sharded}
         replica: ${mongodb_setup.meta.is_replset}
         storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
+        scale_factor: 1 #I'm not sure this one should scale with anything
         test_list: default
         mongo:
             # It turns out the shell supports connection strings, but

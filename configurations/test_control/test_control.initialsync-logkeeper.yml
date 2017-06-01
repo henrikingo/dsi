@@ -31,6 +31,7 @@ run:
         sharded: ${mongodb_setup.meta.is_sharded}
         replica: ${mongodb_setup.meta.is_replset}
         storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
+        scale_factor: ${mongodb_setup.meta.primaries}
         test_list: initialsync-logkeeper
         mongo:
             # It turns out the shell supports connection strings, but

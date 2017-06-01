@@ -57,3 +57,5 @@ meta :
     port: 27017
     is_sharded: true
     is_replset: false
+    primaries: 3
+    secondaries: 2
