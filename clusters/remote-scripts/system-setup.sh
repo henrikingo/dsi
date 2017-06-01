@@ -6,11 +6,9 @@
 #
 # INSTANCE_TYPE:  mongod, mongos, configsvr or workloadclient
 # WITH_EBS:       "with_ebs" or "with_seeded_ebs" to add EBS partition
-# RUN_FIO:            If "false", skip fio tests
 #
 INSTANCE_TYPE="${1}"
 WITH_EBS="${2:-false}"
-RUN_FIO="${3:-true}"
 
 sudo yum -y -q install tmux git wget sysstat dstat perf fio xfsprogs
 
@@ -83,27 +81,22 @@ echo "ec2-user           hard    nofile          65535" | sudo tee -a /etc/secur
 
 echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCmHUZLsuGvNUlCiaZ83jS9f49S0plAtCH19Z2iATOYPH1XE2T8ULcHdFX2GkYiaEqI+fCf1J1opif45sW/5yeDtIp4BfRAdOu2tOvkKvzlnGZndnLzFKuFfBPcysKyrGxkqBvdupOdUROiSIMwPcFgEzyLHk3pQ8lzURiJNtplQ82g3aDi4wneLDK+zuIVCl+QdP/jCc0kpYyrsWKSbxi0YrdpG3E25Q4Rn9uom58c66/3h6MVlk22w7/lMYXWc5fXmyMLwyv4KndH2u3lV45UAb6cuJ6vn6wowiD9N9J1GS57m8jAKaQC1ZVgcZBbDXMR8fbGdc9AH044JVtXe3lT shardtest@test.mongo' | tee -a ~/.ssh/authorized_keys
 
-echo RUN_FIO= $RUN_FIO
 echo INSTANCE_TYPE= $INSTANCE_TYPE
-if [ "${RUN_FIO}" != "false" ]; then
-    fio --directory=/media/ephemeral0 --name fio_test_file --direct=1 --rw=randwrite --bs=16k --size=1G --numjobs=16 --time_based --runtime=60 --group_reporting --norandommap
-    fio --directory=/media/ephemeral1 --name fio_test_file --direct=1 --rw=randwrite --bs=16k --size=1G --numjobs=16 --time_based --runtime=60 --group_reporting --norandommap
-fi
 
-echo
-echo "Compile fio from source, because the stock fio on Amazon Linux didn't work with ioengine=net"
+# echo
+# echo "Compile fio from source, because the stock fio on Amazon Linux didn't work with ioengine=net"
 
-sudo yum groupinstall -y --quiet "Development tools"
-sudo yum install -y --quiet zlib-devel
-git clone --quiet https://github.com/axboe/fio
-cd fio
-git checkout e8750877dcd5b748cc7100654f9d9dff770d0c83
-./configure
-make
-mv fio ../netfio
-cd ..
-echo
-echo
+# sudo yum groupinstall -y --quiet "Development tools"
+# sudo yum install -y --quiet zlib-devel
+# git clone --quiet https://github.com/axboe/fio
+# cd fio
+# git checkout e8750877dcd5b748cc7100654f9d9dff770d0c83
+# ./configure
+# make
+# mv fio ../netfio
+# cd ..
+# echo
+# echo
 
 # Workload setup
 if [ "$INSTANCE_TYPE" == "workloadclient" ]; then
