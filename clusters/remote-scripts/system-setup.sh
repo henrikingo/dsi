@@ -86,8 +86,8 @@ echo INSTANCE_TYPE= $INSTANCE_TYPE
 # echo
 # echo "Compile fio from source, because the stock fio on Amazon Linux didn't work with ioengine=net"
 
-# sudo yum groupinstall -y --quiet "Development tools"
-# sudo yum install -y --quiet zlib-devel
+sudo yum groupinstall -y --quiet "Development tools"
+sudo yum install -y --quiet zlib-devel
 # git clone --quiet https://github.com/axboe/fio
 # cd fio
 # git checkout e8750877dcd5b748cc7100654f9d9dff770d0c83
