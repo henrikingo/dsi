@@ -60,8 +60,6 @@ pre_task:
         rm -rf workloads
         mkdir workloads
         tar zxvf workloads.tar.gz -C workloads
-        chmod 755 fio-test.sh
-        chmod 755 fio-net-test.sh
         curl -O --retry 10 https://s3.amazonaws.com/mciuploads/mongo-tools/binaries/mongo_tools_ubuntu_b3187697d342563efd9b90bdd1aa574aec4d2e00_16_12_08_22_07_30/community/mongoreplay
         chmod +x mongoreplay
         curl -o /media/ephemeral0/initialsync.playback.tgz --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/initialsync.playback.tgz

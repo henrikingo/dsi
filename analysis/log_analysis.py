@@ -4,14 +4,16 @@ everything ran smoothly during a test.
 """
 
 from __future__ import print_function
+import logging
 import os
 import os.path
-import logging
+import time
 
 import rules
 import util
 
 LOGGER = logging.getLogger(__name__)
+KEEPALIVE_TIME = time.time()
 
 def analyze_logs(reports_dir_path, perf_file_path=None):
     """
@@ -76,10 +78,13 @@ def _get_bad_log_lines(reports_dir_path, test_times=None):
     bad_messages_per_log = []
     for path in _get_log_file_paths(reports_dir_path):
         LOGGER.info("Analyzing log file: " + path)
+        bad_messages = []
         with open(path) as log_file:
-            bad_messages = [
-                line for line in log_file if line != "\n" and
-                rules.is_log_line_bad(line, test_times)]
+            # Not using list comprehension due to the need to call _print_keepalive_msg()
+            for line in log_file:
+                if line != "\n" and rules.is_log_line_bad(line, test_times):
+                    bad_messages.append(line)
+                _print_keepalive_msg(path)
         bad_messages_per_log.append((path, bad_messages))
 
     return bad_messages_per_log
@@ -97,3 +102,17 @@ def _get_log_file_paths(dir_path):
             log_paths.append(os.path.join(sub_dir_path, log_filename))
 
     return log_paths
+
+def _print_keepalive_msg(path):
+    """Print a log message every 15 minutes to prevent evergreen timeouts
+
+       If we want to use this more broadly, we would make it into its own small utility class,
+       parameterize the time interval, add unit tests, and that would also make the use of a
+       global variable go away.
+    """
+    global KEEPALIVE_TIME #pylint: disable=global-statement
+    quarter = 60*15
+    now = time.time()
+    if now > KEEPALIVE_TIME + quarter:
+        KEEPALIVE_TIME += quarter
+        LOGGER.info("Still analyzing %s...", path)
