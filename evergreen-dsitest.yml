@@ -37,14 +37,31 @@ functions:
           }
           END_OF_CREDS
 
-  lint:
+  setup_lint_yml:
+    - command: shell.exec
+      type : test
+      params:
+        working_dir: src
+        script: |
+          /opt/chef/embedded/bin/gem install yaml-lint
+          
+  lint_scripts:
     - command: shell.exec
       type : test
       params:
         working_dir: src
         script: |
           source ./venv/bin/activate
-          bash testscripts/lint-scripts.sh
+          bash testscripts/lint-python.sh
+
+  lint_yml:
+    - command: shell.exec
+      type : test
+      params:
+        working_dir: src
+        script: |
+          source ./venv/bin/activate
+          bash testscripts/lint-yml.sh
 
   nosetests:
     - command: shell.exec
@@ -67,10 +84,15 @@ functions:
 #               Tasks                 #
 #######################################
 tasks:
-- name: lint
+- name: lint_scripts
   commands:
     - func: setup_tests
-    - func: lint
+    - func: lint_scripts
+- name: lint_yml
+  commands:
+    - func: setup_tests
+    - func: setup_lint_yml
+    - func: lint_yml
 - name: nosetests
   commands:
     - func: setup_tests
@@ -91,6 +113,7 @@ buildvariants:
   run_on:
       - "rhel70-perf-standalone"
   tasks:
-    - name: lint
+    - name: lint_scripts
+    - name: lint_yml
     - name: nosetests
     - name: validate_overrides
