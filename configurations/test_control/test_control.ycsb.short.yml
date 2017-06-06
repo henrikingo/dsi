@@ -2,10 +2,20 @@ run:
   - id: ycsb_load-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
     "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb load mongodb -s -P workloads/workloadShort -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32; sleep 1"
+    config_filename: workloadShort
+    workload_config: |
+      recordcount=2500000
+      operationcount=3000000
+      workload=com.yahoo.ycsb.workloads.CoreWorkload
+      readallfields=true
+      readproportion=0.5
+      updateproportion=0.5
+      scanproportion=0
+      insertproportion=0.0
+      requestdistribution=zipfian
   - id: ycsb_50read50update-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
     "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb run mongodb -s -P workloads/workloadShort -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
-
 
 pre_task:
   - on_localhost:
@@ -18,5 +28,9 @@ pre_task:
   - on_workload_client:
       exec: |
         tar zxvf ycsb.tar.gz
-        source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && ./setup.sh
+        export JAVA_HOME="/usr/java/jdk1.7.0_71/jre"
+        source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && mvn clean package
+  - on_workload_client:
+      upload_files:
+        workloadShort: YCSB/ycsb-mongodb/workloads/workloadShort
 

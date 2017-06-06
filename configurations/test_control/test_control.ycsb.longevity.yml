@@ -2,6 +2,18 @@ run:
   - id: ycsb_load-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
     "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb load mongodb -s -P workloads/workloadLongevity -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32; sleep 1"
+    config_filename: workloadLongevity
+    workload_config: |
+      recordcount=50000000
+      operationcount=2000000000
+      workload=com.yahoo.ycsb.workloads.CoreWorkload
+      readallfields=true
+      readproportion=0.5
+      updateproportion=0.5
+      scanproportion=0
+      insertproportion=0.0
+      requestdistribution=zipfian
+
   - id: ycsb_50read50update-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
     "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb run mongodb -s -P workloads/workloadLongevity -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64 -p maxexecutiontime=86400; sleep 1"
@@ -36,7 +48,8 @@ pre_task:
         chmod 755 fio-test.sh
         chmod 755 iperf-test.sh
         tar zxvf ycsb.tar.gz
-        source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && ./setup.sh
+        export JAVA_HOME="/usr/java/jdk1.7.0_71/jre"
+        source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && mvn clean package
   - on_all_hosts:
       # Install iperf. It isn't available in yum on AWS instances
       exec: |
@@ -49,6 +62,7 @@ pre_task:
         sudo make install
   - on_workload_client:
       upload_files:
+        workloadLongevity: YCSB/ycsb-mongodb/workloads/workloadLongevity
         fio.ini: fio.ini
 post_task:
   - on_workload_client:

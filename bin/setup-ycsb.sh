@@ -15,9 +15,13 @@ if [ ! -e ${YCSB_DIR} ]
 then
     # need make sure we checked out mongodb-labs/ycsb repo first
     echo ycsb dir does not exist
-    rm -rf ./YCSB
+    # Checkout done in a subshell to protect CWD
+    (rm -rf ./YCSB
     rm -f ycsb.tar.gz
-    git clone -b evergreen https://github.com/mongodb-labs/YCSB.git
+    git clone https://github.com/mongodb-labs/YCSB.git
+    cd YCSB
+    git checkout 5742781
+    )
     YCSB_DIR=./YCSB
 fi
 
