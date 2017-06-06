@@ -45,6 +45,20 @@
                     "ticket":[
                         "PERF-873"
                     ]
+                },
+                "map_reduce_1M_doc-mmapv1":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5124"
+                    ]
+                },
+                "word_count_1M_doc-mmapv1":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5124"
+                    ]
                 }
             }
         },
@@ -369,6 +383,20 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                },
+                "map_reduce_1M_doc-mmapv1":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5124"
+                    ]
+                },
+                "word_count_1M_doc-mmapv1":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5124"
                     ]
                 }
             }

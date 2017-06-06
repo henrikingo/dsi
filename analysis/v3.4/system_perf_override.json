@@ -73,6 +73,20 @@
                     "ticket":[
                         "PERF-750"
                     ]
+                },
+                "map_reduce_1M_doc-mmapv1":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5124"
+                    ]
+                },
+                "word_count_1M_doc-mmapv1":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5124"
+                    ]
                 }
             }
         },
@@ -432,6 +446,20 @@
                     "threshold":0.3,
                     "ticket":[
                         "PERF-750"
+                    ]
+                },
+                "map_reduce_1M_doc-mmapv1":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5124"
+                    ]
+                },
+                "word_count_1M_doc-mmapv1":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5124"
                     ]
                 }
             }
