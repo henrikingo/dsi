@@ -1,4 +1,4 @@
-paramiko
+paramiko==2.1.2
 pycparser==2.14
-pyyaml
+pyyaml==3.12
 -r analysis.txt

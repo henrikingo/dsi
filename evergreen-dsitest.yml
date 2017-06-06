@@ -21,8 +21,7 @@ functions:
         script: |
           virtualenv ./venv
           source ./venv/bin/activate
-          pip install -r requirements.txt
-          pip install -r requirements/analysis-cli.txt
+          pip install -r requirements-dev.txt
           echo "building credentials file"
           cat > config.yml << END_OF_CREDS
           {
