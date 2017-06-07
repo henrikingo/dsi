@@ -43,9 +43,10 @@ pre_cluster_start:
       exec: |
         # This would execute in OS shell (before MongoDB cluster is running)
   - on_workload_client:
-      exec_mongo_shell: |
-        # JavaScript to be executed in mongo shell (when MongoDB cluster is running)
-        # Note: You can also put .js files in upload_files, and use load() to execute them in mongo shell.
+      exec_mongo_shell:
+        script: |
+          # JavaScript to be executed in a mongo shell (when MongoDB cluster is running)
+        connection_string: ${mongodb_setup.meta.hosts}  # Defaults to localhost
   - on_servers: (see above)             # servers = union( mongod, mongos, configsvr) = all_hosts - workload_client
   - on_mongod: (see above)
   - on_mongos: (see above)
