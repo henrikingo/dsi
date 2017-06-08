@@ -5,7 +5,7 @@ tfvars:      # Contents of this is transformed into input JSON to override terra
     mongod_instance_count: 9
     mongod_instance_type: c3.2xlarge
 
-    mongos_instance_count: 1
+    mongos_instance_count: 3
     mongos_instance_type: c3.2xlarge
 
     configsvr_instance_count: 3

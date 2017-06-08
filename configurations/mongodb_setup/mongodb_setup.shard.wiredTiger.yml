@@ -20,6 +20,10 @@ topology:
     mongos:
       - public_ip: ${infrastructure_provisioning.out.mongos.0.public_ip}
         private_ip: ${infrastructure_provisioning.out.mongos.0.private_ip}
+      - public_ip: ${infrastructure_provisioning.out.mongos.1.public_ip}
+        private_ip: ${infrastructure_provisioning.out.mongos.1.private_ip}
+      - public_ip: ${infrastructure_provisioning.out.mongos.2.public_ip}
+        private_ip: ${infrastructure_provisioning.out.mongos.2.private_ip}
     shard:
       - id: rs0
         cluster_type: replset
@@ -52,7 +56,8 @@ topology:
 # Meta data about this mongodb setup
 meta :
     # The list of hosts that can be used in a mongodb connection string
-    hosts: ${mongodb_setup.topology.0.mongos.0.private_ip}:27017
+    hosts: ${mongodb_setup.topology.0.mongos.0.private_ip}:27017,${mongodb_setup.topology.0.mongos.1.private_ip}:27017,${mongodb_setup.topology.0.mongos.2.private_ip}:27017
+    # A single host, as in "host:port". Use the primary or first mongos
     hostname: ${mongodb_setup.topology.0.mongos.0.private_ip}
     port: 27017
     is_sharded: true
