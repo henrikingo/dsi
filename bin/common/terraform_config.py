@@ -11,7 +11,9 @@ import datetime
 import logging
 import socket
 import requests
-from requests.exceptions import ConnectionError
+# RequestException is the parent exception for all requests.exceptions.*
+# http://docs.python-requests.org/en/master/_modules/requests/exceptions/
+from requests.exceptions import RequestException
 
 from common.config import ConfigDict
 
@@ -62,16 +64,18 @@ def generate_runner():
         response = requests.get('http://169.254.169.254/latest/meta-data/public-hostname',
                                 timeout=0.01)
         return response.text
-    except ConnectionError:
+    except RequestException as exception:
         LOG.warning("Terraform_config.py generate_runner could not access AWS"
                     "meta-data. Falling back to other methods")
+        LOG.warning(repr(exception))
 
     try:
         response = requests.get('http://ip.42.pl/raw', timeout=1)
         return response.text
-    except ConnectionError:
+    except RequestException:
         LOG.warning("Terraform_config.py generate_runner could not access ip.42.pl"
                     "to get public IP. Falling back to gethostname")
+        LOG.warning(repr(exception))
 
     return socket.gethostname()
 
