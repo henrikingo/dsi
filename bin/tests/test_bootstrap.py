@@ -248,7 +248,7 @@ class TestBootstrap(unittest.TestCase):
                           'mongodb_setup.replica.wiredTiger.yml'),
              'w').close()
         open(os.path.join(test_dsipath, 'configurations', 'test_control',
-                          'test_control.ycsb.multi_node.yml'),
+                          'test_control.ycsb.yml'),
              'w').close()
         test_config['infrastructure_provisioning'] = 'shard'
         test_config['mongodb_setup'] = 'replica'

@@ -229,22 +229,12 @@ def copy_config_files(dsipath, config, directory):
     '''
     Copy all related config files to the target directory
     '''
-    # Multi-node clusters need a slightly different list of tests for ycsb
-    # Hopefully this can be removed once mission-control is replaced with new test_control
-    ycsb_multinode = ""
-    if config.get("test_control") == "ycsb" and \
-            config.get("infrastructure_provisioning") in ["shard", "replica"]:
-        LOGGER.debug("Adding .multi_node string for ycsb_multinode " +
-                     "since infrastructure_provisioning %s is" +
-                     "shard or replica", config.get("infrastructure_provisioning"))
-        ycsb_multinode = ".multi_node"
-
     # Pairs of ConfigDict module, and bootstrap.yml input.
     # This is all the variable info needed to build the from and to file paths down below.
     configs_to_copy = {"infrastructure_provisioning": config.get("infrastructure_provisioning", ""),
                        "mongodb_setup":
                            config.get("mongodb_setup", "") + "." + config.get("storageEngine", ""),
-                       "test_control": config.get("test_control", "") + ycsb_multinode}
+                       "test_control": config.get("test_control", "")}
 
     for config_module, bootstrap_variable in configs_to_copy.iteritems():
         # Example: ./mongodb_setup.yml

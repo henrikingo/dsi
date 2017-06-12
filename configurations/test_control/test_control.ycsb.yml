@@ -1,9 +1,15 @@
 run:
   - id: ycsb_load-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
-    "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb load mongodb -s -P workloads/workloadEvergreen -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32; sleep 1"
+    cmd: >
+      cd YCSB/ycsb-mongodb;
+      ${test_control.numactl} ./bin/ycsb load mongodb -s
+      -P workloads/workloadEvergreen
+      -threads ${test_control.thread_levels.load.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}};
+      sleep 1;
     config_filename: workloadEvergreen
     workload_config: |
+      mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb
       recordcount=5000000
       operationcount=20000000
       workload=com.yahoo.ycsb.workloads.CoreWorkload
@@ -15,12 +21,22 @@ run:
       requestdistribution=zipfian
   - id: ycsb_100read-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
-    "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
+    cmd: >
+      cd YCSB/ycsb-mongodb;
+      ${test_control.numactl} ./bin/ycsb run mongodb -s
+      -P workloads/workloadEvergreen
+      -threads 64;
+      sleep 1;
   - id: ycsb_95read5update-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
-    "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen_95read5update -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
+    cmd: >
+      cd YCSB/ycsb-mongodb;
+      ${test_control.numactl} ./bin/ycsb run mongodb -s
+      -threads ${test_control.thread_levels.95-5.${mongodb_setup.meta.is_sharded}};
+      sleep 1;
     config_filename: workloadEvergreen_95read5update
     workload_config: |
+      workloads/workloadEvergreen_95read5update -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb
       recordcount=5000000
       operationcount=20000000
       workload=com.yahoo.ycsb.workloads.CoreWorkload
@@ -32,9 +48,15 @@ run:
       requestdistribution=zipfian
   - id: ycsb_50read50update-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
-    "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen_50read50update -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
+    cmd: >
+      cd YCSB/ycsb-mongodb;
+      ${test_control.numactl} ./bin/ycsb run mongodb -s
+      -P workloads/workloadEvergreen_50read50update
+      -threads ${test_control.thread_levels.50-50.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}};
+      sleep 1;
     config_filename: workloadEvergreen_50read50update
     workload_config: |
+      mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb
       recordcount=5000000
       operationcount=20000000
       workload=com.yahoo.ycsb.workloads.CoreWorkload
@@ -44,6 +66,7 @@ run:
       scanproportion=0
       insertproportion=0.0
       requestdistribution=zipfian
+
   - id: fio-${mongodb_setup.mongod_config_file.storage.engine}
     type: shell
     cmd: '${test_control.numactl} ./fio-test.sh ${mongodb_setup.meta.hostname}'
@@ -52,6 +75,25 @@ run:
   - id: iperf
     type: shell
     cmd: '${test_control.numactl} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+
+thread_levels:
+  load:
+    "True":  # Sharded
+      mmapv1: 16
+      wiredTiger: 64
+    "False":  # Not Sharded
+      mmapv1: 8
+      wiredTiger: 32
+  50-50:
+    "True":  # Sharded
+      mmapv1: 64
+      wiredTiger: 64
+    "False":  # Not Sharded
+      mmapv1: 64
+      wiredTiger: 64
+  95-5:
+    "True": 64  # Sharded
+    "False": 32  # Not Sharded
 
 pre_task:
   - on_localhost:
@@ -73,6 +115,18 @@ pre_task:
         tar zxvf ycsb.tar.gz
         export JAVA_HOME="/usr/java/jdk1.7.0_71/jre"
         source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && mvn clean package
+      exec_mongo_shell:
+        connection_string: "${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}"
+        # Shard the YCSB cluster if sharding is enabled
+        script: |
+          if ("${mongodb_setup.meta.is_sharded}" == "True") {
+            assert.commandWorked(sh.enableSharding("ycsb"));
+            assert.commandWorked(
+              sh.shardCollection("ycsb.usertable", {_id: "hashed"}));
+            db.printShardingStatus();
+          } else {
+            print ("Non-sharded cluster");
+          }
   - on_all_hosts:
       # Install iperf. It isn't available in yum on AWS instances
       exec: |

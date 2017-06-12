@@ -487,16 +487,6 @@ class ShardedCluster(object):
             mongos_opt['config_file'] = config_file
             self.mongoses.append(MongoNode(mongos_opt, is_mongos=True))
 
-    def shard_collection(self, db_name, coll_name):
-        """Shards the given collection."""
-        js_shard_coll = '''
-            assert.commandWorked(sh.enableSharding("{0}"));
-            assert.commandWorked(
-                sh.shardCollection("{0}.{1}", {{_id: "hashed"}}));
-            db.printShardingStatus();
-            '''.format(db_name, coll_name)
-        return self.mongoses[0].run_mongo_shell(js_shard_coll)
-
     def wait_until_up(self):
         """Checks to make sure sharded cluster is up and
         accessible. Specifically checking that the mognos's are up"""
@@ -547,10 +537,7 @@ class ShardedCluster(object):
         if not self.mongoses[0].run_mongo_shell('\n'.join(js_add_shards)):
             LOG.error('Failed to add shards!')
             return False
-        # TODO: sharding the ycsb collections or any other collections should
-        # be moved to a workload pre-step module. This goes against the design
-        # goals of DP 2.0.
-        return self.shard_collection('ycsb', 'usertable')
+        return True
 
     def shutdown(self):
         """Shutdown the mongodb cluster gracefully."""
