@@ -2,9 +2,9 @@
 jstests_dir: ""
 
 run:
-    # 5x fio-net tests ###########################################################################
-    # Dummy entry to produce a fio-net-listener.ini file, which is used together with fio-net.ini
-    # in the following entry.
+  # 5x fio-net tests ###########################################################################
+  # Dummy entry to produce a fio-net-listener.ini file, which is used together with fio-net.ini
+  # in the following entry.
   - id: fio-net-listener-${mongodb_setup.mongod_config_file.storage.engine}
     type: shell
     cmd: 'echo ">>> fio_net_dummy_entry :      1.0 1"'
@@ -21,7 +21,7 @@ run:
   - *fio_net
   - *fio_net
 
-    # 5x fio tests ###########################################################################
+  # 5x fio tests ###########################################################################
   - &fio
     id: fio-${mongodb_setup.mongod_config_file.storage.engine}
     type: shell
@@ -33,7 +33,7 @@ run:
   - *fio
   - *fio
 
-    # 5x ycsb load tests #########################################################################
+  # 5x ycsb load tests #########################################################################
   - &ycsb_load
     id: ycsb_load-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
@@ -51,7 +51,7 @@ run:
   - *ycsb_load
   - *ycsb_load_cleanup
 
-    # 5x ycsb 100read tests #########################################################################
+  # 5x ycsb 100read tests #########################################################################
   - &ycsb_100read
     id: ycsb_100read-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
@@ -61,7 +61,7 @@ run:
   - *ycsb_100read
   - *ycsb_100read
 
-    # 5x ycsb 95-5 tests #########################################################################
+  # 5x ycsb 95-5 tests #########################################################################
   - &ycsb_95read5update
     id: ycsb_95read5update-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
@@ -71,7 +71,7 @@ run:
   - *ycsb_95read5update
   - *ycsb_95read5update
 
-    # 5x ycsb 50-50 tests #########################################################################
+  # 5x ycsb 50-50 tests #########################################################################
   - &ycsb_50read50update
     id: ycsb_50read50update-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb

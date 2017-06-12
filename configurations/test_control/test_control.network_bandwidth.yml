@@ -19,7 +19,7 @@ pre_task:
         ./configure
         make
         sudo make install
-  - on_mongod: # This could be in pre-run
+  - on_mongod:  # This could be in pre-run
       exec: |
         sudo /usr/local/bin/iperf3 -s -p 27019 -D
 post_task:

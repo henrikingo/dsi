@@ -15,7 +15,7 @@ functions:
       params:
         directory: src
     - command: shell.exec
-      type : test
+      type: test
       params:
         working_dir: src
         script: |
@@ -36,17 +36,9 @@ functions:
           }
           END_OF_CREDS
 
-  setup_lint_yml:
-    - command: shell.exec
-      type : test
-      params:
-        working_dir: src
-        script: |
-          /opt/chef/embedded/bin/gem install yaml-lint
-          
   lint_scripts:
     - command: shell.exec
-      type : test
+      type: test
       params:
         working_dir: src
         script: |
@@ -55,7 +47,7 @@ functions:
 
   lint_yml:
     - command: shell.exec
-      type : test
+      type: test
       params:
         working_dir: src
         script: |
@@ -64,7 +56,7 @@ functions:
 
   nosetests:
     - command: shell.exec
-      type : test
+      type: test
       params:
         working_dir: src
         script: |
@@ -73,7 +65,7 @@ functions:
 
   validate_overrides:
     - command: shell.exec
-      type : test
+      type: test
       params:
         working_dir: src
         script: |
@@ -90,7 +82,6 @@ tasks:
 - name: lint_yml
   commands:
     - func: setup_tests
-    - func: setup_lint_yml
     - func: lint_yml
 - name: nosetests
   commands:

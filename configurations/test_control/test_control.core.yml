@@ -4,7 +4,7 @@ run:
 
     # This line to be shortened after the config file is copied from below into the production server.
     cmd: cd workloads && ${test_control.numactl} ./run_workloads.py -c workloads.yml
-    config_filename: workloads.yml # The name used in previous row
+    config_filename: workloads.yml  # The name used in previous row
     workload_config:
         ########################################################################
         # Test lists. Command line will indicate which list of tests to execute.
@@ -24,8 +24,8 @@ run:
               - mix.js
               - cpu_noise.js
             test:
-              - # Empty list. Put new workloads here for testing
-            short: # Just does Hello World
+              -  # Empty list. Put new workloads here for testing
+            short:  # Just does Hello World
               - hello.js:
                   parameter1: foo
                   parameter2: [true, false]

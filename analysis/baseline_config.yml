@@ -23,12 +23,12 @@ mongod_links:
   3.4.1: perf-3.4/performance_3.4_5e103c4f5583e2566a45d740225dc250baacfbd7/5e103c4f5583e2566a45d740225dc250baacfbd7/mongod-performance_3.4_5e103c4f5583e2566a45d740225dc250baacfbd7
   3.4.0: perf-3.4/585163183ff122031e0003e5/f4240c60f005be757399042dc12f6addbc3170c1/mongod-585163183ff122031e0003e5
   3.2.10: perf-3.2/5825260c3ff1227828006b38/79d9b3ab5ce20f51c272b4411202710a082d0317/mongod-5825260c3ff1227828006b38
-  3.2.11: perf-3.2/585147523ff122031e000295/009580ad490190ba33d1c6253ebd8d91808923e4/mongod-585147523ff122031e000295 # Patch build
+  3.2.11: perf-3.2/585147523ff122031e000295/009580ad490190ba33d1c6253ebd8d91808923e4/mongod-585147523ff122031e000295  # Patch build
   3.2.12: perf-3.2/performance_3.2_ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14/ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14/mongod-performance_3.2_ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14
   3.0.14: perf-3.0/582526d23ff1227828006b48/08352afcca24bfc145240a0fac9d28b978ab77f3/mongod-582526d23ff1227828006b48
 
 mongod_flags:
-  '3.0': # Need to quote version if only one period
+  '3.0':  # Need to quote version if only one period
     - pattern: --setParameter diagnosticDataCollectionEnabled=false
       replace: ""
     - pattern: --storageEngine=inMemory

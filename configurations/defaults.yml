@@ -11,23 +11,23 @@ bootstrap:
 
 infrastructure_provisioning:
     tfvars:
-        mongod_instance_count      : 1
-        workload_instance_count    : 1
+        mongod_instance_count: 1
+        workload_instance_count: 1
 
-        mongod_instance_type       : c3.8xlarge
-        workload_instance_type     : c3.8xlarge
+        mongod_instance_type: c3.8xlarge
+        workload_instance_type: c3.8xlarge
 
-        region                     : us-west-2
-        availability_zone          : us-west-2a
+        region: us-west-2
+        availability_zone: us-west-2a
 
-        ssh_user                   : ec2-user
-        ssh_key_name               : serverteam-perf-ssh-key
-        ssh_key_file               : aws_ssh_key.pem
+        ssh_user: ec2-user
+        ssh_key_name: serverteam-perf-ssh-key
+        ssh_key_file: aws_ssh_key.pem
 
         tags:
-            expire-on-delta        : 2    # adjust expire_on to today + expire-on-delta days
-            owner                  : serverteam-perf@10gen.com
-            Project                : sys-perf
+            expire-on-delta: 2     # adjust expire_on to today + expire-on-delta days
+            owner: serverteam-perf@10gen.com
+            Project: sys-perf
     numactl_prefix:
       - numactl
       - --interleave=all
@@ -38,14 +38,14 @@ mongodb_setup:
     journal_dir: /media/ephemeral1/journal
     clean_db_dir: true
 
-    mongod_config_file: # Note these defaults can be overridden by user, but not unset.
+    mongod_config_file:  # Note these defaults can be overridden by user, but not unset.
         net:
             port: 27017
             bindIp: 0.0.0.0
         processManagement:
             fork: true
         replication:
-            oplogSizeMB: 153600  # 150GB oplog
+            oplogSizeMB: 153600   # 150GB oplog
         setParameter:
             enableTestCommands: 1
         storage:
@@ -101,7 +101,7 @@ mongodb_setup:
         # Number of primaries in the cluster. For non-sharded this
         # should be 1. For sharded will be the number of shards.
         primaries: 1
-        secondaries: 0 # Secondaries per shard
+        secondaries: 0  # Secondaries per shard
 
     post_task:
         - on_all_servers:

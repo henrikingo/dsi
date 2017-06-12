@@ -1,6 +1,6 @@
 run:
-    # Dummy entry to produce a fio-net-listener.ini file, which is used together with fio-net.ini
-    # in the following entry.
+  # Dummy entry to produce a fio-net-listener.ini file, which is used together with fio-net.ini
+  # in the following entry.
   - id: fio-net-listener-${mongodb_setup.mongod_config_file.storage.engine}
     type: shell
     cmd: 'echo ">>> fio_net_dummy_entry :      1.0 1"'
@@ -76,7 +76,7 @@ run:
 
     # This line to be shortened after the config file is copied from below into the production server.
     cmd: cd workloads &&  ${test_control.numactl} ./run_workloads.py -c workloads.yml
-    config_filename: workloads.yml # The name used in previous row
+    config_filename: workloads.yml  # The name used in previous row
     workload_config:
         ########################################################################
         # Test lists. Command line will indicate which list of tests to execute.
@@ -103,8 +103,8 @@ run:
               - move_chunk_with_load.js
               - index_build.js
             test:
-              - # Empty list. Put new workloads here for testing
-            short: # Just does Hello World
+              -  # Empty list. Put new workloads here for testing
+            short:  # Just does Hello World
               - hello.js:
                   parameter1: foo
                   parameter2: [true, false]

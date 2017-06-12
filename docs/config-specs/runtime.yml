@@ -17,7 +17,7 @@ branch_name: master
 
 # sys-perf expansions
 ext: None
-script_flags : --ycsb-throughput-analysis reports
+script_flags: --ycsb-throughput-analysis reports
 dsi_rev: 123...
 compare_task: industry_benchmarks_WT
 workloads_rev: 123...

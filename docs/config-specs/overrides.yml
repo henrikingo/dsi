@@ -1,10 +1,10 @@
 # Can override any of the values in the input or output file above. If specified, the config
 # library will return this value in place of the above keys.
-# Typical use case would be to use a standard config file as base, but then override a 
+# Typical use case would be to use a standard config file as base, but then override a
 # single value in this separate file.
 infrastructure_provisioning:
-    tfvars: 
-        configsvr_instance_type : t1.micro  # Use even smaller instance type to save money
+    tfvars:
+        configsvr_instance_type: t1.micro   # Use even smaller instance type to save money
 
 
 
@@ -23,5 +23,5 @@ mongodb_setup:
           -
           -
           -
-          - public_ip: 127.0.0.1  # Adds a 4th mongos on localhost
+          - public_ip: 127.0.0.1   # Adds a 4th mongos on localhost
             private_ip: 127.0.0.1

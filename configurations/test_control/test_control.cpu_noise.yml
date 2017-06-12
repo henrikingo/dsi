@@ -2,7 +2,7 @@ run:
   - id: canary_cpu
     type: shell
     cmd: cd workloads && ./run_remote_workloads.py -c workloads.yml
-    config_filename: workloads.yml # The name used in previous row
+    config_filename: workloads.yml  # The name used in previous row
     workload_config:
         tests:
             default:
@@ -36,7 +36,7 @@ pre_task:
   - on_workload_client:
         upload_files:
             workloads.yml: workloads/workloads.yml
-    # The below is added to run cpu_noise.js on each server node as well
+  # The below is added to run cpu_noise.js on each server node as well
   - on_all_servers:
         upload_files:
             workloads.tar.gz: workloads.tar.gz
@@ -54,7 +54,7 @@ post_task:
   - on_workload_client:
       retrieve_files:
         workloads/workload_timestamps.csv: ../workloads_timestamps.csv
-    # For running cpu_noise.js on all servers:
+  # For running cpu_noise.js on all servers:
   - on_workload_client:
       retrieve_files:
         workloads/remote_workload_timestamps.csv: ../remote_workloads_timestamps.csv

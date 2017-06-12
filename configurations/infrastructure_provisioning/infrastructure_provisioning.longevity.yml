@@ -1,5 +1,6 @@
-tfvars:      # Contents of this is transformed into input JSON to override terraform default values
-             # Note that all tfvars values have defaults, and are therefore optional
+tfvars:
+    # Contents of this is transformed into input JSON to override terraform default values
+    # Note that all tfvars values have defaults, and are therefore optional
     cluster_name: longevity
 
     mongod_instance_count: 9

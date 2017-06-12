@@ -5,7 +5,7 @@ mongod_config_file:
     sharding:
         clusterRole: shardsvr
     replication:
-      oplogSizeMB: 4000  # 4GB oplog
+      oplogSizeMB: 4000   # 4GB oplog
 
 topology:
   - id: mycluster
@@ -55,7 +55,7 @@ topology:
             private_ip: ${infrastructure_provisioning.out.mongod.8.private_ip}
 
 # Meta data about this mongodb setup
-meta :
+meta:
     # The list of hosts that can be used in a mongodb connection string
     hosts: ${mongodb_setup.topology.0.mongos.0.private_ip}:27017,${mongodb_setup.topology.0.mongos.1.private_ip}:27017,${mongodb_setup.topology.0.mongos.2.private_ip}:27017
     # A single host, as in "host:port". Use the primary or first mongos
