@@ -8071,6 +8071,13 @@
                         "BF-5096",
                         "BF-5575"
                     ]
+                },
+                "Aggregation.RegexPrefixFindOne":{
+                    "thread_threshold":0.1275,
+                    "threshold":0.085,
+                    "ticket":[
+                        "BF-5126"
+                    ]
                 }
             }
         },
