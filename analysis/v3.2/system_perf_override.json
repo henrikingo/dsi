@@ -115,6 +115,13 @@
                         "PERF-335"
                     ]
                 },
+                "mixed_findOne-wiredTiger":{
+                    "thread_threshold":0.2625,
+                    "threshold":0.175,
+                    "ticket":[
+                        "BF-5683"
+                    ]
+                },
                 "removemulti_jtrue-wiredTiger":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
