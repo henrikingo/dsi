@@ -13493,6 +13493,76 @@
         },
         "views-aggregation":{
             "ndays":{
+                "Aggregation.IdentityView.DistinctWithIndex":{
+                    "create_time":"2017-06-12T22:19:02.471Z",
+                    "max":92.99161522886294,
+                    "name":"Aggregation.IdentityView.DistinctWithIndex",
+                    "order":7962,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":92.99161522886294,
+                            "ops_per_sec_values":[
+                                93.26746692949318,
+                                93.20799153743289,
+                                92.97904459841632,
+                                92.81831742547138,
+                                92.68525565350096
+                            ]
+                        },
+                        "end":"2017-06-13T00:12:40.876Z",
+                        "start":"2017-06-13T00:12:14.855Z"
+                    },
+                    "revision":"a66d41d71a4b7215ad6ba37adc392352da6ec477",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5663"
+                    ]
+                },
+                "Aggregation.IdentityView.DistinctWithIndexAndQuery":{
+                    "create_time":"2017-06-12T22:19:02.471Z",
+                    "max":274.5721677723308,
+                    "name":"Aggregation.IdentityView.DistinctWithIndexAndQuery",
+                    "order":7962,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":274.5721677723308,
+                            "ops_per_sec_values":[
+                                274.766997586047,
+                                275.6405143983691,
+                                273.70573574460957,
+                                273.53319572089384,
+                                275.21439541173436
+                            ]
+                        },
+                        "end":"2017-06-13T00:13:06.796Z",
+                        "start":"2017-06-13T00:12:40.876Z"
+                    },
+                    "revision":"a66d41d71a4b7215ad6ba37adc392352da6ec477",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5663"
+                    ]
+                },
                 "Aggregation.IdentityView.Skip":{
                     "create_time":"2017-05-30T17:24:51.885Z",
                     "max":194.06502430435143,
@@ -13565,11 +13635,11 @@
                         "BF-5126"
                     ]
                 },
-                "Aggregation.IdentityView.DistinctWithIndexAndQuery":{
-                    "create_time":"2017-04-02T18:32:19.601Z",
-                    "max":272.5907048051279,
-                    "name":"Aggregation.IdentityView.DistinctWithIndexAndQuery",
-                    "order":7264,
+                "Aggregation.IdentityView.DistinctWithIndex":{
+                    "create_time":"2017-06-12T22:19:02.471Z",
+                    "max":92.99161522886294,
+                    "name":"Aggregation.IdentityView.DistinctWithIndex",
+                    "order":7962,
                     "results":{
                         "1":{
                             "error_values":[
@@ -13579,25 +13649,61 @@
                                 0,
                                 0
                             ],
-                            "ops_per_sec":272.5907048051279,
+                            "ops_per_sec":92.99161522886294,
                             "ops_per_sec_values":[
-                                272.8556048139325,
-                                272.90830281025575,
-                                271.68817314793233,
-                                273.98957600562767,
-                                271.5118672478913
+                                93.26746692949318,
+                                93.20799153743289,
+                                92.97904459841632,
+                                92.81831742547138,
+                                92.68525565350096
                             ]
                         },
-                        "end":"2017-04-02T19:21:29.661Z",
-                        "start":"2017-04-02T19:21:03.804Z"
+                        "end":"2017-06-13T00:12:40.876Z",
+                        "start":"2017-06-13T00:12:14.855Z"
                     },
-                    "revision":"576e157c2753b9bc61c36002e323421c09bc62dc",
+                    "revision":"a66d41d71a4b7215ad6ba37adc392352da6ec477",
                     "tag":"",
                     "threads":[
                         "1"
                     ],
                     "ticket":[
-                        "BF-5126"
+                        "BF-5663"
+                    ]
+                },
+                "Aggregation.IdentityView.DistinctWithIndexAndQuery":{
+                    "create_time":"2017-06-12T22:19:02.471Z",
+                    "max":274.5721677723308,
+                    "name":"Aggregation.IdentityView.DistinctWithIndexAndQuery",
+                    "order":7962,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":274.5721677723308,
+                            "ops_per_sec_values":[
+                                274.766997586047,
+                                275.6405143983691,
+                                273.70573574460957,
+                                273.53319572089384,
+                                275.21439541173436
+                            ]
+                        },
+                        "end":"2017-06-13T00:13:06.796Z",
+                        "start":"2017-06-13T00:12:40.876Z"
+                    },
+                    "revision":"a66d41d71a4b7215ad6ba37adc392352da6ec477",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5126",
+                        "BF-5663"
                     ]
                 },
                 "Aggregation.IdentityView.DistinctWithoutIndexAndQuery":{
@@ -29345,6 +29451,76 @@
         },
         "views-aggregation":{
             "ndays":{
+                "Aggregation.IdentityView.DistinctWithIndex":{
+                    "create_time":"2017-06-12T22:19:02.471Z",
+                    "max":90.78853973730145,
+                    "name":"Aggregation.IdentityView.DistinctWithIndex",
+                    "order":7962,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":90.78853973730145,
+                            "ops_per_sec_values":[
+                                90.62058935719064,
+                                90.76465624285902,
+                                90.64894260204794,
+                                90.91105262611062,
+                                90.99745785829899
+                            ]
+                        },
+                        "end":"2017-06-13T00:12:21.777Z",
+                        "start":"2017-06-13T00:11:55.770Z"
+                    },
+                    "revision":"a66d41d71a4b7215ad6ba37adc392352da6ec477",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5663"
+                    ]
+                },
+                "Aggregation.IdentityView.DistinctWithIndexAndQuery":{
+                    "create_time":"2017-06-12T22:19:02.471Z",
+                    "max":269.20787555713684,
+                    "name":"Aggregation.IdentityView.DistinctWithIndexAndQuery",
+                    "order":7962,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":269.20787555713684,
+                            "ops_per_sec_values":[
+                                269.2316763559423,
+                                269.95078143857586,
+                                268.1417794663739,
+                                269.47280883423025,
+                                269.242331690562
+                            ]
+                        },
+                        "end":"2017-06-13T00:12:47.741Z",
+                        "start":"2017-06-13T00:12:21.777Z"
+                    },
+                    "revision":"a66d41d71a4b7215ad6ba37adc392352da6ec477",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5663"
+                    ]
+                },
                 "Aggregation.IdentityView.Skip":{
                     "create_time":"2017-05-30T17:24:51.885Z",
                     "max":174.86121072319656,
@@ -29415,6 +29591,76 @@
                     ],
                     "ticket":[
                         "BF-5126"
+                    ]
+                },
+                "Aggregation.IdentityView.DistinctWithIndex":{
+                    "create_time":"2017-06-12T22:19:02.471Z",
+                    "max":90.78853973730145,
+                    "name":"Aggregation.IdentityView.DistinctWithIndex",
+                    "order":7962,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":90.78853973730145,
+                            "ops_per_sec_values":[
+                                90.62058935719064,
+                                90.76465624285902,
+                                90.64894260204794,
+                                90.91105262611062,
+                                90.99745785829899
+                            ]
+                        },
+                        "end":"2017-06-13T00:12:21.777Z",
+                        "start":"2017-06-13T00:11:55.770Z"
+                    },
+                    "revision":"a66d41d71a4b7215ad6ba37adc392352da6ec477",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5663"
+                    ]
+                },
+                "Aggregation.IdentityView.DistinctWithIndexAndQuery":{
+                    "create_time":"2017-06-12T22:19:02.471Z",
+                    "max":269.20787555713684,
+                    "name":"Aggregation.IdentityView.DistinctWithIndexAndQuery",
+                    "order":7962,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":269.20787555713684,
+                            "ops_per_sec_values":[
+                                269.2316763559423,
+                                269.95078143857586,
+                                268.1417794663739,
+                                269.47280883423025,
+                                269.242331690562
+                            ]
+                        },
+                        "end":"2017-06-13T00:12:47.741Z",
+                        "start":"2017-06-13T00:12:21.777Z"
+                    },
+                    "revision":"a66d41d71a4b7215ad6ba37adc392352da6ec477",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5663"
                     ]
                 },
                 "Aggregation.IdentityView.GeoNear2d":{
