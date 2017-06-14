@@ -23,14 +23,14 @@ class TestBootstrap(unittest.TestCase):
         """Testing read_runtime_values method does not modify config"""
         master_config = {'test': 'benchRun',
                          'ssh_key_file': 'aws_ssh_key.pem',
-                         'storageEngine': 'wiredTiger', 
-                         'aws_secret_key': 'NoSecretKey', 
-                         'aws_access_key': 'NoAccessKey', 
-                         'cluster_type': 'single', 
-                         'setup': 'standalone', 
-                         'platform': 'linux', 
-                         'production': False, 
-                         'ssh_key_name': 'serverteam-perf-ssh-key', 
+                         'storageEngine': 'wiredTiger',
+                         'aws_secret_key': 'NoSecretKey',
+                         'aws_access_key': 'NoAccessKey',
+                         'cluster_type': 'single',
+                         'setup': 'standalone',
+                         'platform': 'linux',
+                         'production': False,
+                         'ssh_key_name': 'serverteam-perf-ssh-key',
                          'directory': '.'}
         test_config = copy.copy(bootstrap.DEFAULT_CONFIG)
         bootstrap.read_runtime_values(test_config)
@@ -68,8 +68,8 @@ class TestBootstrap(unittest.TestCase):
         master_config = copy.copy(bootstrap.DEFAULT_CONFIG)
         bootstrap.read_runtime_values(master_config)
         bootstrap.parse_command_line(master_config, [])
-        with patch.dict('os.environ', 
-                        {'AWS_ACCESS_KEY_ID': 'test_aws_access_key2', 
+        with patch.dict('os.environ',
+                        {'AWS_ACCESS_KEY_ID': 'test_aws_access_key2',
                          'AWS_SECRET_ACCESS_KEY': 'test_aws_secret_key2'}):
             test_config = bootstrap.build_config([])
         master_config['aws_access_key'] = 'test_aws_access_key2'
@@ -83,8 +83,8 @@ class TestBootstrap(unittest.TestCase):
         """Testing read_env_vars method correctly modifies config"""
         master_config = copy.copy(bootstrap.DEFAULT_CONFIG)
         test_config = copy.copy(bootstrap.DEFAULT_CONFIG)
-        with patch.dict('os.environ', 
-                        {'AWS_ACCESS_KEY_ID': 'test_aws_access_key', 
+        with patch.dict('os.environ',
+                        {'AWS_ACCESS_KEY_ID': 'test_aws_access_key',
                          'AWS_SECRET_ACCESS_KEY': 'test_aws_secret_key'}):
             test_config = bootstrap.read_env_vars(test_config)
         master_config['aws_access_key'] = 'test_aws_access_key'
@@ -109,14 +109,14 @@ class TestBootstrap(unittest.TestCase):
 
     def test_parse_command_line_all_args(self):
         """Testing for parse_command_line (all args given), modifying config"""
-        args = ['-c', 'test_cluster_type', 
-                '--directory', 'test_directory', 
-                '--mc', 'test_mc', 
-                '--owner', 'test_owner', 
-                '-p', 'test_ssh_key_file', 
-                '--ssh-key', 'test_ssh_key_name', 
-                '--aws-key-name', 'test_aws_access_key', 
-                '--aws-secret-file', 'test_aws_secret_file', 
+        args = ['-c', 'test_cluster_type',
+                '--directory', 'test_directory',
+                '--mc', 'test_mc',
+                '--owner', 'test_owner',
+                '-p', 'test_ssh_key_file',
+                '--ssh-key', 'test_ssh_key_name',
+                '--aws-key-name', 'test_aws_access_key',
+                '--aws-secret-file', 'test_aws_secret_file',
                 '--terraform', 'test_terraform', '--production']
 
         master_config = copy.copy(bootstrap.DEFAULT_CONFIG)
@@ -138,14 +138,14 @@ class TestBootstrap(unittest.TestCase):
 
     def test_parse_command_line_all_args_alternate(self):
         """Testing for parse_command_line (all alt cmds), modifying config"""
-        args = ['--cluster-type', 'test_cluster_type', 
-                '--directory', 'test_directory', 
-                '--mc', 'test_mc', 
-                '--owner', 'test_owner', 
-                '--ssh-keyfile-path', 'test_ssh_key_file', 
-                '--ssh-key-name', 'test_ssh_key_name', 
-                '--aws-access-key', 'test_aws_access_key', 
-                '--aws-secret-file', 'test_aws_secret_file', 
+        args = ['--cluster-type', 'test_cluster_type',
+                '--directory', 'test_directory',
+                '--mc', 'test_mc',
+                '--owner', 'test_owner',
+                '--ssh-keyfile-path', 'test_ssh_key_file',
+                '--ssh-key-name', 'test_ssh_key_name',
+                '--aws-access-key', 'test_aws_access_key',
+                '--aws-secret-file', 'test_aws_secret_file',
                 '--terraform', 'test_terraform', '--production']
 
         master_config = copy.copy(bootstrap.DEFAULT_CONFIG)
@@ -181,21 +181,21 @@ class TestBootstrap(unittest.TestCase):
             shutil.rmtree(test_directory)
         except OSError:
             pass
-        os.makedirs(os.path.join(test_dsipath, 'configurations', 
+        os.makedirs(os.path.join(test_dsipath, 'configurations',
                                  'infrastructure_provisioning'))
-        os.makedirs(os.path.join(test_dsipath, 'configurations', 
+        os.makedirs(os.path.join(test_dsipath, 'configurations',
                                  'mongodb_setup'))
-        os.makedirs(os.path.join(test_dsipath, 'configurations', 
+        os.makedirs(os.path.join(test_dsipath, 'configurations',
                                  'test_control'))
         os.mkdir(test_directory)
-        open(os.path.join(test_dsipath, 'configurations', 
-                          'infrastructure_provisioning', 
-                          'infrastructure_provisioning.single.yml'), 
+        open(os.path.join(test_dsipath, 'configurations',
+                          'infrastructure_provisioning',
+                          'infrastructure_provisioning.single.yml'),
              'w').close()
-        open(os.path.join(test_dsipath, 'configurations', 'mongodb_setup', 
-                          'mongodb_setup.replica.wiredTiger.yml'), 
+        open(os.path.join(test_dsipath, 'configurations', 'mongodb_setup',
+                          'mongodb_setup.replica.wiredTiger.yml'),
              'w').close()
-        open(os.path.join(test_dsipath, 'configurations', 'test_control', 
+        open(os.path.join(test_dsipath, 'configurations', 'test_control',
                           'test_control.core.yml'), 'w').close()
         test_config['cluster_type'] = 'single'
         test_config['setup'] = 'replica'
@@ -203,7 +203,7 @@ class TestBootstrap(unittest.TestCase):
         test_config['test'] = 'core'
 
         bootstrap.copy_config_files(test_dsipath, test_config, test_directory)
-        master_files = set(['infrastructure_provisioning.yml', 
+        master_files = set(['infrastructure_provisioning.yml',
                             'mongodb_setup.yml', 'test_control.yml'])
         test_files = set(os.listdir(test_directory))
         # cleaning up created dirs
@@ -237,15 +237,15 @@ class TestBootstrap(unittest.TestCase):
         os.makedirs(os.path.join(
             test_dsipath, 'configurations', 'test_control'))
         os.mkdir(test_directory)
-        open(os.path.join(test_dsipath, 'configurations', 
-                          'infrastructure_provisioning', 
-                          'infrastructure_provisioning.shard.yml'), 
+        open(os.path.join(test_dsipath, 'configurations',
+                          'infrastructure_provisioning',
+                          'infrastructure_provisioning.shard.yml'),
              'w').close()
-        open(os.path.join(test_dsipath, 'configurations', 'mongodb_setup', 
-                          'mongodb_setup.replica.wiredTiger.yml'), 
+        open(os.path.join(test_dsipath, 'configurations', 'mongodb_setup',
+                          'mongodb_setup.replica.wiredTiger.yml'),
              'w').close()
-        open(os.path.join(test_dsipath, 'configurations', 'test_control', 
-                          'test_control.ycsb.multi_node.yml'), 
+        open(os.path.join(test_dsipath, 'configurations', 'test_control',
+                          'test_control.ycsb.multi_node.yml'),
              'w').close()
         test_config['cluster_type'] = 'shard'
         test_config['setup'] = 'replica'
@@ -253,7 +253,7 @@ class TestBootstrap(unittest.TestCase):
         test_config['test'] = 'ycsb'
 
         bootstrap.copy_config_files(test_dsipath, test_config, test_directory)
-        master_files = set(['infrastructure_provisioning.yml', 
+        master_files = set(['infrastructure_provisioning.yml',
                             'mongodb_setup.yml', 'test_control.yml'])
         test_files = set(os.listdir(test_directory))
         # cleaning up created dirs
@@ -283,7 +283,7 @@ class TestBootstrap(unittest.TestCase):
 
         # Call to setup_overrides creates 'overrides.yml' in current dir
         bootstrap.setup_overrides(config, test_override_path)
-        with open(os.path.join(test_override_path, 
+        with open(os.path.join(test_override_path,
                                'overrides.yml'), 'r') as test_override_file:
             test_override_dict = yaml.load(test_override_file)
         self.assertEqual(test_override_dict, master_override_dict)
@@ -312,15 +312,15 @@ class TestBootstrap(unittest.TestCase):
                 'tags': {'owner': 'testuser2'}}}}, default_flow_style=False)
 
         # Creating 'overrides.yml' in current dir
-        with open(os.path.join(test_override_path, 
+        with open(os.path.join(test_override_path,
                                'overrides.yml'), 'w') as test_override_file:
             test_override_file.write(test_override_str)
-        
+
         # Call to setup_overrides updates 'overrides.yml' in current dir
         bootstrap.setup_overrides(config, test_override_path)
 
         test_override_dict = {}
-        with open(os.path.join(test_override_path, 
+        with open(os.path.join(test_override_path,
                                'overrides.yml'), 'r') as test_override_file:
             test_override_dict = yaml.load(test_override_file)
 
@@ -348,7 +348,7 @@ class TestBootstrap(unittest.TestCase):
         # Call to setup_overrides creates 'overrides.yml' in current dir
         bootstrap.setup_overrides(config, test_override_path)
 
-        with open(os.path.join(test_override_path, 
+        with open(os.path.join(test_override_path,
                                'overrides.yml'), 'r') as test_override_file:
             test_override_dict = yaml.load(test_override_file)
 
@@ -368,10 +368,10 @@ class TestBootstrap(unittest.TestCase):
         master_overrides.update({'infrastructure_provisioning': {
             'tfvars': {}}})
         master_override_dict = master_overrides
-        test_override_str = yaml.dump({}, default_flow_style=False) 
+        test_override_str = yaml.dump({}, default_flow_style=False)
 
         # Creating 'overrides.yml' in current dir
-        with open(os.path.join(test_override_path, 
+        with open(os.path.join(test_override_path,
                                'overrides.yml'), 'w+') as test_override_file:
             test_override_file.write(test_override_str)
 
@@ -379,7 +379,7 @@ class TestBootstrap(unittest.TestCase):
         bootstrap.setup_overrides(config, test_override_path)
 
         test_override_dict = {}
-        with open(os.path.join(test_override_path, 
+        with open(os.path.join(test_override_path,
                                'overrides.yml'), 'r') as test_override_file:
             test_override_dict = yaml.load(test_override_file)
 
@@ -410,9 +410,9 @@ class TestBootstrap(unittest.TestCase):
         test_tf_path = os.path.dirname(os.path.abspath(__file__))
         bootstrap.setup_security_tf(config, test_tf_path)
         test_tf_str = ''
-        with open(os.path.join(test_tf_path, 
+        with open(os.path.join(test_tf_path,
                                'security.tf'), 'r') as test_tf_file:
-            test_tf_str = test_tf_file.read().replace('\n', 
+            test_tf_str = test_tf_file.read().replace('\n',
                                                       '').replace(' ', '')
         self.assertEqual(test_tf_str, master_tf_str)
 
@@ -421,30 +421,30 @@ class TestBootstrap(unittest.TestCase):
 
 
     @patch('subprocess.check_output')
-    def test_find_terraform_no_except_terraform_in_config(self, 
+    def test_find_terraform_no_except_terraform_in_config(self,
                                                           mock_check_output):
         """Testing find_terraform when no exception, val in config"""
         mock_check_output.return_value = '/usr/bin/terraform'
         config = copy.copy(bootstrap.DEFAULT_CONFIG)
         config['terraform'] = '/Users/testuser/config_override/terraform'
         terraform = bootstrap.find_terraform(config, '/')
-        self.assertEqual(terraform, 
+        self.assertEqual(terraform,
                          '/Users/testuser/config_override/terraform')
 
     @patch('subprocess.check_output')
-    def test_find_terraform_exception_terraform_in_config(self, 
+    def test_find_terraform_exception_terraform_in_config(self,
                                                           mock_check_output):
         """Testing find_terraform throws exception when val in config"""
-        mock_check_output.side_effect = subprocess.CalledProcessError('Test', 
+        mock_check_output.side_effect = subprocess.CalledProcessError('Test',
                                                                       1)
         config = copy.copy(bootstrap.DEFAULT_CONFIG)
         config['terraform'] = '/Users/testuser/config_override/terraform'
         terraform = bootstrap.find_terraform(config, '/')
-        self.assertEqual(terraform, 
+        self.assertEqual(terraform,
                          '/Users/testuser/config_override/terraform')
 
     @patch('subprocess.check_output')
-    def test_find_terraform_no_except_tf_not_in_config(self, 
+    def test_find_terraform_no_except_tf_not_in_config(self,
                                                        mock_check_output):
         """Testing find_terraform when no exception, val not in config"""
         mock_check_output.return_value = '/usr/bin/terraform'
@@ -454,10 +454,10 @@ class TestBootstrap(unittest.TestCase):
         self.assertEqual(terraform, '/usr/bin/terraform')
 
     @patch('subprocess.check_output')
-    def test_find_terraform_exception_tf_not_in_config(self, 
+    def test_find_terraform_exception_tf_not_in_config(self,
                                                        mock_check_output):
         """Testing find_terraform throws exception when val not in config"""
-        mock_check_output.side_effect = subprocess.CalledProcessError('Test', 
+        mock_check_output.side_effect = subprocess.CalledProcessError('Test',
                                                                       1)
         config = copy.copy(bootstrap.DEFAULT_CONFIG)
         config.pop('terraform', None)
@@ -465,48 +465,48 @@ class TestBootstrap(unittest.TestCase):
         self.assertEqual(terraform, '/Users/testuser/default/terraform')
 
     @patch('subprocess.check_output')
-    def test_find_mission_control_no_except_mc_in_config(self, 
+    def test_find_mission_control_no_except_mc_in_config(self,
                                                          mock_check_output):
         """Testing find_mission_control when no exception, val in config"""
         mock_check_output.return_value = '/usr/bin/mc'
         config = copy.copy(bootstrap.DEFAULT_CONFIG)
         config['mc'] = '/Users/testuser/config_override/mc'
-        mission_control = bootstrap.find_mission_control(config, 
+        mission_control = bootstrap.find_mission_control(config,
                                                          '/Users/testuser/dsi')
         self.assertEqual(mission_control, '/Users/testuser/config_override/mc')
 
     @patch('subprocess.check_output')
-    def test_find_mission_control_exception_mc_in_config(self, 
+    def test_find_mission_control_exception_mc_in_config(self,
                                                          mock_check_output):
         """Testing find_mission_control when throws exception, val in config"""
-        mock_check_output.side_effect = subprocess.CalledProcessError('Test', 
+        mock_check_output.side_effect = subprocess.CalledProcessError('Test',
                                                                       1)
         config = copy.copy(bootstrap.DEFAULT_CONFIG)
         config['mc'] = '/Users/testuser/config_override/mc'
-        mission_control = bootstrap.find_mission_control(config, 
+        mission_control = bootstrap.find_mission_control(config,
                                                          '/Users/testuser/dsi')
         self.assertEqual(mission_control, '/Users/testuser/config_override/mc')
 
     @patch('subprocess.check_output')
-    def test_find_mission_control_no_except_mc_not_in_config(self, 
+    def test_find_mission_control_no_except_mc_not_in_config(self,
                                                              mock_check_output):
         """Testing find_mission_control when no exception, val not in config"""
         mock_check_output.return_value = '/usr/bin/mc'
         config = copy.copy(bootstrap.DEFAULT_CONFIG)
         config.pop('mc', None)
-        mission_control = bootstrap.find_mission_control(config, 
+        mission_control = bootstrap.find_mission_control(config,
                                                          '/Users/testuser/dsi')
         self.assertEqual(mission_control, '/usr/bin/mc')
 
     @patch('subprocess.check_output')
-    def test_find_mission_control_exception_mc_not_in_config(self, 
+    def test_find_mission_control_exception_mc_not_in_config(self,
                                                              mock_check_output):
         """Testing find_mission_control throws exception, val not in config"""
-        mock_check_output.side_effect = subprocess.CalledProcessError('Test', 
+        mock_check_output.side_effect = subprocess.CalledProcessError('Test',
                                                                       1)
         config = copy.copy(bootstrap.DEFAULT_CONFIG)
         config.pop('mc', None)
-        mission_control = bootstrap.find_mission_control(config, 
+        mission_control = bootstrap.find_mission_control(config,
                                                          '/Users/testuser/dsi')
         self.assertEqual(mission_control, '/Users/testuser/dsi/bin/mc')
 
