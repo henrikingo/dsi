@@ -181,6 +181,9 @@ def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_passwor
                 check_result['state'] = 'undesired'
     # check throughput at each thread level
     for level in (r for r in test["results"] if isinstance(test["results"][r], dict)):
+        if level not in reference['results']:
+            continue
+
         (failed, ratio, target) = compare_one_result_base(
             test['results'][level]['ops_per_sec'],
             reference['results'][level]['ops_per_sec'], noise_levels.get(level, 0),
