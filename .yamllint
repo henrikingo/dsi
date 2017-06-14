@@ -17,4 +17,4 @@ rules:
     present: false
   new-line-at-end-of-file: disable
   empty-lines: disable
-  trailing-spaces: enable 
+  trailing-spaces: enable
