@@ -25087,6 +25087,13 @@
                         "PERF-875"
                     ]
                 },
+                "Insert.MultiKeyIndex.Contested.Rnd":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Insert.SingleIndex.Contested.Rnd":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
