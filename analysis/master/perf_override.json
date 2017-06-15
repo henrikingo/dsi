@@ -23780,6 +23780,13 @@
                         "BF-5316"
                     ]
                 },
+                "Aggregation.IntIDRange":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Aggregation.IntNonIdFindOne":{
                     "thread_threshold":-0.3,
                     "threshold":0.2,
