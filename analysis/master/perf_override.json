@@ -25065,6 +25065,13 @@
                     "ticket":[
                         "PERF-875"
                     ]
+                },
+                "Insert.LargeDocVector":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-944"
+                    ]
                 }
             }
         },
