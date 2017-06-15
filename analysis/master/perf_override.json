@@ -25070,7 +25070,42 @@
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
-                        "PERF-944"
+                        "PERF-875"
+                    ]
+                },
+                "Insert.MultiIndex.Contested.Rnd":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Insert.MultiIndex.Uncontested.Rnd":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Insert.SingleIndex.Contested.Rnd":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Insert.SingleIndex.Seq":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Inserts.PartialIndex.FilteredRange":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
                     ]
                 }
             }
