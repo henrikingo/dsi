@@ -25025,8 +25025,8 @@
                     ]
                 },
                 "Insert.Empty":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.1875,
+                    "threshold":0.125,
                     "ticket":[
                         "PERF-875"
                     ]
@@ -25046,8 +25046,8 @@
                     ]
                 },
                 "Insert.JustID":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.1875,
+                    "threshold":0.125,
                     "ticket":[
                         "PERF-875"
                     ]
@@ -25088,6 +25088,13 @@
                     ]
                 },
                 "Insert.MultiKeyIndex.Contested.Rnd":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Insert.MultiKeyIndex.Uncontested.Rnd":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
