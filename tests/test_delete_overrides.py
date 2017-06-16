@@ -1,9 +1,10 @@
 """Unit tests for the delete_overrides script. Run using nosetests."""
-
+import logging
 import json
 import os
 import shutil
 import unittest
+from testfixtures import LogCapture
 
 import delete_overrides
 from tests import test_utils
@@ -28,7 +29,10 @@ class TestDeleteOverrides(unittest.TestCase):
 
     def _delete_overrides_compare(self, override_file, ticket, rule, expected_json):
         """General comparison function used for all the test cases"""
-        args = [ticket, '-f', override_file, '-d', self.output_file, '-r', rule,
+
+        use_reference = 'c2af7aba'
+        args = [ticket, '-n', use_reference, '-f', override_file,
+                '-d', self.output_file, '-r', rule,
                 '-c', self.config_file, '--verbose']
         delete_overrides.main(args)
 
@@ -47,7 +51,12 @@ class TestDeleteOverrides(unittest.TestCase):
         ticket = 'PERF-443'
         rule = 'reference'
         compare_against = self._path_to_reference('delete.perf', rule, ticket)
-        self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+        with LogCapture(level=logging.CRITICAL) as crit:
+            self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+            crit_logs = set(crit.actual())
+            crit_expected = set([('override.update.warnings', 'CRITICAL',
+                                  'No overrides have changed.')])
+            self.assertEqual(crit_expected, crit_logs)
 
     def test_perf_threshold_deleted(self):
         """Test deletion where ticket 'PERF-443' appears under rule threshold.
@@ -56,10 +65,26 @@ class TestDeleteOverrides(unittest.TestCase):
         ticket = 'PERF-443'
         rule = 'threshold'
         compare_against = self._path_to_reference('delete.perf', rule, ticket)
-        self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+        with LogCapture(level=logging.CRITICAL) as crit:
+            self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+            crit_logs = set(crit.actual())
+            crit_expected = set()
+            self.assertEqual(crit_expected, crit_logs)
+
+        with LogCapture(level=logging.INFO) as info:
+            self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+            info_logs = set(info.actual())
+            info_expected = set([('override.update.information',
+                                  'INFO',
+                                  'The following tests were deleted:'),
+                                 ('override.update.information',
+                                  'INFO',
+                                  '{\n  "linux-wt-standalone": {\n    "query": [\n      '
+                                  '"Queries.UniqueIdx.MultipleUniqueIndices"\n    ]\n  }\n}')])
+            self.assertTrue(info_expected.issubset(info_logs))
 
     def test_perf_all_deleted(self):
-        """Test deletion for ticket 'PERF-755' in all rules. 'PERf-755' is the only
+        """Test deletion for ticket 'PERF-755' in all rules. 'PERF-755' is the only
         ticket associated with each test override, so a clean deletion without
         updates can be made.
         """
@@ -67,7 +92,36 @@ class TestDeleteOverrides(unittest.TestCase):
         ticket = 'PERF-755'
         rule = 'all'
         compare_against = self._path_to_reference('delete.perf', rule, ticket)
-        self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+        with LogCapture(level=logging.CRITICAL) as crit:
+            self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+            crit_logs = set(crit.actual())
+            crit_expected = set()
+            self.assertEqual(crit_expected, crit_logs)
+        with LogCapture(level=logging.INFO) as info:
+            self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+            info_logs = set(info.actual())
+            expected_logs = set([('override.update.information', 'INFO',
+                                  'The following tests were deleted:'),
+                                 ('override.update.information', 'INFO', '{\n  '
+                                  '"linux-mmap-repl-compare": {\n    "misc": [\n      '
+                                  '"Commands.DistinctWithoutIndex"\n    ]\n  },\n  '
+                                  '"linux-mmap-standalone": {\n    "geo": [\n      '
+                                  '"Geo.near.2d.withFilter.find30"\n    ],\n    "query": [\n      '
+                                  '"Queries.FindProjectionThreeFields"\n    ]\n  },\n  '
+                                  '"linux-wt-mmap-repl-compare": {\n    "misc": [\n      '
+                                  '"Commands.DistinctWithoutIndex"\n    ]\n  },\n  '
+                                  '"linux-wt-mmap-standalone-compare": {\n    "misc": [\n      '
+                                  '"Commands.DistinctWithoutIndex"\n    ]\n  },\n  '
+                                  '"linux-wt-repl": {\n    "misc": [\n      '
+                                  '"Commands.DistinctWithoutIndex"\n    ]\n  },\n  '
+                                  '"linux-wt-repl-compare": {\n    "misc": [\n      '
+                                  '"Commands.DistinctWithoutIndex"\n    ]\n  },\n  '
+                                  '"linux-wt-standalone": {\n    "geo": [\n      '
+                                  '"Geo.near.2d.findOne"\n    ],\n    "misc": [\n      '
+                                  '"Commands.DistinctWithoutIndex"\n    ],\n    "query": [\n      '
+                                  '"Queries.FindProjectionThreeFields"\n    ]\n  }\n}')])
+            self.assertTrue(expected_logs.issubset(info_logs))
+
 
     def test_sysperf_none_deleted(self):
         """Test deletion where ticket 'PERF-335' does not appear under rule reference.
@@ -76,7 +130,12 @@ class TestDeleteOverrides(unittest.TestCase):
         ticket = 'PERF-335'
         rule = 'reference'
         compare_against = self._path_to_reference('delete.system_perf', rule, ticket)
-        self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+        with LogCapture(level=logging.CRITICAL) as crit:
+            self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+            crit_logs = set(crit.actual())
+            crit_expected = set([('override.update.warnings', 'CRITICAL',
+                                  'No overrides have changed.')])
+            self.assertEqual(crit_expected, crit_logs)
 
     def test_sysperf_threshold_deleted(self):
         """Test deletion where ticket 'PERF-335' appears under rule threshold.
@@ -85,7 +144,32 @@ class TestDeleteOverrides(unittest.TestCase):
         ticket = 'PERF-335'
         rule = 'threshold'
         compare_against = self._path_to_reference('delete.system_perf', rule, ticket)
-        self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+        with LogCapture(level=logging.CRITICAL) as crit:
+            self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+            crit_logs = set(crit.actual())
+            crit_expected = set()
+            self.assertEqual(crit_logs, crit_expected)
+        with LogCapture(level=logging.INFO) as info:
+            self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+            info_logs = set(info.actual())
+            info_expected = set([('override.update.information',
+                                  'INFO',
+                                  'The following tests were deleted:'),
+                                 ('override.update.information',
+                                  'INFO',
+                                  '{\n  "linux-1-node-replSet": {\n    "core_workloads_WT": [\n'
+                                  '      "removemulti_jtrue-wiredTiger"\n    ]\n  },\n  '
+                                  '"linux-3-node-replSet": {\n    "core_workloads_WT": [\n      '
+                                  '"removemulti_jtrue-wiredTiger"\n    ],\n    '
+                                  '"industry_benchmarks_WT": [\n      '
+                                  '"ycsb_50read50update_w_majority-wiredTiger"\n    ]\n  },\n  '
+                                  '"linux-3-shard": {\n    "core_workloads_WT": [\n      '
+                                  '"moveChunk_secondaryThrottle_true_waitForDelete_false-'
+                                  'wiredTiger"\n    ],\n    "industry_benchmarks_WT": [\n      '
+                                  '"ycsb_50read50update_w_majority-wiredTiger"\n    ]\n  },\n  '
+                                  '"linux-standalone": {\n    "core_workloads_WT": [\n      '
+                                  '"removemulti_jtrue-wiredTiger"\n    ]\n  }\n}')])
+            self.assertTrue(info_expected.issubset(info_logs))
 
     def test_sysperf_all_deleted(self):
         """Test deletion for ticket 'BF-1418' in all rules. 'BF-1418' is the only
@@ -96,7 +180,26 @@ class TestDeleteOverrides(unittest.TestCase):
         ticket = 'BF-1418'
         rule = 'all'
         compare_against = self._path_to_reference('delete.system_perf', rule, ticket)
-        self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+        with LogCapture(level=logging.CRITICAL) as crit:
+            self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+            crit_logs = set(crit.actual())
+            crit_expected = set()
+            self.assertEqual(crit_logs, crit_expected)
+        with LogCapture(level=logging.INFO) as info:
+            self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+            info_logs = set(info.actual())
+            info_expected = set([('override.update.information', 'INFO',
+                                  'The following tests were deleted:'),
+                                 ('override.update.information', 'INFO', '{\n  '
+                                  '"linux-1-node-replSet": {\n    "industry_benchmarks_MMAPv1": [\n'
+                                  '      "ycsb_50read50update-mmapv1"\n    ]\n  },\n  '
+                                  '"linux-3-node-replSet": {\n    "industry_benchmarks_MMAPv1": [\n'
+                                  '      "ycsb_50read50update-mmapv1"\n    ]\n  },\n  '
+                                  '"linux-3-shard": {\n    "industry_benchmarks_MMAPv1": [\n      '
+                                  '"ycsb_50read50update-mmapv1"\n    ]\n  },\n  "linux-standalone":'
+                                  ' {\n    "industry_benchmarks_MMAPv1": [\n      '
+                                  '"ycsb_50read50update-mmapv1"\n    ]\n  }\n}')])
+            self.assertTrue(info_expected.issubset(info_logs))
 
     def test_delete_and_update(self):
         """Test deletion for ticket 'PERF-002' in all rules, where some test
@@ -104,18 +207,43 @@ class TestDeleteOverrides(unittest.TestCase):
         based on the given reference commit.
         """
         override_file = test_utils.fixture_file_path('perf_delete.json')
-        use_reference = 'c2af7aba'
         ticket = 'PERF-002'
         rule = 'all'
-        args = [ticket, '-n', use_reference, '-f', override_file, '-d', self.output_file,
-                '-r', rule, '-c', self.config_file, '--verbose']
-        delete_overrides.main(args)
-
-        expected_json = test_utils.fixture_file_path('delete_update_override.json.ok')
-        with open(expected_json) as exp_file_handle, open(self.output_file) as obs_file_handle:
-            exp_updated_override = json.load(exp_file_handle)
-            obs_updated_override = json.load(obs_file_handle)
-            self.assertEqual(obs_updated_override, exp_updated_override)
+        compare_against = test_utils.fixture_file_path('delete_update_override.json.ok')
+        with LogCapture(level=logging.CRITICAL) as crit:
+            self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+            crit_logs = set(crit.actual())
+            crit_expected = set()
+            self.assertEqual(crit_logs, crit_expected)
+        with LogCapture(level=logging.INFO) as info:
+            self._delete_overrides_compare(override_file, ticket, rule, compare_against)
+            info_logs = set(info.actual())
+            info_expected = set([('override.update.information',
+                                  'INFO',
+                                  'The following tests were deleted:'),
+                                 ('override.update.information', 'INFO',
+                                  '{\n  "linux-mmap-standalone": {\n    "query": [\n      '
+                                  '"Queries.FindProjectionThreeFields"\n    ]\n  },\n  '
+                                  '"linux-wt-standalone": {\n    "misc": [\n      '
+                                  '"Commands.CountsIntIDRange"\n    ]\n  }\n}'),
+                                 ('override.update.information', 'INFO', 'The following tests were '
+                                  'overridden for rule reference:'),
+                                 ('override.update.information', 'INFO', '{\n  "linux-mmap-repl": '
+                                  '{\n    "insert": [],\n    "misc": [\n      '
+                                  '"Commands.CountsIntIDRange"\n    ],\n    "singleThreaded": [],\n'
+                                  '    "update": []\n  },\n  "linux-mmap-standalone": {\n    '
+                                  '"geo": [\n      "Geo.near.2d.findOne"\n    ],\n    '
+                                  '"insert": [],\n    "misc": [],\n    "query": [],\n    '
+                                  '"singleThreaded": [],\n    "update": [],\n    "where": []\n  '
+                                  '}\n}'),
+                                 ('override.update.information', 'INFO',
+                                  'The following tests were overridden for rule ndays:'),
+                                 ('override.update.information', 'INFO', '{\n  '
+                                  '"linux-mmap-standalone": {\n    "geo": [],\n    '
+                                  '"insert": [],\n    "misc": [],\n    "query": [\n      '
+                                  '"Queries.FindProjection"\n    ],\n    "singleThreaded": [],\n'
+                                  '    "update": [],\n    "where": []\n  }\n}')])
+            self.assertTrue(info_expected.issubset(info_logs))
 
     def tearDown(self):
         """Deletes output JSON file after each test case"""

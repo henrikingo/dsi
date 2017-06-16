@@ -122,6 +122,7 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         self.tasks_applied = set()
         self.tests_applied = set()
         self.summary = {}
+        self.delete_summary = {}
 
     def _log_final_checks(self):
         """Sanity checks, called at the very end of general override rule updates (excludes the
@@ -138,25 +139,37 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
             WARNER.warn('Pattern not applied for build variants: {0}'.format(unused_variant))
         self._log_summary()
 
-    def _log_summary(self):
+    def _log_summary(self):  # pylint: disable=too-many-branches
         """Review and print a summary of what's been accomplished to the logfile.
         All operations that involve updating the override file will use this function.
         """
-        if len(self.summary) == 0:
+        has_updated = False
+        has_deleted = False
+        for rule in self.summary:
+            for variant in self.summary[rule]:
+                for task in self.summary[rule][variant]:
+                    task_updates = self.summary[rule][variant][task]
+                    if isinstance(task_updates, list) and len(task_updates) > 0:
+                        has_updated = True
+
+        for variant in self.delete_summary.keys():
+            if self.delete_summary[variant] == {}:
+                del self.delete_summary[variant]
+                continue
+            for task in self.delete_summary[variant]:
+                if self.delete_summary[variant][task]:
+                    has_deleted = True
+
+        if not has_updated and not has_deleted:
             WARNER.critical('No overrides have changed.')
         else:
+            LOGGER.info('The following tests were deleted:')
+            LOGGER.info(json.dumps(self.delete_summary,
+                                   indent=2,
+                                   separators=[',', ': '],
+                                   sort_keys=True))
             for rule in self.summary:
-                if len(rule) == 0:
-                    WARNER.critical('No overrides for rule {0} have changed.'.format(rule))
-                for variant in self.summary[rule].keys():
-                    if not self.summary[rule][variant]:
-                        WARNER.warn('No tasks under the build variant {0} were overridden'.format(
-                            variant))
-                    for task in self.summary[rule][variant].keys():
-                        if not self.summary[rule][variant][task]:
-                            WARNER.warn('No tests under the task {0}.{1} were overridden'.format(
-                                variant, task))
-                LOGGER.info('The following tests have been overridden for rule {0}:'.format(rule))
+                LOGGER.info('The following tests were overridden for rule {0}:'.format(rule))
                 LOGGER.info(json.dumps(self.summary[rule],
                                        indent=2,
                                        separators=[',', ': '],
@@ -557,12 +570,15 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         :rtype: (dict, list[(str, str, str)])
         """
         # Remove anything that can be blanket removed.
-        self.overrides[variant][task][rule] = {name: test for (name, test) in
-                                               self.overrides[variant][task][rule].items()
-                                               if 'ticket' in test and
-                                               test['ticket'].count(ticket) != len(test['ticket'])}
 
-        #variant_rule = self.overrides[variant][task][rule]
+        new_tests = {}
+        for (name, test) in self.overrides[variant][task][rule].items():
+            if 'ticket' in test and test['ticket'].count(ticket) != len(test['ticket']):
+                new_tests[name] = test
+            else:
+                self.delete_summary[variant][task] = [name]
+        self.overrides[variant][task][rule] = new_tests
+
         for test in self.overrides[variant][task][rule]:
             # Look to see if it should be pulled from the ticket list
             check_tickets = self.overrides[variant][task][rule][test]['ticket']
@@ -573,7 +589,7 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                                 'override remains'.format(test, variant, task, rule))
                     LOGGER.info('Remaining tickets are {}'.format(str(check_tickets)))
                     if rule is 'threshold':
-                        WARNER.warn('Threshold override for {} from variant {} and task {} '
+                        LOGGER.info('Threshold override for {} from variant {} and task {} '
                                     'remains due to other outstanding '
                                     'tickets.'.format(test, variant, task))
                     else:
@@ -599,9 +615,11 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         :param str rule: Which rule to delete from. (Default reference)
         :param str|list[str] tasks: Regex (or list of regex) matching tasks to update.
         """
+
         to_update = {}
         to_remove = []
         for build_variant in self.overrides.keys():
+            self.delete_summary[build_variant] = {}
             for task in self.overrides[build_variant].keys():
                 for rule in rules:
                     if rule in self.overrides[build_variant][task]:
@@ -614,16 +632,12 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                 if not check_task['ndays']\
                     and not check_task['reference']\
                     and not check_task['threshold']:
-
                     del self.overrides[build_variant][task]
 
             if not self.overrides[build_variant]:
                 del self.overrides[build_variant]
 
-        # This is used to account for cases where the 'ticket' key has a single value.
         # Can be removed after merge with JSON validation precursor check.
-        for (build_variant, task, rule, test) in to_remove:
-            del self.overrides[build_variant][task][rule][test]
 
         self._update_multiple_overrides(to_update, tasks)
 

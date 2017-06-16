@@ -73,7 +73,7 @@ def main(args):
                             reference=args.reference,
                             verbose=args.verbose)
     rule = args.rule
-    if rule is 'all':
+    if rule == 'all':
         rules = ['reference', 'ndays', 'threshold']
     else:
         rules = [rule]
