@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 import sys
+import inspect
 
 from common.config import ConfigDict
 from common.host import execute_list, extract_hosts
@@ -61,7 +62,12 @@ def pre_tasks(config, task_list):
     for task in task_list:
         # Execute pre task steps
         if 'pre_task' in task:
-            execute_list(task['pre_task'], config)
+            try:
+                execute_list(task['pre_task'], config)
+            except Exception as exception: # pylint: disable=broad-except
+                print_trace(inspect.trace(), exception)
+                LOG.error("Exiting with status code: 1")
+                sys.exit(1)
 
 
 def post_tasks(config, task_list):
@@ -71,17 +77,64 @@ def post_tasks(config, task_list):
     :param dict(ConfigDict) config: The system configuration
     :param list(ConfigDict) task_list: List of ConfigDict objects that may
     have a post_task key.
-
     """
+
     for task in reversed(task_list):
-        # Execute pre task steps
+        # Execute post task steps
         if 'post_task' in task:
             try:  # We've run the test. Don't stop on error
                 execute_list(task['post_task'], config)
             except Exception as exception:  # pylint: disable=broad-except
-                LOG.error("Caught an exception in post_task step. %s", str(exception))
+                print_trace(inspect.trace(), exception)
 
     copy_timeseries(config)
+
+def print_trace(trace, exception):
+    """ print exception information for pre_tasks and post_tasks. Information corresponds
+    to YAML file tasks
+
+    :param list((frame_object, string, int,
+                 string, list(string), int)) trace: returned by inspect.trace()
+    Refer to python docs:
+    https://docs.python.org/2/library/inspect.html#inspect.trace
+    https://docs.python.org/2/library/inspect.html#the-interpreter-stack
+    Each element in the list is a "tuple of six items: the frame object, the filename,
+    the line number of the current line, the function name,
+    a list of lines of context from the source code,
+    and the index of the current line within that list"
+    :param Exception() exception: this is the exception raised by one of tasks
+
+    *NOTE* This function is dependent on the stack frames
+    of the function calls made within pre_tasks
+    post_tasks along with the variable names in those two functions,
+    run_command, execute_list, and _run_command_map.
+    Changes in the variable names or the flow of function
+    calls could cause print_trace to log wrong/unhelpful info.
+    """
+    top_function = trace[0][3]
+    bottom_function = trace[-1][3]
+    bottom_function_file = trace[-1][1]
+    bottom_function_line = str(trace[-1][2])
+    # This conditional does not cause any errors due to lazy evaluation
+    if len(trace) > 1 and 'key' in trace[1][0].f_locals:
+        executed_task = trace[1][0].f_locals['key']
+    else:
+        executed_task = ""
+    executed_command = {}
+    for frame in trace:
+        if frame[3] == "run_command" and executed_command == {}:
+            executed_command = frame[0].f_locals['command']
+        if frame[3] == "_run_command_map":
+            executed_command[frame[0].f_locals['key']] = frame[0].f_locals['value']
+    error_msg = "Exception originated in: " + bottom_function_file
+    error_msg = error_msg + ":" + bottom_function + ":" + bottom_function_line
+    error_msg = error_msg + "\n" + "Exception msg: " + str(exception)
+    error_msg = error_msg + "\n" + top_function + ":"
+    if executed_task != '':
+        error_msg = error_msg + "\n    in task: on_" + executed_task
+    if executed_command != {}:
+        error_msg = error_msg + "\n" + "        in command: " + str(executed_command)
+    LOG.error(error_msg)
 
 def copy_timeseries(config):
     """ copy the files required for timeseries analysis from
@@ -128,9 +181,7 @@ def main(argv):
         '--log-file',
         help='path to log file')
     args = parser.parse_args(argv)
-
     setup_logging(args.debug, args.log_file)
-
     config = ConfigDict('test_control')
     config.load()
     test_control = config['test_control']
