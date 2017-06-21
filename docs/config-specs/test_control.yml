@@ -17,14 +17,21 @@ run:
             default:
               - contended_update.js
               - map_reduce.js
-              - ...
+              - insert_vector.js:
+                    # For clarity(?), thread_levels are in a lookup table further down
+                    # The following reference is recursive. The intermediate step resolves to
+                    # something like
+                    # ${test_control.thread_levels.insert_vector.standalone.wiredTiger}
+                    thread_levels: ${test_control.thread_levels.insert_vector.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
             initialsync:
               - initialsync.js
             correctness:
               - election_timing.js
               - election_timing_workload.js
-            test:  # Put new workloads here when testing
-              - hello.js
+            test: # Put new workloads here when testing
+              - hello.js:
+                  parameter1: foo
+                  parameter2: true
 
         mongo:
             # Note: We shall move to use a connection string for all tests. This allows things like
@@ -34,6 +41,25 @@ run:
             sharded: ${mongodb_setup.meta.is_sharded}
             replica: ${mongodb_setup.meta.is_replset}
             storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
+
+# This is just a lookup table. Each test may reference some leaf node here from a test parameter.
+thread_levels:
+    # Note: This is just an example for one test. Other tests have their own thread levels.
+    # It is of course possible that many tests share the same thread levels though, so this section
+    # can hopefully be shorter than a full cross join of everything.
+    insert_vector:
+        standalone:
+            mmapv1: [1, 2]
+            wiredTiger: [1, 8, 16]
+        single-replica:
+            mmapv1: [1, 2]
+            wiredTiger: [1, 8, 16]
+        replica:
+            mmapv1: [1, 2]
+            wiredTiger: [1, 8, 16]
+        shard:
+            mmapv1: [1, 32]
+            wiredTiger: [1, 32, 64]
 
 # Ordered list of things to do before the set of runs start
 pre_task:

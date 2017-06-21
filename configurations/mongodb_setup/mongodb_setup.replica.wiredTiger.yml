@@ -26,3 +26,4 @@ meta:
     is_sharded: false
     is_replset: true
     secondaries: 2
+    mongodb_setup: replica

@@ -124,6 +124,11 @@ class ConfigDictTestCase(unittest.TestCase):
         # reference to reference
         self.assertEqual(self.conf['mongodb_setup']['meta']['hostname'], '10.2.1.100')
 
+        # recursive reference ${a.${foo}.c} where "foo: b"
+        value = self.conf['test_control']['run'][0]['workload_config']['tests']['default'][2]['insert_vector.js']['thread_levels']
+        expected = [1, 8, 16]
+        self.assertEqual(value, expected)
+
     def test_per_node_mongod_config(self):
         """Test magic per_node_mongod_config() (merging the common mongod_config_file with per node config_file)"""
         mycluster = self.conf['mongodb_setup']['topology'][0]

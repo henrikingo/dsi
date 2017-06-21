@@ -64,3 +64,4 @@ meta:
     is_replset: false
     primaries: 3
     secondaries: 2
+    mongodb_setup: shard-longevity

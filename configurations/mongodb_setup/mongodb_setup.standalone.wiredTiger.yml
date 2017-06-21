@@ -18,3 +18,4 @@ meta:
     port: 27017
     is_sharded: false
     is_replset: false
+    mongodb_setup: standalone

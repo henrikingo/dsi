@@ -17,7 +17,8 @@ run:
               - contended_update.js
               - map_reduce.js
               - insert_ttl.js
-              - insert_vector.js
+              - insert_vector.js:
+                    thread_levels: ${test_control.thread_levels.insert_vector.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
               - word_count.js
               - jtrue.js
               - index_build.js
@@ -28,7 +29,7 @@ run:
             short:  # Just does Hello World
               - hello.js:
                   parameter1: foo
-                  parameter2: [true, false]
+                  parameter2: true
 
         # These next five lines match existing
         # workloads.yml. Workloads needs to be updated to consume from
@@ -57,6 +58,22 @@ run:
   - id: iperf
     type: shell
     cmd: '${test_control.numactl} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+
+# This is just a lookup table. Each test may reference some leaf node here from a test parameter.
+thread_levels:
+    insert_vector:
+        standalone:
+            mmapv1: [1, 2]
+            wiredTiger: [1, 8, 16]
+        single-replica:
+            mmapv1: [1, 2]
+            wiredTiger: [1, 8, 16]
+        replica:
+            mmapv1: [1, 2]
+            wiredTiger: [1, 8, 16]
+        shard:
+            mmapv1: [1, 32]
+            wiredTiger: [1, 32, 64]
 
 
 pre_task:

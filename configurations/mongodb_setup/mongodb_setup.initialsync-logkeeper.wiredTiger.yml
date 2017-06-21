@@ -32,4 +32,5 @@ meta:
     secondary: ${mongodb_setup.topology.1.private_ip}
     is_sharded: false
     is_replset: true
+    mongodb_setup: initialsync-logkeeper
 

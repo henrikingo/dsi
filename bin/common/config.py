@@ -333,42 +333,51 @@ class ConfigDict(dict):
 
     def variable_references(self, key, value):
         """For leaf node that is a string, substitute ${variable.references}"""
-        # str and unicode strings have the common parent class basestring.
-        if isinstance(value, basestring):
-            values = []
-            matches = re.findall(r"\$\{(.*?)\}", value)
-            if matches:
-                for path in matches:
-                    # Note that because self.root is itself a ConfigDict, if a referenced
-                    # value would itself contain a ${variable.reference}, then it will
-                    # automatically be substituted too.
-                    # For example, in docs/config-specs/*.yml we have:
-                    # mongodb_setup.meta.hosts ->
-                    # mongodb_setup.topology.0.mongos.0.private_ip ->
-                    # infrastructure_provisioning.out.mongos.0.private_ip
-                    # and that resolves correctly via recursion.
-                    try:
-                        values.append(self.root.lookup_path(path))
-                    except:
-                        path_from_root = copy.copy(self.path)
-                        path_from_root.append(key)
-                        raise ValueError("ConfigDict error at {}: Cannot resolve variable "
-                                         "reference '{}', error at '{}': {} {}"
-                                         .format(path_from_root, path, path,
-                                                 sys.exc_info()[0], sys.exc_info()[1]))
-                between_values = re.split(r"\$\{.*?\}", value)
+        # This while loop resolves recursive references until all are taken care of.
+        # Example: ${a.${foo}.c} (where foo: b)
+        while True:
+            # str and unicode strings have the common parent class basestring.
+            if not isinstance(value, basestring):
+                break
 
-                # If the variable reference is the entire value, then return the referenced value
-                # as it is, including preserving type. Otherwise, concatenate back into a string.
-                if len(between_values) == 2 and \
-                   between_values[0] == '' and \
-                   between_values[1] == '':
-                    return values[0]
-                else:
-                    value = between_values.pop(0)
-                    while len(values) > 0:
-                        value += str(values.pop(0))
-                        value += between_values.pop(0)
+            values = []
+            # regex matches the innermost { } pairs, and returns the inside content of those.
+            matches = re.findall(r"\$\{([^\{]*?)\}", value)
+            if not matches:
+                break
+
+            for path in matches:
+                # Note that because self.root is itself a ConfigDict, if a referenced
+                # value would itself contain a ${variable.reference}, then it will
+                # automatically be substituted too.
+                # For example, in docs/config-specs/*.yml we have:
+                # mongodb_setup.meta.hosts ->
+                # mongodb_setup.topology.0.mongos.0.private_ip ->
+                # infrastructure_provisioning.out.mongos.0.private_ip
+                # and that resolves correctly via recursion.
+                try:
+                    values.append(self.root.lookup_path(path))
+                except:
+                    path_from_root = copy.copy(self.path)
+                    path_from_root.append(key)
+                    raise ValueError("ConfigDict error at {}: Cannot resolve variable "
+                                     "reference '{}', error at '{}': {} {}"
+                                     .format(path_from_root, path, path,
+                                             sys.exc_info()[0], sys.exc_info()[1]))
+            between_values = re.split(r"\$\{[^\{]*?\}", value)
+
+            # If the variable reference is the entire value, then return the referenced value as it
+            # is, including preserving type. Otherwise, concatenate back into a string.
+            if len(between_values) == 2 and \
+            between_values[0] == '' and \
+            between_values[1] == '':
+                value = values[0]
+            else:
+                value = between_values.pop(0)
+                while len(values) > 0:
+                    value += str(values.pop(0))
+                    value += between_values.pop(0)
+
         return value
 
     def variable_path_as_list(self, path):
