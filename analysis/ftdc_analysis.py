@@ -7,8 +7,6 @@ import inspect
 import os
 import logging
 
-import datetime
-
 import readers
 import rules
 import util
@@ -38,18 +36,13 @@ RESOURCE_RULES_FTDC_CHUNK = {
 
 # Functions to format the failure messages
 
-def ftdc_date_parse(time_in_s):
-    """Helper to convert timestamps in s to human-readable format. Matches formatting in the
-    timeseries web tool
-
-    :type time_in_s: int
-    :rtype: str
-    """
-    time_offset = rules.INITIAL_TIME + datetime.timedelta(seconds=time_in_s)
-    return time_offset.strftime('%Y-%m-%d %H:%M:%SZ')
-
 def failure_message(rule_info, task_run_time):
     """Standardize the way that we return a failure message.
+
+    This wraps around _failure_message(), which builds the actual string. This function separates
+    the handling of errors that are checked on a per node basis, vs errors that are reported on a
+    per replica set basis. In the latter case, rule_info will have a 'members' key, each entry of
+    which holds its own rule_info dictionary.
 
     :param dict rule_info: every resource rule, upon failure, must return a dictionary in
     accordance with the key-value mapping specified in the failure_collection function defined
@@ -57,36 +50,127 @@ def failure_message(rule_info, task_run_time):
       Exception: If a single resource rule handles checks over multiple members, the dictionary
       will contain the attribute 'members' with a list[dict], where each dict follows the standard
       format.
-    :param int task_run_time: how long did the task itself run? Assess relative duration of failure
+    :param int task_run_time: How long did the task itself run? Assess relative duration of failure.
     """
     failure_msg = ''
+
     if 'members' in rule_info and rule_info['members']:
         if 'additional' in rule_info:
             for key, value in rule_info['additional'].iteritems():
                 failure_msg += '\t| {0}: {1}'.format(key, value)
-        for _, member_info in rule_info['members'].iteritems():
-            failure_msg += failure_message(member_info, task_run_time)
-        return failure_msg
+        for member_key, member_info in rule_info['members'].iteritems():
+            failure_msg += _failure_message(member_info, task_run_time, member_key)
+    else:
+        failure_msg = _failure_message(rule_info, task_run_time)
 
-    first_failure_time = ftdc_date_parse(rule_info['times'][0]/rules.MS)
-    failure_msg += '\n  First failure occurred at time {0}'.format(first_failure_time)
+    return failure_msg
 
-    first_failure_values = rule_info['compared_values'][0]
-    for index in xrange(len(first_failure_values)):
-        failure_msg += '\n\t{0}: {1}'.format(
-            rule_info['labels'][index], first_failure_values[index])
+def _failure_message(rule_info, task_run_time, member=None):
+    """Standardize the way that we return a failure message.
+
+    Example output when member=None:
+
+      First failure occurred at time 2017-06-12 23:37:28Z
+            current cache size (bytes): 9307532138
+            WT configured cache size (bytes): 8589934592
+            Failures seen at times: ['2017-06-12 23:37:28Z', ...]
+
+    Corresponding to following parts of rule_info:
+
+      First failure occurred at time rule_info['times'][0]
+            rule_info['labels'][0]: rule_info['compared_values'][][0]
+            rule_info['labels'][1]: rule_info['compared_values'][][1]
+            rule_info['additional'].keys(): rule_info['additional'].values()
+            Failures seen at times: rule_info['times']
+
+    Example output when member=1 and rules_info['report_all_values']=True:
+
+      Member 1:
+            start time: 2017-05-31 16:42:35Z
+            start value (s): 16.0
+            max time: 2017-05-31 16:54:23Z
+            max value (s): 116.0
+            end time: 2017-05-31 16:54:29Z
+            end value (s): 110.0
+
+            start time: 2017-05-31 16:55:25Z
+            start value (s): 16.0
+            max time: 2017-05-31 16:59:23Z
+            max value (s): 103.0
+            end time: 2017-05-31 16:59:26Z
+            end value (s): 102.0
+
+            start time: 2017-05-31 17:00:19Z
+            start value (s): 16.0
+            max time: 2017-05-31 17:04:23Z
+            max value (s): 113.0
+            end time: 2017-05-31 17:04:32Z
+            end value (s): 107.0
+
+            start time: 2017-05-31 17:05:31Z
+            start value (s): 16.0
+            max time: 2017-05-31 17:09:13Z
+            max value (s): 93.0
+            end time: 2017-05-31 17:09:19Z
+            end value (s): 89.0
+
+    Corresponding to:
+
+      Member <member>:
+            start time: rule_info['times'][0]
+            rule_info['labels'][0]: rule_info['compared_values'][0][0]
+            rule_info['labels'][1]: rule_info['compared_values'][0][1]
+            ...
+
+    :param dict rule_info: every resource rule, upon failure, must return a dictionary in
+    accordance with the key-value mapping specified in the failure_collection function.
+    :param int task_run_time: How long did the task itself run? Assess relative duration of failure.
+    :param int member: Print a "Member N: " string at the start of output.
+    """
+    failure_msg = ''
+    first_failure_time = rules.ftdc_date_parse(rule_info['times'][0]/rules.MS)
+
+    failure_msg += '\n  '
+    if member:
+        failure_msg += 'Member {}: '.format(member)
+
+    report_all_values = False
+    # If report_all_values flag is set, there must also be the same nr of timestamps and values. If
+    # they don't match, we silently ignore report_all_values and print the standard format instead.
+    if ('report_all_values' in rule_info and rule_info['report_all_values'] and
+            len(rule_info['times']) == len(rule_info['compared_values'])):
+        LOGGER.debug('report_all_values=True')
+        report_all_values = True
+
+    if report_all_values:
+        for failure_index in xrange(len(rule_info['times'])):
+            failure_msg += '\n\tstart time: {0}'.format(
+                rules.ftdc_date_parse(rule_info['times'][failure_index]/rules.MS))
+            for value_index in xrange(len(rule_info['labels'])):
+                failure_msg += '\n\t{0}: {1}'.format(
+                    rule_info['labels'][value_index],
+                    rule_info['compared_values'][failure_index][value_index])
+            failure_msg += '\n'
+    else:
+        failure_msg += 'First failure occurred at time {0}'.format(first_failure_time)
+        first_failure_values = rule_info['compared_values'][0]
+        for index in xrange(len(first_failure_values)):
+            failure_msg += '\n\t{0}: {1}'.format(
+                rule_info['labels'][index], first_failure_values[index])
 
     if 'additional' in rule_info:
         for key, value in rule_info['additional'].iteritems():
             failure_msg += '\n\t{0}: {1}'.format(key, value)
 
-    duration_failure = len(rule_info['times'])
-    if float(duration_failure)/task_run_time > 0.10:  # proportion of time in failing state
-        failure_msg += '\nFailure detected {0}s out of the {1}s it took to run this task'.format(
-            duration_failure, task_run_time)
-    else:
-        times = [ftdc_date_parse(ts/rules.MS) for ts in rule_info['times']]
-        failure_msg += '\n\tFailures seen at times: {0}'.format(str(times))
+    if not report_all_values:
+        duration_failure = len(rule_info['times'])
+        if float(duration_failure)/task_run_time > 0.10:  # proportion of time in failing state
+            failure_msg += '\n'
+            failure_msg += 'Failure detected {0}s out of the {1}s it took to run this task'.format(
+                duration_failure, task_run_time)
+        else:
+            times = [rules.ftdc_date_parse(ts/rules.MS) for ts in rule_info['times']]
+            failure_msg += '\n\tFailures seen at times: {0}'.format(str(times))
 
     return failure_msg
 

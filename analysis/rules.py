@@ -1,6 +1,7 @@
 """Module of constants and rules used in our resource sanity checks. Used in post_run_check.py.
 """
 
+import datetime
 import logging
 import os
 import re
@@ -49,6 +50,41 @@ BAD_MESSAGES = [msg.lower() for msg in [
 MESSAGE_WHITELIST = [msg.lower() for msg in [
     "ttl query execution for index", "not starting an election"]]
 
+# Resource sanity check rules
+
+FTDC_KEYS = {
+    'cache_size': ('serverStatus', 'wiredTiger', 'cache', 'bytes currently in the cache'),
+    'heap_size': ('serverStatus', 'tcmalloc', 'generic', 'heap_size'),
+    'oplog_size': ('local.oplog.rs.stats', 'size'),
+    'curr_connections': ('serverStatus', 'connections', 'current'),
+    'max_cache_size': ('serverStatus', 'wiredTiger', 'cache', 'maximum bytes configured'),
+    'max_oplog_size': ('local.oplog.rs.stats', 'maxSize'),
+    'time': ('start',),
+    'repl_set_status': ('replSetGetStatus', 'members', '([0-9])+')
+}
+
+FLAG_MEMBER_STATES = {3: 'RECOVERING', 6: 'UNKNOWN', 8: 'DOWN', 9: 'ROLLBACK', 10: 'REMOVED'}
+STARTUP_MEMBER_STATES = {0: 'STARTUP', 5: 'STARTUP2'}
+
+# cache size must be below (1 + CACHE_ALLOCATOR_OVERHEAD) * heap size.
+CACHE_ALLOCATOR_OVERHEAD = .08
+
+# current oplog size must be below (1 + WT_OPLOG_BUFFER)
+WT_OPLOG_BUFFER = .10
+
+# in seconds, when is the member lag too large?
+REPL_MEMBER_LAG_THRESHOLD_S = 15.0
+# if threshold was triggered, when do we consider the secondary caught up?
+# see https://en.wikipedia.org/wiki/Hysteresis
+REPL_MEMBER_LAG_RESET_S = 2.0
+
+### end of configurable constants ##################################################################
+
+MS = 1000.0
+REPL_MEMBER_LAG_THRESHOLD_MS = REPL_MEMBER_LAG_THRESHOLD_S * MS
+REPL_MEMBER_LAG_RESET_MS = REPL_MEMBER_LAG_RESET_S * MS
+
+
 def is_log_line_bad(log_line, test_times=None):
     """
     Return whether or not `log_line`, a line from a log file, is suspect (see `BAD_LOG_TYPES` and
@@ -82,36 +118,20 @@ def is_log_line_bad(log_line, test_times=None):
 
     return err_type_char in ["F", "E"] or any(bad_msg in log_msg for bad_msg in BAD_MESSAGES)
 
-# Resource sanity check rules
+UNIX_EPOCH = date_parser.parse('1970-01-01T00:00:00Z')  # for formatting log failure messages
+def ftdc_date_parse(time_in_s):
+    """Helper to convert timestamps in s to human-readable format. Matches formatting in the
+    timeseries web tool
 
-FTDC_KEYS = {
-    'cache_size': ('serverStatus', 'wiredTiger', 'cache', 'bytes currently in the cache'),
-    'heap_size': ('serverStatus', 'tcmalloc', 'generic', 'heap_size'),
-    'oplog_size': ('local.oplog.rs.stats', 'size'),
-    'curr_connections': ('serverStatus', 'connections', 'current'),
-    'max_cache_size': ('serverStatus', 'wiredTiger', 'cache', 'maximum bytes configured'),
-    'max_oplog_size': ('local.oplog.rs.stats', 'maxSize'),
-    'time': ('start',),
-    'repl_set_status': ('replSetGetStatus', 'members', '([0-9])+')
-}
+    :type time_in_s: int
+    :rtype: str
+    """
+    time_offset = UNIX_EPOCH + datetime.timedelta(seconds=time_in_s)
+    return time_offset.strftime('%Y-%m-%d %H:%M:%SZ')
 
-INITIAL_TIME = date_parser.parse('1970-01-01T00:00:00Z')  # for formatting log failure messages
 
-FLAG_MEMBER_STATES = {3: 'RECOVERING', 6: 'UNKNOWN', 8: 'DOWN', 9: 'ROLLBACK', 10: 'REMOVED'}
-STARTUP_MEMBER_STATES = {0: 'STARTUP', 5: 'STARTUP2'}
-
-# cache size must be below (1 + CACHE_ALLOCATOR_OVERHEAD) * heap size.
-CACHE_ALLOCATOR_OVERHEAD = .08
-
-# current oplog size must be below (1 + WT_OPLOG_BUFFER)
-WT_OPLOG_BUFFER = .10
-
-# in seconds, when is the member lag too large?
-MS = 1000.0
-REPL_MEMBER_LAG_THRESHOLD_S = 15.0
-REPL_MEMBER_LAG_THRESHOLD_MS = REPL_MEMBER_LAG_THRESHOLD_S * MS
-
-def failure_collection(failure_times, compared_values, labels, other_rule_info=None):
+def failure_collection(failure_times, compared_values, labels, other_rule_info=None,
+                       report_all_values=False):
     """Helper function to standardize the dictionary data structure that stores failure information.
     TODO: Each rule currently needs to initialize variables to collect the following parameters.
           Currently, this means any modification to the structure requires code updates in
@@ -125,6 +145,9 @@ def failure_collection(failure_times, compared_values, labels, other_rule_info=N
                          messages
     :param dict other_rule_info: a dict containing any additional information we need to include
                                  in a failure message.
+    :param bool print_all_values: Flag the failure data so that all compared_values are reported.
+                                  This is used e.g. for repl lag, where each failure is different,
+                                  rather than log messages, which tend to be very similar.
     :rtype: dict
     """
     if not failure_times:
@@ -135,6 +158,8 @@ def failure_collection(failure_times, compared_values, labels, other_rule_info=N
     rule_info['labels'] = labels
     if other_rule_info:
         rule_info['additional'] = other_rule_info
+    if report_all_values:
+        rule_info['report_all_values'] = True
     return rule_info
 
 def _fetch_constant(chunk, key):
@@ -470,8 +495,28 @@ def _lag_failures_per_primary(lag_info_per_primary, repl_member_list):
                 failures.append(flagged)
     return failures
 
-def _flag_unacceptable_lag(lag_info_dict, repl_member_list):  # pylint: disable=too-many-branches
+def _flag_unacceptable_lag(lag_info_dict, repl_member_list): #pylint: disable=too-many-locals
     """Helper function to analyze lag times and flag potential problems
+
+       When there's a write after an idle period, we can observe lag that's equal to the duration
+       to the idle period. Note that idle period can be as large as (now - unix_epoch) for the
+       first write! We account for this error with the following simple formula:
+
+            bounded_lag = min(current_lag, previous['lag'] + time_delta)
+            # ...analyze lag...
+            previous['lag'] = bounded_lag
+
+       ...where time_delta is the time from previous lag to current lag. In practice always 1 sec.
+
+       Initialization is: previous['lag'] = 0
+
+       That means that we assume the data begins from a stable initial state where there is no
+       lag - by definition. For an empty new cluster this is trivially the case. It is also
+       possible that a cluster is started with an existing database snapshot on the primary, but
+       empty secondaries. In this case the interpretation is that the initial state isn't
+       considered lag, since it is "by design", but this algorithm will trigger an error, if
+       secondaries wouldn't catch up within REPL_MEMBER_LAG_THRESHOLD_MS. (Which will be a hard
+       requirement for larger database snapshots.)
 
     :param dict lag_info_dict: contains lag information for all members, the primary, and the
            timestamps for all the data collected.
@@ -488,46 +533,71 @@ def _flag_unacceptable_lag(lag_info_dict, repl_member_list):  # pylint: disable=
 
         failure_times = []
         compared_values = []
-
         member_lag = lag_info_dict[member]
-        previous = {'lag': lag_info_dict['times'][0], 'time': member_lag[0]}
 
-        # again, it's possible that we start off with a false positive
-        if previous['lag'] > REPL_MEMBER_LAG_THRESHOLD_MS:
-            last_false_positive = {'lag': previous['lag'], 'time': previous['time']}
-        else:
-            last_false_positive = None
+        previous = {'lag': 0, 'time': member_lag[0]}
+        is_lagging = False
+        failure_dict = {}
 
         for index in xrange(1, num_samples):
             current_time = lag_info_dict['times'][index]
             current_lag = member_lag[index]
-            if last_false_positive and current_lag < last_false_positive['lag']:
-                last_false_positive = None
+            time_delta = current_time - previous['time']
+            bounded_lag = min(current_lag, previous['lag'] + time_delta)
 
-            # current lag appears greater than our specified threshold
-            if current_lag > REPL_MEMBER_LAG_THRESHOLD_MS:
-                # lag can't grow greater than 1s per s
-                if (current_lag - previous['lag']) > (current_time - previous['time']):
-                    last_false_positive = {'lag': current_lag, 'time': current_time}
-                elif last_false_positive:
-                    time_from_fp = current_time - last_false_positive['time']
-                    # accounting for the FP value detection, lag has still grown unacceptably large
-                    if current_lag > last_false_positive['lag'] + time_from_fp:
-                        failure_times.append(current_time)
-                        compared_values.append((current_lag,))
+            if not is_lagging:
+                if bounded_lag > REPL_MEMBER_LAG_THRESHOLD_MS:
+                    # Following if statement shouldn't be needed. It is used to filter out the fact
+                    # that index_build will always have secondary lag and we don't have an override
+                    # mechanism to turn this off test-by-test, so this would always fail for
+                    # index_build. Characteristic for index_build is that the lag grows exactly
+                    # 1 sec / sec, because the secondary is completely blocked.
+                    # FIXME: if can be removed when PERF-1031 is implemented.
+                    if bounded_lag - previous['lag'] < time_delta:
+                        LOGGER.debug("lag start")
+                        LOGGER.debug("bounded_lag > threshold %s %s %s",
+                                     current_lag, previous['lag'], current_time)
+                        is_lagging = True
+                        failure_dict = {'start_time': current_time,
+                                        'start_value': current_lag,
+                                        'max_value': current_lag,
+                                        'max_time': current_time}
+            else:
+                # We want to capture consecutive ranges of lag happening. Therefore the thershold
+                # to determine lag has ended is lower than the treshold that triggers the start.
+                if current_lag < REPL_MEMBER_LAG_RESET_MS:
+                    LOGGER.debug("lag end")
+                    is_lagging = False
+                    failure_dict['end_value'] = previous['lag']
+                    failure_dict['end_time'] = previous['time']
+
+                    failure_times.append(failure_dict['start_time'])
+                    compared_values.append((failure_dict['start_value']/MS,
+                                            ftdc_date_parse(failure_dict['max_time']/MS),
+                                            failure_dict['max_value']/MS,
+                                            ftdc_date_parse(failure_dict['end_time']/MS),
+                                            failure_dict['end_value']/MS))
                 else:
-                    failure_times.append(current_time)
-                    compared_values.append((current_lag/MS,))
+                    # lag continues
+                    if current_lag > failure_dict['max_value']:
+                        failure_dict['max_value'] = current_lag
+                        failure_dict['max_time'] = current_time
+
+            previous['lag'] = bounded_lag
             previous['time'] = current_time
-            previous['lag'] = current_lag
-        failure = failure_collection(failure_times,
-                                     compared_values,
-                                     ('member {0} lag (s)'.format(member),))
+
+        labels = ('start value (s)',
+                  'max time',
+                  'max value (s)',
+                  'end time',
+                  'end value (s)')
+        failure = failure_collection(failure_times, compared_values, labels, None, True)
         if failure:
             failure_by_member[member] = failure
     if failure_by_member:
         return {'members': failure_by_member,
-                'additional': {'using lag threshold (s)': REPL_MEMBER_LAG_THRESHOLD_S,
+                'additional': {'lag start threshold (s)': REPL_MEMBER_LAG_THRESHOLD_S,
+                               'lag end threshold (s)': REPL_MEMBER_LAG_RESET_S,
                                'primary member': lag_info_dict['primary']}
                }
     else:
