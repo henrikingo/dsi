@@ -293,7 +293,8 @@ class TestLogAnalysisRules(unittest.TestCase):
             "2016-07-14T01:00:04.000+0000 F err-type foo bar baz",
             "2016-07-14T01:00:04.000+0000 E err-type foo bar baz",
             "2016-07-14T01:00:04.000+0000 L err-type elecTIon suCCEeded",
-            "2016-07-14T01:00:04.000+0000 D err-type transition TO PRIMARY"]
+            "2016-07-14T01:00:04.000+0000 D err-type transition TO PRIMARY",
+            "2016-07-14T01:00:04.000+0000 I err-type PosIx_FallocaTE FailEd"]
 
         good_lines = [
             "2016-07-14T01:00:04.000+0000 L err-type nothing bad here",
