@@ -15013,6 +15013,20 @@
                 }
             },
             "threshold":{
+                "Aggregation.IdentityView.DistinctWithIndex":{
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5733"
+                    ]
+                },
+                "Aggregation.IdentityView.DistinctWithIndexAndQuery":{
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5733"
+                    ]
+                },
                 "Aggregation.IdentityView.DistinctWithoutIndexAndQuery":{
                     "thread_threshold":0.26,
                     "threshold":0.15,
