@@ -179,6 +179,8 @@ meta:
     is_sharded: true
     is_replset: false
     storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
-    mongodb_setup: standalone # Same name as used in bootstrap.mongodb_setup, but out of convention,
-                              # we don't reference bootstrap.yml from elsewhere, as it's not a
-                              # required file.
+
+    # Same name as used in bootstrap.mongodb_setup, but out of convention,
+    # we don't reference bootstrap.yml from elsewhere, as it's not a
+    # required file.
+    mongodb_setup: standalone

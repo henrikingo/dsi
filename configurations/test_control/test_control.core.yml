@@ -20,8 +20,8 @@ run:
               - insert_vector.js:
                     thread_levels: ${test_control.thread_levels.insert_vector.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
               - word_count.js
-              - jtrue.js
-                    thread_levels: [1, 64, 128]
+              - jtrue.js:
+                  thread_levels: [1, 64, 128]
               - index_build.js
               - mix.js
               - cpu_noise.js

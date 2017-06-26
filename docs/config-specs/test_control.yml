@@ -28,7 +28,7 @@ run:
             correctness:
               - election_timing.js
               - election_timing_workload.js
-            test: # Put new workloads here when testing
+            test:  # Put new workloads here when testing
               - hello.js:
                   parameter1: foo
                   parameter2: true

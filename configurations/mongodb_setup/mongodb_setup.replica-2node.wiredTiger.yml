@@ -28,5 +28,5 @@ meta:
     third_node: ${mongodb_setup.topology.1.private_ip}
     is_sharded: false
     is_replset: true
-    secondaries: 1 # Only 1 secondary at start
+    secondaries: 1  # Only 1 secondary at start
     mongodb_setup: replica-2node
