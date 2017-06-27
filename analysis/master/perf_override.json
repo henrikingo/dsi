@@ -28150,6 +28150,13 @@
                         "BF-5096",
                         "BF-5575"
                     ]
+                },
+                "Aggregation.RegexPrefixFindOne":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-5126"
+                    ]
                 }
             }
         },
