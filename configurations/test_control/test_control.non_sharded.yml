@@ -15,6 +15,7 @@ run:
         tests:
             default:
               - insert_capped.js
+                    thread_levels: [1, 2]
               - insert_capped_indexes.js
               - cpu_noise.js
             test:
@@ -24,25 +25,12 @@ run:
                   parameter1: foo
                   parameter2: [true, false]
 
-        # These next five lines match existing
-        # workloads.yml. Workloads needs to be updated to consume from
-        # mongo entry.
+        # These next five lines match existing workloads.yml.
         target: ${mongodb_setup.meta.hostname}
         port: ${mongodb_setup.meta.port}
         # Hard coding for now. These aren't working right now
         sharded: ${mongodb_setup.meta.is_sharded}
         replica: ${mongodb_setup.meta.is_replset}
-        storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
-        scale_factor: ${mongodb_setup.meta.primaries}
-        test_list: default
-        mongo:
-            # It turns out the shell supports connection strings, but
-            # benchRun itself does not.
-            uri: ${mongodb_setup.meta.hosts}
-            # Hard coding for now. These aren't working right now
-            sharded: ${mongodb_setup.meta.is_sharded}
-            replica: ${mongodb_setup.meta.is_replset}
-            storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
   - id: fio-${mongodb_setup.mongod_config_file.storage.engine}
     type: shell
     cmd: '${test_control.numactl} ./fio-test.sh ${mongodb_setup.meta.hostname}'
