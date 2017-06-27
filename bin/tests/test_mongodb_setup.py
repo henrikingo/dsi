@@ -108,14 +108,6 @@ class TestMongoNode(unittest.TestCase):
                          '--config', '/tmp/mongo_port_9999.conf']
         self.assertEqual(self.mongo_node.launch_cmd(), expected_argv)
 
-    def test_mongo_shell_cmd(self):
-        """Test mongo_shell_cmd uses proper arguments."""
-        file_path = '/tmp/mongo_port_9999.js'
-        expected_argv = ['/usr/bin/mongo', '--verbose', '--port=9999', file_path]
-        self.assertEqual(self.mongo_node.mongo_shell_cmd(file_path),
-                         expected_argv)
-
-
 class TestReplSet(unittest.TestCase):
     """ReplSet tests"""
 

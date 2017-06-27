@@ -18,7 +18,6 @@ from run_test import copy_timeseries
 from run_test import print_trace
 from run_test import pre_tasks
 
-
 class RunTestTestCase(unittest.TestCase):
     """ Unit Test for Host library """
 
@@ -116,7 +115,7 @@ class RunTestTestCase(unittest.TestCase):
         self.assertTrue(mock_copyfile.called_with('/dirpath1/file1--10.0.0.1',
                                                   'reports/mongod.1/matching-dirpath1'))
 
-    @patch("types.FrameType")
+    @patch('types.FrameType')
     def test_print_trace_mock_exception(self, mock_frame):
         """ Test run_test.print_trace with mock frame and mock exception"""
         with LogCapture() as log_capture:
@@ -137,18 +136,20 @@ class RunTestTestCase(unittest.TestCase):
         list_errors = list(log_capture.actual())
         self.assertEqual(error_msg, list_errors[0][2])
 
+    @patch('paramiko.SSHClient')
     @patch('common.host.extract_hosts', return_value=(-1, -1))
-    def help_trace_function(self, mock_remote_host, mock_function,
-                            mock_task_list, mock_extract_hosts):
+    def help_trace_function(self, mock_function, mock_task_list,
+                            mock_extract_hosts, mock_ssh):
         """
         Test run_test.print_trace by running pre_task with a forced exception.
         This is a helper function used by other tests within this class. It uses a mocked RemoteHost
         along with a mocked function within the RemoteHost that has a forced exception it.
-        :param MagicMock() mock_remote_host: A mocked common.host.RemoteHost
         :param MagicMock() mock_function: mocked function from mock_remote_host
         :param list(ConfigDict) mock_task_list: List of ConfigDict objects that
         has a pre_task key.
         :param MagicMock() mock_extract_hosts: DO NOT INPUT IN FUNCTION,
+        patch decorator already inputs this argument into the function
+        :param MagicMock() mock_ssh: DO NOT INPUT IN FUNCTION,
         patch decorator already inputs this argument into the function
         """
         mock_config = {
@@ -173,13 +174,14 @@ class RunTestTestCase(unittest.TestCase):
             # The asserts check if the mock_function, extract_hosts, and make_host were called
             # along with asserting the error code was 1.
             with patch('common.host.make_host',
-                       return_value=mock_remote_host(None, None)) as mock_make_host:
+                       return_value=host.RemoteHost(None, None, None)) as mock_make_host:
                 mock_function.side_effect = Exception("Mock Exception")
                 with self.assertRaises(SystemExit) as exception:
                     pre_tasks(mock_config, mock_task_list)
                 self.assertTrue(mock_function.called)
                 self.assertTrue(mock_extract_hosts.called)
                 self.assertTrue(mock_make_host.called)
+                self.assertTrue(mock_ssh.called)
                 self.assertEqual(exception.exception.code, 1)
         task = mock_task_list[0]['pre_task'][0].iterkeys().next()
         command = mock_task_list[0]['pre_task'][0][task]
@@ -194,41 +196,41 @@ class RunTestTestCase(unittest.TestCase):
 
     #pylint: disable=no-value-for-parameter
     # pylint is confused by the patch decorator on help_test_trace_function()
-    @patch('common.host.RemoteHost')
-    def test_print_trace_upload_file(self, mock_remote_host):
+    @patch('host.RemoteHost.upload_file')
+    def test_print_trace_upload_file(self, mock_upload_file):
         """ Test run_test.print_trace with exception in upload_file"""
         mock_task_list = [{'pre_task':
                            [{'on_workload_client':
                              {'upload_files':
                               {'workloads.tar.gz': 'workloads.tar.gz'}}}]},
                           {}]
-        self.help_trace_function(mock_remote_host,
-                                 mock_remote_host.return_value.upload_file,
+        self.help_trace_function(mock_upload_file,
                                  mock_task_list)
 
-    @patch('common.host.RemoteHost')
-    def test_print_trace_retrieve_path(self, mock_remote_host):
+    @patch('os.path')
+    @patch('host.RemoteHost.retrieve_path')
+    def test_print_trace_retrieve_path(self, mock_retrieve_path, mock_path):
         """ Test run_test.print_trace with exception in retrieve_path"""
+        mock_path.return_value.join.return_value = ""
+        mock_path.return_value.normpath.return_value = ""
         mock_task_list = [{'pre_task':
                            [{'on_workload_client':
                              {'retrieve_files':
                               {'workloads.tar.gz':
                                'workloads.tar.gz'}}}]},
                           {}]
-        self.help_trace_function(mock_remote_host,
-                                 mock_remote_host.return_value.retrieve_path,
+        self.help_trace_function(mock_retrieve_path,
                                  mock_task_list)
 
-    @patch('common.host.RemoteHost')
-    def test_print_trace_create_file(self, mock_remote_host):
+    @patch('host.RemoteHost.create_file')
+    def test_print_trace_create_file(self, mock_create_file):
         """ Test run_test.print_trace with exception in create_file"""
         mock_task_list = [{'pre_task':
                            [{'on_workload_client':
                              {'exec_mongo_shell':
                               {'script': 'mock script'}}}]},
                           {}]
-        self.help_trace_function(mock_remote_host,
-                                 mock_remote_host.return_value.create_file,
+        self.help_trace_function(mock_create_file,
                                  mock_task_list)
     #pylint: enable=no-value-for-parameter
 

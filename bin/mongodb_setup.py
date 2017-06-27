@@ -229,21 +229,6 @@ class MongoNode(object):
         self.started = True
         return self.wait_until_up()
 
-    def mongo_shell_cmd(self, js_file_path):
-        """
-        Returns the command to run js_file_path in a mongo shell on the
-        underlying host.
-        :param js_file_path: Path to JavaScript file.
-        """
-        opts = {
-            'verbose': '',
-            'port': self.port
-        }
-        argv = [os.path.join(self.bin_dir, 'mongo')]
-        argv.extend(args_list(opts))
-        argv.append(js_file_path)
-        return argv
-
     def run_mongo_shell(self, js_string):
         """
         Run JavaScript code in a mongo shell on the underlying host
@@ -251,9 +236,9 @@ class MongoNode(object):
         :return: True if the mongo shell exits successfully
         """
         remote_file_name = '/tmp/mongo_port_{0}.js'.format(self.port)
-        self.host.create_file(remote_file_name, js_string)
-        self.host.run(['cat', remote_file_name])
-        if not self.host.run(self.mongo_shell_cmd(remote_file_name)):
+        if self.host.exec_mongo_command(js_string,
+                                        remote_file_name,
+                                        "localhost:" + str(self.port)) != 0:
             self.dump_mongo_log()
             return False
         return True

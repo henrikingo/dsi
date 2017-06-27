@@ -421,6 +421,26 @@ class HostTestCase(unittest.TestCase):
             mock.call('reports/local_dir/file', 'remote_dir/file'),
             mock.call('reports/local_dir/logs/mongod.log', 'remote_dir/logs/mongod.log')])
 
+    @patch("host.RemoteHost.exec_command")
+    @patch("host.RemoteHost.create_file")
+    @patch('paramiko.SSHClient')
+    def test_exec_mongo_command(self, mock_ssh, mock_create_file, mock_exec_command):
+        """ Test run RemoteHost.exec_mongo_command """
+        mock_exec_command.return_value = 0
+        test_file = 'test_file'
+        test_user = 'test_user'
+        test_pem_file = 'test_pem_file'
+        test_host = 'test_host'
+        test_script = 'test_script'
+        test_connection_string = 'test_connection_string'
+        test_argv = ['bin/mongo', '--verbose', test_connection_string, test_file]
+        remote_host = host.RemoteHost(test_host, test_user, test_pem_file)
+        status_code = remote_host.exec_mongo_command(test_script,
+                                                     test_file,
+                                                     test_connection_string)
+        self.assertTrue(status_code == 0)
+        mock_create_file.assert_called_with(test_file, test_script)
+        mock_exec_command.assert_called_with(test_argv)
 
 if __name__ == '__main__':
     unittest.main()

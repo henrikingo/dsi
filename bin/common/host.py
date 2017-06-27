@@ -56,11 +56,8 @@ def _run_command_map(target_host, command):
             target_host.run(value.split(' '))
         elif key == "exec_mongo_shell":
             LOG.debug('Executing command %s in mongo shell', value)
-            remote_file_name = 'script.js'
-            target_host.create_file(remote_file_name, value['script'])
             connection_string = value.get('connection_string', "")
-            command_list = ['bin/mongo', connection_string, remote_file_name]
-            target_host.run(command_list)
+            target_host.exec_mongo_command(value['script'], connection_string=connection_string)
         else:
             raise Exception("Invalid command type")
 
@@ -197,6 +194,22 @@ class Host(object):
             argvs = [argvs]
 
         return all(self.exec_command(argv) == 0 for argv in argvs)
+
+    def exec_mongo_command(self, script,
+                           remote_file_name="script.js",
+                           connection_string="localhost:27017"):
+        """
+        Executes script in the mongo on the
+        connection string. Returns the status code of executing the script
+        :param script: String containing javascript to be run
+        :param remote_file_name: Name and path of file to create with script contents
+        :param connection_string: Connection information of mongo instance to run script on
+        """
+        self.create_file(remote_file_name, script)
+        self.run(['cat', remote_file_name])
+        argv = ['bin/mongo', '--verbose', connection_string, remote_file_name]
+        status_code = self.exec_command(argv)
+        return status_code
 
     def kill_remote_procs(self, name):
         """Kills all processes on the remote host by name."""
