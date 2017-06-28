@@ -7814,8 +7814,8 @@
                     ]
                 },
                 "Aggregation.RegexPrefixFindOne":{
-                    "thread_threshold":0.1275,
-                    "threshold":0.085,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "BF-5126"
                     ]
