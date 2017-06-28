@@ -3016,8 +3016,8 @@
                     ]
                 },
                 "Aggregation.UnwindThenMatch":{
-                    "thread_threshold":0.3,
-                    "threshold":0.25,
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
                     "ticket":[
                         "BF-5123"
                     ]
@@ -6416,6 +6416,13 @@
                     "threshold":0.16,
                     "ticket":[
                         "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.UnwindThenMatch":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "BF-5123"
                     ]
                 }
             }
@@ -12181,8 +12188,8 @@
                     ]
                 },
                 "Aggregation.UnwindThenMatch":{
-                    "thread_threshold":0.3,
-                    "threshold":0.25,
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
                     "ticket":[
                         "BF-5123"
                     ]
@@ -15123,6 +15130,13 @@
                     "threshold":0.16,
                     "ticket":[
                         "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.UnwindThenMatch":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "BF-5123"
                     ]
                 }
             }
