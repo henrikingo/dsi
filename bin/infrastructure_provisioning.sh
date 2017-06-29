@@ -32,10 +32,11 @@ if [ "$PRODUCTION" == "true" ]
 then
 
 
-    # To force re-creation of existing instances, e.g. for a patch build, you can uncomment this:
-    #if [ -d "$EVG_DATA_DIR" ]; then
-    #    $EVG_DATA_DIR/terraform/infrastructure_teardown.sh && rm -rf "$EVG_DATA_DIR"
-    #fi
+    # instances are re-created for initialsync-logkeeper:
+    if [[ -d "$EVG_DATA_DIR" && "$CLUSTER" == "initialsync-logkeeper" ]]; then
+       echo "$0: $CLUSTER: force re-creation of instances (EXISTING=false) by executing teardown now."
+       $EVG_DATA_DIR/terraform/infrastructure_teardown.sh && rm -rf "$EVG_DATA_DIR"
+    fi
 
     # Create $EVG_DATA_DIR and copy executables into it
     if [ ! -d $EVG_DATA_DIR ]; then
