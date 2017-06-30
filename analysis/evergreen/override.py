@@ -259,12 +259,11 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
 
                         # Finally, update the old override rule
                         self.update_test(build_variant_name, task_name, test_name, rule,
-                                        new_override_val, ticket)
+                                         new_override_val, ticket)
 
                 except evergreen_client.Empty as error:
                     # Typically happens if a task didn't run or had system failure
-                    LOGGER.warning("Empty response received for %s.%s.%s at %s", build_variant_name,
-                                   task_name, test_name, self.commit)
+                    LOGGER.warning(error)
 
         self._log_final_checks()
 
