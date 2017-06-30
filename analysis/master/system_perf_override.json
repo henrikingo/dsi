@@ -2400,57 +2400,57 @@
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":25.0,
-                    "threshold":20.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":25.0,
-                    "threshold":20.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":25.0,
-                    "threshold":20.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":25.0,
-                    "threshold":20.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
-                    "thread_threshold":25.0,
-                    "threshold":20.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
-                    "thread_threshold":25.0,
-                    "threshold":20.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":25.0,
-                    "threshold":20.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
-                    "thread_threshold":25.0,
-                    "threshold":20.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
@@ -3173,57 +3173,57 @@
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
-                    "thread_threshold":15.0,
-                    "threshold":10.0,
+                    "thread_threshold":1500.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
