@@ -6295,6 +6295,31 @@
         "core_workloads_WT":{
             "ndays":{},
             "reference":{
+                "index_build-wiredTiger":{
+                    "create_time":"2017-06-07T14:26:11.486Z",
+                    "end":1496857542,
+                    "max":179610.60421007255,
+                    "name":"index_build-wiredTiger",
+                    "order":7055,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":179610.60421007255,
+                            "ops_per_sec_values":[
+                                179610.60421007255
+                            ]
+                        }
+                    },
+                    "revision":"00dd041c28f0f88cb2478b3be22c50f97515b437",
+                    "start":1496852438,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5832"
+                    ],
+                    "workload":"shell/benchrun"
+                },
                 "mixed_delete-wiredTiger":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494691900,
