@@ -7859,6 +7859,13 @@
                         "BF-5316"
                     ]
                 },
+                "Aggregation.FindProjectionDottedField":{
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Aggregation.FindWideDocProjection":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
@@ -30158,6 +30165,13 @@
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
+                    ]
+                },
+                "Aggregation.FindProjectionDottedField":{
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
+                    "ticket":[
+                        "PERF-875"
                     ]
                 },
                 "Aggregation.FindWideDocProjection":{
