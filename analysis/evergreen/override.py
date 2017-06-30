@@ -233,31 +233,39 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                     history = self._get_task_history(task_name, task_id)
 
                 # Cycle through the names of the tests in this task
-                for test_name, _ in self.evg.tests_from_task(task_id):
-                    match = helpers.matches_any(test_name, self.tests)
-                    if not match:
-                        LOGGER.debug('\t\tSkipping test: {0}'.format(test_name))
-                        continue
+                try:
+                    for test_name, _ in self.evg.tests_from_task(task_id):
+                        match = helpers.matches_any(test_name, self.tests)
+                        if not match:
+                            LOGGER.debug('\t\tSkipping test: {0}'.format(test_name))
+                            continue
 
-                    self.tests_applied.add(match)
-                    self.summary[rule][build_variant_name][task_name].append(test_name)
-                    LOGGER.debug('\t\tProcessing test: {0}'.format(test_name))
+                        LOGGER.debug('\t\tProcessing test: {0}'.format(test_name))
 
-                    if rule is not 'threshold':
-                        # Get the reference data we want to use as the override value
-                        new_override_val = self._get_test_reference_data(history, test_name)
-                        if not new_override_val:
-                            raise evergreen_client.Empty(
-                                'No data for {bv}.{task}.{test} at reference {ref}'.format(
-                                    bv=build_variant_name,
-                                    task=task_name,
-                                    test=test_name,
-                                    ref=self.commit)
-                                )
+                        if rule is not 'threshold':
+                            # Get the reference data we want to use as the override value
+                            new_override_val = self._get_test_reference_data(history, test_name)
+                            if not new_override_val:
+                                LOGGER.warning(
+                                    'No data for {bv}.{task}.{test} at reference {ref}'.format(
+                                        bv=build_variant_name,
+                                        task=task_name,
+                                        test=test_name,
+                                        ref=self.commit))
+                                continue
 
-                    # Finally, update the old override rule
-                    self.update_test(build_variant_name, task_name, test_name, rule,
-                                     new_override_val, ticket)
+                        self.tests_applied.add(match)
+                        self.summary[rule][build_variant_name][task_name].append(test_name)
+
+                        # Finally, update the old override rule
+                        self.update_test(build_variant_name, task_name, test_name, rule,
+                                        new_override_val, ticket)
+
+                except evergreen_client.Empty as error:
+                    # Typically happens if a task didn't run or had system failure
+                    LOGGER.warning("Empty response received for %s.%s.%s at %s", build_variant_name,
+                                   task_name, test_name, self.commit)
+
         self._log_final_checks()
 
     def update_override_threshold(self, threshold, thread_threshold, ticket=None):
