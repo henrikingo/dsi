@@ -2343,6 +2343,62 @@
                         "PERF-767"
                     ]
                 },
+                "createIndex_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-723"
+                    ]
+                },
+                "createIndex_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-723"
+                    ]
+                },
+                "createIndex_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-723"
+                    ]
+                },
+                "createIndex_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-723"
+                    ]
+                },
+                "createIndex_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-723"
+                    ]
+                },
+                "createIndex_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-723"
+                    ]
+                },
+                "createIndex_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-723"
+                    ]
+                },
+                "createIndex_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-723"
+                    ]
+                },
                 "finishing_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
                     "thread_threshold":25.0,
                     "threshold":20.0,
