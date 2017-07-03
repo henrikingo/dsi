@@ -14,7 +14,7 @@ run:
         ########################################################################
         tests:
             default:
-              - insert_capped.js
+              - insert_capped.js:
                     thread_levels: [1, 2]
               - insert_capped_indexes.js
               - cpu_noise.js

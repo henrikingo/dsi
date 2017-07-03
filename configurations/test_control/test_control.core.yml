@@ -16,7 +16,7 @@ run:
             default:
               - contended_update.js
               - map_reduce.js
-              - insert_ttl.js
+              - insert_ttl.js:
                     thread_levels: [1, 16, 32]
               - insert_vector.js:
                     thread_levels: ${test_control.thread_levels.insert_vector.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}

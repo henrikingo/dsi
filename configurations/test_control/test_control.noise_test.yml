@@ -91,9 +91,9 @@ run:
               - cpu_noise.js
               - contended_update.js
               - map_reduce.js
-              - insert_capped.js
+              - insert_capped.js:
                     thread_levels: [1, 2]
-              - insert_ttl.js
+              - insert_ttl.js:
                     thread_levels: [1, 16, 32]
               - insert_capped_indexes.js
               - insert_vector.js
