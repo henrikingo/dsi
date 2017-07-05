@@ -72,7 +72,6 @@ def read_runtime_values(config):
     '''
     config_dict = ConfigDict('bootstrap')
     config_dict.load()
-
     for key in config_dict['bootstrap'].keys():
         config[key] = config_dict['bootstrap'][key]
 
@@ -96,7 +95,6 @@ def read_aws_creds(config):
         config['aws_secret_key'] = config_parser.get('default', 'aws_secret_access_key')
     return config
 
-
 def read_env_vars(config):
     '''
     Read AWS access key id and and secret access key from environment variables
@@ -108,7 +106,6 @@ def read_env_vars(config):
         config['aws_secret_key'] = os.environ.get('AWS_SECRET_ACCESS_KEY',
                                                   DEFAULT_CONFIG['aws_access_key'])
     return config
-
 
 def parse_command_line(config, args=None):
     #pylint: disable=line-too-long,too-many-branches
@@ -376,6 +373,19 @@ def find_mission_control(config, dsipath):
     LOGGER.info('Path to mission-control binary is %s', mission_control)
     return mission_control
 
+def write_dsienv(directory, dsipath, mission_control, terraform, config):
+    '''
+    Writes out the dsienv.sh file. It saves the path to DSI repo.
+    '''
+    with open(os.path.join(directory, 'dsienv.sh'), 'w') as dsienv:
+        dsienv.write('export DSI_PATH={0}\n'.format(dsipath))
+        dsienv.write('export PATH={0}/bin:$PATH\n'.format(dsipath))
+        dsienv.write('export MC={0}\n'.format(mission_control))
+        dsienv.write('export TERRAFORM={0}'.format(terraform))
+        if "workloads_dir" in config:
+            dsienv.write('\nexport WORKLOADS_DIR={0}'.format(config["workloads_dir"]))
+        if "ycsb_dir" in config:
+            dsienv.write('\nexport YCSB_DIR={0}'.format(config["ycsb_dir"]))
 
 def main():
     ''' Main function for setting up working directory
@@ -401,16 +411,12 @@ def main():
     if not os.path.exists(directory):
         os.makedirs(directory)
 
+    write_dsienv(directory, dsipath, mission_control, terraform, config)
+
     # TODO: Copy of persisted terraform information should be copied
     # into working directory here. This is future work to support tying
     # the terraform cluster to the evergreen runner.
 
-    # Write out the dsienv.sh file. It saves the path to DSI repo
-    with open(os.path.join(directory, 'dsienv.sh'), 'w') as dsienv:
-        dsienv.write('export DSI_PATH={0}\n'.format(dsipath))
-        dsienv.write('export PATH={0}/bin:$PATH\n'.format(dsipath))
-        dsienv.write('export MC={0}\n'.format(mission_control))
-        dsienv.write('export TERRAFORM={0}'.format(terraform))
 
     # if we specified a secret file, use its contents as the aws secret
     if 'aws_secret_file' in config:

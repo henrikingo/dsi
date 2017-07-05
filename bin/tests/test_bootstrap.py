@@ -510,5 +510,45 @@ class TestBootstrap(unittest.TestCase):
                                                          '/Users/testuser/dsi')
         self.assertEqual(mission_control, '/Users/testuser/dsi/bin/mc')
 
+    def test_write_dsienv(self):
+        """Testing write_dsienv with workloads and ycsb paths specified"""
+        directory = os.path.dirname(os.path.abspath(__file__))
+        dsipath = "/Users/test_user/dsipath"
+        mission_control = "/Users/test_user/mc"
+        terraform = "/Users/test_user/terraform"
+        config = {"workloads_dir": "/Users/test_user/workloads",
+                  "ycsb_dir": "/Users/test_user/ycsb"}
+
+        master_dsienv = ('export DSI_PATH=/Users/test_user/dsipath\n'
+                         'export PATH=/Users/test_user/dsipath/bin:$PATH\n'
+                         'export MC=/Users/test_user/mc\n'
+                         'export TERRAFORM=/Users/test_user/terraform\n'
+                         'export WORKLOADS_DIR=/Users/test_user/workloads\n'
+                         'export YCSB_DIR=/Users/test_user/ycsb')
+        bootstrap.write_dsienv(directory, dsipath, mission_control, terraform, config)
+
+        with open(os.path.join(directory, "dsienv.sh")) as dsienv:
+            test_dsienv = dsienv.read()
+            self.assertEqual(test_dsienv, master_dsienv)
+        os.remove(os.path.join(directory, "dsienv.sh"))
+
+    def test_write_dsienv_no_workloads_or_ycsb(self):
+        """Testing write_dsienv without workloads or ycsb paths specified"""
+        directory = os.path.dirname(os.path.abspath(__file__))
+        dsipath = "/Users/test_user/dsipath"
+        mission_control = "/Users/test_user/mc"
+        terraform = "/Users/test_user/terraform"
+        config = {}
+        master_dsienv = ('export DSI_PATH=/Users/test_user/dsipath\n'
+                         'export PATH=/Users/test_user/dsipath/bin:$PATH\n'
+                         'export MC=/Users/test_user/mc\n'
+                         'export TERRAFORM=/Users/test_user/terraform')
+        bootstrap.write_dsienv(directory, dsipath, mission_control, terraform, config)
+
+        with open(os.path.join(directory, "dsienv.sh")) as dsienv:
+            test_dsienv = dsienv.read()
+            self.assertEqual(test_dsienv, master_dsienv)
+        os.remove(os.path.join(directory, "dsienv.sh"))
+
 if __name__ == '__main__':
     unittest.main()
