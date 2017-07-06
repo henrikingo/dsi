@@ -10,9 +10,12 @@ import unittest
 # (i.e. import analysis.update_overrides)
 import update_overrides
 from tests import test_utils
+from tests.test_requests_parent import TestRequestsParent
 
+#pylint: disable=no-value-for-parameter
+# pylint is confused by the patch decorators
 
-class TestUpdateOverrides(unittest.TestCase):
+class TestUpdateOverrides(TestRequestsParent):
     """Test class evaluates correctness of the update_overrides script.
     """
 
@@ -28,6 +31,8 @@ class TestUpdateOverrides(unittest.TestCase):
         self.config_file = test_utils.repo_root_file_path('config.yml')
         self.override_file = test_utils.fixture_file_path('perf_override.json')
         self.regenerate_output_files = False #Note: causes all tests to pass
+        TestRequestsParent.setUp(self)
+
 
     def _update_overrides_compare(self, git_hash):
         """General comparison function used for hash-related test cases"""
@@ -134,6 +139,7 @@ class TestUpdateOverrides(unittest.TestCase):
     def tearDown(self):
         """Deletes output JSON files after each test case"""
         os.remove(self.output_file)
+        TestRequestsParent.tearDown(self)
 
 if __name__ == '__main__':
     unittest.main()

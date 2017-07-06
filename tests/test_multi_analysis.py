@@ -4,13 +4,14 @@ from __future__ import print_function
 import unittest
 
 from tests import test_utils
+from tests.test_requests_parent import TestRequestsParent
 from multi_analysis import MultiEvergreenAnalysis, main
 
-
-class TestMultiEvergreenAnalysis(unittest.TestCase):
+class TestMultiEvergreenAnalysis(TestRequestsParent):
     """
     Test the MultiEvergreen client class.
     """
+
     def test_parse_options(self):
         """MultiEvergreenAnalysis: parse options."""
         expected = {
@@ -389,7 +390,6 @@ class TestMultiEvergreenAnalysis(unittest.TestCase):
                            }]
                                 }}}}]
         self.assertEqual(client.results, expected_results)
-
 
     def test_main(self):
         """MultiEvergreenAnalysis: Fetch real Evergreen results and write output files."""

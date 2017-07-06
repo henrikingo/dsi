@@ -8,8 +8,14 @@ from testfixtures import LogCapture
 
 import delete_overrides
 from tests import test_utils
+from tests.test_requests_parent import TestRequestsParent
 
-class TestDeleteOverrides(unittest.TestCase):
+#pylint: disable=no-value-for-parameter
+# @patch decorators cause pylint to throw false no-value-for-parameter errors
+# This is due to the fact that, when the functions are called, the variables passed
+# in by the decorator do not need to be passed in by the calling functions
+
+class TestDeleteOverrides(TestRequestsParent):
     """Test class evaluates correctness of the delete_overrides script.
     """
 
@@ -20,6 +26,7 @@ class TestDeleteOverrides(unittest.TestCase):
         self.output_file = test_utils.fixture_file_path('delete_override_test.json')
         self.config_file = test_utils.repo_root_file_path('config.yml')
         self.regenerate_output_files = False #Note: causes all tests that compare a file to pass
+        TestRequestsParent.setUp(self)
 
     @staticmethod
     def _path_to_reference(prefix, rule, ticket):
@@ -29,16 +36,13 @@ class TestDeleteOverrides(unittest.TestCase):
 
     def _delete_overrides_compare(self, override_file, ticket, rule, expected_json):
         """General comparison function used for all the test cases"""
-
         use_reference = 'c2af7aba'
         args = [ticket, '-n', use_reference, '-f', override_file,
                 '-d', self.output_file, '-r', rule,
                 '-c', self.config_file, '--verbose']
         delete_overrides.main(args)
-
         if self.regenerate_output_files:
             shutil.copyfile(self.output_file, expected_json)
-
         with open(expected_json) as exp_file_handle, open(self.output_file) as obs_file_handle:
             exp_updated_override = json.load(exp_file_handle)
             obs_updated_override = json.load(obs_file_handle)
@@ -248,6 +252,7 @@ class TestDeleteOverrides(unittest.TestCase):
     def tearDown(self):
         """Deletes output JSON file after each test case"""
         os.remove(self.output_file)
+        TestRequestsParent.tearDown(self)
 
 if __name__ == '__main__':
     unittest.main()

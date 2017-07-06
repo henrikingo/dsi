@@ -30,6 +30,10 @@ keys/*
 *.pyc
 venv
 
+# Python Shelve
+tests/unittest-files/override_responses
+tests/unittest-files/override_responses.gz
+
 # PyCharm
 .idea
 

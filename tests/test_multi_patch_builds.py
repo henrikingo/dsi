@@ -11,10 +11,10 @@ import unittest
 import yaml
 
 from tests import test_utils
+from tests.test_requests_parent import TestRequestsParent
 from multi_patch_builds import MultiEvergreen
 
-
-class TestMultiEvergreen(unittest.TestCase):
+class TestMultiEvergreen(TestRequestsParent):
     """
     Test the MultiEvergreen client class.
     """
