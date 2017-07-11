@@ -350,6 +350,25 @@ def find_terraform(config, directory):
     LOGGER.info('Path to terraform binary is %s', terraform)
     return terraform
 
+def validate_terraform(config):
+    '''Asserts that terraform is the correct version'''
+    if not config['production']:
+        try:
+            version = subprocess.check_output(["terraform", "version"]).split('\n')[0]
+        except subprocess.CalledProcessError as error:
+            if error.returncode == 1:
+                LOGGER.critical("Call to terraform failed.")
+            if error.returncode == 126:
+                LOGGER.critical("Cannot execute terraform binary file.")
+            if error.returncode == 127:
+                LOGGER.critical("No terraform binary file found.")
+            LOGGER.critical("See documentation for installing terraform: http://bit.ly/2ufjQ0R")
+            assert False
+        if not version == "Terraform v0.6.16":
+            version_error = "You are using {0}, but DSI requires Terraform v0.6.16.".format(version)
+            LOGGER.critical(version_error)
+            LOGGER.critical("See documentation for installing terraform: http://bit.ly/2ufjQ0R")
+            assert False
 
 def find_mission_control(config, dsipath):
     '''
@@ -372,6 +391,24 @@ def find_mission_control(config, dsipath):
 
     LOGGER.info('Path to mission-control binary is %s', mission_control)
     return mission_control
+
+def validate_mission_control(config):
+    '''Asserts that mission-control is on the path'''
+    if not config['production']:
+        try:
+            errors = subprocess.Popen(["mc", "-h"],
+                                      stdout=subprocess.PIPE,
+                                      stderr=subprocess.PIPE).communicate()[1]
+            if errors.split('\n')[0] != 'Usage of mc:':
+                LOGGER.critical('Call to mission-control failed.')
+                LOGGER.critical('See documentation for installing '
+                                'mission-control: http://bit.ly/2ufjQ0R')
+                assert False
+        except OSError:
+            LOGGER.critical('mission-control binary file not found.')
+            LOGGER.critical('See documentation for installing '
+                            'mission-control: http://bit.ly/2ufjQ0R')
+            assert False
 
 def write_dsienv(directory, dsipath, mission_control, terraform, config):
     '''
@@ -406,6 +443,8 @@ def main():
 
     mission_control = find_mission_control(config, dsipath)
     terraform = find_terraform(config, directory)
+    validate_mission_control(config)
+    validate_terraform(config)
 
     # Create directory if it doesn't exist
     if not os.path.exists(directory):

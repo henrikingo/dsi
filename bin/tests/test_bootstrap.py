@@ -4,6 +4,7 @@ Unit tests for 'bootstrap.py'.
 # pylint: disable=invalid-name
 # pylint: disable=too-many-public-methods
 import copy
+import logging
 import os
 import shutil
 import subprocess
@@ -11,6 +12,7 @@ import sys
 import unittest
 import yaml
 from mock import patch
+from testfixtures import LogCapture
 
 # TODO: Remove all calls to sys.path.append.
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -464,6 +466,130 @@ class TestBootstrap(unittest.TestCase):
         terraform = bootstrap.find_terraform(config, '/Users/testuser/default')
         self.assertEqual(terraform, '/Users/testuser/default/terraform')
 
+
+    @patch('subprocess.check_output')
+    def test_terraform_wrong_version(self,
+                                     mock_check_output):
+        """Testing validate_terraform fails on incorrect version"""
+        mock_check_output.return_value = "Terraform v0.9.11"
+        config = copy.copy(bootstrap.DEFAULT_CONFIG)
+        with LogCapture(level=logging.CRITICAL) as crit:
+            with self.assertRaises(AssertionError):
+                bootstrap.validate_terraform(config)
+            crit_logs = set(crit.actual())
+            crit_expected = set([('bootstrap', 'CRITICAL',
+                                  'You are using Terraform v0.9.11, '
+                                  'but DSI requires Terraform v0.6.16.'),
+                                 ('bootstrap', 'CRITICAL',
+                                  'See documentation for installing terraform: '
+                                  'http://bit.ly/2ufjQ0R')])
+            self.assertTrue(crit_expected.issubset(crit_logs))
+
+    @patch('subprocess.check_output')
+    def test_terraform_call_fails(self,
+                                  mock_check_output):
+        """Testing validate_terraform fails when terraform call fails"""
+        mock_check_output.side_effect = subprocess.CalledProcessError(1, None)
+        mock_check_output.return_value = "Terraform v0.6.16"
+        config = copy.copy(bootstrap.DEFAULT_CONFIG)
+        with LogCapture(level=logging.CRITICAL) as crit:
+            with self.assertRaises(AssertionError):
+                bootstrap.validate_terraform(config)
+            crit_logs = set(crit.actual())
+            crit_expected = set([('bootstrap', 'CRITICAL',
+                                  'Call to terraform failed.'),
+                                 ('bootstrap', 'CRITICAL',
+                                  'See documentation for installing terraform: '
+                                  'http://bit.ly/2ufjQ0R')])
+            self.assertTrue(crit_expected.issubset(crit_logs))
+
+    @patch('subprocess.check_output')
+    def test_terraform_cannot_execute(self,
+                                      mock_check_output):
+        """Testing validate_terraform fails when terraform doesn't run"""
+        mock_check_output.side_effect = subprocess.CalledProcessError(126, None)
+        mock_check_output.return_value = "Terraform v0.6.16"
+        config = copy.copy(bootstrap.DEFAULT_CONFIG)
+        with LogCapture(level=logging.CRITICAL) as crit:
+            with self.assertRaises(AssertionError):
+                bootstrap.validate_terraform(config)
+            crit_logs = set(crit.actual())
+            crit_expected = set([('bootstrap', 'CRITICAL',
+                                  'Cannot execute terraform binary file.'),
+                                 ('bootstrap', 'CRITICAL',
+                                  'See documentation for installing terraform: '
+                                  'http://bit.ly/2ufjQ0R')])
+            self.assertTrue(crit_expected.issubset(crit_logs))
+
+    @patch('subprocess.check_output')
+    def test_terraform_not_found(self,
+                                 mock_check_output):
+        """Testing validate_terraform fails when terraform is not found"""
+        mock_check_output.side_effect = subprocess.CalledProcessError(127, None)
+        mock_check_output.return_value = "Terraform v0.6.16"
+        config = copy.copy(bootstrap.DEFAULT_CONFIG)
+        with LogCapture(level=logging.CRITICAL) as crit:
+            with self.assertRaises(AssertionError):
+                bootstrap.validate_terraform(config)
+            crit_logs = set(crit.actual())
+            crit_expected = set([('bootstrap', 'CRITICAL',
+                                  'No terraform binary file found.'),
+                                 ('bootstrap', 'CRITICAL',
+                                  'See documentation for installing terraform: '
+                                  'http://bit.ly/2ufjQ0R')])
+            self.assertTrue(crit_expected.issubset(crit_logs))
+
+    @patch('subprocess.check_output')
+    def test_terraform_valid(self, mock_check_output):
+        """Testing validate_terraform with valid inputs"""
+        mock_check_output.return_value = 'Terraform v0.6.16'
+        config = copy.copy(bootstrap.DEFAULT_CONFIG)
+        bootstrap.validate_terraform(config)
+        self.assertEquals(config, config)
+
+    @patch('subprocess.Popen')
+    def test_mc_valid(self, mock_popen):
+        """Testing validate_mission_control with valid inputs"""
+        mock_popen.return_value.communicate.return_value = ('', 'Usage of mc:')
+        #print mock_popen.communicate[1].split('\n')[0]
+        config = copy.copy(bootstrap.DEFAULT_CONFIG)
+        bootstrap.validate_mission_control(config)
+        self.assertEquals(config, config)
+
+    @patch('subprocess.Popen.communicate')
+    def test_mission_control_not_on_path(self,
+                                         mock_popen):
+        """Testing validate_mission_control fails when not on path"""
+        mock_popen.side_effect = OSError
+        config = copy.copy(bootstrap.DEFAULT_CONFIG)
+        with LogCapture(level=logging.CRITICAL) as crit:
+            with self.assertRaises(AssertionError):
+                bootstrap.validate_mission_control(config)
+            crit_logs = set(crit.actual())
+            crit_expected = set([('bootstrap', 'CRITICAL',
+                                  'mission-control binary file not found.'),
+                                 ('bootstrap', 'CRITICAL',
+                                  'See documentation for installing mission-control: '
+                                  'http://bit.ly/2ufjQ0R')])
+            self.assertTrue(crit_expected.issubset(crit_logs))
+
+    @patch('subprocess.Popen')
+    def test_mission_control_call_failed(self,
+                                         mock_popen):
+        """Testing validate_mission_control fails when 'mc -h' fails"""
+        mock_popen.return_value.communicate.return_value = ('', '')
+        config = copy.copy(bootstrap.DEFAULT_CONFIG)
+        with LogCapture(level=logging.CRITICAL) as crit:
+            with self.assertRaises(AssertionError):
+                bootstrap.validate_mission_control(config)
+            crit_logs = set(crit.actual())
+            crit_expected = set([('bootstrap', 'CRITICAL',
+                                  'Call to mission-control failed.'),
+                                 ('bootstrap', 'CRITICAL',
+                                  'See documentation for installing mission-control: '
+                                  'http://bit.ly/2ufjQ0R')])
+            self.assertTrue(crit_expected.issubset(crit_logs))
+
     @patch('subprocess.check_output')
     def test_find_mission_control_no_except_mc_in_config(self,
                                                          mock_check_output):
@@ -502,8 +628,7 @@ class TestBootstrap(unittest.TestCase):
     def test_find_mission_control_exception_mc_not_in_config(self,
                                                              mock_check_output):
         """Testing find_mission_control throws exception, val not in config"""
-        mock_check_output.side_effect = subprocess.CalledProcessError('Test',
-                                                                      1)
+        mock_check_output.side_effect = subprocess.CalledProcessError('Test', 1)
         config = copy.copy(bootstrap.DEFAULT_CONFIG)
         config.pop('mc', None)
         mission_control = bootstrap.find_mission_control(config,
