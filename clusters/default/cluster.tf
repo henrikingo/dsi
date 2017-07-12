@@ -40,7 +40,7 @@ variable task_id                    { default = "none" }
 
 
 module "cluster" {
-    source = "../modules/cluster"
+    source = "./modules/cluster"
 
     # cluster details
     mongod_instance_type    = "${var.mongod_instance_type}"

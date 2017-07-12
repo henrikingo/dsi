@@ -42,10 +42,9 @@ then
     if [ ! -d $EVG_DATA_DIR ]; then
         echo "Copying terraform binary to Evergreen host"
         mkdir $EVG_DATA_DIR
-        # modules/ (and remote-scripts/) are still in the parent directory due to historical mistakes
-        cp -r ../modules $EVG_DATA_DIR
-        # Likewise, we want to copy the terraform dir (from parent dir) not just the terraform binary (from work dir)
+        # We want to copy the terraform dir (from parent dir) not just the terraform binary (from work dir)
         cp -r ../terraform $EVG_DATA_DIR
+        cp -r ./modules $EVG_DATA_DIR/terraform
         echo "Copying infrastructure_teardown.sh to Evergreen host"
         cp "$BINDIR/infrastructure_teardown.sh" "$EVG_DATA_DIR/terraform/infrastructure_teardown.sh"
     fi

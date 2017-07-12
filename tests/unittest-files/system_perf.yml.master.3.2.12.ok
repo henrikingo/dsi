@@ -224,7 +224,7 @@ functions:
             echo "Resource provisioned/updated."
             # copy terraform information needed for teardown
             cp {terraform.tfstate,cluster.tf,terraform.tfvars,security.tf,cluster.json} /data/infrastructure_provisioning/terraform/.
-            rsync -vr ../modules /data/infrastructure_provisioning/modules
+            rsync -vr ./modules /data/infrastructure_provisioning/modules
             cd /data/infrastructure_provisioning/terraform
             ./terraform get
             # use provisioned.${shard} to indicate the type of clusters held by EVG host

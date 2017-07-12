@@ -86,7 +86,7 @@ resource "aws_instance" "ebs_member" {
         connection {
             timeout = "10m"
         }
-        source      = "${concat("../remote-scripts/", var.provisioner_file)}"
+        source      = "${concat("./remote-scripts/", var.provisioner_file)}"
         destination = "/tmp/provision.sh"
     }
 

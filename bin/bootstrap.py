@@ -450,6 +450,9 @@ def main():
     if not os.path.exists(directory):
         os.makedirs(directory)
 
+    if directory != os.getcwd() and os.path.isfile('bootstrap.yml'):
+        shutil.copyfile('bootstrap.yml', os.path.join(directory, 'bootstrap.yml'))
+
     write_dsienv(directory, dsipath, mission_control, terraform, config)
 
     # TODO: Copy of persisted terraform information should be copied
@@ -478,7 +481,7 @@ def main():
     # suboptimal and should be changed in the future.
 
     # This should ideally go away when we go to infrastructure.yml
-    remote_scripts_target = os.path.join(os.path.dirname(directory), 'remote-scripts')
+    remote_scripts_target = os.path.join(directory, 'remote-scripts')
     LOGGER.debug("remote_scripts_target is %s", remote_scripts_target)
     LOGGER.debug("remote_scripts_path is %s", remote_scripts_path)
     os.mkdir(remote_scripts_target)
@@ -487,7 +490,7 @@ def main():
 
     # copy modules
     modules_path = os.path.join(dsipath, 'clusters', 'modules')
-    modules_target = os.path.join(os.path.dirname(directory), 'modules')
+    modules_target = os.path.join(directory, 'modules')
     shutil.copytree(modules_path, modules_target)
 
     # copy necessary config files to the current directory

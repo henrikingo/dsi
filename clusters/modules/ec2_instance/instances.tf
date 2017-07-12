@@ -67,7 +67,7 @@ resource "aws_instance" "member" {
         connection {
             timeout = "10m"
         }
-        source      = "${concat("../remote-scripts/", var.provisioner_file)}"
+        source      = "${concat("./remote-scripts/", var.provisioner_file)}"
         destination = "/tmp/provision.sh"
     }
 
