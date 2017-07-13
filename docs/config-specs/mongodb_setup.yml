@@ -130,16 +130,20 @@ topology:
       - id: myrs2
         cluster_type: replset
         mongod:
-          - mongodb_binary_archive: <another url>      # Testing a cluster where some nodes are of a different version
+          # Testing a cluster where some nodes are of a different version
+          # This references mongodb_binary_archive from bootstrap.yml
+          - mongodb_binary_archive: ${bootstrap.mongodb_binary_archive}
             config_file: &diff_mongod_config           # And a different config.
               storage:  # Note: These are merged (or "upserted") into the
                 engine: inMemory                       # global/common mongod_config_file specified above
             public_ip: ${infrastructure_provisioning.out.mongod.6.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.6.private_ip}
+          # The mongodb binary used is the pinned version listed below
           - mongodb_binary_archive: <another url>
             config_file: *diff_mongod_config
             public_ip: ${infrastructure_provisioning.out.mongod.7.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.7.private_ip}
+          # The mongodb binary used is the pinned version listed below
           - mongodb_binary_archive: <another url>
             config_file: *diff_mongod_config
             public_ip: ${infrastructure_provisioning.out.mongod.7.public_ip}

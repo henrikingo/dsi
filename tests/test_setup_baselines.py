@@ -66,7 +66,7 @@ class TestSetupBaselines(unittest.TestCase):
                                         {'working_dir': 'work',
                                          'script':
                                          '''
-                                         cat > runtime.yml <<EOF
+                                         cat > bootstrap.yml <<EOF
                                          # compositions of expansions
                                          # Use 3.4.1 for noise tests
                                          mongodb_binary_archive: "https://s3.amazonaws.com/mciuploads/dsi-v3.4/sys_perf_3.4_5e103c4f5583e2566a45d740225dc250baacfbd7/5e103c4f5583e2566a45d740225dc250baacfbd7/linux/mongod-sys_perf_3.4_5e103c4f5583e2566a45d740225dc250baacfbd7.tar.gz"
@@ -79,7 +79,7 @@ class TestSetupBaselines(unittest.TestCase):
         script = output_yaml['functions']["prepare environment"][3]["params"]["script"]
         script = textwrap.dedent(script)
         expected = textwrap.dedent('''
-        cat > runtime.yml <<EOF
+        cat > bootstrap.yml <<EOF
         # compositions of expansions
         # Use 3.4.1 for noise tests
         mongodb_binary_archive: test_link

@@ -29,16 +29,24 @@ def temp_file(path="mongodb.tgz", sanitize=lambda s: re.sub(r'[^A-Za-z0-9_\-.]',
 class DownloadMongodb(object):
     """Download and install mongodb_binary_archive on all nodes."""
 
-    def __init__(self, config, cli_mongodb_binary_archive=None, run_locally=False):
+    def __init__(self, config, run_locally=False):
 
         self.run_locally = run_locally
 
         self.config = config
 
-        self.mongodb_binary_archive = cli_mongodb_binary_archive
-        if 'runtime' in config.keys():
+        self.mongodb_binary_archive = ""
+        if 'mongodb_setup' in config.keys():
+            self.mongodb_binary_archive = config['mongodb_setup'].get('mongodb_binary_archive',
+                                                                      "")
+        # If mongodb_setup was not in config or mongodb_setup referenced an empty string
+        # for mongodb_binary_archive check to see if runtime exists in config
+        # and pull the mongodb_binary_archive from there
+        # This second if statement is necessary for backwards compatibility
+        # after changes introducted in PERF-1044
+        if self.mongodb_binary_archive == "" and 'runtime' in config.keys():
             self.mongodb_binary_archive = config['runtime'].get('mongodb_binary_archive',
-                                                                cli_mongodb_binary_archive)
+                                                                "")
         LOG.info("Download url is %s", self.mongodb_binary_archive)
 
         tfvars = config['infrastructure_provisioning']['tfvars']

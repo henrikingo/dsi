@@ -13,33 +13,6 @@ from alias import unalias, expand, ALIASES
 class AliasTestCase(unittest.TestCase):
     """Unit tests for Alias utility functions."""
 
-    def setUp(self):
-        """Create the objects required for this set of tests"""
-        self.config = {'infrastructure_provisioning':
-                           {'tfvars':
-                                {'ssh_user': 'ec2-user', 'ssh_key_file': '../../aws.pem'},
-                            'out':
-                                {'mongod': [
-                                    {'public_ip': '10.2.3.4', 'private_ip': '10.0.0.1'},
-                                    {'public_ip': '10.2.3.5', 'private_ip': '10.0.0.2'},
-                                    {'public_ip': '10.2.3.6', 'private_ip': '10.0.0.3'},
-                                    {'public_ip': '10.2.3.7', 'private_ip': '10.0.0.4'},
-                                    {'public_ip': '10.2.3.8', 'private_ip': '10.0.0.5'}],
-                                 'mongos': [
-                                     {'public_ip': '10.2.3.9', 'private_ip': '10.0.0.6'},
-                                     {'public_ip': '10.2.3.10', 'private_ip': '10.0.0.7'},
-                                     {'public_ip': '10.2.3.11', 'private_ip': '10.0.0.8'}],
-                                 'configsvr': [
-                                     {'public_ip': '10.2.3.12', 'private_ip': '10.0.0.9'},
-                                     {'public_ip': '10.2.3.13', 'private_ip': '10.0.0.10'},
-                                     {'public_ip': '10.2.3.14', 'private_ip': '10.0.0.11'}],
-                                 'workload_client': [
-                                     {'public_ip': '10.2.3.15', 'private_ip': '10.0.0.12'}]
-                                }
-                           },
-                       'runtime': {'mongodb_binary_archive': 'http://foo.tgz'}
-                      }
-
     def test_unalias(self):
         """check that the alias work as expected."""
 

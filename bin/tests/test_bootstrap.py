@@ -33,7 +33,8 @@ class TestBootstrap(unittest.TestCase):
                          'platform': 'linux',
                          'production': False,
                          'ssh_key_name': 'serverteam-perf-ssh-key',
-                         'directory': '.'}
+                         'directory': '.',
+                         'mongodb_binary_archive': ""}
         test_config = copy.copy(bootstrap.DEFAULT_CONFIG)
         bootstrap.read_runtime_values(test_config)
         self.assertEqual(test_config, master_config)

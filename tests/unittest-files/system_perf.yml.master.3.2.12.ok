@@ -84,6 +84,8 @@ functions:
           storageEngine: ${storageEngine}
           test: ${test}
           production: true
+          # compositions of expansions
+          mongodb_binary_archive: https://s3.amazonaws.com/mciuploads/dsi-v3.2/sys_perf_3.2_ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14/ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14/linux/mongod-sys_perf_3.2_ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14.tar.gz
           EOF
 
           cat > runtime.yml <<EOF
@@ -108,9 +110,6 @@ functions:
           compare_task: ${compare_task}
           workloads_rev: ${workloads_rev}
           YCSB_rev: ${YCSB_rev}
-
-          # compositions of expansions
-          mongodb_binary_archive: https://s3.amazonaws.com/mciuploads/dsi-v3.2/sys_perf_3.2_ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14/ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14/linux/mongod-sys_perf_3.2_ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14.tar.gz
           EOF
     - command: shell.exec
       params:

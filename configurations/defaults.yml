@@ -8,6 +8,7 @@ bootstrap:
     storageEngine: wiredTiger
     test: benchRun
     production: false
+    mongodb_binary_archive: ""
 
 infrastructure_provisioning:
     tfvars:
@@ -37,7 +38,7 @@ mongodb_setup:
     mongo_dir: mongodb
     journal_dir: /media/ephemeral1/journal
     clean_db_dir: true
-
+    mongodb_binary_archive: ${bootstrap.mongodb_binary_archive}
     mongod_config_file:  # Note these defaults can be overridden by user, but not unset.
         net:
             port: 27017

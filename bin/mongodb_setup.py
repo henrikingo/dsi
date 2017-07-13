@@ -615,7 +615,6 @@ class MongodbSetup(object):
             MongoNode.numactl_prefix = []
         self.clusters = []
         self.downloader = DownloadMongodb(config,
-                                          args.mongodb_binary_archive,
                                           args.run_locally)
         self.parse_topologies()
 
@@ -679,9 +678,6 @@ def parse_command_line():
         '--mongo-dir',
         help='path to dir containing ./bin/mongo binaries')
     parser.add_argument(
-        '--mongodb-binary-archive',
-        help='url to mongodb tar file')
-    parser.add_argument(
         '-d',
         '--debug',
         action='store_true',
@@ -692,7 +688,7 @@ def parse_command_line():
     args = parser.parse_args()
 
     # --mongo-dir must have a bin/ sub-directory
-    if args.mongo_dir and not args.mongodb_binary_archive:
+    if args.mongo_dir:
         bin_dir = os.path.join(args.mongo_dir, 'bin')
         if args.run_locally and not os.path.isdir(bin_dir):
             exit('--mongo-dir: {}, is not a directory!'.format(bin_dir))

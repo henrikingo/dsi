@@ -40,7 +40,7 @@ class DownloadMongodbTestCase(unittest.TestCase):
                              {'public_ip' : '10.2.3.15', 'private_ip' : '10.0.0.12'}]
                         }
                        },
-                       'runtime' :
+                       'mongodb_setup' :
                            {'mongodb_binary_archive' : 'http://foo.tgz'}
                       }
         self.config_no_binary = {'infrastructure_provisioning' :
@@ -56,51 +56,58 @@ class DownloadMongodbTestCase(unittest.TestCase):
                                  'runtime' :  {},
                                  'mongodb_setup' : {'mongo_dir' : '/tmp'}
                                 }
-        self.cli_mongodb_binary_archive = 'http://bar.tgz'
         self.downloader = None
 
 
     def test_basic_use(self):
-        """Init DownloadMongodb with ConfigDict structure."""
-        runtime = self.config['runtime']
+        """
+        Init DownloadMongodb with ConfigDict structure with
+        mongodb_binary specified in mongodb_setup.
+        """
+        mongodb_setup = self.config['mongodb_setup']
         infrastructure = self.config['infrastructure_provisioning']
-        # Must use run_locally=True for testing. RemoteHost opens connections already in __init__.
-        self.downloader = DownloadMongodb(self.config, None, True)
+        self.downloader = DownloadMongodb(self.config, True)
         self.assertTrue(self.downloader)
-        self.assertEqual(self.downloader.mongodb_binary_archive, runtime['mongodb_binary_archive'])
+        self.assertEqual(
+            self.downloader.mongodb_binary_archive, mongodb_setup['mongodb_binary_archive']
+        )
         self.assertEqual(self.downloader.ssh_key_file, infrastructure['tfvars']['ssh_key_file'])
         self.assertEqual(self.downloader.ssh_user, infrastructure['tfvars']['ssh_user'])
+        self.downloader = None
         # TODO: Can't really unit test anything that uses RemoteHost for now, so can't assert the
         # parsing of public_ip's. Need to mock RemoteHost or something
 
-    def test_cli_binary_with_config(self):
-        """Pass mongodb_binary_archive as command line option. Note: The one in config wins."""
+    def test_runtime_binary(self):
+        """
+        Init DownloadMongodb with ConfigDict structure with
+        mongodb_binary specified in runtime.
+        """
+        self.config['mongodb_setup']['mongodb_binary_archive'] = ''
+        self.config['runtime'] = {'mongodb_binary_archive': 'http://bar.tgz'}
         runtime = self.config['runtime']
-        # Must use run_locally=True for testing. RemoteHost opens connections already in __init__.
-        self.downloader = DownloadMongodb(self.config, self.cli_mongodb_binary_archive, True)
-        self.assertEqual(self.downloader.mongodb_binary_archive, runtime['mongodb_binary_archive'])
-
-    def test_cli_binary_only(self):
-        """Pass mongodb_binary_archive as command line option without any specified in config."""
-        # Must use run_locally=True for testing. RemoteHost opens connections already in __init__.
-        self.downloader = DownloadMongodb(self.config_no_binary,
-                                          self.cli_mongodb_binary_archive, True)
-        self.assertEqual(self.downloader.mongodb_binary_archive, self.cli_mongodb_binary_archive)
+        infrastructure = self.config['infrastructure_provisioning']
+        self.downloader = DownloadMongodb(self.config, True)
+        self.assertTrue(self.downloader)
+        self.assertEqual(
+            self.downloader.mongodb_binary_archive, runtime['mongodb_binary_archive']
+        )
+        self.assertEqual(self.downloader.ssh_key_file, infrastructure['tfvars']['ssh_key_file'])
+        self.assertEqual(self.downloader.ssh_user, infrastructure['tfvars']['ssh_user'])
+        self.downloader = None
+        self.config['mongodb_setup']['mongodb_binary_archive'] = 'http://foo.tgz'
 
     def test_temp_file(self):
-        """Pass mongodb_binary_archive as command line option without any specified in config."""
-        # Must use run_locally=True for testing. RemoteHost opens connections already in __init__.
-
+        """ Test temp_file() to ensure it makes properly named random files """
+        mongodb_binary_archive = self.config['mongodb_setup']['mongodb_binary_archive']
         def _test_temp_file(test, filename, value, uuid_len=36):
             test.assertTrue(filename.endswith(value))
             test.assertTrue(len(filename) == len(value) + uuid_len)
-
         _test_temp_file(self, temp_file(), "mongodb.tgz")
-        _test_temp_file(self, temp_file(path=self.cli_mongodb_binary_archive), "bar.tgz")
-        _test_temp_file(self, temp_file(path=self.cli_mongodb_binary_archive + "?test=ing"),
-                        "bar.tgztesting")
-        path = self.cli_mongodb_binary_archive + "?test=ing&second=param"
-        _test_temp_file(self, temp_file(path=path), "bar.tgztestingsecondparam")
+        _test_temp_file(self, temp_file(path=mongodb_binary_archive), "foo.tgz")
+        _test_temp_file(self, temp_file(path=mongodb_binary_archive + "?test=ing"),
+                        "foo.tgztesting")
+        path = mongodb_binary_archive + "?test=ing&second=param"
+        _test_temp_file(self, temp_file(path=path), "foo.tgztestingsecondparam")
 
         # the '/' chars wouldn't have survived the basename, which is why they are removed
         path = ''.join(sorted(string.printable.split())).replace("/", "")
@@ -108,25 +115,25 @@ class DownloadMongodbTestCase(unittest.TestCase):
                         (string.digits + string.ascii_letters + "-._").replace("/", ""))
 
         # test sanitize allows everything
-        path = self.cli_mongodb_binary_archive + "?test=ing"
+        path = mongodb_binary_archive + "?test=ing"
         _test_temp_file(self, temp_file(path=path, sanitize=lambda x: x),
-                        "bar.tgz?test=ing")
+                        "foo.tgz?test=ing")
 
     @patch('download_mongodb.temp_file')
     def test_remove_temp_file(self, mock_temp_file):
         """test that mongo_dir and tmp_file removal."""
-        # Must use run_locally=True for testing. RemoteHost opens connections already in __init__.
-
-        tmp_file = '/tmp/bar.tgz'
+        # mongodb_binary_archive = self.config['mongodb_setup']['mongodb_binary_archive']
+        tmp_file = '/tmp/foo.tgz'
         mock_temp_file.return_value = os.path.basename(tmp_file)
         self.downloader = DownloadMongodb(self.config_no_binary,
-                                          self.cli_mongodb_binary_archive, True)
+                                          True)
         commands = self.downloader._remote_commands(namedtuple('Host', 'host')._make(['host']))
         rm_mongo_dir = ['rm', '-rf', '/tmp']
         rm_tmp_file = ['rm', '-f', tmp_file]
         self.assertTrue(rm_mongo_dir in commands)
         self.assertTrue(rm_tmp_file in commands)
         self.assertTrue(commands.index(rm_mongo_dir) < commands.index(rm_tmp_file))
+        self.downloader = None
 
 if __name__ == '__main__':
     unittest.main()

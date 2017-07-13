@@ -84,6 +84,8 @@ functions:
           storageEngine: ${storageEngine}
           test: ${test}
           production: true
+          # compositions of expansions
+          mongodb_binary_archive: "https://s3.amazonaws.com/mciuploads/${project}/${version_id}/${revision}/${platform}/mongod-${version_id}.tar.gz"
           EOF
 
           cat > runtime.yml <<EOF
@@ -108,10 +110,8 @@ functions:
           compare_task: ${compare_task}
           workloads_rev: ${workloads_rev}
           YCSB_rev: ${YCSB_rev}
-
-          # compositions of expansions
-          mongodb_binary_archive: "https://s3.amazonaws.com/mciuploads/${project}/${version_id}/${revision}/${platform}/mongod-${version_id}.tar.gz"
           EOF
+
     - command: shell.exec
       params:
         silent: true
