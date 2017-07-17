@@ -40688,6 +40688,13 @@
                         "BF-5575"
                     ]
                 },
+                "Aggregation.IdentityView.CountsIntIDRange":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5126"
+                    ]
+                },
                 "Aggregation.IdentityView.DistinctWithIndex":{
                     "thread_threshold":-0.3,
                     "threshold":0.2,
