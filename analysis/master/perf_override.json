@@ -8255,7 +8255,7 @@
                 },
                 "Aggregation.GeoNear2dSphere":{
                     "thread_threshold":0.15,
-                    "threshold":0.09,
+                    "threshold":0.1,
                     "ticket":[
                         "PERF-875"
                     ]
@@ -30479,7 +30479,7 @@
                 },
                 "Aggregation.GeoNear2dSphere":{
                     "thread_threshold":0.15,
-                    "threshold":0.09,
+                    "threshold":0.1,
                     "ticket":[
                         "PERF-875"
                     ]
