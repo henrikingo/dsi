@@ -6498,6 +6498,27 @@
                 }
             },
             "threshold":{
+                "Aggregation.IdentityView.CountsFullCollection":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5706"
+                    ]
+                },
+                "Aggregation.IdentityView.DistinctWithIndex":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5706"
+                    ]
+                },
+                "Aggregation.IdentityView.DistinctWithoutIndex":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5706"
+                    ]
+                },
                 "Aggregation.IdentityView.DistinctWithoutIndexAndQuery":{
                     "thread_threshold":0.26,
                     "threshold":0.15,
@@ -15377,6 +15398,13 @@
                 }
             },
             "threshold":{
+                "Aggregation.IdentityView.CountsFullCollection":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5706"
+                    ]
+                },
                 "Aggregation.IdentityView.DistinctWithIndex":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
@@ -15389,6 +15417,13 @@
                     "threshold":0.15,
                     "ticket":[
                         "BF-5733"
+                    ]
+                },
+                "Aggregation.IdentityView.DistinctWithoutIndex":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5706"
                     ]
                 },
                 "Aggregation.IdentityView.DistinctWithoutIndexAndQuery":{
