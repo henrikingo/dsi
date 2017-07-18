@@ -33,6 +33,8 @@ infrastructure_provisioning:
       - numactl
       - --interleave=all
       - --cpunodebind=1
+    evergreen:
+        data_dir: /data/infrastructure_provisioning
 
 mongodb_setup:
     mongo_dir: mongodb
