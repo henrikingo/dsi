@@ -30124,11 +30124,12 @@
                     ]
                 },
                 "Aggregation.IntIDRange":{
-                    "thread_threshold":0.25,
+                    "thread_threshold":0.225,
                     "threshold":0.15,
                     "ticket":[
                         "PERF-875",
-                        "BF-5713"
+                        "BF-5713",
+                        "BF-5954"
                     ]
                 },
                 "Aggregation.IntNonIdFindOne":{
