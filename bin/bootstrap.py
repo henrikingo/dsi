@@ -357,8 +357,8 @@ def validate_terraform(config):
                 LOGGER.critical("No terraform binary file found.")
             LOGGER.critical("See documentation for installing terraform: http://bit.ly/2ufjQ0R")
             assert False
-        if not version == "Terraform v0.6.16":
-            version_error = "You are using {0}, but DSI requires Terraform v0.6.16.".format(version)
+        if not version == "Terraform v0.9.11":
+            version_error = "You are using {0}, but DSI requires Terraform v0.9.11.".format(version)
             LOGGER.critical(version_error)
             LOGGER.critical("See documentation for installing terraform: http://bit.ly/2ufjQ0R")
             assert False

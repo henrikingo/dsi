@@ -52,7 +52,7 @@ resource "aws_route_table" "r" {
     tags {
         Name = "dsi-dsi-routing"
         TestSetup = "dsi"
-        TestTopology = "${topology}"
+        TestTopology = "${var.topology}"
         Owner = "${var.owner}"
         runner          = "${var.runner}"
         status          = "${var.status}"

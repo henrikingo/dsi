@@ -5,15 +5,34 @@ set -v
 
 export DSI_PATH=${DSI_PATH:-.}
 
+EVG_DATA_DIR="/data/infrastructure_provisioning"
+if [ -d "$EVG_DATA_DIR" ]; then
+	# If terraform-provider-docker is found, that means the older version
+	# of terraform is being used since the new binary has everything packaged
+	# into one.
+	if [ -e $EVG_DATA_DIR/terraform/terraform-provider-docker ]; then
+        # This only sets the TERRAFORM for all child processes.
+        # Therefore it does not need to be set back to the original value.
+		# infrastructure_teardown.sh should specifically use the old
+		# terraform in EVG_DATA_DIR since the new terraform is not
+		# backwards compatible
+		export TERRAFORM=$EVG_DATA_DIR/terraform/terraform
+		# Teardown the infrastructure since the new terraform binary will
+		# not work properly with the old terraform files. Also remove
+		# the old saved state once teardown is complete
+		$EVG_DATA_DIR/terraform/infrastructure_teardown.sh && rm -rf "$EVG_DATA_DIR"
+	fi
+fi
+
 # install terraform
 mkdir terraform
 
 cd terraform
-curl  -O --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/terraform/terraform_0.6.16_linux_amd64.zip
-unzip terraform_0.6.16_linux_amd64.zip
+curl  -O --retry 10 https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd64.zip
+unzip terraform_0.9.11_linux_amd64.zip
 cd ..
 
-cp terraform/* work
+cp terraform/terraform work
 
 # install workload wrapper
 pushd .

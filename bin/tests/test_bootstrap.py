@@ -472,15 +472,15 @@ class TestBootstrap(unittest.TestCase):
     def test_terraform_wrong_version(self,
                                      mock_check_output):
         """Testing validate_terraform fails on incorrect version"""
-        mock_check_output.return_value = "Terraform v0.9.11"
+        mock_check_output.return_value = "Terraform v0.6.16"
         config = copy.copy(bootstrap.DEFAULT_CONFIG)
         with LogCapture(level=logging.CRITICAL) as crit:
             with self.assertRaises(AssertionError):
                 bootstrap.validate_terraform(config)
             crit_logs = set(crit.actual())
             crit_expected = set([('bootstrap', 'CRITICAL',
-                                  'You are using Terraform v0.9.11, '
-                                  'but DSI requires Terraform v0.6.16.'),
+                                  'You are using Terraform v0.6.16, '
+                                  'but DSI requires Terraform v0.9.11.'),
                                  ('bootstrap', 'CRITICAL',
                                   'See documentation for installing terraform: '
                                   'http://bit.ly/2ufjQ0R')])
@@ -543,7 +543,7 @@ class TestBootstrap(unittest.TestCase):
     @patch('subprocess.check_output')
     def test_terraform_valid(self, mock_check_output):
         """Testing validate_terraform with valid inputs"""
-        mock_check_output.return_value = 'Terraform v0.6.16'
+        mock_check_output.return_value = 'Terraform v0.9.11'
         config = copy.copy(bootstrap.DEFAULT_CONFIG)
         bootstrap.validate_terraform(config)
         self.assertEquals(config, config)

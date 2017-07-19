@@ -5,6 +5,9 @@ export EXISTING="${2:-false}"
 BINDIR=$(dirname $0)
 TERRAFORM="${TERRAFORM:-./terraform}"
 
+echo "TERRAFORM VERSION"
+$TERRAFORM version
+
 if [ ! "$CLUSTER" ]
 then
     echo "Usage: $0 single|replica|shard|longevity|<cluster type> [EXISTING=true|false]"
@@ -72,18 +75,12 @@ $TERRAFORM apply $VAR $VAR_FILE | tee -a terraform.log
 $TERRAFORM refresh  $VAR $VAR_FILE
 # Use terraform detailed exit code to catch terraform errors
 $TERRAFORM plan -detailed-exitcode $VAR $VAR_FILE
-if [[ $? == 1 ]]
+if [[ $? != 0 ]]
 then
     >&2 echo "Error: terraform plan -detailed-exitcode failed. Cluster not up"
     exit 1
 fi
-# Check that all the nodes in the cluster are properly up
-good_line_count=$($TERRAFORM plan $VAR $VAR_FILE | egrep "Plan" | egrep -c "0 to add")
-if [ $good_line_count != 1 ]
-then
-    >&2 echo "Error: After setup, but something wrong with provisioning. Still need to add node(s)."
-    exit 1
-fi
+
 $TERRAFORM output | ${BINDIR}/generate_infrastructure.py
 rc=$?
 cat infrastructure_provisioning.out.yml

@@ -27,20 +27,20 @@ resource "aws_instance" "seeded_ebs_member" {
     instance_type       = "${var.instance_type}"
     count               = "${var.count}"
     subnet_id           = "${var.subnet_id}"
-    private_ip          = "${lookup(var.private_ips, concat(var.type, count.index))}"
+    private_ip          = "${lookup(var.private_ips, format("%s%s", var.type, "${count.index}"))}"
 
     connection {
         # The default username for our AMI
         user            = "ec2-user"
 
         # The path to your keyfile
-        key_file        = "${var.key_file}"
+        private_key        = "${file(var.key_file)}"
     }
 
     vpc_security_group_ids     = ["${var.security_groups}"]
 
     availability_zone   = "${var.availability_zone}"
-    placement_group     = "${lookup(var.placement_groups, concat(var.availability_zone, ".", var.placement_group))}"
+    placement_group     = "${lookup(var.placement_groups, format("%s.%s", var.availability_zone, var.placement_group))}"
     tenancy             = "dedicated"
 
     key_name = "${var.key_name}"
@@ -79,7 +79,7 @@ resource "aws_instance" "seeded_ebs_member" {
         connection {
             timeout = "10m"
         }
-        source      = "${concat("./remote-scripts/", var.provisioner_file)}"
+        source      = "${format("./remote-scripts/%s", var.provisioner_file)}"
         destination = "/tmp/provision.sh"
     }
 

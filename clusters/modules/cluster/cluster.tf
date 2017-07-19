@@ -1,7 +1,5 @@
 variable owner                          { default = "serverteam-perf@10gen.com" }
 variable topology                       {}
-variable key_file                       {}
-variable key_name                       {}
 variable runner                         { default = "missing" } # Hostname of the machine using it
 variable status                         { default = "idle" } #Idle, running
 variable task_id                        { default = "none" }
