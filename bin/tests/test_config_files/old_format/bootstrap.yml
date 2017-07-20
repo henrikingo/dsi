@@ -16,11 +16,11 @@
 #     cp <path>/runtime_secret.yml .
 #     $DSI_PATH/bin/bootstrap.py
 
-infrastructure_provisioning: single
+cluster_type: single
 platform: linux
-mongodb_setup: standalone
+setup: standalone
 storageEngine: wiredTiger
-test_control: core
+test: benchRun
 production: false
 
 # Manual run helpers

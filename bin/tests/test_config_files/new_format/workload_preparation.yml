@@ -1,0 +1,43 @@
+# NOTE: this module is not implemented yet. The tasks should match the form implemented for test_control.
+
+# Things like install YCSB happen here. (To the extent they don't happen by default, without configuration needed.)
+
+custom_groups:
+      my_group:  # We could also allow to specify arbitrary groups of hosts. (post DP2.0 for sure)
+        - ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
+        - ip: ${infrastructure_provisioning.out.mongod.1.public_ip}
+
+# Ordered list of steps to take during workload preparation.
+# Each item is guaranteed to complete before the next one.
+#
+# Keys in the list can be on_all_hosts, on_workload_client, on_mongod,
+# on_mongos, on_configsvr, on_host, on_servers
+tasks:
+  - on_workload_client:
+      download_files:
+        - http://url1
+  - on_workload_client:
+      upload_files:
+        - remote-files/install-java.sh
+        - remote-files/install-ycsb.sh
+  - on_workload_client:
+      exec_remote: |
+        ./install-java.sh
+        ./install-ycsb.sh
+  - on_my_group:  # This is like on_servers, but for the custom group defined above.
+      download_files:
+        - http://url1
+  - on_my_group:
+      upload_files:
+        - remote-files/install-java.sh
+        - remote-files/install-ycsb.sh
+  - on_my_group:
+      exec_remote: |
+        ./install-java.sh
+        ./install-ycsb.sh
+  - on_all_hosts: (see above)
+  - on_servers: (see above)             # servers = union( mongod, mongos, configsvr) = all_hosts - workload_client
+  - on_mongod: (see above)
+  - on_mongos: (see above)
+  - on_configsvr: (see above)
+  - on_host: (see system_setup.yml)

@@ -1,0 +1,84 @@
+# This essentially ports dsi/clusters/*/*.json to yml. Additions are up for debate.
+# Note, unlike other files, this is a list of test runs. Hence, even if there's only a single entry, it is a list.
+run:
+  - id: benchRun-mmapv1             # Note: standardize on engine explicitly being part of id, and using correct engine names, not "mmap"
+    type: shell                     # or "ycsb"
+
+    cmd: $DSI_PATH/workloads/run_workloads.py -c workloads.yml
+    config_filename: workloads.yml  # The name used in previous row
+    workload_config:  # This section will be copied out into a file and given as config file to the benchmark tool. Can be yml (run_workloads.py) or a text block (ycsb)
+        ########################################################################
+        # Test lists. Command line will indicate which list of tests to execute.
+        # The 'default' list is the default.
+        # When testing new test workloads, please put your tests in the
+        # tests.test list, and remove the existing hello.js
+        ########################################################################
+        tests:
+            default:
+              - contended_update.js
+              - map_reduce.js
+              - ...
+            initialsync:
+              - initialsync.js
+            correctness:
+              - election_timing.js
+              - election_timing_workload.js
+            test:  # Put new workloads here when testing
+              - hello.js
+
+        mongo:
+            # Note: We shall move to use a connection string for all tests. This allows things like
+            # multiple mongoses to be supported automatically
+            # (After consideration, don't want automatic failover for perf tests. If it fails, fail hard.)
+            uri: mongodb://${mongodb_setup.meta.hosts}/testdb?readPreference=PRIMARY
+            sharded: ${mongodb_setup.meta.is_sharded}
+            replica: ${mongodb_setup.meta.is_replset}
+            storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
+
+# Ordered list of things to do before the set of runs start
+pre_task:
+  # Valid targets are:
+  # on_workload_client, on_mongos, on_mongod, on_configsvr, on_all_hosts, on_all_servers, on_localhost
+  # on_all_hosts includes all the hosts in the out file, while on_all_servers exclude the workload clients.
+  - on_workload_client:
+      upload_files:
+        # Upload file local_file_path to remote_file_path. Paths
+        # should include the file names (not just a target directory_
+        local_file_path: remote_file_path
+      upload_repo_files:
+        # This is the same as upload_files, but looks for the files relative to DSI root
+        local_file_path: remote_file_path
+  - on_workload_client:
+      exec: |
+        # code to be executed on workload client (when MongoDB cluster is running)
+  - on_workload_client:
+      exec_mongo_shell:
+        script: |
+          # JavaScript to be executed in a mongo shell (when MongoDB cluster is running)
+        connection_string: ${mongodb_setup.meta.hosts}  # Defaults to localhost
+# Ordered list of things to do after all the runs
+post_task:
+  - on_workload_client:
+      # All of the above, plus...
+      retrieve_files:
+        # Download remote path to ./reports/host_alias/local path
+        # host_alias: looks like "<category>.<index>" from ConfigDict['infrastructure']['.out']
+        # category: the key name from ConfigDict['infrastructure']['.out'], it is
+        # one of "mongod", "mongos", "configsvr" or "workload_client"
+        # index: the position in ConfigDict['infrastructure']['out']['category']
+        remote_path: local_path
+  - on_workload_client:
+      retrieve_files:
+        workloads/workload_timestamps.csv: ./workloads_timestamps.csv
+        fio.json: ./fio.json
+
+# Ordered list of things to do before each run, after pre_task
+pre_run:
+  - on_mongos: (see above)
+  - on_mongod: (see above)
+  - on_configsvr: (see above)
+
+# Ordered list of things to do after each run, before post_task
+post_run:
+  - on_mongod: (see above)
+  - on_all_hosts: (see above)

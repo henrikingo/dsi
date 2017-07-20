@@ -1,0 +1,27 @@
+# This config file contains runtime parameters. Typical usage is to cat Evergreen variables into
+# this when starting a build.
+#
+# Example:
+
+is_patch: false
+task_id: 123...
+task_name: initialsync_MMAPv1
+execution: 1
+build_id: 123...
+build_variant: linux-standalone
+version_id: 123...
+workdir: /home/ec2_user/123...
+revision: 123...
+project: sys-perf
+branch_name: master
+
+# sys-perf expansions
+ext: None
+script_flags: --ycsb-throughput-analysis reports
+dsi_rev: 123...
+compare_task: industry_benchmarks_WT
+workloads_rev: 123...
+YCSB_rev: 123...
+
+# compositions of expansions
+mongodb_binary_archive: "https://s3.amazonaws.com/mciuploads/{project}/{version_id}/{revision}/{platform}/mongod-{version_id}.tar.gz"

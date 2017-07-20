@@ -1,0 +1,14 @@
+# For discussion...
+
+# We could also allow a test to specify its pass criteria / what to analyze.
+# For example, a test could be only about latency and not care about tps?
+# NOT the place to define overrides, I think, because those are situational corrections, this should be more static.
+
+# Again, note that data_analysis should be able to infer from previous sections where to find necessary log files, etc.
+# No need to repeat those here.
+
+# For the config.py library: A missing file is ok, but an empty file is not. (In other words,
+# empty values / None are forbidden in general.) So here's a placeholder to make the tests work.
+
+placeholder: Content TBD
+

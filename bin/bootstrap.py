@@ -33,7 +33,7 @@ from common.log import setup_logging
 
 LOGGER = logging.getLogger(__name__)
 
-DEFAULT_CONFIG = {'cluster_type': 'single',
+DEFAULT_CONFIG = {'infrastructure_provisioning': 'single',
                   'aws_access_key': 'NoAccessKey',
                   'aws_secret_key': "NoSecretKey",
                   'directory': '.',
@@ -111,16 +111,6 @@ def parse_command_line(config, args=None):
     #pylint: disable=line-too-long,too-many-branches
     '''
     Parse the command line options for setting up a working directory
-
-    >>> from collections import OrderedDict
-    >>> OrderedDict(parse_command_line(copy.copy(DEFAULT_CONFIG), []))
-    OrderedDict([('aws_secret_key', 'NoSecretKey'), ('aws_access_key', 'NoAccessKey'), ('production', False), ('ssh_key_name', 'serverteam-perf-ssh-key'), ('directory', '.'), ('cluster_type', 'single'), ('ssh_key_file', 'aws_ssh_key.pem')])
-
-    >>> OrderedDict(parse_command_line(copy.copy(DEFAULT_CONFIG), ['-c', 'none']))
-    OrderedDict([('aws_secret_key', 'NoSecretKey'), ('aws_access_key', 'NoAccessKey'), ('production', False), ('ssh_key_name', 'serverteam-perf-ssh-key'), ('directory', '.'), ('cluster_type', 'none'), ('ssh_key_file', 'aws_ssh_key.pem')])
-
-    >>> OrderedDict(parse_command_line(copy.copy(DEFAULT_CONFIG), ['-c', 'none', "--aws-access-key", "key_name", "--ssh-keyfile-path", "keyfile", "--aws-secret-file", "newsecret.json"]))
-    OrderedDict([('aws_secret_key', 'NoSecretKey'), ('aws_secret_file', 'newsecret.json'), ('aws_access_key', 'key_name'), ('production', False), ('ssh_key_name', 'serverteam-perf-ssh-key'), ('directory', '.'), ('cluster_type', 'none'), ('ssh_key_file', 'keyfile')])
     '''
 
     parser = argparse.ArgumentParser(description='Setup DSI working environment. For instructions \
@@ -206,8 +196,9 @@ def parse_command_line(config, args=None):
     if args.config:
         for conf in args.config:
             config.update(yaml.load(open(conf)))
+    # Temporary fix for cluster_type, will be removed in subsequent ticket
     if args.cluster_type:
-        config['cluster_type'] = args.cluster_type
+        config['infrastructure_provisioning'] = args.cluster_type
     if args.aws_key_name:
         config['aws_access_key'] = args.aws_key_name
     if args.aws_access_key:
@@ -241,17 +232,19 @@ def copy_config_files(dsipath, config, directory):
     # Multi-node clusters need a slightly different list of tests for ycsb
     # Hopefully this can be removed once mission-control is replaced with new test_control
     ycsb_multinode = ""
-    if config.get("test") == "ycsb" and config.get("cluster_type") in ["shard", "replica"]:
-        LOGGER.debug("Adding .multi_node string for ycsb_multinode since cluster_type %s is" +
-                     "shard or replica", config.get("cluster_type"))
+    if config.get("test_control") == "ycsb" and \
+            config.get("infrastructure_provisioning") in ["shard", "replica"]:
+        LOGGER.debug("Adding .multi_node string for ycsb_multinode " +
+                     "since infrastructure_provisioning %s is" +
+                     "shard or replica", config.get("infrastructure_provisioning"))
         ycsb_multinode = ".multi_node"
 
     # Pairs of ConfigDict module, and bootstrap.yml input.
     # This is all the variable info needed to build the from and to file paths down below.
-    configs_to_copy = {"infrastructure_provisioning": config.get("cluster_type", ""),
+    configs_to_copy = {"infrastructure_provisioning": config.get("infrastructure_provisioning", ""),
                        "mongodb_setup":
-                           config.get("setup", "") + "." + config.get("storageEngine", ""),
-                       "test_control": config.get("test", "") + ycsb_multinode}
+                           config.get("mongodb_setup", "") + "." + config.get("storageEngine", ""),
+                       "test_control": config.get("test_control", "") + ycsb_multinode}
 
     for config_module, bootstrap_variable in configs_to_copy.iteritems():
         # Example: ./mongodb_setup.yml
@@ -466,7 +459,7 @@ def main():
         config['aws_secret'] = open(config['aws_secret_file']).read().rstrip()
 
     # Todo: This section should be replaced by code to select infrastructure.yml
-    cluster_path = os.path.join(dsipath, 'clusters', config['cluster_type'])
+    cluster_path = os.path.join(dsipath, 'clusters', config['infrastructure_provisioning'])
     remote_scripts_path = os.path.join(dsipath, 'clusters', 'remote-scripts')
     # Copy over all files from cluster directory
     if not os.path.isdir(cluster_path):

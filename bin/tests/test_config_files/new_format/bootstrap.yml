@@ -20,7 +20,7 @@ infrastructure_provisioning: single
 platform: linux
 mongodb_setup: standalone
 storageEngine: wiredTiger
-test_control: core
+test_control: benchRun
 production: false
 
 # Manual run helpers

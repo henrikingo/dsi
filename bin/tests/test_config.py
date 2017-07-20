@@ -6,6 +6,8 @@ import unittest
 
 import yaml
 
+from mock import patch
+
 # TODO: Learn how to do this correctly without complaint from pylint
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 
@@ -27,6 +29,32 @@ class ConfigDictTestCase(unittest.TestCase):
     def tearDown(self):
         """Restore working directory"""
         os.chdir(self.old_dir)
+
+    @patch('os.path.join')
+    def test_load_old(self, mock_path_join):
+        """Test loading ConfigDict with old naming convention .yml files"""
+        os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/../tests/test_config_files/old_format')
+        mock_path_join.return_value = './configurations/defaults.yml'
+        test_conf = ConfigDict('bootstrap')
+        test_conf.load()
+        self.assertFalse('cluster_type' in test_conf.raw['bootstrap'])
+        self.assertTrue('infrastructure_provisioning' in test_conf.raw['bootstrap'])
+        self.assertFalse('cluster_type' in test_conf.defaults['bootstrap'])
+        self.assertTrue('infrastructure_provisioning' in test_conf.defaults['bootstrap'])
+        os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/../../docs/config-specs/')
+
+    @patch('os.path.join')
+    def test_load_new(self, mock_path_join):
+        """Test loading ConfigDict with old naming convention .yml files"""
+        os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/../tests/test_config_files/new_format')
+        mock_path_join.return_value = './configurations/defaults.yml'
+        test_conf = ConfigDict('bootstrap')
+        test_conf.load()
+        self.assertFalse('cluster_type' in test_conf.raw['bootstrap'])
+        self.assertTrue('infrastructure_provisioning' in test_conf.raw['bootstrap'])
+        self.assertFalse('cluster_type' in test_conf.defaults['bootstrap'])
+        self.assertTrue('infrastructure_provisioning' in test_conf.defaults['bootstrap'])
+        os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/../../docs/config-specs/')
 
     def test_traverse_entire_dict(self):
         """Traverse entire dict (also tests that the structure of docs/config-specs/ files are ok)"""

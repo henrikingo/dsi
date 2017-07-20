@@ -23,13 +23,13 @@ class TestBootstrap(unittest.TestCase):
 
     def test_read_runtime_values(self):
         """Testing read_runtime_values method does not modify config"""
-        master_config = {'test': 'benchRun',
+        master_config = {'test_control': 'benchRun',
                          'ssh_key_file': 'aws_ssh_key.pem',
                          'storageEngine': 'wiredTiger',
                          'aws_secret_key': 'NoSecretKey',
                          'aws_access_key': 'NoAccessKey',
-                         'cluster_type': 'single',
-                         'setup': 'standalone',
+                         'infrastructure_provisioning': 'single',
+                         'mongodb_setup': 'standalone',
                          'platform': 'linux',
                          'production': False,
                          'ssh_key_name': 'serverteam-perf-ssh-key',
@@ -105,7 +105,7 @@ class TestBootstrap(unittest.TestCase):
         """Testing for parse_command_line (1 arg = 'none'), modifying config"""
         args = ['-c' 'none']
         master_config = copy.copy(bootstrap.DEFAULT_CONFIG)
-        master_config['cluster_type'] = 'none'
+        master_config['infrastructure_provisioning'] = 'none'
         test_config = copy.copy(bootstrap.DEFAULT_CONFIG)
         test_config = bootstrap.parse_command_line(test_config, args)
         self.assertEquals(test_config, master_config)
@@ -123,7 +123,7 @@ class TestBootstrap(unittest.TestCase):
                 '--terraform', 'test_terraform', '--production']
 
         master_config = copy.copy(bootstrap.DEFAULT_CONFIG)
-        master_config['cluster_type'] = 'test_cluster_type'
+        master_config['infrastructure_provisioning'] = 'test_cluster_type'
         master_config['owner'] = 'test_owner'
         master_config['aws_access_key'] = 'test_aws_access_key'
         master_config['aws_secret_file'] = 'test_aws_secret_file'
@@ -152,7 +152,7 @@ class TestBootstrap(unittest.TestCase):
                 '--terraform', 'test_terraform', '--production']
 
         master_config = copy.copy(bootstrap.DEFAULT_CONFIG)
-        master_config['cluster_type'] = 'test_cluster_type'
+        master_config['infrastructure_provisioning'] = 'test_cluster_type'
         master_config['owner'] = 'test_owner'
         master_config['aws_access_key'] = 'test_aws_access_key'
         master_config['aws_secret_file'] = 'test_aws_secret_file'
@@ -200,10 +200,10 @@ class TestBootstrap(unittest.TestCase):
              'w').close()
         open(os.path.join(test_dsipath, 'configurations', 'test_control',
                           'test_control.core.yml'), 'w').close()
-        test_config['cluster_type'] = 'single'
-        test_config['setup'] = 'replica'
+        test_config['infrastructure_provisioning'] = 'single'
+        test_config['mongodb_setup'] = 'replica'
         test_config['storageEngine'] = 'wiredTiger'
-        test_config['test'] = 'core'
+        test_config['test_control'] = 'core'
 
         bootstrap.copy_config_files(test_dsipath, test_config, test_directory)
         master_files = set(['infrastructure_provisioning.yml',
@@ -250,10 +250,10 @@ class TestBootstrap(unittest.TestCase):
         open(os.path.join(test_dsipath, 'configurations', 'test_control',
                           'test_control.ycsb.multi_node.yml'),
              'w').close()
-        test_config['cluster_type'] = 'shard'
-        test_config['setup'] = 'replica'
+        test_config['infrastructure_provisioning'] = 'shard'
+        test_config['mongodb_setup'] = 'replica'
         test_config['storageEngine'] = 'wiredTiger'
-        test_config['test'] = 'ycsb'
+        test_config['test_control'] = 'ycsb'
 
         bootstrap.copy_config_files(test_dsipath, test_config, test_directory)
         master_files = set(['infrastructure_provisioning.yml',

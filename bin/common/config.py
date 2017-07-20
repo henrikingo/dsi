@@ -109,6 +109,10 @@ class ConfigDict(dict):
             file_handle.close()
             LOG.info('ConfigDict: Loaded: %s', file_name)
 
+        if 'bootstrap' in self.raw:
+            change_key_name(self.raw['bootstrap'], 'cluster_type', 'infrastructure_provisioning')
+            change_key_name(self.raw['bootstrap'], 'setup', 'mongodb_setup')
+            change_key_name(self.raw['bootstrap'], 'test', 'test_control')
         return self
 
     def save(self):
@@ -533,3 +537,10 @@ def is_integer(astring):
         return True
     except ValueError:
         return False
+
+def change_key_name(dictionary, old_key, new_key):
+    """Change key names at top level of a dictionary"""
+    for key, val in dictionary.iteritems():
+        if key == old_key:
+            dictionary[new_key] = val
+            del dictionary[old_key]
