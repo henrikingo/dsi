@@ -75,7 +75,7 @@ then
     then
         echo "EC2 resources provisioned/updated successfully."
         echo "Will now save terraform state needed for teardown when triggered by the Evergreen runner."
-        cp terraform.tfstate cluster.tf terraform.tfvars security.tf cluster.json  "$EVG_DATA_DIR/terraform"
+        cp terraform.tfstate cluster.tf terraform.tfvars security.tf cluster.json aws_ssh_key.pem "$EVG_DATA_DIR/terraform"
 
         pushd .
         cd $EVG_DATA_DIR/terraform
