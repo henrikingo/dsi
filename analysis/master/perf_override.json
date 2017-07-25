@@ -2147,6 +2147,13 @@
                 }
             },
             "threshold":{
+                "Insert.DocValidation.TwentyInt":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6025"
+                    ]
+                },
                 "Insert.IntIDUpsert":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
@@ -11299,10 +11306,11 @@
             },
             "threshold":{
                 "Insert.DocValidation.OneInt":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
-                        "PERF-875"
+                        "PERF-875",
+                        "BF-6025"
                     ]
                 },
                 "Insert.DocValidation.TenInt":{
@@ -11320,10 +11328,11 @@
                     ]
                 },
                 "Insert.Empty":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
-                        "PERF-875"
+                        "PERF-875",
+                        "BF-6025"
                     ]
                 },
                 "Insert.EmptyCapped":{
@@ -11355,17 +11364,19 @@
                     ]
                 },
                 "Insert.JustID":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
-                        "PERF-875"
+                        "PERF-875",
+                        "BF-6025"
                     ]
                 },
                 "Insert.JustNum":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
-                        "PERF-875"
+                        "PERF-875",
+                        "BF-6025"
                     ]
                 },
                 "Insert.JustNumIndexed":{
@@ -11382,11 +11393,32 @@
                         "PERF-875"
                     ]
                 },
+                "Insert.SingleIndex.Contested.Rnd":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6025"
+                    ]
+                },
                 "Insert.SingleIndex.Seq":{
                     "thread_threshold":0.17,
                     "threshold":0.12,
                     "ticket":[
                         "BF-4058"
+                    ]
+                },
+                "Insert.SingleIndex.Uncontested.Rnd":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6025"
+                    ]
+                },
+                "InsertIndexedStringsSimpleCollation":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6025"
                     ]
                 },
                 "Inserts.PartialIndex.FilteredRange":{
@@ -24347,6 +24379,13 @@
                 }
             },
             "threshold":{
+                "Insert.Empty":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6025"
+                    ]
+                },
                 "Insert.IntIDUpsert":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
@@ -33542,10 +33581,11 @@
             },
             "threshold":{
                 "Insert.DocValidation.OneInt":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
-                        "PERF-875"
+                        "PERF-875",
+                        "BF-6025"
                     ]
                 },
                 "Insert.DocValidation.TenInt":{
@@ -33591,10 +33631,11 @@
                     ]
                 },
                 "Insert.JustNum":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
-                        "PERF-875"
+                        "PERF-875",
+                        "BF-6025"
                     ]
                 },
                 "Insert.JustNumIndexed":{
