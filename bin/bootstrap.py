@@ -19,7 +19,6 @@ from __future__ import print_function
 import ConfigParser
 import sys
 import argparse
-import copy
 import glob
 import logging
 import os
@@ -33,55 +32,28 @@ from common.log import setup_logging
 
 LOGGER = logging.getLogger(__name__)
 
-DEFAULT_CONFIG = {'infrastructure_provisioning': 'single',
-                  'aws_access_key': 'NoAccessKey',
-                  'aws_secret_key': "NoSecretKey",
-                  'directory': '.',
-                  'production': False,
-                  # These are just used as the default values for security.tf file, overriden at
-                  # runtime in infrastructure_provisioning.yml -> cluster.json
-                  'ssh_key_name': 'serverteam-perf-ssh-key',
-                  'ssh_key_file': 'aws_ssh_key.pem',
-                 }
-
-
-def build_config(args=None):
+def read_aws_credentials(config, config_dict):
     '''
-    Build a config object, including the specified arguments
+    Read AWS credentials into a config object
     '''
-    # default values for config
-    config = copy.copy(DEFAULT_CONFIG)
-
     # if we can read variables out of the ~/.aws/credentials file, do so
-    read_aws_creds(config)
-
-    # if we are running this on evergreen, use the runtime values as defaults
-    read_runtime_values(config)
+    read_aws_credentials_file(config)
 
     # environment variables should supersede config file reading
     read_env_vars(config)
-
-    # command-line options should supersede env vars and cred file
-    parse_command_line(config, args)
-
-    return config
-
-def read_runtime_values(config):
-    '''
-    Read default config values from the 'bootstrap' and 'runtime' ConfigDict modules
-    '''
-    config_dict = ConfigDict('bootstrap')
-    config_dict.load()
-    for key in config_dict['bootstrap'].keys():
-        config[key] = config_dict['bootstrap'][key]
-
     if 'runtime_secret' in config_dict:
         if 'aws_access_key' in config_dict['runtime_secret']:
             config['aws_access_key'] = config_dict['runtime_secret']['aws_access_key']
         if 'aws_secret_key' in config_dict['runtime_secret']:
             config['aws_secret_key'] = config_dict['runtime_secret']['aws_secret_key']
 
-def read_aws_creds(config):
+    if 'aws_access_key' not in config or 'aws_secret_key' not in config:
+        LOGGER.critical('AWS credentials not found. Please ensure that they are present in '
+                        '~/.aws/credentials or are present in your environment as AWS_ACCESS_KEY_ID'
+                        'and AWS_SECRET_ACCESS_KEY.')
+        assert False
+
+def read_aws_credentials_file(config):
     '''
     Read AWS credentials from the 'default' field of ~/.aws/credentials, if it exists
     '''
@@ -100,11 +72,9 @@ def read_env_vars(config):
     Read AWS access key id and and secret access key from environment variables
     '''
     if 'AWS_ACCESS_KEY_ID' in os.environ:
-        config['aws_access_key'] = os.environ.get('AWS_ACCESS_KEY_ID',
-                                                  DEFAULT_CONFIG['aws_access_key'])
+        config['aws_access_key'] = os.environ.get('AWS_ACCESS_KEY_ID')
     if 'AWS_SECRET_ACCESS_KEY' in os.environ:
-        config['aws_secret_key'] = os.environ.get('AWS_SECRET_ACCESS_KEY',
-                                                  DEFAULT_CONFIG['aws_access_key'])
+        config['aws_secret_key'] = os.environ.get('AWS_SECRET_ACCESS_KEY')
     return config
 
 def parse_command_line(config, args=None):
@@ -129,100 +99,37 @@ def parse_command_line(config, args=None):
     # steps. Eventually that option should be removed, and replaced
     # with distinct options for selecting infrastructure provisioning
     # options and mongodb setup options.
-    parser.add_argument('-k',
-                        '--aws-access-key',
-                        help="AWS api access key. If this flag is not used, the key name will \
-                        default to $AWS_ACCESS_KEY_ID if set, then to the evergreen expansion \
-                        ${aws_access_key} if set in runtime.yml, then to the access key specified \
-                        in [default] section of ~/.aws/credentials, and 'NoAccessKey' otherwise.")
-    parser.add_argument('--aws-key-name',
-                        help='Synonym for --aws-access-key. (Deprecated)')
-    parser.add_argument('-s',
-                        '--aws-secret-file',
-                        help="File containing AWS secret. If this flag is not used, the secret \
-                        will default to $AWS_SECRET_ACCESS_KEY if set, then to the \
-                        evergreen expansion ${aws_secret_key} if set in runtime.yml, then to the \
-                        secret specified in the [default] section of ~/.aws/credentials, and \
-                        'NoSecret' otherwise.")
-    # To be replaced by infrastructure.yml selection option
-    parser.add_argument('-c',
-                        '--cluster-type',
-                        help='Set the cluster type. Defaults to the evergreen expansion ${cluster} \
-                        if set in runtime.yml, and to \'single\' otherwise.')
-    parser.add_argument('--config',
-                        action='append',
-                        help='Config file to load. Can be called multiple times and combined.'\
-                        'On conflicts the last file on the command line wins')
+    parser.add_argument('-b',
+                        '--bootstrap-file',
+                        help='Path to bootstrap.yml')
     parser.add_argument('-d',
                         '--debug',
                         action='store_true',
                         help='enable debug output')
     parser.add_argument('--directory',
+                        default='.',
                         help="Directory to setup. Defaults to current directory")
     parser.add_argument('--log-file',
                         help='path to log file')
-    parser.add_argument('--mc',
-                        help='The path of the mc executable. Defaults to $(which mc) if mc is \
-                        in the PATH, and to $DSI_PATH/bin/mc if not.')
-    parser.add_argument('--owner',
-                        help='Owner tag for AWS resources')
-    parser.add_argument('--ssh-keyfile-path',
-                        help="Synonym to --ssh-key-file")
-    parser.add_argument('-p',
-                        '--ssh-key-file',
-                        help="Path to AWS ssh key file (pem)")
-    parser.add_argument('--ssh-key',
-                        help="Synonym for --ssh-key-name. (Deprecated)")
-    parser.add_argument('--ssh-key-name',
-                        help="The name (in EC2) of the SSH key to use.")
-    parser.add_argument('--terraform',
-                        help='The path of the terraform executable. Defaults to $(which terraform) \
-                        if terraform is in the path, and to <directory>/terraform if not. For \
-                        terraform <=0.6.x, the terraform provider binaries are expected to be in \
-                        the same directory.')
+
+    # This option is ignored but allowed for backward compatibility
     parser.add_argument('--production',
                         action='store_true',
+                        default=False,
                         help='Indicate the script is being called as part of a production run. '
-                        'This suppresses certain messages appropriate for local runs')
+                        'This suppresses certain messages appropriate for local runs (Ignored).')
     parser.add_argument('-v',
                         '--verbose',
                         action='store_true',
                         help='Enable verbose output')
     args = parser.parse_args(args)
 
-    # TODO: This is now very late in the execution, needs to be moved earlier.
     setup_logging(args.debug, args.log_file)  # pylint: disable=no-member
 
-    if args.config:
-        for conf in args.config:
-            config.update(yaml.load(open(conf)))
-    # Temporary fix for cluster_type, will be removed in subsequent ticket
-    if args.cluster_type:
-        config['infrastructure_provisioning'] = args.cluster_type
-    if args.aws_key_name:
-        config['aws_access_key'] = args.aws_key_name
-    if args.aws_access_key:
-        config['aws_access_key'] = args.aws_access_key
-    if args.ssh_keyfile_path:
-        config['ssh_key_file'] = args.ssh_keyfile_path
-    if args.ssh_key_file:
-        config['ssh_key_file'] = args.ssh_key_file
-    if args.ssh_key:
-        config['ssh_key_name'] = args.ssh_key
-    if args.ssh_key_name:
-        config['ssh_key_name'] = args.ssh_key_name
+    if args.bootstrap_file:
+        config['bootstrap_file'] = args.bootstrap_file
     if args.directory:
         config['directory'] = args.directory
-    if args.owner:
-        config['owner'] = args.owner
-    if args.aws_secret_file:
-        config['aws_secret_file'] = args.aws_secret_file
-    if args.production:
-        config['production'] = True
-    if args.mc:
-        config['mc'] = args.mc
-    if args.terraform:
-        config['terraform'] = args.terraform
     return config
 
 def copy_config_files(dsipath, config, directory):
@@ -294,7 +201,19 @@ def setup_security_tf(config, directory):
     '''
     Generate the security.tf file
     '''
-
+    # config doesn't include options from infrastructure_provisioning.yml,
+    # because at the start of bootstrap.py, when we read input options with
+    # ConfigDict, it wasn't present.
+    # This method should be moved to infrastructure_provisioning.py.
+    # In the mean time we just hard code the values used in evergreen.
+    if 'ssh_key_name' not in config:
+        config['ssh_key_name'] = 'serverteam-perf-ssh-key'
+        LOGGER.warn("Using default SSH key name from defaults.yml. "
+                    "Please ensure that your own SSH key is being used.")
+    if 'ssh_key_file' not in config:
+        config['ssh_key_file'] = 'aws_ssh_key.pem'
+        LOGGER.warn("Using default SSH key file from defaults.yml. "
+                    "Please ensure that your own SSH key is being used.")
     # Write security.tf. Used to be done by make_terraform_env.sh
     with open(os.path.join(directory, 'security.tf'), 'w') as security:
         security.write('provider "aws" {\n')
@@ -321,7 +240,8 @@ def find_terraform(config, directory):
 
     if 'terraform' in config:
         terraform = os.path.abspath(os.path.expanduser(config['terraform']))
-        LOGGER.debug('Using terraform binary specified by --terraform %s', config['terraform'])
+        LOGGER.debug('Using terraform binary specified by '
+                     'bootstrap.terraform %s', config['terraform'])
     elif system_tf is not None:
         terraform = os.path.abspath(system_tf)
         LOGGER.debug('Using terraform binary specified by $(which terraform)')
@@ -363,7 +283,7 @@ def find_mission_control(config, dsipath):
 
     if 'mc' in config:
         mission_control = os.path.abspath(os.path.expanduser(config['mc']))
-        LOGGER.debug('Using mission-control binary specified by --mc %s', config['mc'])
+        LOGGER.debug('Using mission-control binary specified by bootstrap.mc %s', config['mc'])
     elif system_mc is not None:
         mission_control = os.path.abspath(system_mc)
         LOGGER.debug('Using mission-control binary specified by $(which mc)')
@@ -406,11 +326,53 @@ def write_dsienv(directory, dsipath, mission_control, terraform, config):
         if "ycsb_dir" in config:
             dsienv.write('\nexport YCSB_DIR={0}'.format(config["ycsb_dir"]))
 
+def load_bootstrap(config, directory):
+    '''
+    Move specified bootstrap.yml file to correct location for read_runtime_values
+    '''
+    # Create directory if it doesn't exist
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    if 'bootstrap_file' in config:
+        bootstrap_path = os.path.abspath(os.path.expanduser(config['bootstrap_file']))
+        if os.path.isfile(bootstrap_path):
+            if not bootstrap_path == os.path.abspath(os.path.join(directory, 'bootstrap.yml')):
+                if os.path.isfile(os.path.abspath(os.path.join(directory, 'bootstrap.yml'))):
+                    LOGGER.critical('Attempting to overwrite existing bootstrap.yml file in %s. '
+                                    'Aborting.', directory)
+                    assert False
+                shutil.copyfile(bootstrap_path, os.path.join(directory, 'bootstrap.yml'))
+        else:
+            LOGGER.critical("Location specified for bootstrap.yml is invalid.")
+            assert False
+    else:
+        bootstrap_path = os.path.abspath(os.path.expanduser(os.path.join(os.getcwd(),
+                                                                         'bootstrap.yml')))
+        if os.path.isfile(bootstrap_path):
+            if not bootstrap_path == os.path.abspath(os.path.join(directory, 'bootstrap.yml')):
+                if os.path.isfile(os.path.abspath(os.path.join(directory, 'bootstrap.yml'))):
+                    LOGGER.critical('Attempting to overwrite existing bootstrap.yml file in %s. '
+                                    'Aborting.', directory)
+                    assert False
+                shutil.copyfile(bootstrap_path, os.path.join(directory, 'bootstrap.yml'))
+
+    current_path = os.getcwd()
+    os.chdir(directory)
+    config_dict = ConfigDict('bootstrap')
+    config_dict.load()
+    for key in config_dict['bootstrap'].keys():
+        config[key] = config_dict['bootstrap'][key]
+    os.chdir(current_path)
+
+    return config_dict
+
 def main():
     ''' Main function for setting up working directory
     '''
 
-    config = build_config()
+    config = {}
+    parse_command_line(config)
     directory = os.path.abspath(os.path.expanduser(config['directory']))
     LOGGER.info('Creating work directory in: %s', directory)
 
@@ -418,6 +380,10 @@ def main():
         print ("It looks like you have already setup "
                "{0} for dsi. dsienv.sh exists. Stopping".format(directory))
         sys.exit(1)
+
+    # Copies bootstrap.yml if necessary and then reads values into config
+    config_dict = load_bootstrap(config, directory)
+    read_aws_credentials(config, config_dict)
 
     # Compute DSI Path based on directory location of this script. Go up one level
     dsipath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -428,19 +394,11 @@ def main():
     validate_mission_control(config)
     validate_terraform(config)
 
-    # Create directory if it doesn't exist
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
-    if directory != os.getcwd() and os.path.isfile('bootstrap.yml'):
-        shutil.copyfile('bootstrap.yml', os.path.join(directory, 'bootstrap.yml'))
-
     write_dsienv(directory, dsipath, mission_control, terraform, config)
 
     # TODO: Copy of persisted terraform information should be copied
     # into working directory here. This is future work to support tying
     # the terraform cluster to the evergreen runner.
-
 
     # if we specified a secret file, use its contents as the aws secret
     if 'aws_secret_file' in config:
