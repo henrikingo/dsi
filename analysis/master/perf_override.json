@@ -42443,6 +42443,27 @@
                         "BF-5316"
                     ]
                 },
+                "Queries.IdentityView.FindProjection":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-444"
+                    ]
+                },
+                "Queries.IdentityView.FindProjectionDottedField":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-444"
+                    ]
+                },
+                "Queries.IdentityView.FindWideDocProjection":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-444"
+                    ]
+                },
                 "Queries.IdentityView.IntIDRange":{
                     "thread_threshold":-0.3,
                     "threshold":0.2,
