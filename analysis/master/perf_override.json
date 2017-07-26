@@ -20239,6 +20239,20 @@
                         "PERF-875"
                     ]
                 },
+                "Queries.IdentityView.FindProjectionDottedField":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Queries.IdentityView.FindProjectionThreeFields":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Queries.IdentityView.IntIDRange":{
                     "thread_threshold":-0.3,
                     "threshold":0.2,
