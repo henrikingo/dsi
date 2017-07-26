@@ -9138,6 +9138,13 @@
                 }
             },
             "threshold":{
+                "Geo.geoJSON.nearSphere.2dsphere.find":{
+                    "thread_threshold":0.15,
+                    "threshold":0.075,
+                    "ticket":[
+                        "PERF-1005"
+                    ]
+                },
                 "Geo.geoJSON.nearSphere.2dsphere.withFilter.find30":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
