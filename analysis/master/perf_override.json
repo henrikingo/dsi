@@ -18760,6 +18760,13 @@
                         "BF-4530"
                     ]
                 },
+                "Aggregation.IdentityView.Sample.LargeSample":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Aggregation.IdentityView.Sample.SmallSample":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
@@ -18779,6 +18786,13 @@
                     "threshold":0.16,
                     "ticket":[
                         "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Unwind":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
                     ]
                 },
                 "Aggregation.IdentityView.UnwindThenGroup":{
@@ -40944,6 +40958,13 @@
                     "threshold":0.16,
                     "ticket":[
                         "BF-4530"
+                    ]
+                },
+                "Aggregation.IdentityView.Sample.LargeSample":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
                     ]
                 },
                 "Aggregation.IdentityView.Sample.SmallSample":{
