@@ -11343,10 +11343,11 @@
                     ]
                 },
                 "Insert.DocValidation.TwentyInt":{
-                    "thread_threshold":0.15,
+                    "thread_threshold":0.225,
                     "threshold":0.1,
                     "ticket":[
-                        "PERF-875"
+                        "PERF-875",
+                        "BF-6025"
                     ]
                 },
                 "Insert.Empty":{
