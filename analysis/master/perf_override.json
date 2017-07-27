@@ -40834,8 +40834,8 @@
                     ]
                 },
                 "Aggregation.IdentityView.GeoNear2dSphere":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
                         "PERF-875"
                     ]
