@@ -24429,6 +24429,13 @@
                 }
             },
             "threshold":{
+                "Insert.DocValidation.TwentyInt":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Insert.Empty":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
@@ -24457,11 +24464,25 @@
                         "BF-3554"
                     ]
                 },
+                "Insert.MultiIndex.Uncontested.Rnd":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Insert.SeqIntID.Indexed":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
                     "ticket":[
                         "BF-3554"
+                    ]
+                },
+                "Insert.SingleIndex.Seq":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
                     ]
                 }
             }
