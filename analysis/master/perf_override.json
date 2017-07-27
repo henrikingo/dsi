@@ -33779,6 +33779,13 @@
                         "BF-5889"
                     ]
                 },
+                "InsertIndexedStringsNonSimpleCollation":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6025"
+                    ]
+                },
                 "InsertIndexedStringsSimpleCollation":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
