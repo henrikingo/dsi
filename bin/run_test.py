@@ -218,13 +218,17 @@ def main(argv):
         env['MC_MONITOR_INTERVAL'] = str(config['test_control']['mc']['monitor_interval'])
         env['MC_PER_THREAD_STATS'] = str(config['test_control']['mc']['per_thread_stats'])
         LOG.debug('env for mc call is %s', str(env))
-        subprocess.check_call([mission_control,
-                               '-config',
-                               'mc.json',
-                               '-run',
-                               args.test,
-                               '-o',
-                               'perf.json'], env=env)
+        try:
+            subprocess.check_call([mission_control,
+                                   '-config',
+                                   'mc.json',
+                                   '-run',
+                                   args.test,
+                                   '-o',
+                                   'perf.json'], env=env)
+        finally:
+            # always Execute post task steps
+            post_tasks(config, [test_control, mongodb_setup])
 
         # Next step in refactoring: Call mission control per run, and
         # only do one run per call to mission control. That will allow
@@ -246,9 +250,6 @@ def main(argv):
         #         execute_list(run['post_run'], conf)
         #     if 'post_run' in test_control:
         #         execute_list(test_control['post_run'], conf)
-
-    # Execute post task steps
-    post_tasks(config, [test_control, mongodb_setup])
 
     # Set perf.json to 555
     # Todo: replace with os.chmod call or remove in general
