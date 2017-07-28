@@ -33768,10 +33768,11 @@
                     ]
                 },
                 "Insert.SeqIntID.Indexed":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
                     "ticket":[
-                        "BF-5889"
+                        "BF-5889",
+                        "PERF-875"
                     ]
                 },
                 "Insert.SingleIndex.Contested.Rnd":{
@@ -33782,17 +33783,19 @@
                     ]
                 },
                 "Insert.SingleIndex.Seq":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
                     "ticket":[
+                        "BF-5889",
                         "PERF-875"
                     ]
                 },
                 "Insert.SingleIndex.Uncontested.Rnd":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
                     "ticket":[
-                        "BF-5889"
+                        "BF-5889",
+                        "PERF-875"
                     ]
                 },
                 "InsertIndexedStringsNonSimpleCollation":{
