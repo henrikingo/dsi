@@ -1,5 +1,4 @@
 # pylint: disable=attribute-defined-outside-init,too-many-instance-attributes,too-many-arguments
-
 """
 This file take input and generate necessary configuration files for terraform configuration.
 This function should be called from terraform cluster configuration folder.
@@ -88,31 +87,23 @@ class TerraformConfiguration(object):
     # We limit mongod instance type based on the requirement to have at least
     # 2 SSD, and we need a known type so that we can carry out pre-qualification.
     MONGOD_INSTANCE_TYPE = [
-        "c4.8xlarge",
-        "c3.8xlarge",
-        "c3.4xlarge",
-        "c3.2xlarge",
-        "c3.xlarge",
-        "m3.2xlarge",
-        "m3.xlarge",
-        "g2.8xlarge",
-        "r3.8xlarge",
-        "d2.8xlarge",
-        "d2.4xlarge",
-        "d2.2xlarge",
-        "d2.xlarge",
-        "i2.8xlarge",
-        "i2.4xlarge",
-        "i2.2xlarge",
-        "i2.xlarge"
-        ]
+        "c4.8xlarge", "c3.8xlarge", "c3.4xlarge", "c3.2xlarge", "c3.xlarge", "m3.2xlarge",
+        "m3.xlarge", "g2.8xlarge", "r3.8xlarge", "d2.8xlarge", "d2.4xlarge", "d2.2xlarge",
+        "d2.xlarge", "i2.8xlarge", "i2.4xlarge", "i2.2xlarge", "i2.xlarge"
+    ]
 
-    INSTANCE_ROLES = ["mongod", "mongos", "workload", "configsvr",
-                      "mongod_ebs", "mongod_seeded_ebs"]
+    INSTANCE_ROLES = [
+        "mongod", "mongos", "workload", "configsvr", "mongod_ebs", "mongod_seeded_ebs"
+    ]
 
     MONGOD_ROLES = ["mongod", "mongod_ebs", "mongod_seeded_ebs"]
 
-    def __init__(self, topology=None, region=None, availability_zone=None, now=None, day_delta=2,
+    def __init__(self,
+                 topology=None,
+                 region=None,
+                 availability_zone=None,
+                 now=None,
+                 day_delta=2,
                  use_config=True):
         if topology is not None:
             self.topology = topology
@@ -141,8 +132,7 @@ class TerraformConfiguration(object):
         """
         instance_type = instance_type.lower()
 
-        assert_value(role in self.INSTANCE_ROLES,
-                     "Instance role must be in {}, got {} instead"
+        assert_value(role in self.INSTANCE_ROLES, "Instance role must be in {}, got {} instead"
                      .format(str(self.INSTANCE_ROLES), role))
 
         if role in self.MONGOD_ROLES:
@@ -153,8 +143,7 @@ class TerraformConfiguration(object):
 
         if role == "workload":
             # must have at least one workload client
-            assert_value(count > 0,
-                         "Must have at least one workload instance, got {} instead"
+            assert_value(count > 0, "Must have at least one workload instance, got {} instead"
                          .format(count))
 
         setattr(self, role + "_instance_count", count)
@@ -208,8 +197,7 @@ class TerraformConfiguration(object):
                              "Should define both count and type for {}".format(role))
 
                 # update both count and type
-                self.define_instance(dsi_config,
-                                     role,
+                self.define_instance(dsi_config, role,
                                      dsi_config["tfvars"][role + "_instance_count"],
                                      dsi_config["tfvars"][role + "_instance_type"])
 
@@ -257,11 +245,10 @@ class TerraformConfiguration(object):
         json_dict.pop("now", None)
 
         if compact:
-            json_str = json.dumps(self, default=lambda o: json_dict,
-                                  separators=(',', ':'), sort_keys=True)
+            json_str = json.dumps(
+                self, default=lambda o: json_dict, separators=(',', ':'), sort_keys=True)
         else:
-            json_str = json.dumps(self, default=lambda o: json_dict,
-                                  sort_keys=True, indent=4)
+            json_str = json.dumps(self, default=lambda o: json_dict, sort_keys=True, indent=4)
 
         LOG.info(json_str)
         if file_name is not None:

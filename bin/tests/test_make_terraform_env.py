@@ -21,8 +21,7 @@ class TestTerraformConfiguration(unittest.TestCase):
         """Test default terraform configuration, that is to update expire-on only."""
         mock_generate_runner.return_value = '111.111.111.111'
         tf_config = terraform_config.TerraformConfiguration(
-            use_config=False,
-            now=datetime.datetime(2016, 5, 25, 7, 11, 49, 131998))
+            use_config=False, now=datetime.datetime(2016, 5, 25, 7, 11, 49, 131998))
         json_string = tf_config.to_json(compact=True)
 
         self.assertEqual(json_string,
@@ -37,8 +36,7 @@ class TestTerraformConfiguration(unittest.TestCase):
             use_config=False,
             now=datetime.datetime(2016, 5, 25, 7, 11, 49, 131998))
         tf_config.define_instance(None, "mongod", 10, "c3.8xlarge")
-        self._test_configuration(tf_config,
-                                 '{"expire_on":"2016-5-27",'
+        self._test_configuration(tf_config, '{"expire_on":"2016-5-27",'
                                  '"mongod_instance_count":10,'
                                  '"mongod_instance_placement_group":"yes",'
                                  '"mongod_instance_type":"c3.8xlarge",'
@@ -58,8 +56,7 @@ class TestTerraformConfiguration(unittest.TestCase):
         tf_config.define_instance(None, "mongos", 1, "m3.2xlarge")
         tf_config.define_instance(None, "mongod", 10, "c3.2xlarge")
         tf_config.define_instance(None, "configsvr", 3, "m3.xlarge")
-        self._test_configuration(tf_config,
-                                 '{"configsvr_instance_count":3,'
+        self._test_configuration(tf_config, '{"configsvr_instance_count":3,'
                                  '"configsvr_instance_placement_group":"no",'
                                  '"configsvr_instance_type":"m3.xlarge",'
                                  '"expire_on":"2016-5-27",'
@@ -83,8 +80,7 @@ class TestTerraformConfiguration(unittest.TestCase):
             now=datetime.datetime(2016, 5, 25, 7, 11, 49, 131998))
 
         tf_config.define_instance(None, "mongos", 10, "m3.2xlarge")
-        self._test_configuration(tf_config,
-                                 '{"expire_on":"2016-5-27",'
+        self._test_configuration(tf_config, '{"expire_on":"2016-5-27",'
                                  '"mongos_instance_count":10,'
                                  '"mongos_instance_placement_group":"no",'
                                  '"mongos_instance_type":"m3.2xlarge",'
@@ -133,11 +129,9 @@ class TestTerraformConfiguration(unittest.TestCase):
         os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/artifacts')
 
         tf_config = terraform_config.TerraformConfiguration(
-            topology="test-cluster",
-            now=datetime.datetime(2016, 5, 25, 7, 11, 49, 131998))
+            topology="test-cluster", now=datetime.datetime(2016, 5, 25, 7, 11, 49, 131998))
 
-        self._test_configuration(tf_config,
-                                 '{"availability_zone":"us-west-2b",'
+        self._test_configuration(tf_config, '{"availability_zone":"us-west-2b",'
                                  '"configsvr_instance_count":5,'
                                  '"configsvr_instance_placement_group":"no",'
                                  '"configsvr_instance_type":"m3.4xlarge",'
