@@ -1,10 +1,16 @@
 """test file for terraform_env"""
 
+# pylint: disable=invalid-name
 from __future__ import print_function
-import unittest
 import datetime
+import logging
 import os
+import unittest
 from mock import patch
+
+import requests
+import requests.exceptions
+from testfixtures import LogCapture
 
 from common import terraform_config
 
@@ -12,9 +18,133 @@ from common import terraform_config
 class TestTerraformConfiguration(unittest.TestCase):
     """To test terraform configuration class."""
 
+    def setUp(self):
+        ''' Save some common values '''
+        cookiejar = requests.cookies.RequestsCookieJar()
+        request = requests.Request('GET', 'http://ip.42.pl/raw')
+        request.prepare()
+        self.response_state = {
+            'cookies': cookiejar,
+            '_content': 'ip.42.hostname',
+            'encoding': 'UTF-8',
+            'url': u'http://ip.42.pl/raw',
+            'status_code': 200,
+            'request': request,
+            'elapsed': datetime.timedelta(0, 0, 615501),
+            'headers': {
+                'Content-Length': '14',
+                'X-Powered-By': 'PHP/5.6.27',
+                'Keep-Alive': 'timeout=5, max=100',
+                'Server': 'Apache/2.4.23 (FreeBSD) OpenSSL/1.0.1l-freebsd PHP/5.6.27',
+                'Connection': 'Keep-Alive',
+                'Date': 'Tue, 25 Jul 2017 14:20:06 GMT',
+                'Content-Type': 'text/html; charset=UTF-8'
+            },
+            'reason': 'OK',
+            'history': []
+        }
+
     def _test_configuration(self, tf_config, expected_output_string):
         json_string = tf_config.to_json(compact=True)
         self.assertEqual(json_string, expected_output_string)
+
+    @patch('socket.gethostname')
+    @patch('requests.get')
+    def test_generate_runner_timeout_hostname(self, mock_requests_get, mock_gethostname):
+        """ Test generate runner and error cases. Fall back to gethostname """
+        mock_requests_get.side_effect = requests.exceptions.Timeout()
+        mock_requests_get.return_value = "MockedNotRaise"
+        mock_gethostname.return_value = "HostName"
+        with LogCapture(level=logging.WARNING) as log_output:
+            self.assertEqual(terraform_config.generate_runner(), "HostName")
+            log_output.check(('common.terraform_config', 'WARNING',
+                              "Terraform_config.py generate_runner could not access AWS"
+                              "meta-data. Falling back to other methods"),
+                             ('common.terraform_config', 'WARNING', 'Timeout()'),
+                             ('common.terraform_config', 'WARNING',
+                              "Terraform_config.py generate_runner could not access ip.42.pl"
+                              "to get public IP. Falling back to gethostname"), (
+                                  'common.terraform_config', 'WARNING', 'Timeout()'))
+
+    @patch('socket.gethostname')
+    @patch('requests.get')
+    def test_generate_runner_awsmeta(self, mock_requests_get, mock_gethostname):
+        """ Test generate runner, successfully getting data from aws """
+        request = requests.Request('GET', 'http://169.254.169.254/latest/meta-data/public-hostname')
+        request.prepare()
+        response = requests.models.Response()
+        self.response_state['request'] = request
+        self.response_state['_content'] = 'awsdata'
+        response.__setstate__(self.response_state)
+        mock_requests_get.return_value = response
+        mock_gethostname.return_value = "HostName"
+        with LogCapture(level=logging.WARNING) as log_output:
+            self.assertEqual(terraform_config.generate_runner(), "awsdata")
+            log_output.check()
+
+    @patch('socket.gethostname')
+    @patch('requests.get')
+    def test_generate_runner_timeout_ip42(self, mock_requests_get, mock_gethostname):
+        """ Test generate runner and error cases. Fall back to ip.42 call """
+        mock_gethostname.return_value = "HostName"
+        response = requests.models.Response()
+        response.__setstate__(self.response_state)
+        mock_requests_get.side_effect = [requests.exceptions.Timeout(), response]
+        with LogCapture(level=logging.WARNING) as log_output:
+            self.assertEqual(terraform_config.generate_runner(), 'ip.42.hostname')
+            log_output.check(('common.terraform_config', 'WARNING',
+                              "Terraform_config.py generate_runner could not access AWS"
+                              "meta-data. Falling back to other methods"),
+                             ('common.terraform_config', 'WARNING', 'Timeout()'))
+
+    @patch('socket.gethostname')
+    @patch('requests.get')
+    def test_generate_runner_timeout_ip42_404(self, mock_requests_get, mock_gethostname):
+        """ Test generate runner and error cases. Timeout on aws, and 404 on ip42 """
+        mock_gethostname.return_value = "HostName"
+        response = requests.models.Response()
+        self.response_state['status_code'] = 404
+        response.__setstate__(self.response_state)
+        mock_requests_get.side_effect = [requests.exceptions.Timeout(), response]
+        with LogCapture(level=logging.WARNING) as log_output:
+            self.assertEqual(terraform_config.generate_runner(), 'HostName')
+            log_output.check(
+                ('common.terraform_config', 'WARNING',
+                 "Terraform_config.py generate_runner could not access AWS"
+                 "meta-data. Falling back to other methods"),
+                ('common.terraform_config', 'WARNING', 'Timeout()'), (
+                    'common.terraform_config', 'WARNING',
+                    'Terraform_config.py generate_runner could not access ip.42.plto get public IP.'
+                    ' Falling back to gethostname'), (
+                        'common.terraform_config', 'WARNING',
+                        "HTTPError(u'404 Client Error: OK for url: http://ip.42.pl/raw',)"))
+
+    @patch('socket.gethostname')
+    @patch('requests.get')
+    def test_generate_runner_404_and_timeout(self, mock_requests_get, mock_gethostname):
+        """ Test generate runner and error cases. 404 on aws and timeout on ip42.
+        Fall back to gethostname """
+        request = requests.Request('GET', 'http://169.254.169.254/latest/meta-data/public-hostname')
+        request.prepare()
+        self.response_state['request'] = request
+        self.response_state['status_code'] = 404
+        self.response_state['url'] = 'http://169.254.169.254/latest/meta-data/public-hostname'
+        response = requests.models.Response()
+        response.__setstate__(self.response_state)
+        mock_requests_get.side_effect = [response, requests.exceptions.Timeout()]
+        mock_gethostname.return_value = "HostName"
+        with LogCapture(level=logging.WARNING) as log_output:
+            self.assertEqual(terraform_config.generate_runner(), "HostName")
+            log_output.check(
+                ('common.terraform_config', 'WARNING',
+                 'Terraform_config.py generate_runner could not access AWSmeta-data.'
+                 ' Falling back to other methods'),
+                ('common.terraform_config', 'WARNING', "HTTPError(u'404 Client Error: OK for url: "
+                 "http://169.254.169.254/latest/meta-data/public-hostname',)"),
+                ('common.terraform_config', 'WARNING',
+                 'Terraform_config.py generate_runner could not access ip.42.plto get public IP.'
+                 ' Falling back to gethostname'), ('common.terraform_config', 'WARNING',
+                                                   'Timeout()'))
 
     @patch('common.terraform_config.generate_runner')
     def test_default(self, mock_generate_runner):

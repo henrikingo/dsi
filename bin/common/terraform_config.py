@@ -58,10 +58,10 @@ def generate_runner():
     reverse lookup, and then fall back to using the hostname
 
     """
-
     try:
-        response = requests.get('http://169.254.169.254/latest/meta-data/public-hostname',
-                                timeout=0.01)
+        response = requests.get(
+            'http://169.254.169.254/latest/meta-data/public-hostname', timeout=0.01)
+        response.raise_for_status()
         return response.text
     except RequestException as exception:
         LOG.warning("Terraform_config.py generate_runner could not access AWS"
@@ -70,8 +70,9 @@ def generate_runner():
 
     try:
         response = requests.get('http://ip.42.pl/raw', timeout=1)
+        response.raise_for_status()
         return response.text
-    except RequestException:
+    except RequestException as exception:
         LOG.warning("Terraform_config.py generate_runner could not access ip.42.pl"
                     "to get public IP. Falling back to gethostname")
         LOG.warning(repr(exception))
