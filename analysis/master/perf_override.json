@@ -24473,6 +24473,13 @@
                         "BF-3554"
                     ]
                 },
+                "Insert.MultiIndex.Contested.Rnd":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6025"
+                    ]
+                },
                 "Insert.MultiIndex.Uncontested.Rnd":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
