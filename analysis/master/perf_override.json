@@ -24500,6 +24500,13 @@
                     "ticket":[
                         "PERF-875"
                     ]
+                },
+                "InsertIndexedStringsSimpleCollation":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6025"
+                    ]
                 }
             }
         },
