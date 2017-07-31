@@ -32,6 +32,27 @@
                         "BF-6162"
                     ]
                 },
+                "distinct_types_with_in_predicate-useAgg-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
+                "find_project-noAgg-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
+                "find_project_skip_limit-noAgg-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -102,6 +123,27 @@
                     ]
                 },
                 "canary_server-sleep-10ms-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
+                "distinct_types_with_in_predicate-useAgg-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
+                "find_project-noAgg-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
+                "find_project_skip_limit-noAgg-wiredTiger":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -1108,6 +1150,27 @@
                         "BF-6162"
                     ]
                 },
+                "distinct_types_with_in_predicate-useAgg-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
+                "find_project-noAgg-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
+                "find_project_skip_limit-noAgg-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -1178,6 +1241,27 @@
                     ]
                 },
                 "canary_server-sleep-10ms-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
+                "distinct_types_with_in_predicate-useAgg-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
+                "find_project-noAgg-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
+                "find_project_skip_limit-noAgg-wiredTiger":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -5469,6 +5553,27 @@
                         "BF-6162"
                     ]
                 },
+                "distinct_types_with_in_predicate-useAgg-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
+                "find_project-noAgg-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
+                "find_project_skip_limit-noAgg-mmapv1":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -5539,6 +5644,27 @@
                     ]
                 },
                 "canary_server-sleep-10ms-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
+                "distinct_types_with_in_predicate-useAgg-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
+                "find_project-noAgg-wiredTiger":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-6162"
+                    ]
+                },
+                "find_project_skip_limit-noAgg-wiredTiger":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
