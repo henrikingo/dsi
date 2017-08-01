@@ -1,7 +1,7 @@
 # Shared by all mongods
 mongod_config_file:
     storage:
-        engine: wiredTiger
+        engine: ${bootstrap.storageEngine}
     replication:
         oplogSizeMB: 2000000
         replSetName: logkeeper-rs0

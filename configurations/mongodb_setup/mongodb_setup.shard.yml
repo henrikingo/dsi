@@ -1,11 +1,10 @@
 # Shared by all mongods
+journal_dir: /media/ebs2/journal
 mongod_config_file:
     storage:
-        engine: mmapv1
+        engine: ${bootstrap.storageEngine}
     sharding:
         clusterRole: shardsvr
-    replication:
-      oplogSizeMB: 4000   # 4GB oplog
 
 topology:
   - id: mycluster
@@ -60,8 +59,9 @@ meta:
     hosts: ${mongodb_setup.topology.0.mongos.0.private_ip}:27017,${mongodb_setup.topology.0.mongos.1.private_ip}:27017,${mongodb_setup.topology.0.mongos.2.private_ip}:27017
     # A single host, as in "host:port". Use the primary or first mongos
     hostname: ${mongodb_setup.topology.0.mongos.0.private_ip}
+    port: 27017
     is_sharded: true
     is_replset: false
     primaries: 3
     secondaries: 2
-    mongodb_setup: shard-longevity
+    mongodb_setup: shard

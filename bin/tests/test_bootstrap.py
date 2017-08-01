@@ -196,7 +196,7 @@ class TestBootstrap(unittest.TestCase):
                           'infrastructure_provisioning.single.yml'),
              'w').close()
         open(os.path.join(test_dsipath, 'configurations', 'mongodb_setup',
-                          'mongodb_setup.replica.wiredTiger.yml'),
+                          'mongodb_setup.replica.yml'),
              'w').close()
         open(os.path.join(test_dsipath, 'configurations', 'test_control',
                           'test_control.core.yml'), 'w').close()
@@ -245,7 +245,7 @@ class TestBootstrap(unittest.TestCase):
                           'infrastructure_provisioning.shard.yml'),
              'w').close()
         open(os.path.join(test_dsipath, 'configurations', 'mongodb_setup',
-                          'mongodb_setup.replica.wiredTiger.yml'),
+                          'mongodb_setup.replica.yml'),
              'w').close()
         open(os.path.join(test_dsipath, 'configurations', 'test_control',
                           'test_control.ycsb.yml'),

@@ -2,7 +2,7 @@
 journal_dir: /media/ebs2/journal
 mongod_config_file:
     storage:
-        engine: mmapv1
+        engine: ${bootstrap.storageEngine}
 
 topology:
   - cluster_type: standalone
