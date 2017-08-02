@@ -882,6 +882,28 @@
                     ],
                     "workload":"ycsb"
                 },
+                "ycsb_95read5update-wiredTiger":{
+                    "create_time":"2017-07-30T14:41:40.093Z",
+                    "end":1501432817.0,
+                    "max":79541.20632193508,
+                    "name":"ycsb_95read5update-wiredTiger",
+                    "order":7793,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":79541.20632193508
+                        }
+                    },
+                    "revision":"dcb9dbffa65d8ddcf5be80e88868fd11c01397df",
+                    "start":1501432563.0,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-6161"
+                    ],
+                    "workload":"ycsb"
+                },
                 "ycsb_load-wiredTiger":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494686584,
@@ -1985,6 +2007,31 @@
                     ],
                     "ticket":[
                         "BF-5009"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_95read5update-wiredTiger":{
+                    "create_time":"2017-07-30T14:41:40.093Z",
+                    "end":1501535626.0,
+                    "max":73988.02873695036,
+                    "name":"ycsb_95read5update-wiredTiger",
+                    "order":7793,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":73988.02873695036,
+                            "replica_avg_lag":1.5333333333333334,
+                            "replica_end_of_test_lag":1,
+                            "replica_max_lag":15
+                        }
+                    },
+                    "revision":"dcb9dbffa65d8ddcf5be80e88868fd11c01397df",
+                    "start":1501535354.0,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-6161"
                     ],
                     "workload":"ycsb"
                 },
@@ -5691,6 +5738,25 @@
                         "BF-5009"
                     ]
                 },
+                "ycsb_95read5update-wiredTiger":{
+                    "create_time":"2017-07-30T14:41:40.093Z",
+                    "max":98.19600544061853,
+                    "name":"ycsb_95read5update-wiredTiger",
+                    "order":7793,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":98.19600544061853
+                        }
+                    },
+                    "revision":"dcb9dbffa65d8ddcf5be80e88868fd11c01397df",
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-6161"
+                    ]
+                },
                 "ycsb_load-wiredTiger":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "max":80.97184736824275,
@@ -6576,6 +6642,28 @@
                     ],
                     "ticket":[
                         "BF-5009"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_95read5update-wiredTiger":{
+                    "create_time":"2017-07-30T14:41:40.093Z",
+                    "end":1501432783.0,
+                    "max":81002.48677634403,
+                    "name":"ycsb_95read5update-wiredTiger",
+                    "order":7793,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":81002.48677634403
+                        }
+                    },
+                    "revision":"dcb9dbffa65d8ddcf5be80e88868fd11c01397df",
+                    "start":1501432533.0,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-6161"
                     ],
                     "workload":"ycsb"
                 },
