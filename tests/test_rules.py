@@ -13,25 +13,24 @@ import util
 class TestResourceRules(unittest.TestCase):
     """Test class evaluates correctness of resource sanity check rules.
     """
-
+    # pylint: disable=too-many-instance-attributes,too-many-public-methods
     def setUp(self):
         """Specifies the paths used to fetch JSON testing files. Additionally,
         sets up the common parameters for each operation being tested.
         """
         # parameters used in test cases
-        self.path_ftdc_3node_repl = '{0}linux_3node_replSet_p1.ftdc.metrics'.format(
-            test_utils.FIXTURE_DIR_PATH)
+        self.path_ftdc_3node_repl = test_utils.fixture_file_path(
+            'linux_3node_replSet_p1.ftdc.metrics')
         self.single_chunk_3node = self._first_chunk(self.path_ftdc_3node_repl)
         self.times_3node = self.single_chunk_3node[rules.FTDC_KEYS['time']]
         self.members_3node = ['0', '1', '2']
 
-        path_ftdc_standalone = '{0}core_workloads_wt.ftdc.metrics'.format(
-            test_utils.FIXTURE_DIR_PATH)
+        path_ftdc_standalone = test_utils.fixture_file_path('core_workloads_wt.ftdc.metrics')
         self.single_chunk_standalone = self._first_chunk(path_ftdc_standalone)
         self.times_standalone = self.single_chunk_standalone[rules.FTDC_KEYS['time']]
 
-        self.path_3shard_directory = '{0}test_replset_resource_rules'.format(
-            test_utils.FIXTURE_DIR_PATH)
+        self.path_3shard_directory = test_utils.fixture_file_path('test_replset_resource_rules')
+        self.path_ftdc_repllag = test_utils.fixture_file_path('test_repllag')
 
     @staticmethod
     def _first_chunk(ftdc_filepath):
@@ -237,14 +236,59 @@ class TestResourceRules(unittest.TestCase):
                 self.assertIsNone(primary)
             chunks_until_primary -= 1
 
-    def test_lag_success(self):
+    def test_ftdc_replica_lag_check_success(self): #pylint: disable=invalid-name
         """Test expected success for repl set secondary member lag check
         """
-        path_ftdc_3shard = os.path.join(self.path_3shard_directory, 'metrics.3shard_p1_repl')
-        path_perf_file_3shard = os.path.join(self.path_3shard_directory, 'perf.json.ok')
-        test_times_3shard = util.get_test_times(path_perf_file_3shard)
-        observed = rules.ftdc_replica_lag_check(path_ftdc_3shard, test_times_3shard)
+        path_ftdc = os.path.join(self.path_3shard_directory, 'metrics.3shard_p1_repl')
+        perf_json = os.path.join(self.path_3shard_directory, 'perf.json')
+        test_times = util.get_test_times(perf_json)
+        observed = rules.ftdc_replica_lag_check(path_ftdc, test_times)
         expected = []
+        self.assertEqual(observed, expected)
+
+    def test_ftdc_replica_lag_check_fail(self): #pylint: disable=invalid-name
+        """Test expected failure for repl set secondary member lag check
+
+           The diagnostic.data file metrics.mongod.0 contains ftdc data from the primary on a
+           3 node replica set. In the data there are 4 distinct periods where replication lag will
+           be above the threshold of 15 seconds, as you can see from the `expected` output object
+           below. Note that unittest-files/test_repllag/failure_message.txt.ok contains the
+           human readable failure message that corresponds to these replication lag failures.
+        """
+        path_ftdc = os.path.join(self.path_ftdc_repllag, 'metrics.mongod.0')
+        perf_json = os.path.join(self.path_ftdc_repllag, 'perf.json')
+
+        test_times = util.get_test_times(perf_json)
+        observed = rules.ftdc_replica_lag_check(path_ftdc, test_times)
+        expected = [{'additional': {'lag end threshold (s)': 2.0,
+                                    'lag start threshold (s)': 15.0,
+                                    'primary member': '0'},
+                     'members': {'1': {'compared_values': [(16.0, '2017-05-31 16:54:42Z', 129.0,
+                                                            '2017-05-31 16:54:42Z', 120.0),
+                                                           (17.0, '2017-05-31 16:59:23Z', 104.0,
+                                                            '2017-05-31 16:59:26Z', 99.0),
+                                                           (16.0, '2017-05-31 17:04:33Z', 117.0,
+                                                            '2017-05-31 17:04:34Z', 110.0),
+                                                           (16.0, '2017-05-31 17:09:13Z', 93.0,
+                                                            '2017-05-31 17:09:32Z', 12.0)],
+                                       'labels': ('start value (s)', 'max time', 'max value (s)',
+                                                  'end time', 'end value (s)'),
+                                       'report_all_values': True,
+                                       'times': [1496248949000, 1496249726000,
+                                                 1496250019000, 1496250331000]},
+                                 '2': {'compared_values': [(16.0, '2017-05-31 16:54:03Z', 90.0,
+                                                            '2017-05-31 16:54:04Z', 82.0),
+                                                           (16.0, '2017-05-31 16:58:53Z', 76.0,
+                                                            '2017-05-31 16:59:00Z', 72.0),
+                                                           (16.0, '2017-05-31 17:03:53Z', 80.0,
+                                                            '2017-05-31 17:03:58Z', 77.0),
+                                                           (16.0, '2017-05-31 17:08:53Z', 70.0,
+                                                            '2017-05-31 17:08:54Z', 62.0)],
+                                       'labels': ('start value (s)', 'max time', 'max value (s)',
+                                                  'end time', 'end value (s)'),
+                                       'report_all_values': True,
+                                       'times': [1496248967000, 1496249735000,
+                                                 1496250027000, 1496250339000]}}}]
         self.assertEqual(observed, expected)
 
     def test_lag_no_perf_file(self):

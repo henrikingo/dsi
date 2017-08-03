@@ -13,7 +13,7 @@ import util
 # Useful absolute directory paths.
 TESTS_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT_DIR = os.path.normpath(os.path.join(TESTS_ROOT_DIR, ".."))
-FIXTURE_DIR_PATH = os.path.join(TESTS_ROOT_DIR, "unittest-files/")
+FIXTURE_DIR_PATH = os.path.join(TESTS_ROOT_DIR, "unittest-files")
 
 def repo_root_file_path(file_path):
     """"Return the absolute path of a file at `file_path` with respect to the repo root."""

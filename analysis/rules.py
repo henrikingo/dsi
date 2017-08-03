@@ -1,7 +1,7 @@
 """Module of constants and rules used in our resource sanity checks. Used in post_run_check.py.
 """
 
-import datetime
+from datetime import datetime
 import logging
 import os
 import re
@@ -119,7 +119,6 @@ def is_log_line_bad(log_line, test_times=None):
 
     return err_type_char in ["F", "E"] or any(bad_msg in log_msg for bad_msg in BAD_MESSAGES)
 
-UNIX_EPOCH = date_parser.parse('1970-01-01T00:00:00Z')  # for formatting log failure messages
 def ftdc_date_parse(time_in_s):
     """Helper to convert timestamps in s to human-readable format. Matches formatting in the
     timeseries web tool
@@ -127,8 +126,7 @@ def ftdc_date_parse(time_in_s):
     :type time_in_s: int
     :rtype: str
     """
-    time_offset = UNIX_EPOCH + datetime.timedelta(seconds=time_in_s)
-    return time_offset.strftime('%Y-%m-%d %H:%M:%SZ')
+    return datetime.utcfromtimestamp(time_in_s).strftime('%Y-%m-%d %H:%M:%SZ')
 
 
 def failure_collection(failure_times, compared_values, labels, other_rule_info=None,
