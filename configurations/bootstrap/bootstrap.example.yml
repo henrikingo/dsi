@@ -1,0 +1,79 @@
+# Input for bootstrap.py which prepares an environment to provision resources
+# for local performance testing. The bootstrap phase takes as input a small number of parameters
+# which describe the system to be created. Based on these bootstrap parameters, bootstrap.py will
+# prepare a work directory that contains additional .yml configuration files, terraform related
+# files, etc. As an example, based on the infrastructure_provisioning key, it will put into place
+# the related infrastructure_provisioning.yml file:
+#
+#     cp $DSI_PATH/configurations/infrastructure_provisioning/infrastructure_provisioning.cluster_type.yml infrastructure_provisioning.yml
+#
+# Please consult the documentation for more information: http://bit.ly/2ufjQ0R
+
+# QUICKSTART
+#
+# To run the DSI infrastructure, make a copy of this file, then edit the entries below for your use.
+# Then, run:
+#
+#     $DSI_PATH/bin/bootstrap.py --directory work
+#                                --bootstrap-file /path/to/your/copy/of/this/file
+#
+# This will make a new directory work, configured with everything you need to run the
+# infrastructure.
+#
+# After successfully running bootstrap.py, you can execute the following commands to provision
+# infrastructure, set up mongodb, and run test workloads:
+#
+#     cd work
+#     source dsienv.sh
+#     infrastructure_provisioning.py
+#     mongodb_setup.py
+#     run_test.py
+#
+# Update the fields below to reflect personal information and desired configuration parameters:
+
+
+# Personal information (REQUIRED)
+
+# Specify the path to your SSH key file for AWS (pem file), the name of the key in EC2, and your
+# @10gen.com username. This is necessary to connect to your provisioned infrastructure. For a full
+# description, see the Requirements section of the documentation: http://bit.ly/2ufjQ0R
+ssh_key_file: ~/.ssh/your-ssh-key-file.pem  # SSH pem keyfile to use with AWS
+ssh_key_name: your-ssh-key-name  # The Name of the Key
+owner: your.username  # Your mongodb email address
+
+
+# OPTIONAL BUT RECOMMENDED (See $DSI_PATH/configurations/defaults.yml for default values):
+
+# Specify the type of infrastructure to be provisioned (single, replica, shard, longevity,
+# initialsync-logkeeper)
+# See the .yml files located in $DSI_PATH/configurations/infrastructure_provisioning for more
+# information about each configuration.
+infrastructure_provisioning: single
+
+# Specify the mongodb configuration to test (standalone, single-replica, replica, replica-2node,
+# shard, shard-longevity, initialsync-logkeeper).
+# See the .yml files located in $DSI_PATH/configurations/mongodb_setup for more information about
+# each configuration.
+mongodb_setup: standalone
+
+# Specify the storage engine to use with MongoDB (wiredTiger, mmapv1, inMemory).
+storageEngine: wiredTiger
+
+# Specify the set of tests to be run. See the .yml files located in
+# $DSI_PATH/configurations/test_control for more information about each set of tests.
+test_control: core
+
+# Specify the paths for the repos 'workloads' and 'YCSB'.
+# They are available at https://github.com/10gen/workloads
+# and https://github.com/mongodb-labs/YCSB, and are required for many of the test configurations.
+# If omitted, DSI will automatically clone the repo from github as needed.
+#
+# workloads_dir: ~/repos/workloads
+# ycsb_dir: ~/repos/YCSB
+
+# DSI will search for mc and terraform in your path if not specified. Both are required for running
+# the system. See http://bit.ly/2ufjQ0R to download the files.
+# Leave the following lines as is to maintain this behavior.
+#
+# mc: ~/path/to/mc
+# terraform: ~/path/to/terraform

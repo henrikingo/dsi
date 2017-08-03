@@ -187,6 +187,10 @@ def setup_overrides(config, directory):
     if 'ssh_key_name' in config:
         tfvars['ssh_key_name'] = config['ssh_key_name']
     if 'owner' in config:
+        if config['owner'] == 'your.username':
+            LOGGER.critical("owner is set to your.username. Please update this setting in your "
+                            "bootstrap.yml file, and review the other settings in that file.")
+            assert False
         tfvars['tags'] = {'owner': config['owner']}
     if os.path.exists(override_path):
         with open(override_path) as override_file:

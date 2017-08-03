@@ -332,6 +332,20 @@ class TestBootstrap(unittest.TestCase):
         # Removing created file
         os.remove(os.path.join(test_override_path, 'overrides.yml'))
 
+    def test_setup_overrides_default_username(self):
+        """Testing setup_overrides fails if user doesn't change username
+        from bootstrap.example.yml default"""
+        config = {'owner': 'your.username'}
+        test_override_path = os.path.dirname(os.path.abspath(__file__))
+        with self.assertRaises(AssertionError):
+            bootstrap.setup_overrides(config, test_override_path)
+
+        # Removing created file
+        try:
+            os.remove(os.path.join(test_override_path, 'overrides.yml'))
+        except OSError:
+            pass
+
     def test_setup_security_tf(self):
         """Testing setup_security_tf creates security.tf file"""
         config = {}
