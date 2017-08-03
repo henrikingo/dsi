@@ -41,6 +41,9 @@ class Provisioner(object):
         else:
             self.terraform = './terraform'
 
+        os.environ['TF_LOG'] = 'DEBUG'
+        os.environ['TF_LOG_PATH'] = './terraform.log'
+
     def provision_resources(self):
         """ Function used to actually provision the resources"""
         if self.production:
