@@ -9,7 +9,6 @@ import logging
 import os
 import sys
 import subprocess
-from subprocess import CalledProcessError
 import shutil
 
 
@@ -17,7 +16,6 @@ from common.log import setup_logging
 from common.config import ConfigDict
 from common.terraform_config import TerraformConfiguration
 from common.terraform_output_parser import TerraformOutputParser
-from infrastructure_teardown import destroy_resources
 
 LOG = logging.getLogger(__name__)
 
@@ -133,23 +131,15 @@ class Provisioner(object):
         if not self.existing and self.cluster == 'initialsync-logkeeper':
             terraform_command.extend(['-var="mongod_ebs_instance_count=0"',
                                       '-var="workload_instance_count=0"'])
-        try:
-            subprocess.check_call(terraform_command)
-            if not self.existing and self.cluster == 'initialsync-logkeeper':
-                subprocess.check_call([self.terraform, 'apply',
-                                       self.var_file, self.parallelism])
-                subprocess.check_call([self.terraform, 'refresh', self.var_file])
-                subprocess.check_call([self.terraform, 'plan', '-detailed-exitcode', self.var_file])
-                terraform_output = run_and_save_output([self.terraform, 'output'])
-                tf_parser = TerraformOutputParser(terraform_output=terraform_output)
-                tf_parser.write_output_files()
-        except CalledProcessError as called_process_error:
-            LOG.info("Failed to provision EC2 resources."
-                     "Releasing any EC2 resources that did deploy.")
-            destroy_resources()
-            shutil.rmtree(self.evg_data_dir)
-            LOG.info("Cleaned up %s on Evergreen host. Existing test", self.evg_data_dir)
-            raise called_process_error
+        subprocess.check_call(terraform_command)
+        if not self.existing and self.cluster == 'initialsync-logkeeper':
+            subprocess.check_call([self.terraform, 'apply',
+                                   self.var_file, self.parallelism])
+        subprocess.check_call([self.terraform, 'refresh', self.var_file])
+        subprocess.check_call([self.terraform, 'plan', '-detailed-exitcode', self.var_file])
+        terraform_output = run_and_save_output([self.terraform, 'output'])
+        tf_parser = TerraformOutputParser(terraform_output=terraform_output)
+        tf_parser.write_output_files()
 
         with open('infrastructure_provisioning.out.yml', 'r') as provisioning_out_yaml:
             LOG.info('Contents of infrastructure_provisioning.out.yml:')
