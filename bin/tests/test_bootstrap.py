@@ -714,7 +714,7 @@ class TestBootstrap(unittest.TestCase):
         # confirms that load_bootstrap copies file into working directory correctly
 
     def test_load_bootstrap_copy_file_default_to_local(self):
-        """Testing that load_bootstrap uses local file if --bootstrap-file flag not used""" 
+        """Testing that load_bootstrap uses local file if --bootstrap-file flag not used"""
         bootstrap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                       'bootstrap.yml')
         bootstrap_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'testdir/')
