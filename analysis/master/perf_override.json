@@ -3621,6 +3621,13 @@
                         "PERF-444"
                     ]
                 },
+                "Commands.CountsIntIDRange":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6227"
+                    ]
+                },
                 "Commands.DistinctWithoutIndex":{
                     "thread_threshold":0.26,
                     "threshold":0.21,
@@ -7886,10 +7893,10 @@
                     ]
                 },
                 "Aggregation.CountsIntIDRange":{
-                    "thread_threshold":-0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
                     "ticket":[
-                        "BF-5316"
+                        "BF-6227"
                     ]
                 },
                 "Aggregation.DistinctWithIndex":{
@@ -12992,6 +12999,13 @@
                     "threshold":0.15,
                     "ticket":[
                         "PERF-444"
+                    ]
+                },
+                "Commands.CountsIntIDRange":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6227"
                     ]
                 },
                 "Commands.DistinctWithoutIndex":{
@@ -18699,6 +18713,13 @@
                     "threshold":0.25,
                     "ticket":[
                         "BF-5575"
+                    ]
+                },
+                "Aggregation.IdentityView.CountsIntIDRange":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6227"
                     ]
                 },
                 "Aggregation.IdentityView.DistinctWithIndex":{
@@ -26045,6 +26066,13 @@
                         "PERF-444"
                     ]
                 },
+                "Commands.CountsIntIDRange":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6227"
+                    ]
+                },
                 "Commands.DistinctWithoutIndex":{
                     "thread_threshold":0.26,
                     "threshold":0.23,
@@ -30381,10 +30409,10 @@
                     ]
                 },
                 "Aggregation.CountsIntIDRange":{
-                    "thread_threshold":-0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
                     "ticket":[
-                        "BF-5316"
+                        "BF-6227"
                     ]
                 },
                 "Aggregation.DistinctWithIndex":{
@@ -35468,6 +35496,13 @@
                     "threshold":0.15,
                     "ticket":[
                         "PERF-444"
+                    ]
+                },
+                "Commands.CountsIntIDRange":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6227"
                     ]
                 },
                 "Commands.DistinctWithIndex":{
@@ -41051,7 +41086,7 @@
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
-                        "BF-5126"
+                        "BF-6227"
                     ]
                 },
                 "Aggregation.IdentityView.DistinctWithIndex":{
