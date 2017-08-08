@@ -26092,11 +26092,12 @@
                     ]
                 },
                 "Commands.DistinctWithoutIndex":{
-                    "thread_threshold":0.26,
+                    "thread_threshold":0.35,
                     "threshold":0.23,
                     "ticket":[
                         "PERF-444",
-                        "BF-3965"
+                        "BF-3965",
+                        "BF-6025"
                     ]
                 },
                 "Commands.DistinctWithoutIndexAndQuery":{
@@ -35531,11 +35532,12 @@
                     ]
                 },
                 "Commands.DistinctWithoutIndex":{
-                    "thread_threshold":0.26,
+                    "thread_threshold":0.35,
                     "threshold":0.23,
                     "ticket":[
                         "PERF-444",
-                        "BF-3965"
+                        "BF-3965",
+                        "BF-6025"
                     ]
                 },
                 "Commands.DistinctWithoutIndexAndQuery":{
