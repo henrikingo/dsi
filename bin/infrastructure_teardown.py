@@ -14,8 +14,8 @@ import os
 import subprocess
 from subprocess import CalledProcessError
 
-
 LOG = logging.getLogger(__name__)
+
 
 def destroy_resources():
     """ Destroys AWS resources using terraform """
@@ -34,6 +34,13 @@ def destroy_resources():
     var_file = ''
     if os.path.isfile('cluster.json'):
         var_file = '-var-file=cluster.json'
+    else:
+        LOG.critical("In infrastructure_teardown.py and cluster.json does not exist. Giving up.")
+        if previous_directory is not None:
+            os.chdir(previous_directory)
+        raise (
+            UserWarning("In infrastructure_teardown.py and cluster.json does not exist. Giving up.")
+        )
 
     try:
         subprocess.check_call([terraform, 'destroy', var_file, '-force'])
@@ -71,11 +78,13 @@ def setup_logging(verbose, filename=None):
     root_logger.setLevel(loglevel)
     root_logger.addHandler(handler)
 
+
 def main():
     """ Main Function """
     args = parse_command_line()
     setup_logging(args.debug, args.log_file)
     destroy_resources()
+
 
 if __name__ == '__main__':
     main()
