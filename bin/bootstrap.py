@@ -63,8 +63,8 @@ def read_aws_credentials_file(config):
     config_parser = ConfigParser.ConfigParser(defaults=defaults)
     config_parser.read(credential_path)
     if config_parser.has_section(section):
-        config['aws_access_key'] = config_parser.get('default', 'aws_access_key_id')
-        config['aws_secret_key'] = config_parser.get('default', 'aws_secret_access_key')
+        config['aws_access_key'] = config_parser.get(section, 'aws_access_key_id')
+        config['aws_secret_key'] = config_parser.get(section, 'aws_secret_access_key')
     return config
 
 def read_env_vars(config):
@@ -256,7 +256,7 @@ def validate_terraform(config):
     '''Asserts that terraform is the correct version'''
     if not config['production']:
         try:
-            version = subprocess.check_output(["terraform", "version"]).split('\n')[0]
+            version = subprocess.check_output([config['terraform'], "version"]).split('\n')[0]
         except subprocess.CalledProcessError as error:
             if error.returncode == 1:
                 LOGGER.critical("Call to terraform failed.")
@@ -266,9 +266,9 @@ def validate_terraform(config):
                 LOGGER.critical("No terraform binary file found.")
             LOGGER.critical("See documentation for installing terraform: http://bit.ly/2ufjQ0R")
             assert False
-        if not version == "Terraform v0.9.11":
-            version_error = "You are using {0}, but DSI requires Terraform v0.9.11.".format(version)
-            LOGGER.critical(version_error)
+        if not version == config['terraform_version_check']:
+            LOGGER.critical('You are using %s, but DSI requires %s.',
+                            version, config['terraform_version_check'])
             LOGGER.critical("See documentation for installing terraform: http://bit.ly/2ufjQ0R")
             assert False
 
@@ -363,6 +363,11 @@ def load_bootstrap(config, directory):
     config_dict.load()
     for key in config_dict['bootstrap'].keys():
         config[key] = config_dict['bootstrap'][key]
+
+    # terraform required_version must be specified, we fail hard if user has tried to unset
+    config['terraform_version_check'] = \
+        config_dict['infrastructure_provisioning']['terraform']['required_version']
+
     os.chdir(current_path)
 
     return config_dict
@@ -390,37 +395,20 @@ def main():
     LOGGER.info('dsipath is %s', dsipath)
 
     mission_control = find_mission_control(config, dsipath)
-    terraform = find_terraform(config, directory)
+    config['terraform'] = find_terraform(config, directory)
     validate_mission_control(config)
     validate_terraform(config)
 
-    write_dsienv(directory, dsipath, mission_control, terraform, config)
+    write_dsienv(directory, dsipath, mission_control, config['terraform'], config)
 
-    # TODO: Copy of persisted terraform information should be copied
-    # into working directory here. This is future work to support tying
-    # the terraform cluster to the evergreen runner.
-
-    # if we specified a secret file, use its contents as the aws secret
-    if 'aws_secret_file' in config:
-        # Read in the secret
-        config['aws_secret'] = open(config['aws_secret_file']).read().rstrip()
-
-    # Todo: This section should be replaced by code to select infrastructure.yml
-    cluster_path = os.path.join(dsipath, 'clusters', config['infrastructure_provisioning'])
+    # Copy terraform tf files and remote-scripts to work directory
+    cluster_path = os.path.join(dsipath, 'clusters', 'default')
     remote_scripts_path = os.path.join(dsipath, 'clusters', 'remote-scripts')
-    # Copy over all files from cluster directory
-    if not os.path.isdir(cluster_path):
-        cluster_path = os.path.join(dsipath, 'clusters', 'default')
     LOGGER.debug('Cluster path is %s', cluster_path)
     for filename in glob.glob(os.path.join(cluster_path, '*')):
         shutil.copy(filename, directory)
         LOGGER.debug("Copied %s to work directory %s.", filename, directory)
 
-    # Copy over all files from the remote scripts directory Note that
-    # this is copying above the workload directory for now. This is
-    # suboptimal and should be changed in the future.
-
-    # This should ideally go away when we go to infrastructure.yml
     remote_scripts_target = os.path.join(directory, 'remote-scripts')
     LOGGER.debug("remote_scripts_target is %s", remote_scripts_target)
     LOGGER.debug("remote_scripts_path is %s", remote_scripts_path)
@@ -436,12 +424,8 @@ def main():
     # copy necessary config files to the current directory
     copy_config_files(dsipath, config, directory)
 
-    # The following section goes away when we start using and updating
-    # infrastructure_provisioning.yml.
-
-    # This writes an overrides.yml with the key path. It does a coare
-    # merge. It will override any other infrastructure_provisioning
-    # entries
+    # This writes an overrides.yml with the ssh_key_file, ssh_key_name and owner, if given in
+    # bootstrap.yml.
     setup_overrides(config, directory)
 
     setup_security_tf(config, directory)

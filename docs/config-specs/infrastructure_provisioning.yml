@@ -1,6 +1,7 @@
 # Contents of this is transformed into input JSON to override terraform default values
 # Note that all tfvars values have defaults, and are therefore optional
 tfvars:
+    cluster_name: shard
     mongod_instance_count: 9
     mongos_instance_count: 3
     configsvr_instance_count: 3
@@ -25,6 +26,15 @@ tfvars:
         expire-on-delta: 1                # Set expire-on tag used by reaper script. Note: must be lower case. delta is days added to current date. Default: 1
         Variant: Linux 3-shard cluster
         Project: sys-perf
+
+evergreen:
+    # Whether terraform state files should be stored outside the work dir
+    # Used to reuse clusters during the lifecycle of an evergreen runner
+    reuse_cluster: ${bootstrap.production}
+    data_dir: /data/infrastructure_provisioning
+terraform:
+    # A string, or False
+    required_version: Terraform v0.9.11
 
 custom_terraform: |                                      # Longer term, I would hope to see a mechanism where user can add
     resource "aws_ebs_volume" "my_ebs_volume" {         # custom terraform code. Probably depends on how using a separate

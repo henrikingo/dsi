@@ -3,7 +3,6 @@ Unit tests for 'bootstrap.py'.
 """
 # pylint: disable=invalid-name
 # pylint: disable=too-many-public-methods
-import copy
 import logging
 import os
 import shutil
@@ -52,16 +51,17 @@ class TestBootstrap(unittest.TestCase):
         """Testing read_aws_creds method correctly modifies config"""
         test_cred_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), 'test_credentials')
+
         with open(test_cred_path, 'w+') as test_cred_file:
             test_cred_file.write('[default]\naws_access_key_id = '
                                  'test_aws_access_key\naws_secret_access_key = '
                                  'test_aws_secret_key')
         mock_expanduser.return_value = test_cred_path
-        master_config = {}
-        test_config = bootstrap.read_aws_credentials_file(copy.copy(master_config))
-        master_config['aws_access_key'] = 'test_aws_access_key'
-        master_config['aws_secret_key'] = 'test_aws_secret_key'
-        self.assertEqual(test_config, master_config)
+        test_config = {}
+        test_config = bootstrap.read_aws_credentials_file(test_config)
+        expected_config = {'aws_access_key': 'test_aws_access_key',
+                           'aws_secret_key': 'test_aws_secret_key'}
+        self.assertEqual(test_config, expected_config)
 
         # Removing created file
         os.remove(test_cred_path)
@@ -76,39 +76,36 @@ class TestBootstrap(unittest.TestCase):
                                  'test_aws_access_key1\naws_secret_access_key = '
                                  'test_aws_secret_key1')
         mock_expanduser.return_value = test_cred_path
-        master_config = {}
         with patch.dict('os.environ',
                         {'AWS_ACCESS_KEY_ID': 'test_aws_access_key2',
                          'AWS_SECRET_ACCESS_KEY': 'test_aws_secret_key2'}):
             test_config = {}
             bootstrap.read_aws_credentials_file(test_config)
             bootstrap.read_env_vars(test_config)
-        master_config['aws_access_key'] = 'test_aws_access_key2'
-        master_config['aws_secret_key'] = 'test_aws_secret_key2'
-        self.assertEqual(test_config, master_config)
+        expected_config = {'aws_access_key': 'test_aws_access_key2',
+                           'aws_secret_key': 'test_aws_secret_key2'}
+        self.assertEqual(test_config, expected_config)
 
         # Removing created file
         os.remove(test_cred_path)
 
     def test_read_env_vars(self):
         """Testing read_env_vars method correctly modifies config"""
-        master_config = {}
+        expected_config = {'aws_access_key': 'test_aws_access_key',
+                           'aws_secret_key': 'test_aws_secret_key'}
         test_config = {}
         with patch.dict('os.environ',
                         {'AWS_ACCESS_KEY_ID': 'test_aws_access_key',
                          'AWS_SECRET_ACCESS_KEY': 'test_aws_secret_key'}):
             test_config = bootstrap.read_env_vars(test_config)
-        master_config['aws_access_key'] = 'test_aws_access_key'
-        master_config['aws_secret_key'] = 'test_aws_secret_key'
-        self.assertEqual(test_config, master_config)
+        self.assertEqual(test_config, expected_config)
 
     def test_parse_command_line_no_args(self):
         """Testing for parse_command_line (no args), modifying config"""
-        master_config = {}
-        master_config['directory'] = '.'
+        expected_config = {'directory': '.'}
         test_config = {}
         test_config = bootstrap.parse_command_line(test_config, [])
-        self.assertEquals(test_config, master_config)
+        self.assertEquals(test_config, expected_config)
 
     def test_parse_command_line_all_args(self):
         """Testing for parse_command_line (all args given), modifying config"""
@@ -396,7 +393,6 @@ class TestBootstrap(unittest.TestCase):
         """Testing find_terraform when no exception, val not in config"""
         mock_check_output.return_value = '/usr/bin/terraform'
         config = {}
-        config.pop('terraform', None)
         terraform = bootstrap.find_terraform(config, '/')
         self.assertEqual(terraform, '/usr/bin/terraform')
 
@@ -417,18 +413,18 @@ class TestBootstrap(unittest.TestCase):
                                      mock_check_output):
         """Testing validate_terraform fails on incorrect version"""
         mock_check_output.return_value = "Terraform v0.6.16"
-        config = {'production': False}
+        config = {'terraform': './terraform',
+                  'terraform_version_check': 'Terraform v0.9.11',
+                  'production': False}
         with LogCapture(level=logging.CRITICAL) as crit:
             with self.assertRaises(AssertionError):
                 bootstrap.validate_terraform(config)
-            crit_logs = set(crit.actual())
-            crit_expected = set([('bootstrap', 'CRITICAL',
-                                  'You are using Terraform v0.6.16, '
-                                  'but DSI requires Terraform v0.9.11.'),
-                                 ('bootstrap', 'CRITICAL',
-                                  'See documentation for installing terraform: '
-                                  'http://bit.ly/2ufjQ0R')])
-            self.assertTrue(crit_expected.issubset(crit_logs))
+            crit.check(
+                ('bootstrap', 'CRITICAL',
+                 'You are using Terraform v0.6.16, but DSI requires Terraform v0.9.11.'),
+                ('bootstrap', 'CRITICAL',
+                 'See documentation for installing terraform: http://bit.ly/2ufjQ0R')
+                )
 
     @patch('subprocess.check_output')
     def test_terraform_call_fails(self,
@@ -436,7 +432,9 @@ class TestBootstrap(unittest.TestCase):
         """Testing validate_terraform fails when terraform call fails"""
         mock_check_output.side_effect = subprocess.CalledProcessError(1, None)
         mock_check_output.return_value = "Terraform v0.6.16"
-        config = {'production': False}
+        config = {'terraform': './terraform',
+                  'terraform_version_check': 'Terraform v0.9.11',
+                  'production': False}
         with LogCapture(level=logging.CRITICAL) as crit:
             with self.assertRaises(AssertionError):
                 bootstrap.validate_terraform(config)
@@ -454,7 +452,9 @@ class TestBootstrap(unittest.TestCase):
         """Testing validate_terraform fails when terraform doesn't run"""
         mock_check_output.side_effect = subprocess.CalledProcessError(126, None)
         mock_check_output.return_value = "Terraform v0.6.16"
-        config = {'production': False}
+        config = {'terraform': './terraform',
+                  'terraform_version_check': 'Terraform v0.9.11',
+                  'production': False}
         with LogCapture(level=logging.CRITICAL) as crit:
             with self.assertRaises(AssertionError):
                 bootstrap.validate_terraform(config)
@@ -472,7 +472,9 @@ class TestBootstrap(unittest.TestCase):
         """Testing validate_terraform fails when terraform is not found"""
         mock_check_output.side_effect = subprocess.CalledProcessError(127, None)
         mock_check_output.return_value = "Terraform v0.6.16"
-        config = {'production': False}
+        config = {'terraform': './terraform',
+                  'terraform_version_check': 'Terraform v0.9.11',
+                  'production': False}
         with LogCapture(level=logging.CRITICAL) as crit:
             with self.assertRaises(AssertionError):
                 bootstrap.validate_terraform(config)
@@ -488,7 +490,9 @@ class TestBootstrap(unittest.TestCase):
     def test_terraform_valid(self, mock_check_output):
         """Testing validate_terraform with valid inputs"""
         mock_check_output.return_value = 'Terraform v0.9.11'
-        config = {'production': False}
+        config = {'terraform': './terraform',
+                  'terraform_version_check': 'Terraform v0.9.11',
+                  'production': False}
         bootstrap.validate_terraform(config)
         self.assertEquals(config, config)
 
@@ -701,13 +705,15 @@ class TestBootstrap(unittest.TestCase):
 
     def test_load_bootstrap_no_file_specified(self):
         """Testing that load_bootstrap loads defaults without bootstrap.yml"""
+        mongodb_url = 'https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.4.6.tgz'
         master_config = {'infrastructure_provisioning': 'single',
-                         'mongodb_binary_archive': '',
+                         'mongodb_binary_archive': mongodb_url,
                          'mongodb_setup': 'standalone',
                          'platform': 'linux',
                          'production': False,
                          'storageEngine': 'wiredTiger',
-                         'test_control': 'benchRun'}
+                         'terraform_version_check': 'Terraform v0.9.11',
+                         'test_control': 'core'}
         test_config = {}
         bootstrap.load_bootstrap(test_config, '.')
         self.assertEqual(test_config, master_config)

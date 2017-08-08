@@ -276,6 +276,7 @@ class ConfigDict(dict):
         if value:
             return value
 
+        # For leaf nodes, check overrides and return it if specified
         if self.overrides and \
            isinstance(self.overrides, dict) and \
            not isinstance(self.raw.get(key, "some string"), (list, dict)):

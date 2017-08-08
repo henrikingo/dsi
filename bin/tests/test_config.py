@@ -92,7 +92,7 @@ class ConfigDictTestCase(unittest.TestCase):
     def test_overrides(self):
         """Test value from overrides.yml"""
         self.assertEqual(self.conf['infrastructure_provisioning']['tfvars']['configsvr_instance_type'], "t1.micro")
-        self.assertEqualDicts(self.conf['infrastructure_provisioning']['tfvars'], {'mongos_instance_type': 'c3.8xlarge', 'availability_zone': 'us-west-2a', 'workload_instance_count': 1, 'region': 'us-west-2', 'mongod_instance_count': 9, 'configsvr_instance_count': 3, 'mongos_instance_count': 3, 'ssh_key_file': 'aws_ssh_key.pem', 'ssh_user': 'ec2-user', 'mongod_instance_type': 'c3.8xlarge', 'ssh_key_name': 'serverteam-perf-ssh-key', 'workload_instance_type': 'c3.8xlarge', 'tags': {'Project': 'sys-perf', 'owner': 'serverteam-perf@10gen.com', 'Variant': 'Linux 3-shard cluster', 'expire-on-delta': 1}, 'configsvr_instance_type': 't1.micro'})
+        self.assertEqual(self.conf['infrastructure_provisioning']['tfvars'].as_dict(), {'cluster_name': 'shard', 'mongos_instance_type': 'c3.8xlarge', 'availability_zone': 'us-west-2a', 'workload_instance_count': 1, 'region': 'us-west-2', 'mongod_instance_count': 9, 'configsvr_instance_count': 3, 'mongos_instance_count': 3, 'ssh_key_file': 'aws_ssh_key.pem', 'ssh_user': 'ec2-user', 'mongod_instance_type': 'c3.8xlarge', 'ssh_key_name': 'serverteam-perf-ssh-key', 'workload_instance_type': 'c3.8xlarge', 'tags': {'Project': 'sys-perf', 'owner': 'serverteam-perf@10gen.com', 'Variant': 'Linux 3-shard cluster', 'expire-on-delta': 1}, 'configsvr_instance_type': 't1.micro'})
 
     def test_defaults(self):
         """Test value from defaults.yml"""
@@ -194,8 +194,8 @@ class ConfigDictTestCase(unittest.TestCase):
         """Test that iterators .keys() and .values() work"""
         mycluster = self.conf['mongodb_setup']['topology'][0]
         self.assertEqualLists(self.conf.keys(), ['workload_preparation', 'test_control', 'system_setup', 'runtime_secret', 'bootstrap', 'mongodb_setup', 'analysis', 'infrastructure_provisioning', 'runtime'])
-        self.assertEqualLists(self.conf['infrastructure_provisioning']['tfvars'].values(), ['c3.8xlarge', 'us-west-2a', 1, 'us-west-2', 9, 3, 3, 'aws_ssh_key.pem', 'ec2-user', 'c3.8xlarge', 'serverteam-perf-ssh-key', 'c3.8xlarge', {'Project': 'sys-perf', 'owner': 'serverteam-perf@10gen.com', 'Variant': 'Linux 3-shard cluster', 'expire-on-delta': 1}, 't1.micro'])
-        self.assertEqualLists(mycluster['shard'][2]['mongod'][0].values(), ['53.1.1.7', '', {'replication': {'oplogSizeMB': 153600, 'replSetName': 'override-rs'}, 'systemLog': {'path': 'data/logs/mongod.log', 'destination': 'file'}, 'setParameter': {'enableTestCommands': True, 'foo': True}, 'net': {'port': 27017, 'bindIp': '0.0.0.0'}, 'processManagement': {'fork': True}, 'storage': {'engine': 'inMemory', 'dbPath': 'data/dbs'}}, '10.2.1.7'])
+        self.assertEqualLists(self.conf['infrastructure_provisioning']['tfvars'].values(), ['c3.8xlarge', 'us-west-2a', 1, 'us-west-2', 9, 3, 'shard', 3, 'aws_ssh_key.pem', 'ec2-user', 'c3.8xlarge', 'serverteam-perf-ssh-key', 'c3.8xlarge', {'Project': 'sys-perf', 'owner': 'serverteam-perf@10gen.com', 'Variant': 'Linux 3-shard cluster', 'expire-on-delta': 1}, 't1.micro'])
+        self.assertEqualLists(mycluster['shard'][2]['mongod'][0].values(), ['53.1.1.7', 'https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.4.6.tgz', {'replication': {'oplogSizeMB': 153600, 'replSetName': 'override-rs'}, 'systemLog': {'path': 'data/logs/mongod.log', 'destination': 'file'}, 'setParameter': {'enableTestCommands': True, 'foo': True}, 'net': {'port': 27017, 'bindIp': '0.0.0.0'}, 'processManagement': {'fork': True}, 'storage': {'engine': 'inMemory', 'dbPath': 'data/dbs'}}, '10.2.1.7'])
 
     def test_lookup_path(self):
         """check that the lookup_path works as expected."""
@@ -267,7 +267,7 @@ class ConfigDictTestCase(unittest.TestCase):
             elif isinstance(list1value, list):
                 self.assertEqualLists(list1value, list2value)
             else:
-                self.assertEqual(list1value, list2value, 'assertEqualLists failed: mismatch in values.')
+                self.assertEqual(list1value, list2value, '{} != {}'.format(list1, list2))
         self.assertEqual(len(list2), 0)
 
 

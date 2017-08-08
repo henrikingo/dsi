@@ -19,3 +19,6 @@ tfvars:
     availability_zone: us-west-2b
 
 numactl_prefix: []
+
+evergreen:
+    reuse_cluster: false

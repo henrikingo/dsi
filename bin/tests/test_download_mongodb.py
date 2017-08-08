@@ -77,20 +77,17 @@ class DownloadMongodbTestCase(unittest.TestCase):
         # TODO: Can't really unit test anything that uses RemoteHost for now, so can't assert the
         # parsing of public_ip's. Need to mock RemoteHost or something
 
-    def test_runtime_binary(self):
+    def test_mongodb_binary(self):
         """
         Init DownloadMongodb with ConfigDict structure with
-        mongodb_binary specified in runtime.
+        mongodb_binary specified in bootstrap.
         """
-        self.config['mongodb_setup']['mongodb_binary_archive'] = ''
-        self.config['runtime'] = {'mongodb_binary_archive': 'http://bar.tgz'}
-        runtime = self.config['runtime']
+        mongodb_url = 'http://bar.tgz'
+        self.config['mongodb_setup']['mongodb_binary_archive'] = mongodb_url
         infrastructure = self.config['infrastructure_provisioning']
         self.downloader = DownloadMongodb(self.config, True)
         self.assertTrue(self.downloader)
-        self.assertEqual(
-            self.downloader.mongodb_binary_archive, runtime['mongodb_binary_archive']
-        )
+        self.assertEqual(self.downloader.mongodb_binary_archive, mongodb_url)
         self.assertEqual(self.downloader.ssh_key_file, infrastructure['tfvars']['ssh_key_file'])
         self.assertEqual(self.downloader.ssh_user, infrastructure['tfvars']['ssh_user'])
         self.downloader = None

@@ -33,6 +33,9 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 'infrastructure_provisioning': 'single'
             },
             'infrastructure_provisioning': {
+                'tfvars': {
+                    'cluster_name': 'single'
+                },
                 'evergreen': {
                     'data_dir': 'test/evergreen/data_dir'
                 }
@@ -80,7 +83,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         # Check when TERRAFORM is an environment variable
         provisioner = Provisioner(self.config)
         self.assertEqual(provisioner.cluster, 'single')
-        self.assertFalse(provisioner.production)
+        self.assertFalse(provisioner.reuse_cluster)
         self.assertEqual(provisioner.dsi_dir, 'test/path/dsi')
         self.assertFalse(provisioner.existing)
         self.assertEqual(provisioner.parallelism, '-parallelism=20')
@@ -93,7 +96,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         self.mock_environ.__contains__.side_effect = os_environ_missing_terraform.__contains__
         provisioner_missing_terraform = Provisioner(self.config)
         self.assertEqual(provisioner_missing_terraform.cluster, 'single')
-        self.assertFalse(provisioner_missing_terraform.production)
+        self.assertFalse(provisioner_missing_terraform.reuse_cluster)
         self.assertEqual(provisioner_missing_terraform.dsi_dir, 'test/path/dsi')
         self.assertFalse(provisioner_missing_terraform.existing)
         self.assertEqual(provisioner_missing_terraform.parallelism, '-parallelism=20')
@@ -107,7 +110,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     def test_check_existing_state(self, mock_isdir, mock_check_call,
                                   mock_shutil, mock_setup_evg_dir):
         """ Test Provisioner.existing_state """
-        self.config_dict['bootstrap']['infrastructure_provisioning'] = 'initialsync-logkeeper'
+        self.config_dict['infrastructure_provisioning']['tfvars']['cluster_name'] = \
+            'initialsync-logkeeper'
         self.config_dict['bootstrap']['production'] = True
         evg_data_dir = self.config_dict['infrastructure_provisioning']['evergreen']['data_dir']
         mock_isdir.side_effect = lambda evg_dir: evg_dir == evg_data_dir
@@ -117,6 +121,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             mock_check_call.side_effect = partial(self.check_subprocess_call, expected_command)
             mock_isfile.return_value = True
             provisioner = Provisioner(self.config)
+            self.assertEqual(provisioner.evg_data_dir, evg_data_dir)
             provisioner.check_existing_state()
             mock_shutil.rmtree.assert_called_with(evg_data_dir)
             self.assertTrue(mock_setup_evg_dir.called)
@@ -188,7 +193,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         with patch('infrastructure_provisioning.open', mock_open_file, create=True):
             provisioner = Provisioner(self.config)
             provisioner.cluster = 'initialsync-logkeeper'
-            provisioner.production = True
+            provisioner.reuse_cluster = True
             provisioner.setup_cluster()
             #pylint: disable=line-too-long
             mock_terraform_configuration.return_value.to_json.assert_called_with(file_name='cluster.json')

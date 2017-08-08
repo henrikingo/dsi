@@ -22,3 +22,6 @@ tfvars:
 
     region: us-east-1
     availability_zone: us-east-1a
+
+evergreen:
+    reuse_cluster: false

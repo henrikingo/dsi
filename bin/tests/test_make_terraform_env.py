@@ -262,6 +262,7 @@ class TestTerraformConfiguration(unittest.TestCase):
             topology="test-cluster", now=datetime.datetime(2016, 5, 25, 7, 11, 49, 131998))
 
         self._test_configuration(tf_config, '{"availability_zone":"us-west-2b",'
+                                 '"cluster_name":"test-cluster",'
                                  '"configsvr_instance_count":5,'
                                  '"configsvr_instance_placement_group":"no",'
                                  '"configsvr_instance_type":"m3.4xlarge",'

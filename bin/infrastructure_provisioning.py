@@ -30,25 +30,29 @@ class Provisioner(object):
     """ Used to provision AWS resources """
 
     def __init__(self, config):
-        self.cluster = config['bootstrap']['infrastructure_provisioning']
-        self.production = config['bootstrap'].get('production', False)
-        self.dsi_dir = os.environ['DSI_PATH']
-        self.evg_data_dir = config['infrastructure_provisioning']['evergreen']['data_dir']
-        self.bin_dir = os.path.dirname(os.path.abspath(__file__))
+        self.cluster = config['infrastructure_provisioning']['tfvars'].get('cluster_name',
+                                                                           'missing_cluster_name')
+        self.reuse_cluster = config['infrastructure_provisioning']['evergreen'].get('reuse_cluster',
+                                                                                    False)
+        self.evg_data_dir = config['infrastructure_provisioning']['evergreen'].get('data_dir')
         self.existing = False
         self.var_file = None
         self.parallelism = '-parallelism=' + str(TERRAFORM_PARALLELISM)
+        # infrastructure_teardown.py cannot import ConfigDict, so we use environment variable
+        # for terraform location
         if "TERRAFORM" in os.environ:
             self.terraform = os.environ['TERRAFORM']
         else:
             self.terraform = './terraform'
+        self.dsi_dir = os.environ['DSI_PATH']
+        self.bin_dir = os.path.dirname(os.path.abspath(__file__))
 
         os.environ['TF_LOG'] = 'DEBUG'
         os.environ['TF_LOG_PATH'] = './terraform.log'
 
     def provision_resources(self):
         """ Function used to actually provision the resources"""
-        if self.production:
+        if self.reuse_cluster:
             self.check_existing_state()
         self.setup_cluster()
 
@@ -155,7 +159,7 @@ class Provisioner(object):
             LOG.info('Contents of infrastructure_provisioning.out.yml:')
             LOG.info(provisioning_out_yaml.read())
         LOG.info("EC2 resources provisioned/updated successfully.")
-        if self.production:
+        if self.reuse_cluster:
             self.save_terraform_state()
 
     def save_terraform_state(self):

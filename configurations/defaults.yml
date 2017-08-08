@@ -6,12 +6,15 @@ bootstrap:
     platform: linux
     mongodb_setup: standalone
     storageEngine: wiredTiger
-    test_control: benchRun
+    test_control: core
     production: false
-    mongodb_binary_archive: ""
+    # Note: It's also allowed to upload your own binary. You can unset this by setting to the empty
+    # string "" in bootstrap.yml
+    mongodb_binary_archive: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.4.6.tgz
 
 infrastructure_provisioning:
     tfvars:
+        cluster_name: default_cluster_name
         mongod_instance_count: 1
         workload_instance_count: 1
 
@@ -34,7 +37,10 @@ infrastructure_provisioning:
       - --interleave=all
       - --cpunodebind=1
     evergreen:
+        reuse_cluster: ${bootstrap.production}
         data_dir: /data/infrastructure_provisioning
+    terraform:
+        required_version: Terraform v0.9.11
 
 mongodb_setup:
     mongo_dir: mongodb
