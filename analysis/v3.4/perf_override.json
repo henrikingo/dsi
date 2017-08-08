@@ -6499,8 +6499,8 @@
             },
             "threshold":{
                 "Aggregation.IdentityView.CountsFullCollection":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.35,
+                    "threshold":0.25,
                     "ticket":[
                         "BF-5706"
                     ]
@@ -6527,10 +6527,10 @@
                     ]
                 },
                 "Aggregation.IdentityView.Group.All":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
+                    "thread_threshold":0.35,
+                    "threshold":0.25,
                     "ticket":[
-                        "BF-4530"
+                        "BF-5706"
                     ]
                 },
                 "Aggregation.IdentityView.Group.OneFieldReferencedOutOfMany":{
@@ -15399,8 +15399,8 @@
             },
             "threshold":{
                 "Aggregation.IdentityView.CountsFullCollection":{
-                    "thread_threshold":0.225,
-                    "threshold":0.15,
+                    "thread_threshold":0.35,
+                    "threshold":0.25,
                     "ticket":[
                         "BF-5706"
                     ]
@@ -15434,10 +15434,10 @@
                     ]
                 },
                 "Aggregation.IdentityView.Group.All":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
+                    "thread_threshold":0.35,
+                    "threshold":0.25,
                     "ticket":[
-                        "BF-4530"
+                        "BF-5706"
                     ]
                 },
                 "Aggregation.IdentityView.Group.OneFieldReferencedOutOfMany":{
