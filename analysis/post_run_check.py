@@ -167,50 +167,6 @@ def compare_to_tag(test, threshold, thread_threshold):
     else:
         return {}
 
-# Failure & other condition checks
-
-def replica_lag_check(test, lag_threshold=15):
-    """
-    Iterate through all thread levels and flag a test if its max replication lag is higher
-    than the threshold.
-    """
-    status = 'pass'
-    total_lag_entry = 0
-    for level in test['results']:
-        lag_entry = 0
-        if 'replica_avg_lag' in test['results'][level]:
-            avg_lag = test['results'][level]['replica_avg_lag']
-            lag_entry += 1
-        else:
-            avg_lag = 'NA'
-        if 'replica_max_lag' in test['results'][level]:
-            max_lag = test['results'][level]['replica_max_lag']
-            lag_entry += 1
-        else:
-            max_lag = 'NA'
-        if 'replica_end_of_test_lag' in test['results'][level]:
-            end_of_test_lag = test['results'][level]['replica_end_of_test_lag']
-            lag_entry += 1
-        else:
-            end_of_test_lag = 'NA'
-        total_lag_entry += 1
-        # mark the test failed if max_lag is higher than threshold
-        if max_lag != 'NA':
-            if float(max_lag) > lag_threshold:
-                status = 'fail'
-                print('   ---> replica_max_lag (%s) > threshold(%s) seconds at %s' %
-                      (max_lag, lag_threshold, level))
-        # print an entry in the replica_lag summary table, regardless of pass/fail
-        if lag_entry > 0:
-            replica_lag_line.append((test['name'], level, avg_lag, max_lag, end_of_test_lag))
-
-    if total_lag_entry == 0:
-        # no lag information
-        return {}
-    if status == 'pass':
-        print('        replica_lag under threshold ({}) seconds'.format(lag_threshold))
-    return {'Replica_lag_check': status}
-
 # Utility functions and classes - these are functions and classes that load and manipulate
 # test results for various checks
 
@@ -306,17 +262,16 @@ QUARANTINED_RULES = [
 # in post_run_check because they currently access some number of global variables.
 
 REGRESSION_RULES = [compare_to_previous, compare_n_days_delayed_trigger, compare_to_tag]
-REGRESSION_AND_REPL_LAG_RULES = REGRESSION_RULES + [replica_lag_check]
 
 PROJECT_TEST_RULES = {
     'sys-perf': {
         'default': REGRESSION_RULES,
-        'linux-3-shard': REGRESSION_AND_REPL_LAG_RULES,
-        'linux-3-node-replSet': REGRESSION_AND_REPL_LAG_RULES,
-        'linux-3-node-replSet-initialsync': REGRESSION_AND_REPL_LAG_RULES
+        'linux-3-shard': REGRESSION_RULES,
+        'linux-3-node-replSet': REGRESSION_RULES,
+        'linux-3-node-replSet-initialsync': REGRESSION_RULES
     },
     'mongo-longevity': {
-        'default': [compare_to_previous, compare_to_tag, replica_lag_check]
+        'default': [compare_to_previous, compare_to_tag]
     }
 }
 
