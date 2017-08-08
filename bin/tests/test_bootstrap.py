@@ -3,6 +3,7 @@ Unit tests for 'bootstrap.py'.
 """
 # pylint: disable=invalid-name
 # pylint: disable=too-many-public-methods
+import copy
 import logging
 import os
 import shutil
@@ -20,6 +21,10 @@ import bootstrap
 class TestBootstrap(unittest.TestCase):
     """Test suite for bootstrap.py."""
 
+    TERRAFORM_CONFIG = {'terraform': './terraform',
+                        'terraform_version_check': 'Terraform v0.9.11',
+                        'production': False}
+
     def setUp(self):
         """Running setUp to allow for tearDown"""
         pass
@@ -29,7 +34,7 @@ class TestBootstrap(unittest.TestCase):
         bootstrap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bootstrap.yml')
         bootstrap2_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bootstrap2.yml')
         paths = ['test_dsipath', 'test_directory', 'test_credentials',
-                 'testdir', 'test_old_dir', 'test_new_dir']
+                 'testdir', 'test_old_dir', 'test_new_dir', 'test_cred_path']
         for path in paths:
             try:
                 path = os.path.join(os.path.dirname(
@@ -45,6 +50,28 @@ class TestBootstrap(unittest.TestCase):
             os.remove(bootstrap2_path)
         except OSError:
             pass
+
+    @patch('os.path.expanduser')
+    def test_read_aws_credentials_runtime_secret(self, mock_expanduser):
+        """Testing that read_aws_credentials applies runtime_secret AWS keys"""
+        test_cred_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'test_credentials')
+        with open(test_cred_path, 'w+') as test_cred_file:
+            test_cred_file.write('[default]\naws_access_key_id = '
+                                 'test_aws_access_key\naws_secret_access_key = '
+                                 'test_aws_secret_key')
+        mock_expanduser.return_value = test_cred_path
+        test_config = {}
+        master_config = {}
+        config_dict = {'runtime_secret': {'aws_access_key': 'test_key2',
+                                          'aws_secret_key': 'test_secret2'}}
+        bootstrap.read_aws_credentials(test_config, config_dict)
+        master_config['aws_access_key'] = 'test_key2'
+        master_config['aws_secret_key'] = 'test_secret2'
+        self.assertEqual(test_config, master_config)
+
+        # Removing created file
+        os.remove(test_cred_path)
 
     @patch('os.path.expanduser')
     def test_read_aws_credentials_file(self, mock_expanduser):
@@ -166,41 +193,6 @@ class TestBootstrap(unittest.TestCase):
         test_config['mongodb_setup'] = 'replica'
         test_config['storageEngine'] = 'wiredTiger'
         test_config['test_control'] = 'core'
-        test_config['production'] = False
-        bootstrap.copy_config_files(test_dsipath, test_config, test_directory)
-        master_files = set(['infrastructure_provisioning.yml',
-                            'mongodb_setup.yml', 'test_control.yml'])
-        test_files = set(os.listdir(test_directory))
-        self.assertEqual(test_files, master_files)
-
-    def test_copy_config_files_ycsb(self):
-        """Testing copy_config_files with ycsb flag"""
-        test_config = {}
-        test_dsipath = os.path.join(os.path.dirname(
-            os.path.abspath(__file__)), 'test_dsipath')
-        test_directory = os.path.join(os.path.dirname(
-            os.path.abspath(__file__)), 'test_directory')
-        os.makedirs(os.path.join(
-            test_dsipath, 'configurations', 'infrastructure_provisioning'))
-        os.makedirs(os.path.join(
-            test_dsipath, 'configurations', 'mongodb_setup'))
-        os.makedirs(os.path.join(
-            test_dsipath, 'configurations', 'test_control'))
-        os.mkdir(test_directory)
-        open(os.path.join(test_dsipath, 'configurations',
-                          'infrastructure_provisioning',
-                          'infrastructure_provisioning.shard.yml'),
-             'w').close()
-        open(os.path.join(test_dsipath, 'configurations', 'mongodb_setup',
-                          'mongodb_setup.replica.yml'),
-             'w').close()
-        open(os.path.join(test_dsipath, 'configurations', 'test_control',
-                          'test_control.ycsb.yml'),
-             'w').close()
-        test_config['infrastructure_provisioning'] = 'shard'
-        test_config['mongodb_setup'] = 'replica'
-        test_config['storageEngine'] = 'wiredTiger'
-        test_config['test_control'] = 'ycsb'
         test_config['production'] = False
         bootstrap.copy_config_files(test_dsipath, test_config, test_directory)
         master_files = set(['infrastructure_provisioning.yml',
@@ -466,9 +458,7 @@ class TestBootstrap(unittest.TestCase):
         """Testing validate_terraform fails when terraform doesn't run"""
         mock_check_output.side_effect = subprocess.CalledProcessError(126, None)
         mock_check_output.return_value = "Terraform v0.6.16"
-        config = {'terraform': './terraform',
-                  'terraform_version_check': 'Terraform v0.9.11',
-                  'production': False}
+        config = copy.copy(self.TERRAFORM_CONFIG)
         with LogCapture(level=logging.CRITICAL) as crit:
             with self.assertRaises(AssertionError):
                 bootstrap.validate_terraform(config)
@@ -486,9 +476,7 @@ class TestBootstrap(unittest.TestCase):
         """Testing validate_terraform fails when terraform is not found"""
         mock_check_output.side_effect = subprocess.CalledProcessError(127, None)
         mock_check_output.return_value = "Terraform v0.6.16"
-        config = {'terraform': './terraform',
-                  'terraform_version_check': 'Terraform v0.9.11',
-                  'production': False}
+        config = copy.copy(self.TERRAFORM_CONFIG)
         with LogCapture(level=logging.CRITICAL) as crit:
             with self.assertRaises(AssertionError):
                 bootstrap.validate_terraform(config)
@@ -504,9 +492,7 @@ class TestBootstrap(unittest.TestCase):
     def test_terraform_valid(self, mock_check_output):
         """Testing validate_terraform with valid inputs"""
         mock_check_output.return_value = 'Terraform v0.9.11'
-        config = {'terraform': './terraform',
-                  'terraform_version_check': 'Terraform v0.9.11',
-                  'production': False}
+        config = copy.copy(self.TERRAFORM_CONFIG)
         bootstrap.validate_terraform(config)
         self.assertEquals(config, config)
 

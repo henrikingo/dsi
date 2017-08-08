@@ -101,7 +101,8 @@ def parse_command_line(config, args=None):
     # options and mongodb setup options.
     parser.add_argument('-b',
                         '--bootstrap-file',
-                        help='Path to bootstrap.yml')
+                        help='Specify the bootstrap file. If not specified, will look for '
+                        'bootstrap.yml in the current directory. ')
     parser.add_argument('-d',
                         '--debug',
                         action='store_true',
