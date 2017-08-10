@@ -282,6 +282,13 @@
                         "BF-5148"
                     ]
                 },
+                "insert_ttl":{
+                    "thread_threshold":0.2,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6271"
+                    ]
+                },
                 "insert_ttl-mmapv1":{
                     "thread_threshold":0.5,
                     "threshold":0.4,
@@ -1420,6 +1427,13 @@
                     "threshold":2.0,
                     "ticket":[
                         "BF-5524"
+                    ]
+                },
+                "insert_ttl":{
+                    "thread_threshold":0.2,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6271"
                     ]
                 },
                 "insert_ttl-mmapv1":{
@@ -4265,6 +4279,13 @@
                         "PERF-873"
                     ]
                 },
+                "insert_ttl":{
+                    "thread_threshold":0.2,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6271"
+                    ]
+                },
                 "mixed_delete-mmapv1":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
@@ -5406,6 +5427,13 @@
                         "BF-5833"
                     ]
                 },
+                "insert_ttl":{
+                    "thread_threshold":0.2,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6271"
+                    ]
+                },
                 "map_reduce_1M_doc-mmapv1":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
@@ -6061,6 +6089,13 @@
                     "threshold":0.15,
                     "ticket":[
                         "BF-5148"
+                    ]
+                },
+                "insert_ttl":{
+                    "thread_threshold":0.2,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6271"
                     ]
                 },
                 "insert_ttl-mmapv1":{
