@@ -24607,6 +24607,13 @@
                         "BF-3554"
                     ]
                 },
+                "Insert.LargeDocVector":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-1068"
+                    ]
+                },
                 "Insert.MultiIndex.Contested.Rnd":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
@@ -33998,10 +34005,10 @@
                     ]
                 },
                 "Insert.LargeDocVector":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
-                        "PERF-875"
+                        "PERF-1068"
                     ]
                 },
                 "Insert.MultiIndex.Contested.Rnd":{
