@@ -751,13 +751,6 @@
                         "BF-6272"
                     ]
                 },
-                "insert_jtrue-wiredTiger":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "PERF-335"
-                    ]
-                },
                 "insert_ttl-wiredTiger":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
@@ -814,25 +807,11 @@
                         "BF-6272"
                     ]
                 },
-                "removemulti_jtrue-wiredTiger":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "PERF-335"
-                    ]
-                },
                 "updatemulti_jtrue":{
                     "thread_threshold":0.18,
                     "threshold":0.12,
                     "ticket":[
                         "BF-6272"
-                    ]
-                },
-                "updatemulti_jtrue-wiredTiger":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "PERF-335"
                     ]
                 },
                 "word_count_1M_doc-wiredTiger":{
@@ -1925,13 +1904,6 @@
                         "BF-6272"
                     ]
                 },
-                "insert_jtrue-wiredTiger":{
-                    "thread_threshold":0.75,
-                    "threshold":0.6,
-                    "ticket":[
-                        "PERF-335"
-                    ]
-                },
                 "insert_ttl-wiredTiger":{
                     "thread_threshold":0.6,
                     "threshold":0.4,
@@ -2009,25 +1981,11 @@
                         "BF-6272"
                     ]
                 },
-                "removemulti_jtrue-wiredTiger":{
-                    "thread_threshold":0.75,
-                    "threshold":0.6,
-                    "ticket":[
-                        "PERF-335"
-                    ]
-                },
                 "updatemulti_jtrue":{
                     "thread_threshold":0.18,
                     "threshold":0.12,
                     "ticket":[
                         "BF-6272"
-                    ]
-                },
-                "updatemulti_jtrue-wiredTiger":{
-                    "thread_threshold":0.75,
-                    "threshold":0.6,
-                    "ticket":[
-                        "PERF-335"
                     ]
                 }
             }
@@ -2200,13 +2158,6 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
-                    ]
-                },
-                "ycsb_50read50update_w_majority-wiredTiger":{
-                    "thread_threshold":0.65,
-                    "threshold":0.4,
-                    "ticket":[
-                        "PERF-335"
                     ]
                 }
             }
@@ -5198,13 +5149,6 @@
                     "ticket":[
                         "PERF-873"
                     ]
-                },
-                "ycsb_50read50update_w_majority-wiredTiger":{
-                    "thread_threshold":0.65,
-                    "threshold":0.4,
-                    "ticket":[
-                        "PERF-335"
-                    ]
                 }
             }
         },
@@ -6731,13 +6675,6 @@
                         "BF-6272"
                     ]
                 },
-                "insert_jtrue-wiredTiger":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "PERF-335"
-                    ]
-                },
                 "map_reduce_1M_doc-wiredTiger":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
@@ -6787,25 +6724,11 @@
                         "BF-6272"
                     ]
                 },
-                "removemulti_jtrue-wiredTiger":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "PERF-335"
-                    ]
-                },
                 "updatemulti_jtrue":{
                     "thread_threshold":0.18,
                     "threshold":0.12,
                     "ticket":[
                         "BF-6272"
-                    ]
-                },
-                "updatemulti_jtrue-wiredTiger":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "PERF-335"
                     ]
                 },
                 "word_count_1M_doc-wiredTiger":{
