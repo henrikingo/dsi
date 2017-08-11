@@ -1,3 +1,4 @@
+task_name: network_bandwidth
 run:
   - id: iperf
     type: shell

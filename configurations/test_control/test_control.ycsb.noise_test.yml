@@ -1,3 +1,5 @@
+task_name: ycsb.noise_test
+
 # Disable jstest validations, they'll fail if run repeatedly on same dir
 jstests_dir: ""
 

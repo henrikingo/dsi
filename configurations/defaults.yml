@@ -126,6 +126,7 @@ mongodb_setup:
                   data/dbs/diagnostic.data: ./diagnostic.data
 
 test_control:
+    task_name: default_task_name
     jstests_dir: ./jstests/hooks
     mc:
       monitor_interval: 1

@@ -1,3 +1,4 @@
+task_name: cpu_noise
 run:
   - id: canary_cpu
     type: shell

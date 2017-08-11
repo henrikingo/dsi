@@ -1,3 +1,4 @@
+task_name: ycsb-wmajority
 run:
   - id: ycsb_load-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb

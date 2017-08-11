@@ -1,5 +1,6 @@
 # This file was used for PM-616.
 # It is not actively maintained. Please see test_control.core.yml instead.
+task_name: noise_test
 run:
   # Dummy entry to produce a fio-net-listener.ini file, which is used together with fio-net.ini
   # in the following entry.

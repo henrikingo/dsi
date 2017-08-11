@@ -1,3 +1,4 @@
+task_name: core
 run:
   - id: benchRun-${mongodb_setup.mongod_config_file.storage.engine}
     type: shell

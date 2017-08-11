@@ -1,3 +1,4 @@
+task_name: agg_query_comparison_bestbuy
 run:
   - id: benchRun-${mongodb_setup.mongod_config_file.storage.engine}
     type: shell

@@ -167,11 +167,12 @@ def copy_timeseries(config):
 def main(argv):
     ''' Main function. Parse command line options, and run tests '''
     parser = argparse.ArgumentParser(description='DSI Test runner')
-    # All the positional arguments to go away when config dict used
-    # properly. Here now to match existing call.
-    parser.add_argument('storage_engine', help="mmapv1 or wiredTiger")
-    parser.add_argument('test', help='The test type to run. This will eventually go away')
-    parser.add_argument('cluster', help='The cluster type')
+
+    # These were left here for backward compatibility.
+    parser.add_argument('foo', help='Ignored', nargs='?')
+    parser.add_argument('bar', help='Ignored', nargs='?')
+    parser.add_argument('czar', help='Ignored', nargs='?')
+
     parser.add_argument(
         '-d',
         '--debug',
@@ -189,10 +190,6 @@ def main(argv):
 
     dsi_bin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)))
 
-    # This path should probably be in the config path somewhere rather
-    # than the environemnt. setup_work_env.py can set it up
-    # From CR comment: In that case it should be in bootstrap.out.yml, since it is an output of
-    # that module.
     mission_control = os.path.join(dsi_bin_path, 'mc')
     if 'MC' in os.environ:
         mission_control = os.environ['MC']
@@ -206,10 +203,12 @@ def main(argv):
     # Execute pre task steps
     pre_tasks(config, [test_control, mongodb_setup])
 
-    # Go through the existing scripts if necessary
-    if args.test == 'initialSync':
+    # initialSync is still executed through the old bash script
+    if config['test_control']['task_name'] == 'initialSync':
         subprocess.check_call([os.path.join(dsi_bin_path, 'run-initialSync.sh'),
-                               args.storage_engine, args.test, args.cluster])
+                               config['mongodb_setup']['mongod_config_file']['storage']['engine'],
+                               'initialSync',
+                               config['infrastructure_provisioning']['tfvars']['cluster_name']])
     else:
         # Everything should eventually come through this path
         # Call mission control
@@ -223,7 +222,7 @@ def main(argv):
                                    '-config',
                                    'mc.json',
                                    '-run',
-                                   args.test,
+                                   config['test_control']['task_name'],
                                    '-o',
                                    'perf.json'], env=env)
         finally:
