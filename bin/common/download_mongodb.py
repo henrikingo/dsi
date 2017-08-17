@@ -34,6 +34,15 @@ class DownloadMongodb(object):
         self.run_locally = run_locally
         self.config = config
         self.mongodb_binary_archive = config['mongodb_setup'].get('mongodb_binary_archive', "")
+
+        # If mongodb_binary_archive is set in runtime, use it instead. Previously we only did that
+        # if the mongodb_binary_archive was "", but we have since added a useable default value.
+        # This second if statement is necessary for backwards compatibility after changes
+        # introducted in PERF-1044. It may be removed after all verions of system_perf.yml,
+        # longevity.yml specify the mongodb_binary_archive in bootstrap.yml instead of runtime.yml.
+
+        if 'runtime' in config.keys():
+            self.mongodb_binary_archive = config['runtime'].get('mongodb_binary_archive', "")
         LOG.info("Download url is %s", self.mongodb_binary_archive)
 
         tfvars = config['infrastructure_provisioning']['tfvars']
@@ -44,8 +53,7 @@ class DownloadMongodb(object):
         self._parse_hosts()
 
         if self.mongodb_binary_archive:
-            LOG.debug("DownloadMongodb initialized with url: %s",
-                      self.mongodb_binary_archive)
+            LOG.debug("DownloadMongodb initialized with url: %s", self.mongodb_binary_archive)
 
     def _parse_hosts(self):
         """Parse the public_ip's out of infrastructure_provisioning.out.yml"""
