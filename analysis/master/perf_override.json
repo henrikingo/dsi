@@ -36626,8 +36626,8 @@
                     ]
                 },
                 "Commands.CountsIntIDRange":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
                         "BF-6227"
                     ]
@@ -36637,6 +36637,13 @@
                     "threshold":0.1,
                     "ticket":[
                         "BF-5481"
+                    ]
+                },
+                "Commands.DistinctWithIndexAndQuery":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
                     ]
                 },
                 "Commands.DistinctWithoutIndex":{
@@ -36689,6 +36696,13 @@
                     "threshold":0.2,
                     "ticket":[
                         "PERF-444"
+                    ]
+                },
+                "Remove.IntNonIdIndex":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
                     ]
                 },
                 "Remove.IntNonIdNoIndex":{
