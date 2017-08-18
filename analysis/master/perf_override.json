@@ -7957,11 +7957,25 @@
                         "PERF-875"
                     ]
                 },
+                "Aggregation.FindProjectionDottedField.Indexed":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Aggregation.FindProjectionThreeFields":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
                         "BF-5949"
+                    ]
+                },
+                "Aggregation.FindProjectionThreeFieldsCovered":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
                     ]
                 },
                 "Aggregation.FindWideDocProjection":{
@@ -7978,6 +7992,13 @@
                         "PERF-875",
                         "BF-5713",
                         "BF-5954"
+                    ]
+                },
+                "Aggregation.IntIdFindOne":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
                     ]
                 },
                 "Aggregation.IntNonIdFindOne":{
