@@ -42,7 +42,8 @@ class DownloadMongodb(object):
         # longevity.yml specify the mongodb_binary_archive in bootstrap.yml instead of runtime.yml.
 
         if 'runtime' in config.keys():
-            self.mongodb_binary_archive = config['runtime'].get('mongodb_binary_archive', "")
+            self.mongodb_binary_archive = config['runtime'].get('mongodb_binary_archive',
+                                                                self.mongodb_binary_archive)
         LOG.info("Download url is %s", self.mongodb_binary_archive)
 
         tfvars = config['infrastructure_provisioning']['tfvars']
