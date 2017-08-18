@@ -20394,7 +20394,7 @@
             },
             "threshold":{
                 "Queries.IdentityView.Empty":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
@@ -20404,27 +20404,75 @@
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
-                        "PERF-444",
-                        "PERF-875"
+                        "BF-5316"
                     ]
                 },
                 "Queries.IdentityView.FindProjectionDottedField":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
-                        "PERF-875"
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.FindProjectionDottedField.Indexed":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5316"
                     ]
                 },
                 "Queries.IdentityView.FindProjectionThreeFields":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
-                        "PERF-875"
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.FindProjectionThreeFieldsCovered":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.FindWideDocProjection":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5316"
                     ]
                 },
                 "Queries.IdentityView.IntIDRange":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3,
                     "threshold":0.2,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.IntIdFindOne":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.IntNonIdFindOne":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.IntNonIdFindOneProjection":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.IntNonIdFindOneProjectionCovered":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
                     "ticket":[
                         "BF-5316"
                     ]
@@ -20433,12 +20481,33 @@
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
-                        "PERF-875"
+                        "BF-5316"
                     ]
                 },
                 "Queries.IdentityView.NoMatch":{
                     "thread_threshold":0.225,
                     "threshold":0.15,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.RegexPrefixFindOne":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.TwoInts":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
+                "mongod.log.0":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
                     "ticket":[
                         "BF-5316"
                     ]
@@ -44415,7 +44484,7 @@
             },
             "threshold":{
                 "Queries.IdentityView.Empty":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
@@ -44425,26 +44494,75 @@
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
-                        "PERF-444"
+                        "BF-5316"
                     ]
                 },
                 "Queries.IdentityView.FindProjectionDottedField":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
-                        "PERF-444"
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.FindProjectionDottedField.Indexed":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.FindProjectionThreeFields":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.FindProjectionThreeFieldsCovered":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5316"
                     ]
                 },
                 "Queries.IdentityView.FindWideDocProjection":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
-                        "PERF-444"
+                        "BF-5316"
                     ]
                 },
                 "Queries.IdentityView.IntIDRange":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3,
                     "threshold":0.2,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.IntIdFindOne":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.IntNonIdFindOne":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.IntNonIdFindOneProjection":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.IntNonIdFindOneProjectionCovered":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
                     "ticket":[
                         "BF-5316"
                     ]
@@ -44453,14 +44571,35 @@
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
-                        "PERF-875"
+                        "BF-5316"
                     ]
                 },
                 "Queries.IdentityView.NoMatch":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.RegexPrefixFindOne":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
-                        "PERF-875"
+                        "BF-5316"
+                    ]
+                },
+                "Queries.IdentityView.TwoInts":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5316"
+                    ]
+                },
+                "mongod.log.0":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-5316"
                     ]
                 }
             }
