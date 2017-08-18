@@ -26336,6 +26336,20 @@
                         "PERF-444"
                     ]
                 },
+                "Remove.IntId":{
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Remove.IntNonIdIndex":{
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Remove.IntNonIdNoIndex":{
                     "thread_threshold":0.36,
                     "threshold":0.31,
