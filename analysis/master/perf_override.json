@@ -3670,8 +3670,8 @@
                     ]
                 },
                 "Mixed.FindThenUpdate-50-50":{
-                    "thread_threshold":25.0,
-                    "threshold":20.0,
+                    "thread_threshold":0.25,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-444"
                     ]
@@ -11154,8 +11154,8 @@
                     ]
                 },
                 "Mixed.FindThenUpdate-50-50":{
-                    "thread_threshold":25.0,
-                    "threshold":20.0,
+                    "thread_threshold":0.25,
+                    "threshold":0.2,
                     "ticket":[
                         "PERF-444"
                     ]
@@ -14189,8 +14189,8 @@
                     ]
                 },
                 "Queries.IntIDRange":{
-                    "thread_threshold":20.0,
-                    "threshold":15.0,
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
                     "ticket":[
                         "BF-3257"
                     ]
@@ -35897,8 +35897,8 @@
                     ]
                 },
                 "Queries.IntIDRange":{
-                    "thread_threshold":20.0,
-                    "threshold":15.0,
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
                     "ticket":[
                         "BF-3257"
                     ]
