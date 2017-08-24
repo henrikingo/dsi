@@ -6007,35 +6007,35 @@
                     ]
                 },
                 "Aggregation.DistinctWithIndex":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
                     ]
                 },
                 "Aggregation.DistinctWithIndexAndQuery":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
                     ]
                 },
                 "Aggregation.DistinctWithoutIndex":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
                     ]
                 },
                 "Aggregation.DistinctWithoutIndexAndQuery":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
                     ]
                 },
                 "Aggregation.Empty":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
@@ -6100,21 +6100,21 @@
                     ]
                 },
                 "Aggregation.IntNonIdFindOne":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
                     ]
                 },
                 "Aggregation.IntNonIdFindOneProjection":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
                     ]
                 },
                 "Aggregation.IntNonIdFindOneProjectionCovered":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
@@ -6473,7 +6473,7 @@
             },
             "threshold":{
                 "Aggregation.Empty":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
@@ -15015,15 +15015,15 @@
                     ]
                 },
                 "Aggregation.IdentityView.DistinctWithIndex":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
                     ]
                 },
                 "Aggregation.IdentityView.DistinctWithIndexAndQuery":{
-                    "thread_threshold":-0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.4,
+                    "threshold":0.25,
                     "ticket":[
                         "BF-5316"
                     ]
@@ -27560,35 +27560,35 @@
                     ]
                 },
                 "Aggregation.DistinctWithIndex":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
                     ]
                 },
                 "Aggregation.DistinctWithIndexAndQuery":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
                     ]
                 },
                 "Aggregation.DistinctWithoutIndex":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
                     ]
                 },
                 "Aggregation.DistinctWithoutIndexAndQuery":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
                     ]
                 },
                 "Aggregation.Empty":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
@@ -27632,21 +27632,21 @@
                     ]
                 },
                 "Aggregation.IntNonIdFindOne":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
                     ]
                 },
                 "Aggregation.IntNonIdFindOneProjection":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
                     ]
                 },
                 "Aggregation.IntNonIdFindOneProjectionCovered":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
@@ -27956,7 +27956,7 @@
                     ]
                 },
                 "Aggregation.Empty":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
@@ -38123,7 +38123,7 @@
                     ]
                 },
                 "Aggregation.IdentityView.DistinctWithIndex":{
-                    "thread_threshold":-0.3,
+                    "thread_threshold":0.3
                     "threshold":0.2,
                     "ticket":[
                         "BF-5316"
