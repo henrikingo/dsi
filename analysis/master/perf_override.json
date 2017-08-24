@@ -15076,8 +15076,8 @@
                     ]
                 },
                 "Aggregation.IdentityView.GraphLookupSocialite":{
-                    "thread_threshold":0.22,
-                    "threshold":0.15,
+                    "thread_threshold":0.24,
+                    "threshold":0.16,
                     "ticket":[
                         "BF-5513"
                     ]
