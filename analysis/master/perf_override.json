@@ -5877,6 +5877,27 @@
                         "PERF-875"
                     ]
                 },
+                "Update.DocValidation.OneNum":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Update.DocValidation.TenNum":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Update.DocValidation.TwentyNum":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Update.FieldAtOffset":{
                     "thread_threshold":0.3,
                     "threshold":0.25,
