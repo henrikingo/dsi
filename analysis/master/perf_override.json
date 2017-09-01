@@ -19030,10 +19030,11 @@
                     ]
                 },
                 "Aggregation.IdentityView.UnwindThenSkip":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
-                        "BF-5707"
+                        "BF-5707",
+                        "PERF-875"
                     ]
                 }
             }
@@ -45156,9 +45157,10 @@
                     ]
                 },
                 "Aggregation.IdentityView.UnwindThenSkip":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
+                        "BF-5707",
                         "PERF-875"
                     ]
                 }
