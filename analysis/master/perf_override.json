@@ -20596,6 +20596,20 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "Where.CompareFields.Lt":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Where.CompareFields.Lte":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Where.ComplexNested":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
@@ -46708,6 +46722,20 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "Where.CompareFields.Lt":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
+                "Where.CompareFields.Lte":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
+                },
                 "Where.ComplexNested":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
