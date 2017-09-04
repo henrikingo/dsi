@@ -3659,8 +3659,8 @@
                     ]
                 },
                 "Commands.FindAndModifySortedDelete":{
-                    "thread_threshold":0.35,
-                    "threshold":0.3,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
                         "PERF-444"
                     ]
@@ -13109,8 +13109,8 @@
                     ]
                 },
                 "Commands.FindAndModifySortedDelete":{
-                    "thread_threshold":0.35,
-                    "threshold":0.3,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
                         "PERF-444"
                     ]
@@ -20493,8 +20493,8 @@
                     ]
                 },
                 "Queries.IdentityView.FindProjectionDottedField":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
                         "BF-5316"
                     ]
@@ -27766,8 +27766,8 @@
                     ]
                 },
                 "Commands.FindAndModifySortedDelete":{
-                    "thread_threshold":0.35,
-                    "threshold":0.3,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
                         "PERF-444"
                     ]
@@ -39376,8 +39376,8 @@
                     ]
                 },
                 "Commands.FindAndModifySortedDelete":{
-                    "thread_threshold":0.35,
-                    "threshold":0.3,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
                         "PERF-444"
                     ]
@@ -46626,8 +46626,8 @@
                     ]
                 },
                 "Queries.IdentityView.FindProjectionDottedField":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
                         "BF-5316"
                     ]
