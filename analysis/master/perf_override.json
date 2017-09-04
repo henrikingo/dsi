@@ -8606,6 +8606,13 @@
                     "ticket":[
                         "BF-5974"
                     ]
+                },
+                "Aggregation.UnwindThenSort":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
+                    ]
                 }
             }
         },
@@ -34848,6 +34855,13 @@
                     "threshold":0.3,
                     "ticket":[
                         "BF-5123"
+                    ]
+                },
+                "Aggregation.UnwindThenSort":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-875"
                     ]
                 }
             }
