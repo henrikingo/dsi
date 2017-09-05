@@ -1,4 +1,3 @@
-# NOTE: THIS FILE IS DEPRECATED, use ./test_control.initialsync.yml instead.
 task_name: initialSync
 run:
   # - id: fio-${mongodb_setup.mongod_config_file.storage.engine}
