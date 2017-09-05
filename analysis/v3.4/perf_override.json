@@ -6526,6 +6526,13 @@
                         "BF-5575"
                     ]
                 },
+                "Aggregation.IdentityView.ExpressionObject":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5183"
+                    ]
+                },
                 "Aggregation.IdentityView.Group.All":{
                     "thread_threshold":0.35,
                     "threshold":0.25,
@@ -15431,6 +15438,13 @@
                     "threshold":0.15,
                     "ticket":[
                         "BF-5575"
+                    ]
+                },
+                "Aggregation.IdentityView.ExpressionObject":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5183"
                     ]
                 },
                 "Aggregation.IdentityView.Group.All":{
