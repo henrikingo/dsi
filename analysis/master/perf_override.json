@@ -19009,10 +19009,11 @@
                     ]
                 },
                 "Aggregation.IdentityView.SortWithLimit":{
-                    "thread_threshold":0.21,
-                    "threshold":0.16,
+                    "thread_threshold":0.315,
+                    "threshold":0.21,
                     "ticket":[
-                        "BF-4530"
+                        "BF-4530",
+                        "BF-6509"
                     ]
                 },
                 "Aggregation.IdentityView.Unwind":{
