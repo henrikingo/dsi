@@ -39374,19 +39374,21 @@
                     ]
                 },
                 "Commands.DistinctWithoutIndex":{
-                    "thread_threshold":0.35,
-                    "threshold":0.23,
+                    "thread_threshold":0.42,
+                    "threshold":0.28,
                     "ticket":[
                         "PERF-444",
-                        "BF-3965"
+                        "BF-4047",
+                        "BF-6513"
                     ]
                 },
                 "Commands.DistinctWithoutIndexAndQuery":{
-                    "thread_threshold":0.35,
-                    "threshold":0.3,
+                    "thread_threshold":0.42,
+                    "threshold":0.28,
                     "ticket":[
                         "PERF-444",
-                        "BF-4047"
+                        "BF-4047",
+                        "BF-6513"
                     ]
                 },
                 "Commands.FindAndModifyInserts":{
