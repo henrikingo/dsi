@@ -1090,20 +1090,6 @@
                     "ticket":[
                         "PERF-873"
                     ]
-                },
-                "initial_load_capped-mmapv1":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
-                    "ticket":[
-                        "BF-5476"
-                    ]
-                },
-                "insert_capped-mmapv1":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
-                    "ticket":[
-                        "BF-5476"
-                    ]
                 }
             }
         },
@@ -6833,20 +6819,6 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
-                    ]
-                },
-                "initial_load_capped-mmapv1":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
-                    "ticket":[
-                        "BF-5476"
-                    ]
-                },
-                "insert_capped-mmapv1":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
-                    "ticket":[
-                        "BF-5476"
                     ]
                 }
             }
