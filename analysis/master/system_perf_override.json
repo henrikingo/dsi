@@ -906,20 +906,6 @@
                     "ticket":[
                         "PERF-873"
                     ]
-                },
-                "ycsb_50read50update-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
-                    "ticket":[
-                        "BF-5834"
-                    ]
-                },
-                "ycsb_95read5update-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
-                    "ticket":[
-                        "BF-5834"
-                    ]
                 }
             }
         },
