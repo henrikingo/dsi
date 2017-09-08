@@ -292,13 +292,6 @@
                         "BF-5520"
                     ]
                 },
-                "contended_update-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
-                    "ticket":[
-                        "BF-5833"
-                    ]
-                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -1482,13 +1475,6 @@
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
-                    ]
-                },
-                "contended_update-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
-                    "ticket":[
-                        "BF-5833"
                     ]
                 },
                 "fio_iops_test_read_iops":{
@@ -5566,13 +5552,6 @@
                         "BF-5520"
                     ]
                 },
-                "contended_update-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
-                    "ticket":[
-                        "BF-5833"
-                    ]
-                },
                 "insert_jtrue":{
                     "thread_threshold":0.18,
                     "threshold":0.12,
@@ -6259,13 +6238,6 @@
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
-                    ]
-                },
-                "contended_update-mmapv1":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
-                    "ticket":[
-                        "BF-5833"
                     ]
                 },
                 "fio_iops_test_read_iops":{
