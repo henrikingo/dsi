@@ -8565,6 +8565,13 @@
                         "BF-4442"
                     ]
                 },
+                "Aggregation.Sample.LargeSample":{
+                    "thread_threshold":0.1875,
+                    "threshold":0.125,
+                    "ticket":[
+                        "BF-6510"
+                    ]
+                },
                 "Aggregation.Sort":{
                     "thread_threshold":0.21,
                     "threshold":0.16,
