@@ -391,13 +391,6 @@
                         "PERF-750"
                     ]
                 },
-                "map_reduce_1M_doc-mmapv1":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "BF-5837"
-                    ]
-                },
                 "mixed_delete-mmapv1":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
@@ -459,13 +452,6 @@
                     "threshold":0.15,
                     "ticket":[
                         "BF-5148"
-                    ]
-                },
-                "word_count_1M_doc-mmapv1":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "BF-5837"
                     ]
                 }
             }
@@ -824,13 +810,6 @@
                         "PERF-738"
                     ]
                 },
-                "map_reduce_1M_doc-wiredTiger":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "BF-5837"
-                    ]
-                },
                 "mixed_delete-wiredTiger":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
@@ -878,13 +857,6 @@
                     "threshold":0.12,
                     "ticket":[
                         "BF-6272"
-                    ]
-                },
-                "word_count_1M_doc-wiredTiger":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "BF-5837"
                     ]
                 }
             }
@@ -1624,13 +1596,6 @@
                         "PERF-750"
                     ]
                 },
-                "map_reduce_1M_doc-mmapv1":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "BF-5837"
-                    ]
-                },
                 "mixed_delete-mmapv1":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
@@ -1678,13 +1643,6 @@
                     "threshold":0.12,
                     "ticket":[
                         "BF-6272"
-                    ]
-                },
-                "word_count_1M_doc-mmapv1":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "BF-5837"
                     ]
                 }
             }
@@ -5643,13 +5601,6 @@
                         "BF-6271"
                     ]
                 },
-                "map_reduce_1M_doc-mmapv1":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "BF-5837"
-                    ]
-                },
                 "mixed_delete-mmapv1":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
@@ -5697,13 +5648,6 @@
                     "threshold":0.12,
                     "ticket":[
                         "BF-6272"
-                    ]
-                },
-                "word_count_1M_doc-mmapv1":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "BF-5837"
                     ]
                 }
             }
@@ -5923,13 +5867,6 @@
                         "BF-6272"
                     ]
                 },
-                "map_reduce_1M_doc-wiredTiger":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "BF-5837"
-                    ]
-                },
                 "mixed_delete-wiredTiger":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
@@ -5977,13 +5914,6 @@
                     "threshold":0.12,
                     "ticket":[
                         "BF-6272"
-                    ]
-                },
-                "word_count_1M_doc-wiredTiger":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "BF-5837"
                     ]
                 }
             }
@@ -6422,13 +6352,6 @@
                         "BF-4146"
                     ]
                 },
-                "map_reduce_1M_doc-mmapv1":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "BF-5837"
-                    ]
-                },
                 "mixed_delete-mmapv1":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
@@ -6490,13 +6413,6 @@
                     "threshold":0.15,
                     "ticket":[
                         "BF-5148"
-                    ]
-                },
-                "word_count_1M_doc-mmapv1":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "BF-5837"
                     ]
                 }
             }
@@ -6873,13 +6789,6 @@
                         "BF-6272"
                     ]
                 },
-                "map_reduce_1M_doc-wiredTiger":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "BF-5837"
-                    ]
-                },
                 "mixed_delete-wiredTiger":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
@@ -6927,13 +6836,6 @@
                     "threshold":0.12,
                     "ticket":[
                         "BF-6272"
-                    ]
-                },
-                "word_count_1M_doc-wiredTiger":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
-                    "ticket":[
-                        "BF-5837"
                     ]
                 }
             }
