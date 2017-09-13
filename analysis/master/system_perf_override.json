@@ -195,6 +195,20 @@
                         "BF-6162"
                     ]
                 },
+                "count_with_type_predicate-noAgg-wiredTiger":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-6270"
+                    ]
+                },
+                "count_with_type_predicate-useAgg-wiredTiger":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-6270"
+                    ]
+                },
                 "distinct_types_with_in_predicate-useAgg-wiredTiger":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -1364,6 +1378,20 @@
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
+                    ]
+                },
+                "count_with_type_predicate-noAgg-wiredTiger":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-6270"
+                    ]
+                },
+                "count_with_type_predicate-useAgg-wiredTiger":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-6270"
                     ]
                 },
                 "distinct_types_with_in_predicate-useAgg-wiredTiger":{
@@ -4126,6 +4154,20 @@
                         "BF-6162"
                     ]
                 },
+                "count_with_type_predicate-noAgg-wiredTiger":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-6270"
+                    ]
+                },
+                "count_with_type_predicate-useAgg-wiredTiger":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-6270"
+                    ]
+                },
                 "distinct_types_with_in_predicate-useAgg-mmapv1":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -5927,6 +5969,20 @@
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
+                    ]
+                },
+                "count_with_type_predicate-noAgg-wiredTiger":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-6270"
+                    ]
+                },
+                "count_with_type_predicate-useAgg-wiredTiger":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-6270"
                     ]
                 },
                 "distinct_types_with_in_predicate-useAgg-wiredTiger":{
