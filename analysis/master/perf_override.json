@@ -5417,10 +5417,11 @@
                     ]
                 },
                 "Aggregation.IdentityView.UnwindThenMatch":{
-                    "thread_threshold":0.225,
-                    "threshold":0.15,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
-                        "PERF-875"
+                        "PERF-875",
+                        "BF-6572"
                     ]
                 },
                 "Aggregation.IdentityView.UnwindThenSkip":{
@@ -22278,10 +22279,11 @@
                     ]
                 },
                 "Aggregation.IdentityView.UnwindThenMatch":{
-                    "thread_threshold":0.225,
-                    "threshold":0.15,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
-                        "PERF-875"
+                        "PERF-875",
+                        "BF-6572"
                     ]
                 },
                 "Aggregation.IdentityView.UnwindThenSkip":{
