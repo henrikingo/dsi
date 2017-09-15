@@ -118,5 +118,5 @@ post_task:
         iperf.json: ../iperf.json
 
 thread_levels:
-  mmapv1: [ 10 ]
-  wiredTiger: [ 32 ]
+  mmapv1: [10]
+  wiredTiger: [32]
