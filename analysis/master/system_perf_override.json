@@ -2,40 +2,7 @@
     "linux-1-node-replSet":{
         "agg_query_comparison_bestbuy_MMAPv1":{
             "ndays":{},
-            "reference":{
-                "find_limit-noAgg-mmapv1":{
-                    "create_time":"2017-08-09T04:34:09.978Z",
-                    "end":1502274605.0,
-                    "max":416.18788478725503,
-                    "name":"find_limit-noAgg-mmapv1",
-                    "order":7944,
-                    "results":{
-                        "1":{
-                            "ops_per_sec":220.82685758573464,
-                            "ops_per_sec_values":[
-                                220.82685758573464
-                            ]
-                        },
-                        "8":{
-                            "ops_per_sec":416.18788478725503,
-                            "ops_per_sec_values":[
-                                416.18788478725503
-                            ]
-                        }
-                    },
-                    "revision":"9f2e54384d90ab0c533c6d311337d6bcc8fb5679",
-                    "start":1502270685.0,
-                    "tag":"",
-                    "threads":[
-                        "1",
-                        "8"
-                    ],
-                    "ticket":[
-                        "BF-6267"
-                    ],
-                    "workload":"shell/benchrun"
-                }
-            },
+            "reference":{},
             "threshold":{
                 "canary_client-cpuloop-10x-mmapv1":{
                     "thread_threshold":2.0,
@@ -132,40 +99,7 @@
         },
         "agg_query_comparison_bestbuy_WT":{
             "ndays":{},
-            "reference":{
-                "find_limit-noAgg-wiredTiger":{
-                    "create_time":"2017-08-09T04:34:09.978Z",
-                    "end":1502270066.0,
-                    "max":358.2604442689486,
-                    "name":"find_limit-noAgg-wiredTiger",
-                    "order":7944,
-                    "results":{
-                        "1":{
-                            "ops_per_sec":161.08866606993644,
-                            "ops_per_sec_values":[
-                                161.08866606993644
-                            ]
-                        },
-                        "8":{
-                            "ops_per_sec":358.2604442689486,
-                            "ops_per_sec_values":[
-                                358.2604442689486
-                            ]
-                        }
-                    },
-                    "revision":"9f2e54384d90ab0c533c6d311337d6bcc8fb5679",
-                    "start":1502266129.0,
-                    "tag":"",
-                    "threads":[
-                        "1",
-                        "8"
-                    ],
-                    "ticket":[
-                        "BF-6267"
-                    ],
-                    "workload":"shell/benchrun"
-                }
-            },
+            "reference":{},
             "threshold":{
                 "canary_client-cpuloop-10x-wiredTiger":{
                     "thread_threshold":2.0,
@@ -1187,40 +1121,7 @@
     "linux-3-node-replSet":{
         "agg_query_comparison_bestbuy_MMAPv1":{
             "ndays":{},
-            "reference":{
-                "find_limit-noAgg-mmapv1":{
-                    "create_time":"2017-08-09T04:34:09.978Z",
-                    "end":1502277267.0,
-                    "max":416.17569299985286,
-                    "name":"find_limit-noAgg-mmapv1",
-                    "order":7944,
-                    "results":{
-                        "1":{
-                            "ops_per_sec":207.7866053312718,
-                            "ops_per_sec_values":[
-                                207.7866053312718
-                            ]
-                        },
-                        "8":{
-                            "ops_per_sec":416.17569299985286,
-                            "ops_per_sec_values":[
-                                416.17569299985286
-                            ]
-                        }
-                    },
-                    "revision":"9f2e54384d90ab0c533c6d311337d6bcc8fb5679",
-                    "start":1502273274.0,
-                    "tag":"",
-                    "threads":[
-                        "1",
-                        "8"
-                    ],
-                    "ticket":[
-                        "BF-6267"
-                    ],
-                    "workload":"shell/benchrun"
-                }
-            },
+            "reference":{},
             "threshold":{
                 "canary_client-cpuloop-10x-mmapv1":{
                     "thread_threshold":2.0,
@@ -1317,40 +1218,7 @@
         },
         "agg_query_comparison_bestbuy_WT":{
             "ndays":{},
-            "reference":{
-                "find_limit-noAgg-wiredTiger":{
-                    "create_time":"2017-08-09T04:34:09.978Z",
-                    "end":1502269459.0,
-                    "max":366.92410480662164,
-                    "name":"find_limit-noAgg-wiredTiger",
-                    "order":7944,
-                    "results":{
-                        "1":{
-                            "ops_per_sec":160.67879951320705,
-                            "ops_per_sec_values":[
-                                160.67879951320705
-                            ]
-                        },
-                        "8":{
-                            "ops_per_sec":366.92410480662164,
-                            "ops_per_sec_values":[
-                                366.92410480662164
-                            ]
-                        }
-                    },
-                    "revision":"9f2e54384d90ab0c533c6d311337d6bcc8fb5679",
-                    "start":1502265463.0,
-                    "tag":"",
-                    "threads":[
-                        "1",
-                        "8"
-                    ],
-                    "ticket":[
-                        "BF-6267"
-                    ],
-                    "workload":"shell/benchrun"
-                }
-            },
+            "reference":{},
             "threshold":{
                 "canary_client-cpuloop-10x-wiredTiger":{
                     "thread_threshold":2.0,
@@ -5778,40 +5646,7 @@
     "linux-standalone":{
         "agg_query_comparison_bestbuy_MMAPv1":{
             "ndays":{},
-            "reference":{
-                "find_limit-noAgg-mmapv1":{
-                    "create_time":"2017-08-09T04:34:09.978Z",
-                    "end":1502277159.0,
-                    "max":405.83388944860553,
-                    "name":"find_limit-noAgg-mmapv1",
-                    "order":7944,
-                    "results":{
-                        "1":{
-                            "ops_per_sec":224.03253734077003,
-                            "ops_per_sec_values":[
-                                224.03253734077003
-                            ]
-                        },
-                        "8":{
-                            "ops_per_sec":405.83388944860553,
-                            "ops_per_sec_values":[
-                                405.83388944860553
-                            ]
-                        }
-                    },
-                    "revision":"9f2e54384d90ab0c533c6d311337d6bcc8fb5679",
-                    "start":1502273241.0,
-                    "tag":"",
-                    "threads":[
-                        "1",
-                        "8"
-                    ],
-                    "ticket":[
-                        "BF-6267"
-                    ],
-                    "workload":"shell/benchrun"
-                }
-            },
+            "reference":{},
             "threshold":{
                 "canary_client-cpuloop-10x-mmapv1":{
                     "thread_threshold":2.0,
@@ -5908,40 +5743,7 @@
         },
         "agg_query_comparison_bestbuy_WT":{
             "ndays":{},
-            "reference":{
-                "find_limit-noAgg-wiredTiger":{
-                    "create_time":"2017-08-09T04:34:09.978Z",
-                    "end":1502270027.0,
-                    "max":404.9555912422039,
-                    "name":"find_limit-noAgg-wiredTiger",
-                    "order":7944,
-                    "results":{
-                        "1":{
-                            "ops_per_sec":169.04002382126083,
-                            "ops_per_sec_values":[
-                                169.04002382126083
-                            ]
-                        },
-                        "8":{
-                            "ops_per_sec":404.9555912422039,
-                            "ops_per_sec_values":[
-                                404.9555912422039
-                            ]
-                        }
-                    },
-                    "revision":"9f2e54384d90ab0c533c6d311337d6bcc8fb5679",
-                    "start":1502266090.0,
-                    "tag":"",
-                    "threads":[
-                        "1",
-                        "8"
-                    ],
-                    "ticket":[
-                        "BF-6267"
-                    ],
-                    "workload":"shell/benchrun"
-                }
-            },
+            "reference":{},
             "threshold":{
                 "canary_client-cpuloop-10x-wiredTiger":{
                     "thread_threshold":2.0,
