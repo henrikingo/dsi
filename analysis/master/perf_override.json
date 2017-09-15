@@ -2978,6 +2978,13 @@
                         "BF-3423"
                     ]
                 },
+                "Geo.geoJSON.within.2dsphere.centersphere":{
+                    "thread_threshold":0.1875,
+                    "threshold":0.125,
+                    "ticket":[
+                        "BF-6575"
+                    ]
+                },
                 "Geo.near.2d.find100":{
                     "thread_threshold":0.25,
                     "threshold":0.2,
