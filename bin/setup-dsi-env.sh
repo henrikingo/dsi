@@ -28,8 +28,8 @@ fi
 mkdir terraform
 
 cd terraform
-curl  -O --retry 10 https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd64.zip
-unzip terraform_0.9.11_linux_amd64.zip
+curl  -O --retry 10 https://releases.hashicorp.com/terraform/0.10.4/terraform_0.10.4_linux_amd64.zip
+unzip terraform_0.10.4_linux_amd64.zip
 cd ..
 
 cp terraform/terraform work

@@ -29,6 +29,7 @@ class Provisioner(object):
     """ Used to provision AWS resources """
 
     def __init__(self, config):
+        self.ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
         self.cluster = config['infrastructure_provisioning']['tfvars'].get('cluster_name',
                                                                            'missing_cluster_name')
         self.reuse_cluster = config['infrastructure_provisioning']['evergreen'].get('reuse_cluster',
@@ -109,13 +110,20 @@ class Provisioner(object):
         if not os.path.isdir(self.evg_data_dir):
             LOG.info("Copying terraform binary to Evergreen host")
             os.makedirs(self.evg_data_dir)
+            # While everything else is inside the work directory, setup-dsi-env.sh still downloads
+            # terraform into a directory that is parallel to work, not inside it.
+            # Also note that the below is the directory called "terraform". (Yes, it contains a
+            # binary called "terraform".
             shutil.copytree("../terraform", os.path.join(self.evg_data_dir, "terraform"))
             shutil.copytree("./modules", os.path.join(self.evg_data_dir, "terraform/modules"))
+
+            # Note: The Evergreen distro "Teardown Script" still calls infrastructure_teardown.sh
             LOG.info("Copying infrastructure_teardown.sh to Evergreen host")
             shutil.copyfile(os.path.join(self.bin_dir, 'infrastructure_teardown.sh'),
                             os.path.join(self.evg_data_dir, 'terraform/infrastructure_teardown.sh'))
             shutil.copyfile(os.path.join(self.bin_dir, 'infrastructure_teardown.py'),
                             os.path.join(self.evg_data_dir, 'terraform/infrastructure_teardown.py'))
+            os.chmod(os.path.join(self.evg_data_dir, 'terraform/infrastructure_teardown.py'), 0755)
 
         LOG.info("Contents of %s:", self.evg_data_dir)
         LOG.info(os.listdir(self.evg_data_dir))
@@ -126,7 +134,7 @@ class Provisioner(object):
         """
         Runs terraform to provision the cluster.
         """
-        subprocess.check_call([self.terraform, 'get', '--update'])
+        subprocess.check_call([self.terraform, 'init', '-upgrade'])
         tf_config = TerraformConfiguration()
         tf_config.to_json(file_name='cluster.json')  # pylint: disable=no-member
         self.var_file = '-var-file=cluster.json'
@@ -159,8 +167,8 @@ class Provisioner(object):
             if self.reuse_cluster:
                 self.save_terraform_state()
         except Exception as exception:
-            LOG.info("Failed to provision EC2 resources."
-                     "Releasing any EC2 resources that did deploy.")
+            LOG.info("Failed to provision EC2 resources.")
+            LOG.info("Releasing any EC2 resources that did deploy.")
             destroy_resources()
             shutil.rmtree(self.evg_data_dir)
             LOG.info("Cleaned up %s on Evergreen host. Existing test", self.evg_data_dir)
@@ -175,13 +183,20 @@ class Provisioner(object):
                  "teardown when triggered by the Evergreen runner.")
         terraform_dir = os.path.join(self.evg_data_dir, 'terraform')
         files_to_copy = ['terraform.tfstate', 'cluster.tf', 'terraform.tfvars', 'security.tf',
-                         'cluster.json', 'aws_ssh_key.pem']
+                         'cluster.json']
         LOG.info('Copying files: %s', str(files_to_copy))
         for to_copy in files_to_copy:
             shutil.copyfile(to_copy, os.path.join(terraform_dir, to_copy))
+        # If ssh_key_file is a relative path, copy it too
+        # Important: If you provide an absolute path in the configuration, make sure it doesn't
+        # point to a temporary path! (/tmp, or evergreen runner work dir)
+        if not os.path.isabs(self.ssh_key_file):
+            LOG.info('Copying: %s', self.ssh_key_file)
+            shutil.copyfile(self.ssh_key_file, os.path.join(terraform_dir, self.ssh_key_file))
+
         previous_working_directory = os.getcwd()
         os.chdir(terraform_dir)
-        subprocess.check_call(['./terraform', 'get'])
+        subprocess.check_call(['./terraform', 'init', '-upgrade'])
         for file_path in glob.glob('provisioned.*'):
             os.remove(file_path)
         with open('provisioned.' + self.cluster, 'w+'):

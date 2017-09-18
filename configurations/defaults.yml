@@ -40,7 +40,7 @@ infrastructure_provisioning:
         reuse_cluster: ${bootstrap.production}
         data_dir: /data/infrastructure_provisioning
     terraform:
-        required_version: Terraform v0.9.11
+        required_version: Terraform v0.10.4
 
 mongodb_setup:
     mongo_dir: mongodb
