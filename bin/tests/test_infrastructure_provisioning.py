@@ -212,6 +212,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             # any_order is set to True because when running nosetests, listdir has extra
             # __str__() calls due to logging
             mock_listdir.assert_has_calls(listdir_calls, any_order=True)
+            mock_chmod.assert_called_with(
+                os.path.join(evg_data_dir, 'terraform/infrastructure_teardown.py'), 0755)
 
         # Test when evergreen data directories do exist
         with patch('infrastructure_provisioning.os.makedirs') as mock_makedirs:
@@ -220,6 +222,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             provisioner.bin_dir = 'test/bin'
             provisioner.setup_evg_dir()
             self.assertFalse(mock_makedirs.called)
+            mock_chmod.assert_called_with(
+                os.path.join(evg_data_dir, 'terraform/infrastructure_teardown.py'), 0755)
         self.reset_mock_objects()
 
     @patch('infrastructure_provisioning.Provisioner.save_terraform_state')
