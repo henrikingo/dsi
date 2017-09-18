@@ -20,38 +20,36 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     """ Test suite for infrastructure_provisioning.py """
 
     def setUp(self):
-        self.config_dict_patcher = patch('common.config.ConfigDict')
-        self.mock_config_dict = self.config_dict_patcher.start()
+        self.config_patcher = patch('common.config.ConfigDict')
+        self.mock_config = self.config_patcher.start()
         self.os_environ_patcher = patch('infrastructure_provisioning.os.environ')
         self.mock_environ = self.os_environ_patcher.start()
         self.reset_mock_objects()
-        self.config = self.mock_config_dict('infrastructure_provisioning')
-
-    def reset_mock_objects(self):
-        """
-        Used to reset the test config dict, environment variables,
-        and mock objects.
-        """
-        self.config_dict = {
+        self.config = {
             'bootstrap': {
                 'infrastructure_provisioning': 'single'
             },
             'infrastructure_provisioning': {
                 'tfvars': {
-                    'cluster_name': 'single'
+                    'cluster_name': 'single',
+                    'ssh_key_file': 'aws_ssh_key.pem'
                 },
                 'evergreen': {
                     'data_dir': 'test/evergreen/data_dir'
                 }
             }
         }
+
+    def reset_mock_objects(self):
+        """
+        Used to reset the test config dict, environment variables,
+        and mock objects.
+        """
         self.os_environ = {
             'TERRAFORM': 'test/path/terraform',
             'DSI_PATH': 'test/path/dsi'
         }
         #pylint: disable=no-member
-        self.mock_config_dict.return_value.__getitem__.side_effect = self.config_dict.__getitem__
-        self.mock_config_dict.return_value.get.side_effect = self.mock_get_config
         self.mock_environ.__getitem__.side_effect = self.os_environ.__getitem__
         self.mock_environ.__contains__.side_effect = self.os_environ.__contains__
         self.mock_environ.__delitem__.side_effect = self.os_environ.__delitem__
@@ -59,8 +57,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
 
     def mock_get_config(self, key, default=None):
         """ Used to mock ConfigDict.get since the entire object is mocked in tests """
-        if key in self.config_dict:
-            return self.config_dict[key]
+        if key in self.config:
+            return self.config[key]
         else:
             return default
 
@@ -83,7 +81,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
 
     def test_provisioner_init(self):
         """ Test Provisioner.__init__ """
-        self.config_dict['bootstrap']['infrastructure_provisioning'] = 'single'
+        self.config['bootstrap']['infrastructure_provisioning'] = 'single'
         # Check when TERRAFORM is an environment variable
         provisioner = Provisioner(self.config)
         self.assertEqual(provisioner.cluster, 'single')
@@ -114,9 +112,9 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     def test_check_existing_state(self, mock_isdir, mock_check_call,
                                   mock_shutil, mock_setup_evg_dir):
         """ Test Provisioner.existing_state """
-        self.config_dict['infrastructure_provisioning']['tfvars']['cluster_name'] = \
+        self.config['infrastructure_provisioning']['tfvars']['cluster_name'] = \
             'initialsync-logkeeper'
-        evg_data_dir = self.config_dict['infrastructure_provisioning']['evergreen']['data_dir']
+        evg_data_dir = self.config['infrastructure_provisioning']['evergreen']['data_dir']
         mock_isdir.side_effect = lambda evg_dir: evg_dir == evg_data_dir
         # Run check_existing_state when existing state exists
         with patch('infrastructure_provisioning.os.path.isfile') as mock_isfile:
@@ -159,9 +157,9 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         """Test Provisioner.existing_state when teardown fails. The code should catch the exception,
         and continue execution."""
 
-        self.config_dict['infrastructure_provisioning']['tfvars']['cluster_name'] = \
+        self.config['infrastructure_provisioning']['tfvars']['cluster_name'] = \
             'initialsync-logkeeper'
-        evg_data_dir = self.config_dict['infrastructure_provisioning']['evergreen']['data_dir']
+        evg_data_dir = self.config['infrastructure_provisioning']['evergreen']['data_dir']
         mock_isdir.side_effect = lambda evg_dir: evg_dir == evg_data_dir
         with patch('infrastructure_provisioning.os.path.isfile') as mock_isfile:
             mock_check_call.side_effect = CalledProcessError(1, ['cmd'])
@@ -191,13 +189,14 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     @patch('infrastructure_provisioning.shutil')
     @patch('infrastructure_provisioning.os.listdir')
     @patch('infrastructure_provisioning.os.path.isdir')
-    def test_setup_evg_dir(self, mock_isdir, mock_listdir, mock_shutil):
+    @patch('infrastructure_provisioning.os.chmod')
+    def test_setup_evg_dir(self, mock_chmod, mock_isdir, mock_listdir, mock_shutil):
         """ Test Provisioner.setup_evg_dir """
-        evg_data_dir = self.config_dict['infrastructure_provisioning']['evergreen']['data_dir']
+        evg_data_dir = self.config['infrastructure_provisioning']['evergreen']['data_dir']
         # Test when evergreen data directories do not exist
         with patch('infrastructure_provisioning.os.makedirs') as mock_makedirs:
             mock_isdir.return_value = False
-            provisioner = Provisioner(self.config_dict)
+            provisioner = Provisioner(self.config)
             provisioner.bin_dir = 'test/bin'
             provisioner.setup_evg_dir()
             mock_makedirs.assert_called_with(evg_data_dir)
@@ -217,7 +216,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         # Test when evergreen data directories do exist
         with patch('infrastructure_provisioning.os.makedirs') as mock_makedirs:
             mock_isdir.return_value = True
-            provisioner = Provisioner(self.config_dict)
+            provisioner = Provisioner(self.config)
             provisioner.bin_dir = 'test/bin'
             provisioner.setup_evg_dir()
             self.assertFalse(mock_makedirs.called)
@@ -249,7 +248,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             mock_open_file.assert_has_calls(open_file_calls, any_order=True)
             # If the cluster is initialsync-logkeeper, then terraform should be run twice
             terraform = self.os_environ['TERRAFORM']
-            check_call_calls = [call([terraform, 'get', '--update']),
+            check_call_calls = [call([terraform, 'init', '-upgrade']),
                                 call([terraform, 'apply', '-var-file=cluster.json',
                                       provisioner.parallelism, '-var="mongod_ebs_instance_count=0"',
                                       '-var="workload_instance_count=0"']),
@@ -302,7 +301,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                                   mock_chdir, mock_remove, mock_check_call):
         """ Test Provisioner.save_terraform_state """
         provisioned_files = ['provisioned.single', 'provisioned.shard']
-        evg_data_dir = self.config_dict['infrastructure_provisioning']['evergreen']['data_dir']
+        evg_data_dir = self.config['infrastructure_provisioning']['evergreen']['data_dir']
         terraform_dir = os.path.join(evg_data_dir, 'terraform')
         with patch('infrastructure_provisioning.glob.glob') as mock_glob:
             mock_open_file = mock_open()
@@ -320,14 +319,14 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 mock_copyfile.assert_has_calls(copyfile_calls)
                 chdir_calls = [call(terraform_dir), call(mock_getcwd.return_value)]
                 mock_chdir.assert_has_calls(chdir_calls)
-                mock_check_call.assert_called_with(['./terraform', 'get'])
+                mock_check_call.assert_called_with(['./terraform', 'init', '-upgrade'])
                 remove_calls = [call('provisioned.single'), call('provisioned.shard')]
                 mock_remove.assert_has_calls(remove_calls)
                 mock_open_file.assert_called_with('provisioned.single', 'w+')
         self.reset_mock_objects()
 
     def tearDown(self):
-        self.config_dict_patcher.stop()
+        self.config_patcher.stop()
         self.os_environ_patcher.stop()
 
 

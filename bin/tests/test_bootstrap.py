@@ -712,7 +712,7 @@ class TestBootstrap(unittest.TestCase):
                          'platform': 'linux',
                          'production': False,
                          'storageEngine': 'wiredTiger',
-                         'terraform_version_check': 'Terraform v0.9.11',
+                         'terraform_version_check': 'Terraform v0.10.4',
                          'test_control': 'core'}
         test_config = {}
         bootstrap.load_bootstrap(test_config, '.')
