@@ -1,6 +1,6 @@
 task_name: ycsb
 run:
-  - id: ycsb_load-${mongodb_setup.mongod_config_file.storage.engine}
+  - id: ycsb_load
     type: ycsb
     cmd: >
       cd YCSB/ycsb-mongodb;
@@ -20,7 +20,7 @@ run:
       scanproportion=0
       insertproportion=0.0
       requestdistribution=zipfian
-  - id: ycsb_100read-${mongodb_setup.mongod_config_file.storage.engine}
+  - id: ycsb_100read
     type: ycsb
     cmd: >
       cd YCSB/ycsb-mongodb;
@@ -28,7 +28,7 @@ run:
       -P workloads/workloadEvergreen
       -threads 64;
       sleep 1;
-  - id: ycsb_95read5update-${mongodb_setup.mongod_config_file.storage.engine}
+  - id: ycsb_95read5update
     type: ycsb
     cmd: >
       cd YCSB/ycsb-mongodb;
@@ -48,7 +48,7 @@ run:
       scanproportion=0
       insertproportion=0.0
       requestdistribution=zipfian
-  - id: ycsb_50read50update-${mongodb_setup.mongod_config_file.storage.engine}
+  - id: ycsb_50read50update
     type: ycsb
     cmd: >
       cd YCSB/ycsb-mongodb;
@@ -69,7 +69,7 @@ run:
       insertproportion=0.0
       requestdistribution=zipfian
 
-  - id: fio-${mongodb_setup.mongod_config_file.storage.engine}
+  - id: fio
     type: shell
     cmd: '${test_control.numactl} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini

@@ -1,6 +1,6 @@
 task_name: initialSync
 run:
-  # - id: fio-${mongodb_setup.mongod_config_file.storage.engine}
+  # - id: fio
   #   type: shell
   #   cmd: '${test_control.numactl} ./fio-test.sh ${mongodb_setup.meta.hostname}'
   #   config_filename: fio.ini
@@ -8,7 +8,7 @@ run:
   # - id: iperf
   #   type: shell
   #   cmd: '${test_control.numactl} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
-  - id: benchRun-${mongodb_setup.mongod_config_file.storage.engine}
+  - id: benchRun
     type: shell
     cmd: cd workloads &&  ${test_control.numactl} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
@@ -74,17 +74,8 @@ run:
         # Hard coding for now. These aren't working right now
         sharded: ${mongodb_setup.meta.is_sharded}
         replica: ${mongodb_setup.meta.is_replset}
-        storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
         scale_factor: ${mongodb_setup.meta.primaries}
         test_list: initialsync_c_1_d_1_w_f
-        mongo:
-            # It turns out the shell supports connection strings, but
-            # benchRun itself does not.
-            uri: ${mongodb_setup.meta.hosts}
-            # Hard coding for now. These aren't working right now
-            sharded: ${mongodb_setup.meta.is_sharded}
-            replica: ${mongodb_setup.meta.is_replset}
-            storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
 
 pre_task:
   # - on_all_hosts:

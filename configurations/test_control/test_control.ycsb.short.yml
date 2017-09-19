@@ -1,6 +1,6 @@
 task_name: ycsb.short
 run:
-  - id: ycsb_load-${mongodb_setup.mongod_config_file.storage.engine}
+  - id: ycsb_load
     type: ycsb
     "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb load mongodb -s -P workloads/workloadShort -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32; sleep 1"
     config_filename: workloadShort
@@ -14,7 +14,7 @@ run:
       scanproportion=0
       insertproportion=0.0
       requestdistribution=zipfian
-  - id: ycsb_50read50update-${mongodb_setup.mongod_config_file.storage.engine}
+  - id: ycsb_50read50update
     type: ycsb
     "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb run mongodb -s -P workloads/workloadShort -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
 

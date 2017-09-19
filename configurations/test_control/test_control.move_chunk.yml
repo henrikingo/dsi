@@ -1,6 +1,6 @@
 task_name: move_chunk
 run:
-  - id: benchRun-${mongodb_setup.mongod_config_file.storage.engine}
+  - id: benchRun
     type: shell
 
     # This line to be shortened after the config file is copied from below into the production server.
@@ -18,12 +18,6 @@ run:
               - move_chunk_with_load.js
               - move_chunk.js
               - cpu_noise.js
-            test:
-              -  # Empty list. Put new workloads here for testing
-            short:  # Just does Hello World
-              - hello.js:
-                  parameter1: foo
-                  parameter2: [true, false]
 
         # These next five lines match existing
         # workloads.yml. Workloads needs to be updated to consume from
@@ -33,18 +27,8 @@ run:
         # Hard coding for now. These aren't working right now
         sharded: ${mongodb_setup.meta.is_sharded}
         replica: ${mongodb_setup.meta.is_replset}
-        storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
         scale_factor: ${mongodb_setup.meta.primaries}
-        test_list: default
-        mongo:
-            # It turns out the shell supports connection strings, but
-            # benchRun itself does not.
-            uri: ${mongodb_setup.meta.hosts}
-            # Hard coding for now. These aren't working right now
-            sharded: ${mongodb_setup.meta.is_sharded}
-            replica: ${mongodb_setup.meta.is_replset}
-            storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
-  - id: fio-${mongodb_setup.mongod_config_file.storage.engine}
+  - id: fio
     type: shell
     cmd: '${test_control.numactl} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
