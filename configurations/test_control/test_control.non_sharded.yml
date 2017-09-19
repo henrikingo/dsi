@@ -3,33 +3,19 @@ run:
   - id: benchRun-${mongodb_setup.mongod_config_file.storage.engine}
     type: shell
 
-    # This line to be shortened after the config file is copied from below into the production server.
     cmd: cd workloads && ${test_control.numactl} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
-        ########################################################################
-        # Test lists. Command line will indicate which list of tests to execute.
-        # The 'default' list is the default.
-        # When testing new test workloads, please put your tests in the
-        # tests.test list, and remove the existing hello.js
-        ########################################################################
         tests:
             default:
               - insert_capped.js:
                     thread_levels: [1, 2]
-              - insert_capped_indexes.js
+              - insert_capped_indexes.js:
+                    thread_levels: [1, 2]
               - cpu_noise.js
-            test:
-              -  # Empty list. Put new workloads here for testing
-            short:  # Just does Hello World
-              - hello.js:
-                  parameter1: foo
-                  parameter2: [true, false]
 
-        # These next five lines match existing workloads.yml.
         target: ${mongodb_setup.meta.hostname}
         port: ${mongodb_setup.meta.port}
-        # Hard coding for now. These aren't working right now
         sharded: ${mongodb_setup.meta.is_sharded}
         replica: ${mongodb_setup.meta.is_replset}
   - id: fio-${mongodb_setup.mongod_config_file.storage.engine}
