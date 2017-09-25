@@ -4,7 +4,7 @@ run:
     type: shell
 
     # This line to be shortened after the config file is copied from below into the production server.
-    cmd: cd workloads && ${test_control.numactl} ./run_workloads.py -c workloads.yml
+    cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
         ########################################################################
@@ -42,12 +42,12 @@ run:
         replica: ${mongodb_setup.meta.is_replset}
   - id: fio
     type: shell
-    cmd: '${test_control.numactl} ./fio-test.sh ${mongodb_setup.meta.hostname}'
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
     workload_config: ${test_control.common_fio_config}
   - id: iperf
     type: shell
-    cmd: '${test_control.numactl} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
 
 # This is just a lookup table. Each test may reference some leaf node here from a test parameter.
 thread_levels:

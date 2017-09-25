@@ -23,8 +23,8 @@ class HostTestCase(unittest.TestCase):
 
     def setUp(self):
         """ Init a ConfigDict object and load the configuration files from docs/config-specs/ """
-        self.old_dir = os.getcwd() # Save the old path to restore Note
-        # that this chdir only works without breaking relative imports
+        self.old_dir = os.getcwd() # Save the old path to restore
+        # Note that this chdir only works without breaking relative imports
         # because it's at the same directory depth
         os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/../../docs/config-specs/')
         self.config = ConfigDict('mongodb_setup')
@@ -441,6 +441,47 @@ class HostTestCase(unittest.TestCase):
         self.assertTrue(status_code == 0)
         mock_create_file.assert_called_with(test_file, test_script)
         mock_exec_command.assert_called_with(test_argv)
+
+    @patch('paramiko.SSHClient')
+    def test_run(self, mock_ssh):
+        """Test RemoteHost.run"""
+        ssh_instance = mock_ssh.return_value
+        stdin = Mock()
+        stdout = Mock()
+        stderr = Mock()
+        stdout.channel.recv_exit_status.return_value = 0
+        stdout.readlines.return_value = ["mock cow: mu"]
+        stderr.readlines.return_value = []
+        ssh_instance.exec_command.return_value = [stdin, stdout, stderr]
+
+        remote_host = host.RemoteHost('test_host', 'test_user', 'test_pem_file')
+        # Test a command as string
+        self.assertTrue(remote_host.run('cowsay Hello World'))
+        # Test a command as list
+        self.assertTrue(remote_host.run(['cowsay', 'Hello', 'List']))
+        # Test a batch of commands
+        batch = [['cowsay', 'Hello', 'One'], ['cowsay', 'Hello', 'Two']]
+        self.assertTrue(remote_host.run(batch))
+        # Test empty string and list
+        with self.assertRaises(ValueError):
+            self.assertTrue(remote_host.run(''))
+        with self.assertRaises(ValueError):
+            self.assertTrue(remote_host.run([]))
+        # Anything else should fail
+        with self.assertRaises(ValueError):
+            remote_host.run(None)
+        with self.assertRaises(ValueError):
+            remote_host.run(0)
+
+    @patch('paramiko.SSHClient')
+    def test_exec_command(self, mock_ssh):
+        """Test RemoteHost.exec_command"""
+        # test_run() already tests exec_command too, but we test some incorrect input here
+        remote_host = host.RemoteHost('test_host', 'test_user', 'test_pem_file')
+        with self.assertRaises(ValueError):
+            remote_host.exec_command(None)
+        with self.assertRaises(ValueError):
+            remote_host.exec_command(0)
 
 if __name__ == '__main__':
     unittest.main()

@@ -4,7 +4,7 @@ run:
     type: ycsb
     cmd: >
       cd YCSB/ycsb-mongodb;
-      ${test_control.numactl} ./bin/ycsb load mongodb -s
+      ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb load mongodb -s
       -P workloads/workloadEvergreen
       -threads ${test_control.thread_levels.load.${mongodb_setup.meta.storageEngine}};
       sleep 1;
@@ -24,7 +24,7 @@ run:
     type: ycsb
     cmd: >
       cd YCSB/ycsb-mongodb;
-      ${test_control.numactl} ./bin/ycsb run mongodb -s
+      ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
       -P workloads/workloadEvergreen_95read5update
       -threads ${test_control.thread_levels.95-5.${mongodb_setup.meta.mongodb_setup}};
       sleep 1;
@@ -44,7 +44,7 @@ run:
     type: ycsb
     cmd: >
       cd YCSB/ycsb-mongodb;
-      ${test_control.numactl} ./bin/ycsb run mongodb -s
+      ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
       -P workloads/workloadEvergreen_95read5update
       -threads 1
       -p maxexecutiontime=600;
@@ -53,7 +53,7 @@ run:
     type: ycsb
     cmd: >
       cd YCSB/ycsb-mongodb;
-      ${test_control.numactl} ./bin/ycsb run mongodb -s
+      ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
       -P workloads/workloadEvergreen_50read50update
       -threads ${test_control.thread_levels.50-50.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
       -p maxexecutiontime=600;
@@ -74,7 +74,7 @@ run:
     type: ycsb
     cmd: >
       cd YCSB/ycsb-mongodb;
-      ${test_control.numactl} ./bin/ycsb run mongodb -s
+      ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
       -P workloads/workloadEvergreen_50read50update
       -threads 1
       -p maxexecutiontime=600;
@@ -82,12 +82,12 @@ run:
 
   - id: fio
     type: shell
-    cmd: '${test_control.numactl} ./fio-test.sh ${mongodb_setup.meta.hostname}'
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
     workload_config: ${test_control.common_fio_config}
   - id: iperf
     type: shell
-    cmd: '${test_control.numactl} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
 
 thread_levels:
   load:

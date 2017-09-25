@@ -2,7 +2,7 @@ task_name: ycsb.longevity
 run:
   - id: ycsb_load
     type: ycsb
-    "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb load mongodb -s -P workloads/workloadLongevity -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32; sleep 1"
+    "cmd": "cd YCSB/ycsb-mongodb; ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb load mongodb -s -P workloads/workloadLongevity -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32; sleep 1"
     config_filename: workloadLongevity
     workload_config: |
       recordcount=50000000
@@ -17,15 +17,15 @@ run:
 
   - id: ycsb_50read50update
     type: ycsb
-    "cmd": "cd YCSB/ycsb-mongodb; ${test_control.numactl} ./bin/ycsb run mongodb -s -P workloads/workloadLongevity -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64 -p maxexecutiontime=86400; sleep 1"
+    "cmd": "cd YCSB/ycsb-mongodb; ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s -P workloads/workloadLongevity -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64 -p maxexecutiontime=86400; sleep 1"
   - id: fio
     type: shell
-    cmd: ' ${test_control.numactl} ./fio-test.sh ${mongodb_setup.meta.hostname}'
+    cmd: ' ${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
     workload_config: ${test_control.common_fio_config}
   - id: iperf
     type: shell
-    cmd: '${test_control.numactl} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
 
 mc:
   monitor_interval: 10

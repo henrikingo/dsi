@@ -188,8 +188,14 @@ class Host(object):
     def run(self, argvs):
         """
         Runs a command or list of commands
-        :param argvs: Argument vector or list of argv's [file, args, ...]
+        :param argvs: The string to execute, or one argument vector or list of argv's [file, arg]
         """
+        if not argvs or not isinstance(argvs, (list, basestring)):
+            raise ValueError("Argument must be a nonempty list or string.")
+
+        if isinstance(argvs, basestring):
+            return self.exec_command(argvs) == 0
+
         if not isinstance(argvs[0], list):
             argvs = [argvs]
 
@@ -258,7 +264,15 @@ class RemoteHost(Host):
 
     def exec_command(self, argv):
         """Execute the command and log the output."""
-        command = ' '.join(argv)
+        if not argv or not isinstance(argv, (list, basestring)):
+            raise ValueError("Argument must be a nonempty list or string.")
+
+        command = ''
+        if isinstance(argv, list):
+            command = ' '.join(argv)
+        elif isinstance(argv, basestring):
+            command = argv
+
         LOG.info('[%s@%s]$ %s', self.user, self.host, command)
         try:
             stdin, stdout, stderr = self._ssh.exec_command(command)
@@ -374,9 +388,16 @@ class LocalHost(Host):
 
     def exec_command(self, argv):
         """Execute the command and log the output."""
-        LOG.info('[localhost]$ %s', ' '.join(argv))
+        if not argv or not isinstance(argv, (list, basestring)):
+            raise ValueError("Argument must be a nonempty list or string.")
+
+        command = str(argv)
+        if isinstance(argv, list):
+            command = ' '.join(argv)
+
+        LOG.info('[localhost]$ %s', command)
         proc = subprocess.Popen(
-            ['bash', '-c', ' '.join(argv)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            ['bash', '-c', command], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in iter(proc.stdout.readline, b''):
             LOG.info(line.rstrip())
         # wait for the process to terminate

@@ -81,7 +81,8 @@ class MongoNode(object):
     clean_db_dir = True
     """Delete data directory before startup"""
 
-    numactl_prefix = []
+    numactl_prefix = ""
+    """Set this to execute mongod via numactl"""
 
     def __init__(self, opts, is_mongos=False):
         """
@@ -211,15 +212,12 @@ class MongoNode(object):
         config_contents = yaml.dump(self.mongo_config_file, default_flow_style=False)
         self.host.create_file(remote_file_name, config_contents)
         self.host.run(['cat', remote_file_name])
+        cmd = os.path.join(self.bin_dir, self.mongo_program) + " --config " + remote_file_name
         numactl_prefix = self.numactl_prefix
-        if not numactl:
-            LOG.debug("numactl evaluates to false. Use empty list")
-            numactl_prefix = []
-        LOG.debug("numactl_prefix is %s", str(numactl_prefix))
-        argv = numactl_prefix + [os.path.join(self.bin_dir, self.mongo_program),
-                                 '--config', remote_file_name]
-        LOG.debug("argv is %s", str(argv))
-        return argv
+        if numactl and isinstance(numactl_prefix, basestring) and numactl_prefix != "":
+            cmd = numactl_prefix + " " + cmd
+        LOG.debug("cmd is %s", str(cmd))
+        return cmd
 
     def launch(self, numactl=True):
         """Starts this node."""
@@ -599,7 +597,7 @@ class MongodbSetup(object):
         MongoNode.ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
         MongoNode.numactl_prefix = config['infrastructure_provisioning']['numactl_prefix']
         if MongoNode.numactl_prefix is None:
-            MongoNode.numactl_prefix = []
+            MongoNode.numactl_prefix = ""
         self.clusters = []
         self.downloader = DownloadMongodb(config,
                                           args.run_locally)

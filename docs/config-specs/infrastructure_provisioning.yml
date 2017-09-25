@@ -27,6 +27,9 @@ tfvars:
         Variant: Linux 3-shard cluster
         Project: sys-perf
 
+# Prefix to use before starting mongod or a workload client (optional)
+numactl_prefix: numactl --interleave=all --cpunodebind=1
+
 evergreen:
     # Whether terraform state files should be stored outside the work dir
     # Used to reuse clusters during the lifecycle of an evergreen runner

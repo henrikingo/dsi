@@ -18,7 +18,7 @@ run:
         # there. So we pass the list of servers from infrastructure_provisioning.out.
         remote_execution:
             host_list: ${infrastructure_provisioning.out.mongod}
-            remote_cmd: cd workloads && ${test_control.numactl} ./run_workloads.py -c workloads.yml
+            remote_cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
             remote_prefix: mongod
 
 pre_task:
