@@ -15,7 +15,8 @@ run:
         ########################################################################
         tests:
             default:
-              - contended_update.js
+              - contended_update.js:
+                    thread_levels: [32, 64]
               - map_reduce.js
               - insert_ttl.js:
                     thread_levels: [1, 16, 32]
@@ -25,7 +26,8 @@ run:
               - jtrue.js:
                   thread_levels: [1, 64, 128]
               - index_build.js
-              - mix.js
+              - mix.js:
+                  thread_levels: [4, 64, 128, 256, 512]
               - cpu_noise.js
             test:
               -  # Empty list. Put new workloads here for testing
