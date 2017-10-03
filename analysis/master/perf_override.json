@@ -13610,8 +13610,8 @@
                     ]
                 },
                 "Aggregation.IdentityView.UnwindThenMatch":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.38,
+                    "threshold":0.25,
                     "ticket":[
                         "PERF-875",
                         "BF-6572"
@@ -36697,8 +36697,8 @@
                     ]
                 },
                 "Aggregation.IdentityView.UnwindThenMatch":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.38,
+                    "threshold":0.25,
                     "ticket":[
                         "PERF-875",
                         "BF-6572"
