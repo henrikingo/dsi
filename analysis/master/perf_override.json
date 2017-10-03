@@ -5311,41 +5311,6 @@
                         "BF-5126"
                     ]
                 },
-                "Aggregation.GeoNear2d":{
-                    "create_time":"2017-02-03T13:29:41.753Z",
-                    "max":432.39406482230606,
-                    "name":"Aggregation.GeoNear2d",
-                    "order":6833,
-                    "results":{
-                        "1":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":432.39406482230606,
-                            "ops_per_sec_values":[
-                                432.7573097007198,
-                                432.85681096693213,
-                                432.0502513828707,
-                                431.96535641839347,
-                                432.3405956426144
-                            ]
-                        },
-                        "end":"2017-02-03T14:19:01.099Z",
-                        "start":"2017-02-03T14:18:35.962Z"
-                    },
-                    "revision":"529adf30a88770c44b8dea31323f114975dfd78b",
-                    "tag":"",
-                    "threads":[
-                        "1"
-                    ],
-                    "ticket":[
-                        "BF-4690"
-                    ]
-                },
                 "Aggregation.GraphLookupNeighbors":{
                     "create_time":"2017-04-13T20:54:58.009Z",
                     "max":1411.8223603519405,
@@ -13143,41 +13108,6 @@
                     ],
                     "ticket":[
                         "BF-5126"
-                    ]
-                },
-                "Aggregation.IdentityView.GeoNear2d":{
-                    "create_time":"2017-02-03T13:29:41.753Z",
-                    "max":429.15419731924504,
-                    "name":"Aggregation.IdentityView.GeoNear2d",
-                    "order":6833,
-                    "results":{
-                        "1":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":429.15419731924504,
-                            "ops_per_sec_values":[
-                                430.8206924278115,
-                                427.5067303829573,
-                                430.3700962945594,
-                                428.4148391065381,
-                                428.65862838435885
-                            ]
-                        },
-                        "end":"2017-02-03T14:19:17.875Z",
-                        "start":"2017-02-03T14:18:52.738Z"
-                    },
-                    "revision":"529adf30a88770c44b8dea31323f114975dfd78b",
-                    "tag":"",
-                    "threads":[
-                        "1"
-                    ],
-                    "ticket":[
-                        "BF-4690"
                     ]
                 },
                 "Aggregation.IdentityView.GraphLookupNeighbors":{
@@ -28400,41 +28330,6 @@
                 }
             },
             "reference":{
-                "Aggregation.GeoNear2d":{
-                    "create_time":"2017-02-03T13:29:41.753Z",
-                    "max":352.3066682259423,
-                    "name":"Aggregation.GeoNear2d",
-                    "order":6833,
-                    "results":{
-                        "1":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":352.3066682259423,
-                            "ops_per_sec_values":[
-                                353.124562840984,
-                                350.6112309132763,
-                                351.7783093094732,
-                                353.4362176567379,
-                                352.58302040924013
-                            ]
-                        },
-                        "end":"2017-02-03T14:18:40.636Z",
-                        "start":"2017-02-03T14:18:15.483Z"
-                    },
-                    "revision":"529adf30a88770c44b8dea31323f114975dfd78b",
-                    "tag":"",
-                    "threads":[
-                        "1"
-                    ],
-                    "ticket":[
-                        "BF-4690"
-                    ]
-                },
                 "Aggregation.GraphLookupNeighbors":{
                     "create_time":"2017-04-13T20:54:58.009Z",
                     "max":1284.4715594464624,
@@ -36232,41 +36127,6 @@
                     ],
                     "ticket":[
                         "BF-5126"
-                    ]
-                },
-                "Aggregation.IdentityView.GeoNear2d":{
-                    "create_time":"2017-02-03T13:29:41.753Z",
-                    "max":351.00621452066565,
-                    "name":"Aggregation.IdentityView.GeoNear2d",
-                    "order":6833,
-                    "results":{
-                        "1":{
-                            "error_values":[
-                                0,
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "ops_per_sec":351.00621452066565,
-                            "ops_per_sec_values":[
-                                351.0759999568153,
-                                349.9879772833618,
-                                351.6435889316432,
-                                351.0031574293136,
-                                351.32034900219423
-                            ]
-                        },
-                        "end":"2017-02-03T14:19:20.240Z",
-                        "start":"2017-02-03T14:18:55.087Z"
-                    },
-                    "revision":"529adf30a88770c44b8dea31323f114975dfd78b",
-                    "tag":"",
-                    "threads":[
-                        "1"
-                    ],
-                    "ticket":[
-                        "BF-4690"
                     ]
                 },
                 "Aggregation.IdentityView.GraphLookupNeighbors":{
