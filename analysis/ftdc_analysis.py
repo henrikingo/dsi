@@ -15,7 +15,9 @@ LOGGER = logging.getLogger(__name__)
 
 RESOURCE_RULES_FTDC_FILE = {
     'sys-perf': {
-        'default': [rules.ftdc_replica_lag_check],
+        # Disabled for PERF-1084. To be re-enabled after BF-5815 is resolved
+        # 'default': [rules.ftdc_replica_lag_check],
+        'default': [],
         'linux-3-node-replSet-initialsync': []
     }
 }
