@@ -114,7 +114,9 @@ pre_task:
       exec: |
         chmod 755 fio-test.sh
         chmod 755 iperf-test.sh
-        tar zxvf ycsb.tar.gz
+        rm -rf YCSB
+        mkdir YCSB
+        tar zxvf ycsb.tar.gz -C YCSB
         export JAVA_HOME="/usr/java/jdk1.7.0_71/jre"
         source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && mvn clean package
       exec_mongo_shell:

@@ -137,6 +137,52 @@ class TestReplSet(unittest.TestCase):
         replset = mongodb_setup.ReplSet(repl_set_opts)
         self.assertEquals(replset.highest_priority_node(), replset.nodes[1])
 
+class TestMongodbSetup(unittest.TestCase):
+    """MongodbSetup tests"""
+    def setUp(self):
+        """Common options"""
+        self.config = {
+            'infrastructure_provisioning': {
+                'tfvars': {
+                    'ssh_user': 'ec2-user',
+                    'ssh_key_file': '~/.ssh/user_ssh_key.pem'
+                },
+                'numactl_prefix': 'numactl test'
+            },
+            'mongodb_setup': {
+                'journal_dir': '/data/journal',
+                'topology': [{
+                    'cluster_type': 'standalone',
+                    'id': 'myid1',
+                    'public_ip': '1.2.3.4',
+                    'private_ip': '10.2.0.1',
+                    'config_file': {
+                        'net': {
+                            'port': 27017,
+                            'bindIp': '0.0.0.0'
+                        },
+                        'storage': {
+                            'dbPath': 'data/dbs',
+                            'engine': 'wiredTiger'
+                        },
+                        'systemLog': {
+                            'destination': 'file',
+                            'path': 'data/logs/mongod.log'
+                        }
+                    }
+                }]
+            }
+        }
+
+    #pylint: disable=unused-argument
+    @mock.patch('mongodb_setup.DownloadMongodb')
+    def test_ssh_key(self, mock_downloader):
+        """Test ~/.ssh/user_aws_key.pem"""
+        mongodb_setup.MongodbSetup(self.config, mock.Mock())
+        ssh_key_file = self.config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+        expected_ssh_key_file = os.path.expanduser(ssh_key_file)
+        self.assertEquals(mongodb_setup.MongoNode.ssh_key_file, expected_ssh_key_file)
+        self.assertEquals(mongodb_setup.MongoNode.ssh_user, 'ec2-user')
 
 if __name__ == '__main__':
     unittest.main()

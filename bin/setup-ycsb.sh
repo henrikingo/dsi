@@ -32,5 +32,4 @@ then
     rm ycsb.tar.gz
 fi
 
-tar -cvf ycsb.tar --exclude=.git* -C $(dirname $YCSB_DIR) $(basename $YCSB_DIR)
-gzip ycsb.tar
+tar -czvf ycsb.tar.gz --exclude=.git* -C $YCSB_DIR .

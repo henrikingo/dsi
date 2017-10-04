@@ -20,7 +20,7 @@ class DownloadMongodbTestCase(unittest.TestCase):
         """Init a DownloadMongodb object"""
         self.config = {'infrastructure_provisioning' :
                        {'tfvars' :
-                        {'ssh_user' : 'ec2-user', 'ssh_key_file' : '../../aws.pem'},
+                        {'ssh_user' : 'ec2-user', 'ssh_key_file' : '~/.ssh/user-aws-key.pem'},
                         'out':
                         {'mongod': [
                             {'public_ip' : '10.2.3.4', 'private_ip' : '10.0.0.1'},
@@ -71,7 +71,8 @@ class DownloadMongodbTestCase(unittest.TestCase):
         self.assertEqual(
             self.downloader.mongodb_binary_archive, mongodb_setup['mongodb_binary_archive']
         )
-        self.assertEqual(self.downloader.ssh_key_file, infrastructure['tfvars']['ssh_key_file'])
+        expected_ssh_key_file = os.path.expanduser(infrastructure['tfvars']['ssh_key_file'])
+        self.assertEqual(self.downloader.ssh_key_file, expected_ssh_key_file)
         self.assertEqual(self.downloader.ssh_user, infrastructure['tfvars']['ssh_user'])
         self.downloader = None
         # TODO: Can't really unit test anything that uses RemoteHost for now, so can't assert the
@@ -88,7 +89,8 @@ class DownloadMongodbTestCase(unittest.TestCase):
         self.downloader = DownloadMongodb(self.config, True)
         self.assertTrue(self.downloader)
         self.assertEqual(self.downloader.mongodb_binary_archive, mongodb_url)
-        self.assertEqual(self.downloader.ssh_key_file, infrastructure['tfvars']['ssh_key_file'])
+        expected_ssh_key_file = os.path.expanduser(infrastructure['tfvars']['ssh_key_file'])
+        self.assertEqual(self.downloader.ssh_key_file, expected_ssh_key_file)
         self.assertEqual(self.downloader.ssh_user, infrastructure['tfvars']['ssh_user'])
         self.downloader = None
         self.config['mongodb_setup']['mongodb_binary_archive'] = 'http://foo.tgz'

@@ -4,6 +4,8 @@
 
 from __future__ import print_function
 
+import os
+
 import alias
 
 from common.config import ConfigDict
@@ -12,8 +14,9 @@ def main():
     ''' Main '''
     conf = ConfigDict('test_control') #What should the argument be?
     conf.load()
-    print('export PEMFILE={0}'.format(conf['infrastructure_provisioning']['tfvars']
-                                      ['ssh_key_file']))
+    ssh_key_file = conf['infrastructure_provisioning']['tfvars']['ssh_key_file']
+    ssh_key_file = os.path.expanduser(ssh_key_file)
+    print('export PEMFILE={0}'.format(ssh_key_file))
     print('export SSHUSER={0}'.format(conf['infrastructure_provisioning']['tfvars']['ssh_user']))
     expanded = alias.expand('workload_client')
     unaliased = alias.unalias(expanded)

@@ -119,6 +119,7 @@ def remote_cmd(host, command, config, args):
     :param args object the parsed arguments
     """
     pemfile = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+    pemfile = os.path.expanduser(pemfile)
     sshuser = config['infrastructure_provisioning']['tfvars']['ssh_user']
     ip_address = config["infrastructure_provisioning"]["out"].lookup_path(host)
 

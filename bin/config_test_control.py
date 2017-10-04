@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import json
 import logging
+import os
 import sys
 
 import argparse
@@ -32,7 +33,9 @@ def generate_mc_json():
         LOG.warn("No jstests_dir found in test_control")
 
     # New path for reading in the ssh_user and ssh_key_file values
-    mc_conf['PemFile'] = conf['infrastructure_provisioning']['tfvars']['ssh_key_file']
+    ssh_key_file = conf['infrastructure_provisioning']['tfvars']['ssh_key_file']
+    ssh_key_file = os.path.expanduser(ssh_key_file)
+    mc_conf['PemFile'] = ssh_key_file
     ssh_user = conf['infrastructure_provisioning']['tfvars']['ssh_user']
 
     clients = [ssh_user + '@' + client['public_ip'] for client in

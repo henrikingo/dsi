@@ -29,7 +29,9 @@ class Provisioner(object):
     """ Used to provision AWS resources """
 
     def __init__(self, config):
-        self.ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+        ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+        ssh_key_file = os.path.expanduser(ssh_key_file)
+        self.ssh_key_file = ssh_key_file
         self.cluster = config['infrastructure_provisioning']['tfvars'].get('cluster_name',
                                                                            'missing_cluster_name')
         self.reuse_cluster = config['infrastructure_provisioning']['evergreen'].get('reuse_cluster',

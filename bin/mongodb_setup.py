@@ -594,7 +594,9 @@ class MongodbSetup(object):
         if journal_dir:
             MongoNode.journal_dir = journal_dir
         MongoNode.ssh_user = config['infrastructure_provisioning']['tfvars']['ssh_user']
-        MongoNode.ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+        ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+        ssh_key_file = os.path.expanduser(ssh_key_file)
+        MongoNode.ssh_key_file = ssh_key_file
         MongoNode.numactl_prefix = config['infrastructure_provisioning']['numactl_prefix']
         if MongoNode.numactl_prefix is None:
             MongoNode.numactl_prefix = ""

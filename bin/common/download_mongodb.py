@@ -48,7 +48,7 @@ class DownloadMongodb(object):
 
         tfvars = config['infrastructure_provisioning']['tfvars']
         self.ssh_user = tfvars['ssh_user']
-        self.ssh_key_file = tfvars['ssh_key_file']
+        self.ssh_key_file = os.path.expanduser(tfvars['ssh_key_file'])
 
         self.hosts = []
         self._parse_hosts()

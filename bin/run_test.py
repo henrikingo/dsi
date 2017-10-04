@@ -29,8 +29,9 @@ def setup_ssh_agent(config):
     # It splits the data into lines, and then for any line of the form
     # "key=value", adds {key: value} to the environment
     os.environ.update(dict([line.split('=') for line in ssh_agent_info.split(';') if '=' in line]))
-    subprocess.check_call(['ssh-add',
-                           config['infrastructure_provisioning']['tfvars']['ssh_key_file']])
+    ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+    ssh_key_file = os.path.expanduser(ssh_key_file)
+    subprocess.check_call(['ssh-add', ssh_key_file])
 
 def cleanup_reports():
     ''' Clean up reports directory and files '''

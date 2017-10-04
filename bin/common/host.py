@@ -76,6 +76,7 @@ def run_command(host_list, command, config):
     LOG.debug('Calling run command for %s with command %s', str(host_list), str(command))
     ssh_user = config['infrastructure_provisioning']['tfvars']['ssh_user']
     ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+    ssh_key_file = os.path.expanduser(ssh_key_file)
 
     # If performance becomes a concern, we can operate on all hosts in
     # parallel

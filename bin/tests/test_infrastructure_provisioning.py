@@ -2,6 +2,7 @@
 Unit test for infrastructure_provisioning.py
 """
 
+import copy
 from functools import partial
 import logging
 import os
@@ -20,8 +21,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     """ Test suite for infrastructure_provisioning.py """
 
     def setUp(self):
-        self.config_patcher = patch('common.config.ConfigDict')
-        self.mock_config = self.config_patcher.start()
         self.os_environ_patcher = patch('infrastructure_provisioning.os.environ')
         self.mock_environ = self.os_environ_patcher.start()
         self.reset_mock_objects()
@@ -42,8 +41,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
 
     def reset_mock_objects(self):
         """
-        Used to reset the test config dict, environment variables,
-        and mock objects.
+        Used to reset environment variables and mock objects.
         """
         self.os_environ = {
             'TERRAFORM': 'test/path/terraform',
@@ -54,13 +52,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         self.mock_environ.__contains__.side_effect = self.os_environ.__contains__
         self.mock_environ.__delitem__.side_effect = self.os_environ.__delitem__
         #pylint: enable=no-member
-
-    def mock_get_config(self, key, default=None):
-        """ Used to mock ConfigDict.get since the entire object is mocked in tests """
-        if key in self.config:
-            return self.config[key]
-        else:
-            return default
 
     def check_subprocess_call(self, command_to_check, command, env=None):
         """
@@ -329,8 +320,37 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 mock_open_file.assert_called_with('provisioned.single', 'w+')
         self.reset_mock_objects()
 
+    # pylint: disable=unused-argument
+    @patch('infrastructure_provisioning.subprocess.check_call')
+    @patch('infrastructure_provisioning.os.remove')
+    @patch('infrastructure_provisioning.os.chdir')
+    @patch('infrastructure_provisioning.os.getcwd')
+    @patch('infrastructure_provisioning.shutil.copyfile')
+    def test_userexpand(self, mock_copyfile, mock_getcwd, mock_chdir, mock_remove, mock_check_call):
+        """ Test Provisioner.save_terraform_state with ~/.ssh/user_ssh_key.pem"""
+        config = copy.deepcopy(self.config)
+        config['infrastructure_provisioning']['tfvars']['ssh_key_file'] = '~/.ssh/user_aws_key.pem'
+
+        provisioned_files = ['provisioned.single', 'provisioned.shard']
+        evg_data_dir = self.config['infrastructure_provisioning']['evergreen']['data_dir']
+        terraform_dir = os.path.join(evg_data_dir, 'terraform')
+        with patch('infrastructure_provisioning.glob.glob') as mock_glob:
+            mock_open_file = mock_open()
+            with patch('infrastructure_provisioning.open', mock_open_file, create=True):
+                mock_glob.return_value = provisioned_files
+                mock_getcwd.return_value = 'fake/path'
+                provisioner = Provisioner(self.config)
+                provisioner.production = True
+                provisioner.save_terraform_state()
+                files_to_copy = ['terraform.tfstate', 'cluster.tf', 'terraform.tfvars',
+                                 'security.tf', 'cluster.json']
+                copyfile_calls = [call(file_to_copy,
+                                       os.path.join(terraform_dir, file_to_copy))
+                                  for file_to_copy in files_to_copy]
+                mock_copyfile.assert_has_calls(copyfile_calls)
+        self.reset_mock_objects()
+
     def tearDown(self):
-        self.config_patcher.stop()
         self.os_environ_patcher.stop()
 
 
