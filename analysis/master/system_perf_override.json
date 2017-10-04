@@ -4,49 +4,49 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-mmapv1":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_client-cpuloop-1x-mmapv1":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_server-cpuloop-10x-mmapv1":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_server-sleep-10ms-mmapv1":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "distinct_types_with_in_predicate-useAgg-mmapv1":{
+                "distinct_types_with_in_predicate-useAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "find_project-noAgg-mmapv1":{
+                "find_project-noAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "find_project_skip_limit-noAgg-mmapv1":{
+                "find_project_skip_limit-noAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -101,63 +101,63 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-wiredTiger":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_client-cpuloop-1x-wiredTiger":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_server-cpuloop-10x-wiredTiger":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_server-sleep-10ms-wiredTiger":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "count_with_type_predicate-noAgg-wiredTiger":{
+                "count_with_type_predicate-noAgg":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "BF-6270"
                     ]
                 },
-                "count_with_type_predicate-useAgg-wiredTiger":{
+                "count_with_type_predicate-useAgg":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "BF-6270"
                     ]
                 },
-                "distinct_types_with_in_predicate-useAgg-wiredTiger":{
+                "distinct_types_with_in_predicate-useAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "find_project-noAgg-wiredTiger":{
+                "find_project-noAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "find_project_skip_limit-noAgg-wiredTiger":{
+                "find_project_skip_limit-noAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -212,28 +212,28 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-mmapv1":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-mmapv1":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-mmapv1":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-mmapv1":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -283,13 +283,6 @@
                     ]
                 },
                 "insert_jtrue":{
-                    "thread_threshold":0.18,
-                    "threshold":0.12,
-                    "ticket":[
-                        "BF-6272"
-                    ]
-                },
-                "insert_jtrue-mmapv1":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
@@ -297,13 +290,6 @@
                     ]
                 },
                 "insert_ttl":{
-                    "thread_threshold":0.2,
-                    "threshold":0.1,
-                    "ticket":[
-                        "BF-6271"
-                    ]
-                },
-                "insert_ttl-mmapv1":{
                     "thread_threshold":0.5,
                     "threshold":0.4,
                     "ticket":[
@@ -311,56 +297,56 @@
                         "BF-4144"
                     ]
                 },
-                "insert_vector_primary-mmapv1":{
+                "insert_vector_primary":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-750"
                     ]
                 },
-                "insert_vector_secondary_load_phase-mmapv1":{
+                "insert_vector_secondary_load_phase":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-750"
                     ]
                 },
-                "insert_vector_secondary_overall-mmapv1":{
+                "insert_vector_secondary_overall":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-750"
                     ]
                 },
-                "mixed_delete-mmapv1":{
+                "mixed_delete":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_findOne-mmapv1":{
+                "mixed_findOne":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_insert-mmapv1":{
+                "mixed_insert":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_total-mmapv1":{
+                "mixed_total":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_update-mmapv1":{
+                "mixed_update":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
@@ -368,13 +354,6 @@
                     ]
                 },
                 "removemulti_jtrue":{
-                    "thread_threshold":0.18,
-                    "threshold":0.12,
-                    "ticket":[
-                        "BF-6272"
-                    ]
-                },
-                "removemulti_jtrue-mmapv1":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
@@ -382,13 +361,6 @@
                     ]
                 },
                 "updatemulti_jtrue":{
-                    "thread_threshold":0.18,
-                    "threshold":0.12,
-                    "ticket":[
-                        "BF-6272"
-                    ]
-                },
-                "updatemulti_jtrue-mmapv1":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
@@ -400,11 +372,11 @@
         "core_workloads_WT":{
             "ndays":{},
             "reference":{
-                "mixed_delete-wiredTiger":{
+                "mixed_delete":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494691996,
                     "max":5824.419151974815,
-                    "name":"mixed_delete-wiredTiger",
+                    "name":"mixed_delete",
                     "order":6821,
                     "results":{
                         "128":{
@@ -453,11 +425,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_findOne-wiredTiger":{
+                "mixed_findOne":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494691996,
                     "max":32083.876276934694,
-                    "name":"mixed_findOne-wiredTiger",
+                    "name":"mixed_findOne",
                     "order":6821,
                     "results":{
                         "128":{
@@ -506,11 +478,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_insert-wiredTiger":{
+                "mixed_insert":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494691996,
                     "max":14438.504324874457,
-                    "name":"mixed_insert-wiredTiger",
+                    "name":"mixed_insert",
                     "order":6821,
                     "results":{
                         "128":{
@@ -559,11 +531,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_total-wiredTiger":{
+                "mixed_total":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494691996,
                     "max":49117.076828101905,
-                    "name":"mixed_total-wiredTiger",
+                    "name":"mixed_total",
                     "order":6821,
                     "results":{
                         "128":{
@@ -612,11 +584,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_update-wiredTiger":{
+                "mixed_update":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494691996,
                     "max":8676.68668921118,
-                    "name":"mixed_update-wiredTiger",
+                    "name":"mixed_update",
                     "order":6821,
                     "results":{
                         "128":{
@@ -667,28 +639,28 @@
                 }
             },
             "threshold":{
-                "canary_client-cpuloop-10x-wiredTiger":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-wiredTiger":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-wiredTiger":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-wiredTiger":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -744,42 +716,42 @@
                         "BF-6272"
                     ]
                 },
-                "insert_ttl-wiredTiger":{
+                "insert_ttl":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "PERF-738"
                     ]
                 },
-                "mixed_delete-wiredTiger":{
+                "mixed_delete":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_findOne-wiredTiger":{
+                "mixed_findOne":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_insert-wiredTiger":{
+                "mixed_insert":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_total-wiredTiger":{
+                "mixed_total":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_update-wiredTiger":{
+                "mixed_update":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
@@ -853,11 +825,11 @@
         "industry_benchmarks_WT":{
             "ndays":{},
             "reference":{
-                "ycsb_50read50update-wiredTiger":{
+                "ycsb_50read50update":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494687713,
                     "max":46705.8372955452,
-                    "name":"ycsb_50read50update-wiredTiger",
+                    "name":"ycsb_50read50update",
                     "order":6821,
                     "results":{
                         "64":{
@@ -875,11 +847,11 @@
                     ],
                     "workload":"ycsb"
                 },
-                "ycsb_95read5update-wiredTiger":{
+                "ycsb_95read5update":{
                     "create_time":"2017-07-30T14:41:40.093Z",
                     "end":1501432817.0,
                     "max":79541.20632193508,
-                    "name":"ycsb_95read5update-wiredTiger",
+                    "name":"ycsb_95read5update",
                     "order":7793,
                     "results":{
                         "32":{
@@ -897,11 +869,11 @@
                     ],
                     "workload":"ycsb"
                 },
-                "ycsb_load-wiredTiger":{
+                "ycsb_load":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494686584,
                     "max":56463.36092509571,
-                    "name":"ycsb_load-wiredTiger",
+                    "name":"ycsb_load",
                     "order":6821,
                     "results":{
                         "32":{
@@ -969,28 +941,28 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-mmapv1":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-mmapv1":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-mmapv1":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-mmapv1":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -1045,28 +1017,28 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-wiredTiger":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-wiredTiger":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-wiredTiger":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-wiredTiger":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -1123,49 +1095,49 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-mmapv1":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_client-cpuloop-1x-mmapv1":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_server-cpuloop-10x-mmapv1":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_server-sleep-10ms-mmapv1":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "distinct_types_with_in_predicate-useAgg-mmapv1":{
+                "distinct_types_with_in_predicate-useAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "find_project-noAgg-mmapv1":{
+                "find_project-noAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "find_project_skip_limit-noAgg-mmapv1":{
+                "find_project_skip_limit-noAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -1220,63 +1192,63 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-wiredTiger":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_client-cpuloop-1x-wiredTiger":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_server-cpuloop-10x-wiredTiger":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_server-sleep-10ms-wiredTiger":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "count_with_type_predicate-noAgg-wiredTiger":{
+                "count_with_type_predicate-noAgg":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "BF-6270"
                     ]
                 },
-                "count_with_type_predicate-useAgg-wiredTiger":{
+                "count_with_type_predicate-useAgg":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "BF-6270"
                     ]
                 },
-                "distinct_types_with_in_predicate-useAgg-wiredTiger":{
+                "distinct_types_with_in_predicate-useAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "find_project-noAgg-wiredTiger":{
+                "find_project-noAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "find_project_skip_limit-noAgg-wiredTiger":{
+                "find_project_skip_limit-noAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -1331,28 +1303,28 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-mmapv1":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-mmapv1":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-mmapv1":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-mmapv1":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -1401,7 +1373,7 @@
                         "PERF-873"
                     ]
                 },
-                "index_build-mmapv1":{
+                "index_build":{
                     "thread_threshold":3.0,
                     "threshold":2.0,
                     "ticket":[
@@ -1416,69 +1388,62 @@
                     ]
                 },
                 "insert_ttl":{
-                    "thread_threshold":0.2,
-                    "threshold":0.1,
-                    "ticket":[
-                        "BF-6271"
-                    ]
-                },
-                "insert_ttl-mmapv1":{
                     "thread_threshold":0.6,
                     "threshold":0.4,
                     "ticket":[
                         "PERF-738"
                     ]
                 },
-                "insert_vector_primary-mmapv1":{
+                "insert_vector_primary":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-750"
                     ]
                 },
-                "insert_vector_secondary_load_phase-mmapv1":{
+                "insert_vector_secondary_load_phase":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-750"
                     ]
                 },
-                "insert_vector_secondary_overall-mmapv1":{
+                "insert_vector_secondary_overall":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-750"
                     ]
                 },
-                "mixed_delete-mmapv1":{
+                "mixed_delete":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_findOne-mmapv1":{
+                "mixed_findOne":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_insert-mmapv1":{
+                "mixed_insert":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_total-mmapv1":{
+                "mixed_total":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_update-mmapv1":{
+                "mixed_update":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
@@ -1504,11 +1469,11 @@
         "core_workloads_WT":{
             "ndays":{},
             "reference":{
-                "mixed_delete-wiredTiger":{
+                "mixed_delete":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494694275,
                     "max":5936.149866368106,
-                    "name":"mixed_delete-wiredTiger",
+                    "name":"mixed_delete",
                     "order":6821,
                     "results":{
                         "128":{
@@ -1557,11 +1522,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_findOne-wiredTiger":{
+                "mixed_findOne":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494694275,
                     "max":30857.70698729415,
-                    "name":"mixed_findOne-wiredTiger",
+                    "name":"mixed_findOne",
                     "order":6821,
                     "results":{
                         "128":{
@@ -1610,11 +1575,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_insert-wiredTiger":{
+                "mixed_insert":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494694275,
                     "max":13104.049197104534,
-                    "name":"mixed_insert-wiredTiger",
+                    "name":"mixed_insert",
                     "order":6821,
                     "results":{
                         "128":{
@@ -1663,11 +1628,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_total-wiredTiger":{
+                "mixed_total":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494694275,
                     "max":47874.39182242615,
-                    "name":"mixed_total-wiredTiger",
+                    "name":"mixed_total",
                     "order":6821,
                     "results":{
                         "128":{
@@ -1716,11 +1681,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_update-wiredTiger":{
+                "mixed_update":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494694275,
                     "max":8287.785015040197,
-                    "name":"mixed_update-wiredTiger",
+                    "name":"mixed_update",
                     "order":6821,
                     "results":{
                         "128":{
@@ -1771,28 +1736,28 @@
                 }
             },
             "threshold":{
-                "canary_client-cpuloop-10x-wiredTiger":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-wiredTiger":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-wiredTiger":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-wiredTiger":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -1848,70 +1813,70 @@
                         "BF-6272"
                     ]
                 },
-                "insert_ttl-wiredTiger":{
+                "insert_ttl":{
                     "thread_threshold":0.6,
                     "threshold":0.4,
                     "ticket":[
                         "PERF-738"
                     ]
                 },
-                "insert_vector_primary-wiredTiger":{
+                "insert_vector_primary":{
                     "thread_threshold":0.6,
                     "threshold":0.4,
                     "ticket":[
                         "PERF-750"
                     ]
                 },
-                "insert_vector_secondary_load_phase-wiredTiger":{
+                "insert_vector_secondary_load_phase":{
                     "thread_threshold":0.6,
                     "threshold":0.4,
                     "ticket":[
                         "PERF-750"
                     ]
                 },
-                "insert_vector_secondary_overall-wiredTiger":{
+                "insert_vector_secondary_overall":{
                     "thread_threshold":0.6,
                     "threshold":0.4,
                     "ticket":[
                         "PERF-750"
                     ]
                 },
-                "map_reduce_1M_doc-wiredTiger":{
+                "map_reduce_1M_doc":{
                     "thread_threshold":0.15,
                     "threshold":0.23,
                     "ticket":[
                         "PERF-719"
                     ]
                 },
-                "mixed_delete-wiredTiger":{
+                "mixed_delete":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_findOne-wiredTiger":{
+                "mixed_findOne":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_insert-wiredTiger":{
+                "mixed_insert":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_total-wiredTiger":{
+                "mixed_total":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_update-wiredTiger":{
+                "mixed_update":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
@@ -1985,11 +1950,11 @@
         "industry_benchmarks_WT":{
             "ndays":{},
             "reference":{
-                "ycsb_50read50update-wiredTiger":{
+                "ycsb_50read50update":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494689310,
                     "max":45120.65262511957,
-                    "name":"ycsb_50read50update-wiredTiger",
+                    "name":"ycsb_50read50update",
                     "order":6821,
                     "results":{
                         "64":{
@@ -2010,11 +1975,11 @@
                     ],
                     "workload":"ycsb"
                 },
-                "ycsb_95read5update-wiredTiger":{
+                "ycsb_95read5update":{
                     "create_time":"2017-07-30T14:41:40.093Z",
                     "end":1501535626.0,
                     "max":73988.02873695036,
-                    "name":"ycsb_95read5update-wiredTiger",
+                    "name":"ycsb_95read5update",
                     "order":7793,
                     "results":{
                         "32":{
@@ -2035,11 +2000,11 @@
                     ],
                     "workload":"ycsb"
                 },
-                "ycsb_load-wiredTiger":{
+                "ycsb_load":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494688010,
                     "max":49289.7349198056,
-                    "name":"ycsb_load-wiredTiger",
+                    "name":"ycsb_load",
                     "order":6821,
                     "results":{
                         "32":{
@@ -2110,28 +2075,28 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-mmapv1":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-mmapv1":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-mmapv1":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-mmapv1":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -2144,28 +2109,28 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-wiredTiger":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-wiredTiger":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-wiredTiger":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-wiredTiger":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -2178,84 +2143,84 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "Primary_size_100_count_10M-mmapv1":{
+                "Primary_size_100_count_10M":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "BF-5525"
                     ]
                 },
-                "Primary_size_10K_count_1M-mmapv1":{
+                "Primary_size_10K_count_1M":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "BF-5525"
                     ]
                 },
-                "Primary_size_1K_count_10M-mmapv1":{
+                "Primary_size_1K_count_10M":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "BF-5525"
                     ]
                 },
-                "Primary_size_1_count_10M-mmapv1":{
+                "Primary_size_1_count_10M":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "BF-5525"
                     ]
                 },
-                "Secondary_size_100_count_10M-mmapv1":{
+                "Secondary_size_100_count_10M":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
                     "ticket":[
                         "BF-5525"
                     ]
                 },
-                "Secondary_size_10K_count_1M-mmapv1":{
+                "Secondary_size_10K_count_1M":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
                     "ticket":[
                         "BF-5525"
                     ]
                 },
-                "Secondary_size_1K_count_10M-mmapv1":{
+                "Secondary_size_1K_count_10M":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
                     "ticket":[
                         "BF-5525"
                     ]
                 },
-                "Secondary_size_1_count_10M-mmapv1":{
+                "Secondary_size_1_count_10M":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
                     "ticket":[
                         "BF-5525"
                     ]
                 },
-                "canary_client-cpuloop-10x-mmapv1":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-mmapv1":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-mmapv1":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-mmapv1":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -2310,28 +2275,28 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-wiredTiger":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-wiredTiger":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-wiredTiger":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-wiredTiger":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -2386,11 +2351,11 @@
     "linux-3-node-replSet-initialsync":{
         "initialsync_MMAPv1":{
             "ndays":{
-                "cloneDBs_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
+                "cloneDBs_initialsync_dbs_1_colls_1_writeload_false":{
                     "create_time":"2017-05-19T22:33:22.276Z",
                     "end":1495301673,
                     "max":-212509,
-                    "name":"cloneDBs_initialsync_dbs_1_colls_1_writeload_false-mmapv1",
+                    "name":"cloneDBs_initialsync_dbs_1_colls_1_writeload_false",
                     "order":6887,
                     "results":{
                         "1":{
@@ -2411,11 +2376,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "cloneDBs_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
+                "cloneDBs_initialsync_dbs_1_colls_1_writeload_true":{
                     "create_time":"2017-05-19T22:33:22.276Z",
                     "end":1495304087,
                     "max":-217394,
-                    "name":"cloneDBs_initialsync_dbs_1_colls_1_writeload_true-mmapv1",
+                    "name":"cloneDBs_initialsync_dbs_1_colls_1_writeload_true",
                     "order":6887,
                     "results":{
                         "1":{
@@ -2436,11 +2401,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "cloneDBs_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
+                "cloneDBs_initialsync_dbs_1_colls_32_writeload_false":{
                     "create_time":"2017-05-19T22:33:22.276Z",
                     "end":1495302225,
                     "max":-163007,
-                    "name":"cloneDBs_initialsync_dbs_1_colls_32_writeload_false-mmapv1",
+                    "name":"cloneDBs_initialsync_dbs_1_colls_32_writeload_false",
                     "order":6887,
                     "results":{
                         "1":{
@@ -2461,11 +2426,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "cloneDBs_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
+                "cloneDBs_initialsync_dbs_1_colls_32_writeload_true":{
                     "create_time":"2017-05-19T22:33:22.276Z",
                     "end":1495304648,
                     "max":-168790,
-                    "name":"cloneDBs_initialsync_dbs_1_colls_32_writeload_true-mmapv1",
+                    "name":"cloneDBs_initialsync_dbs_1_colls_32_writeload_true",
                     "order":6887,
                     "results":{
                         "1":{
@@ -2486,11 +2451,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "cloneDBs_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
+                "cloneDBs_initialsync_dbs_32_colls_1_writeload_false":{
                     "create_time":"2017-05-19T22:33:22.276Z",
                     "end":1495302801,
                     "max":-166316,
-                    "name":"cloneDBs_initialsync_dbs_32_colls_1_writeload_false-mmapv1",
+                    "name":"cloneDBs_initialsync_dbs_32_colls_1_writeload_false",
                     "order":6887,
                     "results":{
                         "1":{
@@ -2511,11 +2476,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "cloneDBs_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
+                "cloneDBs_initialsync_dbs_32_colls_1_writeload_true":{
                     "create_time":"2017-05-19T22:33:22.276Z",
                     "end":1495305228,
                     "max":-172619,
-                    "name":"cloneDBs_initialsync_dbs_32_colls_1_writeload_true-mmapv1",
+                    "name":"cloneDBs_initialsync_dbs_32_colls_1_writeload_true",
                     "order":6887,
                     "results":{
                         "1":{
@@ -2536,11 +2501,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "cloneDBs_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
+                "cloneDBs_initialsync_dbs_32_colls_32_writeload_false":{
                     "create_time":"2017-05-19T22:33:22.276Z",
                     "end":1495303320,
                     "max":-148176,
-                    "name":"cloneDBs_initialsync_dbs_32_colls_32_writeload_false-mmapv1",
+                    "name":"cloneDBs_initialsync_dbs_32_colls_32_writeload_false",
                     "order":6887,
                     "results":{
                         "1":{
@@ -2561,11 +2526,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "cloneDBs_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
+                "cloneDBs_initialsync_dbs_32_colls_32_writeload_true":{
                     "create_time":"2017-05-19T22:33:22.276Z",
                     "end":1495305910,
                     "max":-156814,
-                    "name":"cloneDBs_initialsync_dbs_32_colls_32_writeload_true-mmapv1",
+                    "name":"cloneDBs_initialsync_dbs_32_colls_32_writeload_true",
                     "order":6887,
                     "results":{
                         "1":{
@@ -2589,308 +2554,308 @@
             },
             "reference":{},
             "threshold":{
-                "buildIndexes_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
+                "buildIndexes_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":0.3,
                     "threshold":0.25,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "buildIndexes_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
+                "buildIndexes_initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":0.3,
                     "threshold":0.25,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "buildIndexes_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
+                "buildIndexes_initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":0.3,
                     "threshold":0.25,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "buildIndexes_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
+                "buildIndexes_initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":0.3,
                     "threshold":0.25,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "buildIndexes_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
+                "buildIndexes_initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":0.3,
                     "threshold":0.25,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "buildIndexes_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
+                "buildIndexes_initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":0.3,
                     "threshold":0.25,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "buildIndexes_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
+                "buildIndexes_initialsync_dbs_32_colls_32_writeload_false":{
                     "thread_threshold":0.3,
                     "threshold":0.25,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "buildIndexes_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
+                "buildIndexes_initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":0.3,
                     "threshold":0.25,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "canary_client-cpuloop-10x-mmapv1":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-mmapv1":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-mmapv1":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-mmapv1":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "cloneDBs_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
+                "cloneDBs_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":0.7,
                     "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "cloneDBs_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
+                "cloneDBs_initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":0.7,
                     "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "cloneDBs_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
+                "cloneDBs_initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":0.7,
                     "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "cloneDBs_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
+                "cloneDBs_initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":0.7,
                     "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "cloneDBs_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
+                "cloneDBs_initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":0.7,
                     "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "cloneDBs_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
+                "cloneDBs_initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":0.7,
                     "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "cloneDBs_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
+                "cloneDBs_initialsync_dbs_32_colls_32_writeload_false":{
                     "thread_threshold":0.7,
                     "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "cloneDBs_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
+                "cloneDBs_initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":0.7,
                     "threshold":0.6,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "compact_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
+                "compact_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":45.0,
                     "threshold":30.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
-                "compact_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
+                "compact_initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":45.0,
                     "threshold":30.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
-                "compact_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
+                "compact_initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":45.0,
                     "threshold":30.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
-                "compact_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
+                "compact_initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":45.0,
                     "threshold":30.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
-                "compact_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
+                "compact_initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":45.0,
                     "threshold":30.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
-                "compact_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
+                "compact_initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":45.0,
                     "threshold":30.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
-                "compact_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
+                "compact_initialsync_dbs_32_colls_32_writeload_false":{
                     "thread_threshold":45.0,
                     "threshold":30.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
-                "compact_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
+                "compact_initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":45.0,
                     "threshold":30.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
-                "createIndex_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
+                "createIndex_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "createIndex_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
+                "createIndex_initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "createIndex_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
+                "createIndex_initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "createIndex_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
+                "createIndex_initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "createIndex_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
+                "createIndex_initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "createIndex_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
+                "createIndex_initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "createIndex_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
+                "createIndex_initialsync_dbs_32_colls_32_writeload_false":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "createIndex_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
+                "createIndex_initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "finishing_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
+                "finishing_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "finishing_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
+                "finishing_initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "finishing_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
+                "finishing_initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "finishing_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
+                "finishing_initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "finishing_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
+                "finishing_initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "finishing_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
+                "finishing_initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "finishing_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
+                "finishing_initialsync_dbs_32_colls_32_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "finishing_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
+                "finishing_initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
@@ -2939,239 +2904,231 @@
                         "PERF-873"
                     ]
                 },
-                "initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
+                "initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":0.6,
                     "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
+                "initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":0.6,
                     "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
+                "initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":0.6,
                     "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
+                "initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":0.6,
                     "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
+                "initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":0.6,
                     "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
+                "initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":0.6,
                     "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
+                "initialsync_dbs_32_colls_32_writeload_false":{
                     "thread_threshold":0.6,
                     "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
+                "initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":0.6,
                     "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog1_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
+                "oplog1_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":1050.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog1_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
+                "oplog1_initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":1050.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog1_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
+                "oplog1_initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":1050.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog1_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
+                "oplog1_initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":1050.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog1_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
+                "oplog1_initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":1050.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog1_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
+                "oplog1_initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":1050.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog1_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
+                "oplog1_initialsync_dbs_32_colls_32_writeload_false":{
                     "thread_threshold":1050.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog1_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
+                "oplog1_initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":1050.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog2_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
+                "oplog2_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog2_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
+                "oplog2_initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog2_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
+                "oplog2_initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog2_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
+                "oplog2_initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog2_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
+                "oplog2_initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog2_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
+                "oplog2_initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog3_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
+                "oplog3_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog3_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
+                "oplog3_initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog3_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
+                "oplog3_initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog3_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
+                "oplog3_initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog3_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
+                "oplog3_initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog3_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
+                "oplog3_initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog3_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
+                "oplog3_initialsync_dbs_32_colls_32_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog3_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
+                "oplog3_initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "start_initialsync_dbs_1_colls_1_writeload_false-mmapv1":{
+                "start_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":5500.0,
                     "threshold":5050.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "start_initialsync_dbs_1_colls_1_writeload_true-mmapv1":{
+                "start_initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":5500.0,
                     "threshold":5050.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "start_initialsync_dbs_1_colls_32_writeload_false-mmapv1":{
-                    "thread_threshold":5500.0,
-                    "threshold":5050.0,
-                    "ticket":[
-                        "PERF-723",
-                        "BF-4154"
-                    ]
-                },
-                "start_initialsync_dbs_1_colls_32_writeload_true-mmapv1":{
+                "start_initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":5500.0,
                     "threshold":5050.0,
                     "ticket":[
@@ -3179,7 +3136,7 @@
                         "BF-4154"
                     ]
                 },
-                "start_initialsync_dbs_32_colls_1_writeload_false-mmapv1":{
+                "start_initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":5500.0,
                     "threshold":5050.0,
                     "ticket":[
@@ -3187,7 +3144,7 @@
                         "BF-4154"
                     ]
                 },
-                "start_initialsync_dbs_32_colls_1_writeload_true-mmapv1":{
+                "start_initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":5500.0,
                     "threshold":5050.0,
                     "ticket":[
@@ -3195,7 +3152,7 @@
                         "BF-4154"
                     ]
                 },
-                "start_initialsync_dbs_32_colls_32_writeload_false-mmapv1":{
+                "start_initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":5500.0,
                     "threshold":5050.0,
                     "ticket":[
@@ -3203,7 +3160,15 @@
                         "BF-4154"
                     ]
                 },
-                "start_initialsync_dbs_32_colls_32_writeload_true-mmapv1":{
+                "start_initialsync_dbs_32_colls_32_writeload_false":{
+                    "thread_threshold":5500.0,
+                    "threshold":5050.0,
+                    "ticket":[
+                        "PERF-723",
+                        "BF-4154"
+                    ]
+                },
+                "start_initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":5500.0,
                     "threshold":5050.0,
                     "ticket":[
@@ -3215,11 +3180,11 @@
         },
         "initialsync_WT":{
             "ndays":{
-                "cloneDBs_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
+                "cloneDBs_initialsync_dbs_1_colls_1_writeload_false":{
                     "create_time":"2017-05-19T22:33:22.276Z",
                     "end":1495302669,
                     "max":-208444,
-                    "name":"cloneDBs_initialsync_dbs_1_colls_1_writeload_false-wiredTiger",
+                    "name":"cloneDBs_initialsync_dbs_1_colls_1_writeload_false",
                     "order":6887,
                     "results":{
                         "1":{
@@ -3240,11 +3205,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "cloneDBs_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
+                "cloneDBs_initialsync_dbs_1_colls_1_writeload_true":{
                     "create_time":"2017-05-19T22:33:22.276Z",
                     "end":1495304718,
                     "max":-210344,
-                    "name":"cloneDBs_initialsync_dbs_1_colls_1_writeload_true-wiredTiger",
+                    "name":"cloneDBs_initialsync_dbs_1_colls_1_writeload_true",
                     "order":6887,
                     "results":{
                         "1":{
@@ -3265,11 +3230,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "cloneDBs_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
+                "cloneDBs_initialsync_dbs_1_colls_32_writeload_false":{
                     "create_time":"2017-05-19T22:33:22.276Z",
                     "end":1495303107,
                     "max":-156847,
-                    "name":"cloneDBs_initialsync_dbs_1_colls_32_writeload_false-wiredTiger",
+                    "name":"cloneDBs_initialsync_dbs_1_colls_32_writeload_false",
                     "order":6887,
                     "results":{
                         "1":{
@@ -3290,11 +3255,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "cloneDBs_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
+                "cloneDBs_initialsync_dbs_1_colls_32_writeload_true":{
                     "create_time":"2017-05-19T22:33:22.276Z",
                     "end":1495305159,
                     "max":-158701,
-                    "name":"cloneDBs_initialsync_dbs_1_colls_32_writeload_true-wiredTiger",
+                    "name":"cloneDBs_initialsync_dbs_1_colls_32_writeload_true",
                     "order":6887,
                     "results":{
                         "1":{
@@ -3315,11 +3280,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "cloneDBs_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
+                "cloneDBs_initialsync_dbs_32_colls_1_writeload_false":{
                     "create_time":"2017-05-19T22:33:22.276Z",
                     "end":1495303548,
                     "max":-155378,
-                    "name":"cloneDBs_initialsync_dbs_32_colls_1_writeload_false-wiredTiger",
+                    "name":"cloneDBs_initialsync_dbs_32_colls_1_writeload_false",
                     "order":6887,
                     "results":{
                         "1":{
@@ -3340,11 +3305,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "cloneDBs_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
+                "cloneDBs_initialsync_dbs_32_colls_1_writeload_true":{
                     "create_time":"2017-05-19T22:33:22.276Z",
                     "end":1495305605,
                     "max":-158499,
-                    "name":"cloneDBs_initialsync_dbs_32_colls_1_writeload_true-wiredTiger",
+                    "name":"cloneDBs_initialsync_dbs_32_colls_1_writeload_true",
                     "order":6887,
                     "results":{
                         "1":{
@@ -3365,11 +3330,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "cloneDBs_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
+                "cloneDBs_initialsync_dbs_32_colls_32_writeload_false":{
                     "create_time":"2017-05-19T22:33:22.276Z",
                     "end":1495304036,
                     "max":-186917,
-                    "name":"cloneDBs_initialsync_dbs_32_colls_32_writeload_false-wiredTiger",
+                    "name":"cloneDBs_initialsync_dbs_32_colls_32_writeload_false",
                     "order":6887,
                     "results":{
                         "1":{
@@ -3390,11 +3355,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "cloneDBs_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
+                "cloneDBs_initialsync_dbs_32_colls_32_writeload_true":{
                     "create_time":"2017-05-19T22:33:22.276Z",
                     "end":1495306260,
                     "max":-190540,
-                    "name":"cloneDBs_initialsync_dbs_32_colls_32_writeload_true-wiredTiger",
+                    "name":"cloneDBs_initialsync_dbs_32_colls_32_writeload_true",
                     "order":6887,
                     "results":{
                         "1":{
@@ -3418,252 +3383,252 @@
             },
             "reference":{},
             "threshold":{
-                "buildIndexes_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
+                "buildIndexes_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":3.0,
                     "threshold":2.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "buildIndexes_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
+                "buildIndexes_initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":3.0,
                     "threshold":2.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "buildIndexes_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
+                "buildIndexes_initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":3.0,
                     "threshold":2.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "buildIndexes_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
+                "buildIndexes_initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":3.0,
                     "threshold":2.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "buildIndexes_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
+                "buildIndexes_initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":3.0,
                     "threshold":2.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "buildIndexes_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
+                "buildIndexes_initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":3.0,
                     "threshold":2.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "buildIndexes_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
+                "buildIndexes_initialsync_dbs_32_colls_32_writeload_false":{
                     "thread_threshold":3.0,
                     "threshold":2.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "buildIndexes_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
+                "buildIndexes_initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":3.0,
                     "threshold":2.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "canary_client-cpuloop-10x-wiredTiger":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-wiredTiger":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-wiredTiger":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-wiredTiger":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "cloneDBs_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
+                "cloneDBs_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":0.4,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "cloneDBs_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
+                "cloneDBs_initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":0.4,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "cloneDBs_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
+                "cloneDBs_initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":0.4,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "cloneDBs_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
+                "cloneDBs_initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":0.4,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "cloneDBs_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
+                "cloneDBs_initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":0.4,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "cloneDBs_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
+                "cloneDBs_initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":0.4,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "cloneDBs_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
+                "cloneDBs_initialsync_dbs_32_colls_32_writeload_false":{
                     "thread_threshold":0.4,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "cloneDBs_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
+                "cloneDBs_initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":0.4,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "compact_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
+                "compact_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":45.0,
                     "threshold":30.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
-                "compact_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
+                "compact_initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":45.0,
                     "threshold":30.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
-                "compact_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
+                "compact_initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":45.0,
                     "threshold":30.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
-                "compact_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
+                "compact_initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":45.0,
                     "threshold":30.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
-                "compact_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
+                "compact_initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":45.0,
                     "threshold":30.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
-                "compact_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
+                "compact_initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":45.0,
                     "threshold":30.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
-                "compact_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
+                "compact_initialsync_dbs_32_colls_32_writeload_false":{
                     "thread_threshold":45.0,
                     "threshold":30.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
-                "compact_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
+                "compact_initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":45.0,
                     "threshold":30.0,
                     "ticket":[
                         "PERF-767"
                     ]
                 },
-                "finishing_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
+                "finishing_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "finishing_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
+                "finishing_initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "finishing_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
+                "finishing_initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "finishing_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
+                "finishing_initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "finishing_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
+                "finishing_initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "finishing_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
+                "finishing_initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "finishing_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
+                "finishing_initialsync_dbs_32_colls_32_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "finishing_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
+                "finishing_initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
@@ -3712,217 +3677,217 @@
                         "PERF-873"
                     ]
                 },
-                "initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
+                "initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":0.6,
                     "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
+                "initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":0.6,
                     "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
+                "initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":0.6,
                     "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
+                "initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":0.6,
                     "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
+                "initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":0.6,
                     "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
+                "initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":0.6,
                     "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
+                "initialsync_dbs_32_colls_32_writeload_false":{
                     "thread_threshold":0.6,
                     "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
+                "initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":0.6,
                     "threshold":0.5,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog1_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
+                "oplog1_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog1_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
+                "oplog1_initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog1_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
+                "oplog1_initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog1_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
+                "oplog1_initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog1_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
+                "oplog1_initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog1_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
+                "oplog1_initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog1_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
+                "oplog1_initialsync_dbs_32_colls_32_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog1_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
+                "oplog1_initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog2_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
+                "oplog2_initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog2_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
+                "oplog2_initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog2_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
+                "oplog2_initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog2_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
+                "oplog2_initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog2_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
+                "oplog2_initialsync_dbs_32_colls_32_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog2_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
+                "oplog2_initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog3_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
+                "oplog3_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog3_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
+                "oplog3_initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog3_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
+                "oplog3_initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog3_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
+                "oplog3_initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog3_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
+                "oplog3_initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog3_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
+                "oplog3_initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog3_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
+                "oplog3_initialsync_dbs_32_colls_32_writeload_false":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "oplog3_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
+                "oplog3_initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":1500.0,
                     "threshold":1000.0,
                     "ticket":[
                         "PERF-723"
                     ]
                 },
-                "start_initialsync_dbs_1_colls_1_writeload_false-wiredTiger":{
+                "start_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":5500.0,
                     "threshold":5050.0,
                     "ticket":[
@@ -3930,7 +3895,7 @@
                         "BF-4154"
                     ]
                 },
-                "start_initialsync_dbs_1_colls_1_writeload_true-wiredTiger":{
+                "start_initialsync_dbs_1_colls_1_writeload_true":{
                     "thread_threshold":5500.0,
                     "threshold":5050.0,
                     "ticket":[
@@ -3938,7 +3903,7 @@
                         "BF-4154"
                     ]
                 },
-                "start_initialsync_dbs_1_colls_32_writeload_false-wiredTiger":{
+                "start_initialsync_dbs_1_colls_32_writeload_false":{
                     "thread_threshold":5500.0,
                     "threshold":5050.0,
                     "ticket":[
@@ -3946,7 +3911,7 @@
                         "BF-4154"
                     ]
                 },
-                "start_initialsync_dbs_1_colls_32_writeload_true-wiredTiger":{
+                "start_initialsync_dbs_1_colls_32_writeload_true":{
                     "thread_threshold":5500.0,
                     "threshold":5050.0,
                     "ticket":[
@@ -3954,7 +3919,7 @@
                         "BF-4154"
                     ]
                 },
-                "start_initialsync_dbs_32_colls_1_writeload_false-wiredTiger":{
+                "start_initialsync_dbs_32_colls_1_writeload_false":{
                     "thread_threshold":5500.0,
                     "threshold":5050.0,
                     "ticket":[
@@ -3962,7 +3927,7 @@
                         "BF-4154"
                     ]
                 },
-                "start_initialsync_dbs_32_colls_1_writeload_true-wiredTiger":{
+                "start_initialsync_dbs_32_colls_1_writeload_true":{
                     "thread_threshold":5500.0,
                     "threshold":5050.0,
                     "ticket":[
@@ -3970,7 +3935,7 @@
                         "BF-4154"
                     ]
                 },
-                "start_initialsync_dbs_32_colls_32_writeload_false-wiredTiger":{
+                "start_initialsync_dbs_32_colls_32_writeload_false":{
                     "thread_threshold":5500.0,
                     "threshold":5050.0,
                     "ticket":[
@@ -3978,7 +3943,7 @@
                         "BF-4154"
                     ]
                 },
-                "start_initialsync_dbs_32_colls_32_writeload_true-wiredTiger":{
+                "start_initialsync_dbs_32_colls_32_writeload_true":{
                     "thread_threshold":5500.0,
                     "threshold":5050.0,
                     "ticket":[
@@ -3994,63 +3959,63 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-mmapv1":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_client-cpuloop-1x-mmapv1":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_server-cpuloop-10x-mmapv1":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_server-sleep-10ms-mmapv1":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "count_with_type_predicate-noAgg-wiredTiger":{
+                "count_with_type_predicate-noAgg":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "BF-6270"
                     ]
                 },
-                "count_with_type_predicate-useAgg-wiredTiger":{
+                "count_with_type_predicate-useAgg":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "BF-6270"
                     ]
                 },
-                "distinct_types_with_in_predicate-useAgg-mmapv1":{
+                "distinct_types_with_in_predicate-useAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "find_project-noAgg-mmapv1":{
+                "find_project-noAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "find_project_skip_limit-noAgg-mmapv1":{
+                "find_project_skip_limit-noAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -4105,49 +4070,49 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-wiredTiger":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_client-cpuloop-1x-wiredTiger":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_server-cpuloop-10x-wiredTiger":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_server-sleep-10ms-wiredTiger":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "distinct_types_with_in_predicate-useAgg-wiredTiger":{
+                "distinct_types_with_in_predicate-useAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "find_project-noAgg-wiredTiger":{
+                "find_project-noAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "find_project_skip_limit-noAgg-wiredTiger":{
+                "find_project_skip_limit-noAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -4202,28 +4167,28 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-mmapv1":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-mmapv1":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-mmapv1":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-mmapv1":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -4286,49 +4251,49 @@
                         "BF-6271"
                     ]
                 },
-                "mixed_delete-mmapv1":{
+                "mixed_delete":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_findOne-mmapv1":{
+                "mixed_findOne":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_insert-mmapv1":{
+                "mixed_insert":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_total-mmapv1":{
+                "mixed_total":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_update-mmapv1":{
+                "mixed_update":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "moveChunkWithLoad_secondaryThrottle_true-mmapv1":{
+                "moveChunkWithLoad_secondaryThrottle_true":{
                     "thread_threshold":0.6,
                     "threshold":0.4,
                     "ticket":[
                         "PERF-737"
                     ]
                 },
-                "moveChunk_secondaryThrottle_true_waitForDelete_false-mmapv1":{
+                "moveChunk_secondaryThrottle_true_waitForDelete_false":{
                     "thread_threshold":0.75,
                     "threshold":0.5,
                     "ticket":[
@@ -4354,11 +4319,11 @@
         "core_workloads_WT":{
             "ndays":{},
             "reference":{
-                "mixed_delete-wiredTiger":{
+                "mixed_delete":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494818484,
                     "max":11897.52860992188,
-                    "name":"mixed_delete-wiredTiger",
+                    "name":"mixed_delete",
                     "order":6821,
                     "results":{
                         "128":{
@@ -4407,11 +4372,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_findOne-wiredTiger":{
+                "mixed_findOne":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494818484,
                     "max":13110.339030917878,
-                    "name":"mixed_findOne-wiredTiger",
+                    "name":"mixed_findOne",
                     "order":6821,
                     "results":{
                         "128":{
@@ -4460,11 +4425,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_insert-wiredTiger":{
+                "mixed_insert":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494818484,
                     "max":12306.303453295704,
-                    "name":"mixed_insert-wiredTiger",
+                    "name":"mixed_insert",
                     "order":6821,
                     "results":{
                         "128":{
@@ -4513,11 +4478,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_total-wiredTiger":{
+                "mixed_total":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494818484,
                     "max":49069.41096762263,
-                    "name":"mixed_total-wiredTiger",
+                    "name":"mixed_total",
                     "order":6821,
                     "results":{
                         "128":{
@@ -4566,11 +4531,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_update-wiredTiger":{
+                "mixed_update":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494818484,
                     "max":11860.226733842399,
-                    "name":"mixed_update-wiredTiger",
+                    "name":"mixed_update",
                     "order":6821,
                     "results":{
                         "128":{
@@ -4621,28 +4586,28 @@
                 }
             },
             "threshold":{
-                "canary_client-cpuloop-10x-wiredTiger":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-wiredTiger":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-wiredTiger":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-wiredTiger":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -4698,49 +4663,49 @@
                         "BF-6272"
                     ]
                 },
-                "mixed_delete-wiredTiger":{
+                "mixed_delete":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_findOne-wiredTiger":{
+                "mixed_findOne":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_insert-wiredTiger":{
+                "mixed_insert":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_total-wiredTiger":{
+                "mixed_total":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_update-wiredTiger":{
+                "mixed_update":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "moveChunkWithLoad_secondaryThrottle_true-wiredTiger":{
+                "moveChunkWithLoad_secondaryThrottle_true":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "PERF-737"
                     ]
                 },
-                "moveChunk_secondaryThrottle_true_waitForDelete_false-wiredTiger":{
+                "moveChunk_secondaryThrottle_true_waitForDelete_false":{
                     "thread_threshold":0.75,
                     "threshold":0.5,
                     "ticket":[
@@ -4814,11 +4779,11 @@
         "industry_benchmarks_WT":{
             "ndays":{},
             "reference":{
-                "ycsb_50read50update-wiredTiger":{
+                "ycsb_50read50update":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494818326,
                     "max":48657.42013492702,
-                    "name":"ycsb_50read50update-wiredTiger",
+                    "name":"ycsb_50read50update",
                     "order":6821,
                     "results":{
                         "64":{
@@ -4839,11 +4804,11 @@
                     ],
                     "workload":"ycsb"
                 },
-                "ycsb_load-wiredTiger":{
+                "ycsb_load":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494815687,
                     "max":34824.7617986293,
-                    "name":"ycsb_load-wiredTiger",
+                    "name":"ycsb_load",
                     "order":6821,
                     "results":{
                         "32":{
@@ -4914,28 +4879,28 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-mmapv1":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-mmapv1":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-mmapv1":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-mmapv1":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -4990,28 +4955,28 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-wiredTiger":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-wiredTiger":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-wiredTiger":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-wiredTiger":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -5066,28 +5031,28 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-mmapv1":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-mmapv1":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-mmapv1":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-mmapv1":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -5142,28 +5107,28 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-wiredTiger":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-wiredTiger":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-wiredTiger":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-wiredTiger":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -5220,28 +5185,28 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-mmapv1":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-mmapv1":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-mmapv1":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-mmapv1":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -5262,35 +5227,35 @@
                         "BF-6271"
                     ]
                 },
-                "mixed_delete-mmapv1":{
+                "mixed_delete":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_findOne-mmapv1":{
+                "mixed_findOne":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_insert-mmapv1":{
+                "mixed_insert":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_total-mmapv1":{
+                "mixed_total":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_update-mmapv1":{
+                "mixed_update":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
@@ -5316,10 +5281,10 @@
         "core_workloads_WT_oplog_comp":{
             "ndays":{},
             "reference":{
-                "mixed_delete-wiredTiger":{
+                "mixed_delete":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "max":87.19600611821329,
-                    "name":"mixed_delete-wiredTiger",
+                    "name":"mixed_delete",
                     "order":6821,
                     "results":{
                         "128":{
@@ -5351,10 +5316,10 @@
                         "BF-5009"
                     ]
                 },
-                "mixed_findOne-wiredTiger":{
+                "mixed_findOne":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "max":117.99476775438006,
-                    "name":"mixed_findOne-wiredTiger",
+                    "name":"mixed_findOne",
                     "order":6821,
                     "results":{
                         "128":{
@@ -5386,10 +5351,10 @@
                         "BF-5009"
                     ]
                 },
-                "mixed_insert-wiredTiger":{
+                "mixed_insert":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "max":92.34845146881392,
-                    "name":"mixed_insert-wiredTiger",
+                    "name":"mixed_insert",
                     "order":6821,
                     "results":{
                         "128":{
@@ -5421,10 +5386,10 @@
                         "BF-5009"
                     ]
                 },
-                "mixed_total-wiredTiger":{
+                "mixed_total":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "max":94.58232349898887,
-                    "name":"mixed_total-wiredTiger",
+                    "name":"mixed_total",
                     "order":6821,
                     "results":{
                         "128":{
@@ -5456,10 +5421,10 @@
                         "BF-5009"
                     ]
                 },
-                "mixed_update-wiredTiger":{
+                "mixed_update":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "max":93.43380900857498,
-                    "name":"mixed_update-wiredTiger",
+                    "name":"mixed_update",
                     "order":6821,
                     "results":{
                         "128":{
@@ -5493,28 +5458,28 @@
                 }
             },
             "threshold":{
-                "canary_client-cpuloop-10x-wiredTiger":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-wiredTiger":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-wiredTiger":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-wiredTiger":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -5528,35 +5493,35 @@
                         "BF-6272"
                     ]
                 },
-                "mixed_delete-wiredTiger":{
+                "mixed_delete":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_findOne-wiredTiger":{
+                "mixed_findOne":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_insert-wiredTiger":{
+                "mixed_insert":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_total-wiredTiger":{
+                "mixed_total":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_update-wiredTiger":{
+                "mixed_update":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
@@ -5582,10 +5547,10 @@
         "industry_benchmarks_WT_oplog_comp":{
             "ndays":{},
             "reference":{
-                "ycsb_50read50update-wiredTiger":{
+                "ycsb_50read50update":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "max":81.17404463209813,
-                    "name":"ycsb_50read50update-wiredTiger",
+                    "name":"ycsb_50read50update",
                     "order":6821,
                     "results":{
                         "64":{
@@ -5601,10 +5566,10 @@
                         "BF-5009"
                     ]
                 },
-                "ycsb_95read5update-wiredTiger":{
+                "ycsb_95read5update":{
                     "create_time":"2017-07-30T14:41:40.093Z",
                     "max":98.19600544061853,
-                    "name":"ycsb_95read5update-wiredTiger",
+                    "name":"ycsb_95read5update",
                     "order":7793,
                     "results":{
                         "32":{
@@ -5620,10 +5585,10 @@
                         "BF-6161"
                     ]
                 },
-                "ycsb_load-wiredTiger":{
+                "ycsb_load":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "max":80.97184736824275,
-                    "name":"ycsb_load-wiredTiger",
+                    "name":"ycsb_load",
                     "order":6821,
                     "results":{
                         "32":{
@@ -5648,49 +5613,49 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-mmapv1":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_client-cpuloop-1x-mmapv1":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_server-cpuloop-10x-mmapv1":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_server-sleep-10ms-mmapv1":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "distinct_types_with_in_predicate-useAgg-mmapv1":{
+                "distinct_types_with_in_predicate-useAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "find_project-noAgg-mmapv1":{
+                "find_project-noAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "find_project_skip_limit-noAgg-mmapv1":{
+                "find_project_skip_limit-noAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -5745,63 +5710,63 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-wiredTiger":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_client-cpuloop-1x-wiredTiger":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_server-cpuloop-10x-wiredTiger":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "canary_server-sleep-10ms-wiredTiger":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "count_with_type_predicate-noAgg-wiredTiger":{
+                "count_with_type_predicate-noAgg":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "BF-6270"
                     ]
                 },
-                "count_with_type_predicate-useAgg-wiredTiger":{
+                "count_with_type_predicate-useAgg":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
                         "BF-6270"
                     ]
                 },
-                "distinct_types_with_in_predicate-useAgg-wiredTiger":{
+                "distinct_types_with_in_predicate-useAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "find_project-noAgg-wiredTiger":{
+                "find_project-noAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-6162"
                     ]
                 },
-                "find_project_skip_limit-noAgg-wiredTiger":{
+                "find_project_skip_limit-noAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -5856,28 +5821,28 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-mmapv1":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-mmapv1":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-mmapv1":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-mmapv1":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -5927,13 +5892,6 @@
                     ]
                 },
                 "insert_jtrue":{
-                    "thread_threshold":0.18,
-                    "threshold":0.12,
-                    "ticket":[
-                        "BF-6272"
-                    ]
-                },
-                "insert_jtrue-mmapv1":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
@@ -5942,47 +5900,40 @@
                 },
                 "insert_ttl":{
                     "thread_threshold":0.2,
-                    "threshold":0.1,
-                    "ticket":[
-                        "BF-6271"
-                    ]
-                },
-                "insert_ttl-mmapv1":{
-                    "thread_threshold":0.2,
                     "threshold":0.15,
                     "ticket":[
                         "BF-4146"
                     ]
                 },
-                "mixed_delete-mmapv1":{
+                "mixed_delete":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_findOne-mmapv1":{
+                "mixed_findOne":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_insert-mmapv1":{
+                "mixed_insert":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_total-mmapv1":{
+                "mixed_total":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_update-mmapv1":{
+                "mixed_update":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
@@ -5990,13 +5941,6 @@
                     ]
                 },
                 "removemulti_jtrue":{
-                    "thread_threshold":0.18,
-                    "threshold":0.12,
-                    "ticket":[
-                        "BF-6272"
-                    ]
-                },
-                "removemulti_jtrue-mmapv1":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
@@ -6004,13 +5948,6 @@
                     ]
                 },
                 "updatemulti_jtrue":{
-                    "thread_threshold":0.18,
-                    "threshold":0.12,
-                    "ticket":[
-                        "BF-6272"
-                    ]
-                },
-                "updatemulti_jtrue-mmapv1":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
@@ -6022,11 +5959,11 @@
         "core_workloads_WT":{
             "ndays":{},
             "reference":{
-                "index_build-wiredTiger":{
+                "index_build":{
                     "create_time":"2017-06-07T14:26:11.486Z",
                     "end":1496857542,
                     "max":179610.60421007255,
-                    "name":"index_build-wiredTiger",
+                    "name":"index_build",
                     "order":7055,
                     "results":{
                         "1":{
@@ -6047,11 +5984,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_delete-wiredTiger":{
+                "mixed_delete":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494691900,
                     "max":7617.543477723945,
-                    "name":"mixed_delete-wiredTiger",
+                    "name":"mixed_delete",
                     "order":6821,
                     "results":{
                         "128":{
@@ -6100,11 +6037,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_findOne-wiredTiger":{
+                "mixed_findOne":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494691900,
                     "max":27190.931333261356,
-                    "name":"mixed_findOne-wiredTiger",
+                    "name":"mixed_findOne",
                     "order":6821,
                     "results":{
                         "128":{
@@ -6153,11 +6090,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_insert-wiredTiger":{
+                "mixed_insert":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494691900,
                     "max":18419.912185788115,
-                    "name":"mixed_insert-wiredTiger",
+                    "name":"mixed_insert",
                     "order":6821,
                     "results":{
                         "128":{
@@ -6206,11 +6143,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_total-wiredTiger":{
+                "mixed_total":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494691900,
                     "max":53059.68674186917,
-                    "name":"mixed_total-wiredTiger",
+                    "name":"mixed_total",
                     "order":6821,
                     "results":{
                         "128":{
@@ -6259,11 +6196,11 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_update-wiredTiger":{
+                "mixed_update":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494691900,
                     "max":10150.829689327653,
-                    "name":"mixed_update-wiredTiger",
+                    "name":"mixed_update",
                     "order":6821,
                     "results":{
                         "128":{
@@ -6314,28 +6251,28 @@
                 }
             },
             "threshold":{
-                "canary_client-cpuloop-10x-wiredTiger":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-wiredTiger":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-wiredTiger":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-wiredTiger":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -6391,35 +6328,35 @@
                         "BF-6272"
                     ]
                 },
-                "mixed_delete-wiredTiger":{
+                "mixed_delete":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_findOne-wiredTiger":{
+                "mixed_findOne":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_insert-wiredTiger":{
+                "mixed_insert":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_total-wiredTiger":{
+                "mixed_total":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5125"
                     ]
                 },
-                "mixed_update-wiredTiger":{
+                "mixed_update":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
                     "ticket":[
@@ -6493,11 +6430,11 @@
         "industry_benchmarks_WT":{
             "ndays":{},
             "reference":{
-                "ycsb_50read50update-wiredTiger":{
+                "ycsb_50read50update":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494688007,
                     "max":57537.89589668495,
-                    "name":"ycsb_50read50update-wiredTiger",
+                    "name":"ycsb_50read50update",
                     "order":6821,
                     "results":{
                         "64":{
@@ -6515,11 +6452,11 @@
                     ],
                     "workload":"ycsb"
                 },
-                "ycsb_95read5update-wiredTiger":{
+                "ycsb_95read5update":{
                     "create_time":"2017-07-30T14:41:40.093Z",
                     "end":1501432783.0,
                     "max":81002.48677634403,
-                    "name":"ycsb_95read5update-wiredTiger",
+                    "name":"ycsb_95read5update",
                     "order":7793,
                     "results":{
                         "32":{
@@ -6537,11 +6474,11 @@
                     ],
                     "workload":"ycsb"
                 },
-                "ycsb_load-wiredTiger":{
+                "ycsb_load":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494687050,
                     "max":69732.08931285999,
-                    "name":"ycsb_load-wiredTiger",
+                    "name":"ycsb_load",
                     "order":6821,
                     "results":{
                         "32":{
@@ -6609,28 +6546,28 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-mmapv1":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-mmapv1":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-mmapv1":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-mmapv1":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -6685,28 +6622,28 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "canary_client-cpuloop-10x-wiredTiger":{
+                "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_client-cpuloop-1x-wiredTiger":{
+                "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-cpuloop-10x-wiredTiger":{
+                "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
                     ]
                 },
-                "canary_server-sleep-10ms-wiredTiger":{
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[

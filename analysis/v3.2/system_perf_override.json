@@ -46,14 +46,14 @@
                         "PERF-873"
                     ]
                 },
-                "map_reduce_1M_doc-mmapv1":{
+                "map_reduce_1M_doc":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
                         "BF-5124"
                     ]
                 },
-                "word_count_1M_doc-mmapv1":{
+                "word_count_1M_doc":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
@@ -108,28 +108,28 @@
                         "PERF-873"
                     ]
                 },
-                "insert_jtrue-wiredTiger":{
+                "insert_jtrue":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-335"
                     ]
                 },
-                "mixed_findOne-wiredTiger":{
+                "mixed_findOne":{
                     "thread_threshold":0.2625,
                     "threshold":0.175,
                     "ticket":[
                         "BF-5683"
                     ]
                 },
-                "removemulti_jtrue-wiredTiger":{
+                "removemulti_jtrue":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-335"
                     ]
                 },
-                "updatemulti_jtrue-wiredTiger":{
+                "updatemulti_jtrue":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
                     "ticket":[
@@ -280,14 +280,14 @@
                         "PERF-873"
                     ]
                 },
-                "initial_load_capped-mmapv1":{
+                "initial_load_capped":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5476"
                     ]
                 },
-                "insert_capped-mmapv1":{
+                "insert_capped":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
                     "ticket":[
@@ -392,14 +392,14 @@
                         "PERF-873"
                     ]
                 },
-                "map_reduce_1M_doc-mmapv1":{
+                "map_reduce_1M_doc":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
                         "BF-5124"
                     ]
                 },
-                "word_count_1M_doc-mmapv1":{
+                "word_count_1M_doc":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
@@ -454,21 +454,21 @@
                         "PERF-873"
                     ]
                 },
-                "insert_jtrue-wiredTiger":{
+                "insert_jtrue":{
                     "thread_threshold":0.75,
                     "threshold":0.6,
                     "ticket":[
                         "PERF-335"
                     ]
                 },
-                "removemulti_jtrue-wiredTiger":{
+                "removemulti_jtrue":{
                     "thread_threshold":0.75,
                     "threshold":0.6,
                     "ticket":[
                         "PERF-335"
                     ]
                 },
-                "updatemulti_jtrue-wiredTiger":{
+                "updatemulti_jtrue":{
                     "thread_threshold":0.75,
                     "threshold":0.6,
                     "ticket":[
@@ -571,7 +571,7 @@
                         "PERF-873"
                     ]
                 },
-                "ycsb_50read50update_w_majority-wiredTiger":{
+                "ycsb_50read50update_w_majority":{
                     "thread_threshold":0.65,
                     "threshold":0.4,
                     "ticket":[
@@ -1354,21 +1354,21 @@
                         "PERF-873"
                     ]
                 },
-                "insert_jtrue-wiredTiger":{
+                "insert_jtrue":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-335"
                     ]
                 },
-                "removemulti_jtrue-wiredTiger":{
+                "removemulti_jtrue":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
                     "ticket":[
                         "PERF-335"
                     ]
                 },
-                "updatemulti_jtrue-wiredTiger":{
+                "updatemulti_jtrue":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
                     "ticket":[
@@ -1519,14 +1519,14 @@
                         "PERF-873"
                     ]
                 },
-                "initial_load_capped-mmapv1":{
+                "initial_load_capped":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
                     "ticket":[
                         "BF-5476"
                     ]
                 },
-                "insert_capped-mmapv1":{
+                "insert_capped":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
                     "ticket":[
