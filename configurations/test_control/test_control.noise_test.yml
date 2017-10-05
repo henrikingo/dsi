@@ -93,7 +93,7 @@ run:
               - contended_update.js
               - map_reduce.js
               - insert_capped.js:
-                    thread_levels: [1, 2]
+                    thread_levels: ${test_control.thread_levels.insert_vector.${mongodb_setup.meta.storageEngine}}
               - insert_ttl.js:
                     thread_levels: [1, 16, 32]
               - insert_capped_indexes.js
@@ -120,6 +120,12 @@ run:
         # Hard coding for now. These aren't working right now
         sharded: ${mongodb_setup.meta.is_sharded}
         replica: ${mongodb_setup.meta.is_replset}
+
+# This is just a lookup table. Each test may reference some leaf node here from a test parameter.
+thread_levels:
+    insert_capped:
+        mmapv1: [1, 4]
+        wiredTiger: [1, 2]
 
 pre_task:
   - on_localhost:

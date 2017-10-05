@@ -16,7 +16,7 @@ run:
         tests:
             default:
               - contended_update.js:
-                    thread_levels: [32, 64]
+                    thread_levels: [1, 32, 64]
               - map_reduce.js
               - insert_ttl.js:
                     thread_levels: [1, 16, 32]
@@ -55,13 +55,13 @@ run:
 thread_levels:
     insert_vector:
         standalone:
-            mmapv1: [1, 2]
+            mmapv1: [1, 4]
             wiredTiger: [1, 8, 16]
         single-replica:
-            mmapv1: [1, 2]
+            mmapv1: [1, 4]
             wiredTiger: [1, 8, 16]
         replica:
-            mmapv1: [1, 2]
+            mmapv1: [1, 4]
             wiredTiger: [1, 8, 16]
         shard:
             mmapv1: [1, 32]
