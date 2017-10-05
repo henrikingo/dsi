@@ -16925,8 +16925,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.DocValidation.TenInt":{
@@ -17015,8 +17014,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.DocValidation.TwentyInt":{
@@ -17105,8 +17103,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.Empty":{
@@ -17195,8 +17192,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.EmptyCapped":{
@@ -17285,8 +17281,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.EmptyCapped.SeqIntID":{
@@ -17375,8 +17370,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.IntIDUpsert":{
@@ -17465,8 +17459,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.IntVector":{
@@ -17555,8 +17548,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.JustID":{
@@ -17645,8 +17637,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.JustNum":{
@@ -17735,8 +17726,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.JustNumIndexed":{
@@ -17825,8 +17815,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.LargeDocVector":{
@@ -17916,8 +17905,7 @@
                     ],
                     "ticket":[
                         "BF-5577",
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.MultiIndex.Contested.Rnd":{
@@ -18006,8 +17994,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.MultiIndex.Uncontested.Rnd":{
@@ -18096,8 +18083,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.MultiKeyIndex.Contested.Rnd":{
@@ -18186,8 +18172,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.MultiKeyIndex.Uncontested.Rnd":{
@@ -18276,8 +18261,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.SeqIntID.Indexed":{
@@ -18366,8 +18350,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.SingleIndex.Contested.Rnd":{
@@ -18456,8 +18439,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.SingleIndex.Seq":{
@@ -18546,8 +18528,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Insert.SingleIndex.Uncontested.Rnd":{
@@ -18636,8 +18617,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "InsertIndexedStringsNonSimpleCollation":{
@@ -18726,8 +18706,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "InsertIndexedStringsSimpleCollation":{
@@ -18816,8 +18795,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 },
                 "Inserts.PartialIndex.FilteredRange":{
@@ -18906,8 +18884,7 @@
                         "8"
                     ],
                     "ticket":[
-                        "BF-6373",
-                        "BF-6585"
+                        "BF-6373"
                     ]
                 }
             },
