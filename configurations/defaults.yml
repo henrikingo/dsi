@@ -1,5 +1,4 @@
 # Defaults for all config values used by Distributed Performance 2.0 modules.
-# Note: This file is read by dsi/bin/commmon/config.py. Don't mess with it.
 
 bootstrap:
     infrastructure_provisioning: single
@@ -113,8 +112,23 @@ mongodb_setup:
 
     post_task:
         - on_all_servers:
+            exec: |
+              set -v
+              rm -rf ./mdiag
+              mkdir -p ./mdiag
+              wget -O-  https://raw.githubusercontent.com/mongodb/support-tools/master/mdiag/mdiag.sh > ./mdiag/mdiag.sh
+              # The "sys-perf" paramter to mdiag.sh is the 'reference'. As this is a support
+              # tool, the reference would normally be a support case identifier.
+              # For this example, it can be anything so that we don't
+              # get a warning.
+              # The output is written to "$TMPDIR/mdiag-$(hostname).json".
+              # This json file is machine readable, rendering the
+              # output to a more hunan friendly format is not done here.
+              sudo TMPDIR=./mdiag bash ./mdiag/mdiag.sh sys-perf
+        - on_all_servers:
               retrieve_files:
                   data/logs/: ./
+                  mdiag/: ./
         - on_mongod:
               retrieve_files:
                   data/dbs/diagnostic.data: ./diagnostic.data
