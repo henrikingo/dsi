@@ -10,12 +10,23 @@ import setup_baselines
 from tests import test_utils
 
 
+#pylint: disable=too-few-public-methods
+class BaselineUpdaterTest(setup_baselines.BaselineUpdater):
+    ''' Subclassed BaselineUpdater to use different baseline_config.yml file
+
+    All tests for BaselineUpdater should use this class instead'''
+
+    def __init__(self):  #pylint: disable=super-init-not-called
+        ''' init. Load different file than parent '''
+        self.config = test_utils.read_fixture_yaml_file('baseline_config.yml')
+
+
 class TestSetupBaselines(unittest.TestCase):
     ''' Test suite for setup_baselines.py'''
 
     def setUp(self):
         '''
-        Setup perfyaml for each test
+        Setup perfyaml for each test, and patch the file open of baseline_config.yml
         '''
         self.perfyaml = test_utils.read_fixture_yaml_file('perf.yml')
         self.sysperfyaml = test_utils.read_fixture_yaml_file('system_perf.yml')
@@ -151,7 +162,7 @@ class TestSetupBaselines(unittest.TestCase):
         Test patch_perf_yaml_mongod_flags
         '''
 
-        updater = setup_baselines.BaselineUpdater()
+        updater = BaselineUpdaterTest()
         unchanged = updater.patch_perf_yaml_mongod_flags(self.perfyaml, '3.4.0')
         self.assertEqual(self.perfyaml, unchanged, 'No changes to mongod flags for 3.4.0')
         modified = updater.patch_perf_yaml_mongod_flags(self.perfyaml, '3.0.12')
@@ -162,7 +173,7 @@ class TestSetupBaselines(unittest.TestCase):
         '''
         Test that patch_perf_yaml raises if given version it doesn't know
         '''
-        updater = setup_baselines.BaselineUpdater()
+        updater = BaselineUpdaterTest()
         with self.assertRaises(setup_baselines.UnsupportedBaselineError):
             updater.patch_perf_yaml(self.perfyaml, '1.6.0', 'performance')
 
@@ -170,7 +181,7 @@ class TestSetupBaselines(unittest.TestCase):
         '''
         Test the patch_perf_yaml method on BaselineUpdater
         '''
-        updater = setup_baselines.BaselineUpdater()
+        updater = BaselineUpdaterTest()
 
         modified = updater.patch_perf_yaml(self.perfyaml, '3.2.10', 'performance')
         reference = test_utils.read_fixture_yaml_file('perf.yml.master.3.2.10.ok')
@@ -188,7 +199,7 @@ class TestSetupBaselines(unittest.TestCase):
         '''
         Test the patch_perf_yaml method on BaselineUpdater
         '''
-        updater = setup_baselines.BaselineUpdater()
+        updater = BaselineUpdaterTest()
 
         modified = updater.patch_sysperf_yaml(self.sysperfyaml, '3.2.12')
         reference = test_utils.read_fixture_yaml_file('system_perf.yml.master.3.2.12.ok')
