@@ -19,16 +19,13 @@
 # you have https:// in your link, you need to remove the leading
 # characters
 mongod_links:
-  3.4.9: perf-3.4/performance_3.4_876ebee8c7dd0e2d992f36a848ff4dc50ee6603e/876ebee8c7dd0e2d992f36a848ff4dc50ee6603e/mongod-performance_3.4_876ebee8c7dd0e2d992f36a848ff4dc50ee6603e
   3.4.2: perf-3.4/performance_3.4_3f76e40c105fc223b3e5aac3e20dcd026b83b38b/3f76e40c105fc223b3e5aac3e20dcd026b83b38b/mongod-performance_3.4_3f76e40c105fc223b3e5aac3e20dcd026b83b38b
   3.4.1: perf-3.4/performance_3.4_5e103c4f5583e2566a45d740225dc250baacfbd7/5e103c4f5583e2566a45d740225dc250baacfbd7/mongod-performance_3.4_5e103c4f5583e2566a45d740225dc250baacfbd7
   3.4.0: perf-3.4/585163183ff122031e0003e5/f4240c60f005be757399042dc12f6addbc3170c1/mongod-585163183ff122031e0003e5
   3.2.10: perf-3.2/5825260c3ff1227828006b38/79d9b3ab5ce20f51c272b4411202710a082d0317/mongod-5825260c3ff1227828006b38
   3.2.11: perf-3.2/585147523ff122031e000295/009580ad490190ba33d1c6253ebd8d91808923e4/mongod-585147523ff122031e000295  # Patch build
   3.2.12: perf-3.2/performance_3.2_ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14/ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14/mongod-performance_3.2_ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14
-  3.2.17: perf-3.2/performance_3.2_186656d79574f7dfe0831a7e7821292ab380f667/186656d79574f7dfe0831a7e7821292ab380f667/mongod-performance_3.2_186656d79574f7dfe0831a7e7821292ab380f667
   3.0.14: perf-3.0/582526d23ff1227828006b48/08352afcca24bfc145240a0fac9d28b978ab77f3/mongod-582526d23ff1227828006b48
-  3.0.15: perf-3.0/performance_3.0_b8ff507269c382bc100fc52f75f48d54cd42ec3b/b8ff507269c382bc100fc52f75f48d54cd42ec3b/mongod-performance_3.0_b8ff507269c382bc100fc52f75f48d54cd42ec3b
 
 mongod_flags:
   '3.0':  # Need to quote version if only one period
@@ -43,10 +40,10 @@ mongod_flags:
 
 # These shell versions should be updated to something recent when reused.
 mongo_shells:
-  performance: perf/performance_cea80793198c198fc2819808982ac3d5ef7c1105/cea80793198c198fc2819808982ac3d5ef7c1105/mongo-performance_cea80793198c198fc2819808982ac3d5ef7c1105
-  performance-3.4: perf-3.4/performance_3.4_3dacffb42142b0255e1a0dbb99bb5d946a3ffb45/3dacffb42142b0255e1a0dbb99bb5d946a3ffb45/mongo-performance_3.4_3dacffb42142b0255e1a0dbb99bb5d946a3ffb45
-  performance-3.2: perf-3.2/performance_3.2_0995b9e67328b0478a7b8407000a000ff8854ceb/0995b9e67328b0478a7b8407000a000ff8854ceb/mongo-performance_3.2_0995b9e67328b0478a7b8407000a000ff8854ceb
-  performance-3.0: https://s3.amazonaws.com/mciuploads/perf-3.0/performance_3.0_e4714d328466884fdbfc6750fa3bde40280cf855/e4714d328466884fdbfc6750fa3bde40280cf855/mongo-performance_3.0_e4714d328466884fdbfc6750fa3bde40280cf855
+  performance: perf/performance_4cefb2925ab1fcb951777c25d80cd2df0b9f544e/4cefb2925ab1fcb951777c25d80cd2df0b9f544e/mongo-performance_4cefb2925ab1fcb951777c25d80cd2df0b9f544e
+  performance-3.4: perf-3.4/performance_3.4_39fd7c75250da0eac3f118b2044749e7e179eb28/39fd7c75250da0eac3f118b2044749e7e179eb28/mongo-performance_3.4_39fd7c75250da0eac3f118b2044749e7e179eb28
+  performance-3.2: perf-3.2/performance_3.2_30e047e7aa8097bda5d88c5676bdd3c825d8e4ca/30e047e7aa8097bda5d88c5676bdd3c825d8e4ca/mongo-performance_3.2_30e047e7aa8097bda5d88c5676bdd3c825d8e4ca
+  performance-3.0: perf-3.0/performance_3.0_3105cafb4d712deb5cef0b6b12f137b14d2dee33/3105cafb4d712deb5cef0b6b12f137b14d2dee33/mongo-performance_3.0_3105cafb4d712deb5cef0b6b12f137b14d2dee33
 
 sysperf_mongod_links:
   3.2.12: https://s3.amazonaws.com/mciuploads/dsi-v3.2/sys_perf_3.2_ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14/ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14/linux/mongod-sys_perf_3.2_ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14.tar.gz
