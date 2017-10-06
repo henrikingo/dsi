@@ -273,12 +273,12 @@ def compare_one_result(this_one, reference, label, thread_level="max",
     default_threshold -- The minimum percentage allowed regression
     using_override -- Did this comparison use an override
 
-    Returns a pair: a boolean indicating if the test passed or failed,
+    Returns a pair: a boolean indicating if the test failed the comparison,
     and a string with the log message
     '''
 
     if not reference:
-        return (True, "No reference data for " + label)
+        return (False, "No reference data for " + label)
 
     ref = ""
     current = ""
@@ -289,7 +289,7 @@ def compare_one_result(this_one, reference, label, thread_level="max",
     else:
         # Don't do a comparison if the thread data is missing
         if thread_level not in reference["results"].keys():
-            return (True, "Thread data is missing")
+            return (False, "Thread data is missing")
         ref = reference["results"][thread_level]['ops_per_sec']
         current = this_one["results"][thread_level]['ops_per_sec']
 
