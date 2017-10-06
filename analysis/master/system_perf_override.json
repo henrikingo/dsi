@@ -210,7 +210,40 @@
         },
         "core_workloads_MMAPv1":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "contended_update":{
+                    "create_time":"2017-08-20T23:49:29.996Z",
+                    "end":1503286194.0,
+                    "max":13425.574661814873,
+                    "name":"contended_update",
+                    "order":8109,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":13425.574661814873,
+                            "ops_per_sec_values":[
+                                13425.574661814873
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":13208.910296929287,
+                            "ops_per_sec_values":[
+                                13208.910296929287
+                            ]
+                        }
+                    },
+                    "revision":"0cfe4dfc2cf371f9e8196cb79414c3432b95b5af",
+                    "start":1503279697.0,
+                    "tag":"",
+                    "threads":[
+                        "32",
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ],
+                    "workload":"shell/benchrun"
+                }
+            },
             "threshold":{
                 "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
@@ -372,6 +405,38 @@
         "core_workloads_WT":{
             "ndays":{},
             "reference":{
+                "contended_update":{
+                    "create_time":"2017-08-20T23:49:29.996Z",
+                    "end":1503314765.0,
+                    "max":17626.449341412706,
+                    "name":"contended_update",
+                    "order":8109,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":17626.449341412706,
+                            "ops_per_sec_values":[
+                                17626.449341412706
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":16989.462856045153,
+                            "ops_per_sec_values":[
+                                16989.462856045153
+                            ]
+                        }
+                    },
+                    "revision":"0cfe4dfc2cf371f9e8196cb79414c3432b95b5af",
+                    "start":1503308518.0,
+                    "tag":"",
+                    "threads":[
+                        "32",
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ],
+                    "workload":"shell/benchrun"
+                },
                 "mixed_delete":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494691996,
@@ -1301,7 +1366,40 @@
         },
         "core_workloads_MMAPv1":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "contended_update":{
+                    "create_time":"2017-08-20T23:49:29.996Z",
+                    "end":1503286889.0,
+                    "max":13115.611642007632,
+                    "name":"contended_update",
+                    "order":8109,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":13115.611642007632,
+                            "ops_per_sec_values":[
+                                13115.611642007632
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":13023.570126095146,
+                            "ops_per_sec_values":[
+                                13023.570126095146
+                            ]
+                        }
+                    },
+                    "revision":"0cfe4dfc2cf371f9e8196cb79414c3432b95b5af",
+                    "start":1503279694.0,
+                    "tag":"",
+                    "threads":[
+                        "32",
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ],
+                    "workload":"shell/benchrun"
+                }
+            },
             "threshold":{
                 "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
@@ -1469,6 +1567,38 @@
         "core_workloads_WT":{
             "ndays":{},
             "reference":{
+                "contended_update":{
+                    "create_time":"2017-08-20T23:49:29.996Z",
+                    "end":1503317299.0,
+                    "max":18436.784910282313,
+                    "name":"contended_update",
+                    "order":8109,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":18436.784910282313,
+                            "ops_per_sec_values":[
+                                18436.784910282313
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":17615.312530542084,
+                            "ops_per_sec_values":[
+                                17615.312530542084
+                            ]
+                        }
+                    },
+                    "revision":"0cfe4dfc2cf371f9e8196cb79414c3432b95b5af",
+                    "start":1503310883.0,
+                    "tag":"",
+                    "threads":[
+                        "32",
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ],
+                    "workload":"shell/benchrun"
+                },
                 "mixed_delete":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494694275,
@@ -4165,7 +4295,40 @@
         },
         "core_workloads_MMAPv1":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "contended_update":{
+                    "create_time":"2017-08-20T23:49:29.996Z",
+                    "end":1503556110.0,
+                    "max":11666.97321247376,
+                    "name":"contended_update",
+                    "order":8109,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":11666.97321247376,
+                            "ops_per_sec_values":[
+                                11666.97321247376
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":11502.306126215264,
+                            "ops_per_sec_values":[
+                                11502.306126215264
+                            ]
+                        }
+                    },
+                    "revision":"0cfe4dfc2cf371f9e8196cb79414c3432b95b5af",
+                    "start":1503549206.0,
+                    "tag":"",
+                    "threads":[
+                        "32",
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ],
+                    "workload":"shell/benchrun"
+                }
+            },
             "threshold":{
                 "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
@@ -4319,6 +4482,38 @@
         "core_workloads_WT":{
             "ndays":{},
             "reference":{
+                "contended_update":{
+                    "create_time":"2017-08-20T23:49:29.996Z",
+                    "end":1503550621.0,
+                    "max":15739.788770102588,
+                    "name":"contended_update",
+                    "order":8109,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":15739.788770102588,
+                            "ops_per_sec_values":[
+                                15739.788770102588
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":15047.893426932918,
+                            "ops_per_sec_values":[
+                                15047.893426932918
+                            ]
+                        }
+                    },
+                    "revision":"0cfe4dfc2cf371f9e8196cb79414c3432b95b5af",
+                    "start":1503543873.0,
+                    "tag":"",
+                    "threads":[
+                        "32",
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ],
+                    "workload":"shell/benchrun"
+                },
                 "mixed_delete":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "end":1494818484,
@@ -5183,7 +5378,31 @@
     "linux-oplog-compare":{
         "core_workloads_MMAPv1_oplog_comp":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "contended_update":{
+                    "create_time":"2017-08-20T23:49:29.996Z",
+                    "max":71.88228589692007,
+                    "name":"contended_update",
+                    "order":8109,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":71.88228589692007
+                        },
+                        "64":{
+                            "ops_per_sec":70.79109779667691
+                        }
+                    },
+                    "revision":"0cfe4dfc2cf371f9e8196cb79414c3432b95b5af",
+                    "tag":"",
+                    "threads":[
+                        "32",
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ]
+                }
+            },
             "threshold":{
                 "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
@@ -5281,6 +5500,29 @@
         "core_workloads_WT_oplog_comp":{
             "ndays":{},
             "reference":{
+                "contended_update":{
+                    "create_time":"2017-08-20T23:49:29.996Z",
+                    "max":57.754892088965335,
+                    "name":"contended_update",
+                    "order":8109,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":57.754892088965335
+                        },
+                        "64":{
+                            "ops_per_sec":53.02382049715903
+                        }
+                    },
+                    "revision":"0cfe4dfc2cf371f9e8196cb79414c3432b95b5af",
+                    "tag":"",
+                    "threads":[
+                        "32",
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ]
+                },
                 "mixed_delete":{
                     "create_time":"2017-05-13T13:32:48.158Z",
                     "max":87.19600611821329,
@@ -5819,7 +6061,40 @@
         },
         "core_workloads_MMAPv1":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "contended_update":{
+                    "create_time":"2017-08-20T23:49:29.996Z",
+                    "end":1503291159.0,
+                    "max":18677.16711328196,
+                    "name":"contended_update",
+                    "order":8109,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":18677.16711328196,
+                            "ops_per_sec_values":[
+                                18677.16711328196
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":18658.999094585794,
+                            "ops_per_sec_values":[
+                                18658.999094585794
+                            ]
+                        }
+                    },
+                    "revision":"0cfe4dfc2cf371f9e8196cb79414c3432b95b5af",
+                    "start":1503284958.0,
+                    "tag":"",
+                    "threads":[
+                        "32",
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ],
+                    "workload":"shell/benchrun"
+                }
+            },
             "threshold":{
                 "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
@@ -5959,6 +6234,38 @@
         "core_workloads_WT":{
             "ndays":{},
             "reference":{
+                "contended_update":{
+                    "create_time":"2017-08-20T23:49:29.996Z",
+                    "end":1503288457.0,
+                    "max":32041.189595071584,
+                    "name":"contended_update",
+                    "order":8109,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":30519.40485710027,
+                            "ops_per_sec_values":[
+                                30519.40485710027
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":32041.189595071584,
+                            "ops_per_sec_values":[
+                                32041.189595071584
+                            ]
+                        }
+                    },
+                    "revision":"0cfe4dfc2cf371f9e8196cb79414c3432b95b5af",
+                    "start":1503282276.0,
+                    "tag":"",
+                    "threads":[
+                        "32",
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ],
+                    "workload":"shell/benchrun"
+                },
                 "index_build":{
                     "create_time":"2017-06-07T14:26:11.486Z",
                     "end":1496857542,
