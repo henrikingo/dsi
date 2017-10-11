@@ -4,46 +4,60 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "map_reduce_1M_doc":{
@@ -66,46 +80,60 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "insert_jtrue":{
@@ -142,46 +170,53 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 }
             }
@@ -190,46 +225,53 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 }
             }
@@ -238,46 +280,60 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "initial_load_capped":{
@@ -300,46 +356,60 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 }
             }
@@ -350,46 +420,60 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "map_reduce_1M_doc":{
@@ -412,46 +496,60 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "insert_jtrue":{
@@ -481,46 +579,53 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 }
             }
@@ -529,46 +634,53 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "ycsb_50read50update_w_majority":{
@@ -579,6 +691,240 @@
                     ]
                 }
             }
+        },
+        "industry_benchmarks_wmajority_MMAPv1":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                }
+            }
+        },
+        "industry_benchmarks_wmajority_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                }
+            }
+        },
+        "non_sharded_workloads_MMAPv1":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                }
+            }
+        },
+        "non_sharded_workloads_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                }
+            }
         }
     },
     "linux-3-node-replSet-initialsync":{
@@ -586,6 +932,13 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -634,6 +987,13 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -684,46 +1044,60 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 }
             }
@@ -732,46 +1106,60 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 }
             }
@@ -780,46 +1168,53 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 }
             }
@@ -828,46 +1223,163 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                }
+            }
+        },
+        "industry_benchmarks_wmajority_MMAPv1":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                }
+            }
+        },
+        "industry_benchmarks_wmajority_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 }
             }
@@ -876,46 +1388,60 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 }
             }
@@ -924,46 +1450,60 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 }
             }
@@ -972,46 +1512,60 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 }
             }
@@ -1020,46 +1574,60 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 }
             }
@@ -1264,46 +1832,60 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 }
             }
@@ -1312,46 +1894,60 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "insert_jtrue":{
@@ -1381,46 +1977,53 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 }
             }
@@ -1429,46 +2032,53 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 }
             }
@@ -1477,46 +2087,60 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "initial_load_capped":{
@@ -1539,46 +2163,60 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":1.0,
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5520"
                     ]
                 },
                 "fio_iops_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 },
                 "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "PERF-873"
+                        "BF-5520"
                     ]
                 }
             }
