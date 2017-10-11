@@ -715,46 +715,163 @@
                     ],
                     "workload":"shell/benchrun"
                 },
-                "mixed_delete":{
-                    "create_time":"2017-05-13T13:32:48.158Z",
-                    "end":1494691996,
-                    "max":5824.419151974815,
-                    "name":"mixed_delete",
-                    "order":6821,
+                "insert_vector_primary":{
+                    "create_time":"2017-08-22T15:00:36.47Z",
+                    "end":1503424467,
+                    "max":415664.4409385832,
+                    "name":"insert_vector_primary",
+                    "order":8120,
                     "results":{
-                        "128":{
-                            "ops_per_sec":5392.403903727468,
+                        "1":{
+                            "ops_per_sec":125572.20314878393,
                             "ops_per_sec_values":[
-                                5392.403903727468
+                                125572.20314878393
                             ]
                         },
-                        "256":{
-                            "ops_per_sec":4404.33481894774,
+                        "16":{
+                            "ops_per_sec":415664.4409385832,
                             "ops_per_sec_values":[
-                                4404.33481894774
+                                415664.4409385832
                             ]
                         },
-                        "4":{
-                            "ops_per_sec":3039.2283456795813,
+                        "8":{
+                            "ops_per_sec":407103.2559483137,
                             "ops_per_sec_values":[
-                                3039.2283456795813
-                            ]
-                        },
-                        "512":{
-                            "ops_per_sec":4184.517683826055,
-                            "ops_per_sec_values":[
-                                4184.517683826055
-                            ]
-                        },
-                        "64":{
-                            "ops_per_sec":5824.419151974815,
-                            "ops_per_sec_values":[
-                                5824.419151974815
+                                407103.2559483137
                             ]
                         }
                     },
-                    "revision":"ff3177abf366f0699629afb1b20fb72c6c79a6e4",
-                    "start":1494686839,
+                    "revision":"853c221962a95e68faa8ebe13bf5699390f04092",
+                    "start":1503418213,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "8",
+                        "16"
+                    ],
+                    "ticket":[
+                        "BF-6823"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "insert_vector_secondary_load_phase":{
+                    "create_time":"2017-08-22T15:00:36.47Z",
+                    "end":1503424467,
+                    "max":415664.4409385832,
+                    "name":"insert_vector_secondary_load_phase",
+                    "order":8120,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":125572.20314878393,
+                            "ops_per_sec_values":[
+                                125572.20314878393
+                            ]
+                        },
+                        "16":{
+                            "ops_per_sec":415664.4409385832,
+                            "ops_per_sec_values":[
+                                415664.4409385832
+                            ]
+                        },
+                        "8":{
+                            "ops_per_sec":407103.2559483137,
+                            "ops_per_sec_values":[
+                                407103.2559483137
+                            ]
+                        }
+                    },
+                    "revision":"853c221962a95e68faa8ebe13bf5699390f04092",
+                    "start":1503418213,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "8",
+                        "16"
+                    ],
+                    "ticket":[
+                        "BF-6823"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "insert_vector_secondary_overall":{
+                    "create_time":"2017-08-22T15:00:36.47Z",
+                    "end":1503424467,
+                    "max":415650.5871504594,
+                    "name":"insert_vector_secondary_overall",
+                    "order":8120,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":125568.71524517947,
+                            "ops_per_sec_values":[
+                                125568.71524517947
+                            ]
+                        },
+                        "16":{
+                            "ops_per_sec":415650.5871504594,
+                            "ops_per_sec_values":[
+                                415650.5871504594
+                            ]
+                        },
+                        "8":{
+                            "ops_per_sec":407091.948404013,
+                            "ops_per_sec_values":[
+                                407091.948404013
+                            ]
+                        }
+                    },
+                    "revision":"853c221962a95e68faa8ebe13bf5699390f04092",
+                    "start":1503418213,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "8",
+                        "16"
+                    ],
+                    "ticket":[
+                        "BF-6823"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "mixed_delete":{
+                    "create_time":"2017-09-13T18:33:50.662Z",
+                    "end":1505340834,
+                    "max":5233.126118459193,
+                    "name":"mixed_delete",
+                    "order":8343,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":4845.081156705181,
+                            "ops_per_sec_values":[
+                                4845.081156705181
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":4145.680787012445,
+                            "ops_per_sec_values":[
+                                4145.680787012445
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":2876.64000150854,
+                            "ops_per_sec_values":[
+                                2876.64000150854
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":2905.44622838812,
+                            "ops_per_sec_values":[
+                                2905.44622838812
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":5233.126118459193,
+                            "ops_per_sec_values":[
+                                5233.126118459193
+                            ]
+                        }
+                    },
+                    "revision":"61d1cfbf2c8521126506c12bcd2d187a7926fbe0",
+                    "start":1505334371,
                     "tag":"",
                     "threads":[
                         "128",
@@ -764,50 +881,51 @@
                         "4"
                     ],
                     "ticket":[
-                        "BF-5009"
+                        "BF-5009",
+                        "BF-6823"
                     ],
                     "workload":"shell/benchrun"
                 },
                 "mixed_findOne":{
-                    "create_time":"2017-05-13T13:32:48.158Z",
-                    "end":1494691996,
-                    "max":32083.876276934694,
+                    "create_time":"2017-09-13T18:33:50.662Z",
+                    "end":1505340834,
+                    "max":26093.405900488775,
                     "name":"mixed_findOne",
-                    "order":6821,
+                    "order":8343,
                     "results":{
                         "128":{
-                            "ops_per_sec":17281.752440899192,
+                            "ops_per_sec":15907.587624960059,
                             "ops_per_sec_values":[
-                                17281.752440899192
+                                15907.587624960059
                             ]
                         },
                         "256":{
-                            "ops_per_sec":21361.161794337364,
+                            "ops_per_sec":16012.528076469522,
                             "ops_per_sec_values":[
-                                21361.161794337364
+                                16012.528076469522
                             ]
                         },
                         "4":{
-                            "ops_per_sec":4400.807912728305,
+                            "ops_per_sec":4334.129287906323,
                             "ops_per_sec_values":[
-                                4400.807912728305
+                                4334.129287906323
                             ]
                         },
                         "512":{
-                            "ops_per_sec":32083.876276934694,
+                            "ops_per_sec":26093.405900488775,
                             "ops_per_sec_values":[
-                                32083.876276934694
+                                26093.405900488775
                             ]
                         },
                         "64":{
-                            "ops_per_sec":16599.315007684156,
+                            "ops_per_sec":16897.43810695238,
                             "ops_per_sec_values":[
-                                16599.315007684156
+                                16897.43810695238
                             ]
                         }
                     },
-                    "revision":"ff3177abf366f0699629afb1b20fb72c6c79a6e4",
-                    "start":1494686839,
+                    "revision":"61d1cfbf2c8521126506c12bcd2d187a7926fbe0",
+                    "start":1505334371,
                     "tag":"",
                     "threads":[
                         "128",
@@ -817,50 +935,51 @@
                         "4"
                     ],
                     "ticket":[
-                        "BF-5009"
+                        "BF-5009",
+                        "BF-6823"
                     ],
                     "workload":"shell/benchrun"
                 },
                 "mixed_insert":{
-                    "create_time":"2017-05-13T13:32:48.158Z",
-                    "end":1494691996,
-                    "max":14438.504324874457,
+                    "create_time":"2017-09-13T18:33:50.662Z",
+                    "end":1505340834,
+                    "max":11939.925078873317,
                     "name":"mixed_insert",
-                    "order":6821,
+                    "order":8343,
                     "results":{
                         "128":{
-                            "ops_per_sec":13163.999854126201,
+                            "ops_per_sec":11423.969283254399,
                             "ops_per_sec_values":[
-                                13163.999854126201
+                                11423.969283254399
                             ]
                         },
                         "256":{
-                            "ops_per_sec":11134.556755977917,
+                            "ops_per_sec":9824.561966469173,
                             "ops_per_sec_values":[
-                                11134.556755977917
+                                9824.561966469173
                             ]
                         },
                         "4":{
-                            "ops_per_sec":4189.379716243508,
+                            "ops_per_sec":3747.9480373775673,
                             "ops_per_sec_values":[
-                                4189.379716243508
+                                3747.9480373775673
                             ]
                         },
                         "512":{
-                            "ops_per_sec":7213.469211474936,
+                            "ops_per_sec":5973.435992800952,
                             "ops_per_sec_values":[
-                                7213.469211474936
+                                5973.435992800952
                             ]
                         },
                         "64":{
-                            "ops_per_sec":14438.504324874457,
+                            "ops_per_sec":11939.925078873317,
                             "ops_per_sec_values":[
-                                14438.504324874457
+                                11939.925078873317
                             ]
                         }
                     },
-                    "revision":"ff3177abf366f0699629afb1b20fb72c6c79a6e4",
-                    "start":1494686839,
+                    "revision":"61d1cfbf2c8521126506c12bcd2d187a7926fbe0",
+                    "start":1505334371,
                     "tag":"",
                     "threads":[
                         "128",
@@ -870,50 +989,51 @@
                         "4"
                     ],
                     "ticket":[
-                        "BF-5009"
+                        "BF-5009",
+                        "BF-6823"
                     ],
                     "workload":"shell/benchrun"
                 },
                 "mixed_total":{
-                    "create_time":"2017-05-13T13:32:48.158Z",
-                    "end":1494691996,
-                    "max":49117.076828101905,
+                    "create_time":"2017-09-13T18:33:50.662Z",
+                    "end":1505340834,
+                    "max":42199.21930689048,
                     "name":"mixed_total",
-                    "order":6821,
+                    "order":8343,
                     "results":{
                         "128":{
-                            "ops_per_sec":44162.82235254139,
+                            "ops_per_sec":39731.01340168294,
                             "ops_per_sec_values":[
-                                44162.82235254139
+                                39731.01340168294
                             ]
                         },
                         "256":{
-                            "ops_per_sec":44422.89394587024,
+                            "ops_per_sec":36637.47604393901,
                             "ops_per_sec_values":[
-                                44422.89394587024
+                                36637.47604393901
                             ]
                         },
                         "4":{
-                            "ops_per_sec":14918.575380893839,
+                            "ops_per_sec":14093.743265013425,
                             "ops_per_sec_values":[
-                                14918.575380893839
+                                14093.743265013425
                             ]
                         },
                         "512":{
-                            "ops_per_sec":49117.076828101905,
+                            "ops_per_sec":39128.56593057365,
                             "ops_per_sec_values":[
-                                49117.076828101905
+                                39128.56593057365
                             ]
                         },
                         "64":{
-                            "ops_per_sec":45538.9251737446,
+                            "ops_per_sec":42199.21930689048,
                             "ops_per_sec_values":[
-                                45538.9251737446
+                                42199.21930689048
                             ]
                         }
                     },
-                    "revision":"ff3177abf366f0699629afb1b20fb72c6c79a6e4",
-                    "start":1494686839,
+                    "revision":"61d1cfbf2c8521126506c12bcd2d187a7926fbe0",
+                    "start":1505334371,
                     "tag":"",
                     "threads":[
                         "128",
@@ -923,50 +1043,51 @@
                         "4"
                     ],
                     "ticket":[
-                        "BF-5009"
+                        "BF-5009",
+                        "BF-6823"
                     ],
                     "workload":"shell/benchrun"
                 },
                 "mixed_update":{
-                    "create_time":"2017-05-13T13:32:48.158Z",
-                    "end":1494691996,
-                    "max":8676.68668921118,
+                    "create_time":"2017-09-13T18:33:50.662Z",
+                    "end":1505340834,
+                    "max":8128.7300026055855,
                     "name":"mixed_update",
-                    "order":6821,
+                    "order":8343,
                     "results":{
                         "128":{
-                            "ops_per_sec":8324.666153788528,
+                            "ops_per_sec":7554.3753367633035,
                             "ops_per_sec_values":[
-                                8324.666153788528
+                                7554.3753367633035
                             ]
                         },
                         "256":{
-                            "ops_per_sec":7522.840576607214,
+                            "ops_per_sec":6654.705213987869,
                             "ops_per_sec_values":[
-                                7522.840576607214
+                                6654.705213987869
                             ]
                         },
                         "4":{
-                            "ops_per_sec":3289.159406242444,
+                            "ops_per_sec":3135.0259382209956,
                             "ops_per_sec_values":[
-                                3289.159406242444
+                                3135.0259382209956
                             ]
                         },
                         "512":{
-                            "ops_per_sec":5635.213655866221,
+                            "ops_per_sec":4156.277808895803,
                             "ops_per_sec_values":[
-                                5635.213655866221
+                                4156.277808895803
                             ]
                         },
                         "64":{
-                            "ops_per_sec":8676.68668921118,
+                            "ops_per_sec":8128.7300026055855,
                             "ops_per_sec_values":[
-                                8676.68668921118
+                                8128.7300026055855
                             ]
                         }
                     },
-                    "revision":"ff3177abf366f0699629afb1b20fb72c6c79a6e4",
-                    "start":1494686839,
+                    "revision":"61d1cfbf2c8521126506c12bcd2d187a7926fbe0",
+                    "start":1505334371,
                     "tag":"",
                     "threads":[
                         "128",
@@ -976,7 +1097,8 @@
                         "4"
                     ],
                     "ticket":[
-                        "BF-5009"
+                        "BF-5009",
+                        "BF-6823"
                     ],
                     "workload":"shell/benchrun"
                 }
