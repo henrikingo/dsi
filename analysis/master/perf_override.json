@@ -30877,6 +30877,13 @@
                         "BF-5123"
                     ]
                 },
+                "Aggregation.UnwindThenSkip":{
+                    "thread_threshold":0.165,
+                    "threshold":0.11,
+                    "ticket":[
+                        "BF-6876"
+                    ]
+                },
                 "Aggregation.UnwindThenSort":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
