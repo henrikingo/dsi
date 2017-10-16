@@ -7902,6 +7902,27 @@
                         "BF-4146"
                     ]
                 },
+                "insert_vector_primary":{
+                    "thread_threshold":0.21,
+                    "threshold":0.14,
+                    "ticket":[
+                        "BF-6862"
+                    ]
+                },
+                "insert_vector_secondary_load_phase":{
+                    "thread_threshold":0.21,
+                    "threshold":0.14,
+                    "ticket":[
+                        "BF-6862"
+                    ]
+                },
+                "insert_vector_secondary_overall":{
+                    "thread_threshold":0.21,
+                    "threshold":0.14,
+                    "ticket":[
+                        "BF-6862"
+                    ]
+                },
                 "mixed_delete":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
