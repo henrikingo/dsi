@@ -8640,7 +8640,72 @@
         },
         "non_sharded_workloads_MMAPv1":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "insert_capped":{
+                    "create_time":"2017-10-11T13:35:00.389Z",
+                    "end":1507747007.0,
+                    "max":58977.35947041641,
+                    "name":"insert_capped",
+                    "order":8697,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":55653.52853037197,
+                            "ops_per_sec_values":[
+                                55653.52853037197
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":58977.35947041641,
+                            "ops_per_sec_values":[
+                                58977.35947041641
+                            ]
+                        }
+                    },
+                    "revision":"fc249a3d97370dcaa4a6fd8c58f116bfca71283f",
+                    "start":1507745941.0,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-6863"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "insert_capped_indexes":{
+                    "create_time":"2017-10-11T13:35:00.389Z",
+                    "end":1507747007.0,
+                    "max":7273.983244479392,
+                    "name":"insert_capped_indexes",
+                    "order":8697,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":6953.600782482253,
+                            "ops_per_sec_values":[
+                                6953.600782482253
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":7273.983244479392,
+                            "ops_per_sec_values":[
+                                7273.983244479392
+                            ]
+                        }
+                    },
+                    "revision":"fc249a3d97370dcaa4a6fd8c58f116bfca71283f",
+                    "start":1507745941.0,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-6863"
+                    ],
+                    "workload":"shell/benchrun"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
