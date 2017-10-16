@@ -16665,10 +16665,11 @@
                     ]
                 },
                 "Queries.IdentityView.IntNonIdFindProjectionCovered":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
-                        "BF-5316"
+                        "BF-5316",
+                        "BF-6875"
                     ]
                 },
                 "Queries.IdentityView.NoMatch":{
