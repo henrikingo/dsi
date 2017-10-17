@@ -15282,6 +15282,13 @@
                         "BF-5513"
                     ]
                 },
+                "Aggregation.IdentityView.Lookup.UncorrelatedPrefixJoin":{
+                    "thread_threshold":0.135,
+                    "threshold":0.09,
+                    "ticket":[
+                        "BF-6882"
+                    ]
+                },
                 "Aggregation.IdentityView.Lookup.UncorrelatedPrefixJoin.NoCache":{
                     "thread_threshold":0.195,
                     "threshold":0.13,
