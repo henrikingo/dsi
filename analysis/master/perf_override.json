@@ -6934,6 +6934,76 @@
         },
         "aggregation":{
             "ndays":{
+                "Aggregation.Lookup.UncorrelatedPrefixJoin":{
+                    "create_time":"2017-10-10T21:20:37.472Z",
+                    "max":598.0512717480376,
+                    "name":"Aggregation.Lookup.UncorrelatedPrefixJoin",
+                    "order":9527,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":598.0512717480376,
+                            "ops_per_sec_values":[
+                                598.0897110579032,
+                                598.2222824508606,
+                                599.1749498888219,
+                                596.8763736302177,
+                                597.8930417123848
+                            ]
+                        },
+                        "end":"2017-10-10T22:56:09.659Z",
+                        "start":"2017-10-10T22:55:44.583Z"
+                    },
+                    "revision":"9094279371cc1573fed720541555d9ae05a36eb4",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-6881"
+                    ]
+                },
+                "Aggregation.Lookup.UncorrelatedPrefixJoin.NoCache":{
+                    "create_time":"2017-10-10T21:20:37.472Z",
+                    "max":200.09348137116618,
+                    "name":"Aggregation.Lookup.UncorrelatedPrefixJoin.NoCache",
+                    "order":9527,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":200.09348137116618,
+                            "ops_per_sec_values":[
+                                200.31410531164235,
+                                199.5974485092528,
+                                200.3624102539209,
+                                199.65125981144047,
+                                200.54218296957433
+                            ]
+                        },
+                        "end":"2017-10-10T22:56:34.744Z",
+                        "start":"2017-10-10T22:56:09.659Z"
+                    },
+                    "revision":"9094279371cc1573fed720541555d9ae05a36eb4",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-6881"
+                    ]
+                },
                 "Aggregation.Skip":{
                     "create_time":"2017-05-30T17:24:51.885Z",
                     "max":191.80320102231153,
