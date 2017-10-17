@@ -1,62 +1,104 @@
-# pylint: disable=attribute-defined-outside-init,too-many-instance-attributes,too-many-arguments
 """
-This file take input and generate necessary configuration files for terraform configuration.
-This function should be called from terraform cluster configuration folder.
+Take input from ConfigDict config files, output a terraform json file (cluster.json).
 """
 
 from __future__ import print_function
 import json
 import datetime
 import logging
+import os
 import socket
+from uuid import uuid4
+
 import requests
 # RequestException is the parent exception for all requests.exceptions.*
 # http://docs.python-requests.org/en/master/_modules/requests/exceptions/
 from requests.exceptions import RequestException
 
-from common.config import ConfigDict
-
 LOG = logging.getLogger(__name__)
 
-# Constant to define instance classes with placement group support
-INSTANCE_CLASSES_SUPPORT_PLACEMENT_GROUP = ["c3", "c4", "m4", "r3", "d2", "i2", "hi1", "hs1"]
+# http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/placement-groups.html#concepts-placement-groups
+INSTANCE_CLASSES_SUPPORT_PG = [
+    "c3", "c4", "c5", "cc2", "m4", "m5", "r3", "r4", "x1", "x1e", "cr1", "d2", "i2", "i3", "hi1",
+    "hs1", "f1", "g2", "g3", "p2", "p3"
+]
+TF_NODE_TYPES_TO_CHECK = [
+    "mongod", "mongod_ebs", "mongod_seeded_ebs", "mongos", "configsvr", "workload"
+]
 
 
-def assert_value(condition, message):
-    """To raise ValueError if condition is false."""
-    if not condition:
-        LOG.error(message)
-        raise ValueError(message)
+def is_placement_group_needed(node_type, tfvars):
+    """
+    True if node_type_count > 0 and node_type instance type supports placement groups.
+
+    :param str node_type: A node type used in dsi configurations, such as "mongod", "mongod_ebs"...
+    :param dict(str) tfvars: A dict with terraform variables from dsi configuration
+    :return: Whether placement types are supported for given node_type
+    :rtype: bool
+    """
+
+    if tfvars.get(node_type + "_instance_count", 0) > 0:
+        assert node_type + "_instance_type" in tfvars
+        instance_type = tfvars[node_type + "_instance_type"]
+        instance_class = instance_type[0:2]
+        if instance_class in INSTANCE_CLASSES_SUPPORT_PG:
+            LOG.debug("node_type=%s instance_type=%s DOES support placement group", node_type,
+                      instance_type)
+            return True
+        else:
+            LOG.debug("node_type=%s instance_type=%s DOES NOT support placement group", node_type,
+                      instance_type)
+
+    return False
 
 
-def generate_expire_on_tag(now=None, day_delta=2):
+def generate_placement_group(tfvars, prefix="dsi"):
+    """
+    Define a placement_group name that is different for each cluster.
+
+    For each of our node_type, check whether the EC2 instance_type class supports placement
+    groups, and set those that do to the same unique value.
+
+    :param dict(str) tfvars: A dict with terraform variables from dsi configuration
+    :param str prefix: A prefix to use in the unique placement group name
+    :return: the tfvars dict with unique string generated for each [node_type]_placement_group
+    :rtype: dict(str)
+    """
+
+    unique_placement_group = "-".join([prefix, str(uuid4())])
+    tfvars['placement_group'] = unique_placement_group
+    LOG.debug("Generated new placement group: %s", unique_placement_group)
+
+    for node_type in TF_NODE_TYPES_TO_CHECK:
+        if is_placement_group_needed(node_type, tfvars):
+            tfvars[node_type + '_placement_group'] = unique_placement_group
+
+    return tfvars
+
+
+def generate_expire_on_tag(day_delta=2):
     """
     This will generate expire-on tag based on current time or input time,
     expired-on tag will be (now + day_delta) day, default to 2 day.
+
+    :param int day_delta: How many days to add to datetime.now()
+    :return: An ISO datestring such as "2017-12-31"
+    :rtype: str
     """
-    if now is None:
-        now = datetime.datetime.now()
+    now = datetime.datetime.now()
     expire_on = now + datetime.timedelta(days=day_delta)
     return "{}-{}-{}".format(expire_on.year, expire_on.month, expire_on.day)
 
 
-def support_placement_group(instance_type):
-    """
-    Test whether whether an instance type support placement group.
-    Exampes:
-        c3.8xlarge -> True
-        m3.2xlarge -> False
-    """
-
-    return instance_type.split(".")[0] in INSTANCE_CLASSES_SUPPORT_PLACEMENT_GROUP
-
-
 def generate_runner():
-    """Get the IP address of the (evergreen) runner for labelling cluster
+    """
+    Get the IP address of the (evergreen) runner for labelling cluster
 
     Will try to get the public IP from AWS metadata first, then from
     reverse lookup, and then fall back to using the hostname
 
+    :return: An ip address or a hostname
+    :rtype: str
     """
     try:
         response = requests.get(
@@ -100,176 +142,103 @@ class TerraformConfiguration(object):
     DSI Terraform configuration
     """
 
-    # We limit mongod instance type based on the requirement to have at least
-    # 2 SSD, and we need a known type so that we can carry out pre-qualification.
-    MONGOD_INSTANCE_TYPE = [
-        "c4.8xlarge", "c3.8xlarge", "c3.4xlarge", "c3.2xlarge", "c3.xlarge", "m3.2xlarge",
-        "m3.xlarge", "g2.8xlarge", "r3.8xlarge", "d2.8xlarge", "d2.4xlarge", "d2.2xlarge",
-        "d2.xlarge", "i2.8xlarge", "i2.4xlarge", "i2.2xlarge", "i2.xlarge"
-    ]
-
-    INSTANCE_ROLES = [
-        "mongod", "mongos", "workload", "configsvr", "mongod_ebs", "mongod_seeded_ebs"
-    ]
-
-    MONGOD_ROLES = ["mongod", "mongod_ebs", "mongod_seeded_ebs"]
-
-    def __init__(self,
-                 topology=None,
-                 region=None,
-                 availability_zone=None,
-                 now=None,
-                 day_delta=2,
-                 use_config=True):
-        if topology is not None:
-            self.topology = topology
-        if region is not None:
-            self.region = region
-        if availability_zone is not None:
-            self.availability_zone = availability_zone
-        self.now = now
-        self.define_day_delta(day_delta)
-        self.runner = generate_runner()
-        self.runner_instance_id = retrieve_runner_instance_id()
-        self.status = "running"
-        # always update expire-on
-        self.expire_on = generate_expire_on_tag(now, self.day_delta)
-        if use_config:
-            self._update_from_config()
-
-    def define_instance(self, dsi_config, role, count, instance_type):
+    def __init__(self, config, file_name="cluster.json"):
         """
-        A function to dynamically define parameters for an instance type.
-        This can be used to configure mongod/mongos/workload/configsvr.
+        Instantiate a TerraformConfiguration object
 
-        :param object dsi_config config object for DSI
-        :param str role: role of the instance, must in predefined list
-        :param int count: number of instances
-        :param str instance_type: AWS instance type, must in predefined list
+        :param ConfigDict config: A configuration object
+        :param str file_name: The name of the output json file
         """
-        instance_type = instance_type.lower()
+        self.config = config
 
-        assert_value(role in self.INSTANCE_ROLES, "Instance role must be in {}, got {} instead"
-                     .format(str(self.INSTANCE_ROLES), role))
+        # Note: self.tfvars is initialized by self.get_json()
+        if (self.config["infrastructure_provisioning"]["evergreen"]["reuse_cluster"]
+                and self.get_json(file_name)):
 
-        if role in self.MONGOD_ROLES:
-            # this is mongod type of instance, raise exception in case of wrong type
-            assert_value(instance_type in self.MONGOD_INSTANCE_TYPE,
-                         "Instance type must be in {}, got {} instead".format(
-                             str(self.MONGOD_INSTANCE_TYPE), instance_type))
+            # Note: the new config provided should be identical to what we read from get_json().
+            # (Which is the point of reusing a cluster.) But just in case it isn't, then the new
+            # config should take precedence. Terraform should then magically notice the difference
+            # and take appropriate action.
+            self.set_tfvars()
 
-        if role == "workload":
-            # must have at least one workload client
-            assert_value(count > 0, "Must have at least one workload instance, got {} instead"
-                         .format(count))
-
-        setattr(self, role + "_instance_count", count)
-        setattr(self, role + "_instance_type", instance_type)
-
-        if support_placement_group(instance_type):
-            setattr(self, role + "_instance_placement_group", 'yes')
         else:
-            setattr(self, role + "_instance_placement_group", "no")  # default to no placement group
+            # Dict to hold output config (use self.to_json() to print)
+            self.tfvars = {}
+            self.set_tfvars()
+            # Since this is a new cluster, generate a unique id for the placement group to be
+            self.tfvars = generate_placement_group(self.tfvars, self.tfvars.get("cluster_name"))
+            # Cluster metadata
+            self.tfvars["runner"] = generate_runner()
 
-        if role == "mongod_ebs":
-            # user must define ebs related details, such as:
-            #       "mongod_ebs_size" : 200
-            #       "mongod_ebs_iops" : 1500
-            self.mongod_ebs_size = dsi_config["tfvars"]["mongod_ebs_size"]
-            self.mongod_ebs_iops = dsi_config["tfvars"]["mongod_ebs_iops"]
+        self.refresh_tfvars()
 
-        if role == "mongod_seeded_ebs":
-            # user must define seeded ebs related details, such as:
-            #       mongod_seeded_ebs_snapshot_id : "snap-bf69915c"
-            #       mongod_seeded_ebs_iops        : 1500
-            self.mongod_seeded_ebs_snapshot_id =\
-                dsi_config["tfvars"]["mongod_seeded_ebs_snapshot_id"]
-            self.mongod_seeded_ebs_iops = dsi_config["tfvars"]["mongod_seeded_ebs_iops"]
-
-    def define_mongodb_url(self, url):
+    def set_tfvars(self):
         """
-        Define a url to download mongodb.tar.gz, may move this out of here in the future.
+        Update self.tfvars from self.config.
+
+        For a new cluster, this is the initialization of self.tfvars. When reusing an existing
+        cluster, we expect this to be a no-op, but in the rare case that input config has been
+        changed, we want to capture it and then terraform to take corrective action based on it.
         """
-        self.mongourl = url
+        self.tfvars.update(self.config["infrastructure_provisioning"]["tfvars"].as_dict())
+        # For now, we just fold the tags subsection into the top level. Beware of collisions!
+        # This is to say, our downstream terraform files don't support passing through arbitrary
+        # tags (yet).
+        tags = self.tfvars.pop("tags")
+        self.tfvars.update(tags)
+        self.tfvars.pop("expire-on-delta")
 
-    def define_day_delta(self, day_delta):
-        """To define how many days in the future to adjust expire_on"""
-        assert_value(day_delta > 0,
-                     "expire_on must be tomorrow of beyond, received {}".format(day_delta))
-        self.day_delta = day_delta
-        self.expire_on = generate_expire_on_tag(self.now, self.day_delta)
+    def refresh_tfvars(self):
+        """Compute or update various generated fields in self.tfvars"""
 
-    def _update_from_config(self):
-        """Update terraform configuration based on provisioning file."""
+        # Careful there: The tag looked at by the reaper is "expire-on". To match, the yaml file
+        # config option is expire-on-delta. However, terraform variable is expire_on.
+        self.tfvars["expire_on"] = generate_expire_on_tag(
+            self.config["infrastructure_provisioning"]["tfvars"]["tags"]["expire-on-delta"])
 
-        config_obj = ConfigDict("infrastructure_provisioning")
-        config_obj.load()
-
-        dsi_config = config_obj['infrastructure_provisioning']
-
-        for role in self.INSTANCE_ROLES:
-            # update instance definition if they present in the provisioning file
-            if role + "_instance_count" in dsi_config["tfvars"].keys():
-                assert_value(role + "_instance_type" in dsi_config["tfvars"].keys(),
-                             "Should define both count and type for {}".format(role))
-
-                # update both count and type
-                self.define_instance(dsi_config, role,
-                                     dsi_config["tfvars"][role + "_instance_count"],
-                                     dsi_config["tfvars"][role + "_instance_type"])
-
-        # update ssh key name (must match AWS' name)
-        if "ssh_key_name" in dsi_config["tfvars"].keys():
-            self.key_name = dsi_config["tfvars"]["ssh_key_name"]
-
-        # update ssh key file location
-        if "ssh_key_file" in dsi_config["tfvars"].keys():
-            self.key_file = dsi_config["tfvars"]["ssh_key_file"]
-
-        # update region file
-        if "region" in dsi_config["tfvars"].keys():
-            self.region = dsi_config["tfvars"]["region"]
-
-        # update availability_zone file
-        if "availability_zone" in dsi_config["tfvars"].keys():
-            self.availability_zone = dsi_config["tfvars"]["availability_zone"]
-
-        # update day delta value
-        if "expire-on-delta" in dsi_config["tfvars"]["tags"].keys():
-            self.define_day_delta(dsi_config["tfvars"]["tags"]["expire-on-delta"])
-
-        # update owner tag
-        if "owner" in dsi_config["tfvars"]["tags"].keys():
-            self.owner = dsi_config["tfvars"]["tags"]["owner"]
-
-        # update task id tag
-        if "runtime" in config_obj.keys() and "task_id" in config_obj["runtime"].keys():
-            self.task_id = config_obj["runtime"]["task_id"]
+        # Cluster metadata
+        self.tfvars["status"] = "running"
+        if "runtime" in self.config and "task_id" in self.config["runtime"]:
+            self.tfvars["task_id"] = self.config["runtime"]["task_id"]
         else:
-            LOG.info("Couldn't find runtime or task_id in config")
-
-        # update cluster_name tag
-        if "cluster_name" in dsi_config["tfvars"].keys():
-            self.cluster_name = dsi_config["tfvars"]["cluster_name"]
+            LOG.info("Couldn't find runtime.task_id in config")
 
     def to_json(self, compact=False, file_name=None):
-        """To create JSON configuration string."""
+        """
+        To create JSON configuration string.
+
+        :param bool compact: Whether to use a more compact form of json.dumps
+        :param str file_name: A file_name to write json into. If None, json is simply returned.
+        :return: tfvars in json syntax
+        :rtype: str
+        """
         json_str = ""
-        json_dict = self.__dict__.copy()
-
-        # need remove some of the field, such as day_delta which is not used by Terraform
-        json_dict.pop("day_delta", None)
-        json_dict.pop("now", None)
-
         if compact:
-            json_str = json.dumps(
-                self, default=lambda o: json_dict, separators=(',', ':'), sort_keys=True)
+            json_str = json.dumps(self.tfvars, sort_keys=True, separators=(',', ':'))
         else:
-            json_str = json.dumps(self, default=lambda o: json_dict, sort_keys=True, indent=4)
+            json_str = json.dumps(self.tfvars, sort_keys=True, indent=4)
 
         LOG.info(json_str)
         if file_name is not None:
             # write to file as well
-            with open(file_name, 'w') as fwrite:
-                print(json_str, file=fwrite)
+            with open(file_name, 'w') as file_handle:
+                file_handle.write(json_str)
         return json_str
+
+    def get_json(self, file_name):
+        """
+        Read back a json file created by to_json
+
+        When reusing a cluster, we specifically need to continue using the same placement group name
+        and not generate a new string each time.
+
+        :param str file_name: The file_name to read json content from
+        :return: True if file_name existed and was read
+        """
+        if os.path.isfile(file_name):
+            with open(file_name, 'r') as file_handle:
+                LOG.info("Reusing terraform variables from existing %s file.", file_name)
+                self.tfvars = json.load(file_handle)
+                return True
+
+        return False

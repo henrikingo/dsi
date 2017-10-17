@@ -99,7 +99,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     @patch('infrastructure_provisioning.shutil.copyfile')
     @patch('infrastructure_provisioning.subprocess.check_call')
     @patch('infrastructure_provisioning.os.path.isdir')
-    def test_check_existing_state(self, mock_isdir, mock_check_call, mock_copyfile,
+    @patch('infrastructure_provisioning.rmtree_when_present')
+    def test_check_existing_state(self, mock_rmtree, mock_isdir, mock_check_call, mock_copyfile,
                                   mock_setup_evg_dir):
         """ Test Provisioner.existing_state. First case finds a saved state, second doesn't."""
         config = copy.deepcopy(self.config)
@@ -124,6 +125,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             ]
             mock_copyfile.assert_has_calls(copyfile_calls)
             mock_check_call.assert_not_called()
+            mock_rmtree.assert_not_called()
             self.assertTrue(provisioner.existing)
 
         # Run check_existing_state when no existing state exists
@@ -135,6 +137,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             isfile_calls = [call(evg_data_dir + '/terraform/terraform.tfstate')]
             mock_isfile.assert_has_calls(isfile_calls)
             mock_check_call.assert_not_called()
+            mock_rmtree.assert_not_called()
             self.assertFalse(provisioner.existing)
         self.reset_mock_objects()
 
@@ -370,8 +373,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 provisioner.production = True
                 provisioner.save_terraform_state()
                 files_to_copy = [
-                    'terraform.tfstate', 'cluster.tf', 'terraform.tfvars', 'security.tf',
-                    'cluster.json', 'aws_ssh_key.pem'
+                    'terraform.tfstate', 'cluster.tf', 'security.tf', 'cluster.json',
+                    'aws_ssh_key.pem'
                 ]
                 copyfile_calls = [
                     call(file_to_copy, os.path.join(terraform_dir, file_to_copy))
@@ -408,10 +411,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 provisioner = Provisioner(config)
                 provisioner.production = True
                 provisioner.save_terraform_state()
-                files_to_copy = [
-                    'terraform.tfstate', 'cluster.tf', 'terraform.tfvars', 'security.tf',
-                    'cluster.json'
-                ]
+                files_to_copy = ['terraform.tfstate', 'cluster.tf', 'security.tf', 'cluster.json']
                 copyfile_calls = [
                     call(file_to_copy, os.path.join(terraform_dir, file_to_copy))
                     for file_to_copy in files_to_copy

@@ -12,16 +12,19 @@ variable mongod_instance_type                   { default = "c3.8xlarge" }
 variable mongod_ebs_instance_type               { default = "c3.8xlarge" }
 variable mongod_seeded_ebs_instance_type        { default = "c3.8xlarge" }
 variable mongos_instance_type                   { default = "c3.8xlarge" }
-variable configsvr_instance_type                { default = "m3.xlarge" }
+variable configsvr_instance_type                { default = "m5.xlarge" }
 
-variable workload_instance_placement_group      { default = "yes" }
-variable mongod_instance_placement_group        { default = "yes" }
-variable mongod_ebs_instance_placement_group    { default = "yes" }
-variable mongod_seeded_ebs_instance_placement_group    { default = "yes" }
-variable mongos_instance_placement_group        { default = "yes" }
-variable configsvr_instance_placement_group     { default = "no"}
+# This is the value used to create the placement group itself
+variable placement_group                        { default = "" }
+# This is the same value (or empty string) for each node type
+variable workload_placement_group               { default = "" }
+variable mongod_placement_group                 { default = "" }
+variable mongod_ebs_placement_group             { default = "" }
+variable mongod_seeded_ebs_placement_group      { default = "" }
+variable mongos_placement_group                 { default = "" }
+variable configsvr_placement_group              { default = "" }
 
-variable cluster_name               { default="default" }
+variable cluster_name               {}
 variable availability_zone          {}
 variable region                     {}
 variable expire_on                  { default = "2016-12-31" }
@@ -32,12 +35,21 @@ variable mongod_seeded_ebs_iops            { default = 240 }
 variable mongod_ebs_size            { default = 100 }
 variable mongod_ebs_iops            { default = 240 }
 
-variable run_fio                    { default = "true" }
-
 variable runner                     { default = "missing" }
 variable runner_instance_id         { default = "none" }
 variable status                     { default = "idle" }
 variable task_id                    { default = "none" }
+
+# A placement group causes the cluster nodes to be placed near each other in terms of networking
+# It should also help in getting assigned more homogeneous type of hardware
+# https://console.aws.amazon.com/support/home?region=us-east-1#/case/?displayId=4495027801
+#
+# We need to create this here at the top level, because depends_on doesn't work in modules.
+# Similarly, we will use -target in terraform destroy to destroy things in right order
+resource "aws_placement_group" "dsi_placement_group" {
+  name     = "${var.placement_group}"
+  strategy = "cluster"
+}
 
 
 module "cluster" {
@@ -68,12 +80,12 @@ module "cluster" {
     mongod_seeded_ebs_iops             = "${var.mongod_seeded_ebs_iops}"
     mongod_seeded_ebs_snapshot_id      = "${var.mongod_seeded_ebs_snapshot_id}"
 
-    mongod_instance_placement_group     = "${var.mongod_instance_placement_group}"
-    workload_instance_placement_group   = "${var.workload_instance_placement_group}"
-    mongod_ebs_instance_placement_group = "${var.mongod_ebs_instance_placement_group}"
-    mongod_seeded_ebs_instance_placement_group = "${var.mongod_seeded_ebs_instance_placement_group}"
-    mongos_instance_placement_group         = "${var.mongos_instance_placement_group}"
-    configsvr_instance_placement_group      = "${var.configsvr_instance_placement_group}"
+    workload_placement_group           = "${var.workload_placement_group}"
+    mongod_placement_group             = "${var.mongod_placement_group}"
+    mongod_ebs_placement_group         = "${var.mongod_ebs_placement_group}"
+    mongod_seeded_ebs_placement_group  = "${var.mongod_seeded_ebs_placement_group}"
+    mongos_placement_group             = "${var.mongos_placement_group}"
+    configsvr_placement_group          = "${var.configsvr_placement_group}"
 
     topology            = "${var.cluster_name}"
 
@@ -86,8 +98,6 @@ module "cluster" {
 
     key_file            = "${var.key_file}"
     key_name            = "${var.key_name}"
-
-    run_fio    = "${var.run_fio}"
 
     runner              = "${var.runner}"
     runner_instance_id  = "${var.runner_instance_id}"

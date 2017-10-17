@@ -180,21 +180,3 @@ variable "private_ips" {
         "mongod_ebs56" = "10.2.0.256"
     }
 }
-
-variable "placement_groups" {
-    default = {
-        "us-west-2a.yes" = "dsi-perf-us-west-2a"
-        "us-west-2b.yes" = "dsi-perf-us-west-2b"
-        "us-west-2c.yes" = "dsi-perf-us-west-2c"
-        "us-west-2d.yes" = "dsi-perf-us-west-2d"
-
-        "us-east-1a.yes" = "dsi-perf-us-east-1a"
-
-        "us-west-2a.no" = ""
-        "us-west-2b.no" = ""
-        "us-west-2c.no" = ""
-        "us-west-2d.no" = ""
-
-        "us-east-1a.no" = ""
-   }
-}

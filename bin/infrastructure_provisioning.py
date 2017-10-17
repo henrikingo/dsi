@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 # The number determines the number it can create at a time together
 TERRAFORM_PARALLELISM = 20
 
-VERSION = "2"
+VERSION = "3"
 
 
 def check_version(file_path):
@@ -56,6 +56,7 @@ class Provisioner(object):
     """ Used to provision AWS resources """
 
     def __init__(self, config):
+        self.config = config
         ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
         ssh_key_file = os.path.expanduser(ssh_key_file)
         self.ssh_key_file = ssh_key_file
@@ -185,7 +186,7 @@ class Provisioner(object):
         Runs terraform to provision the cluster.
         """
         subprocess.check_call([self.terraform, 'init', '-upgrade'])
-        tf_config = TerraformConfiguration()
+        tf_config = TerraformConfiguration(self.config)
         tf_config.to_json(file_name='cluster.json')  # pylint: disable=no-member
         self.var_file = '-var-file=cluster.json'
         if self.existing:
@@ -229,9 +230,7 @@ class Provisioner(object):
         LOG.info("Will now save terraform state needed for "
                  "teardown when triggered by the Evergreen runner.")
         terraform_dir = os.path.join(self.evg_data_dir, 'terraform')
-        files_to_copy = [
-            'terraform.tfstate', 'cluster.tf', 'terraform.tfvars', 'security.tf', 'cluster.json'
-        ]
+        files_to_copy = ['terraform.tfstate', 'cluster.tf', 'security.tf', 'cluster.json']
         LOG.info('Copying files: %s', str(files_to_copy))
         for to_copy in files_to_copy:
             shutil.copyfile(to_copy, os.path.join(terraform_dir, to_copy))

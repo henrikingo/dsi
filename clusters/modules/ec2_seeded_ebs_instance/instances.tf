@@ -20,7 +20,6 @@ variable "task_id"              {}
 variable "seeded_ebs_type"             { default = "io1" }
 variable "seeded_ebs_iops"             { default = "10000" }
 variable "seeded_ebs_snapshot_id"      {}
-variable "run_fio"                     { default = "true" }
 
 # AWS instance with placement group for mongod
 resource "aws_instance" "seeded_ebs_member" {
@@ -41,7 +40,7 @@ resource "aws_instance" "seeded_ebs_member" {
     vpc_security_group_ids     = ["${var.security_groups}"]
 
     availability_zone   = "${var.availability_zone}"
-    placement_group     = "${lookup(var.placement_groups, format("%s.%s", var.availability_zone, var.placement_group))}"
+    placement_group     = "${var.placement_group}"
     tenancy             = "dedicated"
 
     key_name = "${var.key_name}"
@@ -91,7 +90,7 @@ resource "aws_instance" "seeded_ebs_member" {
         }
         inline = [
             "chmod +x /tmp/provision.sh",
-            "/tmp/provision.sh ${var.type} with_seeded_ebs ${var.run_fio}"
+            "/tmp/provision.sh ${var.type} with_seeded_ebs"
         ]
     }
 }

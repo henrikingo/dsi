@@ -21,13 +21,13 @@ variable mongos_instance_count                  { default = 0 }
 variable workload_instance_count                { default = 0 }
 variable configsvr_instance_count               { default = 0 }
 
-# define whether to use placement_group
-variable mongod_instance_placement_group            { default="yes" }
-variable mongod_ebs_instance_placement_group        { default="yes" }
-variable mongod_seeded_ebs_instance_placement_group { default="yes" }
-variable mongos_instance_placement_group            { default="yes" }
-variable workload_instance_placement_group          { default="yes" }
-variable configsvr_instance_placement_group         { default="no" }
+variable workload_placement_group               { default = "" }
+variable mongod_placement_group                 { default = "" }
+variable mongod_ebs_placement_group             { default = "" }
+variable mongod_seeded_ebs_placement_group      { default = "" }
+variable mongos_placement_group                 { default = "" }
+variable configsvr_placement_group              { default = "" }
+
 
 # AWS details
 variable region                         {}
@@ -44,8 +44,6 @@ variable mongod_ebs_iops                       { default = 1500 }
 # variable for seeded_ebs
 variable mongod_seeded_ebs_snapshot_id         { default = "" }
 variable mongod_seeded_ebs_iops                { default = 1500 }
-
-variable run_fio                               { default = "true" }
 
 # define VPC and related network resources
 module "VPC" {
@@ -72,14 +70,13 @@ module "mongod_instance" {
     key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
-    placement_group     = "${var.mongod_instance_placement_group}"
+    placement_group     = "${var.mongod_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     expire_on           = "${var.expire_on}"
     provisioner_file    = "system-setup.sh"
     topology            = "${var.topology}"
     type                = "mongod"
-    run_fio             = "${var.run_fio}"
     runner              = "${var.runner}"
     runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"
@@ -97,7 +94,7 @@ module "mongod_ebs_instance" {
     key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
-    placement_group     = "${var.mongod_ebs_instance_placement_group}"
+    placement_group     = "${var.mongod_ebs_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     expire_on           = "${var.expire_on}"
@@ -110,7 +107,6 @@ module "mongod_ebs_instance" {
     task_id             = "${var.task_id}"
     ebs_size            = "${var.mongod_ebs_size}"
     ebs_iops            = "${var.mongod_ebs_iops}"
-    run_fio             = "${var.run_fio}"
 }
 
 # AWS instance with placement group, and seeded EBS volume for mongod
@@ -124,7 +120,7 @@ module "mongod_seeded_ebs_instance" {
     key_file                = "${var.key_file}"
     security_groups         = "${module.VPC.aws_security_group_id}"
     availability_zone       = "${var.availability_zone}"
-    placement_group         = "${var.mongod_seeded_ebs_instance_placement_group}"
+    placement_group         = "${var.mongod_seeded_ebs_placement_group}"
     key_name                = "${var.key_name}"
     owner                   = "${var.owner}"
     expire_on               = "${var.expire_on}"
@@ -137,7 +133,6 @@ module "mongod_seeded_ebs_instance" {
     task_id                 = "${var.task_id}"
     seeded_ebs_snapshot_id  = "${var.mongod_seeded_ebs_snapshot_id}"
     seeded_ebs_iops         = "${var.mongod_seeded_ebs_iops}"
-    run_fio                 = "${var.run_fio}"
 }
 
 # AWS instance with placement group for mongos
@@ -151,14 +146,13 @@ module "mongos_instance" {
     key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
-    placement_group     = "${var.mongos_instance_placement_group}"
+    placement_group     = "${var.mongos_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     expire_on           = "${var.expire_on}"
     provisioner_file    = "system-setup.sh"
     topology            = "${var.topology}"
     type                = "mongos"
-    run_fio             = "false"
     runner              = "${var.runner}"
     runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"
@@ -176,14 +170,13 @@ module "configsvr_instance" {
     key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
-    placement_group     = "${var.configsvr_instance_placement_group}"
+    placement_group     = "${var.configsvr_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     expire_on           = "${var.expire_on}"
     provisioner_file    = "system-setup.sh"
     topology            = "${var.topology}"
     type                = "configsvr"
-    run_fio             = "false"
     runner              = "${var.runner}"
     runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"
@@ -201,14 +194,13 @@ module "workload_instance" {
     key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
-    placement_group     = "${var.workload_instance_placement_group}"
+    placement_group     = "${var.workload_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
     expire_on           = "${var.expire_on}"
     provisioner_file    = "system-setup.sh"
     topology            = "${var.topology}"
     type                = "workloadclient"
-    run_fio             = "false"
     runner              = "${var.runner}"
     runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"

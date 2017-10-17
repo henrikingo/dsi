@@ -12,7 +12,6 @@ variable "expire_on"            {}
 variable "provisioner_file"     {}
 variable "topology"             {}
 variable "type"                 {}
-variable "run_fio"              { default = "true" }
 variable "runner"               {}
 variable "runner_instance_id"   {}
 variable "status"               {}
@@ -37,7 +36,7 @@ resource "aws_instance" "member" {
     vpc_security_group_ids     = ["${var.security_groups}"]
 
     availability_zone   = "${var.availability_zone}"
-    placement_group     = "${lookup(var.placement_groups, format("%s.%s", var.availability_zone, var.placement_group))}"
+    placement_group     = "${var.placement_group}"
     tenancy             = "dedicated"
 
     key_name = "${var.key_name}"
@@ -79,7 +78,7 @@ resource "aws_instance" "member" {
         }
         inline = [
             "chmod +x /tmp/provision.sh",
-            "/tmp/provision.sh ${var.type} false ${var.run_fio}"
+            "/tmp/provision.sh ${var.type} false"
         ]
     }
 }
