@@ -7,6 +7,7 @@ import argparse
 import glob
 import logging
 import os
+import pprint
 import sys
 import subprocess
 import shutil
@@ -23,6 +24,21 @@ LOG = logging.getLogger(__name__)
 # The number determines the number it can create at a time together
 TERRAFORM_PARALLELISM = 20
 
+VERSION = "1"
+
+def check_version(file_path):
+    """True, if contents of file_path equals VERSION"""
+    if os.path.isfile(file_path):
+        with open(file_path) as file_handle:
+            content = file_handle.read()
+            LOG.debug("check_version: VERSION=%s file_path=%s content=%s",
+                      VERSION, file_path, pprint.pformat(content))
+            if content == VERSION:
+                return True
+    else:
+        LOG.debug("check_version: No file at file_path=%s", file_path)
+
+    return False
 
 # pylint: disable=too-many-instance-attributes
 class Provisioner(object):
@@ -58,6 +74,39 @@ class Provisioner(object):
             self.check_existing_state()
         self.setup_cluster()
 
+    def teardown_old_cluster(self):
+        """
+        Force recreation of a new cluster by executing teardown in evg_data_dir and deleting state.
+        """
+        try:
+            # Need to unset the TERRAFORM environment variable since infrastructure_teardown.py
+            # needs to use the correct version of terraform which is located in evg_data_dir.
+            # The terraform version matches the version of the terraform state files located
+            # in the same directory. The teardown script in evg_data_dir is used to ensure
+            # the terraform in that directory is used.
+            temp_environ = os.environ.copy()
+            if 'TERRAFORM' in temp_environ:
+                del temp_environ['TERRAFORM']
+
+            teardown_py = os.path.join(self.evg_data_dir, 'terraform/infrastructure_teardown.py')
+            if os.path.isfile(teardown_py):
+                subprocess.check_call(['python', teardown_py], env=temp_environ)
+            else:
+                teardown_script = os.path.join(self.evg_data_dir,
+                                               'terraform/infrastructure_teardown.sh')
+                subprocess.check_call([teardown_script], env=temp_environ)
+        except subprocess.CalledProcessError as exception:
+            LOG.error(
+                "Teardown of existing resources failed. Catching exception and continuing")
+            LOG.error(exception)
+
+        # Delete all state files so that this looks like a fresh evergreen runner
+        shutil.rmtree(self.evg_data_dir)
+        if os.path.isfile("cluster.json"):
+            os.remove("cluster.json")
+        if os.path.isfile("terraform.tfstate"):
+            os.remove("terraform.tfstate")
+
     def check_existing_state(self):
         """
         If running on evergreen, use an existing terraform state if it exists.
@@ -67,41 +116,28 @@ class Provisioner(object):
         if os.path.isdir(self.evg_data_dir) and self.cluster == 'initialsync-logkeeper':
             LOG.info("%s: force re-creation of instances "
                      "by executing teardown now.", self.cluster)
-            try:
-                # Need to unset the TERRAFORM environment variable since infrastructure_teardown.py
-                # needs to use the correct version of terraform which is located in evg_data_dir.
-                # The terraform version matches the version of the terraform state files located
-                # in the same directory. The teardown script in evg_data_dir is used to ensure
-                # the terraform in that directory is used.
-                temp_environ = os.environ.copy()
-                if 'TERRAFORM' in temp_environ:
-                    del temp_environ['TERRAFORM']
+            self.teardown_old_cluster()
 
-                teardown_py = os.path.join(self.evg_data_dir,
-                                           'terraform/infrastructure_teardown.py')
-                if os.path.isfile(teardown_py):
-                    subprocess.check_call(['python', teardown_py], env=temp_environ)
-                else:
-                    teardown_script = os.path.join(self.evg_data_dir,
-                                                   'terraform/infrastructure_teardown.sh')
-                    subprocess.check_call([teardown_script], env=temp_environ)
-            except subprocess.CalledProcessError as exception:
-                LOG.error(
-                    "Teardown of existing resources failed. Catching exception and continuing")
-                LOG.error(exception)
-            shutil.rmtree(self.evg_data_dir)
-
-        self.setup_evg_dir()
         tfstate_path = os.path.join(self.evg_data_dir, 'terraform/terraform.tfstate')
         provision_cluster_path = os.path.join(self.evg_data_dir,
                                               'terraform/provisioned.' + self.cluster)
-        if os.path.isfile(tfstate_path) and os.path.isfile(provision_cluster_path):
-            self.existing = True
-            LOG.info("Retrieving terraform state for existing EC2 resources.")
-            shutil.copyfile(tfstate_path, "./terraform.tfstate")
+        if os.path.isfile(tfstate_path):
+            if check_version(provision_cluster_path):
+                self.existing = True
+                LOG.info("Retrieving terraform state for existing EC2 resources.")
+                shutil.copyfile(tfstate_path, "./terraform.tfstate")
+
+            else:
+                LOG.info("Existing EC2 resources found, but state files are wrong version. "
+                         "Force re-creation of cluster now...")
+                self.teardown_old_cluster()
+                self.existing = False
+
         else:
             self.existing = False
             LOG.info("No existing EC2 resources found.")
+
+        self.setup_evg_dir()
 
     def setup_evg_dir(self):
         """
@@ -201,8 +237,9 @@ class Provisioner(object):
         subprocess.check_call(['./terraform', 'init', '-upgrade'])
         for file_path in glob.glob('provisioned.*'):
             os.remove(file_path)
-        with open('provisioned.' + self.cluster, 'w+'):
-            LOG.info('Created provisioned.%s', self.cluster)
+        with open('provisioned.' + self.cluster, 'w') as file_handle:
+            file_handle.write(VERSION)
+            LOG.info('Created provisioned.%s with version %s', self.cluster, VERSION)
         os.chdir(previous_working_directory)
         LOG.info("EC2 provisioning state saved on Evergreen host.")
 
