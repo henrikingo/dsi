@@ -1446,67 +1446,75 @@
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_1_writeload_false":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
+                    "thread_threshold":20.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-723",
-                        "BF-5520"
+                        "BF-5520",
+                        "BF-6895"
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_1_writeload_true":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
+                    "thread_threshold":20.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-723",
-                        "BF-5520"
+                        "BF-5520",
+                        "BF-6895"
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_32_writeload_false":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
+                    "thread_threshold":20.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-723",
-                        "BF-5520"
+                        "BF-5520",
+                        "BF-6895"
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_32_writeload_true":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
+                    "thread_threshold":20.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-723",
-                        "BF-5520"
+                        "BF-5520",
+                        "BF-6895"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_1_writeload_false":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
+                    "thread_threshold":20.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-723",
-                        "BF-5520"
+                        "BF-5520",
+                        "BF-6895"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_1_writeload_true":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
+                    "thread_threshold":20.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-723",
-                        "BF-5520"
+                        "BF-5520",
+                        "BF-6895"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_32_writeload_false":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
+                    "thread_threshold":20.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-723",
-                        "BF-5520"
+                        "BF-5520",
+                        "BF-6895"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_32_writeload_true":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
+                    "thread_threshold":20.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-723",
-                        "BF-5520"
+                        "BF-5520",
+                        "BF-6895"
                     ]
                 },
                 "fio_iops_test_read_iops":{
@@ -2006,67 +2014,75 @@
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_1_writeload_false":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
+                    "thread_threshold":20.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-723",
-                        "BF-5520"
+                        "BF-5520",
+                        "BF-6895"
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_1_writeload_true":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
+                    "thread_threshold":20.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-723",
-                        "BF-5520"
+                        "BF-5520",
+                        "BF-6895"
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_32_writeload_false":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
+                    "thread_threshold":20.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-723",
-                        "BF-5520"
+                        "BF-5520",
+                        "BF-6895"
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_32_writeload_true":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
+                    "thread_threshold":20.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-723",
-                        "BF-5520"
+                        "BF-5520",
+                        "BF-6895"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_1_writeload_false":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
+                    "thread_threshold":20.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-723",
-                        "BF-5520"
+                        "BF-5520",
+                        "BF-6895"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_1_writeload_true":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
+                    "thread_threshold":20.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-723",
-                        "BF-5520"
+                        "BF-5520",
+                        "BF-6895"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_32_writeload_false":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
+                    "thread_threshold":20.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-723",
-                        "BF-5520"
+                        "BF-5520",
+                        "BF-6895"
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_32_writeload_true":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
+                    "thread_threshold":20.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-723",
-                        "BF-5520"
+                        "BF-5520",
+                        "BF-6895"
                     ]
                 },
                 "fio_iops_test_read_iops":{
