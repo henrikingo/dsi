@@ -6934,6 +6934,41 @@
         },
         "aggregation":{
             "ndays":{
+                "Aggregation.Lookup.LocalArray.Pipeline":{
+                    "create_time":"2017-10-17T16:02:50.052Z",
+                    "max":129.2460613006517,
+                    "name":"Aggregation.Lookup.LocalArray.Pipeline",
+                    "order":9608,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":129.2460613006517,
+                            "ops_per_sec_values":[
+                                129.28010563003872,
+                                129.21839646560724,
+                                129.30123971310712,
+                                129.2824822236587,
+                                129.1480824708467
+                            ]
+                        },
+                        "end":"2017-10-17T18:12:37.289Z",
+                        "start":"2017-10-17T18:12:12.197Z"
+                    },
+                    "revision":"eda6220cbf62a679c2db6a9bc925d3187f0a9b0f",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-6887"
+                    ]
+                },
                 "Aggregation.Lookup.UncorrelatedPrefixJoin":{
                     "create_time":"2017-10-10T21:20:37.472Z",
                     "max":598.0512717480376,
