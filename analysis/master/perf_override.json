@@ -14803,6 +14803,41 @@
         },
         "views-aggregation":{
             "ndays":{
+                "Aggregation.IdentityView.Lookup.LocalArray.Pipeline":{
+                    "create_time":"2017-10-15T01:56:04.441Z",
+                    "max":126.39932709127811,
+                    "name":"Aggregation.IdentityView.Lookup.LocalArray.Pipeline",
+                    "order":9581,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":126.39932709127811,
+                            "ops_per_sec_values":[
+                                126.19715069996488,
+                                126.5152347926889,
+                                126.52008991121208,
+                                126.41768042129641,
+                                126.3464796312282
+                            ]
+                        },
+                        "end":"2017-10-15T03:30:04.066Z",
+                        "start":"2017-10-15T03:29:38.980Z"
+                    },
+                    "revision":"0ed1b71a50b45b93f0952e1482643c0d9216731d",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-6892"
+                    ]
+                },
                 "Aggregation.IdentityView.Skip":{
                     "create_time":"2017-05-30T17:24:51.885Z",
                     "max":194.06502430435143,
