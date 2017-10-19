@@ -38471,6 +38471,41 @@
                         "BF-6894"
                     ]
                 },
+                "Aggregation.IdentityView.Lookup.Pipeline":{
+                    "create_time":"2017-10-16T21:32:50.316Z",
+                    "max":126.93875556054323,
+                    "name":"Aggregation.IdentityView.Lookup.Pipeline",
+                    "order":9598,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":126.93875556054323,
+                            "ops_per_sec_values":[
+                                127.48034694635616,
+                                127.23889011733343,
+                                126.43235070296785,
+                                126.15319716385221,
+                                127.38899287220647
+                            ]
+                        },
+                        "end":"2017-10-16T22:07:16.126Z",
+                        "start":"2017-10-16T22:06:51.028Z"
+                    },
+                    "revision":"bad24a802403e3d2d36e4190a9efc117e9afcf7e",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-6894"
+                    ]
+                },
                 "Aggregation.IdentityView.Skip":{
                     "create_time":"2017-05-30T17:24:51.885Z",
                     "max":174.86121072319656,
