@@ -38974,7 +38974,8 @@
                     "thread_threshold":0.15,
                     "threshold":0.1,
                     "ticket":[
-                        "BF-6884"
+                        "BF-6884",
+                        "BF-6938"
                     ]
                 },
                 "Aggregation.IdentityView.Lookup.UncorrelatedPrefixJoin":{
