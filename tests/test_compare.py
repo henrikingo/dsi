@@ -6,6 +6,7 @@ import unittest
 import compare
 from tests import test_utils
 
+
 class TestCompare(unittest.TestCase):
     """Test suite."""
 
@@ -25,6 +26,5 @@ class TestCompare(unittest.TestCase):
 
             actual_output = compare.compare(comparison_run, baseline_run)
 
-            self.assertEqual(
-                actual_output, exp_output,
-                'Comparison failed for "{}".'.format(test_name))
+            self.assertEqual(actual_output, exp_output,
+                             'Comparison failed for "{}".'.format(test_name))

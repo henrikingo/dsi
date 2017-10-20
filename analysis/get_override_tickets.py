@@ -8,36 +8,26 @@ import logging
 
 from evergreen import override
 
+
 def main(args):
     '''
     Check overrides for tickets
     '''
 
-    global logger, warner # pylint: disable=invalid-name,global-variable-undefined
+    global logger, warner  # pylint: disable=invalid-name,global-variable-undefined
     parser = argparse.ArgumentParser(description='Check override file for tickets')
 
-    parser.add_argument('-p',
-                        '--project',
-                        default='performance',
-                        help='The Evergreen project to check')
-    parser.add_argument('-v',
-                        '--variants',
-                        default='.*',
-                        help='The build variant or variants to check; defaults to all')
-    parser.add_argument('-k',
-                        '--tasks',
-                        default='.*',
-                        help='The task or tasks to check')
-    parser.add_argument('-f',
-                        '--override-file',
-                        help='The path to the override file to update')
-    parser.add_argument('--verbose',
-                        action='store_true',
-                        help='Enable verbose output')
-    parser.add_argument('-r',
-                        '--rule',
-                        default='all',
-                        help='The rule to check')
+    parser.add_argument(
+        '-p', '--project', default='performance', help='The Evergreen project to check')
+    parser.add_argument(
+        '-v',
+        '--variants',
+        default='.*',
+        help='The build variant or variants to check; defaults to all')
+    parser.add_argument('-k', '--tasks', default='.*', help='The task or tasks to check')
+    parser.add_argument('-f', '--override-file', help='The path to the override file to update')
+    parser.add_argument('--verbose', action='store_true', help='Enable verbose output')
+    parser.add_argument('-r', '--rule', default='all', help='The rule to check')
 
     # Parse the arguments and initialize the logging output
     args = parser.parse_args(args)
@@ -65,6 +55,7 @@ def main(args):
 
     for ticket in tickets:
         print(ticket)
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])

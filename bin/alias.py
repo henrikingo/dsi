@@ -68,12 +68,14 @@ import sys
 from common.log import setup_logging
 from common.config import ConfigDict
 
-ALIASES = {'md': 'mongod',
-           'ms': 'mongos',
-           'cs': 'configsvr',
-           # I'm pretty sure I will transpose the following
-           'configsrv': 'configsvr',
-           'wc': 'workload_client'}
+ALIASES = {
+    'md': 'mongod',
+    'ms': 'mongos',
+    'cs': 'configsvr',
+    # I'm pretty sure I will transpose the following
+    'configsrv': 'configsvr',
+    'wc': 'workload_client'
+}
 
 
 def unalias(host, aliases=None):
@@ -146,21 +148,11 @@ def parse_args(args=sys.argv[1:]):
     """
     parser = argparse.ArgumentParser(description='Expand an alias to a server ip address.')
 
-    parser.add_argument('-d',
-                        '--debug',
-                        action='store_true',
-                        help='enable debug output')
-    parser.add_argument('-e',
-                        '--export',
-                        action='store_true',
-                        help='enable output as shell export')
-    parser.add_argument('--log-file',
-                        default='/tmp/expand.log',
-                        help='path to log file')
-    parser.add_argument('host', metavar='host',
-                        type=str,
-                        help='the alias to expand and convert to an ip')
-
+    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
+    parser.add_argument('-e', '--export', action='store_true', help='enable output as shell export')
+    parser.add_argument('--log-file', default='/tmp/expand.log', help='path to log file')
+    parser.add_argument(
+        'host', metavar='host', type=str, help='the alias to expand and convert to an ip')
 
     arguments = parser.parse_args(args)
     setup_logging(arguments.debug, arguments.log_file)
@@ -197,6 +189,7 @@ def main(argv=sys.argv[1:]):
         template = "export {host}={ip_address}"
 
     print(template.format(host=host, ip_address=ip_address))
+
 
 if __name__ == '__main__':
     main()

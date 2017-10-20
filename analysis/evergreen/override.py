@@ -18,6 +18,7 @@ from evergreen.history import History
 LOGGER = None
 WARNER = None
 
+
 def _setup_logging(verbose):
     """Initialize the logger and warner
     :param bool verbose: specifies the level at which LOGGER logs.
@@ -30,6 +31,7 @@ def _setup_logging(verbose):
         LOGGER.setLevel(logging.DEBUG)
     else:
         LOGGER.setLevel(logging.INFO)
+
 
 class OverrideError(Exception):
     """Generic class for Override errors."""
@@ -47,8 +49,16 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
     """This class handles operations related to updating an override file.
     """
 
-    def __init__(self, project, override_info=None, config_file=None, reference=None,  # pylint: disable=too-many-arguments
-                 variants=None, tasks=None, tests=None, verbose=False):
+    def __init__(  # pylint: disable=too-many-arguments
+            self,
+            project,
+            override_info=None,
+            config_file=None,
+            reference=None,
+            variants=None,
+            tasks=None,
+            tests=None,
+            verbose=False):
         """
         :param str project: The project name in Evergreen
         :param str|dict override_info: The filename or dict representing the override file JSON
@@ -102,11 +112,10 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                 # then pull out the Git commit
                 self.commit = reference
                 self.compare_to_commit = False
-                LOGGER.debug('Treating reference point "{tag}" as a tagged baseline'.format(
-                    tag=self.commit))
                 LOGGER.debug(
-                    'Getting {proj} project information from commit {commit}'.format(
-                        proj=self.project, commit=self.commit))
+                    'Treating reference point "{tag}" as a tagged baseline'.format(tag=self.commit))
+                LOGGER.debug('Getting {proj} project information from commit {commit}'.format(
+                    proj=self.project, commit=self.commit))
         else:
             self.commit = None
 
@@ -134,8 +143,9 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         for unused_task in [task for task in self.tasks if task not in self.tasks_applied]:
             WARNER.warn('Pattern not applied for tasks: {0}'.format(unused_task))
 
-        for unused_variant in [variant for variant in self.variants
-                               if variant not in self.build_variants_applied]:
+        for unused_variant in [
+                variant for variant in self.variants if variant not in self.build_variants_applied
+        ]:
             WARNER.warn('Pattern not applied for build variants: {0}'.format(unused_variant))
         self._log_summary()
 
@@ -164,16 +174,13 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
             WARNER.critical('No overrides have changed.')
         else:
             LOGGER.info('The following tests were deleted:')
-            LOGGER.info(json.dumps(self.delete_summary,
-                                   indent=2,
-                                   separators=[',', ': '],
-                                   sort_keys=True))
+            LOGGER.info(
+                json.dumps(self.delete_summary, indent=2, separators=[',', ': '], sort_keys=True))
             for rule in self.summary:
                 LOGGER.info('The following tests were overridden for rule {0}:'.format(rule))
-                LOGGER.info(json.dumps(self.summary[rule],
-                                       indent=2,
-                                       separators=[',', ': '],
-                                       sort_keys=True))
+                LOGGER.info(
+                    json.dumps(
+                        self.summary[rule], indent=2, separators=[',', ': '], sort_keys=True))
         LOGGER.debug('Override update complete.')
 
     def _get_task_history(self, task_name, task_id):
@@ -287,8 +294,7 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         :param float thread_threshold: The new thread threshold to use
         :param str ticket: Associate a JIRA ticket with this override
         """
-        new_override = {'threshold': threshold,
-                        'thread_threshold': thread_threshold}
+        new_override = {'threshold': threshold, 'thread_threshold': thread_threshold}
         self.update_override('threshold', new_override_val=new_override, ticket=ticket)
 
     def update_override_reference(self, ticket=None):
@@ -374,8 +380,7 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
             if set(variant_tests.keys()) > set(revision_info['builds'].keys()):
                 continue
             LOGGER.debug('Processing revision: {0}'.format(revision))
-            num_tests_missing_data = self._process_revision(revision_info['builds'],
-                                                            variant_tests,
+            num_tests_missing_data = self._process_revision(revision_info['builds'], variant_tests,
                                                             tasks)
             revision_case_count.append((revision, num_tests_missing_data))
             if num_tests_missing_data == 0:
@@ -447,8 +452,8 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                             test_reference = self._get_test_reference_data(history, test_name)
 
                             # Finally, update the old override rule
-                            self.update_test(build_variant_name, task_name, test_name,
-                                             rule, test_reference)
+                            self.update_test(build_variant_name, task_name, test_name, rule,
+                                             test_reference)
                     except evergreen_client.Empty:
                         # _log_summary() will account for the case where we've skipped a task
                         # with no test results. (Hence no additional log message here.)
@@ -474,11 +479,7 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
             self.overrides[build_variant] = {}
         if task not in self.overrides[build_variant]:
             LOGGER.debug("Adding task: {}".format(task))
-            self.overrides[build_variant][task] = {
-                'reference': {},
-                'ndays': {},
-                'threshold': {}
-            }
+            self.overrides[build_variant][task] = {'reference': {}, 'ndays': {}, 'threshold': {}}
         task_ovr = self.overrides[build_variant][task]
 
         # ...then, for this regression rule (e.g. 'reference', 'ndays')...
@@ -521,10 +522,12 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
             for task_value in variant_value.values():
                 if rule in task_value:
                     ref = task_value[rule]
-                    tickets = tickets.union(set(itertools.chain(*[test['ticket'] for test in
-                                                                  ref.values() if 'ticket' in
-                                                                  test.keys() and isinstance(
-                                                                      test['ticket'], list)])))
+                    tickets = tickets.union(
+                        set(
+                            itertools.chain(*[
+                                test['ticket'] for test in ref.values()
+                                if 'ticket' in test.keys() and isinstance(test['ticket'], list)
+                            ])))
         return tickets
 
     def rename_ticket(self, old_ticket, new_ticket):
@@ -649,8 +652,12 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         if isinstance(file_or_filename, str):
             with open(file_or_filename, 'w') as file_ptr:
                 json.dump(
-                    self.overrides, file_ptr, file_or_filename, indent=4,
-                    separators=[',', ':'], sort_keys=True)
+                    self.overrides,
+                    file_ptr,
+                    file_or_filename,
+                    indent=4,
+                    separators=[',', ':'],
+                    sort_keys=True)
         elif isinstance(file_or_filename, file):
             json.dump(
                 self.overrides, file_or_filename, indent=4, separators=[',', ':'], sort_keys=True)
@@ -663,6 +670,7 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         """
 
         validate(self.overrides, *args, **kwargs)
+
 
 def validate(overrides_dict, jira_api_auth=None):
     """
@@ -707,18 +715,19 @@ def validate(overrides_dict, jira_api_auth=None):
                                  key, variant_name, task_name, override_type, test_name)
 
                     if override_type in ["reference", "ndays"]:
-                        _validate_results_dict(variant_name, task_name, override_type,
-                                               test_name, test_override["results"])
+                        _validate_results_dict(variant_name, task_name, override_type, test_name,
+                                               test_override["results"])
 
                     ticket_list = test_override["ticket"]
-                    _validate_ticket_list(variant_name, task_name, override_type,
-                                          test_name, ticket_list)
+                    _validate_ticket_list(variant_name, task_name, override_type, test_name,
+                                          ticket_list)
 
                     if query_jira_for_tickets:
                         all_tickets.update(ticket_list)
 
     if query_jira_for_tickets and all_tickets:
         _check_tickets_exist(all_tickets, jira_api_auth)
+
 
 def _validate_results_dict(variant_name, task_name, override_type, test_name, result_dict):
     """
@@ -742,6 +751,7 @@ def _validate_results_dict(variant_name, task_name, override_type, test_name, re
         ('No override data found in override["{}"]["{}"]["{}"]'
          '["{}"]["results"]').format(variant_name, task_name, override_type, test_name)
 
+
 def _validate_ticket_list(variant_name, task_name, override_type, test_name, ticket_list):
     """
     Validate `ticket_list`, a list of tickets from an override configuration, throwing an
@@ -763,6 +773,7 @@ def _validate_ticket_list(variant_name, task_name, override_type, test_name, tic
         assert valid_ticket_name, \
             ('Ticket name "{}" in {} is invalid; it must satisfy the following ' \
             'regex: "{}"').format(ticket_name, err_msg_ticket_path, ticket_name_regex)
+
 
 def _check_tickets_exist(ticket_names, jira_api_auth):
     """

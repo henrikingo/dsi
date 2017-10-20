@@ -8,6 +8,7 @@ from tests import test_utils
 
 # pylint: disable=protected-access
 
+
 class TestLogAnalysis(unittest.TestCase):
     """Test suite."""
 
@@ -17,6 +18,7 @@ class TestLogAnalysis(unittest.TestCase):
         log_dir = test_utils.fixture_file_path("test_log_analysis")
         expected_paths = set([
             path.join(log_dir, "log_subdir1/mongod.log"),
-            path.join(log_dir, "log_subdir2/log_subsubdir/mongod.log")])
+            path.join(log_dir, "log_subdir2/log_subsubdir/mongod.log")
+        ])
         actual_paths = set(log_analysis._get_log_file_paths(log_dir))
         self.assertEqual(expected_paths, actual_paths)

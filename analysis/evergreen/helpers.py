@@ -74,8 +74,7 @@ def create_credentials_config():
     """
     evg_creds = get_evergreen_credentials()
     github_creds = get_git_credentials()
-    config = {'evergreen': evg_creds,
-              'github': github_creds}
+    config = {'evergreen': evg_creds, 'github': github_creds}
     return config
 
 

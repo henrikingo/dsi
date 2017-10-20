@@ -38,14 +38,20 @@ def generate_mc_json():
     mc_conf['PemFile'] = ssh_key_file
     ssh_user = conf['infrastructure_provisioning']['tfvars']['ssh_user']
 
-    clients = [ssh_user + '@' + client['public_ip'] for client in
-               conf['infrastructure_provisioning']['out']['workload_client']]
+    clients = [
+        ssh_user + '@' + client['public_ip']
+        for client in conf['infrastructure_provisioning']['out']['workload_client']
+    ]
 
-    servers = [ssh_user + '@' + server['public_ip'] for server in
-               conf['infrastructure_provisioning']['out']['mongod']]
+    servers = [
+        ssh_user + '@' + server['public_ip']
+        for server in conf['infrastructure_provisioning']['out']['mongod']
+    ]
     if 'mongos' in conf['infrastructure_provisioning']['out']:
-        servers += [ssh_user + '@' + server['public_ip'] for server in
-                    conf['infrastructure_provisioning']['out']['mongos']]
+        servers += [
+            ssh_user + '@' + server['public_ip']
+            for server in conf['infrastructure_provisioning']['out']['mongos']
+        ]
     mc_conf['runs'] = []
 
     for run in conf['test_control']['run']:
@@ -90,17 +96,12 @@ def main(argv):
     ''' Main function. Parse command line options and call generate_mc_json '''
     parser = argparse.ArgumentParser(
         description='Generate control file for mission control from test_control.yml')
-    parser.add_argument(
-        '-d',
-        '--debug',
-        action='store_true',
-        help='enable debug output')
-    parser.add_argument(
-        '--log-file',
-        help='path to log file')
+    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
+    parser.add_argument('--log-file', help='path to log file')
     args = parser.parse_args(argv)
     setup_logging(args.debug, args.log_file)
     generate_mc_json()
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])

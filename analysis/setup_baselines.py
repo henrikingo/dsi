@@ -1,5 +1,4 @@
 #!/usr/bin/env python2.7
-
 """ Script to stage and run baselines for mongo-perf and sys-perf"""
 
 import argparse
@@ -13,7 +12,6 @@ import subprocess
 import sys
 import yaml
 
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -22,6 +20,7 @@ class UnsupportedBaselineError(Exception):
     Exception for when we don't know about a particular baseline
     '''
     pass
+
 
 def remove_dependenies(input_yaml):
     '''Generates a new evergreen yaml file with dependency on the compile
@@ -35,11 +34,13 @@ def remove_dependenies(input_yaml):
     # Remove the depenencies on compile
     for task in outyaml['tasks']:
         if 'depends_on' in task:
-            task['depends_on'] = [dependency for dependency in task['depends_on']
-                                  if dependency['name'] != "compile"]
+            task['depends_on'] = [
+                dependency for dependency in task['depends_on'] if dependency['name'] != "compile"
+            ]
             if len(task['depends_on']) == 0:  # Nothing left after removing compile dependency
                 task.pop('depends_on')
     return outyaml
+
 
 def patch_sysperf_mongod_link(sysperf_yaml, version_link):
     '''
@@ -54,10 +55,10 @@ def patch_sysperf_mongod_link(sysperf_yaml, version_link):
         if 'params' in item and 'script' in item['params']:
             script = item["params"]["script"]
             script = re.sub('mongodb_binary_archive: (.*)',
-                            'mongodb_binary_archive: {}'.format(version_link),
-                            script)
+                            'mongodb_binary_archive: {}'.format(version_link), script)
             item["params"]["script"] = script
     return remove_dependenies(outyaml)
+
 
 def patch_perf_yaml_strings(perfyaml, version_link, shell_link):
     '''
@@ -75,6 +76,7 @@ def patch_perf_yaml_strings(perfyaml, version_link, shell_link):
     outyaml['functions']['start server'][2]['params']['remote_file'] = shell_link
 
     return remove_dependenies(outyaml)
+
 
 def get_base_version(version):
     '''
@@ -272,17 +274,13 @@ def main(argv):
                    ' those changes should be present when running this script.')
 
     arg_parser = argparse.ArgumentParser(description=description)
-    arg_parser.add_argument('-d',
-                            '--debug',
-                            action="store_true",
-                            help='Turn on debug output')
-    arg_parser.add_argument('-p',
-                            '--project',
-                            help='Project to use when running baselines (e.g., performance)',
-                            required=True)
-    arg_parser.add_argument('--version',
-                            help='Baseline version (e.g., 3.2.10)',
-                            required=True)
+    arg_parser.add_argument('-d', '--debug', action="store_true", help='Turn on debug output')
+    arg_parser.add_argument(
+        '-p',
+        '--project',
+        help='Project to use when running baselines (e.g., performance)',
+        required=True)
+    arg_parser.add_argument('--version', help='Baseline version (e.g., 3.2.10)', required=True)
 
     args = arg_parser.parse_args(argv)
     if args.debug:

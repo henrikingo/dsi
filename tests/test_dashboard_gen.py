@@ -52,5 +52,6 @@ class TestDashboardGen(unittest.TestCase):
             test_utils.eq_fixture_json_files("dashboard.json",
                                              "dashboard_gen_perf.dashboard.json.ok"))
 
+
 if __name__ == "__main__":
     unittest.main()

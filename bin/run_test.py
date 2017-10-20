@@ -18,6 +18,7 @@ import config_test_control
 
 LOG = logging.getLogger(__name__)
 
+
 def setup_ssh_agent(config):
     ''' Setup the ssh-agent, and update our environment for it.
 
@@ -33,12 +34,14 @@ def setup_ssh_agent(config):
     ssh_key_file = os.path.expanduser(ssh_key_file)
     subprocess.check_call(['ssh-add', ssh_key_file])
 
+
 def cleanup_reports():
     ''' Clean up reports directory and files '''
     if os.path.exists('reports'):
         shutil.rmtree('reports')
     if os.path.exists('../reports.tgz'):
         os.remove('../reports.tgz')
+
 
 def copy_perf_output():
     ''' Put perf.json in the correct place'''
@@ -65,7 +68,7 @@ def pre_tasks(config, task_list):
         if 'pre_task' in task:
             try:
                 execute_list(task['pre_task'], config)
-            except Exception as exception: # pylint: disable=broad-except
+            except Exception as exception:  # pylint: disable=broad-except
                 print_trace(inspect.trace(), exception)
                 LOG.error("Exiting with status code: 1")
                 sys.exit(1)
@@ -89,6 +92,7 @@ def post_tasks(config, task_list):
                 print_trace(inspect.trace(), exception)
 
     copy_timeseries(config)
+
 
 def print_trace(trace, exception):
     """ print exception information for pre_tasks and post_tasks. Information corresponds
@@ -137,6 +141,7 @@ def print_trace(trace, exception):
         error_msg = error_msg + "\n" + "        in command: " + str(executed_command)
     LOG.error(error_msg)
 
+
 def copy_timeseries(config):
     """ copy the files required for timeseries analysis from
     their legacy mission-control locations to the new locations used by host.py.
@@ -156,11 +161,10 @@ def copy_timeseries(config):
             host = next((host for host in hosts if name.endswith(host.ip_or_name)), None)
             if host:
                 source = os.path.join(root, name)
-                alias = "{category}.{offset}".format(category=host.category,
-                                                     offset=host.offset)
+                alias = "{category}.{offset}".format(category=host.category, offset=host.offset)
 
-                destination = "{}-{}".format(os.path.basename(source).split('--')[0],
-                                             os.path.basename(root))
+                destination = "{}-{}".format(
+                    os.path.basename(source).split('--')[0], os.path.basename(root))
                 destination = os.path.join('reports', alias, destination)
                 shutil.copyfile(source, destination)
 
@@ -174,14 +178,8 @@ def main(argv):
     parser.add_argument('bar', help='Ignored', nargs='?')
     parser.add_argument('czar', help='Ignored', nargs='?')
 
-    parser.add_argument(
-        '-d',
-        '--debug',
-        action='store_true',
-        help='enable debug output')
-    parser.add_argument(
-        '--log-file',
-        help='path to log file')
+    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
+    parser.add_argument('--log-file', help='path to log file')
     args = parser.parse_args(argv)
     setup_logging(args.debug, args.log_file)
     config = ConfigDict('test_control')
@@ -206,10 +204,11 @@ def main(argv):
 
     # initialSync is still executed through the old bash script
     if config['test_control']['task_name'] == 'initialSync':
-        subprocess.check_call([os.path.join(dsi_bin_path, 'run-initialSync.sh'),
-                               config['mongodb_setup']['mongod_config_file']['storage']['engine'],
-                               'initialSync',
-                               config['infrastructure_provisioning']['tfvars']['cluster_name']])
+        subprocess.check_call([
+            os.path.join(dsi_bin_path, 'run-initialSync.sh'),
+            config['mongodb_setup']['mongod_config_file']['storage']['engine'], 'initialSync',
+            config['infrastructure_provisioning']['tfvars']['cluster_name']
+        ])
     else:
         # Everything should eventually come through this path
         # Call mission control
@@ -219,13 +218,12 @@ def main(argv):
         env['MC_PER_THREAD_STATS'] = str(config['test_control']['mc']['per_thread_stats'])
         LOG.debug('env for mc call is %s', str(env))
         try:
-            subprocess.check_call([mission_control,
-                                   '-config',
-                                   'mc.json',
-                                   '-run',
-                                   config['test_control']['task_name'],
-                                   '-o',
-                                   'perf.json'], env=env)
+            subprocess.check_call(
+                [
+                    mission_control, '-config', 'mc.json', '-run',
+                    config['test_control']['task_name'], '-o', 'perf.json'
+                ],
+                env=env)
         finally:
             # always Execute post task steps
             post_tasks(config, [test_control, mongodb_setup])
@@ -257,6 +255,7 @@ def main(argv):
     subprocess.check_call(['chmod', '555', 'perf.json'])
 
     copy_perf_output()
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])

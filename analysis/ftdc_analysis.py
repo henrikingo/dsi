@@ -23,20 +23,27 @@ RESOURCE_RULES_FTDC_FILE = {
 }
 
 # rules run for every variant
-COMMON_RULES = [rules.below_configured_cache_size,
-                rules.compare_heap_cache_sizes,
-                rules.below_configured_oplog_size]
+COMMON_RULES = [
+    rules.below_configured_cache_size, rules.compare_heap_cache_sizes,
+    rules.below_configured_oplog_size
+]
 
 RESOURCE_RULES_FTDC_CHUNK = {
     'sys-perf': {
-        'default': COMMON_RULES + [rules.max_connections,  # rule not run for 3 shard
-                                   rules.repl_member_state],  # rule not run for initialsync
-        'linux-3-shard': COMMON_RULES + [rules.repl_member_state],
-        'linux-3-node-replSet-initiasync': COMMON_RULES + [rules.max_connections]
+        'default':
+            COMMON_RULES + [
+                rules.max_connections,  # rule not run for 3 shard
+                rules.repl_member_state
+            ],  # rule not run for initialsync
+        'linux-3-shard':
+            COMMON_RULES + [rules.repl_member_state],
+        'linux-3-node-replSet-initiasync':
+            COMMON_RULES + [rules.max_connections]
     }
 }
 
 # Functions to format the failure messages
+
 
 def failure_message(rule_info, task_run_time):
     """Standardize the way that we return a failure message.
@@ -66,6 +73,7 @@ def failure_message(rule_info, task_run_time):
         failure_msg = _failure_message(rule_info, task_run_time)
 
     return failure_msg
+
 
 def _failure_message(rule_info, task_run_time, member=None):
     """Standardize the way that we return a failure message.
@@ -130,7 +138,7 @@ def _failure_message(rule_info, task_run_time, member=None):
     :param int member: Print a "Member N: " string at the start of output.
     """
     failure_msg = ''
-    first_failure_time = rules.ftdc_date_parse(rule_info['times'][0]/rules.MS)
+    first_failure_time = rules.ftdc_date_parse(rule_info['times'][0] / rules.MS)
 
     failure_msg += '\n  '
     if member:
@@ -139,15 +147,15 @@ def _failure_message(rule_info, task_run_time, member=None):
     report_all_values = False
     # If report_all_values flag is set, there must also be the same nr of timestamps and values. If
     # they don't match, we silently ignore report_all_values and print the standard format instead.
-    if ('report_all_values' in rule_info and rule_info['report_all_values'] and
-            len(rule_info['times']) == len(rule_info['compared_values'])):
+    if ('report_all_values' in rule_info and rule_info['report_all_values']
+            and len(rule_info['times']) == len(rule_info['compared_values'])):
         LOGGER.debug('report_all_values=True')
         report_all_values = True
 
     if report_all_values:
         for failure_index in xrange(len(rule_info['times'])):
             failure_msg += '\n\tstart time: {0}'.format(
-                rules.ftdc_date_parse(rule_info['times'][failure_index]/rules.MS))
+                rules.ftdc_date_parse(rule_info['times'][failure_index] / rules.MS))
             for value_index in xrange(len(rule_info['labels'])):
                 failure_msg += '\n\t{0}: {1}'.format(
                     rule_info['labels'][value_index],
@@ -157,8 +165,8 @@ def _failure_message(rule_info, task_run_time, member=None):
         failure_msg += 'First failure occurred at time {0}'.format(first_failure_time)
         first_failure_values = rule_info['compared_values'][0]
         for index in xrange(len(first_failure_values)):
-            failure_msg += '\n\t{0}: {1}'.format(
-                rule_info['labels'][index], first_failure_values[index])
+            failure_msg += '\n\t{0}: {1}'.format(rule_info['labels'][index],
+                                                 first_failure_values[index])
 
     if 'additional' in rule_info:
         for key, value in rule_info['additional'].iteritems():
@@ -166,15 +174,16 @@ def _failure_message(rule_info, task_run_time, member=None):
 
     if not report_all_values:
         duration_failure = len(rule_info['times'])
-        if float(duration_failure)/task_run_time > 0.10:  # proportion of time in failing state
+        if float(duration_failure) / task_run_time > 0.10:  # proportion of time in failing state
             failure_msg += '\n'
             failure_msg += 'Failure detected {0}s out of the {1}s it took to run this task'.format(
                 duration_failure, task_run_time)
         else:
-            times = [rules.ftdc_date_parse(ts/rules.MS) for ts in rule_info['times']]
+            times = [rules.ftdc_date_parse(ts / rules.MS) for ts in rule_info['times']]
             failure_msg += '\n\tFailures seen at times: {0}'.format(str(times))
 
     return failure_msg
+
 
 def unify_chunk_failures(chunk_failure_info):
     """Failures are collected for each FTDC chunk. Though this may be an unnecessary step to take
@@ -213,6 +222,7 @@ def unify_chunk_failures(chunk_failure_info):
             all_failure_instances[rule_name] = add_to
     return all_failure_instances
 
+
 def resource_rules(dir_path, project, variant, constant_values=None, perf_file_path=None):
     """Implemented for variants in sys-perf: given the FTDC metrics for a variant's task, check the
     resource rules available to the variant.
@@ -224,9 +234,7 @@ def resource_rules(dir_path, project, variant, constant_values=None, perf_file_p
     :param str perf_file_path: set `perf_file_path` to the path of the performance results file
     (probably `perf.json`) generated by the test runner, which contains relevant timestamp data.
     """
-    result = {
-        'end': 1, 'start': 0
-    }
+    result = {'end': 1, 'start': 0}
     if not constant_values:
         constant_values = {}
     constant_values['test_times'] = None
@@ -245,13 +253,10 @@ def resource_rules(dir_path, project, variant, constant_values=None, perf_file_p
         full_log_raw = ''
         for host_alias, full_path in ftdc_files_dict.iteritems():
             LOGGER.info('Reading FTDC file `%s`', full_path)
-            (passed_checks, log_raw) = _process_ftdc_file(full_path,
-                                                          project,
-                                                          variant,
+            (passed_checks, log_raw) = _process_ftdc_file(full_path, project, variant,
                                                           constant_values)
             if not passed_checks:
-                full_log_raw += ('Failed resource sanity checks for host {0}').format(
-                    host_alias)
+                full_log_raw += ('Failed resource sanity checks for host {0}').format(host_alias)
                 full_log_raw += log_raw
         if full_log_raw:
             result['status'] = 'fail'
@@ -263,6 +268,7 @@ def resource_rules(dir_path, project, variant, constant_values=None, perf_file_p
         result['log_raw'] = full_log_raw
     result['test_file'] = 'resource_sanity_checks'
     return result
+
 
 def _process_ftdc_file(path_to_ftdc_file, project, variant, constant_values):  # pylint: disable=too-many-locals
     """Iterates through chunks in a single FTDC metrics file and checks the resource rules
@@ -278,7 +284,7 @@ def _process_ftdc_file(path_to_ftdc_file, project, variant, constant_values):  #
     failures_per_chunk = {}
     task_run_time = 0
 
-    try: #pylint: disable=too-many-nested-blocks
+    try:  #pylint: disable=too-many-nested-blocks
         for chunk in readers.read_ftdc(path_to_ftdc_file):
             # a couple of asserts to make sure the chunk is not malformed
             assert all(len(chunk.values()[0]) == len(v) for v in chunk.values()), \
@@ -294,16 +300,14 @@ def _process_ftdc_file(path_to_ftdc_file, project, variant, constant_values):  #
             # proceed with rule-checking.
             times = chunk[rules.FTDC_KEYS['time']]
             task_run_time += len(times)
-            for chunk_rule in util.get_project_variant_rules(
-                    project, variant, RESOURCE_RULES_FTDC_CHUNK):
+            for chunk_rule in util.get_project_variant_rules(project, variant,
+                                                             RESOURCE_RULES_FTDC_CHUNK):
                 build_args = {'chunk': chunk, 'times': times}
                 arguments_needed = inspect.getargspec(chunk_rule).args
 
                 # gather any missing arguments
-                (build_args, constant_values) = _fetch_constant_arguments(chunk,
-                                                                          arguments_needed,
-                                                                          build_args,
-                                                                          constant_values)
+                (build_args, constant_values) = _fetch_constant_arguments(
+                    chunk, arguments_needed, build_args, constant_values)
                 if len(build_args) < len(arguments_needed):
                     continue  # could not find all the necessary metrics in this chunk
                 else:
@@ -315,22 +319,22 @@ def _process_ftdc_file(path_to_ftdc_file, project, variant, constant_values):  #
                             failures_per_chunk[rule_name].append(output)
 
     # reader.py throws a general exception
-    except Exception: #pylint: disable=broad-except
+    except Exception:  #pylint: disable=broad-except
         LOGGER.warning("Caught exception when trying to read FTDC data for path=%s",
                        path_to_ftdc_file)
-        return(False, '\nFailed to read FTDC data for {0}'.format(path_to_ftdc_file))
+        return (False, '\nFailed to read FTDC data for {0}'.format(path_to_ftdc_file))
 
     # check rules that require data from the whole FTDC run (rather than by chunk)
-    file_rule_failures = _ftdc_file_rule_evaluation(
-        path_to_ftdc_file, project, variant, constant_values['test_times'])
+    file_rule_failures = _ftdc_file_rule_evaluation(path_to_ftdc_file, project, variant,
+                                                    constant_values['test_times'])
 
     if not failures_per_chunk and not file_rule_failures:
         return (True, '\nPassed resource sanity checks.')
     else:
         log_raw = _ftdc_log_raw(file_rule_failures,
-                                unify_chunk_failures(failures_per_chunk),
-                                task_run_time)
+                                unify_chunk_failures(failures_per_chunk), task_run_time)
         return (False, log_raw)
+
 
 def _fetch_constant_arguments(chunk, arguments_needed, arguments_present, constant_values):
     """Helper to update arguments_present and constant_values. Uses mapping in rules.FETCH_CONSTANTS
@@ -354,6 +358,7 @@ def _fetch_constant_arguments(chunk, arguments_needed, arguments_present, consta
                 arguments_present[parameter] = constant_values[parameter]
     return (arguments_present, constant_values)
 
+
 def _ftdc_log_raw(file_rule_failures, chunk_rule_failures, task_run_time):
     """Produce the raw log output for failures from a single FTDC file
 
@@ -372,6 +377,7 @@ def _ftdc_log_raw(file_rule_failures, chunk_rule_failures, task_run_time):
     print(log_raw)
     return log_raw
 
+
 def _ftdc_file_rule_evaluation(path_to_ftdc_file, project, variant, test_times):
     """Some rules require data from the entire FTDC run.
 
@@ -387,6 +393,7 @@ def _ftdc_file_rule_evaluation(path_to_ftdc_file, project, variant, test_times):
         if check_failed:
             file_rule_failures[resource_rule.__name__] = check_failed
     return file_rule_failures
+
 
 def _ftdc_file_failure_raw(failures_dict, task_run_time):
     """Helper to output log raw message for rules checked across the whole FTDC file, rather than
@@ -406,9 +413,11 @@ def _ftdc_file_failure_raw(failures_dict, task_run_time):
             log_raw += lag_failure_message
     return log_raw
 
+
 # Functions for fetching FTDC diagnostic data. Used to facilitate resource sanity checks during
 # a sys-perf task. We might consider moving resource check functions
 # into a separate module similar to the way we import mongod.log parsing functions (PERF-329)
+
 
 def _get_ftdc_file_paths(dir_path):
     """Recursively search `dir_path` for diagnostic.data directories and return a list of fully
@@ -437,6 +446,7 @@ def _get_ftdc_file_paths(dir_path):
                     full_path = os.path.join(dir_path, find_directory, files[0])
                     ftdc_metrics_paths[host_identification] = full_path
     return ftdc_metrics_paths
+
 
 def _get_host_ip_info(diagnostic_dir_name):
     """Directory names follow the naming convention: <CATEGORY>-<INDEX> where INDEX is

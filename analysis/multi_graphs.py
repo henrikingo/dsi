@@ -18,9 +18,11 @@ import yaml
 
 import deep_dict
 
+
 class OptionError(Exception):
     """Exception raised for erroneous command line options."""
     pass
+
 
 class MultiAnalysisGraphs(object):
     """
@@ -33,39 +35,29 @@ Create pyplot graphs from data that was output from multi_analysis.py.
         # Instance of argparse
         self.parser = None
         # Default config options
-        self.config = {
-            'csv': True,
-            'json': False,
-            'yml': False,
-            'graph_dir': 'multi_graphs_out'
-        }
+        self.config = {'csv': True, 'json': False, 'yml': False, 'graph_dir': 'multi_graphs_out'}
         # Input data. This is the output from multi_analysis.py.
         self.agg_results = {}
 
     def parse_options(self):
         """Parse options in self.cli_args with argparse and put them in self.config."""
         self.parser = argparse.ArgumentParser(description="Create pyplot graphs from "
-                                                          "multi_analysis.py output.")
-        self.parser.add_argument('-c',
-                                 '--config',
-                                 action='append',
-                                 help="Config file that can be used to supply same options as "
-                                      "would be done on command line. Can be called multiple times "
-                                      "and combined. On conflicts the last file on the command "
-                                      "line wins")
-        self.parser.add_argument('--csv',
-                                 action='store_true',
-                                 help="Input is in csv format (default)")
-        self.parser.add_argument('--json',
-                                 action='store_true',
-                                 help="Input is in json format")
-        self.parser.add_argument('--yml',
-                                 action='store_true',
-                                 help="Input is in yml format")
-        self.parser.add_argument('--input',
-                                 help="File name for input data (read stdin if omitted)")
-        self.parser.add_argument('--graph-dir',
-                                 help="Directory to save pyplot graphs (default: multi_graphs_out)")
+                                              "multi_analysis.py output.")
+        self.parser.add_argument(
+            '-c',
+            '--config',
+            action='append',
+            help="Config file that can be used to supply same options as "
+            "would be done on command line. Can be called multiple times "
+            "and combined. On conflicts the last file on the command "
+            "line wins")
+        self.parser.add_argument(
+            '--csv', action='store_true', help="Input is in csv format (default)")
+        self.parser.add_argument('--json', action='store_true', help="Input is in json format")
+        self.parser.add_argument('--yml', action='store_true', help="Input is in yml format")
+        self.parser.add_argument('--input', help="File name for input data (read stdin if omitted)")
+        self.parser.add_argument(
+            '--graph-dir', help="Directory to save pyplot graphs (default: multi_graphs_out)")
 
         args = self.parser.parse_args(self.cli_args)
 
@@ -168,14 +160,9 @@ Create pyplot graphs from data that was output from multi_analysis.py.
 
         # Each variant is a separate graph
         # Second value is whether to use logarithmic y-axis
-        metrics = [('variance_to_mean', False),
-                   ('range_to_median', False),
-                   ('average', False),
-                   ('max', False),
-                   ('all_variance_to_mean', False),
-                   ('all_range_to_median', False),
-                   ('all_average', False),
-                   ('all_max', False)]
+        metrics = [('variance_to_mean', False), ('range_to_median', False), ('average', False),
+                   ('max', False), ('all_variance_to_mean', False), ('all_range_to_median', False),
+                   ('all_average', False), ('all_max', False)]
 
         # Strings used in filenames for output files
         dataset_names = ["", "--mc", "--pri", "--canary"]
@@ -194,7 +181,8 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                     for path, val in deep_dict.iterate(variant_obj):
                         if path[-1] == metric:
                             yvalues.append(val)
-                            test_names.append(path[1] + "." + str(path[2])) # test_name.thread_level
+                            test_names.append(
+                                path[1] + "." + str(path[2]))  # test_name.thread_level
                             if metric == 'max':
                                 # For the 'max' graph we actually print a stacked bar chart with
                                 # min-median-max
@@ -226,7 +214,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                         axis.bar(xvalues, yvalues_median, width=width, color='#0055ff', log=log)
                         axis.bar(xvalues, yvalues_min, width=width, color='#0000ff', log=log)
 
-                    axis.set_xticks(numpy.arange(len(test_names)) + width/2)
+                    axis.set_xticks(numpy.arange(len(test_names)) + width / 2)
                     axis.set_xticklabels(test_names, rotation=90)
                     axis.tick_params(axis='both', which='major', labelsize=4)
                     axis.tick_params(axis='both', which='minor', labelsize=4)
@@ -255,7 +243,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                         path = os.path.join(directory, file_name)
                         pyplot.savefig(path, dpi=500, format='png')
 
-                    pyplot.clf() # Reset canvas between loops
+                    pyplot.clf()  # Reset canvas between loops
         print("Wrote bar graphs to {}{}.".format(directory, os.sep))
 
     def scatter_graphs(self):
@@ -287,7 +275,8 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                     test_names = []
                     for path, ops_per_sec_values in deep_dict.iterate(variant_obj):
                         if path[-1] == metric:
-                            test_names.append(path[1] + "." + str(path[2])) # test_name.thread_level
+                            test_names.append(
+                                path[1] + "." + str(path[2]))  # test_name.thread_level
                             for build_index, build_values in enumerate(ops_per_sec_values):
                                 for iteration_index, iteration_values in enumerate(build_values):
 
@@ -305,19 +294,20 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                     xvalues = range(len(test_names))
                     # Each build gets its shade of blue
                     colors = numpy.array(range(len(yvalues))) / float(len(yvalues))
-                    markers = ['+', 'x', '1', '2', '3', '4', '8', 's', 'p', '*', 'h', 'H', 'D',
-                               'd', '|', '_']
+                    markers = [
+                        '+', 'x', '1', '2', '3', '4', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', '|',
+                        '_'
+                    ]
 
                     for build_index, build_values in enumerate(yvalues):
                         for iteration_index, iteration_values in enumerate(build_values):
-                            axis.scatter(xvalues,
-                                         iteration_values,
-                                         marker=markers[build_index],
-                                         alpha=0.5,
-                                         edgecolors="none",
-                                         c=[[1-colors[build_index],
-                                             0,
-                                             colors[build_index]]])
+                            axis.scatter(
+                                xvalues,
+                                iteration_values,
+                                marker=markers[build_index],
+                                alpha=0.5,
+                                edgecolors="none",
+                                c=[[1 - colors[build_index], 0, colors[build_index]]])
 
                     axis.set_xticks(numpy.arange(len(test_names)) + 0.5)
                     axis.set_xticklabels(test_names, rotation=90)
@@ -348,7 +338,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                     path = os.path.join(directory, file_name)
                     pyplot.savefig(path, dpi=500, format='png')
 
-                    pyplot.clf() # Reset canvas between loops
+                    pyplot.clf()  # Reset canvas between loops
         print("Wrote scatter graphs to {}{}.".format(directory, os.sep))
 
     def line_graphs(self):
@@ -380,7 +370,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                     test_names = []
                     for path, ops_per_sec_values in deep_dict.iterate(variant_obj):
                         if path[-1] == metric:
-                            test_name = path[1] + "." + str(path[2]) # test_name.thread_level
+                            test_name = path[1] + "." + str(path[2])  # test_name.thread_level
                             test_names.append(test_name)
                             for build_values in ops_per_sec_values:
                                 for iteration_values in build_values:
@@ -389,16 +379,21 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                                     # This is what we're really here for
                                     test_results[test_name].append(iteration_values)
 
-                    markers = ['+', 'x', '1', '2', '3', '4', '8', 's', 'p', '*', 'h', 'H', 'D',
-                               'd', '|', '_']
+                    markers = [
+                        '+', 'x', '1', '2', '3', '4', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', '|',
+                        '_'
+                    ]
                     marker_index = 0
                     axis = pyplot.subplot(111)
                     pyplot.subplots_adjust(bottom=0.0)
                     if log:
                         axis.set_yscale('log')
                     for test_name, test_result_array in test_results.iteritems():
-                        axis.plot(test_result_array, label=test_name, marker=markers[marker_index],
-                                  markersize=4)
+                        axis.plot(
+                            test_result_array,
+                            label=test_name,
+                            marker=markers[marker_index],
+                            markersize=4)
                         marker_index += 1
                         marker_index = marker_index % len(markers)
                     # WARNING! The legend() function seems broken. The colors and markers
@@ -443,8 +438,9 @@ Create pyplot graphs from data that was output from multi_analysis.py.
                     path = os.path.join(directory, file_name)
                     pyplot.savefig(path, dpi=500, format='png')
 
-                    pyplot.clf() # Reset canvas between loops
+                    pyplot.clf()  # Reset canvas between loops
         print("Wrote scatter graphs to {}{}.".format(directory, os.sep))
+
 
 def main(cli_args=None):
     """Main function"""
@@ -465,6 +461,7 @@ def main(cli_args=None):
     multi_graphs.bar_graphs()
     multi_graphs.scatter_graphs()
     multi_graphs.line_graphs()
+
 
 if __name__ == '__main__':
     main()

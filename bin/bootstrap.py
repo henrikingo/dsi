@@ -32,6 +32,7 @@ from common.log import setup_logging
 
 LOGGER = logging.getLogger(__name__)
 
+
 def read_aws_credentials(config, config_dict):
     '''
     Read AWS credentials into a config object
@@ -53,6 +54,7 @@ def read_aws_credentials(config, config_dict):
                         'and AWS_SECRET_ACCESS_KEY.')
         assert False
 
+
 def read_aws_credentials_file(config):
     '''
     Read AWS credentials from the 'default' field of ~/.aws/credentials, if it exists
@@ -67,6 +69,7 @@ def read_aws_credentials_file(config):
         config['aws_secret_key'] = config_parser.get(section, 'aws_secret_access_key')
     return config
 
+
 def read_env_vars(config):
     '''
     Read AWS access key id and and secret access key from environment variables
@@ -76,6 +79,7 @@ def read_env_vars(config):
     if 'AWS_SECRET_ACCESS_KEY' in os.environ:
         config['aws_secret_key'] = os.environ.get('AWS_SECRET_ACCESS_KEY')
     return config
+
 
 def parse_command_line(config, args=None):
     #pylint: disable=line-too-long,too-many-branches
@@ -99,30 +103,24 @@ def parse_command_line(config, args=None):
     # steps. Eventually that option should be removed, and replaced
     # with distinct options for selecting infrastructure provisioning
     # options and mongodb setup options.
-    parser.add_argument('-b',
-                        '--bootstrap-file',
-                        help='Specify the bootstrap file. If not specified, will look for '
-                        'bootstrap.yml in the current directory. ')
-    parser.add_argument('-d',
-                        '--debug',
-                        action='store_true',
-                        help='enable debug output')
-    parser.add_argument('--directory',
-                        default='.',
-                        help="Directory to setup. Defaults to current directory")
-    parser.add_argument('--log-file',
-                        help='path to log file')
+    parser.add_argument(
+        '-b',
+        '--bootstrap-file',
+        help='Specify the bootstrap file. If not specified, will look for '
+        'bootstrap.yml in the current directory. ')
+    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
+    parser.add_argument(
+        '--directory', default='.', help="Directory to setup. Defaults to current directory")
+    parser.add_argument('--log-file', help='path to log file')
 
     # This option is ignored but allowed for backward compatibility
-    parser.add_argument('--production',
-                        action='store_true',
-                        default=False,
-                        help='Indicate the script is being called as part of a production run. '
-                        'This suppresses certain messages appropriate for local runs (Ignored).')
-    parser.add_argument('-v',
-                        '--verbose',
-                        action='store_true',
-                        help='Enable verbose output')
+    parser.add_argument(
+        '--production',
+        action='store_true',
+        default=False,
+        help='Indicate the script is being called as part of a production run. '
+        'This suppresses certain messages appropriate for local runs (Ignored).')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
     args = parser.parse_args(args)
 
     setup_logging(args.debug, args.log_file)  # pylint: disable=no-member
@@ -133,23 +131,24 @@ def parse_command_line(config, args=None):
         config['directory'] = args.directory
     return config
 
+
 def copy_config_files(dsipath, config, directory):
     '''
     Copy all related config files to the target directory
     '''
     # Pairs of ConfigDict module, and bootstrap.yml input.
     # This is all the variable info needed to build the from and to file paths down below.
-    configs_to_copy = {"infrastructure_provisioning": config.get("infrastructure_provisioning", ""),
-                       "mongodb_setup": config.get("mongodb_setup", ""),
-                       "test_control": config.get("test_control", "")}
+    configs_to_copy = {
+        "infrastructure_provisioning": config.get("infrastructure_provisioning", ""),
+        "mongodb_setup": config.get("mongodb_setup", ""),
+        "test_control": config.get("test_control", "")
+    }
 
     for config_module, bootstrap_variable in configs_to_copy.iteritems():
         # Example: ./mongodb_setup.yml
         target_file = os.path.join(directory, config_module + ".yml")
         # Example: ../dsi/configurations/mongodb_setup/mongodb_setup.standalone.wiredTiger.yml
-        source_file = os.path.join(dsipath,
-                                   "configurations",
-                                   config_module,
+        source_file = os.path.join(dsipath, "configurations", config_module,
                                    config_module + "." + bootstrap_variable + ".yml")
 
         #pylint: disable=broad-except
@@ -160,9 +159,8 @@ def copy_config_files(dsipath, config, directory):
             # If a source file doesn't exist, it's probably because a wrong or no option was
             # provided in bootstrap.yml. When running manually, this is not fatal. For example,
             # user may want to manually copy some files from somewhere else
-            error_str = "Failed to copy {} from {}.\nError: {}".format(target_file,
-                                                                       source_file,
-                                                                       str(error))
+            error_str = "Failed to copy {} from {}.\nError: {}".format(
+                target_file, source_file, str(error))
             if config["production"]:
                 LOGGER.critical(error_str)
                 raise
@@ -170,6 +168,7 @@ def copy_config_files(dsipath, config, directory):
                 LOGGER.warn(error_str)
 
     return
+
 
 def setup_overrides(config, directory):
     '''
@@ -196,8 +195,7 @@ def setup_overrides(config, directory):
     if os.path.exists(override_path):
         with open(override_path) as override_file:
             overrides = yaml.load(override_file)
-    overrides.update({'infrastructure_provisioning':
-                      {'tfvars': tfvars}})
+    overrides.update({'infrastructure_provisioning': {'tfvars': tfvars}})
     with open(override_path, 'w') as override_file:
         override_file.write(yaml.dump(overrides, default_flow_style=False))
 
@@ -257,6 +255,7 @@ def find_terraform(config, directory):
     LOGGER.info('Path to terraform binary is %s', terraform)
     return terraform
 
+
 def validate_terraform(config):
     '''Asserts that terraform is the correct version'''
     if not config['production']:
@@ -272,10 +271,11 @@ def validate_terraform(config):
             LOGGER.critical("See documentation for installing terraform: http://bit.ly/2ufjQ0R")
             assert False
         if not version == config['terraform_version_check']:
-            LOGGER.critical('You are using %s, but DSI requires %s.',
-                            version, config['terraform_version_check'])
+            LOGGER.critical('You are using %s, but DSI requires %s.', version,
+                            config['terraform_version_check'])
             LOGGER.critical("See documentation for installing terraform: http://bit.ly/2ufjQ0R")
             assert False
+
 
 def find_mission_control(config, dsipath):
     '''
@@ -299,13 +299,13 @@ def find_mission_control(config, dsipath):
     LOGGER.info('Path to mission-control binary is %s', mission_control)
     return mission_control
 
+
 def validate_mission_control(config):
     '''Asserts that mission-control is on the path'''
     if not config['production']:
         try:
-            errors = subprocess.Popen(["mc", "-h"],
-                                      stdout=subprocess.PIPE,
-                                      stderr=subprocess.PIPE).communicate()[1]
+            errors = subprocess.Popen(
+                ["mc", "-h"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
             if errors.split('\n')[0] != 'Usage of mc:':
                 LOGGER.critical('Call to mission-control failed.')
                 LOGGER.critical('See documentation for installing '
@@ -316,6 +316,7 @@ def validate_mission_control(config):
             LOGGER.critical('See documentation for installing '
                             'mission-control: http://bit.ly/2ufjQ0R')
             assert False
+
 
 def write_dsienv(directory, dsipath, mission_control, terraform, config):
     '''
@@ -330,6 +331,7 @@ def write_dsienv(directory, dsipath, mission_control, terraform, config):
             dsienv.write('\nexport WORKLOADS_DIR={0}'.format(config["workloads_dir"]))
         if "ycsb_dir" in config:
             dsienv.write('\nexport YCSB_DIR={0}'.format(config["ycsb_dir"]))
+
 
 def load_bootstrap(config, directory):
     '''
@@ -352,8 +354,8 @@ def load_bootstrap(config, directory):
             LOGGER.critical("Location specified for bootstrap.yml is invalid.")
             assert False
     else:
-        bootstrap_path = os.path.abspath(os.path.expanduser(os.path.join(os.getcwd(),
-                                                                         'bootstrap.yml')))
+        bootstrap_path = os.path.abspath(
+            os.path.expanduser(os.path.join(os.getcwd(), 'bootstrap.yml')))
         if os.path.isfile(bootstrap_path):
             if not bootstrap_path == os.path.abspath(os.path.join(directory, 'bootstrap.yml')):
                 if os.path.isfile(os.path.abspath(os.path.join(directory, 'bootstrap.yml'))):
@@ -377,6 +379,7 @@ def load_bootstrap(config, directory):
 
     return config_dict
 
+
 def main():
     ''' Main function for setting up working directory
     '''
@@ -387,8 +390,8 @@ def main():
     LOGGER.info('Creating work directory in: %s', directory)
 
     if os.path.exists(os.path.join(directory, 'dsienv.sh')):
-        print ("It looks like you have already setup "
-               "{0} for dsi. dsienv.sh exists. Stopping".format(directory))
+        print("It looks like you have already setup "
+              "{0} for dsi. dsienv.sh exists. Stopping".format(directory))
         sys.exit(1)
 
     # Copies bootstrap.yml if necessary and then reads values into config
@@ -436,6 +439,7 @@ def main():
     setup_security_tf(config, directory)
 
     LOGGER.info("Local environment setup in %s", directory)
+
 
 if __name__ == '__main__':
     main()

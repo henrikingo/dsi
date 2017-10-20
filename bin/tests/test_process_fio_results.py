@@ -17,12 +17,15 @@ class TestProcessFIOResults(unittest.TestCase):
 
     def test_format_result(self):
         ''' Test the format_result function '''
-        self.assertEqual(pr.format_result(None, 'job', 'read', 'test', 1.25),
-                         '>>> job_read_test :         1.25 1')
-        self.assertEqual(pr.format_result('fio', 'job', 'read', 'test', 1.25),
-                         '>>> fio_job_read_test :         1.25 1')
-        self.assertEqual(pr.format_result('fio', 'job', 'read', 'test', 1.25, 2),
-                         '>>> fio_job_read_test :         1.25 2')
+        self.assertEqual(
+            pr.format_result(None, 'job', 'read', 'test', 1.25),
+            '>>> job_read_test :         1.25 1')
+        self.assertEqual(
+            pr.format_result('fio', 'job', 'read', 'test', 1.25),
+            '>>> fio_job_read_test :         1.25 1')
+        self.assertEqual(
+            pr.format_result('fio', 'job', 'read', 'test', 1.25, 2),
+            '>>> fio_job_read_test :         1.25 2')
 
     def test_process_results_for_mc(self):
         ''' Test process_results_for_mc '''

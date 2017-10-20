@@ -1,5 +1,4 @@
 #!/usr/bin/env python2.7
-
 ''' Create bash output that can be sourced to set environmental variables '''
 
 from __future__ import print_function
@@ -10,9 +9,10 @@ import alias
 
 from common.config import ConfigDict
 
+
 def main():
     ''' Main '''
-    conf = ConfigDict('test_control') #What should the argument be?
+    conf = ConfigDict('test_control')  #What should the argument be?
     conf.load()
     ssh_key_file = conf['infrastructure_provisioning']['tfvars']['ssh_key_file']
     ssh_key_file = os.path.expanduser(ssh_key_file)
@@ -23,6 +23,7 @@ def main():
     ip_address = alias.lookup_host(unaliased, conf)
 
     print('export workload_client={0}'.format(ip_address))
+
 
 if __name__ == '__main__':
     main()

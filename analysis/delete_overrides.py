@@ -20,38 +20,31 @@ def main(args):
                                      'are considered regular expression patterns. To express '
                                      'an exact match, enclose the terms in ^ and $')
 
-    parser.add_argument('ticket',
-                        help='Remove overrides related to this ticket')
-    parser.add_argument('-n',
-                        '--reference',
-                        help='The Git commit hash (min. length 7 prefix) or tag from which to pull '
-                        'data from as an override reference')
-    parser.add_argument('-f',
-                        '--override-file',
-                        help='The path to the override file to update')
-    parser.add_argument('-d',
-                        '--destination-file',
-                        default='override.json',
-                        help='The path to write the updated override')
-    parser.add_argument('-r',
-                        '--rule',
-                        default='all',
-                        help='The rule to check.')
-    parser.add_argument('-k',
-                        '--tasks',
-                        default='.*',
-                        help='The task or tasks to update')
-    parser.add_argument('-p',
-                        '--project',
-                        default='performance',
-                        help='The Evergreen project for which to generate overrides')
-    parser.add_argument('-c',
-                        '--config',
-                        help='The path to your evergreen & github auth configuration file. '
-                        '(See /example_config.yml for formatting.)')
-    parser.add_argument('--verbose',
-                        action='store_true',
-                        help='Enable verbose output')
+    parser.add_argument('ticket', help='Remove overrides related to this ticket')
+    parser.add_argument(
+        '-n',
+        '--reference',
+        help='The Git commit hash (min. length 7 prefix) or tag from which to pull '
+        'data from as an override reference')
+    parser.add_argument('-f', '--override-file', help='The path to the override file to update')
+    parser.add_argument(
+        '-d',
+        '--destination-file',
+        default='override.json',
+        help='The path to write the updated override')
+    parser.add_argument('-r', '--rule', default='all', help='The rule to check.')
+    parser.add_argument('-k', '--tasks', default='.*', help='The task or tasks to update')
+    parser.add_argument(
+        '-p',
+        '--project',
+        default='performance',
+        help='The Evergreen project for which to generate overrides')
+    parser.add_argument(
+        '-c',
+        '--config',
+        help='The path to your evergreen & github auth configuration file. '
+        '(See /example_config.yml for formatting.)')
+    parser.add_argument('--verbose', action='store_true', help='Enable verbose output')
 
     # Parse the arguments and initialize the logging output
     args = parser.parse_args(args)
@@ -67,11 +60,12 @@ def main(args):
     else:
         LOGGER.setLevel(logging.INFO)
 
-    override_obj = Override(args.project,
-                            override_info=args.override_file,
-                            config_file=args.config,
-                            reference=args.reference,
-                            verbose=args.verbose)
+    override_obj = Override(
+        args.project,
+        override_info=args.override_file,
+        config_file=args.config,
+        reference=args.reference,
+        verbose=args.verbose)
     rule = args.rule
     if rule == 'all':
         rules = ['reference', 'ndays', 'threshold']
@@ -82,6 +76,7 @@ def main(args):
     # Dump the new file as JSON
     LOGGER.info('Saving output to %s', args.destination_file)
     override_obj.save_to_file(args.destination_file)
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])

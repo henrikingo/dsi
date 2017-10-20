@@ -10,9 +10,11 @@ import rules
 from tests import test_utils
 import util
 
+
 class TestResourceRules(unittest.TestCase):
     """Test class evaluates correctness of resource sanity check rules.
     """
+
     # pylint: disable=too-many-instance-attributes,too-many-public-methods
     def setUp(self):
         """Specifies the paths used to fetch JSON testing files. Additionally,
@@ -71,8 +73,7 @@ class TestResourceRules(unittest.TestCase):
         """Test expected success for case of current cache size below configured cache size
         """
         cache_max_3node = 31122784256
-        observed = rules.below_configured_cache_size(self.single_chunk_3node,
-                                                     self.times_3node,
+        observed = rules.below_configured_cache_size(self.single_chunk_3node, self.times_3node,
                                                      cache_max_3node)
         expected = {}
         self.assertEqual(observed, expected)
@@ -81,14 +82,15 @@ class TestResourceRules(unittest.TestCase):
         """Test expected failure for case of current cache size being above configured cache size
         """
         configured_cache_size = 100
-        observed = rules.below_configured_cache_size(self.single_chunk_3node,
-                                                     self.times_3node,
+        observed = rules.below_configured_cache_size(self.single_chunk_3node, self.times_3node,
                                                      configured_cache_size)
         expected = {
             'times': self.times_3node,
-            'compared_values': [(32554,), (32554,)],
-            'labels': ('current cache size (bytes)',),
-            'additional': {'WT configured cache size (bytes)': configured_cache_size}
+            'compared_values': [(32554, ), (32554, )],
+            'labels': ('current cache size (bytes)', ),
+            'additional': {
+                'WT configured cache size (bytes)': configured_cache_size
+            }
         }
         self.assertEqual(observed, expected)
 
@@ -96,8 +98,7 @@ class TestResourceRules(unittest.TestCase):
         """Test expected success for case of current oplog size below configured oplog size
         """
         oplog_max_3node = 161061273600
-        observed = rules.below_configured_oplog_size(self.single_chunk_3node,
-                                                     self.times_3node,
+        observed = rules.below_configured_oplog_size(self.single_chunk_3node, self.times_3node,
                                                      oplog_max_3node)
         expected = {}
         self.assertEqual(observed, expected)
@@ -106,13 +107,12 @@ class TestResourceRules(unittest.TestCase):
         """Test expected failure for case of current oplog size above configured oplog size
         """
         configured_oplog_size = 10
-        observed = rules.below_configured_oplog_size(self.single_chunk_3node,
-                                                     self.times_3node,
+        observed = rules.below_configured_oplog_size(self.single_chunk_3node, self.times_3node,
                                                      configured_oplog_size)
         expected = {
             'times': self.times_3node,
-            'compared_values': [(86,), (86,)],
-            'labels': ('current oplog size (MB)',),
+            'compared_values': [(86, ), (86, )],
+            'labels': ('current oplog size (MB)', ),
             'additional': {
                 'WT configured max oplog size (MB)': configured_oplog_size,
                 'rule': 'current size <= (max size * 1.1)'
@@ -125,8 +125,7 @@ class TestResourceRules(unittest.TestCase):
         """
         configured_oplog_size = 0
         observed = rules.below_configured_oplog_size(self.single_chunk_standalone,
-                                                     self.times_standalone,
-                                                     configured_oplog_size)
+                                                     self.times_standalone, configured_oplog_size)
         expected = {}
         self.assertEqual(observed, expected)
 
@@ -143,8 +142,7 @@ class TestResourceRules(unittest.TestCase):
         """Test expected failure for cache vs. heap size evaluation
         """
         rules.CACHE_ALLOCATOR_OVERHEAD = -1.0
-        observed = rules.compare_heap_cache_sizes(self.single_chunk_3node,
-                                                  self.times_3node)
+        observed = rules.compare_heap_cache_sizes(self.single_chunk_3node, self.times_3node)
         expected = {
             'times': self.times_3node,
             'compared_values': [(32554, 61972480), (32554, 64008192)],
@@ -159,10 +157,8 @@ class TestResourceRules(unittest.TestCase):
         """Test expected success for current # connections below our specified upper bound
         """
         max_thread_level = 64
-        observed = rules.max_connections(self.single_chunk_standalone,
-                                         self.times_standalone,
-                                         max_thread_level,
-                                         [])
+        observed = rules.max_connections(self.single_chunk_standalone, self.times_standalone,
+                                         max_thread_level, [])
         expected = {}
         self.assertEqual(observed, expected)
 
@@ -170,14 +166,12 @@ class TestResourceRules(unittest.TestCase):
         """Test expected failure for current # connections above our specified upper bound
         """
         max_thread_level = -13
-        observed = rules.max_connections(self.single_chunk_3node,
-                                         self.times_3node,
-                                         max_thread_level,
-                                         self.members_3node)
+        observed = rules.max_connections(self.single_chunk_3node, self.times_3node,
+                                         max_thread_level, self.members_3node)
         expected = {
             'times': self.times_3node,
-            'compared_values': [(3,), (3,)],
-            'labels': ('number of current connections',),
+            'compared_values': [(3, ), (3, )],
+            'labels': ('number of current connections', ),
             'additional': {
                 'max thread level for this task': max_thread_level,
                 'connections between members? (4 * N)': 12,
@@ -191,10 +185,8 @@ class TestResourceRules(unittest.TestCase):
     def test_member_state_success(self):
         """Test expected success for members all in 'healthy' states
         """
-        observed = rules.repl_member_state(self.single_chunk_3node,
-                                           self.times_3node,
-                                           self.members_3node,
-                                           None)  # no test times
+        observed = rules.repl_member_state(self.single_chunk_3node, self.times_3node,
+                                           self.members_3node, None)  # no test times
         expected = {}
         print observed
         self.assertEqual(observed, expected)
@@ -203,16 +195,16 @@ class TestResourceRules(unittest.TestCase):
         """Test expected failure for member discovered in an 'unhealthy' state
         """
         rules.FLAG_MEMBER_STATES[2] = 'SECONDARY'
-        observed = rules.repl_member_state(self.single_chunk_3node,
-                                           self.times_3node,
-                                           self.members_3node,
-                                           None)  # no test times
+        observed = rules.repl_member_state(self.single_chunk_3node, self.times_3node,
+                                           self.members_3node, None)  # no test times
         expected = {
-            'members':
-                {'0': {'times': self.times_3node,
-                       'compared_values': [('SECONDARY',), ('SECONDARY',)],
-                       'labels': ('member 0 state',)}
+            'members': {
+                '0': {
+                    'times': self.times_3node,
+                    'compared_values': [('SECONDARY', ), ('SECONDARY', )],
+                    'labels': ('member 0 state', )
                 }
+            }
         }
         self.assertEqual(observed, expected)
         del rules.FLAG_MEMBER_STATES[2]
@@ -236,7 +228,7 @@ class TestResourceRules(unittest.TestCase):
                 self.assertIsNone(primary)
             chunks_until_primary -= 1
 
-    def test_ftdc_replica_lag_check_success(self): #pylint: disable=invalid-name
+    def test_ftdc_replica_lag_check_success(self):  #pylint: disable=invalid-name
         """Test expected success for repl set secondary member lag check
         """
         path_ftdc = os.path.join(self.path_3shard_directory, 'metrics.3shard_p1_repl')
@@ -246,7 +238,7 @@ class TestResourceRules(unittest.TestCase):
         expected = []
         self.assertEqual(observed, expected)
 
-    def test_ftdc_replica_lag_check_fail(self): #pylint: disable=invalid-name
+    def test_ftdc_replica_lag_check_fail(self):  #pylint: disable=invalid-name
         """Test expected failure for repl set secondary member lag check
 
            The diagnostic.data file metrics.mongod.0 contains ftdc data from the primary on a
@@ -260,35 +252,42 @@ class TestResourceRules(unittest.TestCase):
 
         test_times = util.get_test_times(perf_json)
         observed = rules.ftdc_replica_lag_check(path_ftdc, test_times)
-        expected = [{'additional': {'lag end threshold (s)': 2.0,
-                                    'lag start threshold (s)': 15.0,
-                                    'primary member': '0'},
-                     'members': {'1': {'compared_values': [(16.0, '2017-05-31 16:54:42Z', 129.0,
-                                                            '2017-05-31 16:54:42Z', 120.0),
-                                                           (17.0, '2017-05-31 16:59:23Z', 104.0,
-                                                            '2017-05-31 16:59:26Z', 99.0),
-                                                           (16.0, '2017-05-31 17:04:33Z', 117.0,
-                                                            '2017-05-31 17:04:34Z', 110.0),
-                                                           (16.0, '2017-05-31 17:09:13Z', 93.0,
-                                                            '2017-05-31 17:09:32Z', 12.0)],
-                                       'labels': ('start value (s)', 'max time', 'max value (s)',
-                                                  'end time', 'end value (s)'),
-                                       'report_all_values': True,
-                                       'times': [1496248949000, 1496249726000,
-                                                 1496250019000, 1496250331000]},
-                                 '2': {'compared_values': [(16.0, '2017-05-31 16:54:03Z', 90.0,
-                                                            '2017-05-31 16:54:04Z', 82.0),
-                                                           (16.0, '2017-05-31 16:58:53Z', 76.0,
-                                                            '2017-05-31 16:59:00Z', 72.0),
-                                                           (16.0, '2017-05-31 17:03:53Z', 80.0,
-                                                            '2017-05-31 17:03:58Z', 77.0),
-                                                           (16.0, '2017-05-31 17:08:53Z', 70.0,
-                                                            '2017-05-31 17:08:54Z', 62.0)],
-                                       'labels': ('start value (s)', 'max time', 'max value (s)',
-                                                  'end time', 'end value (s)'),
-                                       'report_all_values': True,
-                                       'times': [1496248967000, 1496249735000,
-                                                 1496250027000, 1496250339000]}}}]
+        expected = [{
+            'additional': {
+                'lag end threshold (s)': 2.0,
+                'lag start threshold (s)': 15.0,
+                'primary member': '0'
+            },
+            'members': {
+                '1': {
+                    'compared_values': [
+                        (16.0, '2017-05-31 16:54:42Z', 129.0, '2017-05-31 16:54:42Z', 120.0),
+                        (17.0, '2017-05-31 16:59:23Z', 104.0, '2017-05-31 16:59:26Z',
+                         99.0), (16.0, '2017-05-31 17:04:33Z', 117.0, '2017-05-31 17:04:34Z',
+                                 110.0), (16.0, '2017-05-31 17:09:13Z', 93.0,
+                                          '2017-05-31 17:09:32Z', 12.0)
+                    ],
+                    'labels': ('start value (s)', 'max time', 'max value (s)', 'end time',
+                               'end value (s)'),
+                    'report_all_values':
+                        True,
+                    'times': [1496248949000, 1496249726000, 1496250019000, 1496250331000]
+                },
+                '2': {
+                    'compared_values': [(16.0, '2017-05-31 16:54:03Z', 90.0, '2017-05-31 16:54:04Z',
+                                         82.0), (16.0, '2017-05-31 16:58:53Z', 76.0,
+                                                 '2017-05-31 16:59:00Z', 72.0),
+                                        (16.0, '2017-05-31 17:03:53Z', 80.0, '2017-05-31 17:03:58Z',
+                                         77.0), (16.0, '2017-05-31 17:08:53Z', 70.0,
+                                                 '2017-05-31 17:08:54Z', 62.0)],
+                    'labels': ('start value (s)', 'max time', 'max value (s)', 'end time',
+                               'end value (s)'),
+                    'report_all_values':
+                        True,
+                    'times': [1496248967000, 1496249735000, 1496250027000, 1496250339000]
+                }
+            }
+        }]
         self.assertEqual(observed, expected)
 
     def test_lag_no_perf_file(self):
@@ -299,9 +298,11 @@ class TestResourceRules(unittest.TestCase):
         expected = []
         self.assertEqual(observed, expected)
 
+
 class TestFailureOutputFormatting(unittest.TestCase):
     """Test class checks resource sanity rules' error message formatting
     """
+
     def test_fail_collection_info(self):
         """Test expected output in _failure_collection when failure is detected
         """
@@ -326,6 +327,7 @@ class TestFailureOutputFormatting(unittest.TestCase):
         expected = {}
         self.assertEqual(observed, expected)
 
+
 class TestLogAnalysisRules(unittest.TestCase):
     """Test class evaluates correctness of mongod.log check rules
     """
@@ -338,12 +340,14 @@ class TestLogAnalysisRules(unittest.TestCase):
             "2016-07-14T01:00:04.000+0000 E err-type foo bar baz",
             "2016-07-14T01:00:04.000+0000 L err-type elecTIon suCCEeded",
             "2016-07-14T01:00:04.000+0000 D err-type transition TO PRIMARY",
-            "2016-07-14T01:00:04.000+0000 I err-type PosIx_FallocaTE FailEd"]
+            "2016-07-14T01:00:04.000+0000 I err-type PosIx_FallocaTE FailEd"
+        ]
 
         good_lines = [
             "2016-07-14T01:00:04.000+0000 L err-type nothing bad here",
             "2016-07-14T01:00:04.000+0000 L err-type or here",
-            "2016-07-14T01:00:04.000+0000 E err-type ttl query execution for index"]
+            "2016-07-14T01:00:04.000+0000 E err-type ttl query execution for index"
+        ]
 
         for line in bad_lines:
             self.assertTrue(rules.is_log_line_bad(line))
@@ -354,27 +358,29 @@ class TestLogAnalysisRules(unittest.TestCase):
     def test_is_log_line_bad_time(self):
         """Test `_is_log_line_bad()` when test times are specified."""
 
-        test_times = [
-            (date_parser.parse("2016-07-14T01:00:00.000+0000"),
-             date_parser.parse("2016-07-14T01:10:00.000+0000")),
-            (date_parser.parse("2016-07-14T03:00:00.000+0000"),
-             date_parser.parse("2016-07-14T03:10:00.000+0000"))]
+        test_times = [(date_parser.parse("2016-07-14T01:00:00.000+0000"),
+                       date_parser.parse("2016-07-14T01:10:00.000+0000")),
+                      (date_parser.parse("2016-07-14T03:00:00.000+0000"),
+                       date_parser.parse("2016-07-14T03:10:00.000+0000"))]
 
         bad_lines = [
             "2016-07-14T01:00:04.000+0000 F err-type message",
             "2016-07-14T01:09:00.000+0000 F err-type message",
-            "2016-07-14T03:05:00.000+0000 F err-type message"]
+            "2016-07-14T03:05:00.000+0000 F err-type message"
+        ]
 
         bad_lines_to_ignore = [
             "2016-07-14T00:05:00.000+0000 F err-type message",
             "2016-07-14T02:00:00.000+0000 F err-type message",
-            "2016-07-14T03:25:00.000+0000 F err-type message"]
+            "2016-07-14T03:25:00.000+0000 F err-type message"
+        ]
 
         for line in bad_lines:
             self.assertTrue(rules.is_log_line_bad(line, test_times))
 
         for line in bad_lines_to_ignore:
             self.assertFalse(rules.is_log_line_bad(line, test_times))
+
 
 class TestDBCorrectnessRules(unittest.TestCase):
     """Test class evaluates correctness of DB correctness check rules.
@@ -384,25 +390,29 @@ class TestDBCorrectnessRules(unittest.TestCase):
         """Test expected success in db correctness test log file parsing
         """
         log_dir = test_utils.fixture_file_path('core_workloads_reports')
-        expected_results = [
-            {
-                'status': 'pass',
-                'start': 0,
-                'log_raw': ('\nPassed db-hash-check.core_workloads_reports.'
-                            'unittest-files JS test.'),
-                'test_file': 'db-hash-check.core_workloads_reports.unittest-files',
-                'exit_code': 0
-            },
-            {
-                'status': 'pass',
-                'start': 0,
-                'log_raw': ('\nPassed validate-indexes-and-collections.core_workloads_reports.'
-                            'unittest-files JS test.'),
-                'test_file': ('validate-indexes-and-collections.core_workloads_reports.'
-                              'unittest-files'),
-                'exit_code': 0
-            }
-        ]
+        expected_results = [{
+            'status':
+                'pass',
+            'start':
+                0,
+            'log_raw': ('\nPassed db-hash-check.core_workloads_reports.'
+                        'unittest-files JS test.'),
+            'test_file':
+                'db-hash-check.core_workloads_reports.unittest-files',
+            'exit_code':
+                0
+        }, {
+            'status':
+                'pass',
+            'start':
+                0,
+            'log_raw': ('\nPassed validate-indexes-and-collections.core_workloads_reports.'
+                        'unittest-files JS test.'),
+            'test_file': ('validate-indexes-and-collections.core_workloads_reports.'
+                          'unittest-files'),
+            'exit_code':
+                0
+        }]
         observed_results = rules.db_correctness_analysis(log_dir)
         self.assertEqual(expected_results, observed_results)
 
@@ -415,15 +425,13 @@ class TestDBCorrectnessRules(unittest.TestCase):
                        'Error: Collection validation failed :\n@(shell eval):1:20\n'
                        '@(shell eval):1:2\n\nFailed to run JS test on server [localhost], '
                        'host [localhost]\n1')
-        expected_results = [
-            {
-                'status': 'fail',
-                'start': 0,
-                'log_raw': raw_failure,
-                'test_file': 'validate-indexes-and-collections.test_db_correctness.unittest-files',
-                'exit_code': 1
-            }
-        ]
+        expected_results = [{
+            'status': 'fail',
+            'start': 0,
+            'log_raw': raw_failure,
+            'test_file': 'validate-indexes-and-collections.test_db_correctness.unittest-files',
+            'exit_code': 1
+        }]
         observed_results = rules.db_correctness_analysis(log_dir)
         self.assertEqual(expected_results, observed_results)
 
@@ -437,16 +445,18 @@ class TestDBCorrectnessRules(unittest.TestCase):
                        '@(shell eval):1:2\n\nFailed to run JS test on server [localhost], '
                        'host [localhost]')
 
-        expected_results = [
-            {
-                'status': 'fail',
-                'start': 0,
-                'log_raw': raw_failure,
-                'test_file': ('validate-indexes-and-collections.test_db_correctness_exit_fail.'
-                              'unittest-files'),
-                'exit_code': 1
-            }
-        ]
+        expected_results = [{
+            'status':
+                'fail',
+            'start':
+                0,
+            'log_raw':
+                raw_failure,
+            'test_file': ('validate-indexes-and-collections.test_db_correctness_exit_fail.'
+                          'unittest-files'),
+            'exit_code':
+                1
+        }]
         observed_results = rules.db_correctness_analysis(log_dir)
         self.assertEqual(expected_results, observed_results)
 
@@ -457,6 +467,7 @@ class TestDBCorrectnessRules(unittest.TestCase):
         expected_results = []
         observed_results = rules.db_correctness_analysis(log_dir)
         self.assertEqual(expected_results, observed_results)
+
 
 if __name__ == '__main__':
     unittest.main()

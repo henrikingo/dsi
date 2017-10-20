@@ -38,9 +38,8 @@ def destroy_resources():
         LOG.critical("In infrastructure_teardown.py and cluster.json does not exist. Giving up.")
         if previous_directory is not None:
             os.chdir(previous_directory)
-        raise (
-            UserWarning("In infrastructure_teardown.py and cluster.json does not exist. Giving up.")
-        )
+        raise (UserWarning(
+            "In infrastructure_teardown.py and cluster.json does not exist. Giving up."))
 
     try:
         subprocess.check_call([terraform, 'destroy', var_file, '-force'])
@@ -50,20 +49,15 @@ def destroy_resources():
     if previous_directory is not None:
         os.chdir(previous_directory)
 
+
 def parse_command_line():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(
-        description='Destroy EC2 instances on AWS using terraform.')
-    parser.add_argument(
-        '--log-file',
-        help='path to log file')
-    parser.add_argument(
-        '-d',
-        '--debug',
-        action='store_true',
-        help='enable debug output')
+    parser = argparse.ArgumentParser(description='Destroy EC2 instances on AWS using terraform.')
+    parser.add_argument('--log-file', help='path to log file')
+    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
     args = parser.parse_args()
     return args
+
 
 def setup_logging(verbose, filename=None):
     """

@@ -27,10 +27,11 @@ def log_lines(level, lines):
         if line:
             LOG.log(level, line.rstrip())
 
+
 def repo_root():
     ''' Return the path to the root of the DSI repo '''
-    return os.path.dirname(os.path.dirname(
-        os.path.dirname(os.path.abspath(__file__))))
+    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 def _run_command_map(target_host, command):
     ''' Run one command against a target host if the command is a mapping.
@@ -47,8 +48,7 @@ def _run_command_map(target_host, command):
 
         if key == "upload_repo_files":
             for local_file, remote_file in value.iteritems():
-                local_file = os.path.join(repo_root(),
-                                          local_file)
+                local_file = os.path.join(repo_root(), local_file)
                 LOG.debug('Uploading file %s to %s', local_file, remote_file)
                 target_host.upload_file(local_file, remote_file)
         elif key == "upload_files":
@@ -71,6 +71,7 @@ def _run_command_map(target_host, command):
         else:
             raise Exception("Invalid command type")
 
+
 def run_command(host_list, command, config):
     '''For each host in the list, make a parallelized call to make_host_runner to make the
     appropriate host and run the set of commands
@@ -92,7 +93,7 @@ def run_command(host_list, command, config):
 
     # It's acceptable to use a global variable here to set 'STOP_THREAD_EXECUTION' to false.
     # This is because 'run_command()' will only be called on the main thread.
-    global STOP_THREAD_EXECUTION # pylint: disable=global-statement
+    global STOP_THREAD_EXECUTION  # pylint: disable=global-statement
     STOP_THREAD_EXECUTION = False
     threads = []
     thread_complete_tracker = Queue.Queue(maxsize=len(host_list))
@@ -101,11 +102,7 @@ def run_command(host_list, command, config):
         for host_info in host_list:
             thread = threading.Thread(
                 target=make_host_runner,
-                args=(host_info,
-                      command,
-                      ssh_user,
-                      ssh_key_file,
-                      thread_complete_tracker,
+                args=(host_info, command, ssh_user, ssh_key_file, thread_complete_tracker,
                       thread_exceptions_bucket))
             thread.daemon = True
             threads.append(thread)
@@ -126,12 +123,9 @@ def run_command(host_list, command, config):
         STOP_THREAD_EXECUTION = True
         raise exc
 
-def make_host_runner( # pylint: disable=too-many-arguments
-        host_info,
-        command,
-        ssh_user,
-        ssh_key_file,
-        thread_complete_tracker,
+
+def make_host_runner(  # pylint: disable=too-many-arguments
+        host_info, command, ssh_user, ssh_key_file, thread_complete_tracker,
         thread_exceptions_bucket):
     '''For the host, make an appropriate RemoteHost or
     LocalHost Object and run the set of commands
@@ -167,10 +161,11 @@ def make_host_runner( # pylint: disable=too-many-arguments
         elif isinstance(command, MutableMapping):
             _run_command_map(target_host, command)
 
-    except Exception: # pylint: disable=broad-except
+    except Exception:  # pylint: disable=broad-except
         thread_exceptions_bucket.put(sys.exc_info())
 
     thread_complete_tracker.put(1)
+
 
 def make_host(host_info, ssh_user, ssh_key_file):
     '''
@@ -188,9 +183,9 @@ def make_host(host_info, ssh_user, ssh_key_file):
     else:
         LOG.debug("Making remote host for %s", host_info.ip_or_name)
         host = RemoteHost(host_info.ip_or_name, ssh_user, ssh_key_file)
-    host.alias = "{category}.{offset}".format(category=host_info.category,
-                                              offset=host_info.offset)
+    host.alias = "{category}.{offset}".format(category=host_info.category, offset=host_info.offset)
     return host
+
 
 def _extract_hosts(key, config):
     '''Extract a list of public IP addresses for hosts based off of the
@@ -203,9 +198,12 @@ def _extract_hosts(key, config):
     :returns  list of HostInfo objects
     '''
     if key in config['infrastructure_provisioning']['out']:
-        return [HostInfo(host_info['public_ip'], key, i) for i, host_info in
-                enumerate(config['infrastructure_provisioning']['out'][key])]
+        return [
+            HostInfo(host_info['public_ip'], key, i)
+            for i, host_info in enumerate(config['infrastructure_provisioning']['out'][key])
+        ]
     return list()
+
 
 def extract_hosts(key, config):
     '''Extract a list of public IP addresses for hosts based off of the
@@ -216,13 +214,16 @@ def extract_hosts(key, config):
     if key == 'localhost':
         return [HostInfo('localhost', 'localhost', 0)]
     if key == 'all_servers':
-        return list(itertools.chain.from_iterable((_extract_hosts(key, config) for
-                                                   key in ['mongod', 'mongos', 'configsvr'])))
+        return list(
+            itertools.chain.from_iterable((_extract_hosts(key, config)
+                                           for key in ['mongod', 'mongos', 'configsvr'])))
     if key == 'all_hosts':
-        return list(itertools.chain.from_iterable((_extract_hosts(key, config) for key in
-                                                   ['mongod', 'mongos', 'configsvr',
-                                                    'workload_client'])))
+        return list(
+            itertools.chain.from_iterable(
+                (_extract_hosts(key, config)
+                 for key in ['mongod', 'mongos', 'configsvr', 'workload_client'])))
     return _extract_hosts(key, config)
+
 
 def execute_list(list_actions, config):
     '''
@@ -282,7 +283,8 @@ class Host(object):
 
         return all(self.exec_command(argv) == 0 for argv in argvs)
 
-    def exec_mongo_command(self, script,
+    def exec_mongo_command(self,
+                           script,
                            remote_file_name="script.js",
                            connection_string="localhost:27017"):
         """
@@ -358,8 +360,7 @@ class RemoteHost(Host):
         try:
             stdin, stdout, stderr = self._ssh.exec_command(command)
         except paramiko.SSHException:
-            LOG.exception('failed to exec command on %s@%s',
-                          self.user, self.host)
+            LOG.exception('failed to exec command on %s@%s', self.user, self.host)
             return 1
         stdin.channel.shutdown_write()
         stdin.close()

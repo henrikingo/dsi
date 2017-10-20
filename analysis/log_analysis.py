@@ -15,6 +15,7 @@ import util
 LOGGER = logging.getLogger(__name__)
 KEEPALIVE_TIME = time.time()
 
+
 def analyze_logs(reports_dir_path, perf_file_path=None):
     """
     Analyze all the "mongod.log" logs in the directory tree rooted at `reports_dir_path`,
@@ -54,6 +55,7 @@ def analyze_logs(reports_dir_path, perf_file_path=None):
 
     return results, num_failures
 
+
 def _format_log_raw(path, bad_lines):
     """
     Return a nicely formatted `log_raw` message for a log file at path `path` with bad messages
@@ -65,6 +67,7 @@ def _format_log_raw(path, bad_lines):
         "Number of bad lines: {0}\nBad lines below: \n{1}\n{2}".format(
             path, len(bad_lines), "".join(bad_lines))
     return msg_path_header + msg_body
+
 
 def _get_bad_log_lines(reports_dir_path, test_times=None):
     """
@@ -89,6 +92,7 @@ def _get_bad_log_lines(reports_dir_path, test_times=None):
 
     return bad_messages_per_log
 
+
 def _get_log_file_paths(dir_path):
     """
     Recursively search `dir_path` for files called "mongod.log" and return a list of their fully
@@ -103,6 +107,7 @@ def _get_log_file_paths(dir_path):
 
     return log_paths
 
+
 def _print_keepalive_msg(path):
     """Print a log message every 15 minutes to prevent evergreen timeouts
 
@@ -110,8 +115,8 @@ def _print_keepalive_msg(path):
        parameterize the time interval, add unit tests, and that would also make the use of a
        global variable go away.
     """
-    global KEEPALIVE_TIME #pylint: disable=global-statement
-    quarter = 60*15
+    global KEEPALIVE_TIME  #pylint: disable=global-statement
+    quarter = 60 * 15
     now = time.time()
     if now > KEEPALIVE_TIME + quarter:
         KEEPALIVE_TIME += quarter

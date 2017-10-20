@@ -6,6 +6,7 @@ import requests
 from evergreen import helpers
 from tests import test_utils
 
+
 class TestEvergreenHelpers(unittest.TestCase):
     """Tests are related to Evergreen & Github API access"""
 
@@ -13,9 +14,11 @@ class TestEvergreenHelpers(unittest.TestCase):
         """Specify the expected result variables used in more than 1 test"""
         config_file = test_utils.repo_root_file_path('config.yml')
 
-        self.expected_evergreen = {'user': 'username',
-                                   'api_key': 'api_key_here',
-                                   'ui_server_host': 'https://evergreen.mongodb.com'}
+        self.expected_evergreen = {
+            'user': 'username',
+            'api_key': 'api_key_here',
+            'ui_server_host': 'https://evergreen.mongodb.com'
+        }
         self.expected_git = {'token': 'token_here'}
         self.expected_full_hash = 'c2af7abae8d09d290d7457ab77f5a7529806b75a'
 
@@ -64,5 +67,4 @@ class TestEvergreenHelpers(unittest.TestCase):
     def test_git_hash_error(self):
         """Test for an input that is an invalid hash"""
         with self.assertRaises(requests.exceptions.HTTPError):
-            helpers.get_full_git_commit_hash('invalid_hash',
-                                             self.creds['github']['token'])
+            helpers.get_full_git_commit_hash('invalid_hash', self.creds['github']['token'])

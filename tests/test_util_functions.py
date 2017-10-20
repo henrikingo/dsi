@@ -6,6 +6,7 @@ import datetime
 
 import util
 
+
 class TestUtilFunctions(unittest.TestCase):
     """Test suite."""
 
@@ -37,11 +38,16 @@ class TestUtilFunctions(unittest.TestCase):
         self.assertEqual(len(times), 1)
         assert_instancesof_datetime(times)
         perf_json = {
-            "results": [
-                {"start": 1, "end": 2},
-                {"start": 3, "end": 4},
-                {"start": 5, "end": "2016-07-14T03:24:00.000+0000"}
-            ]
+            "results": [{
+                "start": 1,
+                "end": 2
+            }, {
+                "start": 3,
+                "end": 4
+            }, {
+                "start": 5,
+                "end": "2016-07-14T03:24:00.000+0000"
+            }]
         }
         times = util.get_test_times(perf_json)
         self.assertEqual(len(times), 3)

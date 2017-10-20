@@ -1,4 +1,3 @@
-
 """
 Paser output from terraform and generate necessary cluster definition files to track public and
 private IP addresses. This file will generate the file "infrastructure_provisioning.out.yml"
@@ -18,13 +17,10 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
     DSI Terraform output, this class takes input from stdin or file, parses it and generates
     YML infrastructure_provisioning.out.yml.
     """
-    INSTANCE_TYPES = ["private_config_ip",
-                      "private_member_ip",
-                      "private_mongos_ip",
-                      "public_config_ip",
-                      "public_ip_mc",
-                      "public_member_ip",
-                      "public_mongos_ip"]
+    INSTANCE_TYPES = [
+        "private_config_ip", "private_member_ip", "private_mongos_ip", "public_config_ip",
+        "public_ip_mc", "public_member_ip", "public_mongos_ip"
+    ]
 
     INSTANCE_CATEGORY = {
         "private_config_ip": "configsvr",
@@ -34,7 +30,7 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
         "public_ip_mc": "workload_client",
         "public_member_ip": "mongod",
         "public_mongos_ip": "mongos"
-        }
+    }
 
     IP_SUBNET = {
         "private_config_ip": "private",
@@ -44,7 +40,7 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
         "public_ip_mc": "public",
         "public_member_ip": "public",
         "public_mongos_ip": "public"
-        }
+    }
 
     def __init__(self, input_file=None, terraform_output=None):
         self._file = input_file
@@ -71,9 +67,10 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
                 return out_data
 
             for i in range(len(self._ips[priv])):
-                out_data[category].append(
-                    {"public_ip": self._ips[pub][i],
-                     "private_ip": self._ips[priv][i]})
+                out_data[category].append({
+                    "public_ip": self._ips[pub][i],
+                    "private_ip": self._ips[priv][i]
+                })
 
         return out_data
 
@@ -81,8 +78,7 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
         """Update the configuration object for output from infrastructure_provisioning stage."""
         out_data = {}
         # mongod IP address
-        out_data = self._get_ips("public_member_ip", "private_member_ip",
-                                 "mongod", out_data)
+        out_data = self._get_ips("public_member_ip", "private_member_ip", "mongod", out_data)
 
         # workload_client IP addresses
         if len(self._ips["public_ip_mc"]) == 0:
@@ -92,16 +88,13 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
         out_data["workload_client"] = []
 
         for index in range(len(self._ips["public_ip_mc"])):
-            out_data["workload_client"].append(
-                {"public_ip": self._ips["public_ip_mc"][index]})
+            out_data["workload_client"].append({"public_ip": self._ips["public_ip_mc"][index]})
 
         # mongos IP addresses
-        out_data = self._get_ips("public_mongos_ip", "private_mongos_ip",
-                                 "mongos", out_data)
+        out_data = self._get_ips("public_mongos_ip", "private_mongos_ip", "mongos", out_data)
 
         # configsvr IP addresses
-        out_data = self._get_ips("public_config_ip", "private_config_ip",
-                                 "configsvr", out_data)
+        out_data = self._get_ips("public_config_ip", "private_config_ip", "configsvr", out_data)
 
         self.config_obj['infrastructure_provisioning']['out'] = out_data
 

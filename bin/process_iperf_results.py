@@ -10,8 +10,9 @@ def main():
     with open('iperf.json') as result_file:
         results = json.load(result_file)
 
-    print(
-        ">>> NetworkBandwidth : {0:12.2f} 1".format(results['end']['sum_sent']['bits_per_second']))
+    print(">>> NetworkBandwidth : {0:12.2f} 1".format(
+        results['end']['sum_sent']['bits_per_second']))
+
 
 if __name__ == '__main__':
     main()

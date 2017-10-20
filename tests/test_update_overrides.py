@@ -15,6 +15,7 @@ from tests.test_requests_parent import TestRequestsParent
 #pylint: disable=no-value-for-parameter
 # pylint is confused by the patch decorators
 
+
 class TestUpdateOverrides(TestRequestsParent):
     """Test class evaluates correctness of the update_overrides script.
     """
@@ -30,24 +31,25 @@ class TestUpdateOverrides(TestRequestsParent):
         self.output_file = test_utils.fixture_file_path('update_override_test.json')
         self.config_file = test_utils.repo_root_file_path('config.yml')
         self.override_file = test_utils.fixture_file_path('perf_override.json')
-        self.regenerate_output_files = False #Note: causes all tests to pass
+        self.regenerate_output_files = False  #Note: causes all tests to pass
         TestRequestsParent.setUp(self)
-
 
     def _update_overrides_compare(self, git_hash):
         """General comparison function used for hash-related test cases"""
-        reference_args = [git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'query',
-                          '-f', self.override_file, '-d', self.intermed_file, '--verbose', '-t',
-                          'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$',
-                          '-i', 'noise']
+        reference_args = [
+            git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'query', '-f',
+            self.override_file, '-d', self.intermed_file, '--verbose', '-t',
+            'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$', '-i', 'noise'
+        ]
 
         update_overrides.main(reference_args)
 
-        threshold_args = [git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'query',
-                          '-f', self.intermed_file, '-d', self.output_file, '--verbose', '-t',
-                          'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$',
-                          '--threshold', '0.66', '--thread-threshold', '0.77',
-                          '-i', 'test_threshold']
+        threshold_args = [
+            git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'query', '-f',
+            self.intermed_file, '-d', self.output_file, '--verbose', '-t',
+            'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$', '--threshold',
+            '0.66', '--thread-threshold', '0.77', '-i', 'test_threshold'
+        ]
         update_overrides.main(threshold_args)
 
         os.remove(self.intermed_file)
@@ -85,10 +87,11 @@ class TestUpdateOverrides(TestRequestsParent):
         Test override values are still found and updated.
         """
         git_hash = 'c2af7aba'
-        reference_args = [git_hash, '-c', self.config_file, '-p', 'performance', '-v',
-                          'linux-*-standalone', '-k', 'query', '-f', self.override_file, '-d',
-                          self.output_file, '--verbose', '-t',
-                          'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$']
+        reference_args = [
+            git_hash, '-c', self.config_file, '-p', 'performance', '-v', 'linux-*-standalone', '-k',
+            'query', '-f', self.override_file, '-d', self.output_file, '--verbose', '-t',
+            'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$'
+        ]
         update_overrides.main(reference_args)
 
         expected_json = test_utils.fixture_file_path('update_ref_no_ticket.json.ok')
@@ -107,11 +110,12 @@ class TestUpdateOverrides(TestRequestsParent):
         """
         git_hash = 'c2af7aba'
         override_file = test_utils.fixture_file_path('update_override_reference.json.ok')
-        threshold_args = [git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'query',
-                          '-f', override_file, '-d', self.output_file, '--verbose', '-t',
-                          'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$',
-                          '--threshold', '0.66', '--thread-threshold', '0.77', '-v',
-                          'linux-*-standalone']
+        threshold_args = [
+            git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'query', '-f',
+            override_file, '-d', self.output_file, '--verbose', '-t',
+            'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$', '--threshold',
+            '0.66', '--thread-threshold', '0.77', '-v', 'linux-*-standalone'
+        ]
         update_overrides.main(threshold_args)
 
         expected_json = test_utils.fixture_file_path('update_thresh_no_ticket.json.ok')
@@ -125,9 +129,11 @@ class TestUpdateOverrides(TestRequestsParent):
         Output file should be identical to the input file.
         """
         git_hash = 'c2af7aba'
-        reference_args = [git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'misc',
-                          '-f', self.override_file, '-d', self.output_file, '--verbose', '-t',
-                          'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$']
+        reference_args = [
+            git_hash, '-c', self.config_file, '-p', 'performance', '-k', 'misc', '-f',
+            self.override_file, '-d', self.output_file, '--verbose', '-t',
+            'Queries.FindProjectionDottedField$|Queries.FindProjectionThreeFields$'
+        ]
         update_overrides.main(reference_args)
 
         expected_json = self.override_file
@@ -140,6 +146,7 @@ class TestUpdateOverrides(TestRequestsParent):
         """Deletes output JSON files after each test case"""
         os.remove(self.output_file)
         TestRequestsParent.tearDown(self)
+
 
 if __name__ == '__main__':
     unittest.main()

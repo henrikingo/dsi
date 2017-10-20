@@ -46,10 +46,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         """
         Used to reset environment variables and mock objects.
         """
-        self.os_environ = {
-            'TERRAFORM': 'test/path/terraform',
-            'DSI_PATH': 'test/path/dsi'
-        }
+        self.os_environ = {'TERRAFORM': 'test/path/terraform', 'DSI_PATH': 'test/path/dsi'}
         #pylint: disable=no-member
         self.mock_environ.__getitem__.side_effect = self.os_environ.__getitem__
         self.mock_environ.__contains__.side_effect = self.os_environ.__contains__
@@ -173,10 +170,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 call('bin/tests/artifacts/terraform/provisioned.initialsync-logkeeper')
             ]
             mock_isfile.assert_has_calls(isfile_calls)
-            remove_calls = [
-                call('cluster.json'),
-                call('terraform.tfstate')
-            ]
+            remove_calls = [call('cluster.json'), call('terraform.tfstate')]
             mock_remove.assert_has_calls(remove_calls)
             self.assertTrue(provisioner.existing)
 
@@ -191,10 +185,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             self.assertTrue(mock_setup_evg_dir.called)
             isfile_calls = [call(evg_data_dir + '/terraform/terraform.tfstate')]
             mock_isfile.assert_has_calls(isfile_calls)
-            remove_calls = [
-                call('cluster.json'),
-                call('terraform.tfstate')
-            ]
+            remove_calls = [call('cluster.json'), call('terraform.tfstate')]
             mock_remove.assert_has_calls(remove_calls)
             self.assertFalse(provisioner.existing)
         self.reset_mock_objects()
@@ -238,10 +229,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             # through the sub_process.check_call. As such, it should have the same isfile calls as
             # that case.
             mock_isfile.assert_has_calls(isfile_calls)
-            remove_calls = [
-                call('cluster.json'),
-                call('terraform.tfstate')
-            ]
+            remove_calls = [call('cluster.json'), call('terraform.tfstate')]
             mock_remove.assert_has_calls(remove_calls)
             self.assertFalse(provisioner.existing)
 
@@ -261,13 +249,17 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             provisioner.bin_dir = 'test/bin'
             provisioner.setup_evg_dir()
             mock_makedirs.assert_called_with(evg_data_dir)
-            copytree_calls = [call('../terraform', evg_data_dir + '/terraform'),
-                              call('./modules', evg_data_dir + '/terraform/modules')]
+            copytree_calls = [
+                call('../terraform', evg_data_dir + '/terraform'),
+                call('./modules', evg_data_dir + '/terraform/modules')
+            ]
             mock_shutil.copytree.assert_has_calls(copytree_calls)
-            copyfile_calls = [call(provisioner.bin_dir + '/infrastructure_teardown.sh',
-                                   evg_data_dir + '/terraform/infrastructure_teardown.sh'),
-                              call(provisioner.bin_dir + '/infrastructure_teardown.py',
-                                   evg_data_dir + '/terraform/infrastructure_teardown.py')]
+            copyfile_calls = [
+                call(provisioner.bin_dir + '/infrastructure_teardown.sh',
+                     evg_data_dir + '/terraform/infrastructure_teardown.sh'),
+                call(provisioner.bin_dir + '/infrastructure_teardown.py',
+                     evg_data_dir + '/terraform/infrastructure_teardown.py')
+            ]
             mock_shutil.copyfile.assert_has_calls(copyfile_calls)
             listdir_calls = [call(evg_data_dir), call(os.path.join(evg_data_dir, 'terraform'))]
             # any_order is set to True because when running nosetests, listdir has extra
@@ -304,24 +296,25 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             provisioner.reuse_cluster = True
             provisioner.setup_cluster()
             #pylint: disable=line-too-long
-            mock_terraform_configuration.return_value.to_json.assert_called_with(file_name='cluster.json')
+            mock_terraform_configuration.return_value.to_json.assert_called_with(
+                file_name='cluster.json')
             #pylint: enable=line-too-long
             # __enter__ and __exit__ are checked to see if the files were opened
             # as context managers.
-            open_file_calls = [call('infrastructure_provisioning.out.yml', 'r'),
-                               call().read()]
+            open_file_calls = [call('infrastructure_provisioning.out.yml', 'r'), call().read()]
             mock_open_file.assert_has_calls(open_file_calls, any_order=True)
             # If the cluster is initialsync-logkeeper, then terraform should be run twice
             terraform = self.os_environ['TERRAFORM']
-            check_call_calls = [call([terraform, 'init', '-upgrade']),
-                                call([terraform, 'apply', '-var-file=cluster.json',
-                                      provisioner.parallelism, '-var="mongod_ebs_instance_count=0"',
-                                      '-var="workload_instance_count=0"']),
-                                call([terraform, 'apply', '-var-file=cluster.json',
-                                      provisioner.parallelism]),
-                                call([terraform, 'refresh', '-var-file=cluster.json']),
-                                call([terraform, 'plan', '-detailed-exitcode',
-                                      '-var-file=cluster.json'])]
+            check_call_calls = [
+                call([terraform, 'init', '-upgrade']),
+                call([
+                    terraform, 'apply', '-var-file=cluster.json', provisioner.parallelism,
+                    '-var="mongod_ebs_instance_count=0"', '-var="workload_instance_count=0"'
+                ]),
+                call([terraform, 'apply', '-var-file=cluster.json', provisioner.parallelism]),
+                call([terraform, 'refresh', '-var-file=cluster.json']),
+                call([terraform, 'plan', '-detailed-exitcode', '-var-file=cluster.json'])
+            ]
             mock_subprocess.check_call.assert_has_calls(check_call_calls)
             mock_save_output.assert_called_with([terraform, 'output'])
             self.assertTrue(mock_terraform_output_parser.return_value.write_output_files.called)
@@ -362,8 +355,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     @patch('infrastructure_provisioning.os.chdir')
     @patch('infrastructure_provisioning.os.getcwd')
     @patch('infrastructure_provisioning.shutil.copyfile')
-    def test_save_terraform_state(self, mock_copyfile, mock_getcwd,
-                                  mock_chdir, mock_remove, mock_check_call):
+    def test_save_terraform_state(self, mock_copyfile, mock_getcwd, mock_chdir, mock_remove,
+                                  mock_check_call):
         """ Test Provisioner.save_terraform_state """
         provisioned_files = ['provisioned.single', 'provisioned.shard']
         evg_data_dir = self.config['infrastructure_provisioning']['evergreen']['data_dir']
@@ -376,11 +369,14 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 provisioner = Provisioner(self.config)
                 provisioner.production = True
                 provisioner.save_terraform_state()
-                files_to_copy = ['terraform.tfstate', 'cluster.tf', 'terraform.tfvars',
-                                 'security.tf', 'cluster.json', 'aws_ssh_key.pem']
-                copyfile_calls = [call(file_to_copy,
-                                       os.path.join(terraform_dir, file_to_copy))
-                                  for file_to_copy in files_to_copy]
+                files_to_copy = [
+                    'terraform.tfstate', 'cluster.tf', 'terraform.tfvars', 'security.tf',
+                    'cluster.json', 'aws_ssh_key.pem'
+                ]
+                copyfile_calls = [
+                    call(file_to_copy, os.path.join(terraform_dir, file_to_copy))
+                    for file_to_copy in files_to_copy
+                ]
                 mock_copyfile.assert_has_calls(copyfile_calls)
                 chdir_calls = [call(terraform_dir), call(mock_getcwd.return_value)]
                 mock_chdir.assert_has_calls(chdir_calls)
@@ -412,11 +408,14 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 provisioner = Provisioner(config)
                 provisioner.production = True
                 provisioner.save_terraform_state()
-                files_to_copy = ['terraform.tfstate', 'cluster.tf', 'terraform.tfvars',
-                                 'security.tf', 'cluster.json']
-                copyfile_calls = [call(file_to_copy,
-                                       os.path.join(terraform_dir, file_to_copy))
-                                  for file_to_copy in files_to_copy]
+                files_to_copy = [
+                    'terraform.tfstate', 'cluster.tf', 'terraform.tfvars', 'security.tf',
+                    'cluster.json'
+                ]
+                copyfile_calls = [
+                    call(file_to_copy, os.path.join(terraform_dir, file_to_copy))
+                    for file_to_copy in files_to_copy
+                ]
                 mock_copyfile.assert_has_calls(copyfile_calls)
         self.reset_mock_objects()
 
@@ -427,8 +426,9 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         self.assertFalse(check_version(evg_data_dir + '/terraform/provisioned.single'))
         self.assertTrue(check_version(evg_data_dir + '/terraform/provisioned.replica'))
         self.assertFalse(check_version(evg_data_dir + '/terraform/provisioned.shard'))
-        self.assertTrue(check_version(
-            evg_data_dir + '/terraform/provisioned.initialsync-logkeeper'))
+        self.assertTrue(
+            check_version(evg_data_dir + '/terraform/provisioned.initialsync-logkeeper'))
+
 
 if __name__ == '__main__':
     unittest.main()

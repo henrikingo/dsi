@@ -4,6 +4,7 @@ import unittest
 
 from evergreen import override
 
+
 class TestValidate(unittest.TestCase):
     """Test `validation()`."""
 
@@ -107,6 +108,7 @@ class TestValidate(unittest.TestCase):
     def _test_validation_fail(self):
         with self.assertRaises(AssertionError):
             override.validate(self.override)
+
 
 if __name__ == "__main__":
     unittest.main()

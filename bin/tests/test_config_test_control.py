@@ -11,7 +11,8 @@ import yaml
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import config_test_control #pylint: disable=wrong-import-position
+import config_test_control  #pylint: disable=wrong-import-position
+
 
 def load_json(filename, directory=None):
     ''' Convenience method to read in a json file '''
@@ -19,6 +20,7 @@ def load_json(filename, directory=None):
         directory = '.'
     with open(os.path.join(directory, filename)) as json_file:
         return json.load(json_file)
+
 
 def load_yaml(filename, directory=None):
     ''' Convenience method to read in a yaml file '''
@@ -37,7 +39,7 @@ class TestConfigTestControl(unittest.TestCase):
         self.artifact_dir = os.path.join(self.test_dir, 'config_test_control')
         self.repo_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         self.config_file = 'test_control.yml'
-        self.copied_files = [] # List of files copied
+        self.copied_files = []  # List of files copied
         for filename in glob.glob(os.path.join(self.artifact_dir, '*.yml')):
             shutil.copy(filename, '.')
             self.copied_files.append(os.path.basename(filename))
@@ -59,12 +61,14 @@ class TestConfigTestControl(unittest.TestCase):
         shutil.copy('test_control.benchRun.yml', self.config_file)
         config_test_control.generate_mc_json()
 
-        self.assertEqual(load_json('mc.json'),
-                         load_json('mc.benchrun.json.ok', self.artifact_dir),
-                         'mc.json doesn\'t match expected for test_control.benchRun.yml')
-        self.assertEqual(load_yaml('workloads.yml'),
-                         load_yaml('workloads.benchrun.yml.ok', self.artifact_dir),
-                         'workloads.yml doesn\'t match excpected for test_control.benchRun.yml')
+        self.assertEqual(
+            load_json('mc.json'),
+            load_json('mc.benchrun.json.ok', self.artifact_dir),
+            'mc.json doesn\'t match expected for test_control.benchRun.yml')
+        self.assertEqual(
+            load_yaml('workloads.yml'),
+            load_yaml('workloads.benchrun.yml.ok', self.artifact_dir),
+            'workloads.yml doesn\'t match excpected for test_control.benchRun.yml')
 
     def test_ycsb(self):
         '''
@@ -74,8 +78,11 @@ class TestConfigTestControl(unittest.TestCase):
         '''
         shutil.copy('test_control.ycsb.yml', self.config_file)
         config_test_control.generate_mc_json()
-        self.assertEqual(load_json('mc.json'), load_json('mc.ycsb.json.ok', self.artifact_dir),
-                         'mc.json doesn\'t match excpected for test_control.ycsb.yml')
+        self.assertEqual(
+            load_json('mc.json'),
+            load_json('mc.ycsb.json.ok', self.artifact_dir),
+            'mc.json doesn\'t match excpected for test_control.ycsb.yml')
+
 
 if __name__ == '__main__':
     unittest.main()

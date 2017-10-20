@@ -14,9 +14,7 @@ class TestInfrastructureTeardown(unittest.TestCase):
     """ Test suite for infrastructure_teardown.py """
 
     def setUp(self):
-        self.os_environ = {
-            'TERRAFORM': 'test/path/terraform'
-        }
+        self.os_environ = {'TERRAFORM': 'test/path/terraform'}
 
     @patch('infrastructure_teardown.subprocess.check_call')
     @patch('infrastructure_teardown.glob.glob')

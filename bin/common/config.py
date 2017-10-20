@@ -10,6 +10,7 @@ import yaml
 
 LOG = logging.getLogger(__name__)
 
+
 class ConfigDict(dict):
     """Get/Set API for DSI (Distributed Performance 2.0) config files (dsi/docs/).
 
@@ -27,16 +28,10 @@ class ConfigDict(dict):
     defaults.yml
     raise KeyError"""
 
-    modules = ['bootstrap',
-               'runtime',
-               'runtime_secret',
-               'infrastructure_provisioning',
-               'system_setup',
-               'workload_preparation',
-               'mongodb_setup',
-               'test_control',
-               'analysis',
-               '_internal']
+    modules = [
+        'bootstrap', 'runtime', 'runtime_secret', 'infrastructure_provisioning', 'system_setup',
+        'workload_preparation', 'mongodb_setup', 'test_control', 'analysis', '_internal'
+    ]
 
     def __init__(self, which_module_am_i):
         self.raw = {}
@@ -76,8 +71,9 @@ class ConfigDict(dict):
         """Populate with contents of module_name.yml, module_name.out.yml, overrides.yml."""
 
         # defaults.yml
-        file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                 '..', '..', 'configurations', 'defaults.yml')
+        file_name = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), '..', '..', 'configurations',
+            'defaults.yml')
         with open(file_name) as file_handle:
             self.defaults = yaml.safe_load(file_handle)
             LOG.info('ConfigDict: Loaded: %s', file_name)
@@ -119,7 +115,7 @@ class ConfigDict(dict):
         """Write contents of self.raw[self.module]['out'] to module_name.out.yml"""
         file_name = self.module + '.out.yml'
         file_handle = open(file_name, 'w')
-        out = {'out' : self.raw[self.module]['out']}
+        out = {'out': self.raw[self.module]['out']}
         file_handle.write(yaml.dump(out, default_flow_style=False))
         file_handle.close()
         LOG.info('ConfigDict: Wrote file: %s', file_name)
@@ -151,7 +147,7 @@ class ConfigDict(dict):
         current = self
         keys = ()
         for key in path:
-            keys += (str(key),)
+            keys += (str(key), )
             try:
                 current = current[key]
             except TypeError:
@@ -283,7 +279,7 @@ class ConfigDict(dict):
             value = self.overrides.get(key, None)
 
         # And if none of the above apply, we just get the value from the raw dict, or from defaults:
-        if  value is None:
+        if value is None:
             value = self.raw.get(key, None)
         if value is None and isinstance(self.defaults, dict):
             value = self.defaults.get(key, None)
@@ -362,9 +358,9 @@ class ConfigDict(dict):
                     path_from_root = copy.copy(self.path)
                     path_from_root.append(key)
                     raise ValueError("ConfigDict error at {}: Cannot resolve variable "
-                                     "reference '{}', error at '{}': {} {}"
-                                     .format(path_from_root, path, path,
-                                             sys.exc_info()[0], sys.exc_info()[1]))
+                                     "reference '{}', error at '{}': {} {}".format(
+                                         path_from_root, path, path,
+                                         sys.exc_info()[0], sys.exc_info()[1]))
             between_values = re.split(r"\$\{[^\{]*?\}", value)
 
             # If the variable reference is the entire value, then return the referenced value as it
@@ -405,13 +401,14 @@ class ConfigDict(dict):
         value = None
         if self.is_topology_node() and key == ('config_file'):
             # Note: In the below 2 lines, overrides and ${variables} are already applied
-            common_config = self.root['mongodb_setup'].get(self.topology_node_type()+'_config_file')
+            common_config = self.root['mongodb_setup'].get(self.topology_node_type() +
+                                                           '_config_file')
             node_specific_config = self.raw.get(key, {})
             # Technically this works the same as if common_config was the raw value
             # and node_specific_config is a dict with overrides. So let's reuse some code...
             helper = ConfigDict('_internal')
-            helper.raw = {key : common_config}
-            helper.overrides = {key : node_specific_config}
+            helper.raw = {key: common_config}
+            helper.overrides = {key: node_specific_config}
             value = helper[key]
 
         if self.is_topology_replset() and key == ('rs_conf'):
@@ -428,8 +425,8 @@ class ConfigDict(dict):
         # Technically this works the same as if config_dict1 was the raw value
         # and config_dict2 is a dict with overrides. So let's reuse some code...
         helper = ConfigDict('_internal')
-        helper.raw = {key : config_dict1}
-        helper.overrides = {key : config_dict2}
+        helper.raw = {key: config_dict1}
+        helper.overrides = {key: config_dict2}
         return helper[key]
 
     def is_topology_node(self):
@@ -481,7 +478,6 @@ class ConfigDict(dict):
         else:
             return None
 
-
     def is_topology_replset(self):
         '''Returns true if self.path is a cluster_type: replset node under mongodb_setup.topology.
 
@@ -528,6 +524,7 @@ class ConfigDict(dict):
             raise KeyError('Only values under self["' + self.module +
                            '"]["out"] are settable in this object')
 
+
 def copy_obj(obj):
     """Return a copy of the dictionary or list. For a ConfigDict(), return plain dict()."""
     if isinstance(obj, dict):
@@ -540,6 +537,7 @@ def copy_obj(obj):
     else:
         return obj
 
+
 def is_integer(astring):
     """Return True if astring is an integer, false otherwise."""
     try:
@@ -547,6 +545,7 @@ def is_integer(astring):
         return True
     except ValueError:
         return False
+
 
 def change_key_name(dictionary, old_key, new_key):
     """Change key names at top level of a dictionary"""

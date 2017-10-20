@@ -34,11 +34,28 @@ class TestSetupBaselines(unittest.TestCase):
     def test_remove_depenencies(self):
         ''' Test remove_dependencies with simple input '''
 
-        input_object = {'functions': {'start server':
-                                      [None,
-                                       {'params': {'remote_file': 'original_mongod'}},
-                                       {'params': {'remote_file': 'original_mongo'}}]},
-                        'tasks': [{'depends_on': [{'name': 'foo'}, {'name': 'compile'}]}]}
+        input_object = {
+            'functions': {
+                'start server': [
+                    None, {
+                        'params': {
+                            'remote_file': 'original_mongod'
+                        }
+                    }, {
+                        'params': {
+                            'remote_file': 'original_mongo'
+                        }
+                    }
+                ]
+            },
+            'tasks': [{
+                'depends_on': [{
+                    'name': 'foo'
+                }, {
+                    'name': 'compile'
+                }]
+            }]
+        }
         output_object = setup_baselines.remove_dependenies(input_object)
         # Check output is correct
         self.assertTrue('functions' in output_object)
@@ -56,35 +73,48 @@ class TestSetupBaselines(unittest.TestCase):
         Test patch_sysperf_mongod_link
         '''
         # pylint: disable=line-too-long
-        input_object = {'tasks': [],
-                        'functions': {"prepare environment":
-                                      [{'command': 'shell.exec',
-                                        'params': {
-                                            'script':
-                                            '''
+        input_object = {
+            'tasks': [],
+            'functions': {
+                "prepare environment": [{
+                    'command': 'shell.exec',
+                    'params': {
+                        'script':
+                            '''
                                             rm -rf ./*
                                             mkdir src
                                             mkdir work
                                             mkdir bin
                                             pwd
-                                            ls'''}},
-                                       {'command': 'manifest.load'},
-                                       {'command': 'git.get_project',
-                                        'params': {'directory': 'src',
-                                                   'revisions': 'shortened'}},
-                                       {'command': 'shell.exec',
-                                        'params':
-                                        {'working_dir': 'work',
-                                         'script':
-                                         '''
+                                            ls'''
+                    }
+                }, {
+                    'command': 'manifest.load'
+                }, {
+                    'command': 'git.get_project',
+                    'params': {
+                        'directory': 'src',
+                        'revisions': 'shortened'
+                    }
+                }, {
+                    'command': 'shell.exec',
+                    'params': {
+                        'working_dir':
+                            'work',
+                        'script':
+                            '''
                                          cat > bootstrap.yml <<EOF
                                          # compositions of expansions
                                          # Use 3.4.1 for noise tests
                                          mongodb_binary_archive: "https://s3.amazonaws.com/mciuploads/dsi-v3.4/sys_perf_3.4_5e103c4f5583e2566a45d740225dc250baacfbd7/5e103c4f5583e2566a45d740225dc250baacfbd7/linux/mongod-sys_perf_3.4_5e103c4f5583e2566a45d740225dc250baacfbd7.tar.gz"
                                          EOF
                                          '''
-                                        }},
-                                       {'command': 'shell.exec'}]}}
+                    }
+                }, {
+                    'command': 'shell.exec'
+                }]
+            }
+        }
         # pylint: enable=line-too-long
         output_yaml = setup_baselines.patch_sysperf_mongod_link(input_object, 'test_link')
         script = output_yaml['functions']["prepare environment"][3]["params"]["script"]
@@ -105,11 +135,28 @@ class TestSetupBaselines(unittest.TestCase):
         Test patch_perf_yaml_strings with simple input
         '''
 
-        input_object = {'functions': {'start server':
-                                      [None,
-                                       {'params': {'remote_file': 'original_mongod'}},
-                                       {'params': {'remote_file': 'original_mongo'}}]},
-                        'tasks': [{'depends_on': [{'name': 'foo'}, {'name': 'compile'}]}]}
+        input_object = {
+            'functions': {
+                'start server': [
+                    None, {
+                        'params': {
+                            'remote_file': 'original_mongod'
+                        }
+                    }, {
+                        'params': {
+                            'remote_file': 'original_mongo'
+                        }
+                    }
+                ]
+            },
+            'tasks': [{
+                'depends_on': [{
+                    'name': 'foo'
+                }, {
+                    'name': 'compile'
+                }]
+            }]
+        }
         output_object = setup_baselines.patch_perf_yaml_strings(input_object, 'new_mongod',
                                                                 'new_mongo')
         # Check that input is unchanged
@@ -224,44 +271,20 @@ class TestSetupBaselines(unittest.TestCase):
         updater = setup_baselines.BaselineUpdater()
         # This test removes the views tasks
         tasks = updater.get_tasks(self.perfyaml, '3.2')
-        reference = ['compile',
-                     'query',
-                     'where',
-                     'update',
-                     'insert',
-                     'geo',
-                     'misc',
-                     'singleThreaded',
-                     'singleThreaded-wt-repl-comp',
-                     'insert-wt-repl-comp',
-                     'update-wt-repl-comp',
-                     'misc-wt-repl-comp',
-                     'singleThreaded-mmap-repl-comp',
-                     'insert-mmap-repl-comp',
-                     'update-mmap-repl-comp',
-                     'misc-mmap-repl-comp',
-                     'aggregation']
+        reference = [
+            'compile', 'query', 'where', 'update', 'insert', 'geo', 'misc', 'singleThreaded',
+            'singleThreaded-wt-repl-comp', 'insert-wt-repl-comp', 'update-wt-repl-comp',
+            'misc-wt-repl-comp', 'singleThreaded-mmap-repl-comp', 'insert-mmap-repl-comp',
+            'update-mmap-repl-comp', 'misc-mmap-repl-comp', 'aggregation'
+        ]
         self.assertEqual(tasks, reference)
         tasks = updater.get_tasks(self.perfyaml, '3.4')
-        reference = ['compile',
-                     'query',
-                     'views-query',
-                     'views-aggregation',
-                     'where',
-                     'update',
-                     'insert',
-                     'geo',
-                     'misc',
-                     'singleThreaded',
-                     'singleThreaded-wt-repl-comp',
-                     'insert-wt-repl-comp',
-                     'update-wt-repl-comp',
-                     'misc-wt-repl-comp',
-                     'singleThreaded-mmap-repl-comp',
-                     'insert-mmap-repl-comp',
-                     'update-mmap-repl-comp',
-                     'misc-mmap-repl-comp',
-                     'aggregation']
+        reference = [
+            'compile', 'query', 'views-query', 'views-aggregation', 'where', 'update', 'insert',
+            'geo', 'misc', 'singleThreaded', 'singleThreaded-wt-repl-comp', 'insert-wt-repl-comp',
+            'update-wt-repl-comp', 'misc-wt-repl-comp', 'singleThreaded-mmap-repl-comp',
+            'insert-mmap-repl-comp', 'update-mmap-repl-comp', 'misc-mmap-repl-comp', 'aggregation'
+        ]
         self.assertEqual(tasks, reference)
 
     def test_get_variants(self):
@@ -269,12 +292,10 @@ class TestSetupBaselines(unittest.TestCase):
             '''
 
         variants = setup_baselines.get_variants(self.perfyaml)
-        reference = ['linux-wt-standalone',
-                     'linux-mmap-standalone',
-                     'linux-wt-repl',
-                     'linux-mmap-repl',
-                     'linux-wt-repl-compare',
-                     'linux-mmap-repl-compare']
+        reference = [
+            'linux-wt-standalone', 'linux-mmap-standalone', 'linux-wt-repl', 'linux-mmap-repl',
+            'linux-wt-repl-compare', 'linux-mmap-repl-compare'
+        ]
         self.assertEqual(variants, reference)
 
     def test_prepare_patch(self):
@@ -284,30 +305,33 @@ class TestSetupBaselines(unittest.TestCase):
 
         updater = setup_baselines.BaselineUpdater()
         cmd_args = updater.prepare_patch_cmd(self.perfyaml, '3.2.11', 'performance')
-        reference = ['patch', '-p', 'performance', '-d', '3.2.11 baseline for project performance',
-                     '-y', '-f', '-v', 'linux-wt-standalone', '-v', 'linux-mmap-standalone', '-v',
-                     'linux-wt-repl', '-v', 'linux-mmap-repl', '-v', 'linux-wt-repl-compare', '-v',
-                     'linux-mmap-repl-compare', '-t', 'query', '-t', 'where', '-t', 'update', '-t',
-                     'insert', '-t', 'geo', '-t', 'misc', '-t', 'singleThreaded', '-t',
-                     'singleThreaded-wt-repl-comp', '-t', 'insert-wt-repl-comp', '-t',
-                     'update-wt-repl-comp', '-t', 'misc-wt-repl-comp', '-t',
-                     'singleThreaded-mmap-repl-comp', '-t', 'insert-mmap-repl-comp', '-t',
-                     'update-mmap-repl-comp', '-t', 'misc-mmap-repl-comp', '-t', 'aggregation']
+        reference = [
+            'patch', '-p', 'performance', '-d', '3.2.11 baseline for project performance', '-y',
+            '-f', '-v', 'linux-wt-standalone', '-v', 'linux-mmap-standalone', '-v', 'linux-wt-repl',
+            '-v', 'linux-mmap-repl', '-v', 'linux-wt-repl-compare', '-v', 'linux-mmap-repl-compare',
+            '-t', 'query', '-t', 'where', '-t', 'update', '-t', 'insert', '-t', 'geo', '-t', 'misc',
+            '-t', 'singleThreaded', '-t', 'singleThreaded-wt-repl-comp', '-t',
+            'insert-wt-repl-comp', '-t', 'update-wt-repl-comp', '-t', 'misc-wt-repl-comp', '-t',
+            'singleThreaded-mmap-repl-comp', '-t', 'insert-mmap-repl-comp', '-t',
+            'update-mmap-repl-comp', '-t', 'misc-mmap-repl-comp', '-t', 'aggregation'
+        ]
         # The first entry is the evergreen binary. Remove that.
         self.assertEqual(cmd_args[1:], reference, 'arguments to evergreen Popen call for 3.2.11')
         cmd_args = updater.prepare_patch_cmd(self.perfyaml, '3.4.1', 'performance')
-        reference = ['patch', '-p', 'performance', '-d', '3.4.1 baseline for project performance',
-                     '-y', '-f', '-v', 'linux-wt-standalone', '-v', 'linux-mmap-standalone', '-v',
-                     'linux-wt-repl', '-v', 'linux-mmap-repl', '-v', 'linux-wt-repl-compare', '-v',
-                     'linux-mmap-repl-compare', '-t', 'query', '-t', 'views-query', '-t',
-                     'views-aggregation', '-t', 'where', '-t', 'update', '-t',
-                     'insert', '-t', 'geo', '-t', 'misc', '-t', 'singleThreaded', '-t',
-                     'singleThreaded-wt-repl-comp', '-t', 'insert-wt-repl-comp', '-t',
-                     'update-wt-repl-comp', '-t', 'misc-wt-repl-comp', '-t',
-                     'singleThreaded-mmap-repl-comp', '-t', 'insert-mmap-repl-comp', '-t',
-                     'update-mmap-repl-comp', '-t', 'misc-mmap-repl-comp', '-t', 'aggregation']
+        reference = [
+            'patch', '-p', 'performance', '-d', '3.4.1 baseline for project performance', '-y',
+            '-f', '-v', 'linux-wt-standalone', '-v', 'linux-mmap-standalone', '-v', 'linux-wt-repl',
+            '-v', 'linux-mmap-repl', '-v', 'linux-wt-repl-compare', '-v', 'linux-mmap-repl-compare',
+            '-t', 'query', '-t', 'views-query', '-t', 'views-aggregation', '-t', 'where', '-t',
+            'update', '-t', 'insert', '-t', 'geo', '-t', 'misc', '-t', 'singleThreaded', '-t',
+            'singleThreaded-wt-repl-comp', '-t', 'insert-wt-repl-comp', '-t', 'update-wt-repl-comp',
+            '-t', 'misc-wt-repl-comp', '-t', 'singleThreaded-mmap-repl-comp', '-t',
+            'insert-mmap-repl-comp', '-t', 'update-mmap-repl-comp', '-t', 'misc-mmap-repl-comp',
+            '-t', 'aggregation'
+        ]
         # The first entry is the evergreen binary. Remove that.
         self.assertEqual(cmd_args[1:], reference, 'arguments to evergreen Popen call for 3.4.1')
+
 
 if __name__ == '__main__':
     unittest.main()

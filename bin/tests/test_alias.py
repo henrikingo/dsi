@@ -58,5 +58,6 @@ class AliasTestCase(unittest.TestCase):
         self.assertEquals(expand(unalias('md')), 'mongod.0.public_ip')
         self.assertEquals(unalias(expand('md')), expand(unalias('md')))
 
+
 if __name__ == '__main__':
     unittest.main()

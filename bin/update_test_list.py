@@ -41,18 +41,14 @@ def main(argv):
     ''' Main function for updating testlist '''
 
     parser = argparse.ArgumentParser(description='Update test_list argument in test_control.yml')
-    parser.add_argument('-i',
-                        '--input-file',
-                        default='test_control.yml',
-                        help='Input file to update')
-    parser.add_argument('-o',
-                        '--output-file',
-                        help='Output file. Defaults to inplace update')
-    parser.add_argument('testlist',
-                        help='New testlist to use')
+    parser.add_argument(
+        '-i', '--input-file', default='test_control.yml', help='Input file to update')
+    parser.add_argument('-o', '--output-file', help='Output file. Defaults to inplace update')
+    parser.add_argument('testlist', help='New testlist to use')
 
     args = parser.parse_args(argv)
     testlist_update(args.testlist, args.input_file, args.output_file)
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])

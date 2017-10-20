@@ -7,6 +7,7 @@ source ${BUILDIR}/test-common.sh
 failed=0
 
 run_test ${BUILDIR}/validate-overrides.sh
+run_test ${BUILDIR}/check_format_python.py
 run_test ${BUILDIR}/lint-python.sh
 run_test ${BUILDIR}/lint-yml.sh
 run_test ${BUILDIR}/run-nosetest.sh

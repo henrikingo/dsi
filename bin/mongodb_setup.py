@@ -49,9 +49,7 @@ def merge_dicts(base, override):
     # update takes care of overriding non-dict values
     copy.update(override)
     for key in copy:
-        if (key in base and
-                isinstance(copy[key], dict) and
-                isinstance(base[key], dict)):
+        if key in base and isinstance(copy[key], dict) and isinstance(base[key], dict):
             copy[key] = merge_dicts(base[key], copy[key])
     return copy
 
@@ -104,8 +102,8 @@ class MongoNode(object):
         self.private_ip = opts.get('private_ip', self.public_ip)
         self.bin_dir = os.path.join(opts.get('mongo_dir', self.default_mongo_dir), 'bin')
         self.clean_logs = opts.get('clean_logs', MongoNode.clean_logs)
-        self.clean_diagnostic_data = opts.get('clean_logs',
-                                              (not is_mongos) and MongoNode.clean_logs)
+        self.clean_diagnostic_data = opts.get('clean_logs', (not is_mongos)
+                                              and MongoNode.clean_logs)
         self.clean_db_dir = opts.get('clean_db_dir', (not is_mongos) and MongoNode.clean_db_dir)
         self.use_journal_mnt = opts.get('use_journal_mnt', not is_mongos)
         self.mongo_config_file = copy_obj(opts.get('config_file', {}))
@@ -139,12 +137,10 @@ class MongoNode(object):
 
     def _host(self):
         """Create host wrapper to run commands."""
-        if self.run_locally or self.public_ip in ['localhost', '127.0.0.1',
-                                                  '0.0.0.0']:
+        if self.run_locally or self.public_ip in ['localhost', '127.0.0.1', '0.0.0.0']:
             return LocalHost()
         else:
-            return RemoteHost(self.public_ip, self.ssh_user,
-                              self.ssh_key_file)
+            return RemoteHost(self.public_ip, self.ssh_user, self.ssh_key_file)
 
     def wait_until_up(self):
         """ Checks to make sure node is up and accessible"""
@@ -200,8 +196,7 @@ class MongoNode(object):
             # Create separate journal directory and link to the database
             if self.use_journal_mnt:
                 commands.append(['mkdir', '-p', self.journal_dir])
-                commands.append(['ln', '-s', self.journal_dir,
-                                 os.path.join(self.dbdir, 'journal')])
+                commands.append(['ln', '-s', self.journal_dir, os.path.join(self.dbdir, 'journal')])
             commands.append(['ls', '-la', self.dbdir])
         commands.append(['ls', '-la'])
         return self.host.run(commands)
@@ -234,8 +229,7 @@ class MongoNode(object):
         :return: True if the mongo shell exits successfully
         """
         remote_file_name = '/tmp/mongo_port_{0}.js'.format(self.port)
-        if self.host.exec_mongo_command(js_string,
-                                        remote_file_name,
+        if self.host.exec_mongo_command(js_string, remote_file_name,
                                         "localhost:" + str(self.port)) != 0:
             self.dump_mongo_log()
             return False
@@ -261,8 +255,7 @@ class MongoNode(object):
     def shutdown(self):
         """Shutdown the replset members gracefully"""
         if self.started:
-            return self.run_mongo_shell(
-                'db.getSiblingDB("admin").shutdownServer({timeoutSecs: 5})')
+            return self.run_mongo_shell('db.getSiblingDB("admin").shutdownServer({timeoutSecs: 5})')
         return True
 
     def destroy(self):
@@ -308,13 +301,11 @@ class ReplSet(object):
             self.rs_conf_members.append(copy_obj(opt.get('rs_conf_member', {})))
             # Must add replSetName and clusterRole
             config_file = copy_obj(opt.get('config_file', {}))
-            config_file = merge_dicts(
-                config_file, {'replication': {'replSetName': self.name}})
+            config_file = merge_dicts(config_file, {'replication': {'replSetName': self.name}})
 
             mongod_opt = copy_obj(opt)
             if self.configsvr:
-                config_file = merge_dicts(
-                    config_file, {'sharding': {'clusterRole': 'configsvr'}})
+                config_file = merge_dicts(config_file, {'sharding': {'clusterRole': 'configsvr'}})
                 # The test infrastructure does not set up a separate journal dir for
                 # the config server machines.
                 mongod_opt['use_journal_mnt'] = False
@@ -392,10 +383,7 @@ class ReplSet(object):
     def _init_replica_set(self):
         """Return the JavaScript code to configure the replica set."""
         LOG.info('Configuring replica set: %s', self.name)
-        config = merge_dicts(self.rs_conf, {
-            '_id': self.name,
-            'members': []
-        })
+        config = merge_dicts(self.rs_conf, {'_id': self.name, 'members': []})
         if self.configsvr:
             config['configsvr'] = True
         for i, node in enumerate(self.nodes):
@@ -466,11 +454,7 @@ class ShardedCluster(object):
         config_type = opts.get('configsvr_type', 'csrs')
         if config_type != 'csrs':
             raise NotImplementedError('configsvr_type: {}'.format(config_type))
-        config_opt = {
-            'id': DEFAULT_CSRS_NAME,
-            'configsvr': True,
-            'mongod': opts['configsvr']
-        }
+        config_opt = {'id': DEFAULT_CSRS_NAME, 'configsvr': True, 'mongod': opts['configsvr']}
         self.config = ReplSet(config_opt)
         self.shards = []
         self.mongoses = []
@@ -504,19 +488,16 @@ class ShardedCluster(object):
                 return False
         return True
 
-
     def setup_host(self):
         """Ensures necessary files are setup."""
-        return (self.config.setup_host() and
-                all(shard.setup_host() for shard in self.shards) and
-                all(mongos.setup_host() for mongos in self.mongoses))
+        return (self.config.setup_host() and all(shard.setup_host() for shard in self.shards)
+                and all(mongos.setup_host() for mongos in self.mongoses))
 
     def launch(self):
         """Starts the sharded cluster."""
         LOG.info('Launching sharded cluster...')
-        if not (self.config.launch(numactl=False) and
-                all(shard.launch() for shard in self.shards) and
-                all(mongos.launch() for mongos in self.mongoses)):
+        if not (self.config.launch(numactl=False) and all(shard.launch() for shard in self.shards)
+                and all(mongos.launch() for mongos in self.mongoses)):
             return False
         if not self._add_shards():
             return False
@@ -530,8 +511,8 @@ class ShardedCluster(object):
         # Add shard to mongos
         js_add_shards = []
         for shard in self.shards:
-            js_add_shards.append('assert.commandWorked(sh.addShard("{0}"));'.
-                                 format(shard.connection_string_private()))
+            js_add_shards.append('assert.commandWorked(sh.addShard("{0}"));'.format(
+                shard.connection_string_private()))
         if not self.mongoses[0].run_mongo_shell('\n'.join(js_add_shards)):
             LOG.error('Failed to add shards!')
             return False
@@ -539,9 +520,8 @@ class ShardedCluster(object):
 
     def shutdown(self):
         """Shutdown the mongodb cluster gracefully."""
-        return (all(shard.shutdown() for shard in self.shards) and
-                self.config.shutdown() and
-                all(mongos.shutdown() for mongos in self.mongoses))
+        return (all(shard.shutdown() for shard in self.shards) and self.config.shutdown()
+                and all(mongos.shutdown() for mongos in self.mongoses))
 
     def destroy(self):
         """Kills the remote custer members."""
@@ -601,8 +581,7 @@ class MongodbSetup(object):
         if MongoNode.numactl_prefix is None:
             MongoNode.numactl_prefix = ""
         self.clusters = []
-        self.downloader = DownloadMongodb(config,
-                                          args.run_locally)
+        self.downloader = DownloadMongodb(config, args.run_locally)
         self.parse_topologies()
 
     def parse_topologies(self):
@@ -648,30 +627,16 @@ class MongodbSetup(object):
         for cluster in self.clusters:
             cluster.close()
 
+
 def parse_command_line():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         description='Start a MongoDB cluster in a distributed environment')
-    parser.add_argument(
-        '--config',
-        action='store_true',
-        help='Ignored. (backward compatibility)')
-    parser.add_argument(
-        '-l',
-        '--run-locally',
-        action='store_true',
-        help='launch the setup locally')
-    parser.add_argument(
-        '--mongo-dir',
-        help='path to dir containing ./bin/mongo binaries')
-    parser.add_argument(
-        '-d',
-        '--debug',
-        action='store_true',
-        help='enable debug output')
-    parser.add_argument(
-        '--log-file',
-        help='path to log file')
+    parser.add_argument('--config', action='store_true', help='Ignored. (backward compatibility)')
+    parser.add_argument('-l', '--run-locally', action='store_true', help='launch the setup locally')
+    parser.add_argument('--mongo-dir', help='path to dir containing ./bin/mongo binaries')
+    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
+    parser.add_argument('--log-file', help='path to log file')
     args = parser.parse_args()
 
     # --mongo-dir must have a bin/ sub-directory
@@ -700,6 +665,7 @@ def main():
     mongo = MongodbSetup(config, args)
     if not mongo.start():
         exit(1)
+
 
 if __name__ == '__main__':
     main()

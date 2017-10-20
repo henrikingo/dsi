@@ -18,16 +18,9 @@ import requests
 
 from util import read_histories, get_override, compare_one_result_base
 
-
 # tests are classified into one of the following states
 # When combining states from multiple checks, the highest valued state wins
-TEST_STATE = {
-    'pass': 1,
-    'forced accept': 2,
-    'undesired': 3,
-    'unacceptable': 4,
-    'no data': 5
-}
+TEST_STATE = {'pass': 1, 'forced accept': 2, 'undesired': 3, 'unacceptable': 4, 'no data': 5}
 
 # project_id and variant uniquely identify the set of rules to check
 # using a dictionary to help us choose the function with the right rules
@@ -36,31 +29,41 @@ TEST_STATE = {
 THRESHOLDS = {
     'sys-perf': {
         'linux-oplog-compare': {
-            'undesired': 0.25, 'thread_undesired': 0.38,
-            'unacceptable': 0.38, 'thread_unacceptable': 0.57
-            }
-        },
+            'undesired': 0.25,
+            'thread_undesired': 0.38,
+            'unacceptable': 0.38,
+            'thread_unacceptable': 0.57
+        }
+    },
     'performance': {
         'default': {
-            'undesired': 0.1, 'thread_undesired': 0.15,
-            'unacceptable': 0.15, 'thread_unacceptable': 0.23
-            }
-        },
+            'undesired': 0.1,
+            'thread_undesired': 0.15,
+            'unacceptable': 0.15,
+            'thread_unacceptable': 0.23
+        }
+    },
     'mongo-longevity': {
         'linux-wt-shard': {
-            'undesired': 0.25, 'thread_undesired': 0.25,
-            'unacceptable': 0.40, 'thread_unacceptable': 0.40
-            },
-        'linux-mmapv1-shard': {
-            'undesired': 0.25, 'thread_undesired': 0.25,
-            'unacceptable': 0.40, 'thread_unacceptable': 0.40
-            }
+            'undesired': 0.25,
+            'thread_undesired': 0.25,
+            'unacceptable': 0.40,
+            'thread_unacceptable': 0.40
         },
-    'default': {
-        'undesired': 0.1, 'thread_undesired': 0.15,
-        'unacceptable': 0.15, 'thread_unacceptable': 0.23
+        'linux-mmapv1-shard': {
+            'undesired': 0.25,
+            'thread_undesired': 0.25,
+            'unacceptable': 0.40,
+            'thread_unacceptable': 0.40
         }
+    },
+    'default': {
+        'undesired': 0.1,
+        'thread_undesired': 0.15,
+        'unacceptable': 0.15,
+        'thread_unacceptable': 0.23
     }
+}
 # if only one threshold is defined, such as in the case of
 # using a treshold_override, we use that for undesired and use
 # a multiplier to define the unacceptable
@@ -76,7 +79,6 @@ REPL_LAG_THRESHOLD = 15
 HISTORY = None
 TAG_HISTORY = None
 OVERRIDE_INFO = None
-
 '''
 Checks section -
     All checks return a dictionary that contains information used by
@@ -84,6 +86,7 @@ Checks section -
     and perf_ratio. A check may return only a subset of the information
     that is relevant to the conditions it checks.
 '''
+
 
 def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_password):
     ''' compute throughput ratios for all points in result series this_one
@@ -93,8 +96,7 @@ def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_passwor
 
     # start the state as 'pass', if any override is used move it to 'forced accept'
     # after comparison to reference, move it to unacceptable or undesired if needed
-    check_result = {'state': 'pass', 'notes': '', 'ticket': [],
-                    'perf_ratio': 1}
+    check_result = {'state': 'pass', 'notes': '', 'ticket': [], 'perf_ratio': 1}
 
     # if TAG_HISTORY is undefined, skip this check completely
     if TAG_HISTORY:
@@ -157,9 +159,8 @@ def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_passwor
     # when fixing PERF-595, we need to review noise-handling in all analysis scripts
     noise_levels = HISTORY.noise_levels(test['name'])
     worst_noise = max(noise_levels.values()) if (len(noise_levels.values()) == 0) else 0
-    (failed, ratio, target) = compare_one_result_base(
-        test['max'], reference['max'], worst_noise,
-        NOISE_MULTIPLE, unacceptable_threshold)
+    (failed, ratio, target) = compare_one_result_base(test['max'], reference['max'], worst_noise,
+                                                      NOISE_MULTIPLE, unacceptable_threshold)
     check_result['perf_ratio'] = 1 + ratio
     if failed:
         failed_reason = ' with test noise' if (target < unacceptable_threshold-0.0001)\
@@ -170,8 +171,7 @@ def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_passwor
             check_result['state'] = 'unacceptable'
     else:
         (failed, ratio, target) = compare_one_result_base(
-            test['max'], reference['max'], worst_noise,
-            NOISE_MULTIPLE, undesired_threshold)
+            test['max'], reference['max'], worst_noise, NOISE_MULTIPLE, undesired_threshold)
         if failed:
             failed_reason = ' with test noise' if (target < undesired_threshold-0.0001)\
                 else ''
@@ -185,9 +185,8 @@ def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_passwor
             continue
 
         (failed, ratio, target) = compare_one_result_base(
-            test['results'][level]['ops_per_sec'],
-            reference['results'][level]['ops_per_sec'], noise_levels.get(level, 0),
-            THREAD_NOISE_MULTIPLE, thread_unacceptable_threshold)
+            test['results'][level]['ops_per_sec'], reference['results'][level]['ops_per_sec'],
+            noise_levels.get(level, 0), THREAD_NOISE_MULTIPLE, thread_unacceptable_threshold)
         if failed:
             failed_reason = ' with test noise' if (target < thread_unacceptable_threshold-0.0001)\
                 else ''
@@ -197,9 +196,8 @@ def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_passwor
                 check_result['state'] = 'unacceptable'
         else:
             (failed, ratio, target) = compare_one_result_base(
-                test['results'][level]['ops_per_sec'],
-                reference['results'][level]['ops_per_sec'], noise_levels.get(level, 0),
-                THREAD_NOISE_MULTIPLE, thread_undesired_threshold)
+                test['results'][level]['ops_per_sec'], reference['results'][level]['ops_per_sec'],
+                noise_levels.get(level, 0), THREAD_NOISE_MULTIPLE, thread_undesired_threshold)
             if failed:
                 failed_reason = ' with test noise' \
                     if (target < thread_undesired_threshold-0.0001)\
@@ -229,6 +227,7 @@ def repl_lag_check(test, threshold):
 
 
 # Other utility functions
+
 
 def check_ticket_state(ticket_list, jira_user, jira_password):
     ''' Determine if we want to use override based on the states of the
@@ -273,36 +272,45 @@ def main(args):
     ''' Loop through and classify tests in a task into states used for
     dashboard '''
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--project_id", dest="project_id",
-                        help="project_id for the test in Evergreen")
-    parser.add_argument("--task_name", dest="task_name", help="task_name for"
-                        " the test in Evergreen")
-    parser.add_argument("-f", "--file", dest="hfile", help="path to json file"
-                        " containing history data")
-    parser.add_argument("-t", "--tagFile", dest="tfile", help="path to json"
-                        " file containing tag data")
-    parser.add_argument("--rev", dest="rev", help="revision to examine for"
-                        " regressions")
-    parser.add_argument("--refTag", nargs="+", dest="reference", help=
-                        "Reference tag to compare against. Should be a valid"
-                        " tag name")
-    parser.add_argument("--overrideFile", dest="ofile",
-                        help="File to read override information")
-    parser.add_argument("--variant", dest="variant", help="Variant to lookup"
-                        " in the override file")
-    parser.add_argument("--task", dest="task", help="Task to lookup"
-                        " in the override file")
-    parser.add_argument("--jira-user", dest="jira_user", required=True, help=
-                        "Jira account used to check ticket states. Incorrect"
-                        "user/password may result in override information not"
-                        "properly used")
-    parser.add_argument("--jira-password", dest="jira_password", required=True,
-                        help="Password for the Jira account. Incorrect"
-                        " user/passowrd may result in override information not"
-                        "properly used")
     parser.add_argument(
-        "--dashboard-file", default="dashboard.json",
-        help="File to write the dashboard JSON to.")
+        "--project_id", dest="project_id", help="project_id for the test in Evergreen")
+    parser.add_argument(
+        "--task_name", dest="task_name", help="task_name for"
+        " the test in Evergreen")
+    parser.add_argument(
+        "-f", "--file", dest="hfile", help="path to json file"
+        " containing history data")
+    parser.add_argument(
+        "-t", "--tagFile", dest="tfile", help="path to json"
+        " file containing tag data")
+    parser.add_argument("--rev", dest="rev", help="revision to examine for" " regressions")
+    parser.add_argument(
+        "--refTag",
+        nargs="+",
+        dest="reference",
+        help="Reference tag to compare against. Should be a valid"
+        " tag name")
+    parser.add_argument("--overrideFile", dest="ofile", help="File to read override information")
+    parser.add_argument(
+        "--variant", dest="variant", help="Variant to lookup"
+        " in the override file")
+    parser.add_argument("--task", dest="task", help="Task to lookup" " in the override file")
+    parser.add_argument(
+        "--jira-user",
+        dest="jira_user",
+        required=True,
+        help="Jira account used to check ticket states. Incorrect"
+        "user/password may result in override information not"
+        "properly used")
+    parser.add_argument(
+        "--jira-password",
+        dest="jira_password",
+        required=True,
+        help="Password for the Jira account. Incorrect"
+        " user/passowrd may result in override information not"
+        "properly used")
+    parser.add_argument(
+        "--dashboard-file", default="dashboard.json", help="File to write the dashboard JSON to.")
     ARGS = parser.parse_args(args)  # pylint: disable=invalid-name
 
     # Set up result histories from various files:
@@ -311,11 +319,11 @@ def main(args):
     # OVERRIDE_INFO - this series has the override data to avoid false alarm or fatigues
     # The result histories are stored in global variables within this module as they
     # are accessed across many rules.
-    global HISTORY, TAG_HISTORY, OVERRIDE_INFO # pylint: disable=global-statement
+    global HISTORY, TAG_HISTORY, OVERRIDE_INFO  # pylint: disable=global-statement
     (HISTORY, TAG_HISTORY, OVERRIDE_INFO) = read_histories(ARGS.variant, ARGS.task,\
                                                            ARGS.hfile, ARGS.tfile, ARGS.ofile)
 
-    report = {'baselines':[]}
+    report = {'baselines': []}
     for baseline in ARGS.reference:
         results = []
         report_for_baseline = {'version': baseline}
@@ -327,10 +335,8 @@ def main(args):
             to_check = HISTORY.series_at_revision(test, ARGS.rev)
             if to_check:
                 update_state(result,
-                             throughput_check(to_check, baseline,
-                                              ARGS.project_id, ARGS.variant,
-                                              ARGS.jira_user,
-                                              ARGS.jira_password))
+                             throughput_check(to_check, baseline, ARGS.project_id, ARGS.variant,
+                                              ARGS.jira_user, ARGS.jira_password))
                 update_state(result, repl_lag_check(to_check, REPL_LAG_THRESHOLD))
             else:
                 result['state'] = 'no data'
@@ -343,6 +349,7 @@ def main(args):
 
     with open(ARGS.dashboard_file, "w") as dashboard_file:
         json.dump(report, dashboard_file, indent=4, separators=(',', ': '))
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])

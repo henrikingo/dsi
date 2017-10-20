@@ -7,6 +7,7 @@ import unittest
 import ftdc_analysis
 from tests import test_utils
 
+
 class TestFtdcAnalysis(unittest.TestCase):
     """Test suite."""
 
@@ -45,36 +46,43 @@ class TestFtdcAnalysis(unittest.TestCase):
         self.assertEqual(output, "")
         """
 
-        rule_info = [{'additional': {'lag end threshold (s)': 2.0,
-                                     'lag start threshold (s)': 15.0,
-                                     'primary member': '0'},
-                      'members': {'1': {'compared_values': [(16.0, '2017-05-31 16:54:42Z', 129.0,
-                                                             '2017-05-31 16:54:42Z', 120.0),
-                                                            (17.0, '2017-05-31 16:59:23Z', 104.0,
-                                                             '2017-05-31 16:59:26Z', 99.0),
-                                                            (16.0, '2017-05-31 17:04:33Z', 117.0,
-                                                             '2017-05-31 17:04:34Z', 110.0),
-                                                            (16.0, '2017-05-31 17:09:13Z', 93.0,
-                                                             '2017-05-31 17:09:32Z', 12.0)],
-                                        'labels': ('start value (s)', 'max time', 'max value (s)',
-                                                   'end time', 'end value (s)'),
-                                        'report_all_values': True,
-                                        'times': [1496248949000, 1496249726000,
-                                                  1496250019000, 1496250331000]},
-                                  '2': {'compared_values': [(16.0, '2017-05-31 16:54:03Z', 90.0,
-                                                             '2017-05-31 16:54:04Z', 82.0),
-                                                            (16.0, '2017-05-31 16:58:53Z', 76.0,
-                                                             '2017-05-31 16:59:00Z', 72.0),
-                                                            (16.0, '2017-05-31 17:03:53Z', 80.0,
-                                                             '2017-05-31 17:03:58Z', 77.0),
-                                                            (16.0, '2017-05-31 17:08:53Z', 70.0,
-                                                             '2017-05-31 17:08:54Z', 62.0)],
-                                        'labels': ('start value (s)', 'max time', 'max value (s)',
-                                                   'end time', 'end value (s)'),
-                                        'report_all_values': True,
-                                        'times': [1496248967000, 1496249735000,
-                                                  1496250027000, 1496250339000]}}}]
-        file_rule_failures = {'ftdc_replica_lag_check' : rule_info}
+        rule_info = [{
+            'additional': {
+                'lag end threshold (s)': 2.0,
+                'lag start threshold (s)': 15.0,
+                'primary member': '0'
+            },
+            'members': {
+                '1': {
+                    'compared_values': [
+                        (16.0, '2017-05-31 16:54:42Z', 129.0, '2017-05-31 16:54:42Z', 120.0),
+                        (17.0, '2017-05-31 16:59:23Z', 104.0, '2017-05-31 16:59:26Z',
+                         99.0), (16.0, '2017-05-31 17:04:33Z', 117.0, '2017-05-31 17:04:34Z',
+                                 110.0), (16.0, '2017-05-31 17:09:13Z', 93.0,
+                                          '2017-05-31 17:09:32Z', 12.0)
+                    ],
+                    'labels': ('start value (s)', 'max time', 'max value (s)', 'end time',
+                               'end value (s)'),
+                    'report_all_values':
+                        True,
+                    'times': [1496248949000, 1496249726000, 1496250019000, 1496250331000]
+                },
+                '2': {
+                    'compared_values': [(16.0, '2017-05-31 16:54:03Z', 90.0, '2017-05-31 16:54:04Z',
+                                         82.0), (16.0, '2017-05-31 16:58:53Z', 76.0,
+                                                 '2017-05-31 16:59:00Z', 72.0),
+                                        (16.0, '2017-05-31 17:03:53Z', 80.0, '2017-05-31 17:03:58Z',
+                                         77.0), (16.0, '2017-05-31 17:08:53Z', 70.0,
+                                                 '2017-05-31 17:08:54Z', 62.0)],
+                    'labels': ('start value (s)', 'max time', 'max value (s)', 'end time',
+                               'end value (s)'),
+                    'report_all_values':
+                        True,
+                    'times': [1496248967000, 1496249735000, 1496250027000, 1496250339000]
+                }
+            }
+        }]
+        file_rule_failures = {'ftdc_replica_lag_check': rule_info}
 
         test_dir = test_utils.fixture_file_path('test_repllag')
         ok_file = os.path.join(test_dir, 'failure_message.txt.ok')
@@ -83,7 +91,6 @@ class TestFtdcAnalysis(unittest.TestCase):
 
         log_raw = ftdc_analysis._ftdc_log_raw(file_rule_failures, {}, 1000)
         self.assertEqual(log_raw, expected)
-
 
     def test__get_host_ip_info(self):
         """ add tests for the new reports directory layout """
@@ -94,6 +101,7 @@ class TestFtdcAnalysis(unittest.TestCase):
         return_value = ftdc_analysis._get_host_ip_info('mongod.0')
         expected = 'mongod.0'
         self.assertEqual(return_value, expected)
+
 
 if __name__ == '__main__':
     unittest.main()

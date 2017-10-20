@@ -4,6 +4,7 @@ import glob
 import json
 import os
 
+
 def rewrite_all():
     """Read all json files, parse, sort, and write back again."""
     files = glob.glob('analysis/*/*.json')
@@ -13,11 +14,12 @@ def rewrite_all():
             print file_name
             with open(file_name) as file_handle:
                 json_as_dict = json.load(file_handle)
-                correct_json = json.dumps(json_as_dict, indent=4,
-                                          separators=[',', ':'], sort_keys=True)
+                correct_json = json.dumps(
+                    json_as_dict, indent=4, separators=[',', ':'], sort_keys=True)
 
             with open(file_name, "w") as out_file:
                 out_file.write(correct_json)
+
 
 if __name__ == '__main__':
     rewrite_all()

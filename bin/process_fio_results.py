@@ -42,20 +42,23 @@ def process_results_for_mc(prefix=None, filename='fio.json'):
                 result = job[write_or_read]
                 jobname = job['jobname']
                 if result['iops'] > 0:
-                    output.append(format_result(prefix, jobname, write_or_read, "iops",
-                                                result['iops']))
-                    output.append(format_result(prefix, jobname, write_or_read, "clat_mean",
-                                                result['clat']['mean']))
-                    output.append(format_result(prefix, jobname, write_or_read, "clat_stddev",
-                                                result['clat']['stddev']))
+                    output.append(
+                        format_result(prefix, jobname, write_or_read, "iops", result['iops']))
+                    output.append(
+                        format_result(prefix, jobname, write_or_read, "clat_mean",
+                                      result['clat']['mean']))
+                    output.append(
+                        format_result(prefix, jobname, write_or_read, "clat_stddev",
+                                      result['clat']['stddev']))
     return output
 
 
 def filter_results(lines):
     ''' Filter the results to a brief list '''
-    test_to_print = ['latency_test_(read|write)_clat_mean',
-                     'iops_test_(read|write)_iops',
-                     'streaming_bandwidth_test_(read|write)_iops']
+    test_to_print = [
+        'latency_test_(read|write)_clat_mean', 'iops_test_(read|write)_iops',
+        'streaming_bandwidth_test_(read|write)_iops'
+    ]
     regex = '(' + ')|('.join(test_to_print) + ')'
     matcher = re.compile(regex)
     return [line for line in lines if matcher.search(line)]
@@ -67,21 +70,29 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
 
-    parser = argparse.ArgumentParser(description=
-                                     'Process fio.json for consumption by mission control')
-    parser.add_argument('-b', '--brief', action='store_true', default=True,
-                        help="Print out brief results. If -l is also set, the last one wins")
-    parser.add_argument('-l', '--long', action='store_false', dest='brief',
-                        help="Print out all possible results. If -b is also set, the last one wins")
-    parser.add_argument('-i', '--input-file',
-                        default="fio.json",
-                        help="Input file (default: fio.json)")
+    parser = argparse.ArgumentParser(
+        description='Process fio.json for consumption by mission control')
+    parser.add_argument(
+        '-b',
+        '--brief',
+        action='store_true',
+        default=True,
+        help="Print out brief results. If -l is also set, the last one wins")
+    parser.add_argument(
+        '-l',
+        '--long',
+        action='store_false',
+        dest='brief',
+        help="Print out all possible results. If -b is also set, the last one wins")
+    parser.add_argument(
+        '-i', '--input-file', default="fio.json", help="Input file (default: fio.json)")
     parser.add_argument('prefix', nargs='?', help='Prefix to prepend to all test results')
     args = parser.parse_args(argv)
     if args.brief:
         print('\n'.join(filter_results(process_results_for_mc(args.prefix, args.input_file))))
     else:
         print('\n'.join(process_results_for_mc(args.prefix, args.input_file)))
+
 
 if __name__ == '__main__':
     main()

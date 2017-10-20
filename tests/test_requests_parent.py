@@ -1,4 +1,3 @@
-
 """
 
 This class provides a base test class for other tests which use
@@ -15,6 +14,7 @@ from mock import patch
 
 from tests import test_utils
 from test_utils import ContextShelve
+
 
 class TestRequestsParent(unittest.TestCase):
     """

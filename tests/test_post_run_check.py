@@ -8,6 +8,7 @@ import unittest
 import post_run_check
 from tests import test_utils
 
+
 class TestPostRunCheck(unittest.TestCase):
     """Test suite."""
 
@@ -45,6 +46,7 @@ class TestPostRunCheck(unittest.TestCase):
         self.assertTrue(
             test_utils.eq_fixture_json_files("report.json", "post_run_check.report.json.ok"))
         os.remove(test_utils.fixture_file_path("report.json"))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -13,6 +13,7 @@ Optionally checks whether tickets actually exist in the MongoDB JIRA at http://j
 JIRA credentials are provided via `--jira-user` and `--jira-password`.
 """
 
+
 def main(args):
     """All of the script logic."""
 
@@ -32,7 +33,7 @@ def main(args):
     j_pass = args.jira_password
     if j_user is not None and j_pass is not None:
         j_auth = (j_user, j_pass)
-    elif  j_user is None and j_pass is None:
+    elif j_user is None and j_pass is None:
         j_auth = None
     else:
         arg_parser.error("--jira-user and --jira-password must both be specified.")
@@ -40,6 +41,7 @@ def main(args):
     print("Validating file: " + args.file)
     override.Override("performance", override_info=args.file).validate(j_auth)
     print("Valid override file.")
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])

@@ -14,6 +14,7 @@ from dateutil import tz, parser as date_parser
 
 from evergreen.history import History
 
+
 def get_project_variant_rules(project, variant, rules_dict):
     """The rules we want to check are specified in nested dictionaries. They all follow the same
        structure, so this is a short helper to fetch a list of functions, corresponding to the
@@ -31,6 +32,7 @@ def get_project_variant_rules(project, variant, rules_dict):
         return project_rules['default']
     else:
         return project_rules[variant]
+
 
 def get_test_times(perf_json_or_path):
     """
@@ -53,9 +55,9 @@ def get_test_times(perf_json_or_path):
         return [(num_or_str_to_date(perf_json["start"]), num_or_str_to_date(perf_json["end"]))]
 
     except KeyError:
-        return [
-            (num_or_str_to_date(test["start"]), num_or_str_to_date(test["end"]))
-            for test in perf_json["results"] if "start" in test and "end" in test]
+        return [(num_or_str_to_date(test["start"]), num_or_str_to_date(test["end"]))
+                for test in perf_json["results"] if "start" in test and "end" in test]
+
 
 def num_or_str_to_date(ts_or_date_str):
     """
@@ -67,6 +69,7 @@ def num_or_str_to_date(ts_or_date_str):
         _unix_ts_to_utc_datetime
     return conv_func(ts_or_date_str)
 
+
 def _unix_ts_to_utc_datetime(unix_ts):
     """
     Convert `unix_ts` (a seconds-since-epoch `float`) to a UTC `datetime` object with
@@ -76,10 +79,12 @@ def _unix_ts_to_utc_datetime(unix_ts):
     datetime_ts = datetime.datetime.utcfromtimestamp(unix_ts)
     return datetime_ts.replace(tzinfo=tz.tzutc())
 
+
 def get_json(filename):
     """ Load a file and parse it as json """
     with open(filename) as json_file:
         return json.load(json_file)
+
 
 def read_histories(variant, task, hfile, tfile, ofile):
     ''' Set up result histories from various files and returns the
@@ -107,10 +112,14 @@ def read_histories(variant, task, hfile, tfile, ofile):
         if variant in foverrides:
             if task in foverrides[variant]:
                 overrides = foverrides[variant][task]
-    return(history, tag_history, overrides)
+    return (history, tag_history, overrides)
 
-def compare_one_result_base(current, reference, noise_level=0,
-                            noise_multiple=1, default_threshold=0.05):
+
+def compare_one_result_base(current,
+                            reference,
+                            noise_level=0,
+                            noise_multiple=1,
+                            default_threshold=0.05):
     '''Compare one result.
 
     Returns a tuple: a boolean indicating if the test passed or
@@ -160,9 +169,10 @@ def compare_one_result_base(current, reference, noise_level=0,
     if reference == 0:
         percent_delta = percent_threshold = 0
     else:
-        percent_delta = (current - reference)/(abs(reference))
-        percent_threshold = delta/(abs(reference))
+        percent_delta = (current - reference) / (abs(reference))
+        percent_threshold = delta / (abs(reference))
     return (failed, percent_delta, percent_threshold)
+
 
 def log_header(testname):
     ''' Create the string for the log message header
@@ -177,22 +187,27 @@ def log_header(testname):
 
     log = "Test: " + testname + "\n"
     log += '{0:^10}|{1:^10}|{2:^15}|{3:^7}|{4:^11}|{5:^11s}|{6:^11s}|{7:^11s}\n'.format(
-        "Rule", "State", "Compared_to", "Thread", "Target",
-        "Achieved", "delta(%)", "threshold(%)")
-    log += "-"*10 + "+"
-    log += "-"*10 + "+"
-    log += "-"*15 + "+"
-    log += "-"*7 + "+"
-    log += "-"*11 + "+"
-    log += "-"*11 + "+"
-    log += "-"*11 + "+"
-    log += "-"*12 + "\n"
+        "Rule", "State", "Compared_to", "Thread", "Target", "Achieved", "delta(%)", "threshold(%)")
+    log += "-" * 10 + "+"
+    log += "-" * 10 + "+"
+    log += "-" * 15 + "+"
+    log += "-" * 7 + "+"
+    log += "-" * 11 + "+"
+    log += "-" * 11 + "+"
+    log += "-" * 11 + "+"
+    log += "-" * 12 + "\n"
     return log
 
-def compare_one_result_values(current, reference, label="Baseline",
-                              thread_level="max", noise_level=0,
-                              noise_multiple=1, default_threshold=0.05,
-                              using_override=None, compared_to="Missing"):
+
+def compare_one_result_values(current,
+                              reference,
+                              label="Baseline",
+                              thread_level="max",
+                              noise_level=0,
+                              noise_multiple=1,
+                              default_threshold=0.05,
+                              using_override=None,
+                              compared_to="Missing"):
     #pylint: disable=too-many-arguments,too-many-locals,line-too-long
     '''Compare one result and create log message.
 
@@ -252,15 +267,19 @@ def compare_one_result_values(current, reference, label="Baseline",
         threshold_from_override = "n"
 
     log = "{0:^10}|{1:^10}|{2}{3:^14}|{4:^7}|{5:>11.2f}|{6:>11.2f}|{7:>11.2%}|{8}{9:>10.2%}|"
-    log = log.format(label, pass_fail, target_from_override,
-                     compared_to, thread_level, reference, current,
-                     percent_delta, threshold_from_override,
-                     percent_threshold)
+    log = log.format(label, pass_fail, target_from_override, compared_to, thread_level, reference,
+                     current, percent_delta, threshold_from_override, percent_threshold)
     return (failed, log)
 
-def compare_one_result(this_one, reference, label, thread_level="max",
-                       noise_level=0, noise_multiple=1,
-                       default_threshold=0.05, using_override=False):
+
+def compare_one_result(this_one,
+                       reference,
+                       label,
+                       thread_level="max",
+                       noise_level=0,
+                       noise_multiple=1,
+                       default_threshold=0.05,
+                       using_override=False):
     #pylint: disable=too-many-arguments
     '''Compare one result and create log message.
 
@@ -297,12 +316,12 @@ def compare_one_result(this_one, reference, label, thread_level="max",
     if "tag" in reference and reference["tag"] != "":
         compared_to = reference["tag"]
     else:
-        compared_to = reference["revision"][:7] # Use 7 digit SHA hash
+        compared_to = reference["revision"][:7]  # Use 7 digit SHA hash
 
-    return(compare_one_result_values(current, ref, label,
-                                     thread_level, noise_level,
-                                     noise_multiple, default_threshold,
-                                     using_override, compared_to))
+    return (compare_one_result_values(current, ref, label, thread_level, noise_level,
+                                      noise_multiple, default_threshold, using_override,
+                                      compared_to))
+
 
 def read_threshold_overrides(test_name, base_threshold, base_thread_threshold, overrides):
     '''
@@ -334,7 +353,8 @@ def read_threshold_overrides(test_name, base_threshold, base_thread_threshold, o
                 "defined. Key {0} doesn't exist for test"\
                 "{1}".format(str(exception), test_name), file=sys.stderr)
 
-    return(threshold, thread_threshold, threshold_override)
+    return (threshold, thread_threshold, threshold_override)
+
 
 def get_override(test_name, override_type, overrides):
     """Return the overrides of type `override_type` belonging to the test named `test_name`."""
@@ -342,6 +362,7 @@ def get_override(test_name, override_type, overrides):
     if test_name in overrides[override_type]:
         return overrides[override_type][test_name]
     return None
+
 
 if __name__ == "__main__":
     doctest.testmod()

@@ -10,6 +10,7 @@ LOGGER = logging.getLogger(__name__)
 
 Throughput = collections.namedtuple("Throughput", ["time", "ops"])
 
+
 def analyze_ycsb_throughput(reports_dir_path):
     """
     Search `reports_dir_path` for YCSB log files (any file whose name starts with
@@ -50,6 +51,7 @@ def analyze_ycsb_throughput(reports_dir_path):
 
     return results
 
+
 def _get_ycsb_file_paths(directory_path):
     """
     Recursively search the directory tree starting at `directory_path` for files whose name starts
@@ -63,6 +65,7 @@ def _get_ycsb_file_paths(directory_path):
                 file_paths.append(os.path.join(sub_directory_path, filename))
 
     return file_paths
+
 
 def _throughputs_from_lines(lines):
     """
@@ -97,6 +100,7 @@ def _throughputs_from_lines(lines):
 
     return throughputs
 
+
 def _analyze_throughputs(throughputs):
     """
     Analyze `throughputs`, a list of `Throughput`s, for anomalous performance using the
@@ -110,7 +114,8 @@ def _analyze_throughputs(throughputs):
     passed = not err_messages
     return passed, "No problems detected." if passed else "\n".join(err_messages)
 
-def _analyze_spiky_throughput(throughputs, max_drop=0.5, min_duration=10, skip_initial_seconds=10): # pylint: disable=too-many-locals
+
+def _analyze_spiky_throughput(throughputs, max_drop=0.5, min_duration=10, skip_initial_seconds=10):  # pylint: disable=too-many-locals
     """
     Analyze throughput data for periods of reduced throughput. Any throughput value that is less
     than the average throughput of the entire run multiplied by `max_drop` is considered a "low"
@@ -144,8 +149,9 @@ def _analyze_spiky_throughput(throughputs, max_drop=0.5, min_duration=10, skip_i
             first_low_throughput_time = throughput.time
 
             # Search until the point where performance numbers return to normal.
-            low_throughputs = list(itertools.takewhile(
-                lambda throughput: throughput.ops < min_acceptable_throughput, throughputs_iter))
+            low_throughputs = list(
+                itertools.takewhile(lambda throughput: throughput.ops < min_acceptable_throughput,
+                                    throughputs_iter))
 
             # If there aren't at least two consecutive low throughputs there aren't enough
             # datapoints to confidently flag a regression, no matter what the reporting interval is.
@@ -157,9 +163,8 @@ def _analyze_spiky_throughput(throughputs, max_drop=0.5, min_duration=10, skip_i
             if duration >= min_duration:
                 # We've detected a long-enough period of reduced throughput.
 
-                low_throughputs_str = "\n".join(
-                    "    {0} sec: {1} ops/sec".format(time, throughput)
-                    for time, throughput in low_throughputs)
+                low_throughputs_str = "\n".join("    {0} sec: {1} ops/sec".format(time, throughput)
+                                                for time, throughput in low_throughputs)
                 err_msg = (
                     "spiky throughput: Detected low throughput for {0} seconds, starting at {1} "
                     "seconds and ending at {2} seconds. The minimum acceptable throughput is {3} "
@@ -170,6 +175,7 @@ def _analyze_spiky_throughput(throughputs, max_drop=0.5, min_duration=10, skip_i
                 err_messages.append(err_msg)
 
     return err_messages
+
 
 def _analyze_long_term_degradation(throughputs, duration_seconds=10 * 60, max_drop=0.7):
     """Analyze `throughputs`, a list of `Throughput`s, for long term
@@ -200,17 +206,19 @@ def _analyze_long_term_degradation(throughputs, duration_seconds=10 * 60, max_dr
 
     # Only do the calculation if there is enough data.
     if len(throughputs) > data_window_width:
-    # This computes the max throughput over any data_window_width period of time
-        max_throughput = max(average_throughput(throughputs[x:x + data_window_width]) for x in
-                             range(len(throughputs) - data_window_width))
+        # This computes the max throughput over any data_window_width period of time
+        max_throughput = max(
+            average_throughput(throughputs[x:x + data_window_width])
+            for x in range(len(throughputs) - data_window_width))
         min_acceptable_throughput = max_throughput * max_drop
-        failures = [x for x in range(len(throughputs) - data_window_width) if
-                    average_throughput(throughputs[x:x+data_window_width]) <
-                    min_acceptable_throughput]
+        failures = [
+            x for x in range(len(throughputs) - data_window_width)
+            if average_throughput(throughputs[x:x + data_window_width]) < min_acceptable_throughput
+        ]
         for failure in failures:
-            avg_throughput = average_throughput(throughputs[failure:failure+data_window_width])
+            avg_throughput = average_throughput(throughputs[failure:failure + data_window_width])
             start_time = throughputs[failure].time
-            end_time = throughputs[failure+data_window_width].time
+            end_time = throughputs[failure + data_window_width].time
             err_message = (
                 "long term throughput degradation: Detected a low average throughput of {0} "
                 "starting at {1} and ending at {2} (total duration of {3} seconds). The maximum "
@@ -220,6 +228,7 @@ def _analyze_long_term_degradation(throughputs, duration_seconds=10 * 60, max_dr
             err_messages.append(err_message)
 
     return err_messages
+
 
 def average_throughput(throughputs):
     """Return the average `ops` value of `throughputs`, a list of `Throughput`s."""

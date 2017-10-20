@@ -1,5 +1,4 @@
 # pylint: disable=protected-access
-
 """test file for terraform_env"""
 
 from __future__ import print_function
@@ -17,7 +16,7 @@ class TestTerraformOutputParser(unittest.TestCase):
 
     def setUp(self):
         """Setup so config dict works properly"""
-        self.old_dir = os.getcwd() # Save the old path to restore Note
+        self.old_dir = os.getcwd()  # Save the old path to restore Note
         # that this chdir only works without breaking relative imports
         # because it's at the same directory depth
         os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/../../docs/config-specs/')
@@ -81,10 +80,10 @@ class TestTerraformOutputParser(unittest.TestCase):
     def test_single_cluster_yml(self):
         """Test parsing single cluster YML file is correct."""
         output = tf_output.TerraformOutputParser(
-            input_file=DIR+"/artifacts/terraform_single_cluster_output.txt")
+            input_file=DIR + "/artifacts/terraform_single_cluster_output.txt")
         output._generate_output()
         reference = {}
-        with open(DIR+"/artifacts/terraform_single.out.yml") as fread:
+        with open(DIR + "/artifacts/terraform_single.out.yml") as fread:
             reference = yaml.safe_load(fread)
 
         print(reference['out'])
@@ -95,11 +94,11 @@ class TestTerraformOutputParser(unittest.TestCase):
     def test_shard_cluster_yml(self):
         """Test parsing single cluster YML file is correct."""
         output = tf_output.TerraformOutputParser(
-            input_file=DIR+"/artifacts/terraform_shard_cluster_output.txt")
+            input_file=DIR + "/artifacts/terraform_shard_cluster_output.txt")
 
         output._generate_output()
         reference = {}
-        with open(DIR+"/artifacts/terraform_shard.out.yml") as fread:
+        with open(DIR + "/artifacts/terraform_shard.out.yml") as fread:
             reference = yaml.safe_load(fread)
 
         print(reference['out'])

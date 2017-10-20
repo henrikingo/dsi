@@ -26,19 +26,21 @@ TERRAFORM_PARALLELISM = 20
 
 VERSION = "1"
 
+
 def check_version(file_path):
     """True, if contents of file_path equals VERSION"""
     if os.path.isfile(file_path):
         with open(file_path) as file_handle:
             content = file_handle.read()
-            LOG.debug("check_version: VERSION=%s file_path=%s content=%s",
-                      VERSION, file_path, pprint.pformat(content))
+            LOG.debug("check_version: VERSION=%s file_path=%s content=%s", VERSION, file_path,
+                      pprint.pformat(content))
             if content == VERSION:
                 return True
     else:
         LOG.debug("check_version: No file at file_path=%s", file_path)
 
     return False
+
 
 # pylint: disable=too-many-instance-attributes
 class Provisioner(object):
@@ -48,10 +50,10 @@ class Provisioner(object):
         ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
         ssh_key_file = os.path.expanduser(ssh_key_file)
         self.ssh_key_file = ssh_key_file
-        self.cluster = config['infrastructure_provisioning']['tfvars'].get('cluster_name',
-                                                                           'missing_cluster_name')
-        self.reuse_cluster = config['infrastructure_provisioning']['evergreen'].get('reuse_cluster',
-                                                                                    False)
+        self.cluster = config['infrastructure_provisioning']['tfvars'].get(
+            'cluster_name', 'missing_cluster_name')
+        self.reuse_cluster = config['infrastructure_provisioning']['evergreen'].get(
+            'reuse_cluster', False)
         self.evg_data_dir = config['infrastructure_provisioning']['evergreen'].get('data_dir')
         self.existing = False
         self.var_file = None
@@ -96,8 +98,7 @@ class Provisioner(object):
                                                'terraform/infrastructure_teardown.sh')
                 subprocess.check_call([teardown_script], env=temp_environ)
         except subprocess.CalledProcessError as exception:
-            LOG.error(
-                "Teardown of existing resources failed. Catching exception and continuing")
+            LOG.error("Teardown of existing resources failed. Catching exception and continuing")
             LOG.error(exception)
 
         # Delete all state files so that this looks like a fresh evergreen runner
@@ -157,10 +158,12 @@ class Provisioner(object):
 
             # Note: The Evergreen distro "Teardown Script" still calls infrastructure_teardown.sh
             LOG.info("Copying infrastructure_teardown.sh to Evergreen host")
-            shutil.copyfile(os.path.join(self.bin_dir, 'infrastructure_teardown.sh'),
-                            os.path.join(self.evg_data_dir, 'terraform/infrastructure_teardown.sh'))
-            shutil.copyfile(os.path.join(self.bin_dir, 'infrastructure_teardown.py'),
-                            os.path.join(self.evg_data_dir, 'terraform/infrastructure_teardown.py'))
+            shutil.copyfile(
+                os.path.join(self.bin_dir, 'infrastructure_teardown.sh'),
+                os.path.join(self.evg_data_dir, 'terraform/infrastructure_teardown.sh'))
+            shutil.copyfile(
+                os.path.join(self.bin_dir, 'infrastructure_teardown.py'),
+                os.path.join(self.evg_data_dir, 'terraform/infrastructure_teardown.py'))
             os.chmod(os.path.join(self.evg_data_dir, 'terraform/infrastructure_teardown.py'), 0755)
 
         LOG.info("Contents of %s:", self.evg_data_dir)
@@ -180,18 +183,16 @@ class Provisioner(object):
             LOG.info('Reusing AWS cluster for %s', self.cluster)
         else:
             LOG.info('Creating AWS cluster for %s', self.cluster)
-        terraform_command = [self.terraform, 'apply',
-                             self.var_file, self.parallelism]
+        terraform_command = [self.terraform, 'apply', self.var_file, self.parallelism]
         # Disk warmup for initialsync-logkeeper takes about 4 hours. This will save
         # about $12 by delaying deployment of the two other nodes.
         if not self.existing and self.cluster == 'initialsync-logkeeper':
-            terraform_command.extend(['-var="mongod_ebs_instance_count=0"',
-                                      '-var="workload_instance_count=0"'])
+            terraform_command.extend(
+                ['-var="mongod_ebs_instance_count=0"', '-var="workload_instance_count=0"'])
         try:
             subprocess.check_call(terraform_command)
             if not self.existing and self.cluster == 'initialsync-logkeeper':
-                subprocess.check_call([self.terraform, 'apply',
-                                       self.var_file, self.parallelism])
+                subprocess.check_call([self.terraform, 'apply', self.var_file, self.parallelism])
             subprocess.check_call([self.terraform, 'refresh', self.var_file])
             subprocess.check_call([self.terraform, 'plan', '-detailed-exitcode', self.var_file])
             terraform_output = run_and_save_output([self.terraform, 'output'])
@@ -220,8 +221,9 @@ class Provisioner(object):
         LOG.info("Will now save terraform state needed for "
                  "teardown when triggered by the Evergreen runner.")
         terraform_dir = os.path.join(self.evg_data_dir, 'terraform')
-        files_to_copy = ['terraform.tfstate', 'cluster.tf', 'terraform.tfvars', 'security.tf',
-                         'cluster.json']
+        files_to_copy = [
+            'terraform.tfstate', 'cluster.tf', 'terraform.tfvars', 'security.tf', 'cluster.json'
+        ]
         LOG.info('Copying files: %s', str(files_to_copy))
         for to_copy in files_to_copy:
             shutil.copyfile(to_copy, os.path.join(terraform_dir, to_copy))
@@ -264,20 +266,15 @@ def run_and_save_output(command):
         raise subprocess.CalledProcessError(process.returncode, command, output=output)
     return output
 
+
 def parse_command_line():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(
-        description='Provision EC2 instances on AWS using terraform.')
-    parser.add_argument(
-        '--log-file',
-        help='path to log file')
-    parser.add_argument(
-        '-d',
-        '--debug',
-        action='store_true',
-        help='enable debug output')
+    parser = argparse.ArgumentParser(description='Provision EC2 instances on AWS using terraform.')
+    parser.add_argument('--log-file', help='path to log file')
+    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
     args = parser.parse_args()
     return args
+
 
 def main():
     """ Main function """

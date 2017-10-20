@@ -13,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Filter out bad instances"""
 from __future__ import print_function
 import sys
@@ -23,6 +22,7 @@ import re
 # take input from stdin
 # print to stdout
 # no output if no "bad" instance found
+
 
 def check_bad_instance(line):
     '''
@@ -81,12 +81,14 @@ def check_bad_instance(line):
 
     return None
 
+
 def main():
     '''main function'''
     for line in sys.stdin:
         has_bad_instance = check_bad_instance(line)
         if has_bad_instance != None:
             print(has_bad_instance)
+
 
 if __name__ == '__main__':
     main()

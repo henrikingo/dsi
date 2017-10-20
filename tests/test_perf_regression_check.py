@@ -8,6 +8,7 @@ import unittest
 import perf_regression_check
 from tests import test_utils
 
+
 class TestPerfRegressionCheck(unittest.TestCase):
     """Test suite."""
 
@@ -15,7 +16,7 @@ class TestPerfRegressionCheck(unittest.TestCase):
         """
         Run the script and compare the file it generates to an expected one.
         """
-        regenerate_output_files = False #Note: True causes all tests to pass
+        regenerate_output_files = False  #Note: True causes all tests to pass
 
         report_file = "report.json"
         ok_file = "perf_regression.report.json.ok"

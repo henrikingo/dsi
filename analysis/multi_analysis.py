@@ -65,53 +65,50 @@ class MultiEvergreenAnalysis(object):
     def parse_options(self):
         # pylint: disable=too-many-branches
         """Parse options in self.cli_args with argparse and put them in self.config."""
-        self.parser = argparse.ArgumentParser(description="Analyze results from evergreen builds "
-                                                          "created with multi_patch_builds.py",
-                                              epilog="Use either --continue CONTINUE_FILE or list "
-                                                     "of ids on command line.")
-        self.parser.add_argument('--evergreen-config',
-                                 help="Evergreen config file "
-                                      "(default: {})".format(self.config['evergreen_config']))
+        self.parser = argparse.ArgumentParser(
+            description="Analyze results from evergreen builds "
+            "created with multi_patch_builds.py",
+            epilog="Use either --continue CONTINUE_FILE or list "
+            "of ids on command line.")
+        self.parser.add_argument(
+            '--evergreen-config',
+            help="Evergreen config file "
+            "(default: {})".format(self.config['evergreen_config']))
 
-        self.parser.add_argument('-c',
-                                 '--config',
-                                 action='append',
-                                 help="Config file that can be used to supply same options as "
-                                      "would be done on command line. Can be called multiple times "
-                                      "and combined. On conflicts the last file on the command "
-                                      "line wins")
-        self.parser.add_argument('-C',
-                                 '--continue',
-                                 help="Read state serialized as yaml from CONTINUE, to continue "
-                                      "operating on a series of submitted builds. Example: "
-                                      "'multi_analysis.py --continue 12345.yml")
-        self.parser.add_argument('--csv',
-                                 action='store_true',
-                                 help="Output in csv format (default)")
-        self.parser.add_argument('--json',
-                                 action='store_true',
-                                 help="Output in json format")
-        self.parser.add_argument('--json-array',
-                                 action='store_true',
-                                 help="Output in json format as array of documents")
-        self.parser.add_argument('--yml',
-                                 action='store_true',
-                                 help="Ouput in yml format")
-        self.parser.add_argument('--out',
-                                 help="File name to write output (print to stdout if omitted)")
+        self.parser.add_argument(
+            '-c',
+            '--config',
+            action='append',
+            help="Config file that can be used to supply same options as "
+            "would be done on command line. Can be called multiple times "
+            "and combined. On conflicts the last file on the command "
+            "line wins")
+        self.parser.add_argument(
+            '-C',
+            '--continue',
+            help="Read state serialized as yaml from CONTINUE, to continue "
+            "operating on a series of submitted builds. Example: "
+            "'multi_analysis.py --continue 12345.yml")
+        self.parser.add_argument(
+            '--csv', action='store_true', help="Output in csv format (default)")
+        self.parser.add_argument('--json', action='store_true', help="Output in json format")
+        self.parser.add_argument(
+            '--json-array', action='store_true', help="Output in json format as array of documents")
+        self.parser.add_argument('--yml', action='store_true', help="Ouput in yml format")
+        self.parser.add_argument(
+            '--out', help="File name to write output (print to stdout if omitted)")
 
-        self.parser.add_argument('--ycsbfix',
-                                 action='store_true',
-                                 help="The ycsb noise tests reports the iteration results in 5 "
-                                      "different entries, instead of packing all into a single "
-                                      "entry with individual results on ops_per_sec_values. "
-                                      "This option is needed when fetching ycsb test results to "
-                                      "preprocess the result json into the common format.")
+        self.parser.add_argument(
+            '--ycsbfix',
+            action='store_true',
+            help="The ycsb noise tests reports the iteration results in 5 "
+            "different entries, instead of packing all into a single "
+            "entry with individual results on ops_per_sec_values. "
+            "This option is needed when fetching ycsb test results to "
+            "preprocess the result json into the common format.")
 
-        self.parser.add_argument('id',
-                                 nargs='*',
-                                 type=str,
-                                 help="Space separated list of evergreen build ids")
+        self.parser.add_argument(
+            'id', nargs='*', type=str, help="Space separated list of evergreen build ids")
 
         args = self.parser.parse_args(self.cli_args)
 
@@ -184,8 +181,10 @@ class MultiEvergreenAnalysis(object):
                     task_name = task_name
 
                     task_id = task_obj['task_id']
-                    tasks_in_variant[task_name] = {'task_id': task_id,
-                                                   'build_variant_id': build_variant_id}
+                    tasks_in_variant[task_name] = {
+                        'task_id': task_id,
+                        'build_variant_id': build_variant_id
+                    }
 
                 build['result_ids'][variant_name] = tasks_in_variant
 
@@ -275,8 +274,8 @@ class MultiEvergreenAnalysis(object):
                     fixed_obj = {}
                     for result_obj in task['data']['results']:
                         # fio results are fine, as is the ycsb_cleanup
-                        if ('1' in result_obj['results'] and
-                                'ops_per_sec_values' in result_obj['results']['1']):
+                        if ('1' in result_obj['results']
+                                and 'ops_per_sec_values' in result_obj['results']['1']):
                             fixed_result[variant_name][task_name]['data']['results'].append(
                                 result_obj)
                             continue
@@ -288,8 +287,8 @@ class MultiEvergreenAnalysis(object):
                         for thr in result_obj['results']:
                             new_thread_level = thr
 
-                        if (result_obj['name'] != seen_test_name or
-                                new_thread_level != seen_thread_level):
+                        if (result_obj['name'] != seen_test_name
+                                or new_thread_level != seen_thread_level):
                             # They do come in a sequence, so we initialize stuff on the first
                             # occurence of a name+thread_level, then remember them until one of them
                             # changes again.
@@ -297,7 +296,8 @@ class MultiEvergreenAnalysis(object):
                             seen_thread_level = new_thread_level
                             fixed_obj = copy.deepcopy(result_obj)
                             fixed_obj['results'][seen_thread_level]['ops_per_sec_values'] = [
-                                fixed_obj['results'][seen_thread_level]['ops_per_sec']]
+                                fixed_obj['results'][seen_thread_level]['ops_per_sec']
+                            ]
                             fixed_result[variant_name][task_name]['data']['results'].append(
                                 fixed_obj)
                         else:
@@ -348,12 +348,19 @@ class MultiEvergreenAnalysis(object):
 
                         for thread_level, thread_result in test_result['results'].iteritems():
                             thread_level = int(thread_level)
-                            if thread_level not in self.agg_results[variant_name][task_name][test_name]:
-                                self.agg_results[variant_name][task_name][test_name][thread_level] = {'ops_per_sec': [], 'ops_per_sec_values': []}
+                            if thread_level not in self.agg_results[variant_name][task_name][
+                                    test_name]:
+                                self.agg_results[variant_name][task_name][test_name][
+                                    thread_level] = {
+                                        'ops_per_sec': [],
+                                        'ops_per_sec_values': []
+                                    }
 
-                            agg_thread_level = self.agg_results[variant_name][task_name][test_name][thread_level]
+                            agg_thread_level = self.agg_results[variant_name][task_name][test_name][
+                                thread_level]
                             agg_thread_level['ops_per_sec'].append(thread_result['ops_per_sec'])
-                            agg_thread_level['ops_per_sec_values'].append(thread_result['ops_per_sec_values'])
+                            agg_thread_level['ops_per_sec_values'].append(
+                                thread_result['ops_per_sec_values'])
         self.compute_aggregates()
 
     def compute_aggregates(self):
@@ -373,13 +380,13 @@ class MultiEvergreenAnalysis(object):
                     continue
 
                 parent_obj['variance'] = float(numpy.var(val, ddof=1))
-                parent_obj['variance_to_mean'] = (float(parent_obj['variance']) /
-                                                  float(parent_obj['average']))
+                parent_obj['variance_to_mean'] = (
+                    float(parent_obj['variance']) / float(parent_obj['average']))
                 parent_obj['min'] = min(val)
                 parent_obj['max'] = max(val)
                 parent_obj['range'] = parent_obj['max'] - parent_obj['min']
-                parent_obj['range_to_median'] = (float(parent_obj['range']) /
-                                                 float(parent_obj['median']))
+                parent_obj['range_to_median'] = (
+                    float(parent_obj['range']) / float(parent_obj['median']))
             elif path[-1] == 'ops_per_sec_values' and isinstance(val, list):
                 # Compute aggregates over the iterations inside each build, and pack result back
                 # into an array that contains the result for each build
@@ -404,8 +411,8 @@ class MultiEvergreenAnalysis(object):
                     # For now, never had data where that would actually happen.
                     parent_obj['it_variance'].append(float(numpy.var(per_build_iterations, ddof=1)))
                     parent_obj['it_variance_to_mean'].append(
-                        float(numpy.var(per_build_iterations, ddof=1)) /
-                        float(numpy.average(per_build_iterations)))
+                        float(numpy.var(per_build_iterations, ddof=1)) / float(
+                            numpy.average(per_build_iterations)))
                     parent_obj['it_min'].append(float(min(per_build_iterations)))
                     parent_obj['it_max'].append(float(max(per_build_iterations)))
                     parent_obj['it_range'].append(
@@ -429,14 +436,14 @@ class MultiEvergreenAnalysis(object):
                 parent_obj['all_average'] = float(numpy.average(flat_array))
                 parent_obj['all_median'] = float(numpy.median(flat_array))
                 parent_obj['all_variance'] = float(numpy.var(flat_array, ddof=1))
-                parent_obj['all_variance_to_mean'] = (float(numpy.var(flat_array, ddof=1)) /
-                                                      float(numpy.average(flat_array)))
+                parent_obj['all_variance_to_mean'] = (
+                    float(numpy.var(flat_array, ddof=1)) / float(numpy.average(flat_array)))
                 parent_obj['all_min'] = float(min(flat_array))
                 parent_obj['all_max'] = float(max(flat_array))
                 parent_obj['all_range'] = (float(max(flat_array)) - float(min(flat_array)))
-                parent_obj['all_range_to_median'] = ((float(max(flat_array)) -
-                                                      float(min(flat_array))) /
-                                                     float(numpy.median(flat_array)))
+                parent_obj['all_range_to_median'] = ((
+                    float(max(flat_array)) - float(min(flat_array))) / float(
+                        numpy.median(flat_array)))
 
     def write_results(self):
         """Print or write to file csv or json or yaml, depending on options"""
@@ -469,14 +476,9 @@ class MultiEvergreenAnalysis(object):
                     for thread_level, thread_obj in deep_dict.sorted_iter(test_obj):
                         csv += "{},{},{},{},{},{},{},{},{},{},{},{}\n".format(
                             variant_name, task_name, test_name, thread_level,
-                            thread_obj['variance_to_mean'],
-                            thread_obj['variance'],
-                            thread_obj['average'],
-                            thread_obj['median'],
-                            thread_obj['min'],
-                            thread_obj['max'],
-                            thread_obj['range'],
-                            thread_obj['range_to_median'])
+                            thread_obj['variance_to_mean'], thread_obj['variance'],
+                            thread_obj['average'], thread_obj['median'], thread_obj['min'],
+                            thread_obj['max'], thread_obj['range'], thread_obj['range_to_median'])
         return csv
 
     def json_str(self):
@@ -534,6 +536,7 @@ def main(cli_args=None):
     multi_analysis.evergreen_fetch_results()
     multi_analysis.aggregate_results()
     multi_analysis.write_results()
+
 
 if __name__ == '__main__':
     main()

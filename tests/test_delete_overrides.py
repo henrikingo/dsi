@@ -15,6 +15,7 @@ from tests.test_requests_parent import TestRequestsParent
 # This is due to the fact that, when the functions are called, the variables passed
 # in by the decorator do not need to be passed in by the calling functions
 
+
 class TestDeleteOverrides(TestRequestsParent):
     """Test class evaluates correctness of the delete_overrides script.
     """
@@ -25,7 +26,7 @@ class TestDeleteOverrides(TestRequestsParent):
         """
         self.output_file = test_utils.fixture_file_path('delete_override_test.json')
         self.config_file = test_utils.repo_root_file_path('config.yml')
-        self.regenerate_output_files = False #Note: causes all tests that compare a file to pass
+        self.regenerate_output_files = False  #Note: causes all tests that compare a file to pass
         TestRequestsParent.setUp(self)
 
     @staticmethod
@@ -37,9 +38,10 @@ class TestDeleteOverrides(TestRequestsParent):
     def _delete_overrides_compare(self, override_file, ticket, rule, expected_json):
         """General comparison function used for all the test cases"""
         use_reference = 'c2af7aba'
-        args = [ticket, '-n', use_reference, '-f', override_file,
-                '-d', self.output_file, '-r', rule,
-                '-c', self.config_file, '--verbose']
+        args = [
+            ticket, '-n', use_reference, '-f', override_file, '-d', self.output_file, '-r', rule,
+            '-c', self.config_file, '--verbose'
+        ]
         delete_overrides.main(args)
         if self.regenerate_output_files:
             shutil.copyfile(self.output_file, expected_json)
@@ -78,11 +80,9 @@ class TestDeleteOverrides(TestRequestsParent):
         with LogCapture(level=logging.INFO) as info:
             self._delete_overrides_compare(override_file, ticket, rule, compare_against)
             info_logs = set(info.actual())
-            info_expected = set([('override.update.information',
-                                  'INFO',
+            info_expected = set([('override.update.information', 'INFO',
                                   'The following tests were deleted:'),
-                                 ('override.update.information',
-                                  'INFO',
+                                 ('override.update.information', 'INFO',
                                   '{\n  "linux-wt-standalone": {\n    "query": [\n      '
                                   '"Queries.UniqueIdx.MultipleUniqueIndices"\n    ]\n  }\n}')])
             self.assertTrue(info_expected.issubset(info_logs))
@@ -126,7 +126,6 @@ class TestDeleteOverrides(TestRequestsParent):
                                   '"Queries.FindProjectionThreeFields"\n    ]\n  }\n}')])
             self.assertTrue(expected_logs.issubset(info_logs))
 
-
     def test_sysperf_none_deleted(self):
         """Test deletion where ticket 'PERF-335' does not appear under rule reference.
         """
@@ -156,11 +155,9 @@ class TestDeleteOverrides(TestRequestsParent):
         with LogCapture(level=logging.INFO) as info:
             self._delete_overrides_compare(override_file, ticket, rule, compare_against)
             info_logs = set(info.actual())
-            info_expected = set([('override.update.information',
-                                  'INFO',
+            info_expected = set([('override.update.information', 'INFO',
                                   'The following tests were deleted:'),
-                                 ('override.update.information',
-                                  'INFO',
+                                 ('override.update.information', 'INFO',
                                   '{\n  "linux-1-node-replSet": {\n    "core_workloads_WT": [\n'
                                   '      "removemulti_jtrue-wiredTiger"\n    ]\n  },\n  '
                                   '"linux-3-node-replSet": {\n    "core_workloads_WT": [\n      '
@@ -222,8 +219,7 @@ class TestDeleteOverrides(TestRequestsParent):
         with LogCapture(level=logging.INFO) as info:
             self._delete_overrides_compare(override_file, ticket, rule, compare_against)
             info_logs = set(info.actual())
-            info_expected = set([('override.update.information',
-                                  'INFO',
+            info_expected = set([('override.update.information', 'INFO',
                                   'The following tests were deleted:'),
                                  ('override.update.information', 'INFO',
                                   '{\n  "linux-mmap-standalone": {\n    "query": [\n      '
@@ -239,9 +235,8 @@ class TestDeleteOverrides(TestRequestsParent):
                                   '"geo": [\n      "Geo.near.2d.findOne"\n    ],\n    '
                                   '"insert": [],\n    "misc": [],\n    "query": [],\n    '
                                   '"singleThreaded": [],\n    "update": [],\n    "where": []\n  '
-                                  '}\n}'),
-                                 ('override.update.information', 'INFO',
-                                  'The following tests were overridden for rule ndays:'),
+                                  '}\n}'), ('override.update.information', 'INFO',
+                                            'The following tests were overridden for rule ndays:'),
                                  ('override.update.information', 'INFO', '{\n  '
                                   '"linux-mmap-standalone": {\n    "geo": [],\n    '
                                   '"insert": [],\n    "misc": [],\n    "query": [\n      '
@@ -253,6 +248,7 @@ class TestDeleteOverrides(TestRequestsParent):
         """Deletes output JSON file after each test case"""
         os.remove(self.output_file)
         TestRequestsParent.tearDown(self)
+
 
 if __name__ == '__main__':
     unittest.main()

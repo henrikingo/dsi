@@ -63,8 +63,8 @@ class TestTerraformConfiguration(unittest.TestCase):
                              ('common.terraform_config', 'WARNING', 'Timeout()'),
                              ('common.terraform_config', 'WARNING',
                               "Terraform_config.py generate_runner could not access ip.42.pl"
-                              "to get public IP. Falling back to gethostname"), (
-                                  'common.terraform_config', 'WARNING', 'Timeout()'))
+                              "to get public IP. Falling back to gethostname"),
+                             ('common.terraform_config', 'WARNING', 'Timeout()'))
 
     @patch('socket.gethostname')
     @patch('requests.get')
@@ -112,12 +112,12 @@ class TestTerraformConfiguration(unittest.TestCase):
                 ('common.terraform_config', 'WARNING',
                  "Terraform_config.py generate_runner could not access AWS"
                  "meta-data. Falling back to other methods"),
-                ('common.terraform_config', 'WARNING', 'Timeout()'), (
-                    'common.terraform_config', 'WARNING',
-                    'Terraform_config.py generate_runner could not access ip.42.plto get public IP.'
-                    ' Falling back to gethostname'), (
-                        'common.terraform_config', 'WARNING',
-                        "HTTPError(u'404 Client Error: OK for url: http://ip.42.pl/raw',)"))
+                ('common.terraform_config', 'WARNING', 'Timeout()'),
+                ('common.terraform_config', 'WARNING',
+                 'Terraform_config.py generate_runner could not access ip.42.plto get public IP.'
+                 ' Falling back to gethostname'),
+                ('common.terraform_config', 'WARNING',
+                 "HTTPError(u'404 Client Error: OK for url: http://ip.42.pl/raw',)"))
 
     @patch('socket.gethostname')
     @patch('requests.get')
@@ -143,8 +143,8 @@ class TestTerraformConfiguration(unittest.TestCase):
                  "http://169.254.169.254/latest/meta-data/public-hostname',)"),
                 ('common.terraform_config', 'WARNING',
                  'Terraform_config.py generate_runner could not access ip.42.plto get public IP.'
-                 ' Falling back to gethostname'), ('common.terraform_config', 'WARNING',
-                                                   'Timeout()'))
+                 ' Falling back to gethostname'),
+                ('common.terraform_config', 'WARNING', 'Timeout()'))
 
     @patch('common.terraform_config.generate_runner')
     def test_default(self, mock_generate_runner):

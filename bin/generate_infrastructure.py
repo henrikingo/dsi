@@ -1,5 +1,4 @@
 #!/usr/bin/env python2.7
-
 """
     Read configureation and generate terraform configuration JSON file
     This program will read from stdin, pipe from terraform output, and
@@ -19,16 +18,9 @@ LOG = logging.getLogger(__name__)
 
 def parse_command_line():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(
-        description='Generate infrastructure.out.yml for the cluster')
-    parser.add_argument(
-        '-d',
-        '--debug',
-        action='store_true',
-        help='enable debug output')
-    parser.add_argument(
-        '--log-file',
-        help='path to log file')
+    parser = argparse.ArgumentParser(description='Generate infrastructure.out.yml for the cluster')
+    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
+    parser.add_argument('--log-file', help='path to log file')
     return parser.parse_args()
 
 
@@ -39,6 +31,7 @@ def main():
 
     tf_parser = TerraformOutputParser()
     tf_parser.write_output_files()
+
 
 if __name__ == '__main__':
     main()

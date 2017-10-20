@@ -17,9 +17,15 @@ MONGOD_OPTS = {
     'public_ip': '1.2.3.4',
     'mongo_dir': '/usr/',
     'config_file': {
-        'systemLog': {'path': 'mongod.log'},
-        'storage': {'dbPath': 'db'},
-        'net': {'port': 9999}
+        'systemLog': {
+            'path': 'mongod.log'
+        },
+        'storage': {
+            'dbPath': 'db'
+        },
+        'net': {
+            'port': 9999
+        }
     },
     'rs_conf_member': {}
 }
@@ -30,21 +36,9 @@ class TestHelperFunctions(unittest.TestCase):
 
     def test_args_list(self):
         """Test args_list correctly formats arguments"""
-        opts = {
-            'a': 1,
-            'b': 'string',
-            'c': None,
-            'setParameters': {
-                'a': 1,
-                'b': 'string'
-            }
-        }
+        opts = {'a': 1, 'b': 'string', 'c': None, 'setParameters': {'a': 1, 'b': 'string'}}
         expected_args = {
-            '--a=1',
-            '--b=string',
-            '--c',
-            '--setParameter=a=1',
-            '--setParameter=b=string'
+            '--a=1', '--b=string', '--c', '--setParameter=a=1', '--setParameter=b=string'
         }
         self.assertSetEqual(set(mongodb_setup.args_list(opts)), expected_args)
 
@@ -53,39 +47,14 @@ class TestHelperFunctions(unittest.TestCase):
         base = {'a': 1, 'b': 'string'}
         override = {'b': 2, 'c': 3}
         expected_merge = {'a': 1, 'b': 2, 'c': 3}
-        self.assertEqual(mongodb_setup.merge_dicts(base, override),
-                         expected_merge)
+        self.assertEqual(mongodb_setup.merge_dicts(base, override), expected_merge)
 
     def test_merge_dicts_nested(self):
         """Test merge_dicts correctly overrides dictionaries."""
-        base = {
-            'a': 1,
-            'b': 'string',
-            'setParameters': {
-                'a': 1,
-                'b': 'string'
-            }
-        }
-        override = {
-            'b': 2,
-            'c': 3,
-            'setParameters': {
-                'b': 2,
-                'c': 3
-            }
-        }
-        expected_merge = {
-            'a': 1,
-            'b': 2,
-            'c': 3,
-            'setParameters': {
-                'a': 1,
-                'b': 2,
-                'c': 3
-            }
-        }
-        self.assertEqual(mongodb_setup.merge_dicts(base, override),
-                         expected_merge)
+        base = {'a': 1, 'b': 'string', 'setParameters': {'a': 1, 'b': 'string'}}
+        override = {'b': 2, 'c': 3, 'setParameters': {'b': 2, 'c': 3}}
+        expected_merge = {'a': 1, 'b': 2, 'c': 3, 'setParameters': {'a': 1, 'b': 2, 'c': 3}}
+        self.assertEqual(mongodb_setup.merge_dicts(base, override), expected_merge)
 
 
 class TestMongoNode(unittest.TestCase):
@@ -107,6 +76,7 @@ class TestMongoNode(unittest.TestCase):
         self.mongo_node.numactl_prefix = "numactl --interleave=all --cpunodebind=1"
         expected_cmd = "numactl --interleave=all --cpunodebind=1 " + expected_cmd
         self.assertEqual(self.mongo_node.launch_cmd(), expected_cmd)
+
 
 class TestReplSet(unittest.TestCase):
     """ReplSet tests"""
@@ -137,8 +107,10 @@ class TestReplSet(unittest.TestCase):
         replset = mongodb_setup.ReplSet(repl_set_opts)
         self.assertEquals(replset.highest_priority_node(), replset.nodes[1])
 
+
 class TestMongodbSetup(unittest.TestCase):
     """MongodbSetup tests"""
+
     def setUp(self):
         """Common options"""
         self.config = {
@@ -150,7 +122,8 @@ class TestMongodbSetup(unittest.TestCase):
                 'numactl_prefix': 'numactl test'
             },
             'mongodb_setup': {
-                'journal_dir': '/data/journal',
+                'journal_dir':
+                    '/data/journal',
                 'topology': [{
                     'cluster_type': 'standalone',
                     'id': 'myid1',
@@ -183,6 +156,7 @@ class TestMongodbSetup(unittest.TestCase):
         expected_ssh_key_file = os.path.expanduser(ssh_key_file)
         self.assertEquals(mongodb_setup.MongoNode.ssh_key_file, expected_ssh_key_file)
         self.assertEquals(mongodb_setup.MongoNode.ssh_user, 'ec2-user')
+
 
 if __name__ == '__main__':
     unittest.main()

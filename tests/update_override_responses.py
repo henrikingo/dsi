@@ -19,6 +19,7 @@ from tests import test_utils
 
 RESPONSES_SHELVE = None
 
+
 def main():
     """
     This function updates the persistent dictionary
@@ -35,6 +36,7 @@ def main():
         assert mock_get.called is True
     os.rename(persistent_dict_new_path, persistent_dict_path)
 
+
 def update_persistent_dict(url, **kwargs):
     """
     This function is used to replace ContextShelve.get so that
@@ -44,6 +46,7 @@ def update_persistent_dict(url, **kwargs):
     RESPONSES_SHELVE[url] = response.json()
     assert RESPONSES_SHELVE[url] != None
     return RESPONSES_SHELVE[url]
+
 
 if __name__ == '__main__':
     main()

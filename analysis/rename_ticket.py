@@ -1,10 +1,10 @@
 #!/usr/bin/env python2.7
-
 """A script for renaming tickets in an override file. Usage: `python rename_ticket.py --help`"""
 
 import sys
 import argparse
 from evergreen import override
+
 
 def main(args):
     """All the script logic."""
@@ -19,6 +19,7 @@ def main(args):
     override_obj = override.Override("", args.file_path)
     override_obj.rename_ticket(args.old_ticket_name, args.new_ticket_name)
     override_obj.save_to_file(args.file_path)
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])

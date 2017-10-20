@@ -72,6 +72,7 @@ from common.config import ConfigDict
 
 LOGGER = logging.getLogger(__name__)
 
+
 def parse_args(args=sys.argv[1:]):
     """ create the parser, parse the arguments and set up logging
 
@@ -80,28 +81,25 @@ def parse_args(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description='Create a connection to the remote server.\
                                      For instructions on setting up dsi locally')
 
-    parser.add_argument('-d',
-                        '--debug',
-                        action='store_true',
-                        help='enable debug output')
-    parser.add_argument('--dryrun',
-                        action='store_true',
-                        default=False,
-                        help='Do not run the command, just evaluate it.')
-    parser.add_argument('--log-file',
-                        help='path to log file')
-    parser.add_argument('-s', '--ssh',
-                        default='ssh',
-                        help='the ssh location')
-    parser.add_argument('host', metavar='host',
-                        nargs='+', type=str,
-                        help='the path of the host to connect to')
+    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
+    parser.add_argument(
+        '--dryrun',
+        action='store_true',
+        default=False,
+        help='Do not run the command, just evaluate it.')
+    parser.add_argument('--log-file', help='path to log file')
+    parser.add_argument('-s', '--ssh', default='ssh', help='the ssh location')
+    parser.add_argument(
+        'host', metavar='host', nargs='+', type=str, help='the path of the host to connect to')
 
-    parser.add_argument('-c', '--command', metavar='command',
-                        nargs='?',
-                        action='append',
-                        default=[],
-                        help='the remote command to run')
+    parser.add_argument(
+        '-c',
+        '--command',
+        metavar='command',
+        nargs='?',
+        action='append',
+        default=[],
+        help='the remote command to run')
 
     arguments = parser.parse_args(args)
     setup_logging(arguments.debug, arguments.log_file)
@@ -125,12 +123,10 @@ def remote_cmd(host, command, config, args):
 
     if not command:
         command = ""
-    cmd = [args.ssh,
-           "-A",
-           "-i",
-           pemfile,
-           "@".join(x for x in [sshuser, ip_address] if x),
-           "\'{}\'".format(command)]
+    cmd = [
+        args.ssh, "-A", "-i", pemfile, "@".join(x for x in [sshuser, ip_address] if x),
+        "\'{}\'".format(command)
+    ]
 
     LOGGER.info("conn: %s", " ".join(cmd))
     if not args.dryrun:
@@ -163,7 +159,13 @@ def main(argv=sys.argv[1:]):
         for host in args.host:
             host = alias.expand(host)
             host = alias.unalias(host)
-            thread = threading.Thread(target=remote_cmd, args=(host, cmd, config, args,))
+            thread = threading.Thread(
+                target=remote_cmd, args=(
+                    host,
+                    cmd,
+                    config,
+                    args,
+                ))
             threads.append(thread)
             thread.start()
         for thread in threads:

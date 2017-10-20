@@ -32,6 +32,7 @@ import arg_parsing
 
 logging.basicConfig(level=logging.INFO)
 
+
 def project_test_rules(project, variant, is_patch, test):
     """For each test, run the specified regression rules listed in PROJECT_TEST_RULES and return
     a dictionary with rules as keys and pass/fail information as values.
@@ -59,7 +60,9 @@ def project_test_rules(project, variant, is_patch, test):
 
     return to_return
 
+
 # Regression rules
+
 
 def compare_to_previous(test, threshold, thread_threshold):
     """Compare against the performance data from the previous run."""
@@ -69,8 +72,11 @@ def compare_to_previous(test, threshold, thread_threshold):
         print('        no previous data, skipping')
         return {'PreviousCompare': 'pass'}
     else:
-        return {'PreviousCompare': compare_throughputs(
-            test, previous, 'Previous', threshold, thread_threshold)}
+        return {
+            'PreviousCompare':
+                compare_throughputs(test, previous, 'Previous', threshold, thread_threshold)
+        }
+
 
 def compare_n_days_delayed_trigger(test, threshold, thread_threshold, ndays=7):
     """NDays case with delayed trigger"""
@@ -86,8 +92,9 @@ def compare_n_days_delayed_trigger(test, threshold, thread_threshold, ndays=7):
         try:
             override_time = date_parser.parse(overrides['ndays'][test_name]['create_time'])
             this_time = date_parser.parse(test['create_time'])
-            if (override_time < this_time) and ((override_time + timedelta(days=ndays))
-                                                >= this_time):
+            override_before_create_time = override_time < this_time
+            override_ndays_after_create = (override_time + timedelta(days=ndays)) >= this_time
+            if override_before_create_time and override_ndays_after_create:
                 target = overrides['ndays'][test_name]
                 using_override.append('ndays')
             else:
@@ -96,8 +103,9 @@ def compare_n_days_delayed_trigger(test, threshold, thread_threshold, ndays=7):
             err_msg = ('Key error accessing overrides for ndays. '
                        'Key {0} does not exist for test {1}').format(str(err), test_name)
             print(err_msg, file=sys.stderr)
-    return _delayed_trigger_analysis(
-        test, target, previous, 'NDays', threshold, thread_threshold, using_override)
+    return _delayed_trigger_analysis(test, target, previous, 'NDays', threshold, thread_threshold,
+                                     using_override)
+
 
 def compare_tag_delayed_trigger(test, threshold, thread_threshold):
     """Baseline case with delayed trigger"""
@@ -112,38 +120,41 @@ def compare_tag_delayed_trigger(test, threshold, thread_threshold):
         if test_name in overrides['reference']:
             using_override.append('reference')
             target = overrides['reference'][test_name]
-        return _delayed_trigger_analysis(
-            test, target, previous, 'Baseline', threshold, thread_threshold, using_override)
+        return _delayed_trigger_analysis(test, target, previous, 'Baseline', threshold,
+                                         thread_threshold, using_override)
     else:
         return {}
+
 
 def _delayed_trigger_analysis(  # pylint: disable=too-many-arguments
         test, target, previous, label, threshold, thread_threshold, using_override):
     """Implement a delayed trigger based on the previous commit to reduce false alarms"""
     previous_status = 'fail'
     if previous is not None:
-        previous_status = compare_throughputs(
-            previous, target, 'silent', threshold, thread_threshold, using_override)
+        previous_status = compare_throughputs(previous, target, 'silent', threshold,
+                                              thread_threshold, using_override)
 
     check_name = label + 'Compare'
     if previous_status is 'fail':
-        return {check_name: compare_throughputs(test, target,
-                                                label, threshold,
-                                                thread_threshold,
-                                                using_override)}
+        return {
+            check_name:
+                compare_throughputs(test, target, label, threshold, thread_threshold,
+                                    using_override)
+        }
     else:
         # because of the 'silent' label, the log raw output isn't updated by this
-        must_fail = compare_throughputs(
-            test, target, 'silent', threshold * 1.5, thread_threshold * 1.5, using_override)
+        must_fail = compare_throughputs(test, target, 'silent', threshold * 1.5,
+                                        thread_threshold * 1.5, using_override)
         # only log the results for comparison to the standard threshold and thread_threshold.
-        this_status = compare_throughputs(
-            test, target, label, threshold, thread_threshold, using_override)
+        this_status = compare_throughputs(test, target, label, threshold, thread_threshold,
+                                          using_override)
         if must_fail is 'fail':
             print('  {} check failed because of drop greater than 1.5 x threshold'.format(label))
             return {check_name: 'fail'}
         if this_status is 'fail':
             print('  {} check considered passed as this is the first drop'.format(label))
         return {check_name: 'pass'}
+
 
 def compare_to_tag(test, threshold, thread_threshold):
     """Compare against the tagged performance data in `tag_history`."""
@@ -158,33 +169,49 @@ def compare_to_tag(test, threshold, thread_threshold):
         if test['name'] in overrides['reference']:
             using_override.append('reference')
             reference = overrides['reference'][test['name']]
-        return {'BaselineCompare': compare_throughputs(test,
-                                                       reference,
-                                                       'Baseline',
-                                                       threshold,
-                                                       thread_threshold,
-                                                       using_override)}
+        return {
+            'BaselineCompare':
+                compare_throughputs(test, reference, 'Baseline', threshold, thread_threshold,
+                                    using_override)
+        }
     else:
         return {}
+
 
 # Utility functions and classes - these are functions and classes that load and manipulate
 # test results for various checks
 
-def compare_one_throughput( # pylint: disable=too-many-arguments
-        this_one, reference, label, thread_level='max', threshold=0.07, using_override=None):
+
+def compare_one_throughput(  # pylint: disable=too-many-arguments
+        this_one,
+        reference,
+        label,
+        thread_level='max',
+        threshold=0.07,
+        using_override=None):
     """
     Compare one data point from result series this_one to reference at thread_level
     if this_one is lower by threshold*reference return True.
     """
-    (passed, log) = compare_one_result(this_one, reference, label,
-                                       thread_level, default_threshold=threshold,
-                                       using_override=using_override)
+    (passed, log) = compare_one_result(
+        this_one,
+        reference,
+        label,
+        thread_level,
+        default_threshold=threshold,
+        using_override=using_override)
     if label is not 'silent':
         print(log)
     return passed
 
-def compare_throughputs( # pylint: disable=too-many-arguments
-        this_one, reference, label, threshold=0.07, thread_threshold=0.1, using_override=None):
+
+def compare_throughputs(  # pylint: disable=too-many-arguments
+        this_one,
+        reference,
+        label,
+        threshold=0.07,
+        thread_threshold=0.1,
+        using_override=None):
     """compare all points in result series this_one to reference
 
      Use different thresholds for max throughput, and per-thread comparisons
@@ -214,12 +241,13 @@ def compare_throughputs( # pylint: disable=too-many-arguments
     thread_levels = [r for r in this_one['results'] if isinstance(this_one['results'][r], dict)]
     if len(thread_levels) > 1:
         for level in thread_levels:
-            if compare_one_throughput(this_one, reference, label,
-                                      level, thread_threshold, using_override):
+            if compare_one_throughput(this_one, reference, label, level, thread_threshold,
+                                      using_override):
                 failed = True
     if not failed:
         return 'pass'
     return 'fail'
+
 
 def _lookup_constant_value(project, variant, constant_name):
     """Looks in the rules.CONSTANTS dictionary for default or variant-specific constant values
@@ -239,6 +267,7 @@ def _lookup_constant_value(project, variant, constant_name):
     else:
         return None
 
+
 # pylint: disable=invalid-name
 # pylint wants global variables to be written in uppercase, but changing all of the occurrences of
 # the following ones would be too painful so we opt to locally disable the warning instead.
@@ -253,7 +282,8 @@ replica_lag_line = None
 # number of failures in the report for tests specified in this variable.
 QUARANTINED_RULES = [
     r'mongod\.log\.([0-9])+', r'resource_sanity_checks', r'ycsb-throughput-analysis',
-    r'db-hash-check', r'validate-indexes-and-collections']
+    r'db-hash-check', r'validate-indexes-and-collections'
+]
 
 # These rules are run for every test.
 # TODO: it is best practice to declare all constants at the top of a Python file. This can be done
@@ -275,7 +305,8 @@ PROJECT_TEST_RULES = {
     }
 }
 
-def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-branches
+
+def main(args):  # pylint: disable=too-many-locals,too-many-statements,too-many-branches
     """
     For each test in the result, we call the variant-specific functions to check for
     regressions and other conditions. We keep a count of failed tests in 'failed'.
@@ -287,35 +318,41 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
     parser.add_argument(
         '--project_id', dest='project_id', help='project_id for the test in Evergreen')
     parser.add_argument('--task_name', dest='task_name', help='Deprecated. See --task.')
-    parser.add_argument('-f', '--file', dest='hfile', help='path to json file containing '
-                        'history data')
-    parser.add_argument('-t', '--tagFile', dest='tfile', help='path to json file containing '
-                        'tag data')
+    parser.add_argument(
+        '-f', '--file', dest='hfile', help='path to json file containing '
+        'history data')
+    parser.add_argument(
+        '-t', '--tagFile', dest='tfile', help='path to json file containing '
+        'tag data')
     parser.add_argument('--rev', dest='rev', help='revision to examine for regressions')
-    parser.add_argument('--refTag', dest='reference', help=
-                        'Reference tag to compare against. Should be a valid tag name')
+    parser.add_argument(
+        '--refTag',
+        dest='reference',
+        help='Reference tag to compare against. Should be a valid tag name')
     parser.add_argument(
         '--overrideFile', dest='ofile', help='File to read for comparison override information')
     parser.add_argument('--variant', dest='variant', help='Variant to lookup in the override file')
     parser.add_argument('--task', dest='task', help='Evergreen task name for the test')
     parser.add_argument(
-        "--report-file", help='File to write the report JSON file to. Defaults to "report.json".',
+        "--report-file",
+        help='File to write the report JSON file to. Defaults to "report.json".',
         default="report.json")
     parser.add_argument(
         "--out-file", help="File to write the results table to. Defaults to stdout.")
     parser.add_argument(
         "--ycsb-throughput-analysis",
-        help=(
-            "Analyze the throughput-over-time data from YCSB log files. The argument to this "
-            "flag should be the directory to recursively search for the files."))
+        help=("Analyze the throughput-over-time data from YCSB log files. The argument to this "
+              "flag should be the directory to recursively search for the files."))
     # TODO: PERF-675 to remove this. Present for backwards compatibility right now.
     parser.add_argument(
-        "--is-patch", action='store_true', default=False, dest='is_patch',
+        "--is-patch",
+        action='store_true',
+        default=False,
+        dest='is_patch',
         help='If true, will skip NDays comparison (see PERF-386).')
     parser.add_argument(
         "--log-analysis",
-        help=(
-            "This argument is only present for backwards compatibility. To be removed."))
+        help=("This argument is only present for backwards compatibility. To be removed."))
 
     arg_parsing.add_args(parser, "reports analysis")
     args = parser.parse_args(args)
@@ -328,9 +365,9 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
     # overrides - this series has the override data to avoid false alarm or fatigues
     # The result histories are stored in global variables within this module as they
     # are accessed across many rules.
-    global history, tag_history, overrides, replica_lag_line # pylint: disable=invalid-name,global-statement
-    (history, tag_history, overrides) = read_histories(args.variant, args.task_name,
-                                                       args.hfile, args.tfile, args.ofile)
+    global history, tag_history, overrides, replica_lag_line  # pylint: disable=invalid-name,global-statement
+    (history, tag_history, overrides) = read_histories(args.variant, args.task_name, args.hfile,
+                                                       args.tfile, args.ofile)
     task_max_thread_level = 0
     results = []
 
@@ -357,8 +394,8 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
                 real_stdout = sys.stdout
                 log_stdout = StringIO.StringIO()
                 sys.stdout = log_stdout
-                result.update(project_test_rules(args.project_id, args.variant,
-                                                 args.is_patch, to_test))
+                result.update(
+                    project_test_rules(args.project_id, args.variant, args.is_patch, to_test))
                 # Store log_stdout in log_raw
                 test_log = log_stdout.getvalue()
                 result['log_raw'] += log_header(test)
@@ -377,7 +414,7 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
                     with open(args.out_file, 'w') as out_file:
                         out_file.write(result['log_raw'])
 
-            except Exception as err: # pylint: disable=broad-except
+            except Exception as err:  # pylint: disable=broad-except
                 # Need to restore and print stdout in case of Exception
                 test_log = log_stdout.getvalue()
                 sys.stdout = real_stdout
@@ -412,7 +449,7 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
                 print(
                     '%10s|%16s|%16s|%16s' % ('Thread', 'Avg_lag', 'Max_lag', 'End_of_test_lag'),
                     file=sys.stderr)
-                print('-'*10 + '+' + '-'*16 + '+' + '-'*16 + '+' + '-'*16, file=sys.stderr)
+                print('-' * 10 + '+' + '-' * 16 + '+' + '-' * 16 + '+' + '-' * 16, file=sys.stderr)
             print_line = '{0:>10}'.format(line[1])
             for data in line[2:]:
                 formatted = '|{0:16.2f}'.format(data) if isinstance(data, float) else \
@@ -428,20 +465,17 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
                 and args.project_id in ftdc_analysis.RESOURCE_RULES_FTDC_CHUNK):
             # Maximum thread level is passed in to the '# of connections' rule
             # we are currently using.
-            max_thread_level = _lookup_constant_value(
-                args.project_id, args.variant, 'max_thread_level')
+            max_thread_level = _lookup_constant_value(args.project_id, args.variant,
+                                                      'max_thread_level')
             if not max_thread_level:
                 max_thread_level = task_max_thread_level
-            resource_constant_values = {
-                'max_thread_level': max_thread_level
-            }
+            resource_constant_values = {'max_thread_level': max_thread_level}
             resource_rule_outcome = ftdc_analysis.resource_rules(
-                args.reports_analysis, args.project_id, args.variant,
-                resource_constant_values, args.perf_file)
+                args.reports_analysis, args.project_id, args.variant, resource_constant_values,
+                args.perf_file)
             report['results'] += [resource_rule_outcome]
 
-        db_correctness_results = rules.db_correctness_analysis(
-            args.reports_analysis)
+        db_correctness_results = rules.db_correctness_analysis(args.reports_analysis)
         report['results'].extend(db_correctness_results)
     else:
         print('Did not specify a value for parameter --reports-analysis. Skipping mongod.log and '
@@ -466,6 +500,7 @@ def main(args): # pylint: disable=too-many-locals,too-many-statements,too-many-b
     with open(args.report_file, 'w') as report_file:
         json.dump(report, report_file, indent=4, separators=(',', ': '))
     return 1 if num_failures > 0 else 0
+
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))

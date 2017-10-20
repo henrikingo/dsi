@@ -139,8 +139,8 @@ class TerraformConfiguration(object):
         if role in self.MONGOD_ROLES:
             # this is mongod type of instance, raise exception in case of wrong type
             assert_value(instance_type in self.MONGOD_INSTANCE_TYPE,
-                         "Instance type must be in {}, got {} instead"
-                         .format(str(self.MONGOD_INSTANCE_TYPE), instance_type))
+                         "Instance type must be in {}, got {} instead".format(
+                             str(self.MONGOD_INSTANCE_TYPE), instance_type))
 
         if role == "workload":
             # must have at least one workload client
@@ -198,8 +198,8 @@ class TerraformConfiguration(object):
                              "Should define both count and type for {}".format(role))
 
                 # update both count and type
-                self.define_instance(dsi_config, role,
-                                     dsi_config["tfvars"][role + "_instance_count"],
+                self.define_instance(dsi_config, role, dsi_config["tfvars"][role
+                                                                            + "_instance_count"],
                                      dsi_config["tfvars"][role + "_instance_type"])
 
         # update ssh key name (must match AWS' name)

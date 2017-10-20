@@ -18,12 +18,13 @@ from run_test import copy_timeseries
 from run_test import print_trace
 from run_test import pre_tasks
 
+
 class RunTestTestCase(unittest.TestCase):
     """ Unit Test for Host library """
 
     def setUp(self):
         """ Init a ConfigDict object and load the configuration files from docs/config-specs/ """
-        self.old_dir = os.getcwd() # Save the old path to restore Note
+        self.old_dir = os.getcwd()  # Save the old path to restore Note
         # that this chdir only works without breaking relative imports
         # because it's at the same directory depth
         os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/../../docs/config-specs/')
@@ -55,8 +56,8 @@ class RunTestTestCase(unittest.TestCase):
         mock_copyfile.reset_mock()
 
         mock_walk.return_value = [
-            ('/dirpath', ('dirnames',), ()),
-            ]
+            ('/dirpath', ('dirnames', ), ()),
+        ]
         mock_hosts.return_value = [host.HostInfo('10.0.0.0', 'mongod', 0)]
 
         copy_timeseries(self.config)
@@ -66,8 +67,8 @@ class RunTestTestCase(unittest.TestCase):
         mock_hosts.reset_mock()
         mock_copyfile.reset_mock()
         mock_walk.return_value = [
-            ('/dirpath', ('dirnames',), ('baz',)),
-            ]
+            ('/dirpath', ('dirnames', ), ('baz', )),
+        ]
         mock_hosts.return_value = [host.HostInfo('10.0.0.0', 'mongod', 0)]
 
         copy_timeseries(self.config)
@@ -77,9 +78,9 @@ class RunTestTestCase(unittest.TestCase):
         mock_hosts.reset_mock()
         mock_copyfile.reset_mock()
         mock_walk.return_value = [
-            ('/dirpath', ('dirnames',), ('10.0.0.0--notmatching',)),
+            ('/dirpath', ('dirnames', ), ('10.0.0.0--notmatching', )),
             ('/foo/bar', (), ('spam', 'eggs')),
-            ]
+        ]
         mock_hosts.return_value = [host.HostInfo('10.0.0.0', 'mongod', 0)]
 
         copy_timeseries(self.config)
@@ -89,45 +90,49 @@ class RunTestTestCase(unittest.TestCase):
         mock_hosts.reset_mock()
         mock_copyfile.reset_mock()
         mock_walk.return_value = [
-            ('/dirpath', ('dirnames',), ('matching--10.0.0.0',)),
-            ]
+            ('/dirpath', ('dirnames', ), ('matching--10.0.0.0', )),
+        ]
         mock_hosts.return_value = [host.HostInfo('10.0.0.0', 'mongod', 0)]
 
         copy_timeseries(self.config)
-        self.assertTrue(mock_copyfile.called_with('/dirpath/matching--10.0.0.0',
-                                                  'reports/mongod.0/matching-dirpath'))
+        self.assertTrue(
+            mock_copyfile.called_with('/dirpath/matching--10.0.0.0',
+                                      'reports/mongod.0/matching-dirpath'))
 
         mock_walk.reset_mock()
         mock_hosts.reset_mock()
         mock_copyfile.reset_mock()
         mock_walk.return_value = [
-            ('/dirpath0', ('dirnames0',), ('file0--10.0.0.0',)),
-            ('/dirpath1', ('dirnames1',), ('file1--10.0.0.1',)),
-            ('/dirpath2', ('dirnames2',), ('file2--10.0.0.2',)),
-            ]
-        mock_hosts.return_value = [host.HostInfo('10.0.0.0', 'mongod', 0),
-                                   host.HostInfo('10.0.0.1', 'mongod', 1)]
+            ('/dirpath0', ('dirnames0', ), ('file0--10.0.0.0', )),
+            ('/dirpath1', ('dirnames1', ), ('file1--10.0.0.1', )),
+            ('/dirpath2', ('dirnames2', ), ('file2--10.0.0.2', )),
+        ]
+        mock_hosts.return_value = [
+            host.HostInfo('10.0.0.0', 'mongod', 0),
+            host.HostInfo('10.0.0.1', 'mongod', 1)
+        ]
 
         copy_timeseries(self.config)
         self.assertTrue(mock_copyfile.called)
-        self.assertTrue(mock_copyfile.called_with('/dirpath0/file0--10.0.0.0',
-                                                  'reports/mongod.0/matching-dirpath0'))
-        self.assertTrue(mock_copyfile.called_with('/dirpath1/file1--10.0.0.1',
-                                                  'reports/mongod.1/matching-dirpath1'))
+        self.assertTrue(
+            mock_copyfile.called_with('/dirpath0/file0--10.0.0.0',
+                                      'reports/mongod.0/matching-dirpath0'))
+        self.assertTrue(
+            mock_copyfile.called_with('/dirpath1/file1--10.0.0.1',
+                                      'reports/mongod.1/matching-dirpath1'))
 
     @patch('types.FrameType')
     def test_print_trace_mock_exception(self, mock_frame):
         """ Test run_test.print_trace with mock frame and mock exception"""
         with LogCapture() as log_capture:
-            mock_frame.f_locals = {'value': 'mock_value',
-                                   'key': 'mock_key',
-                                   'command': 'mock_command'}
-            mock_trace = (
-                (None, None, None, "mock_top_function"),
-                (mock_frame, None, None, None),
-                (mock_frame, None, None, "run_command"),
-                (None, "mock_file", -1, "mock_bottom_function")
-            )
+            mock_frame.f_locals = {
+                'value': 'mock_value',
+                'key': 'mock_key',
+                'command': 'mock_command'
+            }
+            mock_trace = ((None, None, None, "mock_top_function"), (mock_frame, None, None, None),
+                          (mock_frame, None, None, "run_command"), (None, "mock_file", -1,
+                                                                    "mock_bottom_function"))
             mock_exception = Exception("mock_exception")
             print_trace(mock_trace, mock_exception)
             error_msg = "Exception originated in: mock_file:mock_bottom_function:-1\n"
@@ -138,8 +143,7 @@ class RunTestTestCase(unittest.TestCase):
 
     @patch('paramiko.SSHClient')
     @patch('common.host.extract_hosts', return_value=(-1, -1))
-    def help_trace_function(self, mock_function, mock_task_list,
-                            mock_extract_hosts, mock_ssh):
+    def help_trace_function(self, mock_function, mock_task_list, mock_extract_hosts, mock_ssh):
         """
         Test run_test.print_trace by running pre_task with a forced exception.
         This is a helper function used by other tests within this class. It uses a mocked RemoteHost
@@ -173,8 +177,8 @@ class RunTestTestCase(unittest.TestCase):
             # this.
             # The asserts check if the mock_function, extract_hosts, and make_host were called
             # along with asserting the error code was 1.
-            with patch('common.host.make_host',
-                       return_value=host.RemoteHost(None, None, None)) as mock_make_host:
+            return_value = host.RemoteHost(None, None, None)
+            with patch('common.host.make_host', return_value=return_value) as mock_make_host:
                 mock_function.side_effect = Exception("Mock Exception")
                 with self.assertRaises(SystemExit) as exception:
                     pre_tasks(mock_config, mock_task_list)
@@ -191,7 +195,7 @@ class RunTestTestCase(unittest.TestCase):
         error_regex_str = error_regex_str + "in task: " + task + "\n        "
         error_regex_str = error_regex_str + "in command: " + str(command)
         error_pattern = re.compile(error_regex_str)
-        list_errors = list(log_capture.actual()) # Get actual string held by loc_capture object
+        list_errors = list(log_capture.actual())  # Get actual string held by loc_capture object
         self.assertRegexpMatches(list_errors[0][2], error_pattern)
 
     #pylint: disable=no-value-for-parameter
@@ -199,13 +203,16 @@ class RunTestTestCase(unittest.TestCase):
     @patch('host.RemoteHost.upload_file')
     def test_print_trace_upload_file(self, mock_upload_file):
         """ Test run_test.print_trace with exception in upload_file"""
-        mock_task_list = [{'pre_task':
-                           [{'on_workload_client':
-                             {'upload_files':
-                              {'workloads.tar.gz': 'workloads.tar.gz'}}}]},
-                          {}]
-        self.help_trace_function(mock_upload_file,
-                                 mock_task_list)
+        mock_task_list = [{
+            'pre_task': [{
+                'on_workload_client': {
+                    'upload_files': {
+                        'workloads.tar.gz': 'workloads.tar.gz'
+                    }
+                }
+            }]
+        }, {}]
+        self.help_trace_function(mock_upload_file, mock_task_list)
 
     @patch('os.path')
     @patch('host.RemoteHost.retrieve_path')
@@ -213,26 +220,33 @@ class RunTestTestCase(unittest.TestCase):
         """ Test run_test.print_trace with exception in retrieve_path"""
         mock_path.return_value.join.return_value = ""
         mock_path.return_value.normpath.return_value = ""
-        mock_task_list = [{'pre_task':
-                           [{'on_workload_client':
-                             {'retrieve_files':
-                              {'workloads.tar.gz':
-                               'workloads.tar.gz'}}}]},
-                          {}]
-        self.help_trace_function(mock_retrieve_path,
-                                 mock_task_list)
+        mock_task_list = [{
+            'pre_task': [{
+                'on_workload_client': {
+                    'retrieve_files': {
+                        'workloads.tar.gz': 'workloads.tar.gz'
+                    }
+                }
+            }]
+        }, {}]
+        self.help_trace_function(mock_retrieve_path, mock_task_list)
 
     @patch('host.RemoteHost.create_file')
     def test_print_trace_create_file(self, mock_create_file):
         """ Test run_test.print_trace with exception in create_file"""
-        mock_task_list = [{'pre_task':
-                           [{'on_workload_client':
-                             {'exec_mongo_shell':
-                              {'script': 'mock script'}}}]},
-                          {}]
-        self.help_trace_function(mock_create_file,
-                                 mock_task_list)
+        mock_task_list = [{
+            'pre_task': [{
+                'on_workload_client': {
+                    'exec_mongo_shell': {
+                        'script': 'mock script'
+                    }
+                }
+            }]
+        }, {}]
+        self.help_trace_function(mock_create_file, mock_task_list)
+
     #pylint: enable=no-value-for-parameter
+
 
 if __name__ == '__main__':
     unittest.main()
