@@ -14799,6 +14799,13 @@
                         "PERF-875"
                     ]
                 },
+                "Update.ManyElementsWithinArray":{
+                    "thread_threshold":0.165,
+                    "threshold":0.11,
+                    "ticket":[
+                        "BF-6966"
+                    ]
+                },
                 "Update.SetWithIndex.Random":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
