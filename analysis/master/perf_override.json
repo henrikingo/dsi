@@ -31179,6 +31179,13 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "Geo.geoJSON.nearSphere.2dsphere.findOne":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6973"
+                    ]
+                },
                 "Geo.geoJSON.nearSphere.2dsphere.withFilter.find30":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
