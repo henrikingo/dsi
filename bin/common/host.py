@@ -4,10 +4,13 @@ from collections import MutableMapping, namedtuple
 import itertools
 import logging
 import os
+import Queue
 import shutil
 import socket
 from stat import S_ISDIR
 import subprocess
+import sys
+import threading
 import time
 
 import paramiko
@@ -15,6 +18,7 @@ import paramiko
 HostInfo = namedtuple('HostInfo', ['ip_or_name', 'category', 'offset'])
 
 LOG = logging.getLogger(__name__)
+STOP_THREAD_EXECUTION = False
 
 
 def log_lines(level, lines):
@@ -35,6 +39,12 @@ def _run_command_map(target_host, command):
     :param dict command: The command to execute
     '''
     for key, value in command.iteritems():
+        # This method will only be called in a worker thread. If 'STOP_THREAD_EXECUTION' is true,
+        # this thread has received a notice that work should stop. This is most likely because of
+        # an error or exception in another thread or the calling thread.
+        if STOP_THREAD_EXECUTION:
+            return
+
         if key == "upload_repo_files":
             for local_file, remote_file in value.iteritems():
                 local_file = os.path.join(repo_root(),
@@ -62,8 +72,8 @@ def _run_command_map(target_host, command):
             raise Exception("Invalid command type")
 
 def run_command(host_list, command, config):
-    '''For each host in the list, make an appropriate RemoteHost or
-    LocalHost Object and run the set of commands
+    '''For each host in the list, make a parallelized call to make_host_runner to make the
+    appropriate host and run the set of commands
 
     :param list host_list: List of ip addresses to connect to
     :param str/dict command: The command to execute. If str, run that
@@ -72,17 +82,82 @@ def run_command(host_list, command, config):
     :param ConfigDict config: The system configuration
 
     '''
+    if not host_list:
+        return
 
     LOG.debug('Calling run command for %s with command %s', str(host_list), str(command))
     ssh_user = config['infrastructure_provisioning']['tfvars']['ssh_user']
     ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
     ssh_key_file = os.path.expanduser(ssh_key_file)
 
-    # If performance becomes a concern, we can operate on all hosts in
-    # parallel
-    for host_info in host_list:
+    # It's acceptable to use a global variable here to set 'STOP_THREAD_EXECUTION' to false.
+    # This is because 'run_command()' will only be called on the main thread.
+    global STOP_THREAD_EXECUTION # pylint: disable=global-statement
+    STOP_THREAD_EXECUTION = False
+    threads = []
+    thread_complete_tracker = Queue.Queue(maxsize=len(host_list))
+    thread_exceptions_bucket = Queue.Queue()
+    try:
+        for host_info in host_list:
+            thread = threading.Thread(
+                target=make_host_runner,
+                args=(host_info,
+                      command,
+                      ssh_user,
+                      ssh_key_file,
+                      thread_complete_tracker,
+                      thread_exceptions_bucket))
+            thread.daemon = True
+            threads.append(thread)
+            thread.start()
+        # Exit from the loop on one of these two conditions:
+        #    1. An exception has been created in a worker thread and said exception information
+        #       has been placed in the 'thread_exceptions_bucket', OR
+        #    2. 'threading.activeCount()' is zero, meaning that all worker threads have
+        #       returned (or raised exceptions).
+        while thread_exceptions_bucket.empty() and not thread_complete_tracker.full():
+            time.sleep(0.1)
+
+        STOP_THREAD_EXECUTION = True
+        if not thread_exceptions_bucket.empty():
+            exception_info = thread_exceptions_bucket.get()
+            raise exception_info[0], exception_info[1], exception_info[2]
+    except Exception as exc:
+        STOP_THREAD_EXECUTION = True
+        raise exc
+
+def make_host_runner( # pylint: disable=too-many-arguments
+        host_info,
+        command,
+        ssh_user,
+        ssh_key_file,
+        thread_complete_tracker,
+        thread_exceptions_bucket):
+    '''For the host, make an appropriate RemoteHost or
+    LocalHost Object and run the set of commands
+
+    :param namedtuple host_info: Public IP address or the string localhost, category
+    and offset
+    :param str ssh_user: The user id to use
+    :param str ssh_key_file: The keyfile to use
+    :param str/dict command: The command to execute. If str, run that
+    command. If dict, type is one of upload_repo_files, upload_files,
+    retrieve_files, exec, or exec_mongo_shell
+
+    '''
+
+    # This method will only be called in a worker thread. If 'STOP_THREAD_EXECUTION' is true, this
+    # thread has received a notice that work should stop. This is most likely because of an error
+    # or exception in another thread or the calling thread.
+    if STOP_THREAD_EXECUTION:
+        return
+
+    try:
         # Create the appropriate host type
         target_host = make_host(host_info, ssh_user, ssh_key_file)
+
+        if STOP_THREAD_EXECUTION:
+            return
 
         # If command is a string, pass it directly to run
         if isinstance(command, str):
@@ -91,6 +166,11 @@ def run_command(host_list, command, config):
         # If command is a dictionary, parse it
         elif isinstance(command, MutableMapping):
             _run_command_map(target_host, command)
+
+    except Exception: # pylint: disable=broad-except
+        thread_exceptions_bucket.put(sys.exc_info())
+
+    thread_complete_tracker.put(1)
 
 def make_host(host_info, ssh_user, ssh_key_file):
     '''
