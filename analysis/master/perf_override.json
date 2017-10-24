@@ -39000,6 +39000,13 @@
                         "BF-5513"
                     ]
                 },
+                "Aggregation.IdentityView.Lookup.LocalArrayOfObject.Pipeline":{
+                    "thread_threshold":0.165,
+                    "threshold":0.11,
+                    "ticket":[
+                        "BF-6975"
+                    ]
+                },
                 "Aggregation.IdentityView.Lookup.UncorrelatedJoin.NoCache":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
