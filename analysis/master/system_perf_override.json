@@ -716,33 +716,33 @@
                     "workload":"shell/benchrun"
                 },
                 "insert_vector_primary":{
-                    "create_time":"2017-08-22T15:00:36.47Z",
-                    "end":1503424467,
-                    "max":415664.4409385832,
+                    "create_time":"2017-08-24T20:50:24.213Z",
+                    "end":1503673630.0,
+                    "max":430122.48979251727,
                     "name":"insert_vector_primary",
-                    "order":8120,
+                    "order":8174,
                     "results":{
                         "1":{
-                            "ops_per_sec":125572.20314878393,
+                            "ops_per_sec":99641.67662009389,
                             "ops_per_sec_values":[
-                                125572.20314878393
+                                99641.67662009389
                             ]
                         },
                         "16":{
-                            "ops_per_sec":415664.4409385832,
+                            "ops_per_sec":430122.48979251727,
                             "ops_per_sec_values":[
-                                415664.4409385832
+                                430122.48979251727
                             ]
                         },
                         "8":{
-                            "ops_per_sec":407103.2559483137,
+                            "ops_per_sec":413608.5372086305,
                             "ops_per_sec_values":[
-                                407103.2559483137
+                                413608.5372086305
                             ]
                         }
                     },
-                    "revision":"853c221962a95e68faa8ebe13bf5699390f04092",
-                    "start":1503418213,
+                    "revision":"4b95c9d2ea4bce67fcf42ed9f712ca94607d8009",
+                    "start":1503667336.0,
                     "tag":"",
                     "threads":[
                         "1",
@@ -755,33 +755,33 @@
                     "workload":"shell/benchrun"
                 },
                 "insert_vector_secondary_load_phase":{
-                    "create_time":"2017-08-22T15:00:36.47Z",
-                    "end":1503424467,
-                    "max":415664.4409385832,
+                    "create_time":"2017-08-24T20:50:24.213Z",
+                    "end":1503673630.0,
+                    "max":430122.48979251727,
                     "name":"insert_vector_secondary_load_phase",
-                    "order":8120,
+                    "order":8174,
                     "results":{
                         "1":{
-                            "ops_per_sec":125572.20314878393,
+                            "ops_per_sec":99641.67662009389,
                             "ops_per_sec_values":[
-                                125572.20314878393
+                                99641.67662009389
                             ]
                         },
                         "16":{
-                            "ops_per_sec":415664.4409385832,
+                            "ops_per_sec":430122.48979251727,
                             "ops_per_sec_values":[
-                                415664.4409385832
+                                430122.48979251727
                             ]
                         },
                         "8":{
-                            "ops_per_sec":407103.2559483137,
+                            "ops_per_sec":413608.5372086305,
                             "ops_per_sec_values":[
-                                407103.2559483137
+                                413608.5372086305
                             ]
                         }
                     },
-                    "revision":"853c221962a95e68faa8ebe13bf5699390f04092",
-                    "start":1503418213,
+                    "revision":"4b95c9d2ea4bce67fcf42ed9f712ca94607d8009",
+                    "start":1503667336.0,
                     "tag":"",
                     "threads":[
                         "1",
@@ -794,33 +794,33 @@
                     "workload":"shell/benchrun"
                 },
                 "insert_vector_secondary_overall":{
-                    "create_time":"2017-08-22T15:00:36.47Z",
-                    "end":1503424467,
-                    "max":415650.5871504594,
+                    "create_time":"2017-08-24T20:50:24.213Z",
+                    "end":1503673630.0,
+                    "max":430110.54327296966,
                     "name":"insert_vector_secondary_overall",
-                    "order":8120,
+                    "order":8174,
                     "results":{
                         "1":{
-                            "ops_per_sec":125568.71524517947,
+                            "ops_per_sec":99636.14143265839,
                             "ops_per_sec_values":[
-                                125568.71524517947
+                                99636.14143265839
                             ]
                         },
                         "16":{
-                            "ops_per_sec":415650.5871504594,
+                            "ops_per_sec":430110.54327296966,
                             "ops_per_sec_values":[
-                                415650.5871504594
+                                430110.54327296966
                             ]
                         },
                         "8":{
-                            "ops_per_sec":407091.948404013,
+                            "ops_per_sec":413599.3467247356,
                             "ops_per_sec_values":[
-                                407091.948404013
+                                413599.3467247356
                             ]
                         }
                     },
-                    "revision":"853c221962a95e68faa8ebe13bf5699390f04092",
-                    "start":1503418213,
+                    "revision":"4b95c9d2ea4bce67fcf42ed9f712ca94607d8009",
+                    "start":1503667336.0,
                     "tag":"",
                     "threads":[
                         "1",
@@ -2530,6 +2530,123 @@
                     "threads":[
                         "32",
                         "64"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "insert_vector_primary":{
+                    "create_time":"2017-08-24T20:50:24.213Z",
+                    "end":1503684577.0,
+                    "max":266920.6030039104,
+                    "name":"insert_vector_primary",
+                    "order":8174,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":85813.80620645979,
+                            "ops_per_sec_values":[
+                                85813.80620645979
+                            ]
+                        },
+                        "16":{
+                            "ops_per_sec":266920.6030039104,
+                            "ops_per_sec_values":[
+                                266920.6030039104
+                            ]
+                        },
+                        "8":{
+                            "ops_per_sec":258030.10943836454,
+                            "ops_per_sec_values":[
+                                258030.10943836454
+                            ]
+                        }
+                    },
+                    "revision":"4b95c9d2ea4bce67fcf42ed9f712ca94607d8009",
+                    "start":1503678020.0,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "8",
+                        "16"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "insert_vector_secondary_load_phase":{
+                    "create_time":"2017-08-24T20:50:24.213Z",
+                    "end":1503684577.0,
+                    "max":265494.4232136509,
+                    "name":"insert_vector_secondary_load_phase",
+                    "order":8174,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":85804.08430830084,
+                            "ops_per_sec_values":[
+                                85804.08430830084
+                            ]
+                        },
+                        "16":{
+                            "ops_per_sec":265494.4232136509,
+                            "ops_per_sec_values":[
+                                265494.4232136509
+                            ]
+                        },
+                        "8":{
+                            "ops_per_sec":257280.4566412977,
+                            "ops_per_sec_values":[
+                                257280.4566412977
+                            ]
+                        }
+                    },
+                    "revision":"4b95c9d2ea4bce67fcf42ed9f712ca94607d8009",
+                    "start":1503678020.0,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "8",
+                        "16"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "insert_vector_secondary_overall":{
+                    "create_time":"2017-08-24T20:50:24.213Z",
+                    "end":1503684577.0,
+                    "max":265030.38893423637,
+                    "name":"insert_vector_secondary_overall",
+                    "order":8174,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":85797.12398842486,
+                            "ops_per_sec_values":[
+                                85797.12398842486
+                            ]
+                        },
+                        "16":{
+                            "ops_per_sec":265030.38893423637,
+                            "ops_per_sec_values":[
+                                265030.38893423637
+                            ]
+                        },
+                        "8":{
+                            "ops_per_sec":257195.69863893595,
+                            "ops_per_sec_values":[
+                                257195.69863893595
+                            ]
+                        }
+                    },
+                    "revision":"4b95c9d2ea4bce67fcf42ed9f712ca94607d8009",
+                    "start":1503678020.0,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "8",
+                        "16"
                     ],
                     "ticket":[
                         "BF-6743"
@@ -8050,6 +8167,123 @@
                     ],
                     "ticket":[
                         "BF-5832"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "insert_vector_primary":{
+                    "create_time":"2017-08-24T20:50:24.213Z",
+                    "end":1503677382.0,
+                    "max":848883.4263811349,
+                    "name":"insert_vector_primary",
+                    "order":8174,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":156105.38596150107,
+                            "ops_per_sec_values":[
+                                156105.38596150107
+                            ]
+                        },
+                        "16":{
+                            "ops_per_sec":848883.4263811349,
+                            "ops_per_sec_values":[
+                                848883.4263811349
+                            ]
+                        },
+                        "8":{
+                            "ops_per_sec":760185.8023662723,
+                            "ops_per_sec_values":[
+                                760185.8023662723
+                            ]
+                        }
+                    },
+                    "revision":"4b95c9d2ea4bce67fcf42ed9f712ca94607d8009",
+                    "start":1503671234.0,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "8",
+                        "16"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "insert_vector_secondary_load_phase":{
+                    "create_time":"2017-08-24T20:50:24.213Z",
+                    "end":1503677382.0,
+                    "max":848883.4263811349,
+                    "name":"insert_vector_secondary_load_phase",
+                    "order":8174,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":156105.38596150107,
+                            "ops_per_sec_values":[
+                                156105.38596150107
+                            ]
+                        },
+                        "16":{
+                            "ops_per_sec":848883.4263811349,
+                            "ops_per_sec_values":[
+                                848883.4263811349
+                            ]
+                        },
+                        "8":{
+                            "ops_per_sec":760185.8023662723,
+                            "ops_per_sec_values":[
+                                760185.8023662723
+                            ]
+                        }
+                    },
+                    "revision":"4b95c9d2ea4bce67fcf42ed9f712ca94607d8009",
+                    "start":1503671234.0,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "8",
+                        "16"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "insert_vector_secondary_overall":{
+                    "create_time":"2017-08-24T20:50:24.213Z",
+                    "end":1503677382.0,
+                    "max":848883.4263811349,
+                    "name":"insert_vector_secondary_overall",
+                    "order":8174,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":156104.51873826428,
+                            "ops_per_sec_values":[
+                                156104.51873826428
+                            ]
+                        },
+                        "16":{
+                            "ops_per_sec":848883.4263811349,
+                            "ops_per_sec_values":[
+                                848883.4263811349
+                            ]
+                        },
+                        "8":{
+                            "ops_per_sec":760181.5798390277,
+                            "ops_per_sec_values":[
+                                760181.5798390277
+                            ]
+                        }
+                    },
+                    "revision":"4b95c9d2ea4bce67fcf42ed9f712ca94607d8009",
+                    "start":1503671234.0,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "8",
+                        "16"
+                    ],
+                    "ticket":[
+                        "BF-6743"
                     ],
                     "workload":"shell/benchrun"
                 },
