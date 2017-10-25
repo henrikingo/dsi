@@ -3353,27 +3353,28 @@
             "ndays":{},
             "reference":{
                 "ycsb_50read50update":{
-                    "create_time":"2017-08-09T01:15:51.416Z",
-                    "end":1503624372.0,
-                    "max":29996.43042477945,
+                    "create_time":"2017-09-28T15:44:11.38Z",
+                    "end":1507763919,
+                    "max":12362.330002509552,
                     "name":"ycsb_50read50update",
-                    "order":7941,
+                    "order":8526,
                     "results":{
                         "64":{
-                            "ops_per_sec":29996.43042477945,
-                            "replica_avg_lag":4.72093023255814,
-                            "replica_end_of_test_lag":2,
-                            "replica_max_lag":34
+                            "ops_per_sec":12362.330002509552,
+                            "replica_avg_lag":56.08494921514312,
+                            "replica_end_of_test_lag":106,
+                            "replica_max_lag":170
                         }
                     },
-                    "revision":"b0f8d105349d9d6df874ed7f566a552dbd98a1ab",
-                    "start":1503623703.0,
+                    "revision":"3fa551ff7a93a2849a52146aff634ba215e75925",
+                    "start":1507762300,
                     "tag":"",
                     "threads":[
                         "64"
                     ],
                     "ticket":[
-                        "BF-6941"
+                        "BF-6941",
+                        "BF-6810"
                     ],
                     "workload":"ycsb"
                 },
