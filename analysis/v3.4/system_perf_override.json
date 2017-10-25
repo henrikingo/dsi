@@ -103,6 +103,13 @@
                         "BF-5124"
                     ]
                 },
+                "map_reduce_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
+                    ]
+                },
                 "word_count_1M_doc":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
@@ -591,6 +598,13 @@
                     "threshold":0.1,
                     "ticket":[
                         "BF-5124"
+                    ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
                     ]
                 },
                 "word_count_1M_doc":{
@@ -2473,6 +2487,13 @@
                         "BF-5520"
                     ]
                 },
+                "map_reduce_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
+                    ]
+                },
                 "moveChunkWithLoad_secondaryThrottle_true":{
                     "thread_threshold":0.6,
                     "threshold":0.4,
@@ -3177,6 +3198,13 @@
                     "ticket":[
                         "PERF-723",
                         "BF-5520"
+                    ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
                     ]
                 }
             }

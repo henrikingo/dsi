@@ -67,6 +67,13 @@
                         "BF-5124"
                     ]
                 },
+                "map_reduce_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
+                    ]
+                },
                 "word_count_1M_doc":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
@@ -481,6 +488,13 @@
                     "threshold":0.1,
                     "ticket":[
                         "BF-5124"
+                    ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
                     ]
                 },
                 "word_count_1M_doc":{
@@ -1886,6 +1900,13 @@
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
+                    ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
                     ]
                 }
             }
