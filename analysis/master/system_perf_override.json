@@ -629,6 +629,13 @@
                         "PERF-750"
                     ]
                 },
+                "map_reduce_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
+                    ]
+                },
                 "mixed_delete":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
@@ -2448,6 +2455,13 @@
                     "threshold":0.3,
                     "ticket":[
                         "PERF-750"
+                    ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
                     ]
                 },
                 "mixed_delete":{
@@ -8057,6 +8071,13 @@
                     "threshold":0.14,
                     "ticket":[
                         "BF-6862"
+                    ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
                     ]
                 },
                 "mixed_delete":{
