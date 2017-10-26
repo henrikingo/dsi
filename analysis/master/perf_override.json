@@ -40226,38 +40226,43 @@
                     ]
                 },
                 "Queries.IdentityView.FindProjection":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
                     "ticket":[
-                        "BF-5316"
+                        "BF-5316",
+                        "BF-6994"
                     ]
                 },
                 "Queries.IdentityView.FindProjectionDottedField":{
-                    "thread_threshold":0.225,
-                    "threshold":0.15,
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
                     "ticket":[
-                        "BF-5316"
+                        "BF-5316",
+                        "BF-6994"
                     ]
                 },
                 "Queries.IdentityView.FindProjectionDottedField.Indexed":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
                     "ticket":[
-                        "BF-5316"
+                        "BF-5316",
+                        "BF-6994"
                     ]
                 },
                 "Queries.IdentityView.FindProjectionThreeFields":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
                     "ticket":[
-                        "BF-5316"
+                        "BF-5316",
+                        "BF-6994"
                     ]
                 },
                 "Queries.IdentityView.FindProjectionThreeFieldsCovered":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
                     "ticket":[
-                        "BF-5316"
+                        "BF-5316",
+                        "BF-6994"
                     ]
                 },
                 "Queries.IdentityView.FindWideDocProjection":{
