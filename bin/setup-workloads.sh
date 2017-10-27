@@ -26,17 +26,5 @@ then
     rm workloads.tar.gz
 fi
 
-if [ -x "$WORKLOADS_DIR/jsdoc/generate.sh" ]
-then
-    PATH="/opt/node/bin:$PATH"
-    if ! hash jsdoc 2>/dev/null ; then
-        echo "jsdoc not installed"
-        /opt/node/bin/npm install -g jsdoc
-    fi
-    $WORKLOADS_DIR/jsdoc/generate.sh
-else
-    echo "$WORKLOADS_DIR/jsdoc/generate.sh missing or not executable"
-fi
-
 tar -czvf workloads.tar.gz --exclude=.git* -C $WORKLOADS_DIR .
 
