@@ -6830,38 +6830,43 @@
                     ]
                 },
                 "Aggregation.FindProjection":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
                     "ticket":[
-                        "BF-5949"
+                        "PERF-875",
+                        "BF-7015"
                     ]
                 },
                 "Aggregation.FindProjectionDottedField":{
                     "thread_threshold":0.18,
                     "threshold":0.12,
                     "ticket":[
-                        "PERF-875"
+                        "PERF-875",
+                        "BF-7015"
                     ]
                 },
                 "Aggregation.FindProjectionDottedField.Indexed":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
                     "ticket":[
-                        "PERF-875"
+                        "PERF-875",
+                        "BF-7015"
                     ]
                 },
                 "Aggregation.FindProjectionThreeFields":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
                     "ticket":[
-                        "BF-5949"
+                        "PERF-875",
+                        "BF-7015"
                     ]
                 },
                 "Aggregation.FindProjectionThreeFieldsCovered":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
                     "ticket":[
-                        "PERF-875"
+                        "PERF-875",
+                        "BF-7015"
                     ]
                 },
                 "Aggregation.FindWideDocProjection":{
