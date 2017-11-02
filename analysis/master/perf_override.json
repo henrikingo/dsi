@@ -12654,11 +12654,25 @@
                         "BF-5478"
                     ]
                 },
+                "Queries.Text.FindPhraseCaseSensitive":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6985"
+                    ]
+                },
                 "Queries.Text.FindSingleLargeDocuments":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
                     "ticket":[
                         "PERF-444"
+                    ]
+                },
+                "Queries.Text.FindThreeWordsCaseSensitive":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6985"
                     ]
                 }
             }
@@ -36470,11 +36484,25 @@
                         "PERF-444"
                     ]
                 },
+                "Queries.Text.FindPhraseCaseSensitive":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6985"
+                    ]
+                },
                 "Queries.Text.FindSingleLargeDocuments":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
                     "ticket":[
                         "PERF-444"
+                    ]
+                },
+                "Queries.Text.FindThreeWordsCaseSensitive":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6985"
                     ]
                 }
             }
