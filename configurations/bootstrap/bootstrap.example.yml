@@ -34,11 +34,11 @@
 
 # Personal information (REQUIRED)
 
-# Specify the path to your SSH private key file for AWS (pem file), the name of the key in EC2, and
+# Specify the path to your SSH private key file for AWS, the name of the key in EC2, and
 # your @10gen.com username. This is necessary to connect to your provisioned infrastructure. For a
 # full description, see the Requirements section of the documentation: http://bit.ly/2ufjQ0R
-ssh_key_file: ~/.ssh/your-ssh-key-file.pem  # SSH pem keyfile to use with AWS
-ssh_key_name: your-ssh-key-name  # The Name of the Key, as known in EC2
+ssh_key_file: ~/.ssh/NAME_OF_SSH_KEY  # SSH keyfile to use with AWS
+ssh_key_name: NAME_OF_SSH_KEY  # The Name of the Key, as known in EC2
 owner: your.username  # Your mongodb email address
 
 
