@@ -23,8 +23,12 @@ run:
               - insert_vector.js:
                     thread_levels: ${test_control.thread_levels.insert_vector.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
               - word_count.js
-              - jtrue.js:
-                  thread_levels: [1, 64, 128]
+              - crud.js:
+                  thread_levels: ${test_control.thread_levels.crud-jfalse.${mongodb_setup.meta.storageEngine}}
+                  j_value: false
+              - crud.js:
+                  thread_levels: [1,64,128]
+                  j_value: true
               - index_build.js
               - mix.js:
                   thread_levels: [4, 64, 128, 256, 512]
@@ -74,6 +78,9 @@ thread_levels:
         shard:
             mmapv1: [1, 32]
             wiredTiger: [1, 32, 64]
+    crud-jfalse:
+        mmapv1: [1, 4]
+        wiredTiger: [1, 16, 32]
 
 pre_task:
   - on_localhost:
