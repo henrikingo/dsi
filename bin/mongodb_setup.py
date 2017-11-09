@@ -5,6 +5,7 @@ MongoDB Setup
 This file takes as input a YAML configuration of the AWS instances and
 MongoDB cluster topology and brings up a cluster on the remote machines.
 """
+from functools import partial
 import json
 import logging
 import os
@@ -19,6 +20,7 @@ from common.download_mongodb import DownloadMongodb
 from common.host import RemoteHost, LocalHost
 from common.log import setup_logging
 from common.config import ConfigDict, copy_obj
+from common.thread_runner import run_threads
 
 LOG = logging.getLogger(__name__)
 
@@ -52,7 +54,6 @@ def merge_dicts(base, override):
         if key in base and isinstance(copy[key], dict) and isinstance(base[key], dict):
             copy[key] = merge_dicts(base[key], copy[key])
     return copy
-
 
 class MongoNode(object):
     """Represents a mongo[ds] program on a remote host."""
@@ -362,11 +363,13 @@ class ReplSet(object):
 
     def setup_host(self):
         """Ensures necessary files are setup."""
-        return all(node.setup_host() for node in self.nodes)
+        return all(run_threads([node.setup_host for node in self.nodes], daemon=True))
 
     def launch(self, numactl=True):
         """Starts the replica set."""
-        if not all(node.launch(numactl) for node in self.nodes):
+        if not all(
+                run_threads(
+                    [partial(node.launch, numactl) for node in self.nodes], daemon=True)):
             return False
         # Give the first host the highest priority so it will become
         # primary. This is the default behavior.
@@ -402,17 +405,15 @@ class ReplSet(object):
 
     def shutdown(self):
         """Shutdown the replset members gracefully"""
-        return all(node.shutdown() for node in self.nodes)
+        return all(run_threads([node.shutdown for node in self.nodes], daemon=True))
 
     def destroy(self):
         """Kills the remote replica members."""
-        for node in self.nodes:
-            node.destroy()
+        run_threads([node.destroy for node in self.nodes], daemon=True)
 
     def close(self):
         """Closes SSH connections to remote hosts."""
-        for node in self.nodes:
-            node.close()
+        run_threads([node.close for node in self.nodes], daemon=True)
 
     def connection_string(self, hostport_fn):
         """Returns the connection string using the hostport_fn function"""
@@ -490,14 +491,20 @@ class ShardedCluster(object):
 
     def setup_host(self):
         """Ensures necessary files are setup."""
-        return (self.config.setup_host() and all(shard.setup_host() for shard in self.shards)
-                and all(mongos.setup_host() for mongos in self.mongoses))
+        commands = []
+        commands.append(self.config.setup_host)
+        commands.extend(shard.setup_host for shard in self.shards)
+        commands.extend(mongos.setup_host for mongos in self.mongoses)
+        return all(run_threads(commands, daemon=True))
 
     def launch(self):
         """Starts the sharded cluster."""
         LOG.info('Launching sharded cluster...')
-        if not (self.config.launch(numactl=False) and all(shard.launch() for shard in self.shards)
-                and all(mongos.launch() for mongos in self.mongoses)):
+        commands = []
+        commands.append(partial(self.config.launch, numactl=False))
+        commands.extend(shard.launch for shard in self.shards)
+        commands.extend(mongos.launch for mongos in self.mongoses)
+        if not all(run_threads(commands, daemon=True)):
             return False
         if not self._add_shards():
             return False
@@ -520,24 +527,23 @@ class ShardedCluster(object):
 
     def shutdown(self):
         """Shutdown the mongodb cluster gracefully."""
-        return (all(shard.shutdown() for shard in self.shards) and self.config.shutdown()
-                and all(mongos.shutdown() for mongos in self.mongoses))
+        commands = []
+        commands.extend(shard.shutdown for shard in self.shards)
+        commands.append(self.config.shutdown)
+        commands.extend(mongos.shutdown for mongos in self.mongoses)
+        return all(run_threads(commands, daemon=True))
 
     def destroy(self):
-        """Kills the remote custer members."""
-        for shard in self.shards:
-            shard.destroy()
+        """Kills the remote cluster members."""
+        run_threads([shard.destroy for shard in self.shards], daemon=True)
         self.config.destroy()
-        for mongos in self.mongoses:
-            mongos.destroy()
+        run_threads([mongos.destroy for mongos in self.mongoses], daemon=True)
 
     def close(self):
         """Closes SSH connections to remote hosts."""
-        for shard in self.shards:
-            shard.close()
+        run_threads([shard.close for shard in self.shards], daemon=True)
         self.config.close()
-        for mongos in self.mongoses:
-            mongos.close()
+        run_threads([mongos.close for mongos in self.mongoses], daemon=True)
 
     def __str__(self):
         """String describing the sharded cluster"""
@@ -595,7 +601,10 @@ class MongodbSetup(object):
         self.destroy()
         if not self.downloader.download_and_extract():
             return False
-        if not all(self.start_cluster(cluster) for cluster in self.clusters):
+        if not all(
+                run_threads(
+                    [partial(self.start_cluster, cluster) for cluster in self.clusters],
+                    daemon=True)):
             self.shutdown()
             return False
         return True
@@ -614,18 +623,15 @@ class MongodbSetup(object):
 
     def shutdown(self):
         """Shutdown all launched mongo programs"""
-        for cluster in self.clusters:
-            cluster.shutdown()
+        run_threads([cluster.shutdown for cluster in self.clusters], daemon=True)
 
     def destroy(self):
         """Kill all launched mongo programs"""
-        for cluster in self.clusters:
-            cluster.destroy()
+        run_threads([cluster.destroy for cluster in self.clusters], daemon=True)
 
     def close(self):
         """Close connections to all hosts."""
-        for cluster in self.clusters:
-            cluster.close()
+        run_threads([cluster.close for cluster in self.clusters], daemon=True)
 
 
 def parse_command_line():

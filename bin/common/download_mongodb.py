@@ -1,5 +1,6 @@
 """Download and install mongodb_binary_archive on all nodes."""
 
+from functools import partial
 import logging
 import os
 import re
@@ -7,6 +8,7 @@ from uuid import uuid4
 
 #pylint: disable=too-few-public-methods
 from host import RemoteHost, LocalHost
+from thread_runner import run_threads
 
 LOG = logging.getLogger(__name__)
 
@@ -88,11 +90,12 @@ class DownloadMongodb(object):
             LOG.warn("DownloadMongodb: download_and_extract() was called, " +
                      "but mongodb_binary_archive isn't defined.")
             return 1
+        to_download = []
         for host in self.hosts:
             commands = self._remote_commands(host)
-            if not host.run(commands):
-                return False
-        return True
+            to_download.append(partial(host.run, commands))
+
+        return run_threads(to_download, daemon=True)
 
     def _remote_commands(self, host):
         mongo_dir = self.config["mongodb_setup"]["mongo_dir"]
