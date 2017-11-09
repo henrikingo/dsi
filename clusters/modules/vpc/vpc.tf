@@ -3,6 +3,7 @@ variable topology           {}
 variable availability_zone  {}
 variable owner              {}
 variable runner             {} # Hostname of the machine using it
+variable runner_instance_id {}
 variable status             {} # Idle, Running
 variable task_id            {}
 
@@ -12,13 +13,14 @@ resource "aws_vpc" "main" {
     enable_dns_hostnames = true
 
     tags {
-        Name = "dsi-${var.topology}-vpc"
-        TestSetup = "dsi"
-        TestTopology = "${var.topology}"
-        Owner = "${var.owner}"
-        runner = "${var.runner}"
-        status = "${var.status}"
-        task_id         = "${var.task_id}"
+        Name               = "dsi-${var.topology}-vpc"
+        TestSetup          = "dsi"
+        TestTopology       = "${var.topology}"
+        Owner              = "${var.owner}"
+        runner             = "${var.runner}"
+        runner_instance_id = "${var.runner_instance_id}"
+        status             = "${var.status}"
+        task_id            = "${var.task_id}"
     }
 }
 
@@ -32,13 +34,14 @@ resource "aws_subnet" "main" {
     availability_zone = "${var.availability_zone}"
 
     tags {
-        Name = "dsi-${var.topology}-subnet"
-        TestSetup = "dsi"
-        TestTopology = "${var.topology}"
-        Owner = "${var.owner}"
-        runner          = "${var.runner}"
-        status          = "${var.status}"
-        task_id         = "${var.task_id}"
+        Name               = "dsi-${var.topology}-subnet"
+        TestSetup          = "dsi"
+        TestTopology       = "${var.topology}"
+        Owner              = "${var.owner}"
+        runner             = "${var.runner}"
+        runner_instance_id = "${var.runner_instance_id}"
+        status             = "${var.status}"
+        task_id            = "${var.task_id}"
     }
 }
 
@@ -50,13 +53,14 @@ resource "aws_route_table" "r" {
     }
 
     tags {
-        Name = "dsi-dsi-routing"
-        TestSetup = "dsi"
-        TestTopology = "${var.topology}"
-        Owner = "${var.owner}"
-        runner          = "${var.runner}"
-        status          = "${var.status}"
-        task_id         = "${var.task_id}"
+        Name               = "dsi-dsi-routing"
+        TestSetup          = "dsi"
+        TestTopology       = "${var.topology}"
+        Owner              = "${var.owner}"
+        runner             = "${var.runner}"
+        runner_instance_id = "${var.runner_instance_id}"
+        status             = "${var.status}"
+        task_id            = "${var.task_id}"
     }
 }
 

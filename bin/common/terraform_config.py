@@ -64,20 +64,35 @@ def generate_runner():
         response.raise_for_status()
         return response.text
     except RequestException as exception:
-        LOG.warning("Terraform_config.py generate_runner could not access AWS"
-                    "meta-data. Falling back to other methods")
-        LOG.warning(repr(exception))
+        LOG.info("Terraform_config.py generate_runner could not access AWS"
+                 "meta-data. Falling back to other methods")
+        LOG.info(repr(exception))
 
     try:
         response = requests.get('http://ip.42.pl/raw', timeout=1)
         response.raise_for_status()
         return response.text
     except RequestException as exception:
-        LOG.warning("Terraform_config.py generate_runner could not access ip.42.pl"
-                    "to get public IP. Falling back to gethostname")
-        LOG.warning(repr(exception))
+        LOG.info("Terraform_config.py generate_runner could not access ip.42.pl"
+                 "to get public IP. Falling back to gethostname")
+        LOG.info(repr(exception))
 
     return socket.gethostname()
+
+
+def retrieve_runner_instance_id():
+    """Get the instance id of the (evergreen) runner for labelling cluster
+
+    """
+    try:
+        response = requests.get('http://169.254.169.254/latest/meta-data/instance-id', timeout=0.01)
+        response.raise_for_status()
+        return response.text
+    except RequestException as exception:
+        LOG.info("Terraform_config.py retrieve_runner_instance_id could not access AWS"
+                 "instance id.")
+        LOG.info(repr(exception))
+        return "deploying host is not an EC2 instance"
 
 
 class TerraformConfiguration(object):
@@ -115,6 +130,7 @@ class TerraformConfiguration(object):
         self.now = now
         self.define_day_delta(day_delta)
         self.runner = generate_runner()
+        self.runner_instance_id = retrieve_runner_instance_id()
         self.status = "running"
         # always update expire-on
         self.expire_on = generate_expire_on_tag(now, self.day_delta)

@@ -55,16 +55,16 @@ class TestTerraformConfiguration(unittest.TestCase):
         mock_requests_get.side_effect = requests.exceptions.Timeout()
         mock_requests_get.return_value = "MockedNotRaise"
         mock_gethostname.return_value = "HostName"
-        with LogCapture(level=logging.WARNING) as log_output:
+        with LogCapture(level=logging.INFO) as log_output:
             self.assertEqual(terraform_config.generate_runner(), "HostName")
-            log_output.check(('common.terraform_config', 'WARNING',
+            log_output.check(('common.terraform_config', 'INFO',
                               "Terraform_config.py generate_runner could not access AWS"
                               "meta-data. Falling back to other methods"),
-                             ('common.terraform_config', 'WARNING', 'Timeout()'),
-                             ('common.terraform_config', 'WARNING',
+                             ('common.terraform_config', 'INFO', 'Timeout()'),
+                             ('common.terraform_config', 'INFO',
                               "Terraform_config.py generate_runner could not access ip.42.pl"
                               "to get public IP. Falling back to gethostname"),
-                             ('common.terraform_config', 'WARNING', 'Timeout()'))
+                             ('common.terraform_config', 'INFO', 'Timeout()'))
 
     @patch('socket.gethostname')
     @patch('requests.get')
@@ -78,7 +78,7 @@ class TestTerraformConfiguration(unittest.TestCase):
         response.__setstate__(self.response_state)
         mock_requests_get.return_value = response
         mock_gethostname.return_value = "HostName"
-        with LogCapture(level=logging.WARNING) as log_output:
+        with LogCapture(level=logging.INFO) as log_output:
             self.assertEqual(terraform_config.generate_runner(), "awsdata")
             log_output.check()
 
@@ -90,12 +90,12 @@ class TestTerraformConfiguration(unittest.TestCase):
         response = requests.models.Response()
         response.__setstate__(self.response_state)
         mock_requests_get.side_effect = [requests.exceptions.Timeout(), response]
-        with LogCapture(level=logging.WARNING) as log_output:
+        with LogCapture(level=logging.INFO) as log_output:
             self.assertEqual(terraform_config.generate_runner(), 'ip.42.hostname')
-            log_output.check(('common.terraform_config', 'WARNING',
+            log_output.check(('common.terraform_config', 'INFO',
                               "Terraform_config.py generate_runner could not access AWS"
                               "meta-data. Falling back to other methods"),
-                             ('common.terraform_config', 'WARNING', 'Timeout()'))
+                             ('common.terraform_config', 'INFO', 'Timeout()'))
 
     @patch('socket.gethostname')
     @patch('requests.get')
@@ -106,17 +106,17 @@ class TestTerraformConfiguration(unittest.TestCase):
         self.response_state['status_code'] = 404
         response.__setstate__(self.response_state)
         mock_requests_get.side_effect = [requests.exceptions.Timeout(), response]
-        with LogCapture(level=logging.WARNING) as log_output:
+        with LogCapture(level=logging.INFO) as log_output:
             self.assertEqual(terraform_config.generate_runner(), 'HostName')
             log_output.check(
-                ('common.terraform_config', 'WARNING',
+                ('common.terraform_config', 'INFO',
                  "Terraform_config.py generate_runner could not access AWS"
                  "meta-data. Falling back to other methods"),
-                ('common.terraform_config', 'WARNING', 'Timeout()'),
-                ('common.terraform_config', 'WARNING',
+                ('common.terraform_config', 'INFO', 'Timeout()'),
+                ('common.terraform_config', 'INFO',
                  'Terraform_config.py generate_runner could not access ip.42.plto get public IP.'
                  ' Falling back to gethostname'),
-                ('common.terraform_config', 'WARNING',
+                ('common.terraform_config', 'INFO',
                  "HTTPError(u'404 Client Error: OK for url: http://ip.42.pl/raw',)"))
 
     @patch('socket.gethostname')
@@ -133,34 +133,70 @@ class TestTerraformConfiguration(unittest.TestCase):
         response.__setstate__(self.response_state)
         mock_requests_get.side_effect = [response, requests.exceptions.Timeout()]
         mock_gethostname.return_value = "HostName"
-        with LogCapture(level=logging.WARNING) as log_output:
+        with LogCapture(level=logging.INFO) as log_output:
             self.assertEqual(terraform_config.generate_runner(), "HostName")
             log_output.check(
-                ('common.terraform_config', 'WARNING',
+                ('common.terraform_config', 'INFO',
                  'Terraform_config.py generate_runner could not access AWSmeta-data.'
                  ' Falling back to other methods'),
-                ('common.terraform_config', 'WARNING', "HTTPError(u'404 Client Error: OK for url: "
+                ('common.terraform_config', 'INFO', "HTTPError(u'404 Client Error: OK for url: "
                  "http://169.254.169.254/latest/meta-data/public-hostname',)"),
-                ('common.terraform_config', 'WARNING',
+                ('common.terraform_config', 'INFO',
                  'Terraform_config.py generate_runner could not access ip.42.plto get public IP.'
-                 ' Falling back to gethostname'),
-                ('common.terraform_config', 'WARNING', 'Timeout()'))
+                 ' Falling back to gethostname'), ('common.terraform_config', 'INFO', 'Timeout()'))
+
+    @patch('socket.gethostname')
+    @patch('requests.get')
+    def test_retrieve_runner_instance_id_awsmeta(self, mock_requests_get, mock_gethostname):
+        """ Test retrieve runner instance id, successfully getting data from aws """
+        request = requests.Request('GET', 'http://169.254.169.254/latest/meta-data/instance-id')
+        request.prepare()
+        response = requests.models.Response()
+        self.response_state['request'] = request
+        self.response_state['_content'] = 'awsdata'
+        response.__setstate__(self.response_state)
+        mock_requests_get.return_value = response
+        mock_gethostname.return_value = "HostName"
+        with LogCapture(level=logging.INFO) as log_output:
+            self.assertEqual(terraform_config.generate_runner(), "awsdata")
+            log_output.check()
+
+    @patch('socket.gethostname')
+    @patch('requests.get')
+    def test_retrieve_runner_instance_id_timeout(self, mock_requests_get, mock_gethostname):
+        """ Test retrieve runner instance id error case."""
+        mock_gethostname.return_value = "HostName"
+        response = requests.models.Response()
+        response.__setstate__(self.response_state)
+        mock_requests_get.side_effect = [requests.exceptions.Timeout(), response]
+        with LogCapture(level=logging.INFO) as log_output:
+            self.assertEqual(terraform_config.retrieve_runner_instance_id(),
+                             "deploying host is not an EC2 instance")
+            log_output.check(('common.terraform_config', 'INFO',
+                              "Terraform_config.py retrieve_runner_instance_id could not access AWS"
+                              "instance id."), ('common.terraform_config', 'INFO', 'Timeout()'))
 
     @patch('common.terraform_config.generate_runner')
-    def test_default(self, mock_generate_runner):
+    @patch('common.terraform_config.retrieve_runner_instance_id')
+    def test_default(self, mock_retrieve_runner_instance_id, mock_generate_runner):
         """Test default terraform configuration, that is to update expire-on only."""
         mock_generate_runner.return_value = '111.111.111.111'
+        mock_retrieve_runner_instance_id.return_value = 'i-0c2aad81dfac5ca6e'
         tf_config = terraform_config.TerraformConfiguration(
             use_config=False, now=datetime.datetime(2016, 5, 25, 7, 11, 49, 131998))
         json_string = tf_config.to_json(compact=True)
 
-        self.assertEqual(json_string,
-                         '{"expire_on":"2016-5-27","runner":"111.111.111.111","status":"running"}')
+        self.assertEqual(json_string, '{"expire_on":"2016-5-27",'
+                         '"runner":"111.111.111.111",'
+                         '"runner_instance_id":"i-0c2aad81dfac5ca6e",'
+                         '"status":"running"}')
 
     @patch('common.terraform_config.generate_runner')
-    def test_mongod_instance(self, mock_generate_runner):
+    @patch('common.terraform_config.retrieve_runner_instance_id')
+    def test_mongod_instance(self, mock_retrieve_runner_instance_id, mock_generate_runner):
         """Test mongod instance parameters."""
         mock_generate_runner.return_value = '111.111.111.111'
+        mock_retrieve_runner_instance_id.return_value = 'i-0c2aad81dfac5ca6e'
         tf_config = terraform_config.TerraformConfiguration(
             topology="test-cluster",
             use_config=False,
@@ -171,13 +207,16 @@ class TestTerraformConfiguration(unittest.TestCase):
                                  '"mongod_instance_placement_group":"yes",'
                                  '"mongod_instance_type":"c3.8xlarge",'
                                  '"runner":"111.111.111.111",'
+                                 '"runner_instance_id":"i-0c2aad81dfac5ca6e",'
                                  '"status":"running",'
                                  '"topology":"test-cluster"}')
 
     @patch('common.terraform_config.generate_runner')
-    def test_large_cluster(self, mock_generate_runner):
+    @patch('common.terraform_config.retrieve_runner_instance_id')
+    def test_large_cluster(self, mock_retrieve_runner_instance_id, mock_generate_runner):
         """Test cluster with mixed instances."""
         mock_generate_runner.return_value = '111.111.111.111'
+        mock_retrieve_runner_instance_id.return_value = 'i-0c2aad81dfac5ca6e'
         tf_config = terraform_config.TerraformConfiguration(
             topology="test-cluster",
             use_config=False,
@@ -197,13 +236,16 @@ class TestTerraformConfiguration(unittest.TestCase):
                                  '"mongos_instance_placement_group":"no",'
                                  '"mongos_instance_type":"m3.2xlarge",'
                                  '"runner":"111.111.111.111",'
+                                 '"runner_instance_id":"i-0c2aad81dfac5ca6e",'
                                  '"status":"running",'
                                  '"topology":"test-cluster"}')
 
     @patch('common.terraform_config.generate_runner')
-    def test_no_placement_group(self, mock_generate_runner):
+    @patch('common.terraform_config.retrieve_runner_instance_id')
+    def test_no_placement_group(self, mock_retrieve_runner_instance_id, mock_generate_runner):
         """Test cluster with placement group."""
         mock_generate_runner.return_value = '111.111.111.111'
+        mock_retrieve_runner_instance_id.return_value = 'i-0c2aad81dfac5ca6e'
         tf_config = terraform_config.TerraformConfiguration(
             topology="test-cluster",
             use_config=False,
@@ -215,6 +257,7 @@ class TestTerraformConfiguration(unittest.TestCase):
                                  '"mongos_instance_placement_group":"no",'
                                  '"mongos_instance_type":"m3.2xlarge",'
                                  '"runner":"111.111.111.111",'
+                                 '"runner_instance_id":"i-0c2aad81dfac5ca6e",'
                                  '"status":"running",'
                                  '"topology":"test-cluster"}')
 
@@ -252,9 +295,11 @@ class TestTerraformConfiguration(unittest.TestCase):
         self.assertEqual(False, terraform_config.support_placement_group("m3.2xlarege"))
 
     @patch('common.terraform_config.generate_runner')
-    def test_provisioning_file(self, mock_generate_runner):
+    @patch('common.terraform_config.retrieve_runner_instance_id')
+    def test_provisioning_file(self, mock_retrieve_runner_instance_id, mock_generate_runner):
         """Test cluster with provisioning file overwrite."""
         mock_generate_runner.return_value = '111.111.111.111'
+        mock_retrieve_runner_instance_id.return_value = 'i-0c2aad81dfac5ca6e'
         old_dir = os.getcwd()
         os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/artifacts')
 
@@ -278,6 +323,7 @@ class TestTerraformConfiguration(unittest.TestCase):
                                  '"owner":"serverteam-perf@10gen.com",'
                                  '"region":"us-west-2",'
                                  '"runner":"111.111.111.111",'
+                                 '"runner_instance_id":"i-0c2aad81dfac5ca6e",'
                                  '"status":"running",'
                                  '"topology":"test-cluster",'
                                  '"workload_instance_count":1,'

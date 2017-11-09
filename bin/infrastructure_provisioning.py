@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 # The number determines the number it can create at a time together
 TERRAFORM_PARALLELISM = 20
 
-VERSION = "1"
+VERSION = "2"
 
 
 def check_version(file_path):

@@ -14,6 +14,7 @@ variable "topology"             {}
 variable "type"                 {}
 variable "run_fio"              { default = "true" }
 variable "runner"               {}
+variable "runner_instance_id"   {}
 variable "status"               {}
 variable "task_id"              {}
 
@@ -41,14 +42,15 @@ resource "aws_instance" "member" {
 
     key_name = "${var.key_name}"
     tags = {
-        Name            = "dsi-${var.topology}-${var.type}-${count.index}"
-        TestSetup       = "dsi"
-        TestTopology    = "${var.topology}"
-        owner           = "${var.owner}"
-        expire-on       = "${var.expire_on}"
-        runner          = "${var.runner}"
-        status          = "${var.status}"
-        task_id         = "${var.task_id}"
+        Name               = "dsi-${var.topology}-${var.type}-${count.index}"
+        TestSetup          = "dsi"
+        TestTopology       = "${var.topology}"
+        owner              = "${var.owner}"
+        expire-on          = "${var.expire_on}"
+        runner             = "${var.runner}"
+        runner_instance_id = "${var.runner_instance_id}"
+        status             = "${var.status}"
+        task_id            = "${var.task_id}"
 }
 
     ephemeral_block_device {

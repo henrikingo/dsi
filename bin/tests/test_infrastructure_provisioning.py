@@ -423,9 +423,19 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         """Test infrastructure_provisioning.check_version (check a version file in evg_data_dir)"""
         evg_data_dir = self.config['infrastructure_provisioning']['evergreen']['data_dir']
 
+        # provisioned.single should always have an empty version number.
         self.assertFalse(check_version(evg_data_dir + '/terraform/provisioned.single'))
+
+        # provisioned.replica should have a version number equal to the current version in
+        # infrastructure_provisioning.py.
         self.assertTrue(check_version(evg_data_dir + '/terraform/provisioned.replica'))
+
+        # provisioned.shard should have a version number one greater than the current version in
+        # infrastructure_provisioning.py.
         self.assertFalse(check_version(evg_data_dir + '/terraform/provisioned.shard'))
+
+        # provisioned.initialsync-logkeeper should have a version number equal to the current
+        # version in infrastructure_provisioning.py.
         self.assertTrue(
             check_version(evg_data_dir + '/terraform/provisioned.initialsync-logkeeper'))
 

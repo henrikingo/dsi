@@ -1,6 +1,7 @@
 variable owner                          { default = "serverteam-perf@10gen.com" }
 variable topology                       {}
 variable runner                         { default = "missing" } # Hostname of the machine using it
+variable runner_instance_id             { default = "none" }
 variable status                         { default = "idle" } #Idle, running
 variable task_id                        { default = "none" }
 
@@ -55,6 +56,7 @@ module "VPC" {
     availability_zone   = "${var.availability_zone}"
     owner               = "${var.owner}"
     runner              = "${var.runner}"
+    runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"
     task_id             = "${var.task_id}"
 }
@@ -79,6 +81,7 @@ module "mongod_instance" {
     type                = "mongod"
     run_fio             = "${var.run_fio}"
     runner              = "${var.runner}"
+    runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"
     task_id             = "${var.task_id}"
 }
@@ -102,6 +105,7 @@ module "mongod_ebs_instance" {
     topology            = "${var.topology}"
     type                = "mongod_ebs"
     runner              = "${var.runner}"
+    runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"
     task_id             = "${var.task_id}"
     ebs_size            = "${var.mongod_ebs_size}"
@@ -128,6 +132,7 @@ module "mongod_seeded_ebs_instance" {
     topology                = "${var.topology}"
     type                    = "mongod_seeded_ebs"
     runner                  = "${var.runner}"
+    runner_instance_id      = "${var.runner_instance_id}"
     status                  = "${var.status}"
     task_id                 = "${var.task_id}"
     seeded_ebs_snapshot_id  = "${var.mongod_seeded_ebs_snapshot_id}"
@@ -155,6 +160,7 @@ module "mongos_instance" {
     type                = "mongos"
     run_fio             = "false"
     runner              = "${var.runner}"
+    runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"
     task_id             = "${var.task_id}"
 }
@@ -179,6 +185,7 @@ module "configsvr_instance" {
     type                = "configsvr"
     run_fio             = "false"
     runner              = "${var.runner}"
+    runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"
     task_id             = "${var.task_id}"
 }
@@ -203,6 +210,7 @@ module "workload_instance" {
     type                = "workloadclient"
     run_fio             = "false"
     runner              = "${var.runner}"
+    runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"
     task_id             = "${var.task_id}"
 }
