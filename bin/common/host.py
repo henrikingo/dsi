@@ -337,6 +337,10 @@ class RemoteHost(Host):
         """Copy a file to the host"""
         self.ftp.put(local_path, remote_path)
 
+        # Get standard permissions mask e.g. 0755
+        source_permissions = os.stat(local_path).st_mode & 0777
+        self.ftp.chmod(remote_path, source_permissions)
+
     def remote_exists(self, remote_path):
         """Test whether a remote path exists.  Returns False if it doesn't exist or on error
 
@@ -449,6 +453,7 @@ class LocalHost(Host):
             LOG.warning('Uploading file locally to same path. Skipping step')
         else:
             shutil.copyfile(local_path, remote_path)
+            shutil.copymode(local_path, remote_path)
 
     def retrieve_path(self, remote_path, local_path):
         """Retrieve a file from the host"""

@@ -97,8 +97,6 @@ pre_task:
         bin/fio-net-test.sh: fio-net-test.sh
   - on_workload_client:
       exec: |
-        chmod 755 fio-test.sh
-        chmod 755 fio-net-test.sh
         rm -rf YCSB
         mkdir YCSB
         tar zxvf ycsb.tar.gz -C YCSB

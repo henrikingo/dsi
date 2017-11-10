@@ -78,8 +78,6 @@ pre_task:
         rm -rf workloads
         mkdir workloads
         tar zxvf workloads.tar.gz -C workloads
-        chmod 755 fio-test.sh
-        chmod 755 iperf-test.sh
   - on_all_hosts:
       # Install iperf. It isn't available in yum on AWS instances
       exec: |
