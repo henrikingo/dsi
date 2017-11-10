@@ -4,4 +4,3 @@ pylint==1.5.5
 yapf==0.19.0
 testfixtures==5.1.1
 yamllint==1.7.0
-testfixtures==5.1.1
