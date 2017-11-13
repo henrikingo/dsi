@@ -37,9 +37,9 @@ run:
     cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
     workload_config: ${test_control.common_fio_config}
-  - id: iperf
-    type: shell
-    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+#  - id: iperf
+#    type: shell
+#    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
 
 
 pre_task:
@@ -204,16 +204,16 @@ pre_task:
         curl -O --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/AggPerformance/bestbuyproducts.bson.gz
         ~/bin/mongorestore -h ${mongodb_setup.meta.hostname} --port=${mongodb_setup.meta.port} --gzip --archive=bestbuyproducts.bson.gz
         ~/bin/mongo --host ${mongodb_setup.meta.hostname} --port=${mongodb_setup.meta.port} --eval 'db.getSiblingDB("bestbuy").products.getShardDistribution()'
-  - on_all_hosts:
-      # Install iperf. It isn't available in yum on AWS instances
-      exec: |
-        sudo killall iperf3
-        rm -rf iperf
-        git clone https://github.com/esnet/iperf
-        cd iperf/
-        ./configure
-        make
-        sudo make install
+#  - on_all_hosts:
+#      # Install iperf. It isn't available in yum on AWS instances
+#      exec: |
+#        sudo killall iperf3
+#        rm -rf iperf
+#        git clone https://github.com/esnet/iperf
+#        cd iperf/
+#        ./configure
+#        make
+#        sudo make install
   - on_workload_client:
       upload_files:
         workloads.yml: workloads/workloads.yml

@@ -80,16 +80,16 @@ pre_task:
         tar zxvf workloads.tar.gz -C workloads
         chmod 755 fio-test.sh
         chmod 755 iperf-test.sh
-  - on_all_hosts:
-      # Install iperf. It isn't available in yum on AWS instances
-      exec: |
-        sudo killall iperf3
-        rm -rf iperf
-        git clone https://github.com/esnet/iperf
-        cd iperf/
-        ./configure
-        make
-        sudo make install
+#  - on_all_hosts:
+#      # Install iperf. It isn't available in yum on AWS instances
+#      exec: |
+#        sudo killall iperf3
+#        rm -rf iperf
+#        git clone https://github.com/esnet/iperf
+#        cd iperf/
+#        ./configure
+#        make
+#        sudo make install
   - on_workload_client:
       upload_files:
         workloads.yml: workloads/workloads.yml

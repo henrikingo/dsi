@@ -123,7 +123,7 @@ mongodb_setup:
               # get a warning.
               # The output is written to "$TMPDIR/mdiag-$(hostname).json".
               # This json file is machine readable, rendering the
-              # output to a more hunan friendly format is not done here.
+              # output to a more human friendly format is not done here.
               sudo TMPDIR=./mdiag bash ./mdiag/mdiag.sh sys-perf
         - on_all_servers:
               retrieve_files:
