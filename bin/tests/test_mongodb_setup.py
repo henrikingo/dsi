@@ -122,6 +122,10 @@ class TestMongodbSetup(unittest.TestCase):
                 'numactl_prefix': 'numactl test'
             },
             'mongodb_setup': {
+                'shutdown_options': {
+                    'force': True,
+                    'timeoutSecs': 5
+                },
                 'journal_dir':
                     '/data/journal',
                 'topology': [{

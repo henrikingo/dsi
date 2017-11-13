@@ -96,6 +96,10 @@ mongodb_setup:
         public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
         private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
 
+    shutdown_options:
+      force: true
+      timeoutSecs: 5
+
     meta:
         # The list of hosts that can be used in a mongodb connection string
         hosts: ${mongodb_setup.topology.0.private_ip}:27017

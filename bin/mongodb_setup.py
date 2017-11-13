@@ -84,6 +84,9 @@ class MongoNode(object):
     numactl_prefix = ""
     """Set this to execute mongod via numactl"""
 
+    shutdown_options = "{}"
+    """ Set this to pass in options to shutdown"""
+
     def __init__(self, opts, is_mongos=False):
         """
         :param opts: Read-only options for mongo[ds], example:
@@ -257,7 +260,8 @@ class MongoNode(object):
     def shutdown(self):
         """Shutdown the replset members gracefully"""
         if self.started:
-            return self.run_mongo_shell('db.getSiblingDB("admin").shutdownServer({timeoutSecs: 5})')
+            return self.run_mongo_shell('db.getSiblingDB("admin").shutdownServer({})'.format(
+                self.shutdown_options))
         return True
 
     def destroy(self):
@@ -586,6 +590,8 @@ class MongodbSetup(object):
         MongoNode.numactl_prefix = config['infrastructure_provisioning']['numactl_prefix']
         if MongoNode.numactl_prefix is None:
             MongoNode.numactl_prefix = ""
+        MongoNode.shutdown_options = json.dumps(
+            copy_obj(config['mongodb_setup']['shutdown_options']))
         self.clusters = []
         self.downloader = DownloadMongodb(config, args.run_locally)
         self.parse_topologies()
