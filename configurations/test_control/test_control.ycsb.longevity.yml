@@ -23,9 +23,9 @@ run:
     cmd: ' ${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
     workload_config: ${test_control.common_fio_config}
-#  - id: iperf
-#    type: shell
-#    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+  - id: iperf
+    type: shell
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
 
 mc:
   monitor_interval: 10
@@ -65,16 +65,16 @@ pre_task:
           } else {
             print ("Non-sharded cluster");
           }
-#  - on_all_hosts:
-#      # Install iperf. It isn't available in yum on AWS instances
-#      exec: |
-#        sudo killall iperf3
-#        rm -rf iperf
-#        git clone https://github.com/esnet/iperf
-#        cd iperf/
-#        ./configure
-#        make
-#        sudo make install
+  - on_all_hosts:
+      # Install iperf. It isn't available in yum on AWS instances
+      exec: |
+        sudo killall iperf3
+        rm -rf iperf
+        git clone https://github.com/esnet/iperf
+        cd iperf/
+        ./configure
+        make
+        sudo make install
   - on_workload_client:
       upload_files:
         workloadLongevity: YCSB/ycsb-mongodb/workloads/workloadLongevity
