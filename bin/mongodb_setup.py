@@ -55,6 +55,7 @@ def merge_dicts(base, override):
             copy[key] = merge_dicts(base[key], copy[key])
     return copy
 
+
 class MongoNode(object):
     """Represents a mongo[ds] program on a remote host."""
 
@@ -368,8 +369,7 @@ class ReplSet(object):
     def launch(self, numactl=True):
         """Starts the replica set."""
         if not all(
-                run_threads(
-                    [partial(node.launch, numactl) for node in self.nodes], daemon=True)):
+                run_threads([partial(node.launch, numactl) for node in self.nodes], daemon=True)):
             return False
         # Give the first host the highest priority so it will become
         # primary. This is the default behavior.
