@@ -85,6 +85,7 @@ pre_task:
   #       rm -rf iperf
   #       git clone https://github.com/esnet/iperf
   #       cd iperf/
+  #       git checkout d06415822a
   #       ./configure
   #       make
   #       sudo make install
