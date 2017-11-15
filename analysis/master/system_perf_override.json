@@ -1215,6 +1215,13 @@
                         "PERF-738"
                     ]
                 },
+                "map_reduce_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
+                    ]
+                },
                 "mixed_delete":{
                     "thread_threshold":0.25,
                     "threshold":0.15,
@@ -7819,6 +7826,13 @@
                     "threshold":0.12,
                     "ticket":[
                         "BF-6272"
+                    ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
                     ]
                 },
                 "mixed_delete":{
