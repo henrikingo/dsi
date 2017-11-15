@@ -19,11 +19,9 @@ else
     if [ -f "../terraform.log" ]; then cp ../terraform.log .; fi
     cp ../perf.json .
     cd ..
-    touch ./reports/graphs/timeseries-p1.html
 
-    $DSI_PATH/bin/generate-timeseries-html.sh || true
-    cp ./reports/graphs/timeseries-mongod.0.html ./reports/graphs/timeseries-p1.html
-
+    # backward compatibility: remove this code post 3.6.0 (PERF-1136 and SERVER-31957)
+    touch  ./reports/graphs/timeseries-mongod.0.html
 
     # The long term plan is to tar the complete work directory, and
     # upload it. Currently we only save the reports directory. It is
