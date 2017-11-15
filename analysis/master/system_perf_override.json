@@ -733,33 +733,33 @@
                     "workload":"shell/benchrun"
                 },
                 "insert_vector_primary":{
-                    "create_time":"2017-08-24T20:50:24.213Z",
-                    "end":1503673630.0,
-                    "max":430122.48979251727,
+                    "create_time":"2017-11-08T09:01:11.011Z",
+                    "end":1510158070.0,
+                    "max":257881.924807593,
                     "name":"insert_vector_primary",
-                    "order":8174,
+                    "order":8984,
                     "results":{
                         "1":{
-                            "ops_per_sec":99641.67662009389,
+                            "ops_per_sec":100668.86659333578,
                             "ops_per_sec_values":[
-                                99641.67662009389
+                                100668.86659333578
                             ]
                         },
                         "16":{
-                            "ops_per_sec":430122.48979251727,
+                            "ops_per_sec":257881.924807593,
                             "ops_per_sec_values":[
-                                430122.48979251727
+                                257881.924807593
                             ]
                         },
                         "8":{
-                            "ops_per_sec":413608.5372086305,
+                            "ops_per_sec":166019.85334464008,
                             "ops_per_sec_values":[
-                                413608.5372086305
+                                166019.85334464008
                             ]
                         }
                     },
-                    "revision":"4b95c9d2ea4bce67fcf42ed9f712ca94607d8009",
-                    "start":1503667336.0,
+                    "revision":"11e68f03f22a040328f34fa636bd7b69a215d16b",
+                    "start":1510151055.0,
                     "tag":"",
                     "threads":[
                         "1",
@@ -767,38 +767,39 @@
                         "16"
                     ],
                     "ticket":[
-                        "BF-6743"
+                        "BF-6743",
+                        "BF-7147"
                     ],
                     "workload":"shell/benchrun"
                 },
                 "insert_vector_secondary_load_phase":{
-                    "create_time":"2017-08-24T20:50:24.213Z",
-                    "end":1503673630.0,
-                    "max":430122.48979251727,
+                    "create_time":"2017-11-08T09:01:11.011Z",
+                    "end":1510158070.0,
+                    "max":257881.924807593,
                     "name":"insert_vector_secondary_load_phase",
-                    "order":8174,
+                    "order":8984,
                     "results":{
                         "1":{
-                            "ops_per_sec":99641.67662009389,
+                            "ops_per_sec":100668.86659333578,
                             "ops_per_sec_values":[
-                                99641.67662009389
+                                100668.86659333578
                             ]
                         },
                         "16":{
-                            "ops_per_sec":430122.48979251727,
+                            "ops_per_sec":257881.924807593,
                             "ops_per_sec_values":[
-                                430122.48979251727
+                                257881.924807593
                             ]
                         },
                         "8":{
-                            "ops_per_sec":413608.5372086305,
+                            "ops_per_sec":166019.85334464008,
                             "ops_per_sec_values":[
-                                413608.5372086305
+                                166019.85334464008
                             ]
                         }
                     },
-                    "revision":"4b95c9d2ea4bce67fcf42ed9f712ca94607d8009",
-                    "start":1503667336.0,
+                    "revision":"11e68f03f22a040328f34fa636bd7b69a215d16b",
+                    "start":1510151055.0,
                     "tag":"",
                     "threads":[
                         "1",
@@ -806,38 +807,39 @@
                         "16"
                     ],
                     "ticket":[
-                        "BF-6743"
+                        "BF-6743",
+                        "BF-7147"
                     ],
                     "workload":"shell/benchrun"
                 },
                 "insert_vector_secondary_overall":{
-                    "create_time":"2017-08-24T20:50:24.213Z",
-                    "end":1503673630.0,
-                    "max":430110.54327296966,
+                    "create_time":"2017-11-08T09:01:11.011Z",
+                    "end":1510158070.0,
+                    "max":243351.1070273381,
                     "name":"insert_vector_secondary_overall",
-                    "order":8174,
+                    "order":8984,
                     "results":{
                         "1":{
-                            "ops_per_sec":99636.14143265839,
+                            "ops_per_sec":100665.511188143,
                             "ops_per_sec_values":[
-                                99636.14143265839
+                                100665.511188143
                             ]
                         },
                         "16":{
-                            "ops_per_sec":430110.54327296966,
+                            "ops_per_sec":243351.1070273381,
                             "ops_per_sec_values":[
-                                430110.54327296966
+                                243351.1070273381
                             ]
                         },
                         "8":{
-                            "ops_per_sec":413599.3467247356,
+                            "ops_per_sec":166018.19705495032,
                             "ops_per_sec_values":[
-                                413599.3467247356
+                                166018.19705495032
                             ]
                         }
                     },
-                    "revision":"4b95c9d2ea4bce67fcf42ed9f712ca94607d8009",
-                    "start":1503667336.0,
+                    "revision":"11e68f03f22a040328f34fa636bd7b69a215d16b",
+                    "start":1510151055.0,
                     "tag":"",
                     "threads":[
                         "1",
@@ -845,7 +847,8 @@
                         "16"
                     ],
                     "ticket":[
-                        "BF-6743"
+                        "BF-6743",
+                        "BF-7147"
                     ],
                     "workload":"shell/benchrun"
                 },
