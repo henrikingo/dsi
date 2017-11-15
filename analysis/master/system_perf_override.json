@@ -4402,8 +4402,8 @@
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_1_writeload_false":{
-                    "thread_threshold":20.0,
-                    "threshold":10.0,
+                    "thread_threshold":2000.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723",
                         "BF-5520",
@@ -4411,8 +4411,8 @@
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_1_writeload_true":{
-                    "thread_threshold":20.0,
-                    "threshold":10.0,
+                    "thread_threshold":2000.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723",
                         "BF-5520",
@@ -4420,8 +4420,8 @@
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_32_writeload_false":{
-                    "thread_threshold":20.0,
-                    "threshold":10.0,
+                    "thread_threshold":2000.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723",
                         "BF-5520",
@@ -4429,8 +4429,8 @@
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_32_writeload_true":{
-                    "thread_threshold":20.0,
-                    "threshold":10.0,
+                    "thread_threshold":2000.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723",
                         "BF-5520",
@@ -4438,8 +4438,8 @@
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_1_writeload_false":{
-                    "thread_threshold":20.0,
-                    "threshold":10.0,
+                    "thread_threshold":2000.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723",
                         "BF-5520",
@@ -4447,8 +4447,8 @@
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_1_writeload_true":{
-                    "thread_threshold":20.0,
-                    "threshold":10.0,
+                    "thread_threshold":2000.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723",
                         "BF-5520",
@@ -4456,8 +4456,8 @@
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_32_writeload_false":{
-                    "thread_threshold":20.0,
-                    "threshold":10.0,
+                    "thread_threshold":2000.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723",
                         "BF-5520",
@@ -4465,8 +4465,8 @@
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_32_writeload_true":{
-                    "thread_threshold":20.0,
-                    "threshold":10.0,
+                    "thread_threshold":2000.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723",
                         "BF-5520",
@@ -5195,8 +5195,8 @@
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_1_writeload_false":{
-                    "thread_threshold":20.0,
-                    "threshold":10.0,
+                    "thread_threshold":2000.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723",
                         "BF-5520",
@@ -5204,8 +5204,8 @@
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_1_writeload_true":{
-                    "thread_threshold":20.0,
-                    "threshold":10.0,
+                    "thread_threshold":2000.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723",
                         "BF-5520",
@@ -5213,8 +5213,8 @@
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_32_writeload_false":{
-                    "thread_threshold":20.0,
-                    "threshold":10.0,
+                    "thread_threshold":2000.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723",
                         "BF-5520",
@@ -5222,8 +5222,8 @@
                     ]
                 },
                 "finishing_initialsync_dbs_1_colls_32_writeload_true":{
-                    "thread_threshold":20.0,
-                    "threshold":10.0,
+                    "thread_threshold":2000.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723",
                         "BF-5520",
@@ -5231,8 +5231,8 @@
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_1_writeload_false":{
-                    "thread_threshold":20.0,
-                    "threshold":10.0,
+                    "thread_threshold":2000.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723",
                         "BF-5520",
@@ -5240,8 +5240,8 @@
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_1_writeload_true":{
-                    "thread_threshold":20.0,
-                    "threshold":10.0,
+                    "thread_threshold":2000.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723",
                         "BF-5520",
@@ -5249,8 +5249,8 @@
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_32_writeload_false":{
-                    "thread_threshold":20.0,
-                    "threshold":10.0,
+                    "thread_threshold":2000.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723",
                         "BF-5520",
@@ -5258,8 +5258,8 @@
                     ]
                 },
                 "finishing_initialsync_dbs_32_colls_32_writeload_true":{
-                    "thread_threshold":20.0,
-                    "threshold":10.0,
+                    "thread_threshold":2000.0,
+                    "threshold":1000.0,
                     "ticket":[
                         "PERF-723",
                         "BF-5520",
