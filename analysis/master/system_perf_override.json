@@ -694,6 +694,13 @@
                         "BF-6272",
                         "BF-7146"
                     ]
+                },
+                "word_count_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
+                    ]
                 }
             }
         },
@@ -1278,6 +1285,13 @@
                     "ticket":[
                         "BF-6272",
                         "BF-7146"
+                    ]
+                },
+                "word_count_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
                     ]
                 }
             }
@@ -2620,6 +2634,13 @@
                     "ticket":[
                         "BF-6272",
                         "BF-7146"
+                    ]
+                },
+                "word_count_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
                     ]
                 }
             }
@@ -5989,6 +6010,13 @@
                     "ticket":[
                         "BF-6272"
                     ]
+                },
+                "word_count_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
+                    ]
                 }
             }
         },
@@ -6167,6 +6195,13 @@
                     "threshold":0.12,
                     "ticket":[
                         "BF-6272"
+                    ]
+                },
+                "word_count_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
                     ]
                 }
             }
@@ -7566,6 +7601,13 @@
                         "BF-6272",
                         "BF-7146"
                     ]
+                },
+                "word_count_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
+                    ]
                 }
             }
         },
@@ -7900,6 +7942,13 @@
                     "ticket":[
                         "BF-6272",
                         "BF-7146"
+                    ]
+                },
+                "word_count_doc":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6979"
                     ]
                 }
             }
