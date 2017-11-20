@@ -98,12 +98,12 @@ post_task:
         fio.json: ./fio.json
 
 # Ordered list of things to do before each run, after pre_task
-pre_run:
+pre_test:
   - on_mongos: (see above)
   - on_mongod: (see above)
   - on_configsvr: (see above)
 
 # Ordered list of things to do after each run, before post_task
-post_run:
+post_test:
   - on_mongod: (see above)
   - on_all_hosts: (see above)

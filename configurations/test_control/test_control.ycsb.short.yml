@@ -14,6 +14,10 @@ run:
       scanproportion=0
       insertproportion=0.0
       requestdistribution=zipfian
+    pre_test:
+      - on_workload_client:
+          upload_files:
+            workloadShort: YCSB/ycsb-mongodb/workloads/workloadShort
   - id: ycsb_50read50update
     type: ycsb
     "cmd": "cd YCSB/ycsb-mongodb; ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s -P workloads/workloadShort -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
@@ -33,7 +37,3 @@ pre_task:
         tar zxvf ycsb.tar.gz -C YCSB
         export JAVA_HOME="/usr/java/jdk1.7.0_71/jre"
         source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && mvn clean package
-  - on_workload_client:
-      upload_files:
-        workloadShort: YCSB/ycsb-mongodb/workloads/workloadShort
-

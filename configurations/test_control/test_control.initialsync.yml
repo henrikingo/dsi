@@ -8,6 +8,11 @@ run:
   # - id: iperf
   #   type: shell
   #   cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+  #   pre_test:
+  #     - on_workload_client:
+  #         upload_files:
+  #           fio.ini: fio.ini
+
   - id: benchRun
     type: shell
     cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
@@ -76,7 +81,10 @@ run:
         replica: ${mongodb_setup.meta.is_replset}
         scale_factor: ${mongodb_setup.meta.primaries}
         test_list: initialsync_c_1_d_1_w_f
-
+    pre_test:
+      - on_workload_client:
+          upload_files:
+            workloads.yml: workloads/workloads.yml  # This is redundant with the run-initial sync script
 pre_task:
   # - on_all_hosts:
   #     # Install iperf. It isn't available in yum on AWS instances
@@ -106,10 +114,6 @@ pre_task:
         rm -rf workloads
         mkdir workloads
         tar zxvf workloads.tar.gz -C workloads
-  - on_workload_client:
-      upload_files:
-        workloads.yml: workloads/workloads.yml  # This is redundant with the run-initial sync script
-        # fio.ini: fio.ini
 post_task:
   - on_workload_client:
       retrieve_files:

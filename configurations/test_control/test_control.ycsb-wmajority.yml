@@ -20,6 +20,10 @@ run:
       scanproportion=0
       insertproportion=0.0
       requestdistribution=zipfian
+    pre_test:
+      - on_workload_client:
+          upload_files:
+            workloadEvergreen: YCSB/ycsb-mongodb/workloads/workloadEvergreen
   - id: ycsb_95read5update_w_majority
     type: ycsb
     cmd: >
@@ -40,6 +44,10 @@ run:
       scanproportion=0
       insertproportion=0.0
       requestdistribution=zipfian
+    pre_test:
+      - on_workload_client:
+          upload_files:
+            workloadEvergreen_95read5update: YCSB/ycsb-mongodb/workloads/workloadEvergreen_95read5update
   - id: ycsb_95read5update_single_w_majority
     type: ycsb
     cmd: >
@@ -70,6 +78,10 @@ run:
       scanproportion=0
       insertproportion=0.0
       requestdistribution=zipfian
+    pre_test:
+      - on_workload_client:
+          upload_files:
+            workloadEvergreen_50read50update: YCSB/ycsb-mongodb/workloads/workloadEvergreen_50read50update
   - id: ycsb_50read50update_single_w_majority
     type: ycsb
     cmd: >
@@ -85,6 +97,10 @@ run:
     cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
     workload_config: ${test_control.common_fio_config}
+    pre_test:
+      - on_workload_client:
+          upload_files:
+            fio.ini: fio.ini
   - id: iperf
     type: shell
     cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
@@ -147,12 +163,6 @@ pre_task:
         ./configure
         make
         sudo make install
-  - on_workload_client:
-      upload_files:
-        workloadEvergreen: YCSB/ycsb-mongodb/workloads/workloadEvergreen
-        workloadEvergreen_95read5update: YCSB/ycsb-mongodb/workloads/workloadEvergreen_95read5update
-        workloadEvergreen_50read50update: YCSB/ycsb-mongodb/workloads/workloadEvergreen_50read50update
-        fio.ini: fio.ini
 post_task:
   - on_workload_client:
       retrieve_files:

@@ -2,18 +2,6 @@
 # It is not actively maintained. Please see test_control.core.yml instead.
 task_name: noise_test
 run:
-  # Dummy entry to produce a fio-net-listener.ini file, which is used together with fio-net.ini
-  # in the following entry.
-  - id: fio-net-listener-${mongodb_setup.mongod_config_file.storage.engine}
-    type: shell
-    cmd: 'echo ">>> fio_net_dummy_entry :      1.0 1"'
-    config_filename: fio-net-listener.ini
-    workload_config: ${test_control.common_fio_net_config_listener}
-  - id: fio-net-${mongodb_setup.mongod_config_file.storage.engine}
-    type: shell
-    cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-net-test.sh ${mongodb_setup.meta.hostname}'
-    config_filename: fio-net.ini
-    workload_config: ${test_control.common_fio_net_config}
   - id: fio-${mongodb_setup.mongod_config_file.storage.engine}.primary_data
     type: shell
     cmd: 'scp -o StrictHostKeyChecking=no fio.ini ${mongodb_setup.meta.hostname}:./; for i in `seq 1 5`; do ssh -A  ${mongodb_setup.meta.hostname} "mkdir -p ./data/fio && ${infrastructure_provisioning.numactl_prefix} fio  --directory=$(readlink -f ./data) --output-format=json --output=fio.json fio.ini" && scp ${mongodb_setup.meta.hostname}:./fio.json . && python process_fio_results.py -l primary && mv fio.json fio.json.p1.$i; done;  ssh -A  ${mongodb_setup.meta.hostname} "rm -r data/fio"'
@@ -73,7 +61,10 @@ run:
       numjobs=16
       bs=16k
       iodepth=32
-
+    pre_test:
+      - on_workload_client:
+          upload_files:
+            fio.ini: fio.ini
   - id: benchRun-${mongodb_setup.mongod_config_file.storage.engine}
     type: shell
 
@@ -120,6 +111,10 @@ run:
         # Hard coding for now. These aren't working right now
         sharded: ${mongodb_setup.meta.is_sharded}
         replica: ${mongodb_setup.meta.is_replset}
+    pre_test:
+      - on_workload_client:
+          upload_files:
+            workloads.yml: workloads/workloads.yml
 
 # This is just a lookup table. Each test may reference some leaf node here from a test parameter.
 thread_levels:
@@ -137,19 +132,11 @@ pre_task:
         workloads.tar.gz: workloads.tar.gz
       upload_repo_files:
         bin/process_fio_results.py: process_fio_results.py
-        bin/fio-test.sh: fio-test.sh
-        bin/fio-net-test.sh: fio-net-test.sh
   - on_workload_client:
       exec: |
         rm -rf workloads
         mkdir workloads
         tar zxvf workloads.tar.gz -C workloads
-  - on_workload_client:
-      upload_files:
-        workloads.yml: workloads/workloads.yml
-        fio.ini: fio.ini
-        fio-net.ini: fio-net.ini
-        fio-net-listener.ini: fio-net-listener.ini
 post_task:
   - on_workload_client:
       retrieve_files:

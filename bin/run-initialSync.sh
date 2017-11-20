@@ -25,7 +25,7 @@ function runInitialSyncTest {
         TEST="$TEST_NAME"
     fi
     MC=${MC:-"${BINDIR}/mc"}
-    MC_MONITOR_INTERVAL=1 $MC -config mc.json -run $TEST-run -o perf.json
+    MC_MONITOR_INTERVAL=1 $MC -config mc_benchRun.json -run $TEST-run -o perf.json
 }
 
 # We will rerun mongodb_setup.py between each test. However, we want to keep
@@ -68,8 +68,8 @@ do
     # Keep a copy of this file.
     cp test_control.yml test_control.${i}.yml
     python $BINDIR/config_test_control.py
-    echo "Generated mc.json"
-    cat mc.json
+    echo "Generated mc_benchRun.json"
+    cat mc_benchRun.json
     scp -oStrictHostKeyChecking=no -i $PEMFILE  workloads.yml $SSHUSER@${workload_client}:./workloads/
     if [ -e fio.ini ]; then
         scp -oStrictHostKeyChecking=no -i $PEMFILE  fio.ini $SSHUSER@${workload_client}:./

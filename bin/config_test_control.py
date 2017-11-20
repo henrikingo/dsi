@@ -17,7 +17,7 @@ from common.log import setup_logging
 LOG = logging.getLogger(__name__)
 
 
-def generate_mc_json():
+def generate_mc_json(test_index=0):
     ''' Generate a json config file for mission control '''
 
     conf = ConfigDict('test_control')
@@ -52,44 +52,40 @@ def generate_mc_json():
             ssh_user + '@' + server['public_ip']
             for server in conf['infrastructure_provisioning']['out']['mongos']
         ]
-    mc_conf['runs'] = []
 
-    for run in conf['test_control']['run']:
-        mc_run = {'client_logs': [], 'server_logs': [], 'clients': clients, 'servers': servers}
-        mc_run['run_id'] = run['id']
-        mc_run['type'] = run['type']
-        mc_run['cmd'] = run['cmd']
+    test = conf['test_control']['run'][test_index]
 
-        if 'background_tasks' in run:
-            # Background task defined
-            mc_run['background_tasks'] = run['background_tasks'].as_dict()
+    mc_test = {'client_logs': [], 'server_logs': [], 'clients': clients, 'servers': servers}
+    mc_test['run_id'] = test['id']
+    mc_test['type'] = test['type']
+    mc_test['cmd'] = test['cmd']
 
-        mc_conf['runs'].append(mc_run)
+    if 'background_tasks' in test:
+        # Background task defined
+        mc_test['background_tasks'] = test['background_tasks'].as_dict()
 
-        # Create the per run config files
-        # I tried testing for existence of the key, byt that did not work
-        # properly, so using try catch block.
-        try:
-            workload_config = run['workload_config']
-            with open(run['config_filename'], 'w') as workloads_file:
-                if isinstance(workload_config, dict):
-                    # Can't assign into config dict. Need an actual dictionary
-                    workload_config_dict = workload_config.as_dict()
-                    if 'scale_factor' in workload_config_dict:
-                        if isinstance(workload_config_dict['scale_factor'], str):
-                            #pylint: disable=eval-used
-                            workload_config_dict['scale_factor'] = eval(
-                                workload_config_dict['scale_factor'])
-                    workloads_file.write(yaml.dump(workload_config_dict))
-                elif isinstance(workload_config, str):
-                    workloads_file.write(workload_config)
-        except KeyError:
-            LOG.warn("No workload config in test control")
+    mc_conf['runs'] = [mc_test]
 
-    with open('mc.json', 'w') as mc_config_file:
-        json.dump(mc_conf, mc_config_file, indent=4, separators=[',', ':'], sort_keys=True)
+    try:
+        workload_config = test['workload_config']
+        with open(test['config_filename'], 'w') as workloads_file:
+            if isinstance(workload_config, dict):
+                # Can't assign into config dict. Need an actual dictionary
+                workload_config_dict = workload_config.as_dict()
+                if 'scale_factor' in workload_config_dict:
+                    if isinstance(workload_config_dict['scale_factor'], str):
+                        #pylint: disable=eval-used
+                        workload_config_dict['scale_factor'] = eval(
+                            workload_config_dict['scale_factor'])
+                workloads_file.write(yaml.dump(workload_config_dict))
+            elif isinstance(workload_config, str):
+                workloads_file.write(workload_config)
+    except KeyError:
+        LOG.warn("No workload config in test control")
 
     # Dump out the config for for the workload. Need to adjust for ycsb Needs to be copied up.
+    with open('mc_' + test['id'] + '.json', 'w') as mc_config_file:
+        json.dump(mc_conf, mc_config_file, indent=4, separators=[',', ':'], sort_keys=True)
 
 
 def main(argv):

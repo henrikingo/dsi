@@ -4,25 +4,6 @@ task_name: ycsb.noise_test
 jstests_dir: ""
 
 run:
-  # 5x fio-net tests ###########################################################################
-  # Dummy entry to produce a fio-net-listener.ini file, which is used together with fio-net.ini
-  # in the following entry.
-  - id: fio-net-listener-${mongodb_setup.mongod_config_file.storage.engine}
-    type: shell
-    cmd: 'echo ">>> fio_net_dummy_entry :      1.0 1"'
-    config_filename: fio-net-listener.ini
-    workload_config: ${test_control.common_fio_net_config_listener}
-  - &fio_net
-    id: fio-net-${mongodb_setup.mongod_config_file.storage.engine}
-    type: shell
-    cmd: './fio-net-test.sh ${mongodb_setup.meta.hostname}'
-    config_filename: fio-net.ini
-    workload_config: ${test_control.common_fio_net_config}
-  - *fio_net
-  - *fio_net
-  - *fio_net
-  - *fio_net
-
   # 5x fio tests ###########################################################################
   - &fio
     id: fio-${mongodb_setup.mongod_config_file.storage.engine}
@@ -30,6 +11,10 @@ run:
     cmd: './fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
     workload_config: ${test_control.common_fio_config}
+    pre_test:
+      - on_workload_client:
+          upload_files:
+            fio.ini: fio.ini
   - *fio
   - *fio
   - *fio
@@ -40,6 +25,10 @@ run:
     id: ycsb_load-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
     "cmd": "cd YCSB/ycsb-mongodb; ./bin/ycsb load mongodb -s -P workloads/workloadEvergreen -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32; sleep 1"
+    pre_test:
+      - on_workload_client:
+          upload_files:
+            workloadEvergreen: YCSB/ycsb-mongodb/workloads/workloadEvergreen
   - &ycsb_load_cleanup
     id: ycsb_load-cleanup
     type: shell
@@ -68,6 +57,10 @@ run:
     id: ycsb_95read5update-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
     "cmd": "cd YCSB/ycsb-mongodb; ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen_95read5update -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
+    pre_test:
+      - on_workload_client:
+          upload_files:
+            workloadEvergreen_95read5update: YCSB/ycsb-mongodb/workloads/workloadEvergreen_95read5update
   - *ycsb_95read5update
   - *ycsb_95read5update
   - *ycsb_95read5update
@@ -78,6 +71,10 @@ run:
     id: ycsb_50read50update-${mongodb_setup.mongod_config_file.storage.engine}
     type: ycsb
     "cmd": "cd YCSB/ycsb-mongodb; ./bin/ycsb run mongodb -s -P workloads/workloadEvergreen_50read50update -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
+    pre_test:
+      - on_workload_client:
+          upload_files:
+            workloadEvergreen_50read50update: YCSB/ycsb-mongodb/workloads/workloadEvergreen_50read50update
   - *ycsb_50read50update
   - *ycsb_50read50update
   - *ycsb_50read50update
@@ -94,18 +91,12 @@ pre_task:
       upload_repo_files:
         bin/process_fio_results.py: process_fio_results.py
         bin/fio-test.sh: fio-test.sh
-        bin/fio-net-test.sh: fio-net-test.sh
   - on_workload_client:
       exec: |
         rm -rf YCSB
         mkdir YCSB
         tar zxvf ycsb.tar.gz -C YCSB
         source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && ./setup.sh
-  - on_workload_client:
-      upload_files:
-        fio.ini: fio.ini
-        fio-net.ini: fio-net.ini
-        fio-net-listener.ini: fio-net-listener.ini
 post_task:
   - on_workload_client:
       retrieve_files:

@@ -33,7 +33,10 @@ run:
         replica: ${mongodb_setup.meta.is_replset}
         scale_factor: ${mongodb_setup.meta.primaries}
         test_list: initialsync-logkeeper
-
+    pre_test:
+      - on_workload_client:
+          upload_files:
+            workloads.yml: workloads/workloads.yml
 # Disable jstest validations, it just takes too long to run it for this test.
 jstests_dir: ""
 mc:
@@ -59,9 +62,6 @@ pre_task:
         curl -o /media/ephemeral0/libpcap.so.0.8  --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/libpcap/libpcap.so.0.8
         cd /media/ephemeral0
         tar zxvf initialsync.playback.tgz
-  - on_workload_client:
-      upload_files:
-        workloads.yml: workloads/workloads.yml
 post_task:
   - on_workload_client:
       exec: |

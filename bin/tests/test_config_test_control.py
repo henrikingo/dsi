@@ -46,7 +46,10 @@ class TestConfigTestControl(unittest.TestCase):
 
     def tearDown(self):
         ''' Delete temporary files from run '''
-        os.remove('mc.json')
+        files = os.listdir('.')
+        for filename in files:
+            if filename.startswith("mc_.json"):
+                os.remove(filename)
         os.remove('test_control.yml')
         for filename in self.copied_files:
             os.remove(filename)
@@ -62,14 +65,16 @@ class TestConfigTestControl(unittest.TestCase):
         config_test_control.generate_mc_json()
 
         self.assertEqual(
-            load_json('mc.json'),
+            load_json('mc_benchRun-wiredTiger.json'),
             load_json('mc.benchrun.json.ok', self.artifact_dir),
             'mc.json doesn\'t match expected for test_control.benchRun.yml')
         self.assertEqual(
             load_yaml('workloads.yml'),
             load_yaml('workloads.benchrun.yml.ok', self.artifact_dir),
-            'workloads.yml doesn\'t match excpected for test_control.benchRun.yml')
+            'workloads.yml doesn\'t match expected for test_control.benchRun.yml')
 
+    # Check only the first ycsb test for now. Not adding in all of the tests because we are
+    # removing mc momentarily.
     def test_ycsb(self):
         '''
         Load in the configuration for a single cluster with ycsb
@@ -77,11 +82,11 @@ class TestConfigTestControl(unittest.TestCase):
 
         '''
         shutil.copy('test_control.ycsb.yml', self.config_file)
-        config_test_control.generate_mc_json()
+        config_test_control.generate_mc_json(test_index=0)
         self.assertEqual(
-            load_json('mc.json'),
+            load_json('mc_ycsb_load-wiredTiger.json'),
             load_json('mc.ycsb.json.ok', self.artifact_dir),
-            'mc.json doesn\'t match excpected for test_control.ycsb.yml')
+            'mc.json doesn\'t match expected for test_control.ycsb.yml')
 
 
 if __name__ == '__main__':

@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import inspect
+from enum import Enum
 
 from common.config import ConfigDict
 from common.host import execute_list, extract_hosts
@@ -17,6 +18,8 @@ from common.log import setup_logging
 import config_test_control
 
 LOG = logging.getLogger(__name__)
+
+EXCEPTION_BEHAVIOR = Enum('Exception Behavior', 'CONTINUE RERAISE EXIT')
 
 
 def setup_ssh_agent(config):
@@ -55,47 +58,37 @@ def copy_perf_output():
             LOG.info(line)
 
 
-def pre_tasks(config, task_list):
-    """ run the pre_tasks list for the given config dicts items. This code will *fail*
-    on error
+def run_pre_post_commands(command_key, command_dicts, config, exception_behavior):
+    ''' Runs all pre or post commands with the specified command key. If exit on exception is
+    true, exit from the script. Otherwise, print the trace and continue.
 
-    :param dict(ConfigDict) config: The root config dict
-    :param list(ConfigDict) task_list: List of ConfigDict objects that may have
-    a pre_task key.
-    """
-    for task in task_list:
-        # Execute pre task steps
-        if 'pre_task' in task:
+    :param string command_key: The key to use to find a command list to execute in each of the
+    command_dicts.
+    :param list(ConfigDict) command_dicts: List of ConfigDict objects that may have the specified
+    command_key.
+    :param dict(ConfigDict) config: The system configuration.
+    :param EXCEPTION_BEHAVIOR exception_behavior: Indicates the proper action to take upon catching
+    an exception.
+    '''
+    for command_dict in command_dicts:
+        if command_key in command_dict:
             try:
-                execute_list(task['pre_task'], config)
-            except Exception as exception:  # pylint: disable=broad-except
+                execute_list(command_dict[command_key], config)
+            except Exception as exception:  #pylint: disable=broad-except
                 print_trace(inspect.trace(), exception)
-                LOG.error("Exiting with status code: 1")
-                sys.exit(1)
-
-
-def post_tasks(config, task_list):
-    """ run the post_tasks list in the opposite order for the given config dicts. This code will
-    *continue* on error
-
-    :param dict(ConfigDict) config: The system configuration
-    :param list(ConfigDict) task_list: List of ConfigDict objects that may
-    have a post_task key.
-    """
-
-    for task in reversed(task_list):
-        # Execute post task steps
-        if 'post_task' in task:
-            try:  # We've run the test. Don't stop on error
-                execute_list(task['post_task'], config)
-            except Exception as exception:  # pylint: disable=broad-except
-                print_trace(inspect.trace(), exception)
-
-    copy_timeseries(config)
+                if exception_behavior == EXCEPTION_BEHAVIOR.RERAISE:
+                    raise exception
+                elif exception_behavior == EXCEPTION_BEHAVIOR.EXIT:
+                    LOG.error("Exiting with status code: 1")
+                    sys.exit(1)
+                elif exception_behavior == EXCEPTION_BEHAVIOR.CONTINUE:
+                    pass
+                else:
+                    LOG.error("Invalid exception_behavior entry")
 
 
 def print_trace(trace, exception):
-    """ print exception information for pre_tasks and post_tasks. Information corresponds
+    """ print exception information for run_pre_post_commands. Information corresponds
     to YAML file tasks
 
     :param list((frame_object, string, int,
@@ -103,17 +96,15 @@ def print_trace(trace, exception):
     Refer to python docs:
     https://docs.python.org/2/library/inspect.html#inspect.trace
     https://docs.python.org/2/library/inspect.html#the-interpreter-stack
-    Each element in the list is a "tuple of six items: the frame object, the filename,
-    the line number of the current line, the function name,
-    a list of lines of context from the source code,
+    Each element in the list is a "tuple of six items: the frame object, the filename, the line
+    number of the current line, the function name, a list of lines of context from the source code,
     and the index of the current line within that list"
+
     :param Exception() exception: this is the exception raised by one of tasks
 
-    *NOTE* This function is dependent on the stack frames
-    of the function calls made within pre_tasks
-    post_tasks along with the variable names in those two functions,
-    run_command, execute_list, and _run_command_map.
-    Changes in the variable names or the flow of function
+    *NOTE* This function is dependent on the stack frames of the function calls made within
+    run_pre_post_commands along with the variable names in run_pre_post_commands, run_command,
+    execute_list, and _run_command_map. Changes in the variable names or the flow of function
     calls could cause print_trace to log wrong/unhelpful info.
     """
     top_function = trace[0][3]
@@ -193,14 +184,14 @@ def main(argv):
     if 'MC' in os.environ:
         mission_control = os.environ['MC']
 
-    # While we are still using MC
-    config_test_control.generate_mc_json()
-
     setup_ssh_agent(config)
     cleanup_reports()
 
+    # TODO: Change the order of test_control and mongodb_setup
+    # https://jira.mongodb.org/browse/PERF-1160
     # Execute pre task steps
-    pre_tasks(config, [test_control, mongodb_setup])
+    run_pre_post_commands('pre_task', [test_control, mongodb_setup], config,
+                          EXCEPTION_BEHAVIOR.EXIT)
 
     # initialSync is still executed through the old bash script
     if config['test_control']['task_name'] == 'initialSync':
@@ -217,37 +208,32 @@ def main(argv):
         env['MC_MONITOR_INTERVAL'] = str(config['test_control']['mc']['monitor_interval'])
         env['MC_PER_THREAD_STATS'] = str(config['test_control']['mc']['per_thread_stats'])
         LOG.debug('env for mc call is %s', str(env))
-        try:
-            subprocess.check_call(
-                [
-                    mission_control, '-config', 'mc.json', '-run',
-                    config['test_control']['task_name'], '-o', 'perf.json'
-                ],
-                env=env)
-        finally:
-            # always Execute post task steps
-            post_tasks(config, [test_control, mongodb_setup])
 
-        # Next step in refactoring: Call mission control per run, and
-        # only do one run per call to mission control. That will allow
-        # us to do the pre and post-run steps in here.
+        if os.path.exists('perf.json'):
+            os.remove('perf.json')
+            LOG.warning("Found old perf.json file. Overwriting.")
 
-        # for run in test_control:
-        #     # execute pre_runsteps
-        #     if 'pre_run' in test_control:
-        #         execute_list(test_control['pre_run'], conf)
-        #     if 'pre_run' in run: # This is a run specific thing to run before the run
-        #         execute_list(run['pre_run'], conf)
+        for index, test in enumerate(test_control['run']):
+            try:
+                # Generate the mc.json file for this test only. Save it to unique name
+                config_test_control.generate_mc_json(test_index=index)
+                mc_config_file = 'mc_' + test['id'] + '.json'
 
-        #     # Generate the mc.json file for this run only. Save it to unique name
-        #     config_test_control.generate_mc_json(run)
-        #     # Move MC call here. perf.jsons must be combined.
+                run_pre_post_commands('pre_test', [mongodb_setup, test_control, test], config,
+                                      EXCEPTION_BEHAVIOR.RERAISE)
 
-        #     # Execute the post_run_steps
-        #     if 'post_run' in run:
-        #         execute_list(run['post_run'], conf)
-        #     if 'post_run' in test_control:
-        #         execute_list(test_control['post_run'], conf)
+                subprocess.check_call(
+                    [
+                        mission_control, '-config', mc_config_file, '-run', test['id'], '-o',
+                        'perf.json'
+                    ],
+                    env=env)
+            finally:
+                run_pre_post_commands('post_test', [test, test_control, mongodb_setup], config,
+                                      EXCEPTION_BEHAVIOR.CONTINUE)
+
+        run_pre_post_commands('post_task', [test_control, mongodb_setup], config,
+                              EXCEPTION_BEHAVIOR.CONTINUE)
 
     # Set perf.json to 555
     # Todo: replace with os.chmod call or remove in general
