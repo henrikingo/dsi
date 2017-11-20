@@ -1451,24 +1451,25 @@
             "ndays":{},
             "reference":{
                 "ycsb_50read50update":{
-                    "create_time":"2017-08-09T02:45:24.009Z",
-                    "end":1503612013.0,
-                    "max":28396.54641202537,
+                    "create_time":"2017-11-18T23:47:40.449Z",
+                    "end":1511101624.0,
+                    "max":32119.48448227406,
                     "name":"ycsb_50read50update",
-                    "order":7942,
+                    "order":9106,
                     "results":{
                         "64":{
-                            "ops_per_sec":28396.54641202537
+                            "ops_per_sec":32119.48448227406
                         }
                     },
-                    "revision":"c7661b14867cd058e1a67986b8e05a7020fc0a5e",
-                    "start":1503611306.0,
+                    "revision":"85251da86bffa977348ecea5a7a5583edd7972d1",
+                    "start":1511101000.0,
                     "tag":"",
                     "threads":[
                         "64"
                     ],
                     "ticket":[
-                        "BF-6941"
+                        "BF-6941",
+                        "BF-7165"
                     ],
                     "workload":"ycsb"
                 },
@@ -3129,28 +3130,29 @@
             "ndays":{},
             "reference":{
                 "ycsb_50read50update":{
-                    "create_time":"2017-09-28T15:44:11.38Z",
-                    "end":1507763919,
-                    "max":12362.330002509552,
+                    "create_time":"2017-11-18T23:47:40.449Z",
+                    "end":1511127840.0,
+                    "max":16507.493163834395,
                     "name":"ycsb_50read50update",
-                    "order":8526,
+                    "order":9106,
                     "results":{
                         "64":{
-                            "ops_per_sec":12362.330002509552,
-                            "replica_avg_lag":56.08494921514312,
-                            "replica_end_of_test_lag":106,
-                            "replica_max_lag":170
+                            "ops_per_sec":16507.493163834395,
+                            "replica_avg_lag":175.24684684684684,
+                            "replica_end_of_test_lag":300,
+                            "replica_max_lag":305
                         }
                     },
-                    "revision":"3fa551ff7a93a2849a52146aff634ba215e75925",
-                    "start":1507762300,
+                    "revision":"85251da86bffa977348ecea5a7a5583edd7972d1",
+                    "start":1511126627.0,
                     "tag":"",
                     "threads":[
                         "64"
                     ],
                     "ticket":[
                         "BF-6941",
-                        "BF-6810"
+                        "BF-6810",
+                        "BF-7165"
                     ],
                     "workload":"ycsb"
                 },
@@ -6258,27 +6260,28 @@
             "ndays":{},
             "reference":{
                 "ycsb_50read50update":{
-                    "create_time":"2017-08-09T01:15:51.416Z",
-                    "end":1503838794.0,
-                    "max":43554.5760615339,
+                    "create_time":"2017-11-18T23:47:40.449Z",
+                    "end":1511152655.0,
+                    "max":40594.95972979995,
                     "name":"ycsb_50read50update",
-                    "order":7941,
+                    "order":9106,
                     "results":{
                         "64":{
-                            "ops_per_sec":43554.5760615339,
-                            "replica_avg_lag":1.4068348250610252,
-                            "replica_end_of_test_lag":2,
-                            "replica_max_lag":11
+                            "ops_per_sec":40594.95972979995,
+                            "replica_avg_lag":3.0627853881278537,
+                            "replica_end_of_test_lag":1,
+                            "replica_max_lag":19
                         }
                     },
-                    "revision":"b0f8d105349d9d6df874ed7f566a552dbd98a1ab",
-                    "start":1503838332.0,
+                    "revision":"85251da86bffa977348ecea5a7a5583edd7972d1",
+                    "start":1511152160.0,
                     "tag":"",
                     "threads":[
                         "64"
                     ],
                     "ticket":[
-                        "BF-6941"
+                        "BF-6941",
+                        "BF-7165"
                     ],
                     "workload":"ycsb"
                 }
@@ -8115,24 +8118,25 @@
             "ndays":{},
             "reference":{
                 "ycsb_50read50update":{
-                    "create_time":"2017-08-09T01:15:51.416Z",
-                    "end":1503587061.0,
-                    "max":41999.86560043008,
+                    "create_time":"2017-11-18T23:47:40.449Z",
+                    "end":1511101330.0,
+                    "max":36618.836363236886,
                     "name":"ycsb_50read50update",
-                    "order":7941,
+                    "order":9106,
                     "results":{
                         "64":{
-                            "ops_per_sec":41999.86560043008
+                            "ops_per_sec":36618.836363236886
                         }
                     },
-                    "revision":"b0f8d105349d9d6df874ed7f566a552dbd98a1ab",
-                    "start":1503586582.0,
+                    "revision":"85251da86bffa977348ecea5a7a5583edd7972d1",
+                    "start":1511100782.0,
                     "tag":"",
                     "threads":[
                         "64"
                     ],
                     "ticket":[
-                        "BF-6941"
+                        "BF-6941",
+                        "BF-7165"
                     ],
                     "workload":"ycsb"
                 },
