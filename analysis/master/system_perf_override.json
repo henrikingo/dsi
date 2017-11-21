@@ -8117,19 +8117,41 @@
         "industry_benchmarks_WT":{
             "ndays":{},
             "reference":{
-                "ycsb_50read50update":{
-                    "create_time":"2017-11-18T23:47:40.449Z",
-                    "end":1511101330.0,
-                    "max":36618.836363236886,
-                    "name":"ycsb_50read50update",
-                    "order":9106,
+                "ycsb_100read":{
+                    "create_time":"2017-11-17T23:52:03.98Z",
+                    "end":1511233417.0,
+                    "max":86885.5022850887,
+                    "name":"ycsb_100read",
+                    "order":9104,
                     "results":{
                         "64":{
-                            "ops_per_sec":36618.836363236886
+                            "ops_per_sec":86885.5022850887
                         }
                     },
-                    "revision":"85251da86bffa977348ecea5a7a5583edd7972d1",
-                    "start":1511100782.0,
+                    "revision":"c85b31b5d392b71cabf87bac1ac229a5a9ad62b4",
+                    "start":1511233184.0,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-7165"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_50read50update":{
+                    "create_time":"2017-11-17T23:52:03.98Z",
+                    "end":1511234691.0,
+                    "max":25530.947976863856,
+                    "name":"ycsb_50read50update",
+                    "order":9104,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":25530.947976863856
+                        }
+                    },
+                    "revision":"c85b31b5d392b71cabf87bac1ac229a5a9ad62b4",
+                    "start":1511233906.0,
                     "tag":"",
                     "threads":[
                         "64"
@@ -8141,24 +8163,47 @@
                     "workload":"ycsb"
                 },
                 "ycsb_95read5update":{
-                    "create_time":"2017-07-30T14:41:40.093Z",
-                    "end":1501432783.0,
-                    "max":81002.48677634403,
+                    "create_time":"2017-11-17T23:52:03.98Z",
+                    "end":1511233818.0,
+                    "max":63221.71539480381,
                     "name":"ycsb_95read5update",
-                    "order":7793,
+                    "order":9104,
                     "results":{
                         "32":{
-                            "ops_per_sec":81002.48677634403
+                            "ops_per_sec":63221.71539480381
                         }
                     },
-                    "revision":"dcb9dbffa65d8ddcf5be80e88868fd11c01397df",
-                    "start":1501432533.0,
+                    "revision":"c85b31b5d392b71cabf87bac1ac229a5a9ad62b4",
+                    "start":1511233500.0,
                     "tag":"",
                     "threads":[
                         "32"
                     ],
                     "ticket":[
-                        "BF-6161"
+                        "BF-6161",
+                        "BF-7165"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_load":{
+                    "create_time":"2017-11-17T23:52:03.98Z",
+                    "end":1511233095.0,
+                    "max":55589.5269331258,
+                    "name":"ycsb_load",
+                    "order":9104,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":55589.5269331258
+                        }
+                    },
+                    "revision":"c85b31b5d392b71cabf87bac1ac229a5a9ad62b4",
+                    "start":1511233003.0,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-7165"
                     ],
                     "workload":"ycsb"
                 }
