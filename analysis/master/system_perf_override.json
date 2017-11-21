@@ -51,6 +51,20 @@
                         "BF-6769"
                     ]
                 },
+                "count_with_and_predicate-noAgg":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "count_with_and_predicate-useAgg":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
                 "distinct_types_no_predicate-useAgg":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
@@ -6967,6 +6981,20 @@
                     "threshold":0.3,
                     "ticket":[
                         "BF-6769"
+                    ]
+                },
+                "count_with_and_predicate-noAgg":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "count_with_and_predicate-useAgg":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "PERF-1157"
                     ]
                 },
                 "distinct_types_no_predicate-useAgg":{
