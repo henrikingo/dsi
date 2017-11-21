@@ -1243,6 +1243,27 @@
                         "PERF-738"
                     ]
                 },
+                "insert_vector_primary":{
+                    "thread_threshold":0.3,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-7147"
+                    ]
+                },
+                "insert_vector_secondary_load_phase":{
+                    "thread_threshold":0.3,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-7147"
+                    ]
+                },
+                "insert_vector_secondary_overall":{
+                    "thread_threshold":0.3,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-7147"
+                    ]
+                },
                 "map_reduce_doc":{
                     "thread_threshold":0.225,
                     "threshold":0.15,
