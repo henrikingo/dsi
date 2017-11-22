@@ -175,6 +175,7 @@ class MongoNode(object):
         # Clean the data/logs directories
         if self.clean_logs:
             commands.append(['rm', '-rf', os.path.join(self.logdir, '*.log')])
+            commands.append(['rm', '-rf', os.path.join(self.logdir, 'core.*')])
         if self.clean_diagnostic_data:
             commands.append(['rm', '-rf', os.path.join(self.dbdir, 'diagnostic.data', '*')])
         # Create the data/logs directories
