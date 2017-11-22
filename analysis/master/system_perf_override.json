@@ -652,8 +652,8 @@
                     ]
                 },
                 "map_reduce_doc":{
-                    "thread_threshold":0.225,
-                    "threshold":0.15,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "BF-6979"
                     ]
@@ -1265,8 +1265,8 @@
                     ]
                 },
                 "map_reduce_doc":{
-                    "thread_threshold":0.225,
-                    "threshold":0.15,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "BF-6979"
                     ]
@@ -2615,8 +2615,8 @@
                     ]
                 },
                 "map_reduce_doc":{
-                    "thread_threshold":0.225,
-                    "threshold":0.15,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "BF-6979"
                     ]
@@ -7597,8 +7597,8 @@
                     ]
                 },
                 "map_reduce_doc":{
-                    "thread_threshold":0.225,
-                    "threshold":0.15,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "BF-6979"
                     ]
@@ -7946,8 +7946,8 @@
                     ]
                 },
                 "map_reduce_doc":{
-                    "thread_threshold":0.225,
-                    "threshold":0.15,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "BF-6979"
                     ]
