@@ -145,6 +145,13 @@
         },
         {
             "status": "pass",
+            "cores": "No core files found",
+            "test_file": "core.mongod.0",
+            "exit_code": 0,
+            "start": 0
+        },
+        {
+            "status": "pass",
             "end": 1,
             "log_raw": "\nPassed resource sanity checks.",
             "exit_code": 0,

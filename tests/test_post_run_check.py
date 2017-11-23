@@ -1,13 +1,17 @@
 """
 Unit tests for `post_run_check.py`.
 """
-import glob
 import os
 import unittest
 
 import errno
-import post_run_check
 import shutil
+
+import sys
+
+sys.path.append(
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "analysis"))
+import post_run_check
 
 from tests import test_utils
 
@@ -51,14 +55,15 @@ class TestPostRunCheck(unittest.TestCase):
         os.remove(test_utils.fixture_file_path("report.json"))
 
     def test_check_core_file_exists(self):
+        # pylint: disable=too-many-statements
         """
         test check_core_file_exists.
         """
-        def remove_cores(dirname):
-            for filename in glob.glob( os.path.join(dirname, "core.*")):
-                os.remove(filename)
 
         def mkdir_p(path):
+            """ make the directory and all missing parents (like mkdir -p)
+            :type path: string the directory path
+            """
             try:
                 os.makedirs(path)
             except OSError as exc:  # Python >2.5
@@ -68,13 +73,23 @@ class TestPostRunCheck(unittest.TestCase):
                     raise
 
         def touch(filename):
+            """ create an empty file (like shell touch command). It will not
+            create directories
+            :type filename: string the full path to the filename
+            """
             open(filename, 'a').close()
 
         def check_failures(results, expected):
+            """ helper to wrap called checks
+            :type expected: list
+            :type results: list
+            :param expected: array containing [expexted dict result, filenames*]
+            :param results: array of dict results
+            """
             self.assertEquals(len(results), len(expected))
             for i, result in enumerate(results):
-                e = expected[i][0]
-                self.assertDictContainsSubset(e, result)
+                current = expected[i][0]
+                self.assertDictContainsSubset(current, result)
                 for filename in expected[i][1:]:
                     self.assertIn(os.path.basename(filename), result['cores'])
 
@@ -90,12 +105,14 @@ class TestPostRunCheck(unittest.TestCase):
         mkdir_p(os.path.dirname(log_filename))
         touch(log_filename)
 
-        self.assertEquals(post_run_check.check_core_file_exists(core_path),
-                          [{'status': 'pass',
-                            'start': 0,
-                            'test_file': 'core.mongod.0',
-                            'cores': 'No core files found',
-                            'exit_code': 0}])
+        self.assertEquals(
+            post_run_check.check_core_file_exists(core_path), [{
+                'status': 'pass',
+                'start': 0,
+                'test_file': 'core.mongod.0',
+                'cores': 'No core files found',
+                'exit_code': 0
+            }])
 
         # mongod
         core_path = test_utils.fixture_file_path('cores')
@@ -107,17 +124,12 @@ class TestPostRunCheck(unittest.TestCase):
         mkdir_p(os.path.dirname(core_filename))
         touch(core_filename)
 
-        expected = [
-            [
-                {
-                    'status': 'fail',
-                    'start': 0,
-                    'test_file': 'core.mongod.0',
-                    'exit_code': 1
-                },
-                core_filename
-             ]
-        ]
+        expected = [[{
+            'status': 'fail',
+            'start': 0,
+            'test_file': 'core.mongod.0',
+            'exit_code': 1
+        }, core_filename]]
         check_failures(post_run_check.check_core_file_exists(core_path), expected)
         check_failures(post_run_check.check_core_file_exists(core_path, pattern="core.*"), expected)
 
@@ -130,12 +142,12 @@ class TestPostRunCheck(unittest.TestCase):
         mkdir_p(os.path.dirname(core_filename))
         touch(core_filename)
 
-        expected = [[{'status': 'fail',
-                    'start': 0,
-                    'test_file': 'core.mongos.0',
-                    'exit_code': 1},
-                     core_filename
-                     ]]
+        expected = [[{
+            'status': 'fail',
+            'start': 0,
+            'test_file': 'core.mongos.0',
+            'exit_code': 1
+        }, core_filename]]
         check_failures(post_run_check.check_core_file_exists(core_path), expected)
 
         # single matching configsvr
@@ -148,12 +160,12 @@ class TestPostRunCheck(unittest.TestCase):
         mkdir_p(os.path.dirname(core_filename))
         touch(core_filename)
 
-        expected = [[{'status': 'fail',
-                    'start': 0,
-                    'test_file': 'core.configsvr.0',
-                    'exit_code': 1},
-                     core_filename
-                     ]]
+        expected = [[{
+            'status': 'fail',
+            'start': 0,
+            'test_file': 'core.configsvr.0',
+            'exit_code': 1
+        }, core_filename]]
         check_failures(post_run_check.check_core_file_exists(core_path), expected)
 
         # multiple mongod
@@ -169,18 +181,12 @@ class TestPostRunCheck(unittest.TestCase):
         mkdir_p(os.path.dirname(core_filename_1))
         touch(core_filename_1)
 
-        expected = [
-            [
-                {
-                    'status': 'fail',
-                    'start': 0,
-                    'test_file': 'core.mongod.0',
-                    'exit_code': 1
-                },
-                core_filename,
-                core_filename_1
-             ]
-        ]
+        expected = [[{
+            'status': 'fail',
+            'start': 0,
+            'test_file': 'core.mongod.0',
+            'exit_code': 1
+        }, core_filename, core_filename_1]]
         check_failures(post_run_check.check_core_file_exists(core_path), expected)
 
         # combinations
@@ -212,45 +218,31 @@ class TestPostRunCheck(unittest.TestCase):
         mkdir_p(os.path.dirname(core_filename_5))
         touch(core_filename_5)
 
-        expected = [
-            [
-                {
-                    'status': 'fail',
-                    'start': 0,
-                    'test_file': 'core.configsvr.0',
-                    'exit_code': 1
-                },
-                core_filename_4,
-                core_filename_5,
-            ],
-            [
-                {
-                    'status': 'fail',
-                    'start': 0,
-                    'test_file': 'core.mongod.0',
-                    'exit_code': 1
-                },
-                core_filename
-            ],
-            [
-                {
-                    'status': 'fail',
-                    'start': 0,
-                    'test_file': 'core.mongod.1',
-                    'exit_code': 1
-                },
-                core_filename_1
-            ],
-            [
-                {
-                    'status': 'fail',
-                    'start': 0,
-                    'test_file': 'core.mongos.0',
-                    'exit_code': 1
-                },
-                core_filename_3
-            ]
-        ]
+        expected = [[
+            {
+                'status': 'fail',
+                'start': 0,
+                'test_file': 'core.configsvr.0',
+                'exit_code': 1
+            },
+            core_filename_4,
+            core_filename_5,
+        ], [{
+            'status': 'fail',
+            'start': 0,
+            'test_file': 'core.mongod.0',
+            'exit_code': 1
+        }, core_filename], [{
+            'status': 'fail',
+            'start': 0,
+            'test_file': 'core.mongod.1',
+            'exit_code': 1
+        }, core_filename_1], [{
+            'status': 'fail',
+            'start': 0,
+            'test_file': 'core.mongos.0',
+            'exit_code': 1
+        }, core_filename_3]]
         results = post_run_check.check_core_file_exists(core_path)
         check_failures(results, expected)
 
@@ -258,43 +250,27 @@ class TestPostRunCheck(unittest.TestCase):
         os.remove(core_filename_4)
         os.remove(core_filename_5)
 
-        expected = [
-            [
-                {
-                    'status': 'pass',
-                    'start': 0,
-                    'test_file': 'core.configsvr.0',
-                    'exit_code': 0
-                }
-            ],
-            [
-                {
-                    'status': 'fail',
-                    'start': 0,
-                    'test_file': 'core.mongod.0',
-                    'exit_code': 1
-                },
-                core_filename
-            ],
-            [
-                {
-                    'status': 'fail',
-                    'start': 0,
-                    'test_file': 'core.mongod.1',
-                    'exit_code': 1
-                },
-                core_filename_1
-            ],
-            [
-                {
-                    'status': 'fail',
-                    'start': 0,
-                    'test_file': 'core.mongos.0',
-                    'exit_code': 1
-                },
-                core_filename_3
-            ]
-        ]
+        expected = [[{
+            'status': 'pass',
+            'start': 0,
+            'test_file': 'core.configsvr.0',
+            'exit_code': 0
+        }], [{
+            'status': 'fail',
+            'start': 0,
+            'test_file': 'core.mongod.0',
+            'exit_code': 1
+        }, core_filename], [{
+            'status': 'fail',
+            'start': 0,
+            'test_file': 'core.mongod.1',
+            'exit_code': 1
+        }, core_filename_1], [{
+            'status': 'fail',
+            'start': 0,
+            'test_file': 'core.mongos.0',
+            'exit_code': 1
+        }, core_filename_3]]
         results = post_run_check.check_core_file_exists(core_path)
         check_failures(results, expected)
 
