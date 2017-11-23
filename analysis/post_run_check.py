@@ -11,6 +11,7 @@ Will exit with status code 1 if any regression is found or resource checks faile
 
 from __future__ import print_function
 import argparse
+import fnmatch
 import inspect
 import json
 import logging
@@ -20,6 +21,8 @@ import traceback
 
 from datetime import timedelta
 import re
+
+import os
 from dateutil import parser as date_parser
 
 import rules
@@ -31,6 +34,82 @@ import ycsb_throughput_analysis
 import arg_parsing
 
 logging.basicConfig(level=logging.INFO)
+
+
+def check_core_file_exists(reports_dir_path, pattern="core.*"):
+    """Analyze all the file in the directory tree rooted at `reports_dir_path`,
+    and return a list of test-result dictionaries ready to be placed in the report JSON generated
+    by `post_run_check`/`perf_regression_check`.
+
+    The check first looks for directories matching the following patterns  'mongo?.[0-9]' or 'configsvr.[0-9]'
+
+    If no directories match then an empty array is returned (this case covers a system failure or the case
+    where nothing is captured for some other reason).
+
+    For each matching directory, it will return a result with the 'test_name' field set to
+    'core.<directory>'.
+
+    *Note*: 'test_name' is the name of the check, not the name of an actual file. Unlike the other sanity checks,
+    in the majority of cases there won't a file.
+    *Note*: directory will be something like mongod.0, mongod.1, mongos.2, configsvr.3.
+
+    In each matching directories, files matching the pattern parameter are checked (default to 'core.*').
+
+    If one or more core file is found per directory then a record is created with:
+      * 'test_file' set to 'core.<directory>'. As described above, this is the name of the sanity check.
+      * 'status' set to 'fail'.
+      * 'exit_code' set to 1.
+      * 'cores'  set to a comma separated list of the base filenames (i.e. excluding the parent directory name).
+
+    A Failing check result looks like:
+    {
+                "status": "fail",
+                "test_file": 'core.<directory>',
+                "cores": '<comma separated core files>',
+                "start": 0,
+                "exit_code": 1
+    }
+
+    If no core is found then each directory generates a result like the following:
+    {
+                "status": "pass",
+                "test_file": 'core.<directory>',
+                "cores": 'No core files found',
+                "start": 0,
+                "exit_code": 0
+    }
+    """
+    reports_dir_paths = []
+    for name in os.listdir(reports_dir_path):
+        if os.path.isdir(os.path.join(reports_dir_path, name)) and \
+                fnmatch.fnmatch(name, 'mongo?.[0-9]') or fnmatch.fnmatch(name, 'configsvr.[0-9]'):
+            reports_dir_paths.append(os.path.basename(name))
+
+    def _format_msg_body(basenames=[]):
+        msg_body = "No core files found" if not basenames else \
+            "core files found: {}\nNames: \n{}".format(
+                len(basenames), ", ".join(basenames))
+        return msg_body
+
+    results = []
+    if reports_dir_paths:
+        cores_lookup = {}
+        for mongo in reports_dir_paths:
+            cores_lookup[mongo] = []
+
+            for basename in os.listdir(os.path.join(reports_dir_path, mongo)):
+                if fnmatch.fnmatch(basename, pattern):
+                    cores_lookup[mongo].append(basename)
+
+        for mongo in sorted(cores_lookup.iterkeys()):
+            cores = [core for core in cores_lookup[mongo]]
+            results.append({
+                        "status": "fail" if cores else "pass",
+                        "test_file": 'core.{}'.format(mongo),
+                        "cores": _format_msg_body(cores),
+                        "start": 0,
+                        "exit_code": 1 if cores else 0})
+    return results
 
 
 def project_test_rules(project, variant, is_patch, test):
@@ -458,6 +537,9 @@ def main(args):  # pylint: disable=too-many-locals,too-many-statements,too-many-
             print(print_line, file=sys.stderr)
 
     if args.reports_analysis is not None:
+        results = check_core_file_exists(args.reports_analysis)
+        report['results'].extend(results)
+
         log_analysis_results, _ = log_analysis.analyze_logs(args.reports_analysis, args.perf_file)
         report['results'].extend(log_analysis_results)
         # are there resource rules to check for this project?
