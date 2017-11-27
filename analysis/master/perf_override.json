@@ -7474,6 +7474,14 @@
                         "BF-7034"
                     ]
                 },
+                "Aggregation.Lookup.UncorrelatedPrefixJoin":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-6882",
+                        "PERF-444"
+                    ]
+                },
                 "Aggregation.LookupOrders":{
                     "thread_threshold":0.22,
                     "threshold":0.15,
@@ -15407,10 +15415,11 @@
                     ]
                 },
                 "Aggregation.IdentityView.Lookup.UncorrelatedPrefixJoin":{
-                    "thread_threshold":0.135,
-                    "threshold":0.09,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
-                        "BF-6882"
+                        "BF-6882",
+                        "PERF-444"
                     ]
                 },
                 "Aggregation.IdentityView.Lookup.UncorrelatedPrefixJoin.NoCache":{
@@ -31082,11 +31091,25 @@
                         "BF-5513"
                     ]
                 },
+                "Aggregation.Lookup.LocalArray.Pipeline":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-444"
+                    ]
+                },
                 "Aggregation.Lookup.LocalArrayOfObject.Pipeline":{
                     "thread_threshold":0.165,
                     "threshold":0.11,
                     "ticket":[
                         "BF-6906"
+                    ]
+                },
+                "Aggregation.Lookup.Pipeline":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-444"
                     ]
                 },
                 "Aggregation.Lookup.UncorrelatedJoin.NoCache":{
@@ -39580,11 +39603,25 @@
                         "BF-5513"
                     ]
                 },
+                "Aggregation.IdentityView.Lookup.LocalArray.Pipeline":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-444"
+                    ]
+                },
                 "Aggregation.IdentityView.Lookup.LocalArrayOfObject.Pipeline":{
                     "thread_threshold":0.165,
                     "threshold":0.11,
                     "ticket":[
                         "BF-6975"
+                    ]
+                },
+                "Aggregation.IdentityView.Lookup.Pipeline":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-444"
                     ]
                 },
                 "Aggregation.IdentityView.Lookup.UncorrelatedJoin.NoCache":{
