@@ -1238,9 +1238,10 @@
                 },
                 "insert_ttl":{
                     "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "threshold":0.1,
                     "ticket":[
-                        "PERF-738"
+                        "PERF-738",
+                        "PERF-1157"
                     ]
                 },
                 "insert_vector_primary":{
@@ -2913,10 +2914,11 @@
                     ]
                 },
                 "insert_ttl":{
-                    "thread_threshold":0.6,
-                    "threshold":0.4,
+                    "thread_threshold":0.3,
+                    "threshold":0.1,
                     "ticket":[
-                        "PERF-738"
+                        "PERF-738",
+                        "PERF-1157"
                     ]
                 },
                 "insert_vector_primary":{
@@ -7943,6 +7945,14 @@
                     "ticket":[
                         "BF-6272",
                         "BF-7146"
+                    ]
+                },
+                "insert_ttl":{
+                    "thread_threshold":0.3,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-738",
+                        "PERF-1157"
                     ]
                 },
                 "map_reduce_doc":{
