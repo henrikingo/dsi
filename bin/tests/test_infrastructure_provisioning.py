@@ -9,9 +9,9 @@ import os
 import unittest
 from subprocess import CalledProcessError
 from mock import patch, call, mock_open
-from testfixtures import LogCapture
+from testfixtures import LogCapture, log_capture
 
-from infrastructure_provisioning import Provisioner, check_version
+from infrastructure_provisioning import Provisioner, check_version, rmtree_when_present
 
 #pylint: disable=too-many-locals
 #pylint: disable=too-many-arguments
@@ -438,6 +438,40 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         # version in infrastructure_provisioning.py.
         self.assertTrue(
             check_version(evg_data_dir + '/terraform/provisioned.initialsync-logkeeper'))
+
+    @patch('infrastructure_provisioning.shutil.rmtree')
+    @patch('infrastructure_provisioning.os.path.exists', return_value=True)
+    @log_capture(level=logging.INFO)
+    def test_rmtree_when_present(self, mock_rmtree, mock_exists, capture):
+        """Test infrastructure_provisioning.rmtree_when_present success path"""
+        # pylint: disable=no-self-use
+        # self.assertLogs(logger='infrastructure_provisioning')
+        rmtree_when_present('')
+        capture.check(('infrastructure_provisioning', 'INFO',
+                       "rmtree_when_present: Cleaning '' ..."))
+
+    @patch('infrastructure_provisioning.os.path.exists', return_value=False)
+    @log_capture()
+    def test_rmtree_when_present_nopath(self, mock_exists, capture):
+        """Test infrastructure_provisioning.rmtree_when_present path not found"""
+        # pylint: disable=no-self-use
+        # self.assertLogs(logger='infrastructure_provisioning')
+        rmtree_when_present('')
+        capture.check(
+            ('infrastructure_provisioning', 'INFO', "rmtree_when_present: Cleaning '' ..."),
+            ('infrastructure_provisioning', 'INFO', "rmtree_when_present: No such path=''"))
+
+    @patch('infrastructure_provisioning.shutil.rmtree', side_effect=OSError)
+    @patch('infrastructure_provisioning.os.path.exists', return_value=True)
+    @log_capture(level=logging.INFO)
+    def test_rmtree_when_present_error(self, mock_rmtree, mock_exists, capture):
+        """Test infrastructure_provisioning.rmtree_when_present unexpected error"""
+        # pylint: disable=no-self-use
+        # self.assertLogs(logger='infrastructure_provisioning')
+        with self.assertRaises(OSError):
+            rmtree_when_present('')
+        capture.check(('infrastructure_provisioning', 'INFO',
+                       "rmtree_when_present: Cleaning '' ..."))
 
 
 if __name__ == '__main__':

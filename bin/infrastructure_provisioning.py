@@ -42,6 +42,15 @@ def check_version(file_path):
     return False
 
 
+def rmtree_when_present(tree_path):
+    """Remove the given tree only if present"""
+    LOG.info("rmtree_when_present: Cleaning '%s' ...", tree_path)
+    if os.path.exists(tree_path):
+        shutil.rmtree(tree_path)
+    else:
+        LOG.info("rmtree_when_present: No such path='%s'", tree_path)
+
+
 # pylint: disable=too-many-instance-attributes
 class Provisioner(object):
     """ Used to provision AWS resources """
@@ -102,7 +111,7 @@ class Provisioner(object):
             LOG.error(exception)
 
         # Delete all state files so that this looks like a fresh evergreen runner
-        shutil.rmtree(self.evg_data_dir)
+        rmtree_when_present(self.evg_data_dir)
         if os.path.isfile("cluster.json"):
             os.remove("cluster.json")
         if os.path.isfile("terraform.tfstate"):
@@ -209,8 +218,7 @@ class Provisioner(object):
             LOG.info("Failed to provision EC2 resources.")
             LOG.info("Releasing any EC2 resources that did deploy.")
             destroy_resources()
-            shutil.rmtree(self.evg_data_dir)
-            LOG.info("Cleaned up %s on Evergreen host. Existing test", self.evg_data_dir)
+            rmtree_when_present(self.evg_data_dir)
             raise exception
 
     def save_terraform_state(self):
