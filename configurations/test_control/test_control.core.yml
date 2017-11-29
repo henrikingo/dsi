@@ -27,7 +27,7 @@ run:
                   thread_levels: ${test_control.thread_levels.crud-jfalse.${mongodb_setup.meta.storageEngine}}
                   j_value: false
               - crud.js:
-                  thread_levels: [1,64,128]
+                  thread_levels: [1, 64, 128]
                   j_value: true
               - index_build.js
               - mix.js:
