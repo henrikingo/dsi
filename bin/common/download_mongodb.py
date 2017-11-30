@@ -100,12 +100,19 @@ class DownloadMongodb(object):
     def _remote_commands(self, host):
         mongo_dir = self.config["mongodb_setup"]["mongo_dir"]
         tmp_file = os.path.join(mongo_dir, temp_file(self.mongodb_binary_archive))
-        return [['echo', 'Downloading {} to {}.'.format(self.mongodb_binary_archive, host.host)], [
-            'rm', '-rf', mongo_dir
-        ], ['rm', '-rf', 'bin'], ['rm', '-rf', 'jstests'], ['mkdir', mongo_dir], [
-            'curl', '--retry', '10', self.mongodb_binary_archive, '-o', tmp_file
-        ], ['tar', '-C', mongo_dir, '-zxvf',
-            tmp_file], ['rm', '-f', tmp_file], ['cd', '..'], ['mv', mongo_dir + '/*/*', mongo_dir],
-                ['mkdir', '-p', 'bin'], ['ln', '-s', '${PWD}/' + mongo_dir + '/bin/*',
-                                         'bin/'], ['ln', '-s', mongo_dir + '/jstests', 'jstests'],
-                ['bin/mongo', '--version'], [mongo_dir + '/bin/mongod', '--version'], ['ls', '-la']]
+        return [['echo', 'Downloading {} to {}.'.format(self.mongodb_binary_archive, host.host)],
+                ['rm', '-rf', mongo_dir],
+                ['rm', '-rf', 'bin'],
+                ['rm', '-rf', 'jstests'],
+                ['mkdir', mongo_dir],
+                ['curl', '--retry', '10', self.mongodb_binary_archive, '-o', tmp_file],
+                ['tar', '-C', mongo_dir, '-zxf', tmp_file],
+                ['rm', '-f', tmp_file],
+                ['cd', '..'],
+                ['mv', mongo_dir + '/*/*', mongo_dir],
+                ['mkdir', '-p', 'bin'],
+                ['ln', '-s', '${PWD}/' + mongo_dir + '/bin/*', 'bin/'],
+                ['ln', '-s', mongo_dir + '/jstests', 'jstests'],
+                ['bin/mongo', '--version'],
+                [mongo_dir + '/bin/mongod', '--version'],
+                ['ls', '-la']] # yapf: disable
