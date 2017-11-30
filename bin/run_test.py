@@ -193,54 +193,57 @@ def main(argv):
     run_pre_post_commands('pre_task', [test_control, mongodb_setup], config,
                           EXCEPTION_BEHAVIOR.EXIT)
 
-    # initialSync is still executed through the old bash script
-    if config['test_control']['task_name'] == 'initialSync':
-        subprocess.check_call([
-            os.path.join(dsi_bin_path, 'run-initialSync.sh'),
-            config['mongodb_setup']['mongod_config_file']['storage']['engine'], 'initialSync',
-            config['infrastructure_provisioning']['tfvars']['cluster_name']
-        ])
-    else:
-        # Everything should eventually come through this path
-        # Call mission control
-        # Pass in MC_MONITOR_INTERVAL=config.test_control.mc_monitor_interval to environment
-        env = copy.deepcopy(os.environ)
-        env['MC_MONITOR_INTERVAL'] = str(config['test_control']['mc']['monitor_interval'])
-        env['MC_PER_THREAD_STATS'] = str(config['test_control']['mc']['per_thread_stats'])
-        LOG.debug('env for mc call is %s', str(env))
+    try:
+        # initialSync is still executed through the old bash script
+        if config['test_control']['task_name'] == 'initialSync':
+            subprocess.check_call([
+                os.path.join(dsi_bin_path, 'run-initialSync.sh'),
+                config['mongodb_setup']['mongod_config_file']['storage']['engine'], 'initialSync',
+                config['infrastructure_provisioning']['tfvars']['cluster_name']
+            ])
+        else:
+            # Everything should eventually come through this path
+            # Call mission control
+            # Pass in MC_MONITOR_INTERVAL=config.test_control.mc_monitor_interval to environment
+            env = copy.deepcopy(os.environ)
+            env['MC_MONITOR_INTERVAL'] = str(config['test_control']['mc']['monitor_interval'])
+            env['MC_PER_THREAD_STATS'] = str(config['test_control']['mc']['per_thread_stats'])
+            LOG.debug('env for mc call is %s', str(env))
 
-        if os.path.exists('perf.json'):
-            os.remove('perf.json')
-            LOG.warning("Found old perf.json file. Overwriting.")
+            if os.path.exists('perf.json'):
+                os.remove('perf.json')
+                LOG.warning("Found old perf.json file. Overwriting.")
 
-        for index, test in enumerate(test_control['run']):
             try:
-                # Generate the mc.json file for this test only. Save it to unique name
-                config_test_control.generate_mc_json(test_index=index)
-                mc_config_file = 'mc_' + test['id'] + '.json'
+                for index, test in enumerate(test_control['run']):
+                    try:
+                        # Generate the mc.json file for this test only. Save it to unique name
+                        config_test_control.generate_mc_json(test_index=index)
+                        mc_config_file = 'mc_' + test['id'] + '.json'
 
-                run_pre_post_commands('pre_test', [mongodb_setup, test_control, test], config,
-                                      EXCEPTION_BEHAVIOR.RERAISE)
+                        run_pre_post_commands('pre_test', [mongodb_setup, test_control, test],
+                                              config, EXCEPTION_BEHAVIOR.RERAISE)
 
-                subprocess.check_call(
-                    [
-                        mission_control, '-config', mc_config_file, '-run', test['id'], '-o',
-                        'perf.json'
-                    ],
-                    env=env)
+                        subprocess.check_call(
+                            [
+                                mission_control, '-config', mc_config_file, '-run', test['id'],
+                                '-o', 'perf.json'
+                            ],
+                            env=env)
+                    finally:
+                        run_pre_post_commands('post_test', [test, test_control, mongodb_setup],
+                                              config, EXCEPTION_BEHAVIOR.CONTINUE)
+
             finally:
-                run_pre_post_commands('post_test', [test, test_control, mongodb_setup], config,
+                run_pre_post_commands('post_task', [test_control, mongodb_setup], config,
                                       EXCEPTION_BEHAVIOR.CONTINUE)
+    finally:
+        # Set perf.json to 555
+        # Todo: replace with os.chmod call or remove in general
+        # Previously this was set to 777. I can't come up with a good reason.
+        subprocess.check_call(['chmod', '555', 'perf.json'])
 
-        run_pre_post_commands('post_task', [test_control, mongodb_setup], config,
-                              EXCEPTION_BEHAVIOR.CONTINUE)
-
-    # Set perf.json to 555
-    # Todo: replace with os.chmod call or remove in general
-    # Previously this was set to 777. I can't come up with a good reason.
-    subprocess.check_call(['chmod', '555', 'perf.json'])
-
-    copy_perf_output()
+        copy_perf_output()
 
 
 if __name__ == '__main__':

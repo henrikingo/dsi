@@ -6,6 +6,8 @@ import unittest
 import logging
 import re
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
+
 from config import ConfigDict
 import host
 
@@ -16,9 +18,6 @@ from run_test import run_pre_post_commands
 
 from mock import patch
 from testfixtures import LogCapture
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 
 
 class RunTestTestCase(unittest.TestCase):
