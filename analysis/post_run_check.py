@@ -62,14 +62,15 @@ def check_core_file_exists(reports_dir_path, pattern="core.*"):
          check.
       * 'status' set to 'fail'.
       * 'exit_code' set to 1.
-      * 'cores'  set to a comma separated list of the base filenames (i.e. excluding the parent
-         directory name).
+      * 'log_raw'  set to 'No core files found' or a comma separated list of the base filenames
+         (i.e. excluding the parent directory). These are the messages displayed within
+         the test results widget in the dashboard.
 
     A Failing check result looks like:
     {
                 "status": "fail",
                 "test_file": 'core.<directory>',
-                "cores": '<comma separated core files>',
+                "log_raw": '<comma separated core files>',
                 "start": 0,
                 "exit_code": 1
     }
@@ -78,7 +79,7 @@ def check_core_file_exists(reports_dir_path, pattern="core.*"):
     {
                 "status": "pass",
                 "test_file": 'core.<directory>',
-                "cores": 'No core files found',
+                "log_raw": 'No core files found',
                 "start": 0,
                 "exit_code": 0
     }
@@ -90,8 +91,8 @@ def check_core_file_exists(reports_dir_path, pattern="core.*"):
             reports_dir_paths.append(os.path.basename(name))
 
     def _format_msg_body(basenames=None):
-        msg_body = "No core files found" if not basenames else \
-            "core files found: {}\nNames: \n{}".format(
+        msg_body = "\nNo core files found" if not basenames else \
+            "\ncore files found: {}\nNames: \n{}".format(
                 len(basenames), ", ".join(basenames))
         return msg_body
 
@@ -110,7 +111,7 @@ def check_core_file_exists(reports_dir_path, pattern="core.*"):
             results.append({
                 "status": "fail" if cores else "pass",
                 "test_file": 'core.{}'.format(mongo),
-                "cores": _format_msg_body(cores),
+                "log_raw": _format_msg_body(cores),
                 "start": 0,
                 "exit_code": 1 if cores else 0
             })

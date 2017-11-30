@@ -16,8 +16,31 @@ import post_run_check
 from tests import test_utils
 
 
+def touch(filename):
+    """ create an empty file (like shell touch command). It will not
+    create directories
+    :type filename: string the full path to the filename
+    """
+    open(filename, 'a').close()
+
+
 class TestPostRunCheck(unittest.TestCase):
     """Test suite."""
+
+    def cleanup(self):
+        """ common clean up code. It is called from both setup and teardown to be sure to be sure.
+        """
+        self.core_file = os.path.join(test_utils.FIXTURE_DIR_PATH,
+                                      'core_workloads_reports/mongod.0/'
+                                      'core.file')
+        if os.path.exists(self.core_file):
+            os.remove(self.core_file)
+
+    def setUp(self):
+        self.cleanup()
+
+    def tearDown(self):
+        self.cleanup()
 
     def test_post_run_check_ftdc(self):
         """
@@ -38,6 +61,28 @@ class TestPostRunCheck(unittest.TestCase):
                                              "post_run_check_ftdc.report.json.ok"))
         os.remove(test_utils.fixture_file_path("report_ftdc.json"))
 
+    def test_post_run_check_core_fail(self):
+        """
+        Runs the full post run check with FTDC resource and core file failure checks.
+        """
+        arg_string = \
+            "--rev 0ff97139df609ae1847da9bfb25c35d209e0936e -f " \
+            "{0}/delayed_trigger_core_workloads_wt.history.json " \
+            "-t {0}/linux-standalone.core_workloads_WT.tags.json --refTag 3.2.1-Baseline " \
+            "--overrideFile {0}/system_perf_override.json " \
+            "--reports-analysis {0}/core_workloads_reports " \
+            "--project_id sys-perf --task_name core_workloads_WT --variant linux-standalone " \
+            "--report-file {0}/report_ftdc.json --out-file /dev/null".format(
+                test_utils.FIXTURE_DIR_PATH)
+
+        touch(self.core_file)
+        post_run_check.main(arg_string.split(" "))
+        self.assertTrue(
+            test_utils.eq_fixture_json_files("report_ftdc.json",
+                                             "post_run_check_core_fail.report.json.ok"))
+        os.remove(test_utils.fixture_file_path("report_ftdc.json"))
+        os.remove(self.core_file)
+
     def test_post_run_check(self):
         """
         Runs the full post run check without FTDC resource checks.
@@ -54,10 +99,10 @@ class TestPostRunCheck(unittest.TestCase):
             test_utils.eq_fixture_json_files("report.json", "post_run_check.report.json.ok"))
         os.remove(test_utils.fixture_file_path("report.json"))
 
+    # pylint: disable=too-many-statements
     def test_check_core_file_exists(self):
-        # pylint: disable=too-many-statements
         """
-        test check_core_file_exists.
+        test check_core_file_exists directly.
         """
 
         def mkdir_p(path):
@@ -72,13 +117,6 @@ class TestPostRunCheck(unittest.TestCase):
                 else:
                     raise
 
-        def touch(filename):
-            """ create an empty file (like shell touch command). It will not
-            create directories
-            :type filename: string the full path to the filename
-            """
-            open(filename, 'a').close()
-
         def check_failures(results, expected):
             """ helper to wrap called checks
             :type expected: list
@@ -91,7 +129,7 @@ class TestPostRunCheck(unittest.TestCase):
                 current = expected[i][0]
                 self.assertDictContainsSubset(current, result)
                 for filename in expected[i][1:]:
-                    self.assertIn(os.path.basename(filename), result['cores'])
+                    self.assertIn(os.path.basename(filename), result['log_raw'])
 
         core_path = test_utils.fixture_file_path('cores')
         shutil.rmtree(core_path, ignore_errors=True)
@@ -110,7 +148,7 @@ class TestPostRunCheck(unittest.TestCase):
                 'status': 'pass',
                 'start': 0,
                 'test_file': 'core.mongod.0',
-                'cores': 'No core files found',
+                'log_raw': '\nNo core files found',
                 'exit_code': 0
             }])
 

@@ -1,5 +1,5 @@
 {
-    "failures": 4,
+    "failures": 5,
     "results": [
         {
             "status": "fail",
@@ -144,11 +144,11 @@
             "NDaysCompare": "pass"
         },
         {
-            "status": "pass",
-            "log_raw": "\nNo core files found",
+            "status": "fail",
+            "start": 0,
+            "log_raw": "\ncore files found: 1\nNames: \ncore.file",
             "test_file": "core.mongod.0",
-            "exit_code": 0,
-            "start": 0
+            "exit_code": 1
         },
         {
             "status": "pass",
