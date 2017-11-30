@@ -107,8 +107,6 @@ class MongoNode(object):
         self.private_ip = opts.get('private_ip', self.public_ip)
         self.bin_dir = os.path.join(opts.get('mongo_dir', self.default_mongo_dir), 'bin')
         self.clean_logs = opts.get('clean_logs', MongoNode.clean_logs)
-        self.clean_diagnostic_data = opts.get('clean_logs', (not is_mongos)
-                                              and MongoNode.clean_logs)
         self.clean_db_dir = opts.get('clean_db_dir', (not is_mongos) and MongoNode.clean_db_dir)
         self.use_journal_mnt = opts.get('use_journal_mnt', not is_mongos)
         self.mongo_config_file = copy_obj(opts.get('config_file', {}))
@@ -129,7 +127,6 @@ class MongoNode(object):
             self.mongo_config_file['systemLog']['path'] += '.{0}.log'.format(self.port)
 
         self.host = self._host()
-        self.started = False
 
     @staticmethod
     def get_open_port(port_hint):
@@ -147,6 +144,7 @@ class MongoNode(object):
         else:
             return RemoteHost(self.public_ip, self.ssh_user, self.ssh_key_file)
 
+    # TODO(rtimmons): refactor to MongoStatusChecker or similar to ease mocking
     def wait_until_up(self):
         """ Checks to make sure node is up and accessible"""
         js_string = '''
@@ -165,47 +163,89 @@ class MongoNode(object):
             return False
         return True
 
-    def setup_host(self):
-        """Ensures necessary files are setup."""
+    def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None):
+        """Ensures necessary files are setup.
+        :param restart_clean_db_dir Should we clean db dir on restart. If not specified, uses value
+        from ConfigDict.
+        :param restart_clean_logs   Should we clean logs and diagnostic data. If not specified,
+        uses value from ConfigDict.
+        """
         if not self.run_locally:
             self.host.kill_mongo_procs()
-        # limit max processes and enable core files
+
+        if restart_clean_db_dir is not None:
+            _clean_db_dir = restart_clean_db_dir
+        else:
+            _clean_db_dir = self.clean_db_dir
+        _clean_logs = restart_clean_logs if restart_clean_logs is not None else self.clean_logs
+
+        # NB: self.dbdir is None when self.is_mongos is True
+        setup_cmd_args = {
+            'clean_db_dir': _clean_db_dir,
+            'clean_logs': _clean_logs,
+            'dbdir': self.dbdir,
+            'journal_dir': self.journal_dir,
+            'logdir': self.logdir,
+            'is_mongos': self.mongo_program is 'mongos',
+            'use_journal_mnt': self.use_journal_mnt
+        }
+        commands = MongoNode._generate_setup_commands(setup_cmd_args)
+
+        return self.host.run(commands)
+
+    @staticmethod
+    def _generate_setup_commands(setup_args):
         commands = []
-
-        # Clean the data/logs directories
-        if self.clean_logs:
-            commands.append(['rm', '-rf', os.path.join(self.logdir, '*.log')])
-            commands.append(['rm', '-rf', os.path.join(self.logdir, 'core.*')])
-        if self.clean_diagnostic_data:
-            commands.append(['rm', '-rf', os.path.join(self.dbdir, 'diagnostic.data', '*')])
+        # Clean the logs and diagnostic data
+        if setup_args['clean_logs']:
+            commands.append(['rm', '-rf', os.path.join(setup_args['logdir'], '*.log')])
+            commands.append(['rm', '-rf', os.path.join(setup_args['logdir'], 'core.*')])
+            if not setup_args['is_mongos']:
+                commands.append(
+                    ['rm', '-rf',
+                     os.path.join(setup_args['dbdir'], 'diagnostic.data', '*')])
         # Create the data/logs directories
-        commands.append(['mkdir', '-p', self.logdir])
+        commands.append(['mkdir', '-p', setup_args['logdir']])
 
-        if self.dbdir:
-            if self.clean_db_dir:
+        if setup_args['dbdir']:
+            if setup_args['clean_db_dir']:
                 # Deleting diagnostic.data is governed by clean_logs. Don't delete it here.
                 # When diagnostic.data doesn't exist, just create an empty one to avoid errors
-                commands.append(['mkdir', '-p', os.path.join(self.dbdir, 'diagnostic.data')])
-                commands.append(['rm', '-rf', os.path.join(self.logdir, 'diagnostic.data')])
-                commands.append(['mv', os.path.join(self.dbdir, 'diagnostic.data'), self.logdir])
+                commands.append(
+                    ['mkdir', '-p',
+                     os.path.join(setup_args['dbdir'], 'diagnostic.data')])
+                commands.append(
+                    ['rm', '-rf',
+                     os.path.join(setup_args['logdir'], 'diagnostic.data')])
+                commands.append([
+                    'mv',
+                    os.path.join(setup_args['dbdir'], 'diagnostic.data'), setup_args['logdir']
+                ])
 
-                commands.append(['rm', '-rf', self.dbdir])
+                commands.append(['rm', '-rf', setup_args['dbdir']])
 
-                if self.use_journal_mnt:
-                    commands.append(['rm', '-rf', self.journal_dir])
+                if setup_args['use_journal_mnt']:
+                    commands.append(['rm', '-rf', setup_args['journal_dir']])
 
-            commands.append(['mkdir', '-p', self.dbdir])
+            commands.append(['mkdir', '-p', setup_args['dbdir']])
 
-            if self.clean_db_dir:
-                commands.append(['mv', os.path.join(self.logdir, 'diagnostic.data'), self.dbdir])
+            if setup_args['clean_db_dir']:
+                commands.append([
+                    'mv',
+                    os.path.join(setup_args['logdir'], 'diagnostic.data'), setup_args['dbdir']
+                ])
 
             # Create separate journal directory and link to the database
-            if self.use_journal_mnt:
-                commands.append(['mkdir', '-p', self.journal_dir])
-                commands.append(['ln', '-s', self.journal_dir, os.path.join(self.dbdir, 'journal')])
-            commands.append(['ls', '-la', self.dbdir])
+            if setup_args['use_journal_mnt']:
+                commands.append(['mkdir', '-p', setup_args['journal_dir']])
+                commands.append([
+                    'ln', '-s', setup_args['journal_dir'],
+                    os.path.join(setup_args['dbdir'], 'journal')
+                ])
+            commands.append(['ls', '-la', setup_args['dbdir']])
+
         commands.append(['ls', '-la'])
-        return self.host.run(commands)
+        return commands
 
     def launch_cmd(self, numactl=True):
         """Returns the command to start this node."""
@@ -225,7 +265,6 @@ class MongoNode(object):
         if not self.host.run(self.launch_cmd(numactl)):
             self.dump_mongo_log()
             return False
-        self.started = True
         return self.wait_until_up()
 
     def run_mongo_shell(self, js_string):
@@ -260,10 +299,11 @@ class MongoNode(object):
 
     def shutdown(self):
         """Shutdown the replset members gracefully"""
-        if self.started:
+        try:
             return self.run_mongo_shell('db.getSiblingDB("admin").shutdownServer({})'.format(
                 self.shutdown_options))
-        return True
+        except Exception:  # pylint: disable=broad-except
+            LOG.error("Error shutting down MongoNode at %s:%s", self.public_ip, self.port)
 
     def destroy(self):
         """Kills the remote mongo program."""
@@ -367,9 +407,22 @@ class ReplSet(object):
                 return False
         return True
 
-    def setup_host(self):
-        """Ensures necessary files are setup."""
-        return all(run_threads([node.setup_host for node in self.nodes], daemon=True))
+    def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None):
+        """Ensures necessary files are setup.
+        :param restart_clean_db_dir Should we clean db dir. If not specified, uses value from
+        ConfigDict.
+        :param restart_clean_logs   Should we clean logs and diagnostic data. If not specified,
+        uses value from ConfigDict.
+        """
+        return all(
+            run_threads(
+                [
+                    partial(
+                        node.setup_host,
+                        restart_clean_db_dir=restart_clean_db_dir,
+                        restart_clean_logs=restart_clean_logs) for node in self.nodes
+                ],
+                daemon=True))
 
     def launch(self, numactl=True):
         """Starts the replica set."""
@@ -494,12 +547,29 @@ class ShardedCluster(object):
                 return False
         return True
 
-    def setup_host(self):
-        """Ensures necessary files are setup."""
+    def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None):
+        """Ensures necessary files are setup.
+        :param restart_clean_db_dir Should we clean db dir. If not specified, uses value from
+        ConfigDict.
+        :param restart_clean_logs   Should we clean logs and diagnostic data. If not specified,
+        uses value from ConfigDict.
+        """
         commands = []
-        commands.append(self.config.setup_host)
-        commands.extend(shard.setup_host for shard in self.shards)
-        commands.extend(mongos.setup_host for mongos in self.mongoses)
+        commands.append(
+            partial(
+                self.config.setup_host,
+                restart_clean_db_dir=restart_clean_db_dir,
+                restart_clean_logs=restart_clean_logs))
+        commands.extend(
+            partial(
+                shard.setup_host,
+                restart_clean_db_dir=restart_clean_db_dir,
+                restart_clean_logs=restart_clean_logs) for shard in self.shards)
+        commands.extend(
+            partial(
+                mongos.setup_host,
+                restart_clean_db_dir=restart_clean_db_dir,
+                restart_clean_logs=restart_clean_logs) for mongos in self.mongoses)
         return all(run_threads(commands, daemon=True))
 
     def launch(self):
@@ -591,6 +661,8 @@ class MongodbSetup(object):
         MongoNode.numactl_prefix = config['infrastructure_provisioning']['numactl_prefix']
         if MongoNode.numactl_prefix is None:
             MongoNode.numactl_prefix = ""
+        MongoNode.clean_logs = config['mongodb_setup'].get('clean_logs', True)
+        MongoNode.clean_db_dir = config['mongodb_setup'].get('clean_db_dir', True)
         MongoNode.shutdown_options = json.dumps(
             copy_obj(config['mongodb_setup']['shutdown_options']))
         self.clusters = []
@@ -603,27 +675,68 @@ class MongodbSetup(object):
             self.clusters.append(create_cluster(topology))
 
     def start(self):
-        """Start all clusters"""
+        """Start all clusters
+        """
+        return self._start()
+
+    def restart(self, clean_db_dir=None, clean_logs=None):
+        """Restart all clusters
+        :param clean_db_dir Should we clean db dir. If not specified, uses value from ConfigDict.
+        :param clean_logs   Should we clean logs and diagnostic data. If not specified, uses value
+        from ConfigDict.
+        """
+        # _start() always calls shutdown() and destroy()
+        return self._start(
+            skip_download=True, restart_clean_db_dir=clean_db_dir, restart_clean_logs=clean_logs)
+
+    def _start(self, skip_download=False, restart_clean_db_dir=None, restart_clean_logs=None):
+        """Shutdown and destroy. Then start all clusters.
+        :param skip_download:       True if we should skip attempting to download and extract
+        binaries.
+        :param restart_clean_db_dir Should we clean db dir. If not specified, uses value from
+        ConfigDict.
+        :param restart_clean_logs   Should we clean logs and diagnostic data. If not specified,
+        uses value from ConfigDict.
+        """
         self.shutdown()
         self.destroy()
-        if not self.downloader.download_and_extract():
-            return False
+        if not skip_download:
+            # The downloader will download MongoDB binaries if a URL was provided in the
+            # ConfigDict.
+            if not self.downloader.download_and_extract():
+                LOG.error("Download URL was not provided in the ConfigDict.")
+                return False
         if not all(
                 run_threads(
-                    [partial(self.start_cluster, cluster) for cluster in self.clusters],
+                    [
+                        partial(
+                            self.start_cluster,
+                            cluster=cluster,
+                            restart_clean_db_dir=restart_clean_db_dir,
+                            restart_clean_logs=restart_clean_logs) for cluster in self.clusters
+                    ],
                     daemon=True)):
+            LOG.error("Could not start clusters in _start. Shutting down...")
             self.shutdown()
             return False
         return True
 
     @staticmethod
-    def start_cluster(cluster):
-        """Start cluster"""
+    def start_cluster(cluster, restart_clean_db_dir=None, restart_clean_logs=None):
+        """Start cluster
+        :param restart_clean_db_dir Should we clean db dir. If not specified, uses value from
+        ConfigDict.
+        :param restart_clean_logs   Should we clean logs and diagnostic data. If not specified,
+        uses value from ConfigDict.
+        """
         LOG.info('-' * 72)
         LOG.info('starting topology: %s', cluster)
-        if not cluster.setup_host():
+        if not cluster.setup_host(
+                restart_clean_db_dir=restart_clean_db_dir, restart_clean_logs=restart_clean_logs):
+            LOG.error("Could not setup host in start_cluster")
             return False
         if not cluster.launch():
+            LOG.error("Could not launch cluster in start_cluster")
             return False
         LOG.info('started topology: %s', cluster)
         return True
@@ -672,11 +785,9 @@ def main():
     # start a mongodb configuration using config module
     config = ConfigDict('mongodb_setup')
     config.load()
-    # Global settings, can be overriden on a per-node basis in MongoNode.__init__()
-    MongoNode.clean_logs = config['mongodb_setup'].get('clean_logs', True)
-    MongoNode.clean_db_dir = config['mongodb_setup'].get('clean_db_dir', True)
     mongo = MongodbSetup(config, args)
     if not mongo.start():
+        LOG.error("Error setting up mongodb")
         exit(1)
 
 
