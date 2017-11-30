@@ -32,6 +32,7 @@ run:
       -P workloads/workloadEvergreen
       -threads 64;
       sleep 1;
+
   - id: ycsb_95read5update
     type: ycsb
     cmd: >
@@ -56,6 +57,32 @@ run:
       - on_workload_client:
           upload_files:
             workloadEvergreen_95read5update: YCSB/ycsb-mongodb/workloads/workloadEvergreen_95read5update
+
+  - id: ycsb_100update
+    type: ycsb
+    cmd: >
+      cd YCSB/ycsb-mongodb;
+      ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
+      -P workloads/workloadEvergreen_100update
+      -threads ${test_control.thread_levels.100-0.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}};
+      sleep 1;
+    config_filename: workloadEvergreen_100update
+    workload_config: |
+      mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb
+      recordcount=5000000
+      operationcount=20000000
+      workload=com.yahoo.ycsb.workloads.CoreWorkload
+      readallfields=true
+      readproportion=0
+      updateproportion=1.0
+      scanproportion=0
+      insertproportion=0.0
+      requestdistribution=zipfian
+    pre_test:
+      - on_workload_client:
+          upload_files:
+            workloadEvergreen_100update: YCSB/ycsb-mongodb/workloads/workloadEvergreen_100update
+
   - id: ycsb_50read50update
     type: ycsb
     cmd: >
@@ -112,6 +139,14 @@ thread_levels:
   95-5:
     "True": 64  # Sharded
     "False": 32  # Not Sharded
+  100-0:
+    "True":  # Sharded
+      mmapv1: 16
+      wiredTiger: 32
+    "False":  # Not Sharded
+      mmapv1: 32
+      wiredTiger: 64
+
 
 pre_task:
   - on_localhost:
@@ -156,6 +191,7 @@ pre_task:
         ./configure
         make
         sudo make install
+
 post_task:
   - on_workload_client:
       retrieve_files:
