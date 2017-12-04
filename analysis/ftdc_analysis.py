@@ -3,6 +3,7 @@ Functions for analyzing `FTDC` diagnostic data. Parse files to do some resource 
 """
 
 from __future__ import print_function
+import copy
 import inspect
 import os
 import logging
@@ -253,8 +254,18 @@ def resource_rules(dir_path, project, variant, constant_values=None, perf_file_p
         full_log_raw = ''
         for host_alias, full_path in ftdc_files_dict.iteritems():
             LOGGER.info('Reading FTDC file `%s`', full_path)
+
+            # Some of the rules, such as below_configured_oplog_size, treat certain values read from
+            # FTDC as constants. An example would be the maximum oplog size. The first time the code
+            # needs the maximum oplog size, it reads it from the FTDC data and saves it in the
+            # constant_values dict. At the very least, the data may be different on different hosts,
+            # as demontrated by BF-7261. By copying the "constants" here, we ensure that a value
+            # from one host isn't used for another host.
+            #
+            # Filed PERF-1182 to follow-up and fix this properly.
+            my_constant_values = copy.deepcopy(constant_values)
             (passed_checks, log_raw) = _process_ftdc_file(full_path, project, variant,
-                                                          constant_values)
+                                                          my_constant_values)
             if not passed_checks:
                 full_log_raw += ('Failed resource sanity checks for host {0}').format(host_alias)
                 full_log_raw += log_raw
