@@ -258,8 +258,7 @@ class TestMongoNode(unittest.TestCase):
             'journal_dir': 'journaldir',
             'logdir': 'logdir',
         }, [['rm', '-rf', 'logdir/*.log'], ['rm', '-rf', 'logdir/core.*'],
-            ['mkdir', '-p', 'logdir'], ['mkdir', '-p', 'dbdir'], ['mkdir', '-p', 'journaldir'],
-            ['ln', '-s', 'journaldir', 'dbdir/journal'], ['ls', '-la', 'dbdir'], ['ls', '-la']])
+            ['mkdir', '-p', 'logdir'], ['ls', '-la']])
 
     def test_gen_setup_commands_ftf(self):
         """Proper output for _generate_setup_commands with
@@ -276,9 +275,8 @@ class TestMongoNode(unittest.TestCase):
             'dbdir': 'dbdir',
             'journal_dir': 'journaldir',
             'logdir': 'logdir',
-        }, [['rm', '-rf', 'logdir/*.log'], ['rm', '-rf', 'logdir/core.*'], [
-            'mkdir', '-p', 'logdir'
-        ], ['mkdir', '-p', 'dbdir'], ['ls', '-la', 'dbdir'], ['ls', '-la']])
+        }, [['rm', '-rf', 'logdir/*.log'], ['rm', '-rf', 'logdir/core.*'],
+            ['mkdir', '-p', 'logdir'], ['ls', '-la']])
 
     def test_gen_setup_commands_fft(self):
         """Proper output for _generate_setup_commands with
@@ -295,8 +293,7 @@ class TestMongoNode(unittest.TestCase):
             'dbdir': 'dbdir',
             'journal_dir': 'journaldir',
             'logdir': 'logdir',
-        }, [['mkdir', '-p', 'logdir'], ['mkdir', '-p', 'dbdir'], ['mkdir', '-p', 'journaldir'],
-            ['ln', '-s', 'journaldir', 'dbdir/journal'], ['ls', '-la', 'dbdir'], ['ls', '-la']])
+        }, [['mkdir', '-p', 'logdir'], ['ls', '-la']])
 
     def test_gen_setup_commands_fff(self):
         """Proper output for _generate_setup_commands with
@@ -313,8 +310,7 @@ class TestMongoNode(unittest.TestCase):
             'dbdir': 'dbdir',
             'journal_dir': 'journaldir',
             'logdir': 'logdir',
-        }, [['mkdir', '-p', 'logdir'], ['mkdir', '-p', 'dbdir'], ['ls', '-la', 'dbdir'],
-            ['ls', '-la']])
+        }, [['mkdir', '-p', 'logdir'], ['ls', '-la']])
 
     def test_launch_cmd(self):
         """Test launch command uses proper config file."""
@@ -412,7 +408,7 @@ class TestMongodbSetup(unittest.TestCase):
     @mock.patch.object(common.host, 'Host', autospec=True)
     def test_restart_does_not_download(self, host):
         """Restarting doesn't re-download"""
-        setup = mongodb_setup.MongodbSetup(config=self.config, args=mock.Mock())
+        setup = mongodb_setup.MongodbSetup(config=self.config, run_locally=True)
         setup.host = host
         setup.downloader = mock.MagicMock()
 

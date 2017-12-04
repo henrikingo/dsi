@@ -2,6 +2,7 @@
 """ Test runner in DSI Framework """
 
 from __future__ import print_function
+from collections import MutableMapping
 import argparse
 import copy
 import logging
@@ -13,9 +14,10 @@ import inspect
 from enum import Enum
 
 from common.config import ConfigDict
-from common.host import execute_list, extract_hosts
+from common.host import extract_hosts, run_host_command
 from common.log import setup_logging
 import config_test_control
+import mongodb_setup
 
 LOG = logging.getLogger(__name__)
 
@@ -59,13 +61,13 @@ def copy_perf_output():
 
 
 def run_pre_post_commands(command_key, command_dicts, config, exception_behavior):
-    ''' Runs all pre or post commands with the specified command key. If exit on exception is
+    ''' Runs all commands with the specified command key. If exit on exception is
     true, exit from the script. Otherwise, print the trace and continue.
 
     :param string command_key: The key to use to find a command list to execute in each of the
     command_dicts.
     :param list(ConfigDict) command_dicts: List of ConfigDict objects that may have the specified
-    command_key.
+    command_section.
     :param dict(ConfigDict) config: The system configuration.
     :param EXCEPTION_BEHAVIOR exception_behavior: Indicates the proper action to take upon catching
     an exception.
@@ -73,7 +75,7 @@ def run_pre_post_commands(command_key, command_dicts, config, exception_behavior
     for command_dict in command_dicts:
         if command_key in command_dict:
             try:
-                execute_list(command_dict[command_key], config)
+                dispatch_commands(command_key, command_dict[command_key], config)
             except Exception as exception:  #pylint: disable=broad-except
                 print_trace(inspect.trace(), exception)
                 if exception_behavior == EXCEPTION_BEHAVIOR.RERAISE:
@@ -85,6 +87,31 @@ def run_pre_post_commands(command_key, command_dicts, config, exception_behavior
                     pass
                 else:
                     LOG.error("Invalid exception_behavior entry")
+
+
+def dispatch_commands(command_key, command_list, config):
+    ''' Routes commands to the appropriate command runner. The command runner will run the command.
+
+    :param string command_key: The key to use to find a command list to execute in each of the
+    command_dicts. Used for error handling only.
+    :param list(dict) command_list: A list of commands to run
+    :param dict(ConfigDict) config: The system configuration.
+    '''
+    for item in command_list:
+        # Item should be a map with one entry
+        assert isinstance(item, MutableMapping), 'item in list isn\'t a dict'
+        assert len(item.keys()) == 1, 'item has more than one entry'
+        for target, command in item.iteritems():
+            if target.startswith('on_'):
+                run_host_command(target, command, config)
+            elif target == "restart_mongodb":
+                mongo_controller = mongodb_setup.MongodbSetup(config)
+                clean_db_dir = command['clean_db_dir']
+                clean_logs = command['clean_logs']
+                if not mongo_controller.restart(clean_db_dir, clean_logs):
+                    raise Exception("Error restarting mongodb")
+            else:
+                raise KeyError("Unknown {} target {}".format(command_key, target))
 
 
 def print_trace(trace, exception):
@@ -103,31 +130,31 @@ def print_trace(trace, exception):
     :param Exception() exception: this is the exception raised by one of tasks
 
     *NOTE* This function is dependent on the stack frames of the function calls made within
-    run_pre_post_commands along with the variable names in run_pre_post_commands, run_command,
-    execute_list, and _run_command_map. Changes in the variable names or the flow of function
-    calls could cause print_trace to log wrong/unhelpful info.
+    run_pre_post_commands along with the variable names in run_pre_post_commands,
+    run_host_command, dispatch_commands, and _run_host_command_map. Changes in the variable names
+    or the flow of function calls could cause print_trace to log wrong/unhelpful info.
     """
     top_function = trace[0][3]
     bottom_function = trace[-1][3]
     bottom_function_file = trace[-1][1]
     bottom_function_line = str(trace[-1][2])
     # This conditional does not cause any errors due to lazy evaluation
-    if len(trace) > 1 and 'key' in trace[1][0].f_locals:
-        executed_task = trace[1][0].f_locals['key']
+    if len(trace) > 1 and 'target' in trace[1][0].f_locals:
+        executed_task = trace[1][0].f_locals['target']
     else:
         executed_task = ""
     executed_command = {}
     for frame in trace:
-        if frame[3] == "run_command" and executed_command == {}:
+        if frame[3] == "run_host_command" and executed_command == {}:
             executed_command = frame[0].f_locals['command']
-        if frame[3] == "_run_command_map":
+        if frame[3] == "_run_host_command_map":
             executed_command[frame[0].f_locals['key']] = frame[0].f_locals['value']
     error_msg = "Exception originated in: " + bottom_function_file
     error_msg = error_msg + ":" + bottom_function + ":" + bottom_function_line
     error_msg = error_msg + "\n" + "Exception msg: " + str(exception)
     error_msg = error_msg + "\n" + top_function + ":"
     if executed_task != '':
-        error_msg = error_msg + "\n    in task: on_" + executed_task
+        error_msg = error_msg + "\n    in task: " + executed_task
     if executed_command != {}:
         error_msg = error_msg + "\n" + "        in command: " + str(executed_command)
     LOG.error(error_msg)
@@ -175,8 +202,9 @@ def main(argv):
     setup_logging(args.debug, args.log_file)
     config = ConfigDict('test_control')
     config.load()
-    test_control = config['test_control']
-    mongodb_setup = config['mongodb_setup']
+
+    test_control_config = config['test_control']
+    mongodb_setup_config = config['mongodb_setup']
 
     dsi_bin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)))
 
@@ -187,10 +215,10 @@ def main(argv):
     setup_ssh_agent(config)
     cleanup_reports()
 
-    # TODO: Change the order of test_control and mongodb_setup
+    # TODO: Change the order of test_control and mongodb_setup_config
     # https://jira.mongodb.org/browse/PERF-1160
     # Execute pre task steps
-    run_pre_post_commands('pre_task', [test_control, mongodb_setup], config,
+    run_pre_post_commands('pre_task', [test_control_config, mongodb_setup_config], config,
                           EXCEPTION_BEHAVIOR.EXIT)
 
     try:
@@ -215,13 +243,19 @@ def main(argv):
                 LOG.warning("Found old perf.json file. Overwriting.")
 
             try:
-                for index, test in enumerate(test_control['run']):
+                for index, test in enumerate(test_control_config['run']):
                     try:
                         # Generate the mc.json file for this test only. Save it to unique name
                         config_test_control.generate_mc_json(test_index=index)
                         mc_config_file = 'mc_' + test['id'] + '.json'
 
-                        run_pre_post_commands('pre_test', [mongodb_setup, test_control, test],
+                        # Only run between_tests after the first test.
+                        if index > 0:
+                            run_pre_post_commands('between_tests',
+                                                  [mongodb_setup_config, test_control_config],
+                                                  config, EXCEPTION_BEHAVIOR.RERAISE)
+                        run_pre_post_commands('pre_test',
+                                              [mongodb_setup_config, test_control_config, test],
                                               config, EXCEPTION_BEHAVIOR.RERAISE)
 
                         subprocess.check_call(
@@ -231,12 +265,14 @@ def main(argv):
                             ],
                             env=env)
                     finally:
-                        run_pre_post_commands('post_test', [test, test_control, mongodb_setup],
+                        run_pre_post_commands('post_test',
+                                              [test, test_control_config, mongodb_setup_config],
                                               config, EXCEPTION_BEHAVIOR.CONTINUE)
 
             finally:
-                run_pre_post_commands('post_task', [test_control, mongodb_setup], config,
-                                      EXCEPTION_BEHAVIOR.CONTINUE)
+                run_pre_post_commands('post_task', [test_control_config, mongodb_setup_config],
+                                      config, EXCEPTION_BEHAVIOR.CONTINUE)
+
     finally:
         # Set perf.json to 555
         # Todo: replace with os.chmod call or remove in general

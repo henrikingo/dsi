@@ -207,34 +207,27 @@ class MongoNode(object):
         # Create the data/logs directories
         commands.append(['mkdir', '-p', setup_args['logdir']])
 
-        if setup_args['dbdir']:
-            if setup_args['clean_db_dir']:
-                # Deleting diagnostic.data is governed by clean_logs. Don't delete it here.
-                # When diagnostic.data doesn't exist, just create an empty one to avoid errors
-                commands.append(
-                    ['mkdir', '-p',
-                     os.path.join(setup_args['dbdir'], 'diagnostic.data')])
-                commands.append(
-                    ['rm', '-rf',
-                     os.path.join(setup_args['logdir'], 'diagnostic.data')])
-                commands.append([
-                    'mv',
-                    os.path.join(setup_args['dbdir'], 'diagnostic.data'), setup_args['logdir']
-                ])
+        if setup_args['dbdir'] and setup_args['clean_db_dir']:
+            # Deleting diagnostic.data is governed by clean_logs. Don't delete it here.
+            # When diagnostic.data doesn't exist, just create an empty one to avoid errors
+            commands.append(['mkdir', '-p', os.path.join(setup_args['dbdir'], 'diagnostic.data')])
+            commands.append(['rm', '-rf', os.path.join(setup_args['logdir'], 'diagnostic.data')])
+            commands.append(
+                ['mv',
+                 os.path.join(setup_args['dbdir'], 'diagnostic.data'), setup_args['logdir']])
 
-                commands.append(['rm', '-rf', setup_args['dbdir']])
+            commands.append(['rm', '-rf', setup_args['dbdir']])
 
-                if setup_args['use_journal_mnt']:
-                    commands.append(['rm', '-rf', setup_args['journal_dir']])
+            if setup_args['use_journal_mnt']:
+                commands.append(['rm', '-rf', setup_args['journal_dir']])
 
             commands.append(['mkdir', '-p', setup_args['dbdir']])
 
-            if setup_args['clean_db_dir']:
-                commands.append([
-                    'mv',
-                    os.path.join(setup_args['logdir'], 'diagnostic.data'), setup_args['dbdir']
-                ])
+            commands.append(
+                ['mv',
+                 os.path.join(setup_args['logdir'], 'diagnostic.data'), setup_args['dbdir']])
 
+            # If not clean_db_dir assume that this has already been done.
             # Create separate journal directory and link to the database
             if setup_args['use_journal_mnt']:
                 commands.append(['mkdir', '-p', setup_args['journal_dir']])
@@ -260,8 +253,16 @@ class MongoNode(object):
         LOG.debug("cmd is %s", str(cmd))
         return cmd
 
-    def launch(self, numactl=True):
-        """Starts this node."""
+    def launch(self, initialize=True, numactl=True):
+        """Starts this node.
+
+        :param initialize boolean: Initialize the node. This doesn't do anything for the
+                                     base node"""
+
+        # initialize is explicitly not used for now for a single node. We may want to use it in
+        # the future
+        _ = initialize
+
         if not self.host.run(self.launch_cmd(numactl)):
             self.dump_mongo_log()
             return False
@@ -424,20 +425,24 @@ class ReplSet(object):
                 ],
                 daemon=True))
 
-    def launch(self, numactl=True):
-        """Starts the replica set."""
+    def launch(self, initialize=True, numactl=True):
+        """Starts the replica set.
+        :param initialize boolean: Initialize the replica set"""
         if not all(
-                run_threads([partial(node.launch, numactl) for node in self.nodes], daemon=True)):
+                run_threads(
+                    [partial(node.launch, initialize, numactl)
+                     for node in self.nodes], daemon=True)):
             return False
-        # Give the first host the highest priority so it will become
-        # primary. This is the default behavior.
-        if not self.is_any_priority_set():
-            for member in self.rs_conf_members:
-                member['priority'] = DEFAULT_MEMBER_PRIORITY
-            self.rs_conf_members[0]['priority'] = DEFAULT_MEMBER_PRIORITY + 1
-        primary = self.highest_priority_node()
-        if not primary.run_mongo_shell(self._init_replica_set()):
-            return False
+        if initialize:
+            # Give the first host the highest priority so it will become
+            # primary. This is the default behavior.
+            if not self.is_any_priority_set():
+                for member in self.rs_conf_members:
+                    member['priority'] = DEFAULT_MEMBER_PRIORITY
+                self.rs_conf_members[0]['priority'] = DEFAULT_MEMBER_PRIORITY + 1
+            primary = self.highest_priority_node()
+            if not primary.run_mongo_shell(self._init_replica_set()):
+                return False
         # Wait for all nodes to be up
         return self.wait_until_up()
 
@@ -572,17 +577,21 @@ class ShardedCluster(object):
                 restart_clean_logs=restart_clean_logs) for mongos in self.mongoses)
         return all(run_threads(commands, daemon=True))
 
-    def launch(self):
-        """Starts the sharded cluster."""
+    def launch(self, initialize=True):
+        """Starts the sharded cluster.
+
+        :param initialize boolean: Initialize the cluster
+        """
         LOG.info('Launching sharded cluster...')
         commands = []
-        commands.append(partial(self.config.launch, numactl=False))
-        commands.extend(shard.launch for shard in self.shards)
-        commands.extend(mongos.launch for mongos in self.mongoses)
+        commands.append(partial(self.config.launch, initialize=initialize, numactl=False))
+        commands.extend(partial(shard.launch, initialize=initialize) for shard in self.shards)
+        commands.extend(partial(mongos.launch, initialize=initialize) for mongos in self.mongoses)
         if not all(run_threads(commands, daemon=True)):
             return False
-        if not self._add_shards():
-            return False
+        if initialize:
+            if not self._add_shards():
+                return False
         if self.disable_balancer and not self.mongoses[0].run_mongo_shell('sh.stopBalancer();'):
             return False
         return self.wait_until_up()
@@ -648,7 +657,7 @@ def create_cluster(topology):
 class MongodbSetup(object):
     """Parse the mongodb_setup config"""
 
-    def __init__(self, config, args):
+    def __init__(self, config, run_locally=False):
         self.config = config
         self.mongodb_setup = config['mongodb_setup']
         journal_dir = self.mongodb_setup.get('journal_dir')
@@ -666,7 +675,7 @@ class MongodbSetup(object):
         MongoNode.shutdown_options = json.dumps(
             copy_obj(config['mongodb_setup']['shutdown_options']))
         self.clusters = []
-        self.downloader = DownloadMongodb(config, args.run_locally)
+        self.downloader = DownloadMongodb(config, run_locally)
         self.parse_topologies()
 
     def parse_topologies(self):
@@ -687,9 +696,16 @@ class MongodbSetup(object):
         """
         # _start() always calls shutdown() and destroy()
         return self._start(
-            skip_download=True, restart_clean_db_dir=clean_db_dir, restart_clean_logs=clean_logs)
+            skip_download=True,
+            restart_clean_db_dir=clean_db_dir,
+            restart_clean_logs=clean_logs,
+            restart_mongodb=True)
 
-    def _start(self, skip_download=False, restart_clean_db_dir=None, restart_clean_logs=None):
+    def _start(self,
+               skip_download=False,
+               restart_clean_db_dir=None,
+               restart_clean_logs=None,
+               restart_mongodb=False):
         """Shutdown and destroy. Then start all clusters.
         :param skip_download:       True if we should skip attempting to download and extract
         binaries.
@@ -697,6 +713,7 @@ class MongodbSetup(object):
         ConfigDict.
         :param restart_clean_logs   Should we clean logs and diagnostic data. If not specified,
         uses value from ConfigDict.
+        :param restart_mongodb      This is a restart of the cluster, not the first start.
         """
         self.shutdown()
         self.destroy()
@@ -713,7 +730,8 @@ class MongodbSetup(object):
                             self.start_cluster,
                             cluster=cluster,
                             restart_clean_db_dir=restart_clean_db_dir,
-                            restart_clean_logs=restart_clean_logs) for cluster in self.clusters
+                            restart_clean_logs=restart_clean_logs,
+                            restart_mongodb=restart_mongodb) for cluster in self.clusters
                     ],
                     daemon=True)):
             LOG.error("Could not start clusters in _start. Shutting down...")
@@ -722,12 +740,16 @@ class MongodbSetup(object):
         return True
 
     @staticmethod
-    def start_cluster(cluster, restart_clean_db_dir=None, restart_clean_logs=None):
+    def start_cluster(cluster,
+                      restart_clean_db_dir=None,
+                      restart_clean_logs=None,
+                      restart_mongodb=False):
         """Start cluster
         :param restart_clean_db_dir Should we clean db dir. If not specified, uses value from
         ConfigDict.
         :param restart_clean_logs   Should we clean logs and diagnostic data. If not specified,
         uses value from ConfigDict.
+        :param restart_mongodb      This is a restart of the cluster, not the first start.
         """
         LOG.info('-' * 72)
         LOG.info('starting topology: %s', cluster)
@@ -735,7 +757,9 @@ class MongodbSetup(object):
                 restart_clean_db_dir=restart_clean_db_dir, restart_clean_logs=restart_clean_logs):
             LOG.error("Could not setup host in start_cluster")
             return False
-        if not cluster.launch():
+        # Don't initialize if restarting mongodb and keeping (not cleaning) the db dir
+        initialize = not (restart_mongodb and not restart_clean_db_dir)
+        if not cluster.launch(initialize):
             LOG.error("Could not launch cluster in start_cluster")
             return False
         LOG.info('started topology: %s', cluster)
@@ -785,7 +809,7 @@ def main():
     # start a mongodb configuration using config module
     config = ConfigDict('mongodb_setup')
     config.load()
-    mongo = MongodbSetup(config, args)
+    mongo = MongodbSetup(config, args.run_locally)
     if not mongo.start():
         LOG.error("Error setting up mongodb")
         exit(1)

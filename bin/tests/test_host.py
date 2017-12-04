@@ -89,7 +89,7 @@ class HostTestCase(unittest.TestCase):
             self.assertEqual(localhost.alias, 'localhost.0', "alias not set as expected")
 
     @patch('paramiko.SSHClient')
-    def test_run_command_map(self, mock_ssh):
+    def test_run_host_command_map(self, mock_ssh):
         """ Test run command map retrieve_files """
 
         mock_retrieve_file = Mock()
@@ -97,7 +97,7 @@ class HostTestCase(unittest.TestCase):
 
         command = {"retrieve_files": {"remote_path": "mongos.log"}}
         mongod = host.RemoteHost("host", "user", "pem_file")
-        host._run_command_map(mongod, command)
+        host._run_host_command_map(mongod, command)
         mock_retrieve_file.assert_any_call("reports/host/mongos.log", "remote_path")
 
         mock_retrieve_file = Mock()
@@ -105,14 +105,14 @@ class HostTestCase(unittest.TestCase):
 
         command = {"retrieve_files": {"remote_path": "local_path"}}
         mongod = host.RemoteHost("host", "user", "pem_file")
-        host._run_command_map(mongod, command)
+        host._run_host_command_map(mongod, command)
         mock_retrieve_file.assert_any_call("reports/host/local_path", "remote_path")
 
         mock_retrieve_file = Mock()
         host.RemoteHost.retrieve_path = mock_retrieve_file
 
         mongod.alias = "mongod.0"
-        host._run_command_map(mongod, command)
+        host._run_host_command_map(mongod, command)
         mock_retrieve_file.assert_any_call("reports/mongod.0/local_path", "remote_path")
 
         mock_retrieve_file = Mock()
@@ -120,7 +120,7 @@ class HostTestCase(unittest.TestCase):
 
         command = {"retrieve_files": {"remote_path": "./local_path"}}
         mongod.alias = "mongos.0"
-        host._run_command_map(mongod, command)
+        host._run_host_command_map(mongod, command)
         mock_retrieve_file.assert_any_call("reports/mongos.0/local_path", "remote_path")
 
         mock_retrieve_file = Mock()
@@ -133,7 +133,7 @@ class HostTestCase(unittest.TestCase):
             }
         }
         mongod.alias = "workload_client.0"
-        host._run_command_map(mongod, command)
+        host._run_host_command_map(mongod, command)
         mock_retrieve_file.assert_any_call("reports/workload_client.0/../workloads_timestamps.csv",
                                            "workloads/workload_timestamps.csv")
 
