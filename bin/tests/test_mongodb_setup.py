@@ -412,7 +412,7 @@ class TestMongodbSetup(unittest.TestCase):
     @mock.patch.object(common.host, 'Host', autospec=True)
     def test_restart_does_not_download(self, host):
         """Restarting doesn't re-download"""
-        setup = mongodb_setup.MongodbSetup(config=self.config, args=mock.Mock())
+        setup = mongodb_setup.MongodbSetup(config=self.config, run_locally=True)
         setup.host = host
         setup.downloader = mock.MagicMock()
 

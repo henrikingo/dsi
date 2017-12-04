@@ -648,7 +648,7 @@ def create_cluster(topology):
 class MongodbSetup(object):
     """Parse the mongodb_setup config"""
 
-    def __init__(self, config, args):
+    def __init__(self, config, run_locally=False):
         self.config = config
         self.mongodb_setup = config['mongodb_setup']
         journal_dir = self.mongodb_setup.get('journal_dir')
@@ -666,7 +666,7 @@ class MongodbSetup(object):
         MongoNode.shutdown_options = json.dumps(
             copy_obj(config['mongodb_setup']['shutdown_options']))
         self.clusters = []
-        self.downloader = DownloadMongodb(config, args.run_locally)
+        self.downloader = DownloadMongodb(config, run_locally)
         self.parse_topologies()
 
     def parse_topologies(self):
@@ -785,7 +785,7 @@ def main():
     # start a mongodb configuration using config module
     config = ConfigDict('mongodb_setup')
     config.load()
-    mongo = MongodbSetup(config, args)
+    mongo = MongodbSetup(config, args.run_locally)
     if not mongo.start():
         LOG.error("Error setting up mongodb")
         exit(1)

@@ -32,7 +32,7 @@ def repo_root():
     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
-def _run_command_map(target_host, command):
+def _run_host_command_map(target_host, command):
     ''' Run one command against a target host if the command is a mapping.
 
     :param Host target_host: The host to send the command to
@@ -65,7 +65,7 @@ def _run_command_map(target_host, command):
             raise Exception("Invalid command type")
 
 
-def run_command(host_list, command, config):
+def _run_host_command(host_list, command, config):
     '''For each host in the list, make a parallelized call to make_host_runner to make the
     appropriate host and run the set of commands
 
@@ -114,7 +114,7 @@ def make_host_runner(host_info, command, ssh_user, ssh_key_file):
 
     # If command is a dictionary, parse it
     elif isinstance(command, MutableMapping):
-        _run_command_map(target_host, command)
+        _run_host_command_map(target_host, command)
 
 
 def make_host(host_info, ssh_user, ssh_key_file):
@@ -175,20 +175,17 @@ def extract_hosts(key, config):
     return _extract_hosts(key, config)
 
 
-def execute_list(list_actions, config):
-    '''
-    Execute a list of actions on the appropriate hosts
+def run_host_command(target, command, config):
+    ''' Sets up and runs a command for use on the appropriate hosts
+    :param string target: The target to run the command on.
+    :param dict command: The action to run.
+    :param dict(ConfigDict) config: The system configuration.
     '''
 
-    for item in list_actions:
-        # Item should be a map with one entry
-        assert isinstance(item, MutableMapping), 'item in list isn\'t a dict'
-        assert len(item.keys()) == 1, 'item has more than one entry'
-        for key, value in item.iteritems():
-            assert key.startswith('on_')
-            key = key[3:]
-            hosts = extract_hosts(key, config)
-            run_command(hosts, value, config)
+    assert target.startswith('on_')
+    target = target[3:]
+    hosts = extract_hosts(target, config)
+    _run_host_command(hosts, command, config)
 
 
 class Host(object):
