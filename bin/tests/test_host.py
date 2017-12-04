@@ -1,17 +1,16 @@
 """Tests for bin/common/host.py"""
-#pylint: disable=unused-argument, no-self-use, protected-access
+#pylint: disable=unused-argument, no-self-use, protected-access, wrong-import-position, wrong-import-order
 
 import collections
 import os
 import sys
 import stat
 import unittest
-import paramiko
 
+import paramiko
 from mock import patch, Mock, mock
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
-
 from config import ConfigDict
 import host
 
@@ -239,13 +238,12 @@ class HostTestCase(unittest.TestCase):
         remote.ftp.get.assert_called_with('remote_file', 'local_file')
         mock_makedirs.assert_not_called()
 
-        with patch('os.makedirs') as mock_makedirs:
-            mock_exists.return_value = False
-            remote = host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
-            remote._retrieve_file('reports/local_file', 'remote_file')
+        mock_exists.return_value = False
+        remote = host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
+        remote._retrieve_file('reports/local_file', 'remote_file')
 
-            remote.ftp.get.assert_called_with('remote_file', 'reports/local_file')
-            mock_makedirs.assert_called_with('reports')
+        remote.ftp.get.assert_called_with('remote_file', 'reports/local_file')
+        mock_makedirs.assert_called_with('reports')
 
     @patch('paramiko.SSHClient')
     def test_retrieve_file_for_files(self, mock_ssh):

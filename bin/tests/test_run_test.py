@@ -1,23 +1,23 @@
 """Tests for bin/common/host.py"""
 
+#pylint: disable=wrong-import-position, wrong-import-order
+
 import os
 import sys
 import unittest
 import logging
 import re
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
+from mock import patch
+from testfixtures import LogCapture
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 from config import ConfigDict
 import host
-
 from run_test import EXCEPTION_BEHAVIOR
 from run_test import copy_timeseries
 from run_test import print_trace
 from run_test import run_pre_post_commands
-
-from mock import patch
-from testfixtures import LogCapture
 
 
 class RunTestTestCase(unittest.TestCase):

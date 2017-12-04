@@ -43,7 +43,7 @@ def get_tagged_data(project, variants, tasks, filename_format, cli):
             tags = cli.query_mongo_perf_task_tags(task_name, task_id)
             filename = filename_format.format(variant=build_variant, task=task_name)
             with open(filename, 'w') as file_ptr:
-                LOGGER.info('Saving tagged data to {filename}'.format(filename=filename))
+                LOGGER.info('Saving tagged data to %s', filename)
                 json.dump(tags, file_ptr, sort_keys=True, separators=[',', ':'], indent=4)
 
 

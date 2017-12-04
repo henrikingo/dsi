@@ -156,11 +156,10 @@ def compare_to_previous(test, threshold, thread_threshold):
     if not previous:
         print('        no previous data, skipping')
         return {'PreviousCompare': 'pass'}
-    else:
-        return {
-            'PreviousCompare':
-                compare_throughputs(test, previous, 'Previous', threshold, thread_threshold)
-        }
+    return {
+        'PreviousCompare':
+            compare_throughputs(test, previous, 'Previous', threshold, thread_threshold)
+    }
 
 
 def compare_n_days_delayed_trigger(test, threshold, thread_threshold, ndays=7):
@@ -220,7 +219,7 @@ def _delayed_trigger_analysis(  # pylint: disable=too-many-arguments
                                               thread_threshold, using_override)
 
     check_name = label + 'Compare'
-    if previous_status is 'fail':
+    if previous_status == 'fail':
         return {
             check_name:
                 compare_throughputs(test, target, label, threshold, thread_threshold,
@@ -233,10 +232,10 @@ def _delayed_trigger_analysis(  # pylint: disable=too-many-arguments
         # only log the results for comparison to the standard threshold and thread_threshold.
         this_status = compare_throughputs(test, target, label, threshold, thread_threshold,
                                           using_override)
-        if must_fail is 'fail':
+        if must_fail == 'fail':
             print('  {} check failed because of drop greater than 1.5 x threshold'.format(label))
             return {check_name: 'fail'}
-        if this_status is 'fail':
+        if this_status == 'fail':
             print('  {} check considered passed as this is the first drop'.format(label))
         return {check_name: 'pass'}
 
@@ -285,7 +284,7 @@ def compare_one_throughput(  # pylint: disable=too-many-arguments
         thread_level,
         default_threshold=threshold,
         using_override=using_override)
-    if label is not 'silent':
+    if label != 'silent':
         print(log)
     return passed
 
@@ -349,8 +348,7 @@ def _lookup_constant_value(project, variant, constant_name):
         return project_constants[variant][constant_name]
     elif constant_name in project_constants['default']:
         return project_constants['default'][constant_name]
-    else:
-        return None
+    return None
 
 
 # pylint: disable=invalid-name
@@ -523,7 +521,7 @@ def main(args):  # pylint: disable=too-many-locals,too-many-statements,too-many-
     sys.stdout.flush()
 
     # use the stderr to print replica_lag table
-    if len(replica_lag_line) > 0:
+    if replica_lag_line:
         print('\n==============================', file=sys.stderr)
         print('Replication Lag Summary:', file=sys.stderr)
         printing_test = ''
@@ -578,7 +576,7 @@ def main(args):  # pylint: disable=too-many-locals,too-many-statements,too-many-
     for test_result in report['results']:
         match_on_rule = any(
             re.match(rule_regex, test_result['test_file']) for rule_regex in QUARANTINED_RULES)
-        if test_result['status'] is 'fail' and not match_on_rule:
+        if test_result['status'] == 'fail' and not match_on_rule:
             num_failures += 1
     report['failures'] = num_failures
 

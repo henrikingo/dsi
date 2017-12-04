@@ -126,7 +126,7 @@ class MultiEvergreenAnalysis(object):
             if val is not None and val is not False:
                 self.config[key] = val
 
-        if len(args.id) > 0 and 'continue' in self.config:
+        if args.id and 'continue' in self.config:
             raise OptionError('--continue and id on the command line are mutually exclusive.')
 
         if self.config['json'] or self.config['json_array'] or self.config['yml']:
@@ -330,7 +330,7 @@ class MultiEvergreenAnalysis(object):
         keyed as self.agg_results[variant_name][task_name][test_name][thread_level]
         """
         # I decided that the below is more readable with allowing the longest lines to be themselves
-        # pylint: disable=line-too-long
+        # pylint: disable=line-too-long, too-many-nested-blocks
         self.agg_results = {}
         for result in self.results:
             for variant_name, variant_result in result.iteritems():

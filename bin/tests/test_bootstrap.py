@@ -8,14 +8,12 @@ import logging
 import os
 import shutil
 import subprocess
-import sys
 import unittest
+
 import yaml
 from mock import patch
 from testfixtures import LogCapture
 
-# TODO: Remove all calls to sys.path.append.
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import bootstrap
 
 

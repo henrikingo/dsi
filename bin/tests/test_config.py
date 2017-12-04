@@ -105,28 +105,29 @@ class ConfigDictTestCase(unittest.TestCase):
         self.assertEqual(
             self.conf['infrastructure_provisioning']['tfvars']['configsvr_instance_type'],
             "t1.micro")
-        self.assertEqual(self.conf['infrastructure_provisioning']['tfvars'].as_dict(), {
-            'cluster_name': 'shard',
-            'mongos_instance_type': 'c3.8xlarge',
-            'availability_zone': 'us-west-2a',
-            'workload_instance_count': 1,
-            'region': 'us-west-2',
-            'mongod_instance_count': 9,
-            'configsvr_instance_count': 3,
-            'mongos_instance_count': 3,
-            'ssh_key_file': 'aws_ssh_key.pem',
-            'ssh_user': 'ec2-user',
-            'mongod_instance_type': 'c3.8xlarge',
-            'ssh_key_name': 'serverteam-perf-ssh-key',
-            'workload_instance_type': 'c3.8xlarge',
-            'tags': {
-                'Project': 'sys-perf',
-                'owner': 'serverteam-perf@10gen.com',
-                'Variant': 'Linux 3-shard cluster',
-                'expire-on-delta': 1
-            },
-            'configsvr_instance_type': 't1.micro'
-        })
+        self.assertEqual(
+            self.conf['infrastructure_provisioning']['tfvars'].as_dict(), {
+                'cluster_name': 'shard',
+                'mongos_instance_type': 'c3.8xlarge',
+                'availability_zone': 'us-west-2a',
+                'workload_instance_count': 1,
+                'region': 'us-west-2',
+                'mongod_instance_count': 9,
+                'configsvr_instance_count': 3,
+                'mongos_instance_count': 3,
+                'ssh_key_file': 'aws_ssh_key.pem',
+                'ssh_user': 'ec2-user',
+                'mongod_instance_type': 'c3.8xlarge',
+                'ssh_key_name': 'serverteam-perf-ssh-key',
+                'workload_instance_type': 'c3.8xlarge',
+                'tags': {
+                    'Project': 'sys-perf',
+                    'owner': 'serverteam-perf@10gen.com',
+                    'Variant': 'Linux 3-shard cluster',
+                    'expire-on-delta': 1
+                },
+                'configsvr_instance_type': 't1.micro'
+            })
 
     def test_defaults(self):
         """Test value from defaults.yml"""
@@ -182,56 +183,58 @@ class ConfigDictTestCase(unittest.TestCase):
         """Test magic per_node_mongod_config() (merging the common mongod_config_file with per node config_file)"""
         mycluster = self.conf['mongodb_setup']['topology'][0]
         mongod = mycluster['shard'][2]['mongod'][0]
-        self.assertEqualDicts(mycluster['shard'][0]['mongod'][0]['config_file'], {
-            'replication': {
-                'oplogSizeMB': 153600,
-                'replSetName': 'override-rs'
-            },
-            'systemLog': {
-                'path': 'data/logs/mongod.log',
-                'destination': 'file'
-            },
-            'setParameter': {
-                'enableTestCommands': True,
-                'foo': True
-            },
-            'net': {
-                'port': 27017,
-                'bindIp': '0.0.0.0'
-            },
-            'processManagement': {
-                'fork': True
-            },
-            'storage': {
-                'engine': 'wiredTiger',
-                'dbPath': 'data/dbs'
-            }
-        })
-        self.assertEqualDicts(mycluster['shard'][2]['mongod'][0]['config_file'], {
-            'replication': {
-                'oplogSizeMB': 153600,
-                'replSetName': 'override-rs'
-            },
-            'systemLog': {
-                'path': 'data/logs/mongod.log',
-                'destination': 'file'
-            },
-            'setParameter': {
-                'enableTestCommands': True,
-                'foo': True
-            },
-            'net': {
-                'port': 27017,
-                'bindIp': '0.0.0.0'
-            },
-            'processManagement': {
-                'fork': True
-            },
-            'storage': {
-                'engine': 'inMemory',
-                'dbPath': 'data/dbs'
-            }
-        })
+        self.assertEqualDicts(
+            mycluster['shard'][0]['mongod'][0]['config_file'], {
+                'replication': {
+                    'oplogSizeMB': 153600,
+                    'replSetName': 'override-rs'
+                },
+                'systemLog': {
+                    'path': 'data/logs/mongod.log',
+                    'destination': 'file'
+                },
+                'setParameter': {
+                    'enableTestCommands': True,
+                    'foo': True
+                },
+                'net': {
+                    'port': 27017,
+                    'bindIp': '0.0.0.0'
+                },
+                'processManagement': {
+                    'fork': True
+                },
+                'storage': {
+                    'engine': 'wiredTiger',
+                    'dbPath': 'data/dbs'
+                }
+            })
+        self.assertEqualDicts(
+            mycluster['shard'][2]['mongod'][0]['config_file'], {
+                'replication': {
+                    'oplogSizeMB': 153600,
+                    'replSetName': 'override-rs'
+                },
+                'systemLog': {
+                    'path': 'data/logs/mongod.log',
+                    'destination': 'file'
+                },
+                'setParameter': {
+                    'enableTestCommands': True,
+                    'foo': True
+                },
+                'net': {
+                    'port': 27017,
+                    'bindIp': '0.0.0.0'
+                },
+                'processManagement': {
+                    'fork': True
+                },
+                'storage': {
+                    'engine': 'inMemory',
+                    'dbPath': 'data/dbs'
+                }
+            })
         self.assertEqualDicts(mycluster['shard'][2]['mongod'][0]['config_file'].overrides, {})
         self.assertEqual(mycluster['shard'][2]['mongod'][0]['config_file']['storage']['engine'],
                          "inMemory")
@@ -240,42 +243,44 @@ class ConfigDictTestCase(unittest.TestCase):
                          "0.0.0.0")
         self.assertEqual(
             mycluster['shard'][2]['mongod'][0]['config_file']['processManagement']['fork'], True)
-        self.assertEqual(mongod.raw, {
-            'public_ip': '${infrastructure_provisioning.out.mongod.6.public_ip}',
-            'mongodb_binary_archive': '${bootstrap.mongodb_binary_archive}',
-            'config_file': {
-                'storage': {
-                    'engine': 'inMemory'
-                }
-            },
-            'private_ip': '${infrastructure_provisioning.out.mongod.6.private_ip}'
-        })
+        self.assertEqual(
+            mongod.raw, {
+                'public_ip': '${infrastructure_provisioning.out.mongod.6.public_ip}',
+                'mongodb_binary_archive': '${bootstrap.mongodb_binary_archive}',
+                'config_file': {
+                    'storage': {
+                        'engine': 'inMemory'
+                    }
+                },
+                'private_ip': '${infrastructure_provisioning.out.mongod.6.private_ip}'
+            })
         # Standalone node
-        self.assertEqualDicts(self.conf['mongodb_setup']['topology'][2]['config_file'], {
-            'replication': {
-                'oplogSizeMB': 153600,
-                'replSetName': 'override-rs'
-            },
-            'systemLog': {
-                'path': 'data/logs/mongod.log',
-                'destination': 'file'
-            },
-            'setParameter': {
-                'enableTestCommands': True,
-                'foo': True
-            },
-            'net': {
-                'port': 27017,
-                'bindIp': '0.0.0.0'
-            },
-            'processManagement': {
-                'fork': True
-            },
-            'storage': {
-                'engine': 'wiredTiger',
-                'dbPath': 'data/dbs'
-            }
-        })
+        self.assertEqualDicts(
+            self.conf['mongodb_setup']['topology'][2]['config_file'], {
+                'replication': {
+                    'oplogSizeMB': 153600,
+                    'replSetName': 'override-rs'
+                },
+                'systemLog': {
+                    'path': 'data/logs/mongod.log',
+                    'destination': 'file'
+                },
+                'setParameter': {
+                    'enableTestCommands': True,
+                    'foo': True
+                },
+                'net': {
+                    'port': 27017,
+                    'bindIp': '0.0.0.0'
+                },
+                'processManagement': {
+                    'fork': True
+                },
+                'storage': {
+                    'engine': 'wiredTiger',
+                    'dbPath': 'data/dbs'
+                }
+            })
         # self.keys() should return a 'config_file' key
         self.assertTrue('config_file' in mycluster['shard'][0]['mongod'][0].keys())
         self.assertTrue('config_file' in mycluster['shard'][2]['mongod'][0].keys())

@@ -158,7 +158,7 @@ def throughput_check(test, ref_tag, project_id, variant, jira_user, jira_passwor
     # use the larger of threshold or noise to avoid false positive
     # when fixing PERF-595, we need to review noise-handling in all analysis scripts
     noise_levels = HISTORY.noise_levels(test['name'])
-    worst_noise = max(noise_levels.values()) if (len(noise_levels.values()) == 0) else 0
+    worst_noise = max(noise_levels.values()) if noise_levels.values() else 0
     (failed, ratio, target) = compare_one_result_base(test['max'], reference['max'], worst_noise,
                                                       NOISE_MULTIPLE, unacceptable_threshold)
     check_result['perf_ratio'] = 1 + ratio

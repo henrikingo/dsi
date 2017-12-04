@@ -231,6 +231,7 @@ def main(argv):
     run_pre_post_commands('pre_task', [test_control_config, mongodb_setup_config], config,
                           EXCEPTION_BEHAVIOR.EXIT)
 
+    # pylint: disable=too-many-nested-blocks
     try:
         # Everything should eventually come through this path
         # Call mission control

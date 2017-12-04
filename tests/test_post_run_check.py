@@ -3,16 +3,10 @@ Unit tests for `post_run_check.py`.
 """
 import os
 import unittest
-
 import errno
 import shutil
 
-import sys
-
-sys.path.append(
-    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "analysis"))
 import post_run_check
-
 from tests import test_utils
 
 

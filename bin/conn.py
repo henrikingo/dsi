@@ -73,7 +73,7 @@ from common.config import ConfigDict
 LOGGER = logging.getLogger(__name__)
 
 
-def parse_args(args=sys.argv[1:]):
+def parse_args(args):
     """ create the parser, parse the arguments and set up logging
 
     :returns tuple of parser and parsed arguments
@@ -133,7 +133,7 @@ def remote_cmd(host, command, config, args):
         os.system(" ".join(cmd))
 
 
-def main(argv=sys.argv[1:]):
+def main(argv):
     """ Main function. parse args and execute
 
     :param argv list the command line arguments excluding the program name. Default is
@@ -173,4 +173,4 @@ def main(argv=sys.argv[1:]):
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

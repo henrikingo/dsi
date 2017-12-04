@@ -2,12 +2,9 @@
 """Tests for the mongodb_setup module"""
 import os
 import os.path
-import sys
 import unittest
 
 import mock
-
-sys.path.insert(0, os.path.join(os.path.dirname(sys.path[0]), 'bin'))
 
 import mongodb_setup
 import common.host

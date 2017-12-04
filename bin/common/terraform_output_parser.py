@@ -57,7 +57,7 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
                 LOG.error(category + ": public and private IP address counts mismatch!")
                 raise ValueError(category + ": public and private IP address counts mismatch!")
 
-            if len(self._ips[pub]) > 0 and self._ips[pub][0]:
+            if self._ips[pub] and self._ips[pub][0]:
                 # found category and IP address is not empty
                 # IP address could be empty if category instance count is set to 0
                 out_data[category] = []
@@ -81,7 +81,7 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
         out_data = self._get_ips("public_member_ip", "private_member_ip", "mongod", out_data)
 
         # workload_client IP addresses
-        if len(self._ips["public_ip_mc"]) == 0:
+        if not self._ips["public_ip_mc"]:
             LOG.error("Workload client: public and private IP address counts mismatch!")
             raise ValueError("Workload client: public and private IP address counts mismatch!")
 

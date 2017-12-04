@@ -141,7 +141,7 @@ def expand(host):
     return host
 
 
-def parse_args(args=sys.argv[1:]):
+def parse_args(args):
     """ create the parser, parse the arguments and set up logging
 
     :returns tuple of parser and parsed arguments
@@ -171,7 +171,7 @@ def lookup_host(host, config):
     return config["infrastructure_provisioning"]["out"].lookup_path(host)
 
 
-def main(argv=sys.argv[1:]):
+def main(argv):
     """ Main function. parse args and execute
 
     :param argv list the command line arguments excluding the program name. Default is
@@ -192,4 +192,4 @@ def main(argv=sys.argv[1:]):
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

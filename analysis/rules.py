@@ -174,8 +174,7 @@ def failure_collection(failure_times,
 def _fetch_constant(chunk, key):
     if key in chunk:
         return chunk[key][0]
-    else:
-        return None
+    return None
 
 
 # Some constants can be fetched from the FTDC data. Find the first occurrence of these metrics in
@@ -385,8 +384,7 @@ def repl_member_state(chunk, times, repl_member_list, test_times=None):
             member_states[member] = failure
     if member_states:
         return {'members': member_states}
-    else:
-        return {}
+    return {}
 
 
 def find_primary(chunk, repl_member_list):
@@ -602,8 +600,9 @@ def _flag_unacceptable_lag(lag_info_dict, repl_member_list):  #pylint: disable=t
                     failure_dict['end_time'] = previous['time']
 
                     failure_times.append(failure_dict['start_time'])
-                    compared_values.append((failure_dict['start_value'] / MS, ftdc_date_parse(
-                        failure_dict['max_time'] / MS), failure_dict['max_value'] / MS,
+                    compared_values.append((failure_dict['start_value'] / MS,
+                                            ftdc_date_parse(failure_dict['max_time'] / MS),
+                                            failure_dict['max_value'] / MS,
                                             ftdc_date_parse(failure_dict['end_time'] / MS),
                                             failure_dict['end_value'] / MS))
                 else:
@@ -628,8 +627,7 @@ def _flag_unacceptable_lag(lag_info_dict, repl_member_list):  #pylint: disable=t
                 'primary member': lag_info_dict['primary']
             }
         }
-    else:
-        return {}
+    return {}
 
 
 def _get_whitelist_from_test_times(chunk, test_times=None):
@@ -676,13 +674,13 @@ def db_correctness_analysis(dir_path):
     # The directories in db-correctness. Same as the name of the test on Evergreen.
     db_correctness_log_directories = ['db-hash-check', 'validate-indexes-and-collections']
     report_results = []
-    for dir_path, sub_directory, _ in os.walk(dir_path):
+    for root_directory, sub_directory, _ in os.walk(dir_path):
         if find_directory in sub_directory:
-            path_to_target = os.path.join(dir_path, find_directory)
+            path_to_target = os.path.join(root_directory, find_directory)
             for log_directory in db_correctness_log_directories:
                 path_to_directory = os.path.join(path_to_target, log_directory)
-                log_name = log_directory + '.' + os.path.basename(dir_path) + '.'
-                log_name = log_name + os.path.basename(os.path.dirname(dir_path))
+                log_name = log_directory + '.' + os.path.basename(root_directory) + '.'
+                log_name = log_name + os.path.basename(os.path.dirname(root_directory))
                 if os.path.exists(path_to_directory):
                     log_files = os.listdir(path_to_directory)
                     if log_files:

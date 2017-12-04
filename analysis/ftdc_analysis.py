@@ -301,7 +301,7 @@ def _process_ftdc_file(path_to_ftdc_file, project, variant, constant_values):  #
             assert all(len(chunk.values()[0]) == len(v) for v in chunk.values()), \
                 ('Metrics from file {0} do not all have same number of collected '
                  'samples in the chunk').format(os.path.basename(path_to_ftdc_file))
-            assert len(chunk.values()[0]) != 0, \
+            assert chunk.values()[0], \
                                              ('No data captured in chunk from file {0}').format(
                                                  os.path.basename(path_to_ftdc_file))
             assert rules.FTDC_KEYS['time'] in chunk, \
@@ -341,10 +341,9 @@ def _process_ftdc_file(path_to_ftdc_file, project, variant, constant_values):  #
 
     if not failures_per_chunk and not file_rule_failures:
         return (True, '\nPassed resource sanity checks.')
-    else:
-        log_raw = _ftdc_log_raw(file_rule_failures,
-                                unify_chunk_failures(failures_per_chunk), task_run_time)
-        return (False, log_raw)
+    log_raw = _ftdc_log_raw(file_rule_failures, unify_chunk_failures(failures_per_chunk),
+                            task_run_time)
+    return (False, log_raw)
 
 
 def _fetch_constant_arguments(chunk, arguments_needed, arguments_present, constant_values):
@@ -439,22 +438,22 @@ def _get_ftdc_file_paths(dir_path):
     """
     find_directory = 'diagnostic.data'
     ftdc_metrics_paths = {}
-    for dir_path, sub_folder, _ in os.walk(dir_path):
-        if find_directory in sub_folder:
-            parent_directory_name = os.path.basename(dir_path)
+    for root_directory, sub_directory, _ in os.walk(dir_path):
+        if find_directory in sub_directory:
+            parent_directory_name = os.path.basename(root_directory)
             host_identification = _get_host_ip_info(parent_directory_name)
             # in the short term, there are also diag-p*-*-* directories with
             # diagnostic data.
             # The previous line and the following check skips analysis
             # for the diag-p* directories (this check can probably be removed later)
             if host_identification:
-                ftdc_files = os.listdir(os.path.join(dir_path, find_directory))
+                ftdc_files = os.listdir(os.path.join(root_directory, find_directory))
                 files = [fi for fi in ftdc_files if not fi.endswith(".interim")]
                 if len(files) != 1:
-                    LOGGER.info('%s FTDC metrics files in %s. Skipping.',
-                                len(files), parent_directory_name)
+                    LOGGER.info('%s FTDC metrics files in %s. Skipping.', len(files),
+                                parent_directory_name)
                 else:
-                    full_path = os.path.join(dir_path, find_directory, files[0])
+                    full_path = os.path.join(root_directory, find_directory, files[0])
                     ftdc_metrics_paths[host_identification] = full_path
     return ftdc_metrics_paths
 
@@ -472,5 +471,4 @@ def _get_host_ip_info(diagnostic_dir_name):
     """
     if '-' in diagnostic_dir_name:
         return None
-    else:
-        return diagnostic_dir_name
+    return diagnostic_dir_name

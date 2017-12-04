@@ -30,8 +30,7 @@ def get_project_variant_rules(project, variant, rules_dict):
     project_rules = rules_dict[project]
     if variant not in project_rules:
         return project_rules['default']
-    else:
-        return project_rules[variant]
+    return project_rules[variant]
 
 
 def get_test_times(perf_json_or_path):

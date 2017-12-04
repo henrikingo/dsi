@@ -360,7 +360,8 @@ class ConfigDict(dict):
                     raise ValueError("ConfigDict error at {}: Cannot resolve variable "
                                      "reference '{}', error at '{}': {} {}".format(
                                          path_from_root, path, path,
-                                         sys.exc_info()[0], sys.exc_info()[1]))
+                                         sys.exc_info()[0],
+                                         sys.exc_info()[1]))
             between_values = re.split(r"\$\{[^\{]*?\}", value)
 
             # If the variable reference is the entire value, then return the referenced value as it
@@ -371,7 +372,7 @@ class ConfigDict(dict):
                 value = values[0]
             else:
                 value = between_values.pop(0)
-                while len(values) > 0:
+                while values:
                     value += str(values.pop(0))
                     value += between_values.pop(0)
 
@@ -401,8 +402,8 @@ class ConfigDict(dict):
         value = None
         if self.is_topology_node() and key == ('config_file'):
             # Note: In the below 2 lines, overrides and ${variables} are already applied
-            common_config = self.root['mongodb_setup'].get(self.topology_node_type() +
-                                                           '_config_file')
+            common_config = self.root['mongodb_setup'].get(
+                self.topology_node_type() + '_config_file')
             node_specific_config = self.raw.get(key, {})
             # Technically this works the same as if common_config was the raw value
             # and node_specific_config is a dict with overrides. So let's reuse some code...
@@ -475,8 +476,7 @@ class ConfigDict(dict):
             return self.path[-2]
         elif is_integer(self.path[-1]):
             return 'mongod'
-        else:
-            return None
+        return None
 
     def is_topology_replset(self):
         '''Returns true if self.path is a cluster_type: replset node under mongodb_setup.topology.
@@ -521,8 +521,8 @@ class ConfigDict(dict):
             return True
 
         else:
-            raise KeyError('Only values under self["' + self.module +
-                           '"]["out"] are settable in this object')
+            raise KeyError(
+                'Only values under self["' + self.module + '"]["out"] are settable in this object')
 
 
 def copy_obj(obj):
@@ -534,8 +534,7 @@ def copy_obj(obj):
         return new_dict
     elif isinstance(obj, list):
         return [copy_obj(item) for item in obj]
-    else:
-        return obj
+    return obj
 
 
 def is_integer(astring):

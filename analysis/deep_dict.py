@@ -23,8 +23,7 @@ def iterate(deep_dict, path=None, to_return=None):
             if pair != to_return:
                 to_return.append(pair)
         return to_return
-    else:
-        return path, deep_dict
+    return path, deep_dict
 
 
 def get_value(deep_dict, path):

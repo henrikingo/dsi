@@ -100,8 +100,7 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                                                                   creds['github']['token'])
                 self.commit = full_reference
                 self.compare_to_commit = True
-                LOGGER.debug('Treating reference point "{commit}" as a Git commit'.format(
-                    commit=self.commit))
+                LOGGER.debug('Treating reference point "%s" as a Git commit', self.commit)
             except KeyError:
                 LOGGER.debug('Unable to retrieve a valid github token from ~/.gitconfig')
                 sys.exit(0)
@@ -112,10 +111,9 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                 # then pull out the Git commit
                 self.commit = reference
                 self.compare_to_commit = False
-                LOGGER.debug(
-                    'Treating reference point "{tag}" as a tagged baseline'.format(tag=self.commit))
-                LOGGER.debug('Getting {proj} project information from commit {commit}'.format(
-                    proj=self.project, commit=self.commit))
+                LOGGER.debug('Treating reference point "%s" as a tagged baseline', self.commit)
+                LOGGER.debug('Getting %s project information from commit %s', self.project,
+                             self.commit)
         else:
             self.commit = None
 
@@ -138,15 +136,15 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         delete ticket & update operation)
         """
         for unused_test in [test for test in self.tests if test not in self.tests_applied]:
-            WARNER.warn('Pattern not applied for tests: {0}'.format(unused_test))
+            WARNER.warn('Pattern not applied for tests: %s', unused_test)
 
         for unused_task in [task for task in self.tasks if task not in self.tasks_applied]:
-            WARNER.warn('Pattern not applied for tasks: {0}'.format(unused_task))
+            WARNER.warn('Pattern not applied for tasks: %s', unused_task)
 
         for unused_variant in [
                 variant for variant in self.variants if variant not in self.build_variants_applied
         ]:
-            WARNER.warn('Pattern not applied for build variants: {0}'.format(unused_variant))
+            WARNER.warn('Pattern not applied for build variants: %s', unused_variant)
         self._log_summary()
 
     def _log_summary(self):  # pylint: disable=too-many-branches
@@ -159,9 +157,10 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
             for variant in self.summary[rule]:
                 for task in self.summary[rule][variant]:
                     task_updates = self.summary[rule][variant][task]
-                    if isinstance(task_updates, list) and len(task_updates) > 0:
+                    if isinstance(task_updates, list) and task_updates:
                         has_updated = True
 
+        # pylint: disable=consider-iterating-dictionary
         for variant in self.delete_summary.keys():
             if self.delete_summary[variant] == {}:
                 del self.delete_summary[variant]
@@ -177,7 +176,7 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
             LOGGER.info(
                 json.dumps(self.delete_summary, indent=2, separators=[',', ': '], sort_keys=True))
             for rule in self.summary:
-                LOGGER.info('The following tests were overridden for rule {0}:'.format(rule))
+                LOGGER.info('The following tests were overridden for rule %s:', rule)
                 LOGGER.info(
                     json.dumps(
                         self.summary[rule], indent=2, separators=[',', ': '], sort_keys=True))
@@ -222,17 +221,18 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         :param str ticket: Associate a JIRA ticket with this update.
         """
         self.summary[rule] = {}
+        # pylint: disable=too-many-nested-blocks
         # Find the build variants for the project at this Git commit
         for build_variant_name, build_variant_id in self.evg.build_variants_from_git_commit(
                 self.project, self.commit):
             match = helpers.matches_any(build_variant_name, self.variants)
             if not match:
-                LOGGER.debug('Skipping build variant: {0}'.format(build_variant_name))
+                LOGGER.debug('Skipping build variant: %s', build_variant_name)
                 continue
 
             self.build_variants_applied.add(match)
             self.summary[rule][build_variant_name] = {}
-            LOGGER.debug('Processing build variant: {0}'.format(build_variant_name))
+            LOGGER.debug('Processing build variant: %s', build_variant_name)
 
             # Find the tasks in this build variant that we're interested in
             for task_name, task_id in self.evg.tasks_from_build_variant(build_variant_id):
@@ -242,14 +242,14 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
 
                 match = helpers.matches_any(task_name, self.tasks)
                 if not match:
-                    LOGGER.debug('\tSkipping task: {0}'.format(task_name))
+                    LOGGER.debug('\tSkipping task: %s', task_name)
                     continue
 
                 self.tasks_applied.add(match)
                 self.summary[rule][build_variant_name][task_name] = []
-                LOGGER.debug('\tProcessing task: {0}'.format(task_name))
+                LOGGER.debug('\tProcessing task: %s', task_name)
 
-                if rule is not 'threshold':
+                if rule != 'threshold':
                     history = self._get_task_history(task_name, task_id)
 
                 # Cycle through the names of the tests in this task
@@ -257,21 +257,18 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                     for test_name, _ in self.evg.tests_from_task(task_id):
                         match = helpers.matches_any(test_name, self.tests)
                         if not match:
-                            LOGGER.debug('\t\tSkipping test: {0}'.format(test_name))
+                            LOGGER.debug('\t\tSkipping test: %s', test_name)
                             continue
 
-                        LOGGER.debug('\t\tProcessing test: {0}'.format(test_name))
+                        LOGGER.debug('\t\tSkipping test: %s', test_name)
 
-                        if rule is not 'threshold':
+                        if rule != 'threshold':
                             # Get the reference data we want to use as the override value
                             new_override_val = self._get_test_reference_data(history, test_name)
                             if not new_override_val:
-                                LOGGER.warning(
-                                    'No data for {bv}.{task}.{test} at reference {ref}'.format(
-                                        bv=build_variant_name,
-                                        task=task_name,
-                                        test=test_name,
-                                        ref=self.commit))
+                                LOGGER.warning('No data for %s.%s.%s at reference %s',
+                                               build_variant_name, task_name, test_name,
+                                               self.commit)
                                 continue
 
                         self.tests_applied.add(match)
@@ -338,16 +335,16 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                         if test_name in variant_tests[variant]:
                             variant_tests_remaining[variant].remove(test_name)
                 except evergreen_client.Empty:
-                    LOGGER.warning("Caught evergreen_client.Empty exception in "
-                                   "_processing_revision in call to tests_from_task for "
-                                   "task_id {0}. ".format(task_info['task_id']) +
-                                   "Supressing error. This indicates something is wrong, "
-                                   "but the current operation can still complete correctly.")
+                    LOGGER.warning("Caught evergreen_client. Empty exception in "
+                                   "_processing_revision in call to tests_from_task for task_id %s."
+                                   "Supressing error. This indicates something is wrong, but the "
+                                   "current operation can still complete correctly.",
+                                   task_info['task_id'])
 
             tests_remain = variant_tests_remaining[variant]
             num_tests_missing_data += len(tests_remain)
             for test in tests_remain:
-                LOGGER.debug('\tNo result for test {} in variant {}'.format(test, variant))
+                LOGGER.debug('\tNo result for test %s in variant %s', test, variant)
         return num_tests_missing_data
 
     def _get_recent_commit(self, overrides_to_update, tasks):
@@ -379,15 +376,14 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
             # revision does not contain all the variants targeted in the update
             if set(variant_tests.keys()) > set(revision_info['builds'].keys()):
                 continue
-            LOGGER.debug('Processing revision: {0}'.format(revision))
+            LOGGER.debug('Processing revision: %s', revision)
             num_tests_missing_data = self._process_revision(revision_info['builds'], variant_tests,
                                                             tasks)
             revision_case_count.append((revision, num_tests_missing_data))
             if num_tests_missing_data == 0:
                 self.commit = revision
                 self.compare_to_commit = True
-                LOGGER.info('Treating reference point "{commit}" as a Git commit'.format(
-                    commit=self.commit))
+                LOGGER.info('Treating reference point "%s" as a Git commit', self.commit)
                 return
         # Could not find a revision with the necessary test data. Output an error message with some
         # details about the 'closest' most recent revision.
@@ -416,15 +412,15 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         if not self.commit:
             self._get_recent_commit(overrides_to_update, tasks)
         for rule, build_variant_tests in overrides_to_update.iteritems():
-            LOGGER.debug('Updating overrides for rule {0}'.format(rule))
+            LOGGER.debug('Updating overrides for rule %s', rule)
             self.summary[rule] = {}
             for build_variant_name, build_variant_id in self.evg.build_variants_from_git_commit(
                     self.project, self.commit):
                 if build_variant_name not in build_variant_tests.keys():
-                    LOGGER.debug('Skipping build variant: {0}'.format(build_variant_name))
+                    LOGGER.debug('Skipping build variant: %s', build_variant_name)
                     continue
                 self.summary[rule][build_variant_name] = {}
-                LOGGER.debug('Processing build variant: {0}'.format(build_variant_name))
+                LOGGER.debug('Processing build variant: %s', build_variant_name)
 
                 tests = overrides_to_update[rule][build_variant_name]
                 for task_name, task_id in self.evg.tasks_from_build_variant(build_variant_id):
@@ -433,20 +429,20 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                         continue
                     match = helpers.matches_any(task_name, tasks)
                     if not match:
-                        LOGGER.debug('\tSkipping task: {0}'.format(task_name))
+                        LOGGER.debug('\tSkipping task: %s', task_name)
                         continue
                     self.summary[rule][build_variant_name][task_name] = []
-                    LOGGER.debug('\tProcessing task: {0}'.format(task_name))
+                    LOGGER.debug('\tProcessing task: %s', task_name)
 
                     history = self._get_task_history(task_name, task_id)
                     try:
                         for test_name, _ in self.evg.tests_from_task(task_id):
                             if test_name not in tests:
-                                LOGGER.debug('\t\tSkipping test: {0}'.format(test_name))
+                                LOGGER.debug('\t\tSkipping test: %s', test_name)
                                 continue
 
                             self.summary[rule][build_variant_name][task_name].append(test_name)
-                            LOGGER.debug('\t\tProcessing test: {0}'.format(test_name))
+                            LOGGER.debug('\t\tProcessing test: %s', test_name)
 
                             # Get the reference data we want to use as the override value
                             test_reference = self._get_test_reference_data(history, test_name)
@@ -475,10 +471,10 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         """
         # Find the overrides for this build variant...
         if build_variant not in self.overrides:
-            LOGGER.debug("Adding variant: {}".format(build_variant))
+            LOGGER.debug("Adding variant: %s", build_variant)
             self.overrides[build_variant] = {}
         if task not in self.overrides[build_variant]:
-            LOGGER.debug("Adding task: {}".format(task))
+            LOGGER.debug("Adding task: %s", task)
             self.overrides[build_variant][task] = {'reference': {}, 'ndays': {}, 'threshold': {}}
         task_ovr = self.overrides[build_variant][task]
 
@@ -588,13 +584,13 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
             if ticket in check_tickets:
                 if isinstance(check_tickets, list):
                     check_tickets.remove(ticket)
-                    LOGGER.info('Deleting test {} from variant {}, task {} and rule {}, but '
-                                'override remains'.format(test, variant, task, rule))
-                    LOGGER.info('Remaining tickets are {}'.format(str(check_tickets)))
-                    if rule is 'threshold':
-                        LOGGER.info('Threshold override for {} from variant {} and task {} '
+                    LOGGER.info('Deleting test %s from variant %s, task %s and rule %s, but '
+                                'override remains', test, variant, task, rule)
+                    LOGGER.info('Remaining tickets are %s', str(check_tickets))
+                    if rule == 'threshold':
+                        LOGGER.info('Threshold override for %s from variant %s and task %s '
                                     'remains due to other outstanding '
-                                    'tickets.'.format(test, variant, task))
+                                    'tickets.', test, variant, task)
                     else:
                         # Note: task to update is passed in separately, and may be a regex even
                         # There's no need to include it in this hierarchy
@@ -681,7 +677,7 @@ def validate(overrides_dict, jira_api_auth=None):
     regex validation.
     """
 
-    assert len(overrides_dict) > 0, "No variants specified."
+    assert overrides_dict, "No variants specified."
     expected_keys_per_type = {
         "ndays": ["results", "threads", "ticket", "revision", "create_time"],
         "reference": ["results", "threads", "ticket", "revision"],
@@ -699,7 +695,7 @@ def validate(overrides_dict, jira_api_auth=None):
     query_jira_for_tickets = jira_api_auth is not None
 
     for variant_name, variant_override in overrides_dict.items():
-        assert len(variant_override) > 0, "No tasks specified in variant {}.".format(variant_name)
+        assert variant_override, "No tasks specified in variant {}.".format(variant_name)
         for task_name, task_override in variant_override.items():
             for override_type in ["reference", "ndays", "threshold"]:
                 assert override_type in task_override, \

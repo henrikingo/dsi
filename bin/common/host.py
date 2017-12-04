@@ -1,5 +1,4 @@
 """Provide abstraction over running commands on remote or local machines."""
-#pylint: disable=redefined-variable-type
 from collections import MutableMapping, namedtuple
 from functools import partial
 import itertools
@@ -177,8 +176,8 @@ def extract_hosts(key, config):
         return [HostInfo('localhost', 'localhost', 0)]
     if key == 'all_servers':
         return list(
-            itertools.chain.from_iterable((_extract_hosts(key, config)
-                                           for key in ['mongod', 'mongos', 'configsvr'])))
+            itertools.chain.from_iterable(
+                (_extract_hosts(key, config) for key in ['mongod', 'mongos', 'configsvr'])))
     if key == 'all_hosts':
         return list(
             itertools.chain.from_iterable(
@@ -218,8 +217,7 @@ class Host(object):
         """
         if not self._alias:
             return self.host
-        else:
-            return self._alias
+        return self._alias
 
     @alias.setter
     def alias(self, alias):
@@ -276,11 +274,11 @@ class Host(object):
         """Creates a file on the remote host"""
         raise NotImplementedError()
 
-    def upload_file(self, remote_path, local_path):
+    def upload_file(self, local_path, remote_path):
         """Copy a file to the host"""
         raise NotImplementedError()
 
-    def retrieve_path(self, remote_path, local_path):
+    def retrieve_path(self, local_path, remote_path):
         """Retrieve a file from the host"""
         raise NotImplementedError()
 
@@ -454,12 +452,12 @@ class LocalHost(Host):
             LOG.warn('failed with exit status %s', proc.returncode)
         return proc.returncode
 
-    def create_file(self, file_path, file_contents):
+    def create_file(self, remote_path, file_contents):
         """Creates a file on the local host"""
-        with open(file_path, 'w') as local_file:
+        with open(remote_path, 'w') as local_file:
             local_file.write(file_contents)
 
-    def upload_file(self, remote_path, local_path):
+    def upload_file(self, local_path, remote_path):
         """Copy a file to the host"""
         if local_path == remote_path:
             LOG.warning('Uploading file locally to same path. Skipping step')
@@ -467,7 +465,7 @@ class LocalHost(Host):
             shutil.copyfile(local_path, remote_path)
             shutil.copymode(local_path, remote_path)
 
-    def retrieve_path(self, remote_path, local_path):
+    def retrieve_path(self, local_path, remote_path):
         """Retrieve a file from the host"""
         if local_path == remote_path:
             LOG.warning('Retrieving file locally to same path. Skipping step')

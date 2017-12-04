@@ -54,7 +54,7 @@ def compare_results(  # pylint: disable=too-many-arguments,too-many-locals
     # Check max throughput first
     noise = 0
     # For the max throughput, use the max noise across the thread levels as the noise parameter
-    if len(noise_levels.values()) > 0:
+    if noise_levels.values():
         noise = max(noise_levels.values())
     result = compare_one_result(
         this_one,

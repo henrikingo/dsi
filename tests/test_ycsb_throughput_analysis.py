@@ -80,8 +80,8 @@ class TestYCSBThroughputAnalysis(unittest.TestCase):
             results = ycsb_throughput._analyze_long_term_degradation(throughputs, *args, **kwargs)
             return not results
 
-        throughputs = tuples_to_throughputs([(time, 10) for time in range(600)] +
-                                            [(time, 5) for time in range(601, 20 * 60 + 3)])
+        throughputs = tuples_to_throughputs(
+            [(time, 10) for time in range(600)] + [(time, 5) for time in range(601, 20 * 60 + 3)])
         self.assertFalse(analyze(), "Detects long-term throughput degradation")
         self.assertTrue(
             analyze(duration_seconds=10 * 100),

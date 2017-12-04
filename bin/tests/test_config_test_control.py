@@ -69,8 +69,7 @@ class TestConfigTestControl(unittest.TestCase):
             load_json('mc.benchrun.json.ok', self.artifact_dir),
             'mc.json doesn\'t match expected for test_control.benchRun.yml')
         self.assertEqual(
-            load_yaml('workloads.yml'),
-            load_yaml('workloads.benchrun.yml.ok', self.artifact_dir),
+            load_yaml('workloads.yml'), load_yaml('workloads.benchrun.yml.ok', self.artifact_dir),
             'workloads.yml doesn\'t match expected for test_control.benchRun.yml')
 
     # Check only the first ycsb test for now. Not adding in all of the tests because we are

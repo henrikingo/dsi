@@ -141,8 +141,7 @@ class MongoNode(object):
         """Create host wrapper to run commands."""
         if self.run_locally or self.public_ip in ['localhost', '127.0.0.1', '0.0.0.0']:
             return LocalHost()
-        else:
-            return RemoteHost(self.public_ip, self.ssh_user, self.ssh_key_file)
+        return RemoteHost(self.public_ip, self.ssh_user, self.ssh_key_file)
 
     # TODO(rtimmons): refactor to MongoStatusChecker or similar to ease mocking
     def wait_until_up(self):
@@ -186,7 +185,7 @@ class MongoNode(object):
             'dbdir': self.dbdir,
             'journal_dir': self.journal_dir,
             'logdir': self.logdir,
-            'is_mongos': self.mongo_program is 'mongos',
+            'is_mongos': self.mongo_program == 'mongos',
             'use_journal_mnt': self.use_journal_mnt
         }
         commands = MongoNode._generate_setup_commands(setup_cmd_args)

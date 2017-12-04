@@ -37,7 +37,7 @@ def remove_dependenies(input_yaml):
             task['depends_on'] = [
                 dependency for dependency in task['depends_on'] if dependency['name'] != "compile"
             ]
-            if len(task['depends_on']) == 0:  # Nothing left after removing compile dependency
+            if not task['depends_on']:  # Nothing left after removing compile dependency
                 task.pop('depends_on')
     return outyaml
 

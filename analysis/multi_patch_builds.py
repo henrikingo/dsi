@@ -345,14 +345,14 @@ class MultiEvergreen(object):
               "builds finish.")
         for build in self.builds:
             print("")
-            print("Build #{}: ".format(build['index'] + 1) + self.build_url_template.format(
-                build['ID']))
+            print("Build #{}: ".format(build['index'] + 1) +
+                  self.build_url_template.format(build['ID']))
             for result_url in build['result_urls']:
                 print(result_url)
 
     def serialize(self, print_help=False):
         """Serialize self.builds into a yaml file and print some advice related to it"""
-        if len(self.builds) > 0:
+        if self.builds:
             build = self.builds[0]
             _id = build['ID']
             self._serialize(_id)

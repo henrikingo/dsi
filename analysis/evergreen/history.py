@@ -19,8 +19,8 @@ class History(object):
         """Get the set of test names"""
         return set(
             list(
-                itertools.chain.from_iterable([[z["name"] for z in c["data"]["results"]]
-                                               for c in self._raw])))
+                itertools.chain.from_iterable(
+                    [[z["name"] for z in c["data"]["results"]] for c in self._raw])))
 
     def task(self):
         """Get the task that this history belongs to (as recorded in the history.json file)."""
