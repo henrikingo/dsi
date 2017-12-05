@@ -128,12 +128,12 @@ class RunTestTestCase(unittest.TestCase):
         with LogCapture() as log_capture:
             mock_frame.f_locals = {
                 'value': 'mock_value',
-                'target': 'on_mock_key',
+                'key': 'mock_key',
                 'command': 'mock_command'
             }
             mock_trace = ((None, None, None, "mock_top_function"), (mock_frame, None, None, None),
-                          (mock_frame, None, None, "run_host_command"), (None, "mock_file", -1,
-                                                                         "mock_bottom_function"))
+                          (mock_frame, None, None, "run_command"), (None, "mock_file", -1,
+                                                                    "mock_bottom_function"))
             mock_exception = Exception("mock_exception")
             print_trace(mock_trace, mock_exception)
             error_msg = "Exception originated in: mock_file:mock_bottom_function:-1\n"
@@ -170,12 +170,12 @@ class RunTestTestCase(unittest.TestCase):
             # LogCapture captures all log output into the object log_capture. level specifies which
             # log level to detect. logging.ERROR will cause log_capture to only contain logs
             # outputted with the ERROR level or higher. The patch on common.host.make_host mocks
-            # the function and is called within run_commands:
-            # (pre_task -> dispatch_commands -> run_host_command -> make_host)
+            # the function and is called within run_pre_post_commands:
+            # (pre_task -> execute_list -> run_command -> make_host)
             # The mock_function.side_effect causes it to raise an Exception causing print_trace
             # to log the proper information. mock_function will be called within run_command or
-            # _run_host_command_map depending on mock_command_dicts. run_pre_post_commands exits
-            # with code 1 on exception when given EXCEPTION_BEHAVIOR.EXIT, so self.assertRaises()
+            # _run_command_map depending on mock_command_dicts. run_pre_post_commands exits with
+            # code 1 on exception when given EXCEPTION_BEHAVIOR.EXIT, so self.assertRaises()
             # catches this. The asserts check if the mock_function, extract_hosts, and make_host
             # were called along with asserting the error code was 1.
             return_value = host.RemoteHost(None, None, None)
