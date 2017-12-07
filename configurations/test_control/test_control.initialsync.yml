@@ -171,7 +171,6 @@ run:
         sharded: ${mongodb_setup.meta.is_sharded}
         replica: ${mongodb_setup.meta.is_replset}
         scale_factor: ${mongodb_setup.meta.primaries}
-        test_list: initialsync_c_1_d_1_w_f
         third_node_addr: ${mongodb_setup.meta.third_node}
     pre_test: *pretest
     post_test: *posttest
