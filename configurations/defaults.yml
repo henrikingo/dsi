@@ -114,6 +114,16 @@ mongodb_setup:
         primaries: 1
         secondaries: 0  # Secondaries per shard
 
+    post_test:
+        - on_all_servers:
+              retrieve_files:
+                  data/logs/: ./
+        - on_mongod:
+              retrieve_files:
+                  data/dbs/diagnostic.data: ./diagnostic.data
+        - on_configsvr:
+              retrieve_files:
+                  data/dbs/diagnostic.data: ./diagnostic.data
     post_task:
         - on_all_servers:
             exec: |
@@ -131,22 +141,18 @@ mongodb_setup:
               sudo TMPDIR=./mdiag bash ./mdiag/mdiag.sh sys-perf
         - on_all_servers:
               retrieve_files:
-                  data/logs/: ./
                   mdiag/: ./
-        - on_mongod:
-              retrieve_files:
-                  data/dbs/diagnostic.data: ./diagnostic.data
-        - on_configsvr:
-              retrieve_files:
-                  data/dbs/diagnostic.data: ./diagnostic.data
 
 test_control:
     task_name: default_task_name
     jstests_dir: ./jstests/hooks
-    between_tests:
-        - restart_mongodb:
-              clean_logs: false
-              clean_db_dir: false
+    # Restarting mongodb after ycsb_load, gives a 10% and 5% boost to the following ycsb tests.
+    # Other than that, this works fine, but we want to postpone introducing a discontinuity
+    # until storage team is less actively focused on performance work.
+    # between_tests:
+    #     - restart_mongodb:
+    #           clean_logs: true
+    #           clean_db_dir: true
     mc:
       monitor_interval: 1
       per_thread_stats: "yes"

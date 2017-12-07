@@ -5,6 +5,8 @@ jstests_dir: ""
 
 run:
   # 5x fio tests ###########################################################################
+  # If PERF-1192 is implemented, using yaml templates to repeat a test will stop working,
+  # as ids will not be unique.
   - &fio
     id: fio-${mongodb_setup.mongod_config_file.storage.engine}
     type: shell
@@ -15,6 +17,12 @@ run:
       - on_workload_client:
           upload_files:
             fio.ini: fio.ini
+    # Note that the next fio.json file overwrites the previous one, so you only get the last
+    # This is harmless, as the file isn't really used for anything.
+    post_test:
+      - on_workload_client:
+          retrieve_files:
+            fio.json: ../fio.json
   - *fio
   - *fio
   - *fio
@@ -97,7 +105,11 @@ pre_task:
         mkdir YCSB
         tar zxvf ycsb.tar.gz -C YCSB
         source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && ./setup.sh
-post_task:
-  - on_workload_client:
-      retrieve_files:
-        fio.json: ../fio.json
+
+# Restarting mongodb after ycsb_load, gives a 10% and 5% boost to the following ycsb tests.
+# Other than that, this works fine, but we want to postpone introducing a discontinuity
+# until storage team is less actively focused on performance work.
+# between_tests:
+#   - restart_mongodb:
+#       clean_logs: true
+#       clean_db_dir: false

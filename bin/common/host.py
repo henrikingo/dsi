@@ -32,11 +32,14 @@ def repo_root():
     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
-def _run_host_command_map(target_host, command):
+def _run_host_command_map(target_host, command, current_test_id=None):
     ''' Run one command against a target host if the command is a mapping.
 
     :param Host target_host: The host to send the command to
     :param dict command: The command to execute
+    :param string current_test_id: Indicates the id for the test related to the current command. If
+    there is not a specific test related to the current command, the value of current_test_id will
+    be None.
     '''
     for key, value in command.iteritems():
         if key == "upload_repo_files":
@@ -50,8 +53,13 @@ def _run_host_command_map(target_host, command):
                 target_host.upload_file(local_file, remote_file)
         elif key == "retrieve_files":
             for remote_file, local_file in value.iteritems():
-                local_file = os.path.join('reports', target_host.alias,
-                                          os.path.normpath(local_file))
+                if current_test_id:
+                    local_file = os.path.join('reports', target_host.alias, current_test_id,
+                                              os.path.normpath(local_file))
+                else:
+                    local_file = os.path.join('reports', target_host.alias,
+                                              os.path.normpath(local_file))
+
                 LOG.debug('Retrieving file %s from %s', local_file, remote_file)
                 target_host.retrieve_path(local_file, remote_file)
         elif key == "exec":
@@ -65,7 +73,7 @@ def _run_host_command_map(target_host, command):
             raise Exception("Invalid command type")
 
 
-def _run_host_command(host_list, command, config):
+def _run_host_command(host_list, command, config, current_test_id=None):
     '''For each host in the list, make a parallelized call to make_host_runner to make the
     appropriate host and run the set of commands
 
@@ -74,7 +82,9 @@ def _run_host_command(host_list, command, config):
     command. If dict, type is one of upload_repo_files, upload_files,
     retrieve_files, exec, or exec_mongo_shell
     :param ConfigDict config: The system configuration
-
+    :param string current_test_id: Indicates the id for the test related to the current command. If
+    there is not a specific test related to the current command, the value of current_test_id will
+    be None.
     '''
     if not host_list:
         return
@@ -87,12 +97,12 @@ def _run_host_command(host_list, command, config):
     thread_commands = []
     for host_info in host_list:
         thread_commands.append(
-            partial(make_host_runner, host_info, command, ssh_user, ssh_key_file))
+            partial(make_host_runner, host_info, command, ssh_user, ssh_key_file, current_test_id))
 
     run_threads(thread_commands, daemon=True)
 
 
-def make_host_runner(host_info, command, ssh_user, ssh_key_file):
+def make_host_runner(host_info, command, ssh_user, ssh_key_file, current_test_id=None):
     '''For the host, make an appropriate RemoteHost or
     LocalHost Object and run the set of commands
 
@@ -103,7 +113,9 @@ def make_host_runner(host_info, command, ssh_user, ssh_key_file):
     :param str/dict command: The command to execute. If str, run that
     command. If dict, type is one of upload_repo_files, upload_files,
     retrieve_files, exec, or exec_mongo_shell
-
+    :param string current_test_id: Indicates the id for the test related to the current command. If
+    there is not a specific test related to the current command, the value of current_test_id will
+    be None.
     '''
     # Create the appropriate host type
     target_host = make_host(host_info, ssh_user, ssh_key_file)
@@ -114,7 +126,7 @@ def make_host_runner(host_info, command, ssh_user, ssh_key_file):
 
     # If command is a dictionary, parse it
     elif isinstance(command, MutableMapping):
-        _run_host_command_map(target_host, command)
+        _run_host_command_map(target_host, command, current_test_id)
 
 
 def make_host(host_info, ssh_user, ssh_key_file):
@@ -175,17 +187,20 @@ def extract_hosts(key, config):
     return _extract_hosts(key, config)
 
 
-def run_host_command(target, command, config):
+def run_host_command(target, command, config, current_test_id=None):
     ''' Sets up and runs a command for use on the appropriate hosts
     :param string target: The target to run the command on.
     :param dict command: The action to run.
     :param dict(ConfigDict) config: The system configuration.
+    :param string current_test_id: Indicates the id for the test related to the current command. If
+    there is not a specific test related to the current command, the value of current_test_id will
+    be None.
     '''
 
     assert target.startswith('on_')
     target = target[3:]
     hosts = extract_hosts(target, config)
-    _run_host_command(hosts, command, config)
+    _run_host_command(hosts, command, config, current_test_id)
 
 
 class Host(object):

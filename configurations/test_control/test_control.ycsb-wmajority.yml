@@ -24,6 +24,7 @@ run:
       - on_workload_client:
           upload_files:
             workloadEvergreen: YCSB/ycsb-mongodb/workloads/workloadEvergreen
+
   - id: ycsb_95read5update_w_majority
     type: ycsb
     cmd: >
@@ -48,6 +49,7 @@ run:
       - on_workload_client:
           upload_files:
             workloadEvergreen_95read5update: YCSB/ycsb-mongodb/workloads/workloadEvergreen_95read5update
+
   - id: ycsb_95read5update_single_w_majority
     type: ycsb
     cmd: >
@@ -57,6 +59,7 @@ run:
       -threads 1
       -p maxexecutiontime=600;
       sleep 1;
+
   - id: ycsb_50read50update_w_majority
     type: ycsb
     cmd: >
@@ -82,6 +85,7 @@ run:
       - on_workload_client:
           upload_files:
             workloadEvergreen_50read50update: YCSB/ycsb-mongodb/workloads/workloadEvergreen_50read50update
+
   - id: ycsb_50read50update_single_w_majority
     type: ycsb
     cmd: >
@@ -101,9 +105,18 @@ run:
       - on_workload_client:
           upload_files:
             fio.ini: fio.ini
+    post_test:
+      - on_workload_client:
+          retrieve_files:
+            fio.json: ../fio.json
+
   - id: iperf
     type: shell
     cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    post_test:
+      - on_workload_client:
+          retrieve_files:
+            iperf.json: ../iperf.json
 
 thread_levels:
   load:
@@ -163,8 +176,11 @@ pre_task:
         ./configure
         make
         sudo make install
-post_task:
-  - on_workload_client:
-      retrieve_files:
-        fio.json: ../fio.json
-        iperf.json: ../iperf.json
+
+# Restarting mongodb after ycsb_load, gives a 10% and 5% boost to the following ycsb tests.
+# Other than that, this works fine, but we want to postpone introducing a discontinuity
+# until storage team is less actively focused on performance work.
+# between_tests:
+#   - restart_mongodb:
+#       clean_logs: true
+#       clean_db_dir: false

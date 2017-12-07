@@ -60,7 +60,11 @@ def copy_perf_output():
             LOG.info(line)
 
 
-def run_pre_post_commands(command_key, command_dicts, config, exception_behavior):
+def run_pre_post_commands(command_key,
+                          command_dicts,
+                          config,
+                          exception_behavior,
+                          current_test_id=None):
     ''' Runs all commands with the specified command key. If exit on exception is
     true, exit from the script. Otherwise, print the trace and continue.
 
@@ -71,11 +75,14 @@ def run_pre_post_commands(command_key, command_dicts, config, exception_behavior
     :param dict(ConfigDict) config: The system configuration.
     :param EXCEPTION_BEHAVIOR exception_behavior: Indicates the proper action to take upon catching
     an exception.
+    :param string current_test_id: Indicates the id for the test related to the current set of
+    commands. If there is not a specific test related to the current set of commands, the value of
+    current_test_id will be None.
     '''
     for command_dict in command_dicts:
         if command_key in command_dict:
             try:
-                dispatch_commands(command_key, command_dict[command_key], config)
+                dispatch_commands(command_key, command_dict[command_key], config, current_test_id)
             except Exception as exception:  #pylint: disable=broad-except
                 print_trace(inspect.trace(), exception)
                 if exception_behavior == EXCEPTION_BEHAVIOR.RERAISE:
@@ -89,13 +96,16 @@ def run_pre_post_commands(command_key, command_dicts, config, exception_behavior
                     LOG.error("Invalid exception_behavior entry")
 
 
-def dispatch_commands(command_key, command_list, config):
+def dispatch_commands(command_key, command_list, config, currrent_test_id=None):
     ''' Routes commands to the appropriate command runner. The command runner will run the command.
 
     :param string command_key: The key to use to find a command list to execute in each of the
     command_dicts. Used for error handling only.
     :param list(dict) command_list: A list of commands to run
     :param dict(ConfigDict) config: The system configuration.
+    :param string current_test_id: Indicates the id for the test related to the current set of
+    commands. If there is not a specific test related to the current set of commands, the value of
+    current_test_id will be None.
     '''
     for item in command_list:
         # Item should be a map with one entry
@@ -103,7 +113,7 @@ def dispatch_commands(command_key, command_list, config):
         assert len(item.keys()) == 1, 'item has more than one entry'
         for target, command in item.iteritems():
             if target.startswith('on_'):
-                run_host_command(target, command, config)
+                run_host_command(target, command, config, currrent_test_id)
             elif target == "restart_mongodb":
                 mongo_controller = mongodb_setup.MongodbSetup(config)
                 clean_db_dir = command['clean_db_dir']
@@ -256,7 +266,7 @@ def main(argv):
                                                   config, EXCEPTION_BEHAVIOR.RERAISE)
                         run_pre_post_commands('pre_test',
                                               [mongodb_setup_config, test_control_config, test],
-                                              config, EXCEPTION_BEHAVIOR.RERAISE)
+                                              config, EXCEPTION_BEHAVIOR.RERAISE, test['id'])
 
                         subprocess.check_call(
                             [
@@ -267,7 +277,7 @@ def main(argv):
                     finally:
                         run_pre_post_commands('post_test',
                                               [test, test_control_config, mongodb_setup_config],
-                                              config, EXCEPTION_BEHAVIOR.CONTINUE)
+                                              config, EXCEPTION_BEHAVIOR.CONTINUE, test['id'])
 
             finally:
                 run_pre_post_commands('post_task', [test_control_config, mongodb_setup_config],

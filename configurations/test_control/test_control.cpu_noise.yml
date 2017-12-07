@@ -24,6 +24,15 @@ run:
       - on_workload_client:
           upload_files:
             workloads.yml: workloads/workloads.yml
+    post_test:
+      - on_workload_client:
+          retrieve_files:
+            workloads/workload_timestamps.csv: ../workloads_timestamps.csv
+      # For running cpu_noise.js on all servers:
+      - on_workload_client:
+          retrieve_files:
+            workloads/remote_workload_timestamps.csv: ../remote_workloads_timestamps.csv
+
 pre_task:
   - on_localhost:
       exec: $DSI_PATH/bin/setup-workloads.sh
@@ -46,16 +55,3 @@ pre_task:
         rm -rf workloads
         mkdir workloads
         tar zxvf workloads.tar.gz -C workloads
-
-post_task:
-  - on_workload_client:
-      retrieve_files:
-        workloads/workload_timestamps.csv: ../workloads_timestamps.csv
-  # For running cpu_noise.js on all servers:
-  - on_workload_client:
-      retrieve_files:
-        workloads/remote_workload_timestamps.csv: ../remote_workloads_timestamps.csv
-#    This will work after Jim's PERF-713 comes in. The retrieved files need to land in separate dirs.
-#  - on_mongod:
-#      retrieve_files:
-#        workloads/workload_timestamps.csv: workloads_timestamps.csv

@@ -32,6 +32,11 @@ run:
       - on_workload_client:
           upload_files:
             workloads.yml: workloads/workloads.yml
+    post_test:
+      - on_workload_client:
+          retrieve_files:
+            workloads/workload_timestamps.csv: ../workloads_timestamps.csv
+
   - id: fio
     type: shell
     cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
@@ -41,9 +46,17 @@ run:
       - on_workload_client:
           upload_files:
             fio.ini: fio.ini
+    post_test:
+      - on_workload_client:
+          retrieve_files:
+            fio.json: ../fio.json
   - id: iperf
     type: shell
     cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    post_test:
+      - on_workload_client:
+          retrieve_files:
+            iperf.json: ../iperf.json
 
 pre_task:
   - on_localhost:
@@ -75,9 +88,3 @@ pre_task:
         ./configure
         make
         sudo make install
-post_task:
-  - on_workload_client:
-      retrieve_files:
-        workloads/workload_timestamps.csv: ../workloads_timestamps.csv
-        fio.json: ../fio.json
-        iperf.json: ../iperf.json

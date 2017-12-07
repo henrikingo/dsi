@@ -37,6 +37,11 @@ run:
       - on_workload_client:
           upload_files:
             workloads.yml: workloads/workloads.yml
+    post_test:
+      - on_workload_client:
+          retrieve_files:
+            workloads/workload_timestamps.csv: ../workloads_timestamps.csv
+
 # Disable jstest validations, it just takes too long to run it for this test.
 jstests_dir: ""
 mc:
@@ -67,6 +72,3 @@ post_task:
       exec: |
         killall -9 mongoreplay
         killall -9 mongoreplay
-  - on_workload_client:
-      retrieve_files:
-        workloads/workload_timestamps.csv: ../workloads_timestamps.csv

@@ -18,9 +18,11 @@ run:
       - on_workload_client:
           upload_files:
             workloadLongevity: YCSB/ycsb-mongodb/workloads/workloadLongevity
+
   - id: ycsb_50read50update
     type: ycsb
     "cmd": "cd YCSB/ycsb-mongodb; ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s -P workloads/workloadLongevity -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64 -p maxexecutiontime=86400; sleep 1"
+
   - id: fio
     type: shell
     cmd: ' ${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
@@ -30,9 +32,18 @@ run:
       - on_workload_client:
           upload_files:
             fio.ini: fio.ini
+    post_test:
+      - on_workload_client:
+          retrieve_files:
+            fio.json: ../fio.json
+
   - id: iperf
     type: shell
     cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    post_test:
+      - on_workload_client:
+          retrieve_files:
+            iperf.json: ../iperf.json
 
 mc:
   monitor_interval: 10
@@ -81,6 +92,15 @@ pre_task:
         ./configure
         make
         sudo make install
+
+# Restarting mongodb after ycsb_load, gives a 10% and 5% boost to the following ycsb tests.
+# Other than that, this works fine, but we want to postpone introducing a discontinuity
+# until storage team is less actively focused on performance work.
+# between_tests:
+#   - restart_mongodb:
+#       clean_logs: true
+#       clean_db_dir: false
+
 post_task:
   - on_workload_client:
       retrieve_files:

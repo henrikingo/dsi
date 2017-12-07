@@ -85,6 +85,10 @@ run:
       - on_workload_client:
           upload_files:
             workloads.yml: workloads/workloads.yml  # This is redundant with the run-initial sync script
+    post_test:
+      - on_workload_client:
+          retrieve_files:
+            workloads/workload_timestamps.csv: ../workloads_timestamps.csv
 pre_task:
   # - on_all_hosts:
   #     # Install iperf. It isn't available in yum on AWS instances
@@ -114,9 +118,3 @@ pre_task:
         rm -rf workloads
         mkdir workloads
         tar zxvf workloads.tar.gz -C workloads
-post_task:
-  - on_workload_client:
-      retrieve_files:
-        workloads/workload_timestamps.csv: ../workloads_timestamps.csv
-        # fio.json: ../fio.json
-        # iperf.json: ../iperf.json
