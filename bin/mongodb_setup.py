@@ -309,6 +309,8 @@ class MongoNode(object):
     def destroy(self):
         """Kills the remote mongo program."""
         self.host.kill_mongo_procs()
+        # Clean up any old lock files. Server shouldn't be running at this point.
+        self.host.run(['rm', '-rf', os.path.join(self.dbdir, 'mongod.lock')])
 
     def close(self):
         """Closes SSH connections to remote hosts."""
@@ -696,28 +698,19 @@ class MongodbSetup(object):
         """
         # _start() always calls shutdown() and destroy()
         return self._start(
-            skip_download=True,
-            restart_clean_db_dir=clean_db_dir,
-            restart_clean_logs=clean_logs,
-            restart_mongodb=True)
+            is_restart=True, restart_clean_db_dir=clean_db_dir, restart_clean_logs=clean_logs)
 
-    def _start(self,
-               skip_download=False,
-               restart_clean_db_dir=None,
-               restart_clean_logs=None,
-               restart_mongodb=False):
+    def _start(self, is_restart=False, restart_clean_db_dir=None, restart_clean_logs=None):
         """Shutdown and destroy. Then start all clusters.
-        :param skip_download:       True if we should skip attempting to download and extract
-        binaries.
+        :param is_restart      This is a restart of the cluster, not the first start.
         :param restart_clean_db_dir Should we clean db dir. If not specified, uses value from
         ConfigDict.
         :param restart_clean_logs   Should we clean logs and diagnostic data. If not specified,
         uses value from ConfigDict.
-        :param restart_mongodb      This is a restart of the cluster, not the first start.
         """
         self.shutdown()
         self.destroy()
-        if not skip_download:
+        if not is_restart:
             # The downloader will download MongoDB binaries if a URL was provided in the
             # ConfigDict.
             if not self.downloader.download_and_extract():
@@ -729,9 +722,9 @@ class MongodbSetup(object):
                         partial(
                             self.start_cluster,
                             cluster=cluster,
+                            is_restart=is_restart,
                             restart_clean_db_dir=restart_clean_db_dir,
-                            restart_clean_logs=restart_clean_logs,
-                            restart_mongodb=restart_mongodb) for cluster in self.clusters
+                            restart_clean_logs=restart_clean_logs) for cluster in self.clusters
                     ],
                     daemon=True)):
             LOG.error("Could not start clusters in _start. Shutting down...")
@@ -740,16 +733,14 @@ class MongodbSetup(object):
         return True
 
     @staticmethod
-    def start_cluster(cluster,
-                      restart_clean_db_dir=None,
-                      restart_clean_logs=None,
-                      restart_mongodb=False):
+    def start_cluster(cluster, is_restart=False, restart_clean_db_dir=None,
+                      restart_clean_logs=None):
         """Start cluster
+        :param is_restart      This is a restart of the cluster, not the first start.
         :param restart_clean_db_dir Should we clean db dir. If not specified, uses value from
         ConfigDict.
         :param restart_clean_logs   Should we clean logs and diagnostic data. If not specified,
         uses value from ConfigDict.
-        :param restart_mongodb      This is a restart of the cluster, not the first start.
         """
         LOG.info('-' * 72)
         LOG.info('starting topology: %s', cluster)
@@ -758,7 +749,7 @@ class MongodbSetup(object):
             LOG.error("Could not setup host in start_cluster")
             return False
         # Don't initialize if restarting mongodb and keeping (not cleaning) the db dir
-        initialize = not (restart_mongodb and not restart_clean_db_dir)
+        initialize = not (is_restart and not restart_clean_db_dir)
         if not cluster.launch(initialize):
             LOG.error("Could not launch cluster in start_cluster")
             return False
