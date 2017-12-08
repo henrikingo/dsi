@@ -1,6 +1,6 @@
 """Tests for bin/common/host.py"""
 
-#pylint: disable=wrong-import-position, wrong-import-order
+# pylint: disable=wrong-import-position, wrong-import-order
 
 import os
 import sys
@@ -8,16 +8,20 @@ import unittest
 import logging
 import re
 
-from mock import patch
-from testfixtures import LogCapture
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 from config import ConfigDict
 import host
 from run_test import EXCEPTION_BEHAVIOR
 from run_test import copy_timeseries
 from run_test import print_trace
 from run_test import run_pre_post_commands
+
+from mock import patch, mock_open, Mock, MagicMock
+from testfixtures import LogCapture
+
+from bin.run_test import BackgroundCommand, start_background_tasks
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 
 
 class RunTestTestCase(unittest.TestCase):
@@ -200,7 +204,7 @@ class RunTestTestCase(unittest.TestCase):
         list_errors = list(log_capture.actual())  # Get actual string held by loc_capture object
         self.assertRegexpMatches(list_errors[0][2], error_pattern)
 
-    #pylint: disable=no-value-for-parameter
+    # pylint: disable=no-value-for-parameter
     # pylint is confused by the patch decorator on help_test_trace_function()
     @patch('host.RemoteHost.upload_file')
     def test_print_trace_upload_file(self, mock_upload_file):
@@ -247,7 +251,49 @@ class RunTestTestCase(unittest.TestCase):
         }, {}]
         self.help_trace_function(mock_create_file, mock_command_dicts)
 
-    #pylint: enable=no-value-for-parameter
+    # pylint: disable=no-self-use
+    @patch("host.RemoteHost")
+    @patch("os.makedirs")
+    def test_background_command_run(self, mock_makedirs, mock_host):
+        """ Test BackgroundCommand run"""
+        subject = BackgroundCommand(mock_host, 'command', 'dirname/basename')
+
+        with patch('bin.run_test.open', mock_open()) as mock_file:
+            mock_out = mock_file.return_value
+            subject.run()
+            mock_file.assert_called_with('dirname/basename', 'wb+', 0)
+            mock_makedirs.assert_called_with('dirname')
+            mock_host.exec_command.assert_called_with(
+                'command', out=mock_out, err=mock_out, pty=True)
+
+    # pylint: disable=no-self-use
+    @patch("host.RemoteHost")
+    def test_background_command_stop(self, mock_host):
+        """ Test BackgroundCommand  stop"""
+        subject = BackgroundCommand(mock_host, 'command', 'dirname/basename')
+        subject.stop()
+        mock_host.close.assert_called_once()
+
+    # pylint: disable=unused-argument
+    @patch('bin.run_test.make_host')
+    @patch('bin.run_test.extract_hosts')
+    def test_start_background_tasks(self, mock_extract_hosts, mock_make_host):
+        """ Test start_background_tasks"""
+        test_id = 'benchRun'
+
+        with patch('bin.run_test.BackgroundCommand'):
+
+            command_dict = self.config['test_control']['run'][0]
+            command_dict.keys = MagicMock(side_effect=lambda: [])
+
+            self.assertEqual(start_background_tasks(self.config, command_dict, test_id), [])
+
+        with patch('bin.run_test.BackgroundCommand'):
+            command_dict = self.config['test_control']['run'][0]
+            mock_make_host.return_value = Mock()
+            self.assertTrue(len(start_background_tasks(self.config, command_dict, test_id)), 3)
+
+    # pylint: enable=no-value-for-parameter
 
 
 if __name__ == '__main__':

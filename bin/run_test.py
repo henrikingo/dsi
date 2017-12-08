@@ -2,6 +2,7 @@
 """ Test runner in DSI Framework """
 
 from __future__ import print_function
+
 from collections import MutableMapping
 import argparse
 import copy
@@ -11,10 +12,12 @@ import shutil
 import subprocess
 import sys
 import inspect
+import threading
 from enum import Enum
 
+from common.utils import mkdir_p
 from common.config import ConfigDict
-from common.host import extract_hosts, run_host_command
+from common.host import extract_hosts, make_host, run_host_command
 from common.log import setup_logging
 import config_test_control
 import mongodb_setup
@@ -57,7 +60,7 @@ def copy_perf_output():
     # Read perf.json into the log file
     with open('../perf.json') as perf_file:
         for line in perf_file:
-            LOG.info(line)
+            LOG.info(line.rstrip())
 
 
 def run_pre_post_commands(command_key,
@@ -197,6 +200,84 @@ def copy_timeseries(config):
                 shutil.copyfile(source, destination)
 
 
+class BackgroundCommand(object):
+    """ create a command that can be run in the background"""
+
+    def __init__(self, host, command, filename):
+        """
+
+        :param RemoteHost  host: the remote host to run the command on. This host will be closed
+        at the end of it's life span so must not be used for anything else.
+        :param string or list command: the shell command to execute.
+        :param string filename: the location to write the logs to. Any missing directories will be
+        created. The file will be closed on completion of the command or when close is called.
+        """
+        self.host = host
+        self.command = command
+        self.filename = filename
+
+    def run(self):
+        """ run the command. no checking is done with this instance. If it is called multiple times
+        it will attempt to run multiple times. As host is closed, only the first call will succeed.
+
+        The file is opened with 'wb+' so previous contents will be lost. """
+        # 0 => no buffering
+        mkdir_p(os.path.dirname(self.filename))
+        with open(self.filename, 'wb+', 0) as out:
+            self.host.exec_command(self.command, out=out, err=out, pty=True)
+
+    def stop(self):
+        """ stop the process, by closing the connnection to the host. This
+         works because of the pty=True in the exec_comand call."""
+        self.host.close()
+
+
+# pylint: disable=too-many-locals
+def start_background_tasks(config, command_dict, test_id, reports_dir='./reports'):
+    """
+    create any directories that are required and then evaluate the list of background task.
+    :param dict(configDic) config: the overall configuration.
+    :param dict command_dict: the command dict.
+    :param string test: the name of the current test.
+    :param string reports_dir: the report directory.
+    """
+    background_tasks = []
+    if 'background_tasks' not in command_dict:
+        LOG.info('%s BackgroundTask:map {}', test_id)
+    else:
+        background_tasks_spec = command_dict['background_tasks']
+        LOG.info('%s BackgroundTask:map %s', test_id, background_tasks_spec)
+        task_name = config['test_control']['task_name']
+        ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+        ssh_key_file = os.path.expanduser(ssh_key_file)
+        ssh_user = config['infrastructure_provisioning']['tfvars']['ssh_user']
+
+        for name, command in background_tasks_spec.iteritems():
+            # only a single workload_client is currently possible
+            host_info = extract_hosts('workload_client', config)[0]
+            remote_host = make_host(host_info, ssh_user, ssh_key_file)
+            basename = "{}.log--{}@{}".format(name, remote_host.user, remote_host.alias)
+            filename = os.path.join(reports_dir, task_name, test_id, basename)
+            background = BackgroundCommand(remote_host, command, filename)
+            thread = threading.Thread(target=background.run)
+            thread.daemon = True
+            thread.start()
+
+            background_tasks.append(background)
+
+    return background_tasks
+
+
+def stop_background_tasks(background_tasks):
+    """ stop all the background tasks """
+    if background_tasks:
+        LOG.info('stopping %s BackgroundTask%s', len(background_tasks),
+                 "" if len(background_tasks) == 1 else "")
+
+        for background_task in background_tasks:
+            background_task.stop()
+
+
 def main(argv):
     ''' Main function. Parse command line options, and run tests '''
     parser = argparse.ArgumentParser(description='DSI Test runner')
@@ -246,6 +327,7 @@ def main(argv):
             LOG.warning("Found old perf.json file. Overwriting.")
 
         for index, test in enumerate(test_control_config['run']):
+            background_tasks = []
             try:
                 # Generate the mc.json file for this test only. Save it to unique name
                 config_test_control.generate_mc_json(test_index=index)
@@ -258,6 +340,7 @@ def main(argv):
                                           EXCEPTION_BEHAVIOR.RERAISE)
                 run_pre_post_commands('pre_test', [mongodb_setup_config, test_control_config, test],
                                       config, EXCEPTION_BEHAVIOR.RERAISE, test['id'])
+                background_tasks = start_background_tasks(config, test, test['id'])
 
                 subprocess.check_call(
                     [
@@ -266,6 +349,7 @@ def main(argv):
                     ],
                     env=env)
             finally:
+                stop_background_tasks(background_tasks)
                 run_pre_post_commands('post_test',
                                       [test, test_control_config, mongodb_setup_config], config,
                                       EXCEPTION_BEHAVIOR.CONTINUE, test['id'])

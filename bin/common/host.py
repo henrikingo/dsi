@@ -4,7 +4,9 @@ from functools import partial
 import itertools
 import logging
 import os
+import select
 import shutil
+import signal
 import socket
 from stat import S_ISDIR
 import subprocess
@@ -12,18 +14,31 @@ import time
 
 import paramiko
 
+from common.log import IOLogAdapter
 from thread_runner import run_threads
 
 HostInfo = namedtuple('HostInfo', ['ip_or_name', 'category', 'offset'])
 
 LOG = logging.getLogger(__name__)
+INFO_ADAPTER = IOLogAdapter(LOG, logging.INFO)
+ERROR_ADAPTER = IOLogAdapter(LOG, logging.ERROR)
 
 
-def log_lines(level, lines):
-    """Logs a list of lines without trailing whitespace"""
-    for line in lines:
-        if line:
-            LOG.log(level, line.rstrip())
+# https://stackoverflow.com/questions/23064636/python-subprocess-popen-blocks-with-shell-and-pipe
+def restore_signals():
+    """ restore signals in the child process or the process block forever"""
+    signals = ('SIGPIPE', 'SIGXFZ', 'SIGXFSZ')
+    for sig in signals:
+        if hasattr(signal, sig):
+            signal.signal(getattr(signal, sig), signal.SIG_DFL)
+
+
+def close_safely(stream):
+    ''' close the stream
+    :parameter object stream: the stream instance or None
+    '''
+    if stream is not None:
+        stream.close()
 
 
 def repo_root():
@@ -36,9 +51,6 @@ def _run_host_command_map(target_host, command, current_test_id=None):
 
     :param Host target_host: The host to send the command to
     :param dict command: The command to execute
-    :param string current_test_id: Indicates the id for the test related to the current command. If
-    there is not a specific test related to the current command, the value of current_test_id will
-    be None.
     '''
     for key, value in command.iteritems():
         if key == "upload_repo_files":
@@ -69,7 +81,7 @@ def _run_host_command_map(target_host, command, current_test_id=None):
             connection_string = value.get('connection_string', "")
             target_host.exec_mongo_command(value['script'], connection_string=connection_string)
         else:
-            raise Exception("Invalid command type")
+            raise UserWarning("Invalid command type")
 
 
 def _run_host_command(host_list, command, config, current_test_id=None):
@@ -118,19 +130,24 @@ def make_host_runner(host_info, command, ssh_user, ssh_key_file, current_test_id
     '''
     # Create the appropriate host type
     target_host = make_host(host_info, ssh_user, ssh_key_file)
+    try:
+        # If command is a string, pass it directly to run
+        if isinstance(command, str):
+            target_host.run(command)
 
-    # If command is a string, pass it directly to run
-    if isinstance(command, str):
-        target_host.run(command)
-
-    # If command is a dictionary, parse it
-    elif isinstance(command, MutableMapping):
-        _run_host_command_map(target_host, command, current_test_id)
+        # If command is a dictionary, parse it
+        elif isinstance(command, MutableMapping):
+            _run_host_command_map(target_host, command, current_test_id)
+    finally:
+        target_host.close()
 
 
 def make_host(host_info, ssh_user, ssh_key_file):
     '''
-    Create a host object based off of host_ip_or_name.
+    Create a host object based off of host_ip_or_name. The code that receives the host is
+    responsible for calling close on the host instance. Each RemoteHost instance can have 2*n+1 open
+    sockets (where n is the number of exec_command calls with Pty=True) otherwise n is 1 so there
+    is a max of 3 open sockets.
 
     :param namedtuple host_info: Public IP address or the string localhost, category
     and offset
@@ -223,14 +240,24 @@ class Host(object):
     def alias(self, alias):
         self._alias = alias
 
-    def exec_command(self, argv):
-        """Execute the command and log the output."""
+    def exec_command(self, argv, out=None, err=None, pty=False):
+        """Execute the command and log the output.
+        :param string or list argv: the command to run.
+        :param IO out: standard out from the command is written to this IO. If None is supplied
+        then the INFO_ADAPTER will be used.
+        :param IO err: standard err from the command is written to this IO on error. If None is
+         supplied then the ERROR_ADAPTER will be used.
+        :param bool pty: only valied for remote commands. if pty is set to True, then the shell
+        command is executed in a pseudo terminal. As a result, the commands will be killed if the
+        host is closed.
+        """
         raise NotImplementedError()
 
     def run(self, argvs):
         """
         Runs a command or list of commands
-        :param argvs: The string to execute, or one argument vector or list of argv's [file, arg]
+        :param string or list argvs: The string to execute, or one argument vector or list of
+        argv's [file, arg]
         """
         if not argvs or not isinstance(argvs, (list, basestring)):
             raise ValueError("Argument must be a nonempty list or string.")
@@ -305,36 +332,61 @@ class RemoteHost(Host):
         self.ftp = ftp
         self.user = user
 
-    def exec_command(self, argv):
-        """Execute the command and log the output."""
+    def exec_command(self, argv, out=None, err=None, pty=False):
+        """Execute the argv command and log the output.
+        :param string or list argv: the command to execute.
+        :param bool pty: only valied for remote commands. if pty is set to True, then the shell
+        command is executed in a pseudo terminal. As a result, the commands will be killed if the
+        host is closed.
+        :param IO out: standard out from the command is written to this IO. If None is supplied
+        then the INFO_ADAPTER will be used.
+        :param IO err: standard err from the command is written to this IO on error. If None is
+         supplied then the ERROR_ADAPTER will be used.
+        :returns int the exit status of the command.
+        """
+        # pylint: disable=too-many-branches
         if not argv or not isinstance(argv, (list, basestring)):
             raise ValueError("Argument must be a nonempty list or string.")
 
-        command = ''
+        if out is None:
+            out = INFO_ADAPTER
+        if err is None:
+            err = ERROR_ADAPTER
+
         if isinstance(argv, list):
             command = ' '.join(argv)
         elif isinstance(argv, basestring):
             command = argv
 
         LOG.info('[%s@%s]$ %s', self.user, self.host, command)
+        stdin = None
+        stdout = None
+        stderr = None
+        exit_status = 1
         try:
-            stdin, stdout, stderr = self._ssh.exec_command(command)
+            stdin, stdout, stderr = self._ssh.exec_command(command, get_pty=pty)
+            stdin.channel.shutdown_write()
+            stdin.close()
+            # Stream the output of the command to the log
+            while not stdout.channel.exit_status_ready():
+                for line in stdout:
+                    out.write(line)
+            # Log the rest of stdout and stderr
+            for line in stdout:
+                out.write(line)
+            exit_status = stdout.channel.recv_exit_status()
+            if exit_status != 0:
+                for line in stderr:
+                    err.write(line)
+                LOG.warn('%s \'%s\': Failed with exit status %s', self.alias, command, exit_status)
+            stdout.close()
+            stderr.close()
         except paramiko.SSHException:
             LOG.exception('failed to exec command on %s@%s', self.user, self.host)
-            return 1
-        stdin.channel.shutdown_write()
-        stdin.close()
-        # Stream the output of the command to the log
-        while not stdout.channel.exit_status_ready():
-            log_lines(logging.INFO, [stdout.readline()])
-        # Log the rest of stdout and stderr
-        log_lines(logging.INFO, stdout.readlines())
-        exit_status = stdout.channel.recv_exit_status()
-        if exit_status != 0:
-            log_lines(logging.ERROR, stderr.readlines())
-            LOG.warn('Failed with exit status %s', exit_status)
-        stdout.close()
-        stderr.close()
+        finally:
+            close_safely(stdin)
+            close_safely(stdout)
+            close_safely(stderr)
         return exit_status
 
     def create_file(self, remote_path, file_contents):
@@ -426,16 +478,65 @@ class RemoteHost(Host):
         self.ftp.close()
 
 
+def _stream_proc_logs(proc, out, err, timeout=.5):
+    """ stream proc.stdout and proc.stderr to out and err
+    :param proc: the sub process
+    :param IO out: the proc.stdout stream destination.
+    :param IO err: the proc.stderr stream destination.
+    :param float timeout: wait for up to a max of this amount of seconds.
+    """
+    try:
+        # stream standard out
+        while True:
+
+            ready, _, _ = select.select((proc.stdout, proc.stderr), (), (), timeout)
+
+            if proc.stdout in ready:
+                line = proc.stdout.readline()
+                if line:
+                    out.write(line)
+                elif proc.returncode is not None:
+                    # The program has exited, and we have read everything written to stdout
+                    ready.remove(proc.stdout)
+
+            if proc.stderr in ready:
+                line = proc.stderr.readline()
+                if line:
+                    err.write(line)
+                elif proc.returncode is not None:
+                    # The program has exited, and we have read everything written to stderr
+                    ready.remove(proc.stderr)
+
+            if proc.poll() is not None and not ready:
+                break
+    # closed stream
+    except ValueError:
+        pass
+
+
 class LocalHost(Host):
     """Represents a connection to the local host."""
 
     def __init__(self):
         super(LocalHost, self).__init__("localhost")
 
-    def exec_command(self, argv):
-        """Execute the command and log the output."""
+    def exec_command(self, argv, out=None, err=None, pty=False):
+        """Execute the command and log the output.
+        :type argv: string or list containing the command to execute
+        :param IO out: standard out from the command is written to this IO. If None is supplied
+        then the INFO_ADAPTER will be used.
+        :param IO err: standard err from the command is written to this IO on error. If None is
+         supplied then the ERROR_ADAPTER will be used.
+        :param bool pty: only valied for remote commands. if pty is set to True, then the shell
+        command is executed in a pseudo terminal. As a result, the commands will be killed if the
+        host is closed.
+        """
         if not argv or not isinstance(argv, (list, basestring)):
             raise ValueError("Argument must be a nonempty list or string.")
+        if out is None:
+            out = INFO_ADAPTER
+        if err is None:
+            err = ERROR_ADAPTER
 
         command = str(argv)
         if isinstance(argv, list):
@@ -443,13 +544,16 @@ class LocalHost(Host):
 
         LOG.info('[localhost]$ %s', command)
         proc = subprocess.Popen(
-            ['bash', '-c', command], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        for line in iter(proc.stdout.readline, b''):
-            LOG.info(line.rstrip())
-        # wait for the process to terminate
-        proc.communicate()
+            ['bash', '-c', command],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            preexec_fn=restore_signals)
+
+        _stream_proc_logs(proc, out, err)
+
         if proc.returncode != 0:
-            LOG.warn('failed with exit status %s', proc.returncode)
+            LOG.warn('%s \'%s\': Failed with exit status %s', self.alias, command,
+                     proc.returncode)
         return proc.returncode
 
     def create_file(self, remote_path, file_contents):

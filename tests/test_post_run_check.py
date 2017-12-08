@@ -1,21 +1,20 @@
 """
 Unit tests for `post_run_check.py`.
 """
+# pylint: disable=wrong-import-position, wrong-import-order
 import os
 import unittest
-import errno
+
 import shutil
 
+import sys
+
+from common.utils import mkdir_p, touch
+
+sys.path.append(
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "analysis"))
 import post_run_check
 from tests import test_utils
-
-
-def touch(filename):
-    """ create an empty file (like shell touch command). It will not
-    create directories
-    :type filename: string the full path to the filename
-    """
-    open(filename, 'a').close()
 
 
 class TestPostRunCheck(unittest.TestCase):
@@ -98,18 +97,6 @@ class TestPostRunCheck(unittest.TestCase):
         """
         test check_core_file_exists directly.
         """
-
-        def mkdir_p(path):
-            """ make the directory and all missing parents (like mkdir -p)
-            :type path: string the directory path
-            """
-            try:
-                os.makedirs(path)
-            except OSError as exc:  # Python >2.5
-                if exc.errno == errno.EEXIST and os.path.isdir(path):
-                    pass
-                else:
-                    raise
 
         def check_failures(results, expected):
             """ helper to wrap called checks

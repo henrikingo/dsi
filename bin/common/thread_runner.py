@@ -8,9 +8,14 @@ example:
 """
 
 import Queue
+import logging
 import sys
 import threading
 import time
+
+
+# logging must have been setup else where
+LOG = logging.getLogger(__name__)
 
 
 def run_threads(commands, daemon=False):
@@ -58,4 +63,5 @@ def wrap(command, thread_results, thread_exceptions_bucket, stop_thread_executio
     try:
         thread_results.put(command())
     except Exception:  # pylint: disable=broad-except
+        LOG.warn("Unexpected exception in thread", exc_info=1)
         thread_exceptions_bucket.put(sys.exc_info())

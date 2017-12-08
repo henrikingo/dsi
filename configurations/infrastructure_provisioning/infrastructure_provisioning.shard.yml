@@ -13,7 +13,7 @@ tfvars:
     mongos_instance_type: c3.8xlarge
 
     configsvr_instance_count: 3
-    configsvr_instance_type: m3.xlarge
+    configsvr_instance_type: m5.xlarge
 
     workload_instance_count: 1
     workload_instance_type: c3.8xlarge

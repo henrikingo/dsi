@@ -59,11 +59,6 @@ def generate_mc_json(test_index=0):
     mc_test['run_id'] = test['id']
     mc_test['type'] = test['type']
     mc_test['cmd'] = test['cmd']
-
-    if 'background_tasks' in test:
-        # Background task defined
-        mc_test['background_tasks'] = test['background_tasks'].as_dict()
-
     mc_conf['runs'] = [mc_test]
 
     try:

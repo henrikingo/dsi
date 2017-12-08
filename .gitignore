@@ -33,6 +33,7 @@ venv
 # Python Shelve
 tests/unittest-files/override_responses
 tests/unittest-files/override_responses.gz
+bin/tests/unittest-files/*
 
 # PyCharm
 .idea
