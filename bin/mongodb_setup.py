@@ -310,7 +310,8 @@ class MongoNode(object):
         """Kills the remote mongo program."""
         self.host.kill_mongo_procs()
         # Clean up any old lock files. Server shouldn't be running at this point.
-        self.host.run(['rm', '-rf', os.path.join(self.dbdir, 'mongod.lock')])
+        if self.dbdir:
+            self.host.run(['rm', '-rf', os.path.join(self.dbdir, 'mongod.lock')])
 
     def close(self):
         """Closes SSH connections to remote hosts."""
