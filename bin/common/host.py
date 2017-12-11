@@ -552,8 +552,7 @@ class LocalHost(Host):
         _stream_proc_logs(proc, out, err)
 
         if proc.returncode != 0:
-            LOG.warn('%s \'%s\': Failed with exit status %s', self.alias, command,
-                     proc.returncode)
+            LOG.warn('%s \'%s\': Failed with exit status %s', self.alias, command, proc.returncode)
         return proc.returncode
 
     def create_file(self, remote_path, file_contents):

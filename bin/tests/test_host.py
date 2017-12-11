@@ -26,7 +26,6 @@ import host
 
 FakeStat = collections.namedtuple('FakeStat', 'st_mode')
 
-
 # Useful absolute directory paths.
 FIXTURE_DIR_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "unittest-files")
 
@@ -243,17 +242,21 @@ class HostTestCase(unittest.TestCase):
 
         # test exec_mongo_shell
         with patch('host.RemoteHost') as mongod:
-            command = {"exec_mongo_shell": {"script": "this is a script",
-                                            "connection_string": "connection string"}}
+            command = {
+                "exec_mongo_shell": {
+                    "script": "this is a script",
+                    "connection_string": "connection string"
+                }
+            }
             host._run_host_command_map(mongod, command)
-            mongod.exec_mongo_command.assert_called_once_with("this is a script",
-                                                              connection_string="connection string")
+            mongod.exec_mongo_command.assert_called_once_with(
+                "this is a script", connection_string="connection string")
 
         with patch('host.RemoteHost') as mongod:
             command = {"exec_mongo_shell": {"script": "this is a script"}}
             host._run_host_command_map(mongod, command)
-            mongod.exec_mongo_command.assert_called_once_with("this is a script",
-                                                              connection_string="")
+            mongod.exec_mongo_command.assert_called_once_with(
+                "this is a script", connection_string="")
 
     @patch('paramiko.SSHClient')
     def test_remote_host_isdir(self, mock_ssh):
@@ -319,7 +322,7 @@ class HostTestCase(unittest.TestCase):
         command = 'cat {filename} && tac {filename}  >&2; exit 1'.format(filename=self.filename)
         local.exec_command(command, out, err)
         self.assertEqual(out.getvalue(), "Hello\nWorld\n")
-        self.assertEqual(err.getvalue(), "World\nHello\n")# tac is cat backwards
+        self.assertEqual(err.getvalue(), "World\nHello\n")  # tac is cat backwards
 
         out = StringIO()
         err = StringIO()
@@ -612,8 +615,8 @@ class HostTestCase(unittest.TestCase):
             command = {}
             mock_target_host = Mock()
             mock_make_host.return_value = mock_target_host
-            make_host_runner("host_info", command, "ssh_user", "ssh_key_file",
-                             current_test_id='test_id')
+            make_host_runner(
+                "host_info", command, "ssh_user", "ssh_key_file", current_test_id='test_id')
             mock_make_host.assert_called_once_with("host_info", "ssh_user", "ssh_key_file")
             mock_run_host_command_map.assert_called_once_with(mock_target_host, command, 'test_id')
             mock_target_host.close.assert_called_once()
@@ -653,7 +656,7 @@ class HostTestCase(unittest.TestCase):
             mock_ssh = MagicMock(name='connection')
             mock_paramiko.return_value = mock_ssh
 
-            mock_ssh .connect.side_effect = socket.error()
+            mock_ssh.connect.side_effect = socket.error()
             host.RemoteHost('test_host', 'test_user', 'test_pem_file')
 
         # test other exceptions are thrown to caller
@@ -702,15 +705,15 @@ class HostTestCase(unittest.TestCase):
         # test list command failure
         subject.exec_command = MagicMock(name='exec_command')
         subject.exec_command.return_value = 0
-        self.assertTrue(
-            subject.run(['cowsay Hello World', 'cowsay moo']))
+        self.assertTrue(subject.run(['cowsay Hello World', 'cowsay moo']))
         subject.exec_command.assert_called_once_with(['cowsay Hello World', 'cowsay moo'])
 
     # pylint: disable=too-many-statements
     def test_exec_command(self):
         """Test exec_command"""
 
-        def _test_common(command='cowsay Hello World', expected='cowsay Hello World',
+        def _test_common(command='cowsay Hello World',
+                         expected='cowsay Hello World',
                          return_value=0):
             """ test common code with """
             remote_host = host.RemoteHost('test_host', 'test_user', 'test_pem_file')

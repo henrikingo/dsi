@@ -13,7 +13,6 @@ import sys
 import threading
 import time
 
-
 # logging must have been setup else where
 LOG = logging.getLogger(__name__)
 

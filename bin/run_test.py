@@ -271,8 +271,8 @@ def start_background_tasks(config, command_dict, test_id, reports_dir='./reports
 def stop_background_tasks(background_tasks):
     """ stop all the background tasks """
     if background_tasks:
-        LOG.info('stopping %s BackgroundTask%s', len(background_tasks),
-                 "" if len(background_tasks) == 1 else "")
+        LOG.info('stopping %s BackgroundTask%s', len(background_tasks), ""
+                 if len(background_tasks) == 1 else "")
 
         for background_task in background_tasks:
             background_task.stop()

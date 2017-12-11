@@ -24,6 +24,7 @@ class IOLogAdapter(StringIO):
     It derives from StringIO in order to get stubbed base implementations
     of methods like flush and close.
     """
+
     def __init__(self, logger, level=None):
         StringIO.__init__(self)
         self.logger = logger
