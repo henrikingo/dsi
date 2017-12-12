@@ -39722,10 +39722,11 @@
                     ]
                 },
                 "Aggregation.IdentityView.Lookup.UncorrelatedPrefixJoin":{
-                    "thread_threshold":0.195,
-                    "threshold":0.13,
+                    "thread_threshold":0.24,
+                    "threshold":0.16,
                     "ticket":[
-                        "BF-6884"
+                        "BF-6884",
+                        "BF-7379"
                     ]
                 },
                 "Aggregation.IdentityView.Lookup.UncorrelatedPrefixJoin.NoCache":{
