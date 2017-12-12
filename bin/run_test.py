@@ -6,14 +6,16 @@ from __future__ import print_function
 from collections import MutableMapping
 import argparse
 import copy
+from enum import Enum
+import inspect
 import logging
 import os
 import shutil
 import subprocess
 import sys
-import inspect
 import threading
-from enum import Enum
+
+from nose.tools import nottest
 
 from common.utils import mkdir_p
 from common.config import ConfigDict
@@ -278,22 +280,9 @@ def stop_background_tasks(background_tasks):
             background_task.stop()
 
 
-def main(argv):
-    ''' Main function. Parse command line options, and run tests '''
-    parser = argparse.ArgumentParser(description='DSI Test runner')
-
-    # These were left here for backward compatibility.
-    parser.add_argument('foo', help='Ignored', nargs='?')
-    parser.add_argument('bar', help='Ignored', nargs='?')
-    parser.add_argument('czar', help='Ignored', nargs='?')
-
-    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
-    parser.add_argument('--log-file', help='path to log file')
-    args = parser.parse_args(argv)
-    setup_logging(args.debug, args.log_file)
-    config = ConfigDict('test_control')
-    config.load()
-
+@nottest
+def run_tests(config):
+    """Main logic to run tests"""
     test_control_config = config['test_control']
     mongodb_setup_config = config['mongodb_setup']
 
@@ -363,6 +352,24 @@ def main(argv):
         subprocess.check_call(['chmod', '555', 'perf.json'])
 
         copy_perf_output()
+
+
+def main(argv):
+    ''' Main function. Parse command line options, and run tests '''
+    parser = argparse.ArgumentParser(description='DSI Test runner')
+
+    # These were left here for backward compatibility.
+    parser.add_argument('foo', help='Ignored', nargs='?')
+    parser.add_argument('bar', help='Ignored', nargs='?')
+    parser.add_argument('czar', help='Ignored', nargs='?')
+
+    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
+    parser.add_argument('--log-file', help='path to log file')
+    args = parser.parse_args(argv)
+    setup_logging(args.debug, args.log_file)
+    config = ConfigDict('test_control')
+    config.load()
+    run_tests(config)
 
 
 if __name__ == '__main__':

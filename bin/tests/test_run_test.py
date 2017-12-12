@@ -2,48 +2,113 @@
 
 # pylint: disable=wrong-import-position, wrong-import-order
 
+import copy
+import logging
 import os
+import re
 import sys
 import unittest
-import logging
-import re
 
-from config import ConfigDict
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
+
 import host
 from run_test import EXCEPTION_BEHAVIOR
 from run_test import copy_timeseries
 from run_test import print_trace
 from run_test import run_pre_post_commands
+from run_test import run_tests
 
-from mock import patch, mock_open, Mock, MagicMock
+from mock import patch, mock_open, Mock
 from testfixtures import LogCapture
 
 from bin.run_test import BackgroundCommand, start_background_tasks
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 
 
 class RunTestTestCase(unittest.TestCase):
     """ Unit Test for Host library """
 
     def setUp(self):
-        """ Init a ConfigDict object and load the configuration files from docs/config-specs/ """
-        self.old_dir = os.getcwd()  # Save the old path to restore Note
-        # that this chdir only works without breaking relative imports
-        # because it's at the same directory depth
-        os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/../../docs/config-specs/')
-        self.config = ConfigDict('mongodb_setup')
-        self.config.load()
-
-    def tearDown(self):
-        """ Restore working directory """
-        os.chdir(self.old_dir)
+        """Create a dict that looks like a ConfigDict object """
+        self.config = {
+            'infrastructure_provisioning': {
+                'tfvars': {
+                    'ssh_user': 'test_ssh_user',
+                    'ssh_key_file': 'mock/ssh/key/file'
+                },
+                'out': {
+                    'mongod': [
+                        {'public_ip': '53.1.1.1',
+                         'private_ip': '10.2.1.1'},
+                        {'public_ip': '53.1.1.9',
+                         'private_ip': '10.2.1.9'}
+                    ],
+                    'mongos': [
+                        {'public_ip': '53.1.1.102',
+                         'private_ip': '10.2.1.102'}
+                    ],
+                    'configsvr': [
+                        {'public_ip': '53.1.1.53',
+                         'private_ip': '10.2.1.53'}
+                    ],
+                    'workload_client': [
+                        {'public_ip': '53.1.1.101'}
+                    ]
+                }
+            },
+            'mongodb_setup': {
+                'post_test': [
+                    {'on_all_servers': {
+                        'retrieve_files': {
+                            'data/logs/': './'}
+                        }
+                    },
+                    {'on_mongod': {
+                        'retrieve_files': {
+                            'data/dbs/diagnostic.data': './diagnostic.data'}
+                        }
+                    },
+                    {'on_configsvr': {
+                        'retrieve_files': {
+                            'data/dbs/diagnostic.data': './diagnostic.data'}
+                        }
+                    }
+                ]
+            },
+            'test_control': {
+                'task_name': 'test_config',
+                'run': [
+                    {'id': 'benchRun',
+                     'type': 'shell',
+                     'cmd': '$DSI_PATH/workloads/run_workloads.py -c workloads.yml',
+                     'config_filename': 'workloads.yml',
+                     'workload_config':  'mock_workload_config'
+                    },
+                    {'id': 'ycsb_load',
+                     'type': 'ycsb',
+                     'cmd': 'cd YCSB/ycsb-mongodb; ./bin/ycsb load mongodb -s -P ' +
+                            'workloads/workloadEvergreen -threads 8; sleep 1;',
+                     'config_filename': 'workloadEvergreen',
+                     'workload_config': 'mock_workload_config'}
+                ],
+                'mc': {
+                    'monitor_interval': 10,
+                    'per_thread_stats': 1
+                },
+                'post_test': [
+                    {'on_workload_client': {
+                        'retrieve_files': {
+                            'workloads/workload_timestamps.csv': '../workloads_timestamps.csv'}
+                        }
+                    }
+                ]
+            }
+        } # yapf: disable
 
     @patch('os.walk')
     @patch('run_test.extract_hosts')
     @patch('shutil.copyfile')
-    def test__retrieve_file(self, mock_copyfile, mock_hosts, mock_walk):
+    def test_copy_timeseries(self, mock_copyfile, mock_hosts, mock_walk):
         """ Test run RunTest.copy_timeseries. """
 
         mock_walk.return_value = []
@@ -125,6 +190,18 @@ class RunTestTestCase(unittest.TestCase):
         self.assertTrue(
             mock_copyfile.called_with('/dirpath1/file1--10.0.0.1',
                                       'reports/mongod.1/matching-dirpath1'))
+
+    @patch('run_test.run_host_command')
+    def test_run_pre_post(self, mock_run_host_command):
+        """Test run_test.run_pre_post_commands()"""
+        command_dicts = [self.config['test_control'], self.config['mongodb_setup']]
+        run_pre_post_commands('post_test', command_dicts, self.config, EXCEPTION_BEHAVIOR.EXIT)
+
+        expected_args = ['on_workload_client', 'on_all_servers', 'on_mongod', 'on_configsvr']
+        observed_args = []
+        for args in mock_run_host_command.call_args_list:
+            observed_args.append(args[0][0])
+        self.assertEquals(observed_args, expected_args)
 
     @patch('types.FrameType')
     def test_print_trace_mock_exception(self, mock_frame):
@@ -279,21 +356,49 @@ class RunTestTestCase(unittest.TestCase):
     @patch('bin.run_test.extract_hosts')
     def test_start_background_tasks(self, mock_extract_hosts, mock_make_host):
         """ Test start_background_tasks"""
+        # Add some background tasks to our config
+        config = copy.deepcopy(self.config)
+        config['test_control']['run'][0]['background_tasks'] = {
+            'background_task_one': 'mock_background_task',
+            'background_task_two': 'mock_background_task',
+            'background_task_three': 'mock_background_task'
+        }
         test_id = 'benchRun'
 
         with patch('bin.run_test.BackgroundCommand'):
-
-            command_dict = self.config['test_control']['run'][0]
-            command_dict.keys = MagicMock(side_effect=lambda: [])
-
-            self.assertEqual(start_background_tasks(self.config, command_dict, test_id), [])
+            command_dict = config['test_control']['run'][1]
+            self.assertEqual(start_background_tasks(config, command_dict, test_id), [])
 
         with patch('bin.run_test.BackgroundCommand'):
-            command_dict = self.config['test_control']['run'][0]
+            command_dict = config['test_control']['run'][0]
             mock_make_host.return_value = Mock()
-            self.assertTrue(len(start_background_tasks(self.config, command_dict, test_id)), 3)
+            result = start_background_tasks(config, command_dict, test_id)
+            self.assertEqual(len(result), 3)
 
     # pylint: enable=no-value-for-parameter
+
+    @patch('run_test.config_test_control.generate_mc_json')
+    @patch('run_test.subprocess.check_call')
+    @patch('run_test.copy_perf_output')
+    @patch('run_test.run_pre_post_commands')
+    def test_run_tests(self, mock_pre_post, mock_copy_perf, mock_mc, mock_mc_json):
+        """Test run_tests (the top level workhorse for test_control)"""
+        run_tests(self.config)
+
+        # We will check that the calls to run_pre_post_commands() happened in expected order
+        expected_args = [
+            'pre_task', 'pre_test', 'post_test', 'between_tests', 'pre_test', 'post_test',
+            'post_task'
+        ]
+        observed_args = []
+        for args in mock_pre_post.call_args_list:
+            observed_args.append(args[0][0])
+        self.assertEqual(expected_args, observed_args)
+
+        # These are just throwaway mocks, pylint wants me to do something with them
+        mock_copy_perf.assert_called()
+        mock_mc.assert_called()
+        mock_mc_json.assert_called()
 
 
 if __name__ == '__main__':
