@@ -319,14 +319,17 @@ class HostTestCase(unittest.TestCase):
 
         out = StringIO()
         err = StringIO()
-        command = 'cat {filename} && tac {filename}  >&2; exit 1'.format(filename=self.filename)
+        command = """cat {filename} && cat -n {filename} >&2; \
+        exit 1""".format(filename=self.filename)
         local.exec_command(command, out, err)
         self.assertEqual(out.getvalue(), "Hello\nWorld\n")
-        self.assertEqual(err.getvalue(), "World\nHello\n")  # tac is cat backwards
+        self.assertEqual(err.getvalue(), "     1\tHello\n     2\tWorld\n")
 
         out = StringIO()
         err = StringIO()
-        command = "seq 1 10 | tac | xargs  -I % sh -c '{ echo %; sleep .1; }'; echo 'blast off!'"
+        command = "seq 10 -1 1 | xargs  -I % sh -c '{ echo %; sleep .1; }'; \
+        echo 'blast off!'"
+
         local.exec_command(command, out, err)
         self.assertEqual(out.getvalue(), "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\nblast off!\n")
         self.assertEqual(err.getvalue(), "")
