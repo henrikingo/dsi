@@ -658,17 +658,15 @@ def _get_whitelist_from_test_times(chunk, test_times=None):
 
 
 def db_correctness_analysis(dir_path):
-    """Recursively search `dir_path` for db-correctness directory. MC is responsible for running
-    these JS tests if the relevant scripts are present. As a result of the JS tests being run,
-    MC will create the db-correctness directory in addition to the db-hash-check &
-    validate-indexes-and-collections sub-directories to hold the resulting log files.
-    If such log files exist, this function finds and parses them.
-    TODO: For PERF-659, we might do a regex match on directories pre/suffixed with db-correctness.
-          This would occur if we ran db hash & validate after every test. We currently only do it
-          one time at the end of a whole task.
+    """Recursively search `dir_path` for db-correctness directory. test_control.py is responsible
+    for running these JS tests if the relevant scripts are present. As a result of the JS tests
+    being run, test_control.py will create the db-correctness directory in addition to the
+    db-hash-check & validate-indexes-and-collections sub-directories to hold the resulting log
+    files.  If such log files exist, this function finds and parses them.
 
     :type dir_path: str
     :rtype: list[dict], a list of result dictionaries to be written to report.json
+
     """
     find_directory = 'db-correctness'
     # The directories in db-correctness. Same as the name of the test on Evergreen.
@@ -679,8 +677,7 @@ def db_correctness_analysis(dir_path):
             path_to_target = os.path.join(root_directory, find_directory)
             for log_directory in db_correctness_log_directories:
                 path_to_directory = os.path.join(path_to_target, log_directory)
-                log_name = log_directory + '.' + os.path.basename(root_directory) + '.'
-                log_name = log_name + os.path.basename(os.path.dirname(root_directory))
+                log_name = log_directory + '.' + os.path.basename(root_directory)
                 if os.path.exists(path_to_directory):
                     log_files = os.listdir(path_to_directory)
                     if log_files:

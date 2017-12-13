@@ -14,6 +14,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/
 from config import ConfigDict  #pylint: disable=wrong-import-position,wrong-import-order
 
 
+#pylint: disable=too-many-public-methods
 class ConfigDictTestCase(unittest.TestCase):
     """Unit tests for ConfigDict library."""
 
@@ -178,6 +179,10 @@ class ConfigDictTestCase(unittest.TestCase):
             'insert_vector.js']['thread_levels']
         expected = [1, 8, 16]
         self.assertEqual(value, expected)
+
+    def test_variable_reference_in_list(self):
+        """Test ${variable.references} in a list"""
+        self.assertEqual(self.conf['mongodb_setup']['validate']['primaries'][0], "10.2.1.1:27017")
 
     def test_per_node_mongod_config(self):
         """Test magic per_node_mongod_config() (merging the common mongod_config_file with per node config_file)"""

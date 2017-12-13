@@ -19,3 +19,8 @@ meta:
   is_sharded: false
   is_replset: false
   mongodb_setup: standalone
+
+# Hosts to run correctness checks on.
+validate:
+  standalone:
+    - ${mongodb_setup.topology.0.private_ip}:27017

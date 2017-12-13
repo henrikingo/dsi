@@ -20,6 +20,7 @@ from nose.tools import nottest
 from common.utils import mkdir_p
 from common.config import ConfigDict
 from common.host import extract_hosts, make_host, run_host_command
+from common.jstests import run_validate
 from common.log import setup_logging
 import config_test_control
 import mongodb_setup
@@ -206,13 +207,15 @@ class BackgroundCommand(object):
     """ create a command that can be run in the background"""
 
     def __init__(self, host, command, filename):
-        """
+        """Note: This class only works with RemoteHost today, not the parent Host class. See
+        https://jira.mongodb.org/browse/PERF-1215
 
-        :param RemoteHost  host: the remote host to run the command on. This host will be closed
+        :param RemoteHost host: the remote host to run the command on. This host will be closed
         at the end of it's life span so must not be used for anything else.
         :param string or list command: the shell command to execute.
         :param string filename: the location to write the logs to. Any missing directories will be
         created. The file will be closed on completion of the command or when close is called.
+
         """
         self.host = host
         self.command = command
@@ -336,6 +339,7 @@ def run_tests(config):
                     env=env)
             finally:
                 stop_background_tasks(background_tasks)
+                run_validate(config, test['id'])
                 run_pre_post_commands('post_test',
                                       [test, test_control_config, mongodb_setup_config], config,
                                       EXCEPTION_BEHAVIOR.CONTINUE, test['id'])

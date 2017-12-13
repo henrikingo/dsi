@@ -391,25 +391,19 @@ class TestDBCorrectnessRules(unittest.TestCase):
         """
         log_dir = test_utils.fixture_file_path('core_workloads_reports')
         expected_results = [{
-            'status':
-                'pass',
-            'start':
-                0,
-            'log_raw': ('\nPassed db-hash-check.core_workloads_reports.'
-                        'unittest-files JS test.'),
-            'test_file':
-                'db-hash-check.core_workloads_reports.unittest-files',
-            'exit_code':
-                0
+            'status': 'pass',
+            'start': 0,
+            'log_raw': ('\nPassed db-hash-check.core_workloads_reports JS test.'),
+            'test_file': 'db-hash-check.core_workloads_reports',
+            'exit_code': 0
         }, {
             'status':
                 'pass',
             'start':
                 0,
-            'log_raw': ('\nPassed validate-indexes-and-collections.core_workloads_reports.'
-                        'unittest-files JS test.'),
-            'test_file': ('validate-indexes-and-collections.core_workloads_reports.'
-                          'unittest-files'),
+            'log_raw': (
+                '\nPassed validate-indexes-and-collections.core_workloads_reports JS test.'),
+            'test_file': ('validate-indexes-and-collections.core_workloads_reports'),
             'exit_code':
                 0
         }]
@@ -429,7 +423,7 @@ class TestDBCorrectnessRules(unittest.TestCase):
             'status': 'fail',
             'start': 0,
             'log_raw': raw_failure,
-            'test_file': 'validate-indexes-and-collections.test_db_correctness.unittest-files',
+            'test_file': 'validate-indexes-and-collections.test_db_correctness',
             'exit_code': 1
         }]
         observed_results = rules.db_correctness_analysis(log_dir)
@@ -446,16 +440,11 @@ class TestDBCorrectnessRules(unittest.TestCase):
                        'host [localhost]')
 
         expected_results = [{
-            'status':
-                'fail',
-            'start':
-                0,
-            'log_raw':
-                raw_failure,
-            'test_file': ('validate-indexes-and-collections.test_db_correctness_exit_fail.'
-                          'unittest-files'),
-            'exit_code':
-                1
+            'status': 'fail',
+            'start': 0,
+            'log_raw': raw_failure,
+            'test_file': ('validate-indexes-and-collections.test_db_correctness_exit_fail'),
+            'exit_code': 1
         }]
         observed_results = rules.db_correctness_analysis(log_dir)
         self.assertEqual(expected_results, observed_results)

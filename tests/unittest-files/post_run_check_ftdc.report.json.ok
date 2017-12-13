@@ -161,15 +161,15 @@
         {
             "status": "pass",
             "start": 0,
-            "log_raw": "\nPassed db-hash-check.core_workloads_reports.unittest-files JS test.",
-            "test_file": "db-hash-check.core_workloads_reports.unittest-files",
+            "log_raw": "\nPassed db-hash-check.core_workloads_reports JS test.",
+            "test_file": "db-hash-check.core_workloads_reports",
             "exit_code": 0
         },
         {
             "status": "pass",
             "start": 0,
-            "log_raw": "\nPassed validate-indexes-and-collections.core_workloads_reports.unittest-files JS test.",
-            "test_file": "validate-indexes-and-collections.core_workloads_reports.unittest-files",
+            "log_raw": "\nPassed validate-indexes-and-collections.core_workloads_reports JS test.",
+            "test_file": "validate-indexes-and-collections.core_workloads_reports",
             "exit_code": 0
         }
     ]

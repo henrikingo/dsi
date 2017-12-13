@@ -333,6 +333,16 @@ class ConfigDict(dict):
         # This while loop resolves recursive references until all are taken care of.
         # Example: ${a.${foo}.c} (where foo: b)
         while True:
+            # Expand variable references in a list also.
+            # Note: This approach imposes a requirement that all ${variable.references}
+            # in all elements of the list must successfully evaluate to a value,
+            # not just the element(s) the user is about to access.
+            if isinstance(value, list):
+                return [
+                    self.variable_references(index, list_value)
+                    for index, list_value in enumerate(value)
+                ]
+
             # str and unicode strings have the common parent class basestring.
             if not isinstance(value, basestring):
                 break

@@ -27,3 +27,8 @@ meta:
   is_replset: true
   secondaries: 2
   mongodb_setup: replica
+
+# Hosts to run correctness tests on.
+validate:
+  primaries:
+    - ${mongodb_setup.topology.0.mongod.0.private_ip}:27017

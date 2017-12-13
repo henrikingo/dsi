@@ -20,3 +20,8 @@ meta:
   is_sharded: false
   is_replset: true
   mongodb_setup: single-replica
+
+# Hosts to run correctness tests on.
+validate:
+  primaries:
+    - ${mongodb_setup.topology.0.mongod.0.private_ip}:27017

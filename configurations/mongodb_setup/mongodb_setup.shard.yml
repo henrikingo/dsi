@@ -65,3 +65,11 @@ meta:
   primaries: 3
   secondaries: 2
   mongodb_setup: shard
+
+# Hosts to run correctness tests on.
+validate:
+  primaries:
+    - ${mongodb_setup.topology.0.shard.0.mongod.0.private_ip}:27017
+    - ${mongodb_setup.topology.0.shard.1.mongod.0.private_ip}:27017
+    - ${mongodb_setup.topology.0.shard.2.mongod.0.private_ip}:27017
+    - ${mongodb_setup.topology.0.configsvr.0.private_ip}:27017

@@ -1,6 +1,5 @@
 {
     "PemFile":"/Users/daviddaly/.ssh/David2.pem",
-    "jstests_dir":"./jstests/hooks",
     "runs":[
         {
             "client_logs":[],

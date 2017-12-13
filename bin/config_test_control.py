@@ -24,13 +24,7 @@ def generate_mc_json(test_index=0):
     conf.load()
     mc_conf = {}
 
-    # NOTE: MC will NOT run DB correctness checks if the jstests_dir
-    # parameter is not present in the mc.json.  This is the path to DB
-    # correctness JS tests, to be run at the end of a task.
-    try:
-        mc_conf['jstests_dir'] = conf['test_control']['jstests_dir']
-    except KeyError:
-        LOG.warn("No jstests_dir found in test_control")
+    LOG.info("No longer passing jstests_dir information into mission control")
 
     # New path for reading in the ssh_user and ssh_key_file values
     ssh_key_file = conf['infrastructure_provisioning']['tfvars']['ssh_key_file']

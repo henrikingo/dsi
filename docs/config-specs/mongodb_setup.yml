@@ -184,3 +184,15 @@ meta:
   # we don't reference bootstrap.yml from elsewhere, as it's not a
   # required file.
   mongodb_setup: standalone
+
+# Hosts to run correctness tests on.
+validate:
+  # Standalone hosts will have validate called on them.
+  standalone:
+    - ${mongodb_setup.topology.2.private_ip}:27017
+  # Primaries will run validate and dbhash
+  primaries:
+    - ${mongodb_setup.topology.0.shard.0.mongod.0.private_ip}:27017
+    - ${mongodb_setup.topology.0.shard.1.mongod.0.private_ip}:27017
+    - ${mongodb_setup.topology.0.shard.2.mongod.0.private_ip}:27017
+    - ${mongodb_setup.topology.0.configsvr.0.private_ip}:27017
