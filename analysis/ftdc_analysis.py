@@ -47,8 +47,8 @@ RESOURCE_RULES_FTDC_CHUNK = {
 
 
 def failure_message(rule_info, task_run_time):
-    """Standardize the way that we return a failure message.
-
+    """
+    Standardize the way that we return a failure message.
     This wraps around _failure_message(), which builds the actual string. This function separates
     the handling of errors that are checked on a per node basis, vs errors that are reported on a
     per replica set basis. In the latter case, rule_info will have a 'members' key, each entry of
@@ -77,7 +77,8 @@ def failure_message(rule_info, task_run_time):
 
 
 def _failure_message(rule_info, task_run_time, member=None):
-    """Standardize the way that we return a failure message.
+    """
+    Standardize the way that we return a failure message.
 
     Example output when member=None:
 
@@ -187,7 +188,8 @@ def _failure_message(rule_info, task_run_time, member=None):
 
 
 def unify_chunk_failures(chunk_failure_info):
-    """Failures are collected for each FTDC chunk. Though this may be an unnecessary step to take
+    """
+    Failures are collected for each FTDC chunk. Though this may be an unnecessary step to take
     for our current resource rule output (reporting 1st occurrence of failure), if we ever want to
     return 'smarter' failure messages, we might want to go through all the timestamps and values
     compared in a rule. Rather than divide failures by chunk, this function collects the results
@@ -225,7 +227,8 @@ def unify_chunk_failures(chunk_failure_info):
 
 
 def resource_rules(dir_path, project, variant, constant_values=None, perf_file_path=None):
-    """Implemented for variants in sys-perf: given the FTDC metrics for a variant's task, check the
+    """
+    Implemented for variants in sys-perf: given the FTDC metrics for a variant's task, check the
     resource rules available to the variant.
 
     :param str dir_path: path to the directory we recursively search for FTDC diagnostic data files
@@ -252,23 +255,33 @@ def resource_rules(dir_path, project, variant, constant_values=None, perf_file_p
     else:
         # depending on variant, there can be multiple hosts and therefore multiple FTDC data files
         full_log_raw = ''
-        for host_alias, full_path in ftdc_files_dict.iteritems():
-            LOGGER.info('Reading FTDC file `%s`', full_path)
+        # This loop iterates the nested dictionary, `ftdc_files_dict`, returned by
+        # `_get_ftdc_file_paths`. Each host will have one or more tests and each test has one FTDC
+        # file path associated with it.
+        #
+        # `ftdc_files_dict` has the following structure:
+        #   key: <host_alias> str
+        #   value: dict with key: <test_name> str
+        #                    value: <ftdc_file_path> str
+        for host_alias, test_names in ftdc_files_dict.iteritems():
+            for test_name, ftdc_file_path in test_names.iteritems():
+                LOGGER.info('Reading FTDC file `%s`', ftdc_file_path)
 
-            # Some of the rules, such as below_configured_oplog_size, treat certain values read from
-            # FTDC as constants. An example would be the maximum oplog size. The first time the code
-            # needs the maximum oplog size, it reads it from the FTDC data and saves it in the
-            # constant_values dict. At the very least, the data may be different on different hosts,
-            # as demontrated by BF-7261. By copying the "constants" here, we ensure that a value
-            # from one host isn't used for another host.
-            #
-            # Filed PERF-1182 to follow-up and fix this properly.
-            my_constant_values = copy.deepcopy(constant_values)
-            (passed_checks, log_raw) = _process_ftdc_file(full_path, project, variant,
-                                                          my_constant_values)
-            if not passed_checks:
-                full_log_raw += ('Failed resource sanity checks for host {0}').format(host_alias)
-                full_log_raw += log_raw
+                # Some of the rules, such as below_configured_oplog_size, treat certain values read
+                # from FTDC as constants. An example would be the maximum oplog size. The first time
+                # the code needs the maximum oplog size, it reads it from the FTDC data and saves it
+                # in the constant_values dict. At the very least, the data may be different on
+                # different hosts, as demontrated by BF-7261. By copying the "constants" here, we
+                # ensure that a value from one host isn't used for another host.
+                #
+                # Filed PERF-1182 to follow-up and fix this properly.
+                my_constant_values = copy.deepcopy(constant_values)
+                (passed_checks, log_raw) = _process_ftdc_file(ftdc_file_path, project, variant,
+                                                              my_constant_values)
+                if not passed_checks:
+                    full_log_raw += ('Failed resource sanity check {0} for host {1}').format(
+                        test_name, host_alias)
+                    full_log_raw += log_raw
         if full_log_raw:
             result['status'] = 'fail'
             result['exit_code'] = 1
@@ -282,7 +295,8 @@ def resource_rules(dir_path, project, variant, constant_values=None, perf_file_p
 
 
 def _process_ftdc_file(path_to_ftdc_file, project, variant, constant_values):  # pylint: disable=too-many-locals
-    """Iterates through chunks in a single FTDC metrics file and checks the resource rules
+    """
+    Iterates through chunks in a single FTDC metrics file and checks the resource rules.
 
     :param str path_to_ftdc_file: path to a FTDC metrics file
     :param str project: Evergreen project ID
@@ -347,7 +361,8 @@ def _process_ftdc_file(path_to_ftdc_file, project, variant, constant_values):  #
 
 
 def _fetch_constant_arguments(chunk, arguments_needed, arguments_present, constant_values):
-    """Helper to update arguments_present and constant_values. Uses mapping in rules.FETCH_CONSTANTS
+    """
+    Helper to update arguments_present and constant_values. Uses mapping in rules.FETCH_CONSTANTS
     to retrieve needed values from the FTDC metrics. These configured values, such as oplog maxSize,
     are known to be stored in the FTDC data and so do not need to be manually passed in.
 
@@ -370,7 +385,8 @@ def _fetch_constant_arguments(chunk, arguments_needed, arguments_present, consta
 
 
 def _ftdc_log_raw(file_rule_failures, chunk_rule_failures, task_run_time):
-    """Produce the raw log output for failures from a single FTDC file
+    """
+    Produce the raw log output for failures from a single FTDC file.
 
     :param dict file_rule_failures: failure info gathered from checks run on the whole FTDC file
     :param dict chunk_rule_failures: failure info gathered from checks run per-chunk
@@ -389,7 +405,8 @@ def _ftdc_log_raw(file_rule_failures, chunk_rule_failures, task_run_time):
 
 
 def _ftdc_file_rule_evaluation(path_to_ftdc_file, project, variant, test_times):
-    """Some rules require data from the entire FTDC run.
+    """
+    Some rules require data from the entire FTDC run.
 
     :type path_to_ftdc_file: str
     :type project: str
@@ -406,7 +423,8 @@ def _ftdc_file_rule_evaluation(path_to_ftdc_file, project, variant, test_times):
 
 
 def _ftdc_file_failure_raw(failures_dict, task_run_time):
-    """Helper to output log raw message for rules checked across the whole FTDC file, rather than
+    """
+    Helper to output log raw message for rules checked across the whole FTDC file, rather than
     by chunk. This only really applies to replica lag failure collection right now. Potentially
     useful if resource rule checks grow more complex in the future.
 
@@ -430,36 +448,52 @@ def _ftdc_file_failure_raw(failures_dict, task_run_time):
 
 
 def _get_ftdc_file_paths(dir_path):
-    """Recursively search `dir_path` for diagnostic.data directories and return a list of fully
+    """
+    Recursively search `dir_path` for diagnostic.data directories and return a list of fully
     qualified FTDC metrics file paths.
 
-    :type dir_path: str
-    :rtype: dict with key: (host name, ip address) tuple and value: full path to FTDC metrics file
+    The expected structure of the directory is as follows:
+    - reports
+        - <host_name>
+            - <test_name>
+                - diagnostic.data
+            - <test_name>
+                - diagnostic.data
+        - <host_name>
+        ...
+
+    :param type dir_path: str
+    :rtype: dict
     """
+    dir_path = os.path.abspath(dir_path)
     find_directory = 'diagnostic.data'
     ftdc_metrics_paths = {}
     for root_directory, sub_directory, _ in os.walk(dir_path):
         if find_directory in sub_directory:
             parent_directory_name = os.path.basename(root_directory)
-            host_identification = _get_host_ip_info(parent_directory_name)
-            # in the short term, there are also diag-p*-*-* directories with
-            # diagnostic data.
-            # The previous line and the following check skips analysis
-            # for the diag-p* directories (this check can probably be removed later)
-            if host_identification:
+            grandparent_directory_name = os.path.basename(os.path.dirname(root_directory))
+            host_alias = _get_host_ip_info(grandparent_directory_name)
+            # In the short term, there are also diag-p*-*-* directories with diagnostic data. The
+            # previous line and the following check skips analysis for the diag-p* directories (this
+            # check can probably be removed later).
+            if host_alias:
                 ftdc_files = os.listdir(os.path.join(root_directory, find_directory))
                 files = [fi for fi in ftdc_files if not fi.endswith(".interim")]
                 if len(files) != 1:
-                    LOGGER.info('%s FTDC metrics files in %s. Skipping.', len(files),
-                                parent_directory_name)
+                    LOGGER.info('%s FTDC metrics files in %s: %s. Skipping.', len(files),
+                                parent_directory_name, str(files))
                 else:
-                    full_path = os.path.join(root_directory, find_directory, files[0])
-                    ftdc_metrics_paths[host_identification] = full_path
+                    ftdc_file_path = os.path.join(root_directory, find_directory, files[0])
+                    if host_alias in ftdc_metrics_paths:
+                        ftdc_metrics_paths[host_alias][parent_directory_name] = ftdc_file_path
+                    else:
+                        ftdc_metrics_paths[host_alias] = {parent_directory_name: ftdc_file_path}
     return ftdc_metrics_paths
 
 
 def _get_host_ip_info(diagnostic_dir_name):
-    """Directory names follow the naming convention: <CATEGORY>-<INDEX> where INDEX is
+    """
+    Directory names follow the naming convention: <CATEGORY>-<INDEX> where INDEX is
     between 0 and (# of instances of that category) and CATEGORY is one of
     'mongod', 'mongos', 'configsvr', or 'workload_client'. In this instance
     only 'mongod' or 'configsvr' could be valid.
