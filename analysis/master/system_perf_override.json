@@ -645,10 +645,11 @@
                     ]
                 },
                 "insert_vector_secondary_overall":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
+                    "thread_threshold":0.5,
+                    "threshold":0.35,
                     "ticket":[
-                        "PERF-750"
+                        "BF-7147",
+                        "BF-7379"
                     ]
                 },
                 "map_reduce_doc":{
@@ -1377,10 +1378,11 @@
                     ]
                 },
                 "insert_vector_secondary_overall":{
-                    "thread_threshold":0.3,
-                    "threshold":0.1,
+                    "thread_threshold":0.5,
+                    "threshold":0.35,
                     "ticket":[
-                        "BF-7147"
+                        "BF-7147",
+                        "BF-7379"
                     ]
                 },
                 "map_reduce_doc":{
