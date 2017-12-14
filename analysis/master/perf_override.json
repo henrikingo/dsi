@@ -31187,6 +31187,13 @@
                         "PERF-444"
                     ]
                 },
+                "Aggregation.Lookup.LocalArrayOfObject":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-7379"
+                    ]
+                },
                 "Aggregation.Lookup.LocalArrayOfObject.Pipeline":{
                     "thread_threshold":0.165,
                     "threshold":0.11,
