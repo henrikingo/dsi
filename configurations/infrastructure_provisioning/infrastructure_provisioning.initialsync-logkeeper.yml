@@ -1,24 +1,24 @@
 tfvars:
-    # Contents of this is transformed into input JSON to override terraform default values
-    # Note that all tfvars values have defaults, and are therefore optional
+  # Contents of this is transformed into input JSON to override terraform default values
+  # Note that all tfvars values have defaults, and are therefore optional
 
-    cluster_name: initialsync-logkeeper
+  cluster_name: initialsync-logkeeper
 
-    mongod_instance_count: 0
-    mongod_instance_type: c3.8xlarge
+  mongod_instance_count: 0
+  mongod_instance_type: c3.8xlarge
 
-    mongod_seeded_ebs_instance_count: 1
-    mongod_seeded_ebs_instance_type: c3.8xlarge
-    mongod_seeded_ebs_snapshot_id: snap-02f8fb5b88df90f13
-    mongod_seeded_ebs_iops: 5500
+  mongod_seeded_ebs_instance_count: 1
+  mongod_seeded_ebs_instance_type: c3.8xlarge
+  mongod_seeded_ebs_snapshot_id: snap-02f8fb5b88df90f13
+  mongod_seeded_ebs_iops: 5500
 
-    mongod_ebs_instance_count: 1
-    mongod_ebs_instance_type: c3.8xlarge
-    mongod_ebs_size: 1700
-    mongod_ebs_iops: 5500
+  mongod_ebs_instance_count: 1
+  mongod_ebs_instance_type: c3.8xlarge
+  mongod_ebs_size: 1700
+  mongod_ebs_iops: 5500
 
-    workload_instance_count: 1
-    workload_instance_type: c3.8xlarge
+  workload_instance_count: 1
+  workload_instance_type: c3.8xlarge
 
-    region: us-east-1
-    availability_zone: us-east-1a
+  region: us-east-1
+  availability_zone: us-east-1a

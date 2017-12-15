@@ -1,7 +1,7 @@
 custom_groups:
-      my_group:  # We could also allow to specify arbitrary groups of hosts. (post DP2.0 for sure)
-        - ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
-        - ip: ${infrastructure_provisioning.out.mongod.1.public_ip}
+  my_group:  # We could also allow to specify arbitrary groups of hosts. (post DP2.0 for sure)
+    - ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
+    - ip: ${infrastructure_provisioning.out.mongod.1.public_ip}
 
 # NOTE: tasks below is not implemented. When implemented it should match behavior of test_control.yml
 
@@ -24,10 +24,10 @@ tasks:
         ./linux-setup-tasks.sh  # Implementation of upload phase should chmod a+rx as a convenience to user
         ./mount-ebs-drive.sh
   - on_host:  # Do this on a single host specified by ip
-    - ip: ${infrastructure_provisioning.out.mongod.4.public_ip}    # Reference key elsewhere in config
-      download_files: (see above)
-      upload_files: (see above)
-      exec_remote: (see above)
+      - ip: ${infrastructure_provisioning.out.mongod.4.public_ip}    # Reference key elsewhere in config
+        download_files: (see above)
+        upload_files: (see above)
+        exec_remote: (see above)
   - on_my_group:  # This is like on_servers, but for the custom group defined above.
       download_files: (see above)
       upload_files: (see above)

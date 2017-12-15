@@ -1,11 +1,11 @@
 # Shared by all mongods
 mongod_config_file:
-    storage:
-        engine: ${bootstrap.storageEngine}
-    sharding:
-        clusterRole: shardsvr
-    replication:
-      oplogSizeMB: 4000   # 4GB oplog
+  storage:
+    engine: ${bootstrap.storageEngine}
+  sharding:
+    clusterRole: shardsvr
+  replication:
+    oplogSizeMB: 4000   # 4GB oplog
 
 topology:
   - id: mycluster
@@ -56,13 +56,13 @@ topology:
 
 # Meta data about this mongodb setup
 meta:
-    # The list of hosts that can be used in a mongodb connection string
-    hosts: ${mongodb_setup.topology.0.mongos.0.private_ip}:27017,${mongodb_setup.topology.0.mongos.1.private_ip}:27017,${mongodb_setup.topology.0.mongos.2.private_ip}:27017
-    # A single host, as in "host:port". Use the primary or first mongos
-    hostname: ${mongodb_setup.topology.0.mongos.0.private_ip}
-    port: 27017
-    is_sharded: true
-    is_replset: false
-    primaries: 3
-    secondaries: 2
-    mongodb_setup: shard-longevity
+  # The list of hosts that can be used in a mongodb connection string
+  hosts: ${mongodb_setup.topology.0.mongos.0.private_ip}:27017,${mongodb_setup.topology.0.mongos.1.private_ip}:27017,${mongodb_setup.topology.0.mongos.2.private_ip}:27017
+  # A single host, as in "host:port". Use the primary or first mongos
+  hostname: ${mongodb_setup.topology.0.mongos.0.private_ip}
+  port: 27017
+  is_sharded: true
+  is_replset: false
+  primaries: 3
+  secondaries: 2
+  mongodb_setup: shard-longevity

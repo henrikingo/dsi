@@ -74,10 +74,10 @@ pre_task:
         # Shard the YCSB cluster if sharding is enabled
         script: |
           if ("${mongodb_setup.meta.is_sharded}" == "True") {
-             assert.commandWorked(sh.enableSharding("ycsb"));
-             assert.commandWorked(
-                sh.shardCollection("ycsb.usertable", {_id: "hashed"}));
-             db.printShardingStatus();
+            assert.commandWorked(sh.enableSharding("ycsb"));
+            assert.commandWorked(
+              sh.shardCollection("ycsb.usertable", {_id: "hashed"}));
+            db.printShardingStatus();
           } else {
             print ("Non-sharded cluster");
           }

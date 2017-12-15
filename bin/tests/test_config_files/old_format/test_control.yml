@@ -7,33 +7,33 @@ run:
     cmd: $DSI_PATH/workloads/run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:  # This section will be copied out into a file and given as config file to the benchmark tool. Can be yml (run_workloads.py) or a text block (ycsb)
-        ########################################################################
-        # Test lists. Command line will indicate which list of tests to execute.
-        # The 'default' list is the default.
-        # When testing new test workloads, please put your tests in the
-        # tests.test list, and remove the existing hello.js
-        ########################################################################
-        tests:
-            default:
-              - contended_update.js
-              - map_reduce.js
-              - ...
-            initialsync:
-              - initialsync.js
-            correctness:
-              - election_timing.js
-              - election_timing_workload.js
-            test:  # Put new workloads here when testing
-              - hello.js
+      ########################################################################
+      # Test lists. Command line will indicate which list of tests to execute.
+      # The 'default' list is the default.
+      # When testing new test workloads, please put your tests in the
+      # tests.test list, and remove the existing hello.js
+      ########################################################################
+      tests:
+        default:
+          - contended_update.js
+          - map_reduce.js
+          - ...
+        initialsync:
+          - initialsync.js
+        correctness:
+          - election_timing.js
+          - election_timing_workload.js
+        test:  # Put new workloads here when testing
+          - hello.js
 
-        mongo:
-            # Note: We shall move to use a connection string for all tests. This allows things like
-            # multiple mongoses to be supported automatically
-            # (After consideration, don't want automatic failover for perf tests. If it fails, fail hard.)
-            uri: mongodb://${mongodb_setup.meta.hosts}/testdb?readPreference=PRIMARY
-            sharded: ${mongodb_setup.meta.is_sharded}
-            replica: ${mongodb_setup.meta.is_replset}
-            storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
+      mongo:
+        # Note: We shall move to use a connection string for all tests. This allows things like
+        # multiple mongoses to be supported automatically
+        # (After consideration, don't want automatic failover for perf tests. If it fails, fail hard.)
+        uri: mongodb://${mongodb_setup.meta.hosts}/testdb?readPreference=PRIMARY
+        sharded: ${mongodb_setup.meta.is_sharded}
+        replica: ${mongodb_setup.meta.is_replset}
+        storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
 
 # Ordered list of things to do before the set of runs start
 pre_task:
@@ -50,11 +50,11 @@ pre_task:
         local_file_path: remote_file_path
   - on_workload_client:
       exec: |
-        # code to be executed on workload client (when MongoDB cluster is running)
+  # code to be executed on workload client (when MongoDB cluster is running)
   - on_workload_client:
       exec_mongo_shell:
         script: |
-          # JavaScript to be executed in a mongo shell (when MongoDB cluster is running)
+        # JavaScript to be executed in a mongo shell (when MongoDB cluster is running)
         connection_string: ${mongodb_setup.meta.hosts}  # Defaults to localhost
 # Ordered list of things to do after all the runs
 post_task:

@@ -4,10 +4,10 @@ api_server_host: "http://mci-motu.10gen.cc:8080/api"
 ui_server_host: "https://evergreen.mongodb.com"
 
 projects:
-- name: mongodb-mongo-master
-  default: true
-  variants:
-  - windows-64-2k8-debug
-  - enterprise-rhel-62-64-bit
-  tasks:
-  - all
+  - name: mongodb-mongo-master
+    default: true
+    variants:
+      - windows-64-2k8-debug
+      - enterprise-rhel-62-64-bit
+    tasks:
+      - all

@@ -6,18 +6,18 @@ run:
     cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
-        tests:
-            default:
-              - insert_capped.js:
-                    thread_levels: ${test_control.thread_levels.insert_capped.${mongodb_setup.meta.storageEngine}}
-              - insert_capped_indexes.js:
-                    thread_levels: ${test_control.thread_levels.insert_capped_indexes.${mongodb_setup.meta.storageEngine}}
-              - cpu_noise.js
+      tests:
+        default:
+          - insert_capped.js:
+              thread_levels: ${test_control.thread_levels.insert_capped.${mongodb_setup.meta.storageEngine}}
+          - insert_capped_indexes.js:
+              thread_levels: ${test_control.thread_levels.insert_capped_indexes.${mongodb_setup.meta.storageEngine}}
+          - cpu_noise.js
 
-        target: ${mongodb_setup.meta.hostname}
-        port: ${mongodb_setup.meta.port}
-        sharded: ${mongodb_setup.meta.is_sharded}
-        replica: ${mongodb_setup.meta.is_replset}
+      target: ${mongodb_setup.meta.hostname}
+      port: ${mongodb_setup.meta.port}
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
     pre_test:
       - on_workload_client:
           upload_files:
@@ -50,12 +50,12 @@ run:
 
 # This is just a lookup table. Each test may reference some leaf node here from a test parameter.
 thread_levels:
-    insert_capped:
-        mmapv1: [1, 4]
-        wiredTiger: [1, 2]
-    insert_capped_indexes:
-        mmapv1: [1, 4]
-        wiredTiger: [1, 2]
+  insert_capped:
+    mmapv1: [1, 4]
+    wiredTiger: [1, 2]
+  insert_capped_indexes:
+    mmapv1: [1, 4]
+    wiredTiger: [1, 2]
 
 pre_task:
   - on_localhost:

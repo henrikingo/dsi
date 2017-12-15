@@ -3,9 +3,9 @@
 # Things like install YCSB happen here. (To the extent they don't happen by default, without configuration needed.)
 
 custom_groups:
-      my_group:  # We could also allow to specify arbitrary groups of hosts. (post DP2.0 for sure)
-        - ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
-        - ip: ${infrastructure_provisioning.out.mongod.1.public_ip}
+  my_group:  # We could also allow to specify arbitrary groups of hosts. (post DP2.0 for sure)
+    - ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
+    - ip: ${infrastructure_provisioning.out.mongod.1.public_ip}
 
 # Ordered list of steps to take during workload preparation.
 # Each item is guaranteed to complete before the next one.

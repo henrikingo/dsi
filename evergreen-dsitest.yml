@@ -73,16 +73,16 @@ functions:
           # If the file is found, save it to the src directory
           # so it does not have to be reproduced for nosetests
           then
-              echo "Cached override_responses found; using cached file for nosetests"
-              cp /data/dsitest/override_responses ./tests/unittest-files/override_responses
+            echo "Cached override_responses found; using cached file for nosetests"
+            cp /data/dsitest/override_responses ./tests/unittest-files/override_responses
           else
-          # If the file is not found, generate it and save to
-          # /data/dsitest/override_responses and to the src directory
-              echo "Cached override_responses not found"
-              echo "generating file and saving it to /data/dsitest/override_responses"
-              PYTHONPATH=analysis:bin:. python ./tests/update_override_responses.py
-              mkdir -p /data/dsitest
-              cp ./tests/unittest-files/override_responses /data/dsitest/override_responses
+            # If the file is not found, generate it and save to
+            # /data/dsitest/override_responses and to the src directory
+            echo "Cached override_responses not found"
+            echo "generating file and saving it to /data/dsitest/override_responses"
+            PYTHONPATH=analysis:bin:. python ./tests/update_override_responses.py
+            mkdir -p /data/dsitest
+            cp ./tests/unittest-files/override_responses /data/dsitest/override_responses
           fi
 
     - command: shell.exec
@@ -111,26 +111,26 @@ functions:
 #               Tasks                 #
 #######################################
 tasks:
-- name: check_python_formatting
-  commands:
-    - func: setup_tests
-    - func: check_python_formatting
-- name: lint_python_scripts
-  commands:
-    - func: setup_tests
-    - func: lint_python_scripts
-- name: lint_yml
-  commands:
-    - func: setup_tests
-    - func: lint_yml
-- name: nosetests
-  commands:
-    - func: setup_tests
-    - func: nosetests
-- name: validate_overrides
-  commands:
-    - func: setup_tests
-    - func: validate_overrides
+  - name: check_python_formatting
+    commands:
+      - func: setup_tests
+      - func: check_python_formatting
+  - name: lint_python_scripts
+    commands:
+      - func: setup_tests
+      - func: lint_python_scripts
+  - name: lint_yml
+    commands:
+      - func: setup_tests
+      - func: lint_yml
+  - name: nosetests
+    commands:
+      - func: setup_tests
+      - func: nosetests
+  - name: validate_overrides
+    commands:
+      - func: setup_tests
+      - func: validate_overrides
 
 
 #######################################
@@ -138,13 +138,13 @@ tasks:
 #######################################
 
 buildvariants:
-- name: linux-runner
-  display_name: Linux
-  run_on:
+  - name: linux-runner
+    display_name: Linux
+    run_on:
       - "rhel70-perf-standalone"
-  tasks:
-    - name: check_python_formatting
-    - name: lint_python_scripts
-    - name: lint_yml
-    - name: nosetests
-    - name: validate_overrides
+    tasks:
+      - name: check_python_formatting
+      - name: lint_python_scripts
+      - name: lint_yml
+      - name: nosetests
+      - name: validate_overrides

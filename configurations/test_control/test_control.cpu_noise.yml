@@ -5,21 +5,21 @@ run:
     cmd: cd workloads && ./run_remote_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
-        tests:
-            default:
-              - cpu_noise.js
-        # In this case, we want each mongo shell to connect to the mongod/s on its localhost
-        target: localhost
-        port: 27017
-        scale_factor: ${mongodb_setup.meta.primaries}
-        test_list: default
-        # Normally tests are run from a single workload_client (default, when below is missing).
-        # In this case, we want run_workloads.py to ssh into each server and run the test locally
-        # there. So we pass the list of servers from infrastructure_provisioning.out.
-        remote_execution:
-            host_list: ${infrastructure_provisioning.out.mongod}
-            remote_cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
-            remote_prefix: mongod
+      tests:
+        default:
+          - cpu_noise.js
+      # In this case, we want each mongo shell to connect to the mongod/s on its localhost
+      target: localhost
+      port: 27017
+      scale_factor: ${mongodb_setup.meta.primaries}
+      test_list: default
+      # Normally tests are run from a single workload_client (default, when below is missing).
+      # In this case, we want run_workloads.py to ssh into each server and run the test locally
+      # there. So we pass the list of servers from infrastructure_provisioning.out.
+      remote_execution:
+        host_list: ${infrastructure_provisioning.out.mongod}
+        remote_cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
+        remote_prefix: mongod
     pre_test:
       - on_workload_client:
           upload_files:
@@ -39,8 +39,8 @@ pre_task:
   - on_workload_client:
       exec: rm -rf workloads*
   - on_workload_client:
-        upload_files:
-            workloads.tar.gz: workloads.tar.gz
+      upload_files:
+        workloads.tar.gz: workloads.tar.gz
   - on_workload_client:
       exec: |
         rm -rf workloads
@@ -48,8 +48,8 @@ pre_task:
         tar zxvf workloads.tar.gz -C workloads
   # The below is added to run cpu_noise.js on each server node as well
   - on_all_servers:
-        upload_files:
-            workloads.tar.gz: workloads.tar.gz
+      upload_files:
+        workloads.tar.gz: workloads.tar.gz
   - on_all_servers:
       exec: |
         rm -rf workloads

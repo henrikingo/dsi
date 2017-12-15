@@ -7,45 +7,45 @@ run:
     cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
-        ########################################################################
-        # Test lists. Command line will indicate which list of tests to execute.
-        # The 'default' list is the default.
-        # When testing new test workloads, please put your tests in the
-        # tests.test list, and remove the existing hello.js
-        ########################################################################
-        tests:
-            default:
-              - contended_update.js:
-                    thread_levels: [1, 32, 64]
-              - map_reduce.js
-              - insert_ttl.js:
-                    thread_levels: [1, 16, 32]
-              - insert_vector.js:
-                    thread_levels: ${test_control.thread_levels.insert_vector.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
-              - word_count.js
-              - crud.js:
-                  thread_levels: ${test_control.thread_levels.crud-jfalse.${mongodb_setup.meta.storageEngine}}
-                  j_value: false
-              - crud.js:
-                  thread_levels: [1, 64, 128]
-                  j_value: true
-              - index_build.js
-              - mix.js:
-                  thread_levels: [4, 64, 128, 256, 512]
-              - cpu_noise.js
-            test:
-              -  # Empty list. Put new workloads here for testing
-            short:  # Just does Hello World
-              - hello.js:
-                  parameter1: foo
-                  parameter2: true
+      ########################################################################
+      # Test lists. Command line will indicate which list of tests to execute.
+      # The 'default' list is the default.
+      # When testing new test workloads, please put your tests in the
+      # tests.test list, and remove the existing hello.js
+      ########################################################################
+      tests:
+        default:
+          - contended_update.js:
+              thread_levels: [1, 32, 64]
+          - map_reduce.js
+          - insert_ttl.js:
+              thread_levels: [1, 16, 32]
+          - insert_vector.js:
+              thread_levels: ${test_control.thread_levels.insert_vector.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
+          - word_count.js
+          - crud.js:
+              thread_levels: ${test_control.thread_levels.crud-jfalse.${mongodb_setup.meta.storageEngine}}
+              j_value: false
+          - crud.js:
+              thread_levels: [1, 64, 128]
+              j_value: true
+          - index_build.js
+          - mix.js:
+              thread_levels: [4, 64, 128, 256, 512]
+          - cpu_noise.js
+        test:
+          -  # Empty list. Put new workloads here for testing
+        short:  # Just does Hello World
+          - hello.js:
+              parameter1: foo
+              parameter2: true
 
-        # These next five lines match existing workloads.yml.
-        target: ${mongodb_setup.meta.hostname}
-        port: ${mongodb_setup.meta.port}
-        # Hard coding for now. These aren't working right now
-        sharded: ${mongodb_setup.meta.is_sharded}
-        replica: ${mongodb_setup.meta.is_replset}
+      # These next five lines match existing workloads.yml.
+      target: ${mongodb_setup.meta.hostname}
+      port: ${mongodb_setup.meta.port}
+      # Hard coding for now. These aren't working right now
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
     pre_test:
       - on_workload_client:
           upload_files:
@@ -79,22 +79,22 @@ run:
 
 # This is just a lookup table. Each test may reference some leaf node here from a test parameter.
 thread_levels:
-    insert_vector:
-        standalone:
-            mmapv1: [1, 4]
-            wiredTiger: [1, 8, 16]
-        single-replica:
-            mmapv1: [1, 4]
-            wiredTiger: [1, 8, 16]
-        replica:
-            mmapv1: [1, 4]
-            wiredTiger: [1, 8, 16]
-        shard:
-            mmapv1: [1, 32]
-            wiredTiger: [1, 32, 64]
-    crud-jfalse:
-        mmapv1: [1, 4]
-        wiredTiger: [1, 16, 32]
+  insert_vector:
+    standalone:
+      mmapv1: [1, 4]
+      wiredTiger: [1, 8, 16]
+    single-replica:
+      mmapv1: [1, 4]
+      wiredTiger: [1, 8, 16]
+    replica:
+      mmapv1: [1, 4]
+      wiredTiger: [1, 8, 16]
+    shard:
+      mmapv1: [1, 32]
+      wiredTiger: [1, 32, 64]
+  crud-jfalse:
+    mmapv1: [1, 4]
+    wiredTiger: [1, 16, 32]
 
 pre_task:
   - on_localhost:

@@ -1,7 +1,7 @@
 # Shared by all mongods
 mongod_config_file:
-    storage:
-        engine: wiredTiger
+  storage:
+    engine: wiredTiger
 
 topology:
   - cluster_type: replset
@@ -12,9 +12,9 @@ topology:
 
 # Meta data about this mongodb setup
 meta:
-    # The list of hosts that can be used in a mongodb connection string
-    hosts: ${mongodb_setup.topology.0.mongod.0.private_ip}:27017
-    hostname: ${mongodb_setup.topology.0.mongod.0.private_ip}
-    port: 27017
-    is_sharded: false
-    is_replset: true
+  # The list of hosts that can be used in a mongodb connection string
+  hosts: ${mongodb_setup.topology.0.mongod.0.private_ip}:27017
+  hostname: ${mongodb_setup.topology.0.mongod.0.private_ip}
+  port: 27017
+  is_sharded: false
+  is_replset: true

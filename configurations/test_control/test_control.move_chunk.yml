@@ -7,27 +7,27 @@ run:
     cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
-        ########################################################################
-        # Test lists. Command line will indicate which list of tests to execute.
-        # The 'default' list is the default.
-        # When testing new test workloads, please put your tests in the
-        # tests.test list, and remove the existing hello.js
-        ########################################################################
-        tests:
-            default:
-              - move_chunk_with_load.js
-              - move_chunk.js
-              - cpu_noise.js
+      ########################################################################
+      # Test lists. Command line will indicate which list of tests to execute.
+      # The 'default' list is the default.
+      # When testing new test workloads, please put your tests in the
+      # tests.test list, and remove the existing hello.js
+      ########################################################################
+      tests:
+        default:
+          - move_chunk_with_load.js
+          - move_chunk.js
+          - cpu_noise.js
 
-        # These next five lines match existing
-        # workloads.yml. Workloads needs to be updated to consume from
-        # mongo entry.
-        target: ${mongodb_setup.meta.hostname}
-        port: ${mongodb_setup.meta.port}
-        # Hard coding for now. These aren't working right now
-        sharded: ${mongodb_setup.meta.is_sharded}
-        replica: ${mongodb_setup.meta.is_replset}
-        scale_factor: ${mongodb_setup.meta.primaries}
+      # These next five lines match existing
+      # workloads.yml. Workloads needs to be updated to consume from
+      # mongo entry.
+      target: ${mongodb_setup.meta.hostname}
+      port: ${mongodb_setup.meta.port}
+      # Hard coding for now. These aren't working right now
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
+      scale_factor: ${mongodb_setup.meta.primaries}
     pre_test:
       - on_workload_client:
           upload_files:

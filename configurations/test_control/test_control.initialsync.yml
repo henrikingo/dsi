@@ -5,19 +5,19 @@ run:
     cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
-        tests:
-          default:
-            - initialsync.js:
-                num_collections: 1
-                num_dbs: 1
-                write_load: false
-                third_node_addr: ${mongodb_setup.meta.third_node}
-        target: ${mongodb_setup.meta.hostname}
-        port: ${mongodb_setup.meta.port}
-        sharded: ${mongodb_setup.meta.is_sharded}
-        replica: ${mongodb_setup.meta.is_replset}
-        scale_factor: ${mongodb_setup.meta.primaries}
-        third_node_addr: ${mongodb_setup.meta.third_node}
+      tests:
+        default:
+          - initialsync.js:
+              num_collections: 1
+              num_dbs: 1
+              write_load: false
+              third_node_addr: ${mongodb_setup.meta.third_node}
+      target: ${mongodb_setup.meta.hostname}
+      port: ${mongodb_setup.meta.port}
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
+      scale_factor: ${mongodb_setup.meta.primaries}
+      third_node_addr: ${mongodb_setup.meta.third_node}
     pre_test: &pretest
       - on_workload_client:
           upload_files:
@@ -32,19 +32,19 @@ run:
     cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
-        tests:
-          default:
-            - initialsync.js:
-                num_collections: 1
-                num_dbs: 32
-                write_load: false
-                third_node_addr: ${mongodb_setup.meta.third_node}
-        target: ${mongodb_setup.meta.hostname}
-        port: ${mongodb_setup.meta.port}
-        sharded: ${mongodb_setup.meta.is_sharded}
-        replica: ${mongodb_setup.meta.is_replset}
-        scale_factor: ${mongodb_setup.meta.primaries}
-        third_node_addr: ${mongodb_setup.meta.third_node}
+      tests:
+        default:
+          - initialsync.js:
+              num_collections: 1
+              num_dbs: 32
+              write_load: false
+              third_node_addr: ${mongodb_setup.meta.third_node}
+      target: ${mongodb_setup.meta.hostname}
+      port: ${mongodb_setup.meta.port}
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
+      scale_factor: ${mongodb_setup.meta.primaries}
+      third_node_addr: ${mongodb_setup.meta.third_node}
     pre_test: *pretest
     post_test: *posttest
 
@@ -53,19 +53,19 @@ run:
     cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
-        tests:
-          default:
-            - initialsync.js:
-                num_collections: 32
-                num_dbs: 1
-                write_load: false
-                third_node_addr: ${mongodb_setup.meta.third_node}
-        target: ${mongodb_setup.meta.hostname}
-        port: ${mongodb_setup.meta.port}
-        sharded: ${mongodb_setup.meta.is_sharded}
-        replica: ${mongodb_setup.meta.is_replset}
-        scale_factor: ${mongodb_setup.meta.primaries}
-        third_node_addr: ${mongodb_setup.meta.third_node}
+      tests:
+        default:
+          - initialsync.js:
+              num_collections: 32
+              num_dbs: 1
+              write_load: false
+              third_node_addr: ${mongodb_setup.meta.third_node}
+      target: ${mongodb_setup.meta.hostname}
+      port: ${mongodb_setup.meta.port}
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
+      scale_factor: ${mongodb_setup.meta.primaries}
+      third_node_addr: ${mongodb_setup.meta.third_node}
     pre_test: *pretest
     post_test: *posttest
 
@@ -74,19 +74,19 @@ run:
     cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
-        tests:
-          default:
-            - initialsync.js:
-                num_collections: 32
-                num_dbs: 32
-                write_load: false
-                third_node_addr: ${mongodb_setup.meta.third_node}
-        target: ${mongodb_setup.meta.hostname}
-        port: ${mongodb_setup.meta.port}
-        sharded: ${mongodb_setup.meta.is_sharded}
-        replica: ${mongodb_setup.meta.is_replset}
-        scale_factor: ${mongodb_setup.meta.primaries}
-        third_node_addr: ${mongodb_setup.meta.third_node}
+      tests:
+        default:
+          - initialsync.js:
+              num_collections: 32
+              num_dbs: 32
+              write_load: false
+              third_node_addr: ${mongodb_setup.meta.third_node}
+      target: ${mongodb_setup.meta.hostname}
+      port: ${mongodb_setup.meta.port}
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
+      scale_factor: ${mongodb_setup.meta.primaries}
+      third_node_addr: ${mongodb_setup.meta.third_node}
     pre_test: *pretest
     post_test: *posttest
 
@@ -95,19 +95,19 @@ run:
     cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
-        tests:
-          default:
-            - initialsync.js:
-                num_collections: 1
-                num_dbs: 1
-                write_load: true
-                third_node_addr: ${mongodb_setup.meta.third_node}
-        target: ${mongodb_setup.meta.hostname}
-        port: ${mongodb_setup.meta.port}
-        sharded: ${mongodb_setup.meta.is_sharded}
-        replica: ${mongodb_setup.meta.is_replset}
-        scale_factor: ${mongodb_setup.meta.primaries}
-        third_node_addr: ${mongodb_setup.meta.third_node}
+      tests:
+        default:
+          - initialsync.js:
+              num_collections: 1
+              num_dbs: 1
+              write_load: true
+              third_node_addr: ${mongodb_setup.meta.third_node}
+      target: ${mongodb_setup.meta.hostname}
+      port: ${mongodb_setup.meta.port}
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
+      scale_factor: ${mongodb_setup.meta.primaries}
+      third_node_addr: ${mongodb_setup.meta.third_node}
     pre_test: *pretest
     post_test: *posttest
 
@@ -116,19 +116,19 @@ run:
     cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
-        tests:
-          default:
-            - initialsync.js:
-                num_collections: 1
-                num_dbs: 32
-                write_load: true
-                third_node_addr: ${mongodb_setup.meta.third_node}
-        target: ${mongodb_setup.meta.hostname}
-        port: ${mongodb_setup.meta.port}
-        sharded: ${mongodb_setup.meta.is_sharded}
-        replica: ${mongodb_setup.meta.is_replset}
-        scale_factor: ${mongodb_setup.meta.primaries}
-        third_node_addr: ${mongodb_setup.meta.third_node}
+      tests:
+        default:
+          - initialsync.js:
+              num_collections: 1
+              num_dbs: 32
+              write_load: true
+              third_node_addr: ${mongodb_setup.meta.third_node}
+      target: ${mongodb_setup.meta.hostname}
+      port: ${mongodb_setup.meta.port}
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
+      scale_factor: ${mongodb_setup.meta.primaries}
+      third_node_addr: ${mongodb_setup.meta.third_node}
     pre_test: *pretest
     post_test: *posttest
 
@@ -137,19 +137,19 @@ run:
     cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
-        tests:
-          default:
-            - initialsync.js:
-                num_collections: 32
-                num_dbs: 1
-                write_load: true
-                third_node_addr: ${mongodb_setup.meta.third_node}
-        target: ${mongodb_setup.meta.hostname}
-        port: ${mongodb_setup.meta.port}
-        sharded: ${mongodb_setup.meta.is_sharded}
-        replica: ${mongodb_setup.meta.is_replset}
-        scale_factor: ${mongodb_setup.meta.primaries}
-        third_node_addr: ${mongodb_setup.meta.third_node}
+      tests:
+        default:
+          - initialsync.js:
+              num_collections: 32
+              num_dbs: 1
+              write_load: true
+              third_node_addr: ${mongodb_setup.meta.third_node}
+      target: ${mongodb_setup.meta.hostname}
+      port: ${mongodb_setup.meta.port}
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
+      scale_factor: ${mongodb_setup.meta.primaries}
+      third_node_addr: ${mongodb_setup.meta.third_node}
     pre_test: *pretest
     post_test: *posttest
 
@@ -158,20 +158,20 @@ run:
     cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
-        tests:
-          default:
-            - initialsync.js:
-                num_collections: 32
-                num_dbs: 32
-                write_load: true
-                third_node_addr: ${mongodb_setup.meta.third_node}
-            - cpu_noise.js
-        target: ${mongodb_setup.meta.hostname}
-        port: ${mongodb_setup.meta.port}
-        sharded: ${mongodb_setup.meta.is_sharded}
-        replica: ${mongodb_setup.meta.is_replset}
-        scale_factor: ${mongodb_setup.meta.primaries}
-        third_node_addr: ${mongodb_setup.meta.third_node}
+      tests:
+        default:
+          - initialsync.js:
+              num_collections: 32
+              num_dbs: 32
+              write_load: true
+              third_node_addr: ${mongodb_setup.meta.third_node}
+          - cpu_noise.js
+      target: ${mongodb_setup.meta.hostname}
+      port: ${mongodb_setup.meta.port}
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
+      scale_factor: ${mongodb_setup.meta.primaries}
+      third_node_addr: ${mongodb_setup.meta.third_node}
     pre_test: *pretest
     post_test: *posttest
 

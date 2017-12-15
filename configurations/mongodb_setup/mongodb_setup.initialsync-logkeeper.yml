@@ -1,12 +1,12 @@
 # Shared by all mongods
 mongod_config_file:
-    storage:
-        engine: ${bootstrap.storageEngine}
-    replication:
-        oplogSizeMB: 2000000
-        replSetName: logkeeper-rs0
-    setParameter:
-        numInitialSyncAttempts: 1
+  storage:
+    engine: ${bootstrap.storageEngine}
+  replication:
+    oplogSizeMB: 2000000
+    replSetName: logkeeper-rs0
+  setParameter:
+    numInitialSyncAttempts: 1
 
 topology:
   - id: logkeeper-rs0
@@ -25,12 +25,12 @@ topology:
 
 # Meta data about this mongodb setup
 meta:
-    # The list of hosts that can be used in a mongodb connection string
-    hosts: ${mongodb_setup.topology.0.mongod.0.private_ip}:27017
-    hostname: ${mongodb_setup.topology.0.mongod.0.private_ip}
-    port: 27017
-    secondary: ${mongodb_setup.topology.1.private_ip}
-    is_sharded: false
-    is_replset: true
-    mongodb_setup: initialsync-logkeeper
+  # The list of hosts that can be used in a mongodb connection string
+  hosts: ${mongodb_setup.topology.0.mongod.0.private_ip}:27017
+  hostname: ${mongodb_setup.topology.0.mongod.0.private_ip}
+  port: 27017
+  secondary: ${mongodb_setup.topology.1.private_ip}
+  is_sharded: false
+  is_replset: true
+  mongodb_setup: initialsync-logkeeper
 

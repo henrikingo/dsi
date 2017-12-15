@@ -1,10 +1,10 @@
 # Shared by all mongods
 journal_dir: /media/ebs2/journal
 mongod_config_file:
-    storage:
-        engine: ${bootstrap.storageEngine}
-    replication:
-        replSetName: initialsyncrs
+  storage:
+    engine: ${bootstrap.storageEngine}
+  replication:
+    replSetName: initialsyncrs
 
 topology:
   - id: initialsyncrs
@@ -20,13 +20,13 @@ topology:
 
 # Meta data about this mongodb setup
 meta:
-    # The list of hosts that can be used in a mongodb connection string
-    hosts: ${mongodb_setup.topology.0.mongod.0.private_ip}:27017
-    hostname: ${mongodb_setup.topology.0.mongod.0.private_ip}
-    secondary: ${mongodb_setup.topology.0.mongod.1.private_ip}
-    port: 27017
-    third_node: ${mongodb_setup.topology.1.private_ip}
-    is_sharded: false
-    is_replset: true
-    secondaries: 1  # Only 1 secondary at start
-    mongodb_setup: replica-2node
+  # The list of hosts that can be used in a mongodb connection string
+  hosts: ${mongodb_setup.topology.0.mongod.0.private_ip}:27017
+  hostname: ${mongodb_setup.topology.0.mongod.0.private_ip}
+  secondary: ${mongodb_setup.topology.0.mongod.1.private_ip}
+  port: 27017
+  third_node: ${mongodb_setup.topology.1.private_ip}
+  is_sharded: false
+  is_replset: true
+  secondaries: 1  # Only 1 secondary at start
+  mongodb_setup: replica-2node

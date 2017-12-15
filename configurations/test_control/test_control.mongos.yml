@@ -7,36 +7,36 @@ run:
     cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
-        ########################################################################
-        # Test lists. Command line will indicate which list of tests to execute.
-        # The 'default' list is the default.
-        # When testing new test workloads, please put your tests in the
-        # tests.test list, and remove the existing hello.js
-        ########################################################################
-        tests:
-            default:
-              - mongos_read_single.js
-              - mongos_insert_vector.js
-              - mongos_insert_single.js
-              - mongos_50read_50write.js
-              - cpu_noise.js
-            test:
-              -  # Empty list. Put new workloads here for testing
-            short:  # Just does Hello World
-              - hello.js:
-                  parameter1: foo
-                  parameter2: [true, false]
+      ########################################################################
+      # Test lists. Command line will indicate which list of tests to execute.
+      # The 'default' list is the default.
+      # When testing new test workloads, please put your tests in the
+      # tests.test list, and remove the existing hello.js
+      ########################################################################
+      tests:
+        default:
+          - mongos_read_single.js
+          - mongos_insert_vector.js
+          - mongos_insert_single.js
+          - mongos_50read_50write.js
+          - cpu_noise.js
+        test:
+          -  # Empty list. Put new workloads here for testing
+        short:  # Just does Hello World
+          - hello.js:
+              parameter1: foo
+              parameter2: [true, false]
 
-        # These next five lines match existing
-        # workloads.yml. Workloads needs to be updated to consume from
-        # mongo entry.
-        target: ${mongodb_setup.meta.hostname}
-        port: ${mongodb_setup.meta.port}
-        # Hard coding for now. These aren't working right now
-        sharded: ${mongodb_setup.meta.is_sharded}
-        replica: ${mongodb_setup.meta.is_replset}
-        scale_factor: 1  # I'm not sure this one should scale with anything
-        test_list: default
+      # These next five lines match existing
+      # workloads.yml. Workloads needs to be updated to consume from
+      # mongo entry.
+      target: ${mongodb_setup.meta.hostname}
+      port: ${mongodb_setup.meta.port}
+      # Hard coding for now. These aren't working right now
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
+      scale_factor: 1  # I'm not sure this one should scale with anything
+      test_list: default
     pre_test:
       - on_workload_client:
           upload_files:
