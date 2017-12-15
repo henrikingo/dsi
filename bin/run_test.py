@@ -3,8 +3,8 @@
 
 from __future__ import print_function
 
-from collections import MutableMapping
 import argparse
+from collections import MutableMapping
 import copy
 from enum import Enum
 import inspect
@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 import threading
+import time
 
 from nose.tools import nottest
 
@@ -22,6 +23,7 @@ from common.config import ConfigDict
 from common.host import extract_hosts, make_host, run_host_command
 from common.jstests import run_validate
 from common.log import setup_logging
+from common.workload_output_parser import parse_test_results, validate_config
 import config_test_control
 import mongodb_setup
 
@@ -54,8 +56,8 @@ def cleanup_reports():
         os.remove('../reports.tgz')
 
 
-def copy_perf_output():
-    ''' Put perf.json in the correct place'''
+def legacy_copy_perf_output():
+    ''' Put perf.json in the legacy place for backward compatibility'''
     if os.path.exists('../perf.json'):
         os.remove('../perf.json')
     shutil.copyfile('perf.json', '../perf.json')
@@ -298,6 +300,7 @@ def run_tests(config):
     setup_ssh_agent(config)
     cleanup_reports()
 
+    validate_config(config)
     run_pre_post_commands('pre_task', [mongodb_setup_config, test_control_config], config,
                           EXCEPTION_BEHAVIOR.EXIT)
 
@@ -331,12 +334,16 @@ def run_tests(config):
                                       config, EXCEPTION_BEHAVIOR.RERAISE, test['id'])
                 background_tasks = start_background_tasks(config, test, test['id'])
 
+                timer = {}
+                timer['start'] = time.time()
                 subprocess.check_call(
                     [
                         mission_control, '-config', mc_config_file, '-run', test['id'], '-o',
                         'perf.json'
                     ],
                     env=env)
+                timer['end'] = time.time()
+
             finally:
                 stop_background_tasks(background_tasks)
                 if 'skip_validate' not in test or not test['skip_validate']:
@@ -345,6 +352,9 @@ def run_tests(config):
                                       [test, test_control_config, mongodb_setup_config], config,
                                       EXCEPTION_BEHAVIOR.CONTINUE, test['id'])
 
+            # Parse test output (on successful test exit)
+            parse_test_results(test, config, timer)
+
     finally:
         run_pre_post_commands('post_task', [test_control_config, mongodb_setup_config], config,
                               EXCEPTION_BEHAVIOR.CONTINUE)
@@ -352,8 +362,7 @@ def run_tests(config):
         # Todo: replace with os.chmod call or remove in general
         # Previously this was set to 777. I can't come up with a good reason.
         subprocess.check_call(['chmod', '555', 'perf.json'])
-
-        copy_perf_output()
+        legacy_copy_perf_output()
 
 
 def main(argv):

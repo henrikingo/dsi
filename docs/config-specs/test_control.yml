@@ -1,3 +1,14 @@
+# Note: Until we purge mission-control, these are still hard coded, so you can't actually change them yet
+output_file:
+  mongoshell: test_screen_capture.log--ec2-user@${infrastructure_provisioning.out.workload_client.0.public_ip}
+  ycsb: test_screen_capture.log--ec2-user@${infrastructure_provisioning.out.workload_client.0.public_ip}
+  fio: fio.json
+  iperf: iperf.json
+# As I'm writing this, the basename IS the name. PERF-1096 will add a unique component.
+reports_dir_basename: reports
+perf_json:
+  path: perf.new.json
+
 # This essentially ports dsi/clusters/*/*.json to yml. Additions are up for debate.
 # Note, unlike other files, this is a list of test runs. Hence, even if there's only a single entry, it is a list.
 run:
