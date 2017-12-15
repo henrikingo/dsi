@@ -1484,18 +1484,18 @@
                     "workload":"ycsb"
                 },
                 "ycsb_50read50update":{
-                    "create_time":"2017-10-24T13:26:41.263Z",
-                    "end":1508870500.0,
-                    "max":15192.927388442133,
+                    "create_time":"2017-12-14T11:18:50.769Z",
+                    "end":1513271693.0,
+                    "max":15630.030916201153,
                     "name":"ycsb_50read50update",
-                    "order":8835,
+                    "order":9322,
                     "results":{
                         "64":{
-                            "ops_per_sec":15192.927388442133
+                            "ops_per_sec":15630.030916201153
                         }
                     },
-                    "revision":"2ff0f268538b713b457a16eb3e8f731bd2e63028",
-                    "start":1508869181.0,
+                    "revision":"9611f1368349db2fcbe7a7090d7bb7afe0f789af",
+                    "start":1513270412.0,
                     "tag":"",
                     "threads":[
                         "64"
@@ -1613,25 +1613,24 @@
             "ndays":{},
             "reference":{
                 "ycsb_50read50update":{
-                    "create_time":"2017-11-18T23:47:40.449Z",
-                    "end":1511101624.0,
-                    "max":32119.48448227406,
+                    "create_time":"2017-12-14T11:18:50.769Z",
+                    "end":1513273250.0,
+                    "max":41019.66687928527,
                     "name":"ycsb_50read50update",
-                    "order":9106,
+                    "order":9322,
                     "results":{
                         "64":{
-                            "ops_per_sec":32119.48448227406
+                            "ops_per_sec":41019.66687928527
                         }
                     },
-                    "revision":"85251da86bffa977348ecea5a7a5583edd7972d1",
-                    "start":1511101000.0,
+                    "revision":"9611f1368349db2fcbe7a7090d7bb7afe0f789af",
+                    "start":1513272760.0,
                     "tag":"",
                     "threads":[
                         "64"
                     ],
                     "ticket":[
-                        "BF-6941",
-                        "BF-7165"
+                        "BF-6941"
                     ],
                     "workload":"ycsb"
                 },
@@ -3159,21 +3158,21 @@
                     "workload":"ycsb"
                 },
                 "ycsb_50read50update":{
-                    "create_time":"2017-10-24T13:26:41.263Z",
-                    "end":1508875373.0,
-                    "max":14368.167038562724,
+                    "create_time":"2017-12-14T11:18:50.769Z",
+                    "end":1513275125.0,
+                    "max":14806.873943159373,
                     "name":"ycsb_50read50update",
-                    "order":8835,
+                    "order":9322,
                     "results":{
                         "64":{
-                            "ops_per_sec":14368.167038562724,
-                            "replica_avg_lag":1.0955829109341058,
+                            "ops_per_sec":14806.873943159373,
+                            "replica_avg_lag":0.8656716417910447,
                             "replica_end_of_test_lag":1,
                             "replica_max_lag":2
                         }
                     },
-                    "revision":"2ff0f268538b713b457a16eb3e8f731bd2e63028",
-                    "start":1508873980.0,
+                    "revision":"9611f1368349db2fcbe7a7090d7bb7afe0f789af",
+                    "start":1513273773.0,
                     "tag":"",
                     "threads":[
                         "64"
@@ -3297,29 +3296,28 @@
             "ndays":{},
             "reference":{
                 "ycsb_50read50update":{
-                    "create_time":"2017-11-18T23:47:40.449Z",
-                    "end":1511127840.0,
-                    "max":16507.493163834395,
+                    "create_time":"2017-12-14T11:18:50.769Z",
+                    "end":1513290724.0,
+                    "max":37976.67852171981,
                     "name":"ycsb_50read50update",
-                    "order":9106,
+                    "order":9322,
                     "results":{
                         "64":{
-                            "ops_per_sec":16507.493163834395,
-                            "replica_avg_lag":175.24684684684684,
-                            "replica_end_of_test_lag":300,
-                            "replica_max_lag":305
+                            "ops_per_sec":37976.67852171981,
+                            "replica_avg_lag":0.9214145383104125,
+                            "replica_end_of_test_lag":1,
+                            "replica_max_lag":3
                         }
                     },
-                    "revision":"85251da86bffa977348ecea5a7a5583edd7972d1",
-                    "start":1511126627.0,
+                    "revision":"9611f1368349db2fcbe7a7090d7bb7afe0f789af",
+                    "start":1513290196.0,
                     "tag":"",
                     "threads":[
                         "64"
                     ],
                     "ticket":[
                         "BF-6941",
-                        "BF-6810",
-                        "BF-7165"
+                        "BF-6810"
                     ],
                     "workload":"ycsb"
                 },
@@ -6447,8 +6445,7 @@
                         "64"
                     ],
                     "ticket":[
-                        "BF-6941",
-                        "BF-7165"
+                        "BF-6941"
                     ],
                     "workload":"ycsb"
                 }
@@ -8182,18 +8179,18 @@
                     "workload":"ycsb"
                 },
                 "ycsb_50read50update":{
-                    "create_time":"2017-10-24T13:26:41.263Z",
-                    "end":1508874313.0,
-                    "max":17168.339864455957,
+                    "create_time":"2017-12-14T11:18:50.769Z",
+                    "end":1513274222.0,
+                    "max":17742.450587275114,
                     "name":"ycsb_50read50update",
-                    "order":8835,
+                    "order":9322,
                     "results":{
                         "64":{
-                            "ops_per_sec":17168.339864455957
+                            "ops_per_sec":17742.450587275114
                         }
                     },
-                    "revision":"2ff0f268538b713b457a16eb3e8f731bd2e63028",
-                    "start":1508873145.0,
+                    "revision":"9611f1368349db2fcbe7a7090d7bb7afe0f789af",
+                    "start":1513273093.0,
                     "tag":"",
                     "threads":[
                         "64"
@@ -8204,18 +8201,18 @@
                     "workload":"ycsb"
                 },
                 "ycsb_95read5update":{
-                    "create_time":"2017-10-24T13:26:41.263Z",
-                    "end":1508873073.0,
-                    "max":56048.31364636317,
+                    "create_time":"2017-12-14T11:18:50.769Z",
+                    "end":1513271333.0,
+                    "max":58703.36018033672,
                     "name":"ycsb_95read5update",
-                    "order":8835,
+                    "order":9322,
                     "results":{
                         "32":{
-                            "ops_per_sec":56048.31364636317
+                            "ops_per_sec":58703.36018033672
                         }
                     },
-                    "revision":"2ff0f268538b713b457a16eb3e8f731bd2e63028",
-                    "start":1508872714.0,
+                    "revision":"9611f1368349db2fcbe7a7090d7bb7afe0f789af",
+                    "start":1513270990.0,
                     "tag":"",
                     "threads":[
                         "32"
@@ -8310,93 +8307,47 @@
         "industry_benchmarks_WT":{
             "ndays":{},
             "reference":{
-                "ycsb_100read":{
-                    "create_time":"2017-11-17T23:52:03.98Z",
-                    "end":1511233417.0,
-                    "max":86885.5022850887,
-                    "name":"ycsb_100read",
-                    "order":9104,
-                    "results":{
-                        "64":{
-                            "ops_per_sec":86885.5022850887
-                        }
-                    },
-                    "revision":"c85b31b5d392b71cabf87bac1ac229a5a9ad62b4",
-                    "start":1511233184.0,
-                    "tag":"",
-                    "threads":[
-                        "64"
-                    ],
-                    "ticket":[
-                        "BF-7165"
-                    ],
-                    "workload":"ycsb"
-                },
                 "ycsb_50read50update":{
-                    "create_time":"2017-11-17T23:52:03.98Z",
-                    "end":1511234691.0,
-                    "max":25530.947976863856,
+                    "create_time":"2017-12-14T11:18:50.769Z",
+                    "end":1513273977.0,
+                    "max":50047.92088424667,
                     "name":"ycsb_50read50update",
-                    "order":9104,
+                    "order":9322,
                     "results":{
                         "64":{
-                            "ops_per_sec":25530.947976863856
+                            "ops_per_sec":50047.92088424667
                         }
                     },
-                    "revision":"c85b31b5d392b71cabf87bac1ac229a5a9ad62b4",
-                    "start":1511233906.0,
+                    "revision":"9611f1368349db2fcbe7a7090d7bb7afe0f789af",
+                    "start":1513273576.0,
                     "tag":"",
                     "threads":[
                         "64"
                     ],
                     "ticket":[
-                        "BF-6941",
-                        "BF-7165"
+                        "BF-6941"
                     ],
                     "workload":"ycsb"
                 },
                 "ycsb_95read5update":{
-                    "create_time":"2017-11-17T23:52:03.98Z",
-                    "end":1511233818.0,
-                    "max":63221.71539480381,
+                    "create_time":"2017-12-14T11:18:50.769Z",
+                    "end":1513272792.0,
+                    "max":77025.28354932506,
                     "name":"ycsb_95read5update",
-                    "order":9104,
+                    "order":9322,
                     "results":{
                         "32":{
-                            "ops_per_sec":63221.71539480381
+                            "ops_per_sec":77025.28354932506
                         }
                     },
-                    "revision":"c85b31b5d392b71cabf87bac1ac229a5a9ad62b4",
-                    "start":1511233500.0,
+                    "revision":"9611f1368349db2fcbe7a7090d7bb7afe0f789af",
+                    "start":1513272530.0,
                     "tag":"",
                     "threads":[
                         "32"
                     ],
                     "ticket":[
-                        "BF-6161",
-                        "BF-7165"
-                    ],
-                    "workload":"ycsb"
-                },
-                "ycsb_load":{
-                    "create_time":"2017-11-17T23:52:03.98Z",
-                    "end":1511233095.0,
-                    "max":55589.5269331258,
-                    "name":"ycsb_load",
-                    "order":9104,
-                    "results":{
-                        "32":{
-                            "ops_per_sec":55589.5269331258
-                        }
-                    },
-                    "revision":"c85b31b5d392b71cabf87bac1ac229a5a9ad62b4",
-                    "start":1511233003.0,
-                    "tag":"",
-                    "threads":[
-                        "32"
-                    ],
-                    "ticket":[
-                        "BF-7165"
+                        "BF-6161"
                     ],
                     "workload":"ycsb"
                 }
