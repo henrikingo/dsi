@@ -295,10 +295,7 @@ def run_tests(config):
     setup_ssh_agent(config)
     cleanup_reports()
 
-    # TODO: Change the order of test_control and mongodb_setup_config
-    # https://jira.mongodb.org/browse/PERF-1160
-    # Execute pre task steps
-    run_pre_post_commands('pre_task', [test_control_config, mongodb_setup_config], config,
+    run_pre_post_commands('pre_task', [mongodb_setup_config, test_control_config], config,
                           EXCEPTION_BEHAVIOR.EXIT)
 
     # pylint: disable=too-many-nested-blocks
