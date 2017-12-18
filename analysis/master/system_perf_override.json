@@ -2627,6 +2627,13 @@
                 }
             },
             "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379"
+                    ]
+                },
                 "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -2961,6 +2968,13 @@
                 }
             },
             "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379"
+                    ]
+                },
                 "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -3912,6 +3926,19 @@
                 }
             }
         },
+        "retryable_writes_workloads_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379"
+                    ]
+                }
+            }
+        },
         "secondary_performance_MMAPv1":{
             "ndays":{},
             "reference":{},
@@ -4345,6 +4372,13 @@
             },
             "reference":{},
             "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379"
+                    ]
+                },
                 "buildIndexes_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":0.3,
                     "threshold":0.25,
@@ -5194,6 +5228,13 @@
             },
             "reference":{},
             "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":1.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379"
+                    ]
+                },
                 "buildIndexes_initialsync_dbs_1_colls_1_writeload_false":{
                     "thread_threshold":3.0,
                     "threshold":2.0,
