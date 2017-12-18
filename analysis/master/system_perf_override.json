@@ -642,7 +642,8 @@
                     "thread_threshold":0.45,
                     "threshold":0.3,
                     "ticket":[
-                        "PERF-750"
+                        "BF-7147",
+                        "BF-6862"
                     ]
                 },
                 "insert_vector_secondary_overall":{
@@ -1373,10 +1374,11 @@
                     ]
                 },
                 "insert_vector_secondary_load_phase":{
-                    "thread_threshold":0.3,
-                    "threshold":0.1,
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
                     "ticket":[
-                        "BF-7147"
+                        "BF-7147",
+                        "BF-6862"
                     ]
                 },
                 "insert_vector_secondary_overall":{
