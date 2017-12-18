@@ -3317,6 +3317,13 @@
                         "PERF-723",
                         "BF-5520"
                     ]
+                },
+                "ycsb_load":{
+                    "thread_threshold":0.32,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-7200"
+                    ]
                 }
             }
         },
@@ -3431,6 +3438,13 @@
                         "PERF-723",
                         "BF-5520"
                     ]
+                },
+                "ycsb_load":{
+                    "thread_threshold":0.32,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-7200"
+                    ]
                 }
             }
         },
@@ -3514,6 +3528,13 @@
                     "ticket":[
                         "BF-7430"
                     ]
+                },
+                "ycsb_load":{
+                    "thread_threshold":0.32,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-7200"
+                    ]
                 }
             }
         },
@@ -3596,6 +3617,13 @@
                     "threshold":0.25,
                     "ticket":[
                         "BF-7430"
+                    ]
+                },
+                "ycsb_load":{
+                    "thread_threshold":0.32,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-7200"
                     ]
                 }
             }
