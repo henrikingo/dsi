@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-""""
+"""
 Provision AWS resources using terraform
-
 """
 import argparse
 import glob
@@ -16,6 +15,7 @@ from common.log import setup_logging
 from common.config import ConfigDict
 from common.terraform_config import TerraformConfiguration
 from common.terraform_output_parser import TerraformOutputParser
+from common.utils import read_aws_credentials
 from infrastructure_teardown import destroy_resources
 
 CLUSTER_JSON = "cluster.json"
@@ -62,6 +62,8 @@ class Provisioner(object):
         ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
         ssh_key_file = os.path.expanduser(ssh_key_file)
         self.ssh_key_file = ssh_key_file
+        self.ssh_key_name = config['infrastructure_provisioning']['tfvars']['ssh_key_name']
+        self.aws_access_key, self.aws_secret_key = read_aws_credentials(config)
         self.cluster = config['infrastructure_provisioning']['tfvars'].get(
             'cluster_name', 'missing_cluster_name')
         self.reuse_cluster = config['infrastructure_provisioning']['evergreen'].get(
@@ -82,15 +84,63 @@ class Provisioner(object):
         os.environ['TF_LOG'] = 'DEBUG'
         os.environ['TF_LOG_PATH'] = './terraform.log'
 
+    def setup_security_tf(self):
+        """
+        Generate the security.tf file
+        """
+        # Write security.tf.
+        with open(os.path.join('security.tf'), 'w') as security:
+            security.write('provider "aws" {\n')
+            security.write('    access_key = "{0}"\n'.format(self.aws_access_key))
+            security.write('    secret_key = "{0}"\n'.format(self.aws_secret_key))
+            security.write('    region = "${var.region}"\n')
+            security.write('}\n')
+            security.write('variable "key_name" {\n')
+            security.write('    default = "{0}"\n'.format(self.ssh_key_name))
+            security.write('}\n')
+            security.write('variable "key_file" {\n')
+            security.write('    default = "{0}"\n'.format(self.ssh_key_file))
+            security.write('}')
+
+    def setup_terraform_tf(self):
+        """
+        Copy terraform tf files and remote-scripts to work directory
+        """
+        # Copy terraform files and remote-scripts to work directory
+        directory = os.getcwd()
+        cluster_path = os.path.join(self.dsi_dir, 'clusters', 'default')
+        remote_scripts_path = os.path.join(self.dsi_dir, 'clusters', 'remote-scripts')
+        LOG.debug('Cluster path is %s', cluster_path)
+        for filename in glob.glob(os.path.join(cluster_path, '*')):
+            shutil.copy(filename, directory)
+            LOG.debug("Copied %s to work directory %s.", filename, directory)
+        remote_scripts_target = os.path.join(directory, 'remote-scripts')
+        LOG.debug("remote_scripts_target is %s", remote_scripts_target)
+        LOG.debug("remote_scripts_path is %s", remote_scripts_path)
+        rmtree_when_present(remote_scripts_target)
+        os.mkdir(remote_scripts_target)
+        for filename in glob.glob(os.path.join(remote_scripts_path, '*')):
+            shutil.copy(filename, remote_scripts_target)
+            LOG.debug("Copied %s to work directory %s.", filename, remote_scripts_target)
+
+        # Copy modules
+        modules_path = os.path.join(self.dsi_dir, 'clusters', 'modules')
+        modules_target = os.path.join(directory, 'modules')
+        rmtree_when_present(modules_target)
+        shutil.copytree(modules_path, modules_target)
+        LOG.debug("Copied %s to work directory %s.", modules_path, modules_target)
+
     def provision_resources(self):
-        """ Function used to actually provision the resources"""
+        """
+        Function used to actually provision the resources
+        """
         if self.reuse_cluster:
             self.check_existing_state()
         self.setup_cluster()
 
     def teardown_old_cluster(self):
         """
-        Force recreation of a new cluster by executing teardown in evg_data_dir and deleting state.
+        Force recreation of a new cluster by executing teardown in evg_data_dir and deleting state
         """
         try:
             # Need to unset the TERRAFORM environment variable since infrastructure_teardown.py
@@ -153,8 +203,6 @@ class Provisioner(object):
             self.existing = False
             LOG.info("No existing EC2 resources found.")
 
-        self.setup_evg_dir()
-
     def setup_evg_dir(self):
         """
         Sets up the Evergreen data directories and creates them if they do not exist.
@@ -167,11 +215,10 @@ class Provisioner(object):
             # While everything else is inside the work directory, setup-dsi-env.sh still downloads
             # terraform into a directory that is parallel to work, not inside it.
             # Also note that the below is the directory called "terraform". (Yes, it contains a
-            # binary called "terraform".
+            # binary called "terraform".)
             shutil.copytree("../terraform", os.path.join(self.evg_data_dir, "terraform"))
             shutil.copytree("./modules", os.path.join(self.evg_data_dir, "terraform/modules"))
 
-            # Note: The Evergreen distro "Teardown Script" still calls infrastructure_teardown.
             LOG.info("Copying infrastructure_teardown.py to Evergreen host")
             shutil.copyfile(
                 os.path.join(self.bin_dir, 'infrastructure_teardown.py'),
@@ -185,8 +232,14 @@ class Provisioner(object):
 
     def setup_cluster(self):
         """
-        Runs terraform to provision the cluster.
+        Runs terraform to provision the cluster
         """
+        # Create and copy needed security.tf and terraform.tf files into current work directory
+        self.setup_security_tf()
+        self.setup_terraform_tf()
+        if self.reuse_cluster:
+            self.setup_evg_dir()
+
         subprocess.check_call([self.terraform, 'init', '-upgrade'])
         tf_config = TerraformConfiguration(self.config)
         tf_config.to_json(file_name=CLUSTER_JSON)  # pylint: disable=no-member
