@@ -3493,6 +3493,13 @@
                         "PERF-723",
                         "BF-5520"
                     ]
+                },
+                "ycsb_50read50update_single_w_majority":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-7379"
+                    ]
                 }
             }
         },
@@ -3554,6 +3561,13 @@
                     "ticket":[
                         "PERF-723",
                         "BF-5520"
+                    ]
+                },
+                "ycsb_50read50update_single_w_majority":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-7379"
                     ]
                 }
             }
