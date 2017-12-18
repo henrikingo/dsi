@@ -3507,6 +3507,13 @@
                     "ticket":[
                         "BF-7430"
                     ]
+                },
+                "ycsb_95read5update_w_majority":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7430"
+                    ]
                 }
             }
         },
@@ -3580,6 +3587,13 @@
                 "ycsb_95read5update_single_w_majority":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
+                    "ticket":[
+                        "BF-7430"
+                    ]
+                },
+                "ycsb_95read5update_w_majority":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
                     "ticket":[
                         "BF-7430"
                     ]
