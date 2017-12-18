@@ -4088,10 +4088,11 @@
                     ]
                 },
                 "Secondary_size_1_count_10M":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
+                    "thread_threshold":0.55,
+                    "threshold":0.35,
                     "ticket":[
-                        "BF-5525"
+                        "BF-5525",
+                        "BF-7430"
                     ]
                 },
                 "canary_client-cpuloop-10x":{
@@ -4199,6 +4200,14 @@
                 "Primary_size_1_count_10M":{
                     "thread_threshold":0.22,
                     "threshold":0.15,
+                    "ticket":[
+                        "BF-5525",
+                        "BF-7430"
+                    ]
+                },
+                "Secondary_size_1_count_10M":{
+                    "thread_threshold":0.55,
+                    "threshold":0.35,
                     "ticket":[
                         "BF-5525",
                         "BF-7430"
