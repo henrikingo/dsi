@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-""""
+"""
 Provision AWS resources using terraform
-
 """
 import argparse
 import glob
@@ -16,6 +15,7 @@ from common.log import setup_logging
 from common.config import ConfigDict
 from common.terraform_config import TerraformConfiguration
 from common.terraform_output_parser import TerraformOutputParser
+from common.utils import read_aws_credentials
 from infrastructure_teardown import destroy_resources
 
 LOG = logging.getLogger(__name__)
@@ -60,6 +60,8 @@ class Provisioner(object):
         ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
         ssh_key_file = os.path.expanduser(ssh_key_file)
         self.ssh_key_file = ssh_key_file
+        self.ssh_key_name = config['infrastructure_provisioning']['tfvars']['ssh_key_name']
+        self.aws_access_key, self.aws_secret_key = read_aws_credentials(config)
         self.cluster = config['infrastructure_provisioning']['tfvars'].get(
             'cluster_name', 'missing_cluster_name')
         self.reuse_cluster = config['infrastructure_provisioning']['evergreen'].get(
@@ -79,6 +81,41 @@ class Provisioner(object):
 
         os.environ['TF_LOG'] = 'DEBUG'
         os.environ['TF_LOG_PATH'] = './terraform.log'
+
+    def setup_security_tf(self):
+        """
+        Generate the security.tf file
+        """
+        # Write security.tf.
+        with open(os.path.join('security.tf'), 'w') as security:
+            security.write('provider "aws" {\n')
+            security.write('    access_key = "{0}"\n'.format(self.aws_access_key))
+            security.write('    secret_key = "{0}"\n'.format(self.aws_secret_key))
+            security.write('    region = "${var.region}"\n')
+            security.write('}\n')
+            security.write('variable "key_name" {\n')
+            security.write('    default = "{0}"\n'.format(self.ssh_key_name))
+            security.write('}\n')
+            security.write('variable "key_file" {\n')
+            security.write('    default = "{0}"\n'.format(self.ssh_key_file))
+            security.write('}')
+
+    def setup_terraform_tf(self):
+        """
+        Copy terraform tf files and remote-scripts to work directory
+        """
+        # Copy terraform files and remote-scripts to work directory
+        directory = os.getcwd()
+        terraform_files = os.path.join(self.dsi_dir, 'terraform')
+        for source in glob.glob(os.path.join(terraform_files, '*')):
+            if os.path.isfile(source):
+                shutil.copy(source, directory)
+                LOG.info("Copied file %s", source)
+            else:
+                target = os.path.join(directory, os.path.basename(source))
+                rmtree_when_present(target)
+                shutil.copytree(source, target)
+                LOG.info("Copied directory %s", source)
 
     def provision_resources(self):
         """ Function used to actually provision the resources"""
@@ -182,6 +219,10 @@ class Provisioner(object):
         """
         Runs terraform to provision the cluster.
         """
+        # Create and copy needed security.tf and terraform.tf files into current work directory
+        self.setup_security_tf()
+        self.setup_terraform_tf()
+
         subprocess.check_call([self.terraform, 'init', '-upgrade'])
         tf_config = TerraformConfiguration(self.config)
         tf_config.to_json(file_name='cluster.json')  # pylint: disable=no-member
@@ -272,7 +313,9 @@ def run_and_save_output(command):
 
 
 def parse_command_line():
-    """Parse command line arguments."""
+    """
+    Parse command line arguments
+    """
     parser = argparse.ArgumentParser(description='Provision EC2 instances on AWS using terraform.')
     parser.add_argument('--log-file', help='path to log file')
     parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
@@ -281,7 +324,9 @@ def parse_command_line():
 
 
 def main():
-    """ Main function """
+    """
+    Main function
+    """
     args = parse_command_line()
     setup_logging(args.debug, args.log_file)
     config = ConfigDict('infrastructure_provisioning')
