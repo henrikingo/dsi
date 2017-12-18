@@ -2662,6 +2662,13 @@
                         "BF-5520"
                     ]
                 },
+                "contended_update":{
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
+                    "ticket":[
+                        "BF-7379"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":1.0,
                     "threshold":1.0,
@@ -3001,6 +3008,13 @@
                     "threshold":1.0,
                     "ticket":[
                         "BF-5520"
+                    ]
+                },
+                "contended_update":{
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
+                    "ticket":[
+                        "BF-7379"
                     ]
                 },
                 "fio_iops_test_read_iops":{
