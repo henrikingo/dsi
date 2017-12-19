@@ -57,6 +57,9 @@ run:
           sleep 1
         done | awk '{ print strftime("%Y-%m-%dT%H:%M:%S"), $0; fflush(); }'
 
+    # Indicate that mongodb database validation checks should be skipped. Defaults to false.
+    skip_validate: false
+
 
 # This is just a lookup table. Each test may reference some leaf node here from a test parameter.
 thread_levels:

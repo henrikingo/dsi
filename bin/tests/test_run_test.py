@@ -89,12 +89,15 @@ class RunTestTestCase(unittest.TestCase):
                      'cmd': 'cd YCSB/ycsb-mongodb; ./bin/ycsb load mongodb -s -P ' +
                             'workloads/workloadEvergreen -threads 8; sleep 1;',
                      'config_filename': 'workloadEvergreen',
-                     'workload_config': 'mock_workload_config'}
+                     'workload_config': 'mock_workload_config',
+                     'skip_validate': True
+                    }
                 ],
                 'mc': {
                     'monitor_interval': 10,
                     'per_thread_stats': 1
                 },
+                'jstests_dir': './jstests/hooks',
                 'post_test': [
                     {'on_workload_client': {
                         'retrieve_files': {
@@ -377,12 +380,16 @@ class RunTestTestCase(unittest.TestCase):
 
     # pylint: enable=no-value-for-parameter
 
+    @patch('run_test.run_validate')
     @patch('run_test.config_test_control.generate_mc_json')
     @patch('run_test.subprocess.check_call')
     @patch('run_test.copy_perf_output')
     @patch('run_test.run_pre_post_commands')
-    def test_run_tests(self, mock_pre_post, mock_copy_perf, mock_mc, mock_mc_json):
+    #pylint: disable=too-many-arguments
+    def test_run_tests(self, mock_pre_post, mock_copy_perf, mock_mc, mock_mc_json,
+                       mock_run_validate):
         """Test run_tests (the top level workhorse for test_control)"""
+
         run_tests(self.config)
 
         # We will check that the calls to run_pre_post_commands() happened in expected order
@@ -399,6 +406,8 @@ class RunTestTestCase(unittest.TestCase):
         mock_copy_perf.assert_called()
         mock_mc.assert_called()
         mock_mc_json.assert_called()
+
+        mock_run_validate.assert_called_once_with(self.config, 'benchRun')
 
 
 if __name__ == '__main__':

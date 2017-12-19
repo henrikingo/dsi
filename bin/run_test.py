@@ -339,7 +339,8 @@ def run_tests(config):
                     env=env)
             finally:
                 stop_background_tasks(background_tasks)
-                run_validate(config, test['id'])
+                if 'skip_validate' not in test or not test['skip_validate']:
+                    run_validate(config, test['id'])
                 run_pre_post_commands('post_test',
                                       [test, test_control_config, mongodb_setup_config], config,
                                       EXCEPTION_BEHAVIOR.CONTINUE, test['id'])
