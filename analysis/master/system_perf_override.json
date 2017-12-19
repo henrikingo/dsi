@@ -1928,6 +1928,13 @@
                         "PERF-723",
                         "BF-5520"
                     ]
+                },
+                "initial_load_capped":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6792"
+                    ]
                 }
             }
         },
@@ -2118,6 +2125,13 @@
                     "ticket":[
                         "PERF-723",
                         "BF-5520"
+                    ]
+                },
+                "initial_load_capped":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-6792"
                     ]
                 }
             }
