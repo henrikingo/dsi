@@ -1,0 +1,93 @@
+task_name: change_streams
+run:
+  - id: change_streams_multi_mongos
+    type: shell
+
+    cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
+    config_filename: workloads.yml  # The name used in previous row
+    workload_config:
+        tests:
+            default:
+              - change_streams_crud_throughput.js:
+                  thread_levels: [60]
+                  listener_levels: [15]
+                  update_lookup: false
+                  selective_change: false
+                  nb_collections: 1
+                  mongos_hosts: ${infrastructure_provisioning.out.mongos}
+              - change_streams_latency.js:
+                  thread_levels: [60]
+                  listener_levels: [15]
+                  update_lookup: false
+                  selective_change: false
+                  nb_collections: 1
+                  mongos_hosts: ${infrastructure_provisioning.out.mongos}
+              - cpu_noise.js
+
+        # These next five lines match existing workloads.yml.
+        target: ${mongodb_setup.meta.hostname}
+        port: ${mongodb_setup.meta.port}
+        # Hard coding for now. These aren't working right now
+        sharded: ${mongodb_setup.meta.is_sharded}
+        replica: ${mongodb_setup.meta.is_replset}
+    pre_test:
+      - on_workload_client:
+          upload_files:
+            workloads.yml: workloads/workloads.yml
+    post_test:
+      - on_workload_client:
+          retrieve_files:
+            workloads/workload_timestamps.csv: ../workloads_timestamps.csv
+
+  - id: fio
+    type: shell
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
+    config_filename: fio.ini
+    workload_config: ${test_control.common_fio_config}
+    pre_test:
+      - on_workload_client:
+          upload_files:
+            fio.ini: fio.ini
+    post_test:
+      - on_workload_client:
+          retrieve_files:
+            fio.json: ../fio.json
+
+  - id: iperf
+    type: shell
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    post_test:
+      - on_workload_client:
+          retrieve_files:
+            iperf.json: ../iperf.json
+
+pre_task:
+  - on_localhost:
+      exec: $DSI_PATH/bin/setup-workloads.sh
+  - on_workload_client:
+      exec: rm -rf workloads*
+  - on_workload_client:
+      # no order is guaranteed between the two upload files. That is okay here
+      upload_files:
+        workloads.tar.gz: workloads.tar.gz
+      upload_repo_files:
+        bin/process_fio_results.py: process_fio_results.py
+        bin/process_iperf_results.py: process_iperf_results.py
+        bin/fio-test.sh: fio-test.sh
+        bin/iperf-test.sh: iperf-test.sh
+  - on_workload_client:
+      exec: |
+        rm -rf workloads
+        mkdir workloads
+        tar zxvf workloads.tar.gz -C workloads
+  - on_all_hosts:
+      # Install iperf. It isn't available in yum on AWS instances
+      exec: |
+        sudo killall iperf3
+        rm -rf iperf
+        git clone https://github.com/esnet/iperf
+        cd iperf/
+        git checkout d06415822a
+        ./configure
+        make
+        sudo make install
