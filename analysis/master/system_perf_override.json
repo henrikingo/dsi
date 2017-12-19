@@ -2189,6 +2189,13 @@
                         "BF-6769"
                     ]
                 },
+                "count_with_type_predicate-noAgg":{
+                    "thread_threshold":0.37,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7407"
+                    ]
+                },
                 "distinct_types_no_predicate-useAgg":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
@@ -2417,10 +2424,10 @@
                     ]
                 },
                 "count_with_type_predicate-noAgg":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.37,
+                    "threshold":0.25,
                     "ticket":[
-                        "BF-6270"
+                        "BF-7407"
                     ]
                 },
                 "count_with_type_predicate-useAgg":{
