@@ -72,14 +72,13 @@ run:
           retrieve_files:
             fio.json: ../fio.json
 
-#  - id: iperf
-#    type: shell
-#    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
-#    post_test:
-#      - on_workload_client:
-#          retrieve_files:
-#            iperf.json: ../iperf.json
-
+  - id: iperf
+    type: shell
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    post_test:
+      - on_workload_client:
+          retrieve_files:
+            iperf.json: ../iperf.json
 
 pre_task:
   - on_localhost:
