@@ -6,10 +6,10 @@ import copy
 import logging
 import os
 import re
+import subprocess
 import sys
 import unittest
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 
 import host
@@ -17,6 +17,7 @@ from run_test import EXCEPTION_BEHAVIOR
 from run_test import copy_timeseries
 from run_test import print_trace
 from run_test import run_pre_post_commands
+from run_test import run_test
 from run_test import run_tests
 
 from mock import patch, mock_open, Mock
@@ -380,14 +381,47 @@ class RunTestTestCase(unittest.TestCase):
 
     # pylint: enable=no-value-for-parameter
 
+    @patch('run_test.make_workload_runner_host')
+    @patch('run_test.mkdir_p')
+    def test_run_test(self, mock_mkdir, mock_make_host):
+        """Test run_test """
+        mock_host = Mock(spec=host.RemoteHost)
+        mock_host.exec_command = Mock(return_value=0)
+        mock_make_host.return_value = mock_host
+        test = self.config['test_control']['run'][0]
+        with patch('run_test.open', mock_open()):
+            run_test(test, self.config)
+
+        mock_host.exec_command.assert_called()
+        # These are just throwaway mocks, pylint wants me to do something with them
+        mock_mkdir.assert_called()
+
+    @patch('run_test.make_workload_runner_host')
+    @patch('run_test.mkdir_p')
+    def test_run_test_with_error(self, mock_mkdir, mock_make_host):
+        """Test run_test where the exec command returns non-zero"""
+        mock_host = Mock(spec=host.RemoteHost)
+        mock_host.exec_command = Mock(return_value=1)
+        mock_make_host.return_value = mock_host
+        test = self.config['test_control']['run'][0]
+        with patch('run_test.open', mock_open()):
+            with self.assertRaises(subprocess.CalledProcessError):
+                run_test(test, self.config)
+
+        mock_host.exec_command.assert_called()
+        # These are just throwaway mocks, pylint wants me to do something with them
+        mock_mkdir.assert_called()
+
+    @patch('subprocess.check_call')
+    @patch('run_test.setup_ssh_agent')
     @patch('run_test.run_validate')
-    @patch('run_test.config_test_control.generate_mc_json')
-    @patch('run_test.subprocess.check_call')
+    @patch('run_test.generate_config_file')
+    @patch('run_test.run_test')
     @patch('run_test.legacy_copy_perf_output')
     @patch('run_test.run_pre_post_commands')
     #pylint: disable=too-many-arguments
-    def test_run_tests(self, mock_pre_post, mock_copy_perf, mock_mc, mock_mc_json,
-                       mock_run_validate):
+    def test_run_tests(self, mock_pre_post, mock_copy_perf, mock_generate, mock_run,
+                       mock_run_validate, mock_ssh_agent, mock_check_call):
         """Test run_tests (the top level workhorse for test_control)"""
 
         run_tests(self.config)
@@ -404,8 +438,10 @@ class RunTestTestCase(unittest.TestCase):
 
         # These are just throwaway mocks, pylint wants me to do something with them
         mock_copy_perf.assert_called()
-        mock_mc.assert_called()
-        mock_mc_json.assert_called()
+        mock_run.assert_called()
+        mock_generate.assert_called()
+        mock_ssh_agent.assert_called()
+        mock_check_call.assert_called()
 
         mock_run_validate.assert_called_once_with(self.config, 'benchRun')
 

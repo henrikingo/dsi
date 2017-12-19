@@ -97,8 +97,6 @@ pre_task:
       upload_files:
         ycsb.tar.gz: ycsb.tar.gz
       upload_repo_files:
-        bin/process_fio_results.py: process_fio_results.py
-        bin/fio-test.sh: fio-test.sh
   - on_workload_client:
       exec: |
         rm -rf YCSB

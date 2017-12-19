@@ -2,16 +2,17 @@
 
 import glob
 import json
+import logging
 import os
 import unittest
 import shutil
-import sys
 
+from mock import patch
+from testfixtures import LogCapture
 import yaml
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-import config_test_control  #pylint: disable=wrong-import-position
+from common.config import ConfigDict
+import run_test  #pylint: disable=wrong-import-position
 
 
 def load_json(filename, directory=None):
@@ -38,54 +39,47 @@ class TestConfigTestControl(unittest.TestCase):
         self.test_dir = os.path.dirname(os.path.abspath(__file__))
         self.artifact_dir = os.path.join(self.test_dir, 'config_test_control')
         self.repo_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        self.config_file = 'test_control.yml'
         self.copied_files = []  # List of files copied
         for filename in glob.glob(os.path.join(self.artifact_dir, '*.yml')):
             shutil.copy(filename, '.')
             self.copied_files.append(os.path.basename(filename))
+        self.config = ConfigDict('test_control')
+        self.config.load()
 
     def tearDown(self):
         ''' Delete temporary files from run '''
-        files = os.listdir('.')
-        for filename in files:
-            if filename.startswith("mc_.json"):
-                os.remove(filename)
-        os.remove('test_control.yml')
         for filename in self.copied_files:
             os.remove(filename)
         if os.path.isfile('workloads.yml'):
             os.remove('workloads.yml')
+        if os.path.isfile('workloadEvergreen'):
+            os.remove('workloadEvergreen')
 
-    def test_benchrun(self):
+    def test_benchrun_workload_config(self):
         '''
-        Load in configuration for a single cluster with benchrun
-        tests. Check the generated mc.json and workloads.yml
+        Test that generate_config_files works with a benchrun workload
         '''
-        shutil.copy('test_control.benchRun.yml', self.config_file)
-        config_test_control.generate_mc_json()
-
-        self.assertEqual(
-            load_json('mc_benchRun-wiredTiger.json'),
-            load_json('mc.benchrun.json.ok', self.artifact_dir),
-            'mc.json doesn\'t match expected for test_control.benchRun.yml')
+        run_test.generate_config_file(self.config['test_control']['run'][0])
         self.assertEqual(
             load_yaml('workloads.yml'), load_yaml('workloads.benchrun.yml.ok', self.artifact_dir),
-            'workloads.yml doesn\'t match expected for test_control.benchRun.yml')
+            'workloads.yml doesn\'t match expected for test_control.yml')
 
-    # Check only the first ycsb test for now. Not adding in all of the tests because we are
-    # removing mc momentarily.
-    def test_ycsb(self):
+    def test_ycsb_workload_config(self):
+        ''' Test that generate_config_files works with a ycsb run
         '''
-        Load in the configuration for a single cluster with ycsb
-        tests. Check the generated mc.json
-
-        '''
-        shutil.copy('test_control.ycsb.yml', self.config_file)
-        config_test_control.generate_mc_json(test_index=0)
+        run_test.generate_config_file(self.config['test_control']['run'][1])
         self.assertEqual(
-            load_json('mc_ycsb_load-wiredTiger.json'),
-            load_json('mc.ycsb.json.ok', self.artifact_dir),
-            'mc.json doesn\'t match expected for test_control.ycsb.yml')
+            load_yaml('workloadEvergreen'), load_yaml('workloadEvergreen.ok', self.artifact_dir),
+            'workloadEvergreen doesn\'t match expected for test_control.yml')
+
+    @patch('run_test.open')
+    def test_generate_config_no_config(self, mock_open):
+        '''Test that generate_config_file doesn't create a workload file and logs the correct
+        message if there is no config file'''
+        with LogCapture(level=logging.WARNING) as warning:
+            run_test.generate_config_file(self.config['test_control']['run'][2])
+        warning.check(('run_test', 'WARNING', 'No workload config in test control'))
+        mock_open.assert_not_called()
 
 
 if __name__ == '__main__':

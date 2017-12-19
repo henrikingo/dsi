@@ -97,7 +97,7 @@ run:
       sleep 1;
 
   - id: fio
-    type: shell
+    type: fio
     cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
     workload_config: ${test_control.common_fio_config}
@@ -112,7 +112,7 @@ run:
             fio.json: ../fio.json
 
   - id: iperf
-    type: shell
+    type: iperf
     cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
     skip_validate: true
     post_test:
@@ -144,8 +144,6 @@ pre_task:
       upload_files:
         ycsb.tar.gz: ycsb.tar.gz
       upload_repo_files:
-        bin/process_fio_results.py: process_fio_results.py
-        bin/process_iperf_results.py: process_iperf_results.py
         bin/fio-test.sh: fio-test.sh
         bin/iperf-test.sh: iperf-test.sh
   - on_workload_client:

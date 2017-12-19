@@ -36,8 +36,8 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
                     'path': 'bin/tests/artifacts/perf.unittest-out.json'
                 },
                 'output_file' : {
-                    'mongoshell': 'test_screen_capture.log-mongoshell',
-                    'ycsb': 'test_screen_capture.log-ycsb',
+                    'mongoshell': 'test_output.log',
+                    'ycsb': 'test_output.log',
                     'fio': 'fio.json',
                     'iperf': 'iperf.json'
                 },

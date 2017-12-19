@@ -5,7 +5,6 @@ from __future__ import print_function
 
 import argparse
 from collections import MutableMapping
-import copy
 from enum import Enum
 import inspect
 import logging
@@ -15,16 +14,17 @@ import subprocess
 import sys
 import threading
 import time
+import yaml
 
 from nose.tools import nottest
 
 from common.utils import mkdir_p
 from common.config import ConfigDict
-from common.host import extract_hosts, make_host, run_host_command
+from common.host import extract_hosts, make_host, run_host_command, make_workload_runner_host
+from common.host import INFO_ADAPTER
 from common.jstests import run_validate
-from common.log import setup_logging
+import common.log
 from common.workload_output_parser import parse_test_results, validate_config
-import config_test_control
 import mongodb_setup
 
 LOG = logging.getLogger(__name__)
@@ -66,6 +66,30 @@ def legacy_copy_perf_output():
     with open('../perf.json') as perf_file:
         for line in perf_file:
             LOG.info(line.rstrip())
+
+
+def generate_config_file(test):
+    ''' Generate configuration files from the test run
+
+    :param ConfigDict test: The configuration for the test
+    '''
+
+    try:
+        workload_config = test['workload_config']
+        with open(test['config_filename'], 'w') as workloads_file:
+            if isinstance(workload_config, ConfigDict):
+                # Can't assign into config dict. Need an actual dictionary
+                workload_config_dict = workload_config.as_dict()
+                if 'scale_factor' in workload_config_dict:
+                    if isinstance(workload_config_dict['scale_factor'], str):
+                        #pylint: disable=eval-used
+                        workload_config_dict['scale_factor'] = eval(
+                            workload_config_dict['scale_factor'])
+                workloads_file.write(yaml.dump(workload_config_dict))
+            elif isinstance(workload_config, str):
+                workloads_file.write(workload_config)
+    except KeyError:
+        LOG.warn("No workload config in test control")
 
 
 def run_pre_post_commands(command_key,
@@ -286,16 +310,35 @@ def stop_background_tasks(background_tasks):
 
 
 @nottest
+def run_test(test, config, reports_dir='reports'):
+    '''
+    Run one test. This creates a Host object, runs the command, and saves the output to a file
+
+    :param test ConfigDict: The ConfigDict object for the test to run
+    :param config ConfigDict: The top level ConfigDict
+    :param string reports_dir: the report directory.
+'''
+    directory = os.path.join(reports_dir, test['id'])
+    filename = os.path.join(directory, 'test_output.log')
+    mkdir_p(directory)
+    client_host = make_workload_runner_host(config)
+
+    with open(filename, 'wb+', 0) as out:
+        tee_out = common.log.TeeStream(INFO_ADAPTER, out)
+        error = client_host.exec_command(test['cmd'], out=tee_out, err=tee_out)
+        if error:
+            # To match previous behavior, we are raising a CalledProcessError
+            # TODO: we should mark the test as failed in perf.json
+            raise subprocess.CalledProcessError(error, test['cmd'])
+
+    client_host.close()
+
+
+@nottest
 def run_tests(config):
     """Main logic to run tests"""
     test_control_config = config['test_control']
     mongodb_setup_config = config['mongodb_setup']
-
-    dsi_bin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)))
-
-    mission_control = os.path.join(dsi_bin_path, 'mc')
-    if 'MC' in os.environ:
-        mission_control = os.environ['MC']
 
     setup_ssh_agent(config)
     cleanup_reports()
@@ -306,14 +349,6 @@ def run_tests(config):
 
     # pylint: disable=too-many-nested-blocks
     try:
-        # Everything should eventually come through this path
-        # Call mission control
-        # Pass in MC_MONITOR_INTERVAL=config.test_control.mc_monitor_interval to environment
-        env = copy.deepcopy(os.environ)
-        env['MC_MONITOR_INTERVAL'] = str(config['test_control']['mc']['monitor_interval'])
-        env['MC_PER_THREAD_STATS'] = str(config['test_control']['mc']['per_thread_stats'])
-        LOG.debug('env for mc call is %s', str(env))
-
         if os.path.exists('perf.json'):
             os.remove('perf.json')
             LOG.warning("Found old perf.json file. Overwriting.")
@@ -321,9 +356,8 @@ def run_tests(config):
         for index, test in enumerate(test_control_config['run']):
             background_tasks = []
             try:
-                # Generate the mc.json file for this test only. Save it to unique name
-                config_test_control.generate_mc_json(test_index=index)
-                mc_config_file = 'mc_' + test['id'] + '.json'
+                # Generate the tests configuration file if there is one.
+                generate_config_file(test)
 
                 # Only run between_tests after the first test.
                 if index > 0:
@@ -334,14 +368,11 @@ def run_tests(config):
                                       config, EXCEPTION_BEHAVIOR.RERAISE, test['id'])
                 background_tasks = start_background_tasks(config, test, test['id'])
 
+                LOG.info("Starting test %s", test['id'])
                 timer = {}
                 timer['start'] = time.time()
-                subprocess.check_call(
-                    [
-                        mission_control, '-config', mc_config_file, '-run', test['id'], '-o',
-                        'perf.json'
-                    ],
-                    env=env)
+                # Run the actual task
+                run_test(test, config)
                 timer['end'] = time.time()
 
             finally:
@@ -353,6 +384,7 @@ def run_tests(config):
                                       EXCEPTION_BEHAVIOR.CONTINUE, test['id'])
 
             # Parse test output (on successful test exit)
+            LOG.info("After successful test run for test %s. Parsing results now", test['id'])
             parse_test_results(test, config, timer)
 
     finally:
@@ -377,7 +409,7 @@ def main(argv):
     parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
     parser.add_argument('--log-file', help='path to log file')
     args = parser.parse_args(argv)
-    setup_logging(args.debug, args.log_file)
+    common.log.setup_logging(args.debug, args.log_file)
     config = ConfigDict('test_control')
     config.load()
     run_tests(config)

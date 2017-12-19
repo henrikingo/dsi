@@ -26,7 +26,4 @@ kill %1
 ssh -A ${HOSTNAME} "sudo killall iperf3" || true
 sudo killall iperf3 || true
 
-# Produce a perf.json file and cleanup
-python ./process_iperf_results.py
-
 echo "Done $0"

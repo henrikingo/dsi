@@ -7,6 +7,7 @@ See SUPPORTED_TYPES below for a list of types you can use.
 import json
 import logging
 import os
+import re
 
 from nose.tools import nottest
 
@@ -98,7 +99,7 @@ class ResultParser(object):
         self.reports_root = config['test_control']['reports_dir_basename']
         self.perf_json_path = config['test_control']['perf_json']['path']
         self.load_perf_json()
-        self.reports_log_dir = os.path.join(self.reports_root, self.test_id, self.test_id)
+        self.reports_log_dir = os.path.join(self.reports_root, self.test_id)
         self.timer = timer
         self.input_log = None
 
@@ -280,6 +281,23 @@ class FioParser(ResultParser):
         """Override super() to return a huge string instead of list of lines"""
         return "".join(super(FioParser, self).load_input_log())
 
+    def add_filtered_result(self, name, result, threads="1"):
+        """
+        Filter and merge new result into (potentially) existing perf_json structure
+
+        For fio we filter out a number of tests. The filtering happens here.
+        See ResultParser.add_result for parameter values.
+        """
+        # Regex to filter the results
+        test_to_print = [
+            'latency_test_(read|write)_clat_mean', 'iops_test_(read|write)_iops',
+            'streaming_bandwidth_test_(read|write)_iops'
+        ]
+        regex = '(' + ')|('.join(test_to_print) + ')'
+        matcher = re.compile(regex)
+        if matcher.search(name):
+            return self.add_result(name, result, threads)
+
     def parse(self):
         """Parse fio.json"""
         fio_output = json.loads(self.load_input_log())
@@ -292,13 +310,13 @@ class FioParser(ResultParser):
                     jobname = job['jobname']
                     if result['iops'] > 0:
                         name = self._format_name(jobname, write_or_read, "iops")
-                        self.add_result(name, result['iops'])
+                        self.add_filtered_result(name, result['iops'])
 
                         name = self._format_name(jobname, write_or_read, "clat_mean")
-                        self.add_result(name, result['clat']['mean'])
+                        self.add_filtered_result(name, result['clat']['mean'])
 
                         name = self._format_name(jobname, write_or_read, "clat_stddev")
-                        self.add_result(name, result['clat']['stddev'])
+                        self.add_filtered_result(name, result['clat']['stddev'])
 
     def _format_name(self, jobname, write_or_read, testname):
         return "{0}_{1}_{2}_{3}".format(self.prefix, jobname, write_or_read, testname)

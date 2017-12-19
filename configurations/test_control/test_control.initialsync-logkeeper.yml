@@ -44,8 +44,6 @@ run:
 
 # Disable jstest validations, it just takes too long to run it for this test.
 jstests_dir: ""
-mc:
-  monitor_interval: 60
 
 pre_task:
   - on_localhost:

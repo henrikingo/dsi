@@ -277,55 +277,13 @@ def validate_terraform(config):
             assert False
 
 
-def find_mission_control(config, dsipath):
-    '''
-    Returns the location of the mission_control binary to use.
-    '''
-    try:
-        system_mc = subprocess.check_output(['which', 'mc']).strip()
-    except subprocess.CalledProcessError:
-        system_mc = None
-
-    if 'mc' in config:
-        mission_control = os.path.abspath(os.path.expanduser(config['mc']))
-        LOGGER.debug('Using mission-control binary specified by bootstrap.mc %s', config['mc'])
-    elif system_mc is not None:
-        mission_control = os.path.abspath(system_mc)
-        LOGGER.debug('Using mission-control binary specified by $(which mc)')
-    else:
-        mission_control = os.path.join(dsipath, "bin/mc")
-        LOGGER.debug('Using mission-control binary in default location')
-
-    LOGGER.info('Path to mission-control binary is %s', mission_control)
-    return mission_control
-
-
-def validate_mission_control(config):
-    '''Asserts that mission-control is on the path'''
-    if not config['production']:
-        try:
-            errors = subprocess.Popen(
-                ["mc", "-h"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
-            if errors.split('\n')[0] != 'Usage of mc:':
-                LOGGER.critical('Call to mission-control failed.')
-                LOGGER.critical('See documentation for installing '
-                                'mission-control: http://bit.ly/2ufjQ0R')
-                assert False
-        except OSError:
-            LOGGER.critical('mission-control binary file not found.')
-            LOGGER.critical('See documentation for installing '
-                            'mission-control: http://bit.ly/2ufjQ0R')
-            assert False
-
-
-def write_dsienv(directory, dsipath, mission_control, terraform, config):
+def write_dsienv(directory, dsipath, terraform, config):
     '''
     Writes out the dsienv.sh file. It saves the path to DSI repo.
     '''
     with open(os.path.join(directory, 'dsienv.sh'), 'w') as dsienv:
         dsienv.write('export DSI_PATH={0}\n'.format(dsipath))
         dsienv.write('export PATH={0}/bin:$PATH\n'.format(dsipath))
-        dsienv.write('export MC={0}\n'.format(mission_control))
         dsienv.write('export TERRAFORM={0}'.format(terraform))
         if "workloads_dir" in config:
             dsienv.write('\nexport WORKLOADS_DIR={0}'.format(config["workloads_dir"]))
@@ -402,12 +360,10 @@ def main():
     dsipath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     LOGGER.info('dsipath is %s', dsipath)
 
-    mission_control = find_mission_control(config, dsipath)
     config['terraform'] = find_terraform(config, directory)
-    validate_mission_control(config)
     validate_terraform(config)
 
-    write_dsienv(directory, dsipath, mission_control, config['terraform'], config)
+    write_dsienv(directory, dsipath, config['terraform'], config)
 
     # Copy terraform tf files and remote-scripts to work directory
     cluster_path = os.path.join(dsipath, 'clusters', 'default')

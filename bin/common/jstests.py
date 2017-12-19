@@ -5,7 +5,7 @@ from functools import partial
 import logging
 import os
 
-from host import extract_hosts, make_host
+from host import make_workload_runner_host
 from thread_runner import run_threads
 from utils import mkdir_p
 
@@ -32,12 +32,7 @@ def jstest_one_host(config, mongo_uri, reports_dir, current_test_id, name):
     directory = os.path.join(reports_dir, current_test_id, 'db-correctness', name)
     filename = os.path.join(directory, mongo_uri)
     mkdir_p(directory)
-    # Make the host object for the client
-    ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
-    ssh_key_file = os.path.expanduser(ssh_key_file)
-    ssh_user = config['infrastructure_provisioning']['tfvars']['ssh_user']
-    host_info = extract_hosts('workload_client', config)[0]
-    client_host = make_host(host_info, ssh_user, ssh_key_file)
+    client_host = make_workload_runner_host(config)
     script = SCRIPT_NAMES[name]
 
     with open(filename, 'wb+', 0) as out:
@@ -54,6 +49,7 @@ def jstest_one_host(config, mongo_uri, reports_dir, current_test_id, name):
         else:
             # Indicate that the script returned 0. This is checked by the analysis script rules.py.
             out.write("0")
+    client_host.close()
 
 
 def validate_one_host(config, mongo_uri, reports_dir, current_test_id, replica_checks=False):

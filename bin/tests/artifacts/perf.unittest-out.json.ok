@@ -582,138 +582,12 @@
         },
         {
             "end":2,
-            "name":"fio_setupfiles_write_iops",
-            "results":{
-                "1":{
-                    "ops_per_sec":439,
-                    "ops_per_sec_values":[
-                        439
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
-            "name":"fio_setupfiles_write_clat_mean",
-            "results":{
-                "1":{
-                    "ops_per_sec":1655.53,
-                    "ops_per_sec_values":[
-                        1655.53
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
-            "name":"fio_setupfiles_write_clat_stddev",
-            "results":{
-                "1":{
-                    "ops_per_sec":3171.96,
-                    "ops_per_sec_values":[
-                        3171.96
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
-            "name":"fio_setupfiles_read_iops",
-            "results":{
-                "1":{
-                    "ops_per_sec":492,
-                    "ops_per_sec_values":[
-                        492
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
-            "name":"fio_setupfiles_read_clat_mean",
-            "results":{
-                "1":{
-                    "ops_per_sec":529.22,
-                    "ops_per_sec_values":[
-                        529.22
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
-            "name":"fio_setupfiles_read_clat_stddev",
-            "results":{
-                "1":{
-                    "ops_per_sec":672.37,
-                    "ops_per_sec_values":[
-                        672.37
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
-            "name":"fio_latency_test_write_iops",
-            "results":{
-                "1":{
-                    "ops_per_sec":825,
-                    "ops_per_sec_values":[
-                        825
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
             "name":"fio_latency_test_write_clat_mean",
             "results":{
                 "1":{
                     "ops_per_sec":608.21,
                     "ops_per_sec_values":[
                         608.21
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
-            "name":"fio_latency_test_write_clat_stddev",
-            "results":{
-                "1":{
-                    "ops_per_sec":1579.44,
-                    "ops_per_sec_values":[
-                        1579.44
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
-            "name":"fio_latency_test_read_iops",
-            "results":{
-                "1":{
-                    "ops_per_sec":824,
-                    "ops_per_sec_values":[
-                        824
                     ]
                 }
             },
@@ -736,54 +610,12 @@
         },
         {
             "end":2,
-            "name":"fio_latency_test_read_clat_stddev",
-            "results":{
-                "1":{
-                    "ops_per_sec":1494.63,
-                    "ops_per_sec_values":[
-                        1494.63
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
             "name":"fio_iops_test_write_iops",
             "results":{
                 "1":{
                     "ops_per_sec":2749,
                     "ops_per_sec_values":[
                         2749
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
-            "name":"fio_iops_test_write_clat_mean",
-            "results":{
-                "1":{
-                    "ops_per_sec":180020.28,
-                    "ops_per_sec_values":[
-                        180020.28
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
-            "name":"fio_iops_test_write_clat_stddev",
-            "results":{
-                "1":{
-                    "ops_per_sec":41480.95,
-                    "ops_per_sec_values":[
-                        41480.95
                     ]
                 }
             },
@@ -806,34 +638,6 @@
         },
         {
             "end":2,
-            "name":"fio_iops_test_read_clat_mean",
-            "results":{
-                "1":{
-                    "ops_per_sec":176999.03,
-                    "ops_per_sec_values":[
-                        176999.03
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
-            "name":"fio_iops_test_read_clat_stddev",
-            "results":{
-                "1":{
-                    "ops_per_sec":46759.77,
-                    "ops_per_sec_values":[
-                        46759.77
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
             "name":"fio_streaming_bandwidth_test_write_iops",
             "results":{
                 "1":{
@@ -848,68 +652,12 @@
         },
         {
             "end":2,
-            "name":"fio_streaming_bandwidth_test_write_clat_mean",
-            "results":{
-                "1":{
-                    "ops_per_sec":39266.92,
-                    "ops_per_sec_values":[
-                        39266.92
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
-            "name":"fio_streaming_bandwidth_test_write_clat_stddev",
-            "results":{
-                "1":{
-                    "ops_per_sec":21482.37,
-                    "ops_per_sec_values":[
-                        21482.37
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
             "name":"fio_streaming_bandwidth_test_read_iops",
             "results":{
                 "1":{
                     "ops_per_sec":6474,
                     "ops_per_sec_values":[
                         6474
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
-            "name":"fio_streaming_bandwidth_test_read_clat_mean",
-            "results":{
-                "1":{
-                    "ops_per_sec":38284.38,
-                    "ops_per_sec_values":[
-                        38284.38
-                    ]
-                }
-            },
-            "start":1,
-            "workload":"fio"
-        },
-        {
-            "end":2,
-            "name":"fio_streaming_bandwidth_test_read_clat_stddev",
-            "results":{
-                "1":{
-                    "ops_per_sec":21547.89,
-                    "ops_per_sec_values":[
-                        21547.89
                     ]
                 }
             },

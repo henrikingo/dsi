@@ -501,85 +501,10 @@ class TestBootstrap(unittest.TestCase):
         bootstrap.validate_terraform(config)
         self.assertEquals(config, config)
 
-    @patch('subprocess.Popen')
-    def test_mc_valid(self, mock_popen):
-        """Testing validate_mission_control with valid inputs"""
-        mock_popen.return_value.communicate.return_value = ('', 'Usage of mc:')
-        config = {'production': False}
-        bootstrap.validate_mission_control(config)
-        self.assertEquals(config, config)
-
-    @patch('subprocess.Popen.communicate')
-    def test_mission_control_not_on_path(self, mock_popen):
-        """Testing validate_mission_control fails when not on path"""
-        mock_popen.side_effect = OSError
-        config = {'production': False}
-        with LogCapture(level=logging.CRITICAL) as crit:
-            with self.assertRaises(AssertionError):
-                bootstrap.validate_mission_control(config)
-            crit_logs = set(crit.actual())
-            crit_expected = set(
-                [('bootstrap', 'CRITICAL', 'mission-control binary file not found.'),
-                 ('bootstrap', 'CRITICAL', 'See documentation for installing mission-control: '
-                  'http://bit.ly/2ufjQ0R')])
-            self.assertTrue(crit_expected.issubset(crit_logs))
-
-    @patch('subprocess.Popen')
-    def test_mission_control_call_failed(self, mock_popen):
-        """Testing validate_mission_control fails when 'mc -h' fails"""
-        mock_popen.return_value.communicate.return_value = ('', '')
-        config = {'production': False}
-        with LogCapture(level=logging.CRITICAL) as crit:
-            with self.assertRaises(AssertionError):
-                bootstrap.validate_mission_control(config)
-            crit_logs = set(crit.actual())
-            crit_expected = set([('bootstrap', 'CRITICAL', 'Call to mission-control failed.'),
-                                 ('bootstrap', 'CRITICAL',
-                                  'See documentation for installing mission-control: '
-                                  'http://bit.ly/2ufjQ0R')])
-            self.assertTrue(crit_expected.issubset(crit_logs))
-
-    @patch('subprocess.check_output')
-    def test_find_mission_control_no_except_mc_in_config(self, mock_check_output):
-        """Testing find_mission_control when no exception, val in config"""
-        mock_check_output.return_value = '/usr/bin/mc'
-        config = {}
-        config['mc'] = '/Users/testuser/config_override/mc'
-        mission_control = bootstrap.find_mission_control(config, '/Users/testuser/dsi')
-        self.assertEqual(mission_control, '/Users/testuser/config_override/mc')
-
-    @patch('subprocess.check_output')
-    def test_find_mission_control_exception_mc_in_config(self, mock_check_output):
-        """Testing find_mission_control when throws exception, val in config"""
-        mock_check_output.side_effect = subprocess.CalledProcessError('Test', 1)
-        config = {}
-        config['mc'] = '/Users/testuser/config_override/mc'
-        mission_control = bootstrap.find_mission_control(config, '/Users/testuser/dsi')
-        self.assertEqual(mission_control, '/Users/testuser/config_override/mc')
-
-    @patch('subprocess.check_output')
-    def test_find_mission_control_no_except_mc_not_in_config(self, mock_check_output):
-        """Testing find_mission_control when no exception, val not in config"""
-        mock_check_output.return_value = '/usr/bin/mc'
-        config = {}
-        config.pop('mc', None)
-        mission_control = bootstrap.find_mission_control(config, '/Users/testuser/dsi')
-        self.assertEqual(mission_control, '/usr/bin/mc')
-
-    @patch('subprocess.check_output')
-    def test_find_mission_control_exception_mc_not_in_config(self, mock_check_output):
-        """Testing find_mission_control throws exception, val not in config"""
-        mock_check_output.side_effect = subprocess.CalledProcessError('Test', 1)
-        config = {}
-        config.pop('mc', None)
-        mission_control = bootstrap.find_mission_control(config, '/Users/testuser/dsi')
-        self.assertEqual(mission_control, '/Users/testuser/dsi/bin/mc')
-
     def test_write_dsienv(self):
         """Testing write_dsienv with workloads and ycsb paths specified"""
         directory = os.path.dirname(os.path.abspath(__file__))
         dsipath = "/Users/test_user/dsipath"
-        mission_control = "/Users/test_user/mc"
         terraform = "/Users/test_user/terraform"
         config = {
             "workloads_dir": "/Users/test_user/workloads",
@@ -588,11 +513,10 @@ class TestBootstrap(unittest.TestCase):
 
         master_dsienv = ('export DSI_PATH=/Users/test_user/dsipath\n'
                          'export PATH=/Users/test_user/dsipath/bin:$PATH\n'
-                         'export MC=/Users/test_user/mc\n'
                          'export TERRAFORM=/Users/test_user/terraform\n'
                          'export WORKLOADS_DIR=/Users/test_user/workloads\n'
                          'export YCSB_DIR=/Users/test_user/ycsb')
-        bootstrap.write_dsienv(directory, dsipath, mission_control, terraform, config)
+        bootstrap.write_dsienv(directory, dsipath, terraform, config)
 
         with open(os.path.join(directory, "dsienv.sh")) as dsienv:
             test_dsienv = dsienv.read()
@@ -603,14 +527,12 @@ class TestBootstrap(unittest.TestCase):
         """Testing write_dsienv without workloads or ycsb paths specified"""
         directory = os.path.dirname(os.path.abspath(__file__))
         dsipath = "/Users/test_user/dsipath"
-        mission_control = "/Users/test_user/mc"
         terraform = "/Users/test_user/terraform"
         config = {}
         master_dsienv = ('export DSI_PATH=/Users/test_user/dsipath\n'
                          'export PATH=/Users/test_user/dsipath/bin:$PATH\n'
-                         'export MC=/Users/test_user/mc\n'
                          'export TERRAFORM=/Users/test_user/terraform')
-        bootstrap.write_dsienv(directory, dsipath, mission_control, terraform, config)
+        bootstrap.write_dsienv(directory, dsipath, terraform, config)
 
         with open(os.path.join(directory, "dsienv.sh")) as dsienv:
             test_dsienv = dsienv.read()

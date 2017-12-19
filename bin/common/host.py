@@ -171,7 +171,7 @@ def _extract_hosts(key, config):
     workload_client.
 
     :param str key: The key to use (mongod, mongod, ...)
-    :param ConfigDict config: The configugration
+    :param ConfigDict config: The configuration
 
     :returns  list of HostInfo objects
     '''
@@ -181,6 +181,18 @@ def _extract_hosts(key, config):
             for i, host_info in enumerate(config['infrastructure_provisioning']['out'][key])
         ]
     return list()
+
+
+def make_workload_runner_host(config):
+    ''' Convenience function to make a host to connect to the workload runner node
+
+    :param ConfigDict config: The configuration
+    '''
+    ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+    ssh_key_file = os.path.expanduser(ssh_key_file)
+    ssh_user = config['infrastructure_provisioning']['tfvars']['ssh_user']
+    host_info = extract_hosts('workload_client', config)[0]
+    return make_host(host_info, ssh_user, ssh_key_file)
 
 
 def extract_hosts(key, config):
@@ -325,6 +337,11 @@ class RemoteHost(Host):
         try:
             ssh.connect(host, username=user, key_filename=pem_file)
             ftp = ssh.open_sftp()
+
+            # Setup authentication forwarding. See
+            # https://stackoverflow.com/questions/23666600/ssh-key-forwarding-using-python-paramiko
+            session = ssh.get_transport().open_session()
+            paramiko.agent.AgentRequestHandler(session)
         except (paramiko.SSHException, socket.error):
             LOG.exception('failed to connect to %s@%s', user, host)
             exit(1)

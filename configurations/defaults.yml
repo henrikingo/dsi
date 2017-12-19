@@ -153,21 +153,17 @@ test_control:
   #     - restart_mongodb:
   #           clean_logs: true
   #           clean_db_dir: true
-  mc:
-    monitor_interval: 1
-    per_thread_stats: "yes"
 
-  # Note: Until we purge mission-control, these are still hard coded, so you can't actually change them yet
   output_file:
-    mongoshell: test_screen_capture.log--ec2-user@${infrastructure_provisioning.out.workload_client.0.public_ip}
-    ycsb: test_screen_capture.log--ec2-user@${infrastructure_provisioning.out.workload_client.0.public_ip}
+    mongoshell: test_output.log
+    ycsb: test_output.log
     fio: fio.json
     iperf: iperf.json
 
   # As I'm writing this, the basename IS the name. PERF-1096 will add a unique component.
   reports_dir_basename: reports
   perf_json:
-    path: perf.new.json
+    path: perf.json
 
   common_fio_config: |
     [global]
