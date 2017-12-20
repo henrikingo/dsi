@@ -6,7 +6,7 @@ But some superficial unit testing is still possible and meaningful to execute.
 
 
 """
-
+import os
 import unittest
 import yaml
 
@@ -19,6 +19,11 @@ class TestMultiEvergreen(TestRequestsParent):
     """
     Test the MultiEvergreen client class.
     """
+
+    @classmethod
+    def tearDownClass(cls):
+        """Remove test output file"""
+        os.remove("5873a2613ff1224e8e0003ea.yml")
 
     def test_parse_options(self):
         """MultiEvergreen: parse options."""

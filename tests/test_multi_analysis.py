@@ -1,6 +1,7 @@
 """Unit tests for util/multi_analysis.py"""
 
 from __future__ import print_function
+import os
 import unittest
 
 from tests import test_utils
@@ -473,6 +474,7 @@ class TestMultiEvergreenAnalysis(TestRequestsParent):
         ]
         main(args)
         # Intentionally not checking output files, just testing that we run without exceptions.
+        os.remove("test_outfile.json")
 
 
 if __name__ == '__main__':

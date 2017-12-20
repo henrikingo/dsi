@@ -211,7 +211,7 @@ class MongoShellParser(ResultParser):
         Parse mongoshell (benchrun) results as we report them in the workloads repo.
 
         Example line:
-        >>> contended_update : 18154.473077825252 64
+        ">>> contended_update : 18154.473077825252 64"
         """
         for line in self.load_input_log():
             # This is the magic marker for results emitted by mongoshell kind of test
