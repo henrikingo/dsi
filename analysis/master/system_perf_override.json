@@ -2135,6 +2135,65 @@
                     ]
                 }
             }
+        },
+        "retryable_writes_workloads_WT":{
+            "ndays":{
+                "mixed_findOne_retry":{
+                    "create_time":"2017-12-19T05:32:37.02Z",
+                    "end":1513701410.0,
+                    "max":18182.583522790785,
+                    "name":"mixed_findOne_retry",
+                    "order":9358,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":15790.142005467258,
+                            "ops_per_sec_values":[
+                                15790.142005467258
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":17678.876210828457,
+                            "ops_per_sec_values":[
+                                17678.876210828457
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":4362.250894548162,
+                            "ops_per_sec_values":[
+                                4362.250894548162
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":18182.583522790785,
+                            "ops_per_sec_values":[
+                                18182.583522790785
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":16419.953078978753,
+                            "ops_per_sec_values":[
+                                16419.953078978753
+                            ]
+                        }
+                    },
+                    "revision":"5a781806537d7710c3b895e450df2307b8861b69",
+                    "start":1513698686.0,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7438"
+                    ],
+                    "workload":"shell/benchrun"
+                }
+            },
+            "reference":{},
+            "threshold":{}
         }
     },
     "linux-3-node-replSet":{
