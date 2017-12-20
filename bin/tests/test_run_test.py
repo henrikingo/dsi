@@ -383,7 +383,7 @@ class RunTestTestCase(unittest.TestCase):
     @patch('run_test.run_validate')
     @patch('run_test.config_test_control.generate_mc_json')
     @patch('run_test.subprocess.check_call')
-    @patch('run_test.copy_perf_output')
+    @patch('run_test.legacy_copy_perf_output')
     @patch('run_test.run_pre_post_commands')
     #pylint: disable=too-many-arguments
     def test_run_tests(self, mock_pre_post, mock_copy_perf, mock_mc, mock_mc_json,
