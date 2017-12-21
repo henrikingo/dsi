@@ -18,6 +18,7 @@ from mock import patch, Mock, mock, MagicMock
 from common.utils import mkdir_p
 
 from bin.common.host import make_host_runner
+from bin.common.log import TeeStream
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 
@@ -282,7 +283,7 @@ class HostTestCase(unittest.TestCase):
         self.assertFalse(isdir, "expected False")
         remote.ftp.stat.assert_called_with('/exception')
 
-    def test_local_host_(self):
+    def test_local_host(self):
         """ Test run command map retrieve_files """
 
         local = host.LocalHost()
@@ -333,6 +334,27 @@ class HostTestCase(unittest.TestCase):
         local.exec_command(command, out, err)
         self.assertEqual(out.getvalue(), "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\nblast off!\n")
         self.assertEqual(err.getvalue(), "")
+
+    def test_local_host_tee(self):
+        """ Test run command map retrieve_files """
+
+        local = host.LocalHost()
+        mkdir_p(os.path.dirname(self.filename))
+
+        expected = "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\nblast off!\n"
+        with open(self.filename, "w") as the_file:
+            out = StringIO()
+            tee = TeeStream(the_file, out)
+            err = StringIO()
+            command = "seq 10 -1 1 | xargs  -I % sh -c '{ echo %; sleep .1; }'; \
+        echo 'blast off!'"
+
+            local.exec_command(command, tee, err)
+            self.assertEqual(out.getvalue(), expected)
+            self.assertEqual(err.getvalue(), "")
+
+        with open(self.filename) as the_file:
+            self.assertEqual(expected, "".join(the_file.readlines()))
 
     @patch('paramiko.SSHClient')
     def test_exists_os_error(self, mock_ssh):

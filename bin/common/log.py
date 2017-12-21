@@ -55,3 +55,73 @@ class IOLogAdapter(StringIO):
         for line in iterable:
             self._barf_if_closed()
             self.write(line)
+
+
+class TeeStream(object):
+    """ A class type to tee output to multiple streams
+    Only write, writelines, flush and close are supported. Add more
+    method if necessary.
+
+    Nothing is returned by any of the methods and they will raise exceptions
+    as defined by the 'streams'. So for example, calling close multiple times
+    shouldn't raise exceptions but writing to a closed stream probably will.
+
+    The following example would write stdout to filename *and* info logger and
+    writes stderr to filename and error logger:
+
+        with open(filename, 'w+', 0) as out:
+            tee_out = TeeStream(INFO_ADAPTER, out)
+            tee_err = TeeStream(ERROR_ADAPTER, out)
+            host.exec_command(command, out=tee_out, err=tee_err, pty=True)
+
+            tee_out.flush()
+            tee_out.close()
+
+            tee_err.flush()
+            tee_err.close()
+
+    :param stream: the streams to write to
+    :type streams: iterable, array, tuple
+
+    :see https://docs.python.org/2/library/io.html#io.IOBase for the
+    interface it should implement.
+    """
+
+    def __init__(self, *streams):
+        self.streams = list(streams)
+        self.closed = False
+
+    def write(self, line):
+        """
+        write line to all streams
+        :param line: the line to write
+        :type  line: string
+        """
+        for stream in self.streams:
+            stream.write(line)
+
+    def writelines(self, iterable):
+        """
+        write the contents of iterable to all streams (each line is written to
+        each stream in turn)
+        :param iterable: the lines to write
+        :type  iterable: array, iter, generator .. something iterable
+        """
+        for line in iterable:
+            for stream in self.streams:
+                stream.write(line)
+
+    def flush(self):
+        """
+        flush each stream in turn
+        """
+        for stream in self.streams:
+            stream.flush()
+
+    def close(self):
+        """
+        close each stream in turn
+        """
+        self.closed = True
+        for stream in self.streams:
+            stream.close()
