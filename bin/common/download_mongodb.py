@@ -7,7 +7,7 @@ import re
 from uuid import uuid4
 
 #pylint: disable=too-few-public-methods
-from host import RemoteHost, LocalHost
+from host import make_host, extract_hosts
 from thread_runner import run_threads
 
 LOG = logging.getLogger(__name__)
@@ -31,9 +31,8 @@ def temp_file(path="mongodb.tgz", sanitize=lambda s: re.sub(r'[^A-Za-z0-9_\-.]',
 class DownloadMongodb(object):
     """Download and install mongodb_binary_archive on all nodes."""
 
-    def __init__(self, config, run_locally=False):
+    def __init__(self, config):
 
-        self.run_locally = run_locally
         self.config = config
         self.mongodb_binary_archive = config['mongodb_setup'].get('mongodb_binary_archive', "")
 
@@ -60,9 +59,6 @@ class DownloadMongodb(object):
 
     def _parse_hosts(self):
         """Parse the public_ip's out of infrastructure_provisioning.out.yml"""
-        if self.run_locally:
-            self.hosts = [LocalHost()]
-            return
         # ["out"] contains a structure like:
         #
         # mongod:
@@ -77,12 +73,8 @@ class DownloadMongodb(object):
         #
         # We are flexible / future proof and accept anything that comes with a
         # public_ip.
-        for val in self.config["infrastructure_provisioning"]["out"].values():
-            if isinstance(val, list):
-                for srv in val:
-                    if 'public_ip' in srv.keys():
-                        self.hosts.append(
-                            RemoteHost(srv['public_ip'], self.ssh_user, self.ssh_key_file))
+        for host_info in extract_hosts('all_hosts', self.config):
+            self.hosts.append(make_host(host_info, self.ssh_user, self.ssh_key_file))
 
     def download_and_extract(self):
         """Download self.mongodb_binary_archive, extract it, and create some symlinks."""

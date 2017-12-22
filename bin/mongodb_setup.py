@@ -66,14 +66,8 @@ class MongoNode(object):
     ssh_key_file = '../../keys/aws.pem'
     """ssh credentials for remote hosts, overrided by config."""
 
-    default_mongo_dir = DEFAULT_MONGO_DIR
-    """Default directory to look for mongo binaries"""
-
     journal_dir = DEFAULT_JOURNAL_DIR
     """Directory to symlink mongod journal"""
-
-    run_locally = False
-    """True if launching mongodb locally"""
 
     clean_logs = True
     """Delete mongod.log and diagnostic.data before startup"""
@@ -105,7 +99,7 @@ class MongoNode(object):
         self.mongo_program = 'mongos' if is_mongos else 'mongod'
         self.public_ip = opts['public_ip']
         self.private_ip = opts.get('private_ip', self.public_ip)
-        self.bin_dir = os.path.join(opts.get('mongo_dir', self.default_mongo_dir), 'bin')
+        self.bin_dir = os.path.join(opts.get('mongo_dir', DEFAULT_MONGO_DIR), 'bin')
         self.clean_logs = opts.get('clean_logs', MongoNode.clean_logs)
         self.clean_db_dir = opts.get('clean_db_dir', (not is_mongos) and MongoNode.clean_db_dir)
         self.use_journal_mnt = opts.get('use_journal_mnt', not is_mongos)
@@ -116,16 +110,6 @@ class MongoNode(object):
         else:
             self.dbdir = self.mongo_config_file['storage']['dbPath']
         self.port = self.mongo_config_file['net']['port']
-        if self.run_locally:
-            self.public_ip = self.private_ip = 'localhost'
-            # make port, dbpath, and logpath unique
-            self.port = self.mongo_config_file['net']['port'] = self.get_open_port(self.port)
-            self.use_journal_mnt = False
-            if not is_mongos:
-                self.dbdir = os.path.join(self.dbdir, str(self.port))
-                self.mongo_config_file['storage']['dbPath'] = self.dbdir
-            self.mongo_config_file['systemLog']['path'] += '.{0}.log'.format(self.port)
-
         self.host = self._host()
 
     @staticmethod
@@ -139,7 +123,8 @@ class MongoNode(object):
 
     def _host(self):
         """Create host wrapper to run commands."""
-        if self.run_locally or self.public_ip in ['localhost', '127.0.0.1', '0.0.0.0']:
+        # TODO: this should not use the Remote and LocalHost classes directly.
+        if self.public_ip in ['localhost', '127.0.0.1', '0.0.0.0']:
             return LocalHost()
         return RemoteHost(self.public_ip, self.ssh_user, self.ssh_key_file)
 
@@ -169,8 +154,7 @@ class MongoNode(object):
         :param restart_clean_logs   Should we clean logs and diagnostic data. If not specified,
         uses value from ConfigDict.
         """
-        if not self.run_locally:
-            self.host.kill_mongo_procs()
+        self.host.kill_mongo_procs()
 
         if restart_clean_db_dir is not None:
             _clean_db_dir = restart_clean_db_dir
@@ -659,7 +643,7 @@ def create_cluster(topology):
 class MongodbSetup(object):
     """Parse the mongodb_setup config"""
 
-    def __init__(self, config, run_locally=False):
+    def __init__(self, config):
         self.config = config
         self.mongodb_setup = config['mongodb_setup']
         journal_dir = self.mongodb_setup.get('journal_dir')
@@ -677,7 +661,7 @@ class MongodbSetup(object):
         MongoNode.shutdown_options = json.dumps(
             copy_obj(config['mongodb_setup']['shutdown_options']))
         self.clusters = []
-        self.downloader = DownloadMongodb(config, run_locally)
+        self.downloader = DownloadMongodb(config)
         self.parse_topologies()
 
     def parse_topologies(self):
@@ -773,19 +757,10 @@ def parse_command_line():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         description='Start a MongoDB cluster in a distributed environment')
-    parser.add_argument('--config', action='store_true', help='Ignored. (backward compatibility)')
-    parser.add_argument('-l', '--run-locally', action='store_true', help='launch the setup locally')
-    parser.add_argument('--mongo-dir', help='path to dir containing ./bin/mongo binaries')
     parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
     parser.add_argument('--log-file', help='path to log file')
-    args = parser.parse_args()
 
-    # --mongo-dir must have a bin/ sub-directory
-    if args.mongo_dir:
-        bin_dir = os.path.join(args.mongo_dir, 'bin')
-        if args.run_locally and not os.path.isdir(bin_dir):
-            exit('--mongo-dir: {}, is not a directory!'.format(bin_dir))
-    return args
+    return parser.parse_args()
 
 
 def main():
@@ -793,14 +768,10 @@ def main():
     args = parse_command_line()
     setup_logging(args.debug, args.log_file)
 
-    if args.mongo_dir is not None:
-        MongoNode.default_mongo_dir = args.mongo_dir
-    MongoNode.run_locally = args.run_locally
-
     # start a mongodb configuration using config module
     config = ConfigDict('mongodb_setup')
     config.load()
-    mongo = MongodbSetup(config, args.run_locally)
+    mongo = MongodbSetup(config)
     if not mongo.start():
         LOG.error("Error setting up mongodb")
         exit(1)

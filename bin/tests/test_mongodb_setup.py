@@ -360,7 +360,8 @@ class TestMongodbSetup(unittest.TestCase):
                     'ssh_user': 'ec2-user',
                     'ssh_key_file': '~/.ssh/user_ssh_key.pem'
                 },
-                'numactl_prefix': 'numactl test'
+                'numactl_prefix': 'numactl test',
+                'out': []
             },
             'mongodb_setup': {
                 'shutdown_options': {
@@ -396,7 +397,7 @@ class TestMongodbSetup(unittest.TestCase):
     @mock.patch('mongodb_setup.DownloadMongodb')
     def test_ssh_key(self, mock_downloader):
         """Test ~/.ssh/user_aws_key.pem"""
-        mongodb_setup.MongodbSetup(self.config, mock.Mock())
+        mongodb_setup.MongodbSetup(self.config)
         ssh_key_file = self.config['infrastructure_provisioning']['tfvars']['ssh_key_file']
         expected_ssh_key_file = os.path.expanduser(ssh_key_file)
         self.assertEquals(mongodb_setup.MongoNode.ssh_key_file, expected_ssh_key_file)
@@ -405,7 +406,7 @@ class TestMongodbSetup(unittest.TestCase):
     @mock.patch.object(common.host, 'Host', autospec=True)
     def test_restart_does_not_download(self, host):
         """Restarting doesn't re-download"""
-        setup = mongodb_setup.MongodbSetup(config=self.config, run_locally=True)
+        setup = mongodb_setup.MongodbSetup(config=self.config)
         setup.host = host
         setup.downloader = mock.MagicMock()
 
