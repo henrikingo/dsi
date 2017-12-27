@@ -31212,8 +31212,8 @@
                     ]
                 },
                 "Aggregation.Lookup.UncorrelatedPrefixJoin":{
-                    "thread_threshold":0.18,
-                    "threshold":0.12,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
                         "BF-6883",
                         "BF-6958"
