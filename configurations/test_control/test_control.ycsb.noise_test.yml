@@ -104,10 +104,7 @@ pre_task:
         tar zxvf ycsb.tar.gz -C YCSB
         source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && ./setup.sh
 
-# Restarting mongodb after ycsb_load, gives a 10% and 5% boost to the following ycsb tests.
-# Other than that, this works fine, but we want to postpone introducing a discontinuity
-# until storage team is less actively focused on performance work.
-# between_tests:
-#   - restart_mongodb:
-#       clean_logs: true
-#       clean_db_dir: false
+between_tests:
+  - restart_mongodb:
+      clean_logs: true
+      clean_db_dir: false
