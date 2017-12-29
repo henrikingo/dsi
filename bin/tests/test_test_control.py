@@ -13,17 +13,16 @@ import unittest
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 
 import host
-from run_test import EXCEPTION_BEHAVIOR
-from run_test import copy_timeseries
-from run_test import print_trace
-from run_test import run_pre_post_commands
-from run_test import run_test
-from run_test import run_tests
+from test_control import BackgroundCommand, start_background_tasks
+from test_control import EXCEPTION_BEHAVIOR
+from test_control import copy_timeseries
+from test_control import print_trace
+from test_control import run_pre_post_commands
+from test_control import run_test
+from test_control import run_tests
 
 from mock import patch, mock_open, Mock
 from testfixtures import LogCapture
-
-from bin.run_test import BackgroundCommand, start_background_tasks
 
 
 class RunTestTestCase(unittest.TestCase):
@@ -106,7 +105,7 @@ class RunTestTestCase(unittest.TestCase):
         } # yapf: disable
 
     @patch('os.walk')
-    @patch('run_test.extract_hosts')
+    @patch('test_control.extract_hosts')
     @patch('shutil.copyfile')
     def test_copy_timeseries(self, mock_copyfile, mock_hosts, mock_walk):
         """ Test run RunTest.copy_timeseries. """
@@ -191,9 +190,9 @@ class RunTestTestCase(unittest.TestCase):
             mock_copyfile.called_with('/dirpath1/file1--10.0.0.1',
                                       'reports/mongod.1/matching-dirpath1'))
 
-    @patch('run_test.run_host_command')
+    @patch('test_control.run_host_command')
     def test_run_pre_post(self, mock_run_host_command):
-        """Test run_test.run_pre_post_commands()"""
+        """Test test_control.run_pre_post_commands()"""
         command_dicts = [self.config['test_control'], self.config['mongodb_setup']]
         run_pre_post_commands('post_test', command_dicts, self.config, EXCEPTION_BEHAVIOR.EXIT)
 
@@ -205,7 +204,7 @@ class RunTestTestCase(unittest.TestCase):
 
     @patch('types.FrameType')
     def test_print_trace_mock_exception(self, mock_frame):
-        """ Test run_test.print_trace with mock frame and mock exception"""
+        """ Test test_control.print_trace with mock frame and mock exception"""
         with LogCapture() as log_capture:
             mock_frame.f_locals = {
                 'value': 'mock_value',
@@ -227,7 +226,7 @@ class RunTestTestCase(unittest.TestCase):
     @patch('common.host.extract_hosts', return_value=(-1, -1))
     def help_trace_function(self, mock_function, mock_command_dicts, mock_extract_hosts, mock_ssh):
         """
-        Test run_test.print_trace by calling run_pre_post_commands with a 'pre_task' key, with a
+        Test test_control.print_trace by calling run_pre_post_commands with a 'pre_task' key, with a
         forced exception. This is a helper function used by other tests within this class. It uses
         a mocked RemoteHost along with a mocked function within the RemoteHost that has a forced
         exception in it.
@@ -285,7 +284,7 @@ class RunTestTestCase(unittest.TestCase):
     # pylint is confused by the patch decorator on help_test_trace_function()
     @patch('host.RemoteHost.upload_file')
     def test_print_trace_upload_file(self, mock_upload_file):
-        """ Test run_test.print_trace with exception in upload_file"""
+        """ Test test_control.print_trace with exception in upload_file"""
         mock_command_dicts = [{
             'pre_task': [{
                 'on_workload_client': {
@@ -300,7 +299,7 @@ class RunTestTestCase(unittest.TestCase):
     @patch('os.path')
     @patch('host.RemoteHost.retrieve_path')
     def test_print_trace_retrieve_path(self, mock_retrieve_path, mock_path):
-        """ Test run_test.print_trace with exception in retrieve_path"""
+        """ Test test_control.print_trace with exception in retrieve_path"""
         mock_path.return_value.join.return_value = ""
         mock_path.return_value.normpath.return_value = ""
         mock_command_dicts = [{
@@ -316,7 +315,7 @@ class RunTestTestCase(unittest.TestCase):
 
     @patch('host.RemoteHost.create_file')
     def test_print_trace_create_file(self, mock_create_file):
-        """ Test run_test.print_trace with exception in create_file"""
+        """ Test test_control.print_trace with exception in create_file"""
         mock_command_dicts = [{
             'pre_task': [{
                 'on_workload_client': {
@@ -335,7 +334,7 @@ class RunTestTestCase(unittest.TestCase):
         """ Test BackgroundCommand run"""
         subject = BackgroundCommand(mock_host, 'command', 'dirname/basename')
 
-        with patch('bin.run_test.open', mock_open()) as mock_file:
+        with patch('test_control.open', mock_open()) as mock_file:
             mock_out = mock_file.return_value
             subject.run()
             mock_file.assert_called_with('dirname/basename', 'wb+', 0)
@@ -352,8 +351,8 @@ class RunTestTestCase(unittest.TestCase):
         mock_host.close.assert_called_once()
 
     # pylint: disable=unused-argument
-    @patch('bin.run_test.make_host')
-    @patch('bin.run_test.extract_hosts')
+    @patch('test_control.make_host')
+    @patch('test_control.extract_hosts')
     def test_start_background_tasks(self, mock_extract_hosts, mock_make_host):
         """ Test start_background_tasks"""
         # Add some background tasks to our config
@@ -365,11 +364,11 @@ class RunTestTestCase(unittest.TestCase):
         }
         test_id = 'benchRun'
 
-        with patch('bin.run_test.BackgroundCommand'):
+        with patch('test_control.BackgroundCommand'):
             command_dict = config['test_control']['run'][1]
             self.assertEqual(start_background_tasks(config, command_dict, test_id), [])
 
-        with patch('bin.run_test.BackgroundCommand'):
+        with patch('test_control.BackgroundCommand'):
             command_dict = config['test_control']['run'][0]
             mock_make_host.return_value = Mock()
             result = start_background_tasks(config, command_dict, test_id)
@@ -377,30 +376,30 @@ class RunTestTestCase(unittest.TestCase):
 
     # pylint: enable=no-value-for-parameter
 
-    @patch('run_test.make_workload_runner_host')
-    @patch('run_test.mkdir_p')
+    @patch('test_control.make_workload_runner_host')
+    @patch('test_control.mkdir_p')
     def test_run_test(self, mock_mkdir, mock_make_host):
-        """Test run_test """
+        """Test test_control.run_test """
         mock_host = Mock(spec=host.RemoteHost)
         mock_host.exec_command = Mock(return_value=0)
         mock_make_host.return_value = mock_host
         test = self.config['test_control']['run'][0]
-        with patch('run_test.open', mock_open()):
+        with patch('test_control.open', mock_open()):
             run_test(test, self.config)
 
         mock_host.exec_command.assert_called()
         # These are just throwaway mocks, pylint wants me to do something with them
         mock_mkdir.assert_called()
 
-    @patch('run_test.make_workload_runner_host')
-    @patch('run_test.mkdir_p')
+    @patch('test_control.make_workload_runner_host')
+    @patch('test_control.mkdir_p')
     def test_run_test_with_error(self, mock_mkdir, mock_make_host):
-        """Test run_test where the exec command returns non-zero"""
+        """Test test_control.run_test where the exec command returns non-zero"""
         mock_host = Mock(spec=host.RemoteHost)
         mock_host.exec_command = Mock(return_value=1)
         mock_make_host.return_value = mock_host
         test = self.config['test_control']['run'][0]
-        with patch('run_test.open', mock_open()):
+        with patch('test_control.open', mock_open()):
             with self.assertRaises(subprocess.CalledProcessError):
                 run_test(test, self.config)
 
@@ -409,12 +408,12 @@ class RunTestTestCase(unittest.TestCase):
         mock_mkdir.assert_called()
 
     @patch('subprocess.check_call')
-    @patch('run_test.setup_ssh_agent')
-    @patch('run_test.run_validate')
-    @patch('run_test.generate_config_file')
-    @patch('run_test.run_test')
-    @patch('run_test.legacy_copy_perf_output')
-    @patch('run_test.run_pre_post_commands')
+    @patch('test_control.setup_ssh_agent')
+    @patch('test_control.run_validate')
+    @patch('test_control.generate_config_file')
+    @patch('test_control.run_test')
+    @patch('test_control.legacy_copy_perf_output')
+    @patch('test_control.run_pre_post_commands')
     #pylint: disable=too-many-arguments
     def test_run_tests(self, mock_pre_post, mock_copy_perf, mock_generate, mock_run,
                        mock_run_validate, mock_ssh_agent, mock_check_call):

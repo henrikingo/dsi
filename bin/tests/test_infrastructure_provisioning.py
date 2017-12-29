@@ -258,8 +258,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             ]
             mock_shutil.copytree.assert_has_calls(copytree_calls)
             copyfile_calls = [
-                call(provisioner.bin_dir + '/infrastructure_teardown.sh',
-                     evg_data_dir + '/terraform/infrastructure_teardown.sh'),
                 call(provisioner.bin_dir + '/infrastructure_teardown.py',
                      evg_data_dir + '/terraform/infrastructure_teardown.py')
             ]
