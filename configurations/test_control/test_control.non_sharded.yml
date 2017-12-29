@@ -1,7 +1,7 @@
 task_name: non_sharded
 run:
   - id: benchRun
-    type: shell
+    type: mongoshell
 
     cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row

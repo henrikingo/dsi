@@ -13,7 +13,7 @@ perf_json:
 # Note, unlike other files, this is a list of test runs. Hence, even if there's only a single entry, it is a list.
 run:
   - id: benchRun  # For some tests (such as YCSB), this is used as the testname when reporting results.
-    type: shell   # or "ycsb"
+    type: mongoshell   # or "ycsb"
 
     cmd: $DSI_PATH/workloads/run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row

@@ -9,7 +9,7 @@ run:
   # as ids will not be unique.
   - &fio
     id: fio-${mongodb_setup.mongod_config_file.storage.engine}
-    type: shell
+    type: mongoshell
     cmd: './fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
     workload_config: ${test_control.common_fio_config}
@@ -39,7 +39,7 @@ run:
             workloadEvergreen: YCSB/ycsb-mongodb/workloads/workloadEvergreen
   - &ycsb_load_cleanup
     id: ycsb_load-cleanup
-    type: shell
+    type: mongoshell
     cmd: '~/bin/mongo ${mongodb_setup.meta.hostname}/ycsb --eval "db.dropDatabase()" && echo ">>> ycsb_cleanup_dummy_entry :      1.0 1"'
   - *ycsb_load
   - *ycsb_load_cleanup

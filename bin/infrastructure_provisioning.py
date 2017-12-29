@@ -166,11 +166,8 @@ class Provisioner(object):
             shutil.copytree("../terraform", os.path.join(self.evg_data_dir, "terraform"))
             shutil.copytree("./modules", os.path.join(self.evg_data_dir, "terraform/modules"))
 
-            # Note: The Evergreen distro "Teardown Script" still calls infrastructure_teardown.sh
-            LOG.info("Copying infrastructure_teardown.sh to Evergreen host")
-            shutil.copyfile(
-                os.path.join(self.bin_dir, 'infrastructure_teardown.sh'),
-                os.path.join(self.evg_data_dir, 'terraform/infrastructure_teardown.sh'))
+            # Note: The Evergreen distro "Teardown Script" still calls infrastructure_teardown.
+            LOG.info("Copying infrastructure_teardown.py to Evergreen host")
             shutil.copyfile(
                 os.path.join(self.bin_dir, 'infrastructure_teardown.py'),
                 os.path.join(self.evg_data_dir, 'terraform/infrastructure_teardown.py'))

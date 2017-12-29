@@ -1,7 +1,7 @@
 task_name: cpu_noise
 run:
   - id: canary_cpu
-    type: shell
+    type: mongoshell
     cmd: cd workloads && ./run_remote_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:

@@ -1,7 +1,7 @@
 task_name: initialsync-logkeeper
 run:
   - id: benchRun
-    type: shell
+    type: mongoshell
     cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     background_tasks:
       background_traffic: LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/media/ephemeral0/ ./mongoreplay play -p /media/ephemeral0/playback.bson --host mongodb://${mongodb_setup.meta.hosts} --no-preprocess

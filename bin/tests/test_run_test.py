@@ -94,10 +94,6 @@ class RunTestTestCase(unittest.TestCase):
                      'skip_validate': True
                     }
                 ],
-                'mc': {
-                    'monitor_interval': 10,
-                    'per_thread_stats': 1
-                },
                 'jstests_dir': './jstests/hooks',
                 'post_test': [
                     {'on_workload_client': {

@@ -1,7 +1,7 @@
 task_name: change_streams
 run:
   - id: change_streams_multi_mongos
-    type: shell
+    type: mongoshell
 
     cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row

@@ -1,7 +1,7 @@
 task_name: initialSync
 run:
   - id: initialsync_c_1_d_1_w_f
-    type: shell
+    type: mongoshell
     cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
@@ -28,7 +28,7 @@ run:
             workloads/workload_timestamps.csv: ../workloads_timestamps.csv
 
   - id: initialsync_c_1_d_32_w_f
-    type: shell
+    type: mongoshell
     cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
@@ -49,7 +49,7 @@ run:
     post_test: *posttest
 
   - id: initialsync_c_32_d_1_w_f
-    type: shell
+    type: mongoshell
     cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
@@ -70,7 +70,7 @@ run:
     post_test: *posttest
 
   - id: initialsync_c_32_d_32_w_f
-    type: shell
+    type: mongoshell
     cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
@@ -91,7 +91,7 @@ run:
     post_test: *posttest
 
   - id: initialsync_c_1_d_1_w_t
-    type: shell
+    type: mongoshell
     cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
@@ -112,7 +112,7 @@ run:
     post_test: *posttest
 
   - id: initialsync_c_1_d_32_w_t
-    type: shell
+    type: mongoshell
     cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
@@ -133,7 +133,7 @@ run:
     post_test: *posttest
 
   - id: initialsync_c_32_d_1_w_t
-    type: shell
+    type: mongoshell
     cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:
@@ -154,7 +154,7 @@ run:
     post_test: *posttest
 
   - id: initialsync_c_32_d_32_w_t
-    type: shell
+    type: mongoshell
     cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     workload_config:

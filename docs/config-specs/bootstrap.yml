@@ -30,6 +30,5 @@ mongodb_binary_archive: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-am
 ssh_key_file: ~/.ssh/henrikingo-10gen-cap-oregon.pem
 ssh_key_name: henrik.ingo-10gen-cap-oregon
 owner: henrik.ingo
-# Use mc and terraform from these locations instead of downloading
-mc: ~/local/bin/mc
+# Use terraform from this path instead of searching PATH
 terraform: ~/local/terraform

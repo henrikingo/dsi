@@ -71,9 +71,9 @@ test_control: core
 # workloads_dir: ~/repos/workloads
 # ycsb_dir: ~/repos/YCSB
 
-# DSI will search for mc and terraform in your path if not specified. Both are required for running
-# the system. See http://bit.ly/2ufjQ0R to download the files.
-# Leave the following lines as is to maintain this behavior.
+# DSI will search for terraform in your PATH. Terraform is required for deploying clusters into EC2.
+# See http://bit.ly/2ufjQ0R to download the files.
+# You can also provide the path to the terraform binary here. (The file, not the directory
+# containing it.) This will take precedence over a terraform found in your PATH.
 #
-# mc: ~/path/to/mc
 # terraform: ~/path/to/terraform

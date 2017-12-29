@@ -1,7 +1,7 @@
 task_name: core
 run:
   - id: benchRun
-    type: shell
+    type: mongoshell
 
     # This line to be shortened after the config file is copied from below into the production server.
     cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml

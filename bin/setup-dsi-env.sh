@@ -15,15 +15,9 @@ cd ..
 
 cp terraform/terraform work
 
-# install workload wrapper
-pushd .
-cd ${DSI_PATH}/bin
-curl --retry 10 -o mc.tar.gz https://s3.amazonaws.com/mciuploads/mission-control/linux/513958123705b425da34ed8e133f13fc16a61a7b/mc-mission_control_linux_513958123705b425da34ed8e133f13fc16a61a7b_17_06_13_13_42_59.tar.gz
-tar zxvf mc.tar.gz
-popd
 
+# Note: These were added for mission-control and in particular its many threads doing logging.
+# It's quite likely this is no longer needed.
 sysctl vm.overcommit_memory
 sysctl -w vm.overcommit_memory=1
 sysctl vm.overcommit_memory
-
-ls
