@@ -12,7 +12,7 @@ from testfixtures import LogCapture
 import yaml
 
 from common.config import ConfigDict
-import run_test  #pylint: disable=wrong-import-position
+import test_control  #pylint: disable=wrong-import-position
 
 
 def load_json(filename, directory=None):
@@ -59,7 +59,7 @@ class TestConfigTestControl(unittest.TestCase):
         '''
         Test that generate_config_files works with a benchrun workload
         '''
-        run_test.generate_config_file(self.config['test_control']['run'][0])
+        test_control.generate_config_file(self.config['test_control']['run'][0])
         self.assertEqual(
             load_yaml('workloads.yml'), load_yaml('workloads.benchrun.yml.ok', self.artifact_dir),
             'workloads.yml doesn\'t match expected for test_control.yml')
@@ -67,18 +67,18 @@ class TestConfigTestControl(unittest.TestCase):
     def test_ycsb_workload_config(self):
         ''' Test that generate_config_files works with a ycsb run
         '''
-        run_test.generate_config_file(self.config['test_control']['run'][1])
+        test_control.generate_config_file(self.config['test_control']['run'][1])
         self.assertEqual(
             load_yaml('workloadEvergreen'), load_yaml('workloadEvergreen.ok', self.artifact_dir),
             'workloadEvergreen doesn\'t match expected for test_control.yml')
 
-    @patch('run_test.open')
+    @patch('test_control.open')
     def test_generate_config_no_config(self, mock_open):
         '''Test that generate_config_file doesn't create a workload file and logs the correct
         message if there is no config file'''
         with LogCapture(level=logging.WARNING) as warning:
-            run_test.generate_config_file(self.config['test_control']['run'][2])
-        warning.check(('run_test', 'WARNING', 'No workload config in test control'))
+            test_control.generate_config_file(self.config['test_control']['run'][2])
+        warning.check(('test_control', 'WARNING', 'No workload config in test control'))
         mock_open.assert_not_called()
 
 
