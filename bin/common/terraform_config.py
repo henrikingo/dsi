@@ -22,9 +22,7 @@ INSTANCE_CLASSES_SUPPORT_PG = [
     "c3", "c4", "c5", "cc2", "m4", "m5", "r3", "r4", "x1", "x1e", "cr1", "d2", "i2", "i3", "hi1",
     "hs1", "f1", "g2", "g3", "p2", "p3"
 ]
-TF_NODE_TYPES_TO_CHECK = [
-    "mongod", "mongod_ebs", "mongod_seeded_ebs", "mongos", "configsvr", "workload"
-]
+TF_NODE_TYPES_TO_CHECK = ["mongod", "mongod_ebs", "mongod_seeded_ebs", "mongos", "workload"]
 
 
 def is_placement_group_needed(node_type, tfvars):
