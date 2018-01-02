@@ -2863,8 +2863,8 @@
                     ]
                 },
                 "Mixed.FindThenUpdate-50-50":{
-                    "thread_threshold":0.25,
-                    "threshold":0.2,
+                    "thread_threshold":0.3,
+                    "threshold":0.25,
                     "ticket":[
                         "PERF-444"
                     ]
