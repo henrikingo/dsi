@@ -112,6 +112,7 @@ class TestBootstrap(unittest.TestCase):
         os.makedirs(os.path.join(test_dsipath, 'configurations', 'infrastructure_provisioning'))
         os.makedirs(os.path.join(test_dsipath, 'configurations', 'mongodb_setup'))
         os.makedirs(os.path.join(test_dsipath, 'configurations', 'test_control'))
+        os.makedirs(os.path.join(test_dsipath, 'configurations', 'workload_setup'))
         os.mkdir(test_directory)
         open(
             os.path.join(test_dsipath, 'configurations', 'infrastructure_provisioning',
@@ -122,14 +123,19 @@ class TestBootstrap(unittest.TestCase):
         open(
             os.path.join(test_dsipath, 'configurations', 'test_control', 'test_control.core.yml'),
             'w').close()
+        open(
+            os.path.join(test_dsipath, 'configurations', 'workload_setup', 'workload_setup.core.yml'),
+            'w').close()
         test_config['infrastructure_provisioning'] = 'single'
         test_config['mongodb_setup'] = 'replica'
         test_config['storageEngine'] = 'wiredTiger'
         test_config['test_control'] = 'core'
+        test_config['workload_setup'] = 'core'
         test_config['production'] = False
         bootstrap.copy_config_files(test_dsipath, test_config, test_directory)
         master_files = set(
-            ['infrastructure_provisioning.yml', 'mongodb_setup.yml', 'test_control.yml'])
+            ['infrastructure_provisioning.yml', 'mongodb_setup.yml', 'test_control.yml',
+             'workload_setup.yml'])
         test_files = set(os.listdir(test_directory))
         self.assertEqual(test_files, master_files)
 
@@ -565,6 +571,7 @@ class TestBootstrap(unittest.TestCase):
         """
         mongodb_url = 'https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.4.6.tgz'
         master_config = {
+            'workload_setup': 'common',
             'infrastructure_provisioning': 'single',
             'mongodb_binary_archive': mongodb_url,
             'mongodb_setup': 'standalone',

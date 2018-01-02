@@ -4,6 +4,7 @@ bootstrap:
   infrastructure_provisioning: single
   platform: linux
   mongodb_setup: standalone
+  workload_setup: common
   storageEngine: wiredTiger
   test_control: core
   production: false

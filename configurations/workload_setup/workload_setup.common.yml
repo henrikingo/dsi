@@ -1,0 +1,75 @@
+mongoshell:
+  - on_locahost:
+      exec: $DSI_PATH/bin/setup-workloads.sh
+  - on_workload_client:
+      exec: rm -rf workloads*
+  - on_workload_client:
+      upload_files:
+        workloads.tar.gz: workloads.tar.gz
+  - on_workload_client:
+      exec: |
+        rm -rf workloads
+        mkdir workloads
+        tar zxvf workloads.tar.gz -C workloads
+
+fio:
+  - on_workload_client:
+      exec: |
+        sudo yum -y -q install fio
+      upload_repo_files:
+        bin/fio-test.sh: fio-test.sh
+
+
+iperf:
+  - on_workload_client:
+      # Install iperf3. It isn't available in yum on AWS instances
+      # TODO: Please change this to yum install from EPEL instead
+      exec: |
+        sudo killall iperf3
+        rm -rf iperf
+        git clone https://github.com/esnet/iperf
+        git checkout d06415822a
+        cd iperf/
+        ./configure
+        make
+        sudo make install
+      upload_repo_files:
+        bin/iperf-test.sh: iperf-test.sh
+
+
+ycsb:
+  - on_workload_client:
+      exec: |
+        curl -O --retry 10 https://s3.../jdk-7u71-linux-x64.rpm
+        sudo rpm -i jdk-7u71-linux-x64.rpm
+        sudo /usr/sbin/alternatives --install /usr/bin/java java \
+              /usr/java/jdk1.7.0_71/bin/java 20000
+        curl -O --retry 10 https://oss.sona.../mongo-java-driver-3.2.2.jar
+        echo 'export CLASSPATH=~/mongo-java-driver-3.2.2.jar:$CLASSPATH' >> ~/.bashrc
+        curl --retry 10 https://s3.../install_maven.sh | sudo bash
+  - on_localhost:
+      exec: $DSI_PATH/bin/setup-ycsb.sh
+  - on_workload_client:
+      exec: rm -rf ycsb*
+  - on_workload_client:
+      upload_files:
+        ycsb.tar.gz: ycsb.tar.gz
+  - on_workload_client:
+      exec: |
+        rm -rf YCSB
+        mkdir YCSB
+        tar zxvf ycsb.tar.gz -C YCSB
+        export JAVA_HOME="/usr/java/jdk1.7.0_71/jre"
+        source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && mvn clean package
+      exec_mongo_shell:
+        connection_string: "${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}"
+        # Shard the YCSB cluster if sharding is enabled
+        script: |
+          if ("${mongodb_setup.meta.is_sharded}" == "True") {
+            assert.commandWorked(sh.enableSharding("ycsb"));
+            assert.commandWorked(
+              sh.shardCollection("ycsb.usertable", {_id: "hashed"}));
+            db.printShardingStatus();
+          } else {
+            print ("Non-sharded cluster");
+          }
