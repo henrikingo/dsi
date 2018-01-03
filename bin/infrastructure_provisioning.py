@@ -169,12 +169,17 @@ class Provisioner(object):
         tfstate_path = os.path.join(self.evg_data_dir, 'terraform/terraform.tfstate')
         provision_cluster_path = os.path.join(self.evg_data_dir,
                                               'terraform/provisioned.' + self.cluster)
+        filename = 'cluster.json'
         if os.path.isfile(tfstate_path):
             if check_version(provision_cluster_path):
                 self.existing = True
                 LOG.info("Retrieving terraform state for existing EC2 resources.")
                 shutil.copyfile(tfstate_path, "./terraform.tfstate")
 
+                LOG.info("Retrieving %s for existing EC2 resources.", filename)
+                from_file = os.path.join(self.evg_data_dir, 'terraform', filename)
+                to_file = os.path.join('.', filename)
+                shutil.copyfile(from_file, to_file)
             else:
                 LOG.info("Existing EC2 resources found, but state files are wrong version. "
                          "Force re-creation of cluster now...")
