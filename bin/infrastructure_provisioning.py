@@ -18,6 +18,8 @@ from common.terraform_config import TerraformConfiguration
 from common.terraform_output_parser import TerraformOutputParser
 from infrastructure_teardown import destroy_resources
 
+CLUSTER_JSON = "cluster.json"
+
 LOG = logging.getLogger(__name__)
 
 # Set terraform parallelism so it can create multiple resources
@@ -113,8 +115,8 @@ class Provisioner(object):
 
         # Delete all state files so that this looks like a fresh evergreen runner
         rmtree_when_present(self.evg_data_dir)
-        if os.path.isfile("cluster.json"):
-            os.remove("cluster.json")
+        if os.path.isfile(CLUSTER_JSON):
+            os.remove(CLUSTER_JSON)
         if os.path.isfile("terraform.tfstate"):
             os.remove("terraform.tfstate")
 
@@ -132,17 +134,15 @@ class Provisioner(object):
         tfstate_path = os.path.join(self.evg_data_dir, 'terraform/terraform.tfstate')
         provision_cluster_path = os.path.join(self.evg_data_dir,
                                               'terraform/provisioned.' + self.cluster)
-        filename = 'cluster.json'
         if os.path.isfile(tfstate_path):
             if check_version(provision_cluster_path):
                 self.existing = True
                 LOG.info("Retrieving terraform state for existing EC2 resources.")
                 shutil.copyfile(tfstate_path, "./terraform.tfstate")
 
-                LOG.info("Retrieving %s for existing EC2 resources.", filename)
-                from_file = os.path.join(self.evg_data_dir, 'terraform', filename)
-                to_file = os.path.join('.', filename)
-                shutil.copyfile(from_file, to_file)
+                LOG.info("Retrieving %s for existing EC2 resources.", CLUSTER_JSON)
+                from_file = os.path.join(self.evg_data_dir, 'terraform', CLUSTER_JSON)
+                shutil.copyfile(from_file, CLUSTER_JSON)
             else:
                 LOG.info("Existing EC2 resources found, but state files are wrong version. "
                          "Force re-creation of cluster now...")
@@ -189,8 +189,8 @@ class Provisioner(object):
         """
         subprocess.check_call([self.terraform, 'init', '-upgrade'])
         tf_config = TerraformConfiguration(self.config)
-        tf_config.to_json(file_name='cluster.json')  # pylint: disable=no-member
-        self.var_file = '-var-file=cluster.json'
+        tf_config.to_json(file_name=CLUSTER_JSON)  # pylint: disable=no-member
+        self.var_file = '-var-file={}'.format(CLUSTER_JSON)
         if self.existing:
             LOG.info('Reusing AWS cluster for %s', self.cluster)
         else:
@@ -232,7 +232,7 @@ class Provisioner(object):
         LOG.info("Will now save terraform state needed for "
                  "teardown when triggered by the Evergreen runner.")
         terraform_dir = os.path.join(self.evg_data_dir, 'terraform')
-        files_to_copy = ['terraform.tfstate', 'cluster.tf', 'security.tf', 'cluster.json']
+        files_to_copy = ['terraform.tfstate', 'cluster.tf', 'security.tf', CLUSTER_JSON]
         LOG.info('Copying files: %s', str(files_to_copy))
         for to_copy in files_to_copy:
             shutil.copyfile(to_copy, os.path.join(terraform_dir, to_copy))

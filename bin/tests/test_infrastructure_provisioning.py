@@ -8,7 +8,7 @@ import logging
 import os
 import unittest
 from subprocess import CalledProcessError
-from mock import patch, call, mock_open
+from mock import patch, call, mock_open, MagicMock
 from testfixtures import LogCapture, log_capture
 
 from infrastructure_provisioning import Provisioner, check_version, rmtree_when_present
@@ -112,6 +112,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         with patch('infrastructure_provisioning.os.path.isfile') as mock_isfile:
             mock_isfile.return_value = True
             provisioner = Provisioner(config)
+            mock_teardown_old_cluster = MagicMock(name="teardown_old_cluster")
             self.assertEqual(provisioner.evg_data_dir, evg_data_dir)
             provisioner.check_existing_state()
             self.assertTrue(mock_setup_evg_dir.called)
@@ -121,12 +122,29 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             ]
             mock_isfile.assert_has_calls(isfile_calls)
             copyfile_calls = [
-                call('bin/tests/artifacts/terraform/terraform.tfstate', './terraform.tfstate')
+                call('bin/tests/artifacts/terraform/terraform.tfstate', './terraform.tfstate'),
+                call('bin/tests/artifacts/terraform/cluster.json', 'cluster.json')
             ]
             mock_copyfile.assert_has_calls(copyfile_calls)
             mock_check_call.assert_not_called()
             mock_rmtree.assert_not_called()
             self.assertTrue(provisioner.existing)
+            mock_teardown_old_cluster.assert_not_called()
+
+        with patch('infrastructure_provisioning.os.path.isfile') as mock_isfile:
+            with patch('infrastructure_provisioning.check_version') as mock_check_version:
+                mock_check_version.return_value = False
+                mock_isfile.return_value = True
+                provisioner = Provisioner(config)
+                mock_teardown_old_cluster = MagicMock(name="teardown_old_cluster")
+                provisioner.teardown_old_cluster = mock_teardown_old_cluster
+                self.assertEqual(provisioner.evg_data_dir, evg_data_dir)
+                provisioner.check_existing_state()
+                self.assertTrue(mock_setup_evg_dir.called)
+                mock_teardown_old_cluster.assert_called_once()
+                self.assertFalse(provisioner.existing)
+                mock_check_version.assert_called_once_with(
+                    'bin/tests/artifacts/terraform/provisioned.replica')
 
         # Run check_existing_state when no existing state exists
         with patch('infrastructure_provisioning.os.path.isfile') as mock_isfile:
