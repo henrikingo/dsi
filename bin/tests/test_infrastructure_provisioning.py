@@ -1,12 +1,11 @@
 """
 Unit test for infrastructure_provisioning.py
 """
+
 import copy
 from functools import partial
-import glob
 import logging
 import os
-import shutil
 import unittest
 from subprocess import CalledProcessError
 from mock import patch, call, mock_open
@@ -14,19 +13,16 @@ from testfixtures import LogCapture, log_capture
 
 from infrastructure_provisioning import Provisioner, check_version, rmtree_when_present
 
-#pylint: disable=too-many-locals, too-many-arguments
+#pylint: disable=too-many-locals
+#pylint: disable=too-many-arguments
 
 
 class TestInfrastructureProvisioning(unittest.TestCase):
-    """
-    Test suite for infrastructure_provisioning.py
-    """
+    """ Test suite for infrastructure_provisioning.py """
 
     def setUp(self):
         self.os_environ_patcher = patch('infrastructure_provisioning.os.environ')
         self.mock_environ = self.os_environ_patcher.start()
-        self.dsi_path = os.path.dirname(
-            os.path.dirname(os.path.abspath(os.path.join(__file__, '..'))))
         self.reset_mock_objects()
         self.config = {
             'bootstrap': {
@@ -35,16 +31,11 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             'infrastructure_provisioning': {
                 'tfvars': {
                     'cluster_name': 'single',
-                    'ssh_key_file': 'aws_ssh_key.pem',
-                    'ssh_key_name': 'serverteam-perf-ssh-key'
+                    'ssh_key_file': 'aws_ssh_key.pem'
                 },
                 'evergreen': {
                     'data_dir': 'bin/tests/artifacts'
                 }
-            },
-            'runtime_secret': {
-                'aws_access_key': 'test_access_key',
-                'aws_secret_key': 'test_secret_key'
             }
         }
 
@@ -53,9 +44,9 @@ class TestInfrastructureProvisioning(unittest.TestCase):
 
     def reset_mock_objects(self):
         """
-        Used to reset environment variables and mock objects
+        Used to reset environment variables and mock objects.
         """
-        self.os_environ = {'TERRAFORM': 'test/path/terraform', 'DSI_PATH': self.dsi_path}
+        self.os_environ = {'TERRAFORM': 'test/path/terraform', 'DSI_PATH': 'test/path/dsi'}
         #pylint: disable=no-member
         self.mock_environ.__getitem__.side_effect = self.os_environ.__getitem__
         self.mock_environ.__contains__.side_effect = self.os_environ.__contains__
@@ -66,7 +57,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         """
         Needed to properly check subprocess.check_call since __file__ is used
         to find the path to the file being executed.
-
         :param command_to_check list that represents the expected command
         :param command is the command subprocess.check_call tries to run. This command is checked
         against command_to_check based on the file in the commands.
@@ -81,14 +71,12 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         self.assertEqual(command_to_check, command)
 
     def test_provisioner_init(self):
-        """
-        Test Provisioner.__init__
-        """
+        """ Test Provisioner.__init__ """
         # Check when TERRAFORM is an environment variable
         provisioner = Provisioner(self.config)
         self.assertEqual(provisioner.cluster, 'single')
         self.assertFalse(provisioner.reuse_cluster)
-        self.assertEqual(provisioner.dsi_dir, self.dsi_path)
+        self.assertEqual(provisioner.dsi_dir, 'test/path/dsi')
         self.assertFalse(provisioner.existing)
         self.assertEqual(provisioner.parallelism, '-parallelism=20')
         self.assertEqual(provisioner.terraform, 'test/path/terraform')
@@ -101,70 +89,11 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         provisioner_missing_terraform = Provisioner(self.config)
         self.assertEqual(provisioner_missing_terraform.cluster, 'single')
         self.assertFalse(provisioner_missing_terraform.reuse_cluster)
-        self.assertEqual(provisioner_missing_terraform.dsi_dir, self.dsi_path)
+        self.assertEqual(provisioner_missing_terraform.dsi_dir, 'test/path/dsi')
         self.assertFalse(provisioner_missing_terraform.existing)
         self.assertEqual(provisioner_missing_terraform.parallelism, '-parallelism=20')
         self.assertEqual(provisioner_missing_terraform.terraform, './terraform')
         self.reset_mock_objects()
-
-    def test_setup_security_tf(self):
-        """
-        Testing setup_security_tf creates security.tf file
-        """
-        key_name = self.config['infrastructure_provisioning']['tfvars']['ssh_key_name']
-        key_file = self.config['infrastructure_provisioning']['tfvars']['ssh_key_file']
-        master_tf_str = ('provider "aws" {{    '
-                         'access_key = "test_aws_access_key"    '
-                         'secret_key = "test_aws_secret_key"    '
-                         'region = "${{var.region}}"}}'
-                         'variable "key_name" {{    '
-                         'default = "{}"}}'
-                         'variable "key_file" {{    '
-                         'default = "{}"}}').format(key_name, key_file)
-        master_tf_str = master_tf_str.replace('\n', '').replace(' ', '')
-        provisioner = Provisioner(self.config)
-        provisioner.aws_access_key = 'test_aws_access_key'
-        provisioner.aws_secret_key = 'test_aws_secret_key'
-
-        # Creating 'security.tf' file in current dir to test, reading to string
-        provisioner.setup_security_tf()
-        test_tf_str = ''
-        with open('security.tf', 'r') as test_tf_file:
-            test_tf_str = test_tf_file.read().replace('\n', '').replace(' ', '')
-        self.assertEqual(test_tf_str, master_tf_str)
-
-        # Removing created file
-        os.remove('security.tf')
-
-    def test_setup_terraform_tf(self):
-        """
-        Test setup_terraform_tf creates the correct directories and files
-        """
-        # Create temporary directory and get correct paths
-        directory = 'temp_test'
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-        os.mkdir(directory)
-        cluster_path = os.path.join(self.dsi_path, 'clusters', 'default')
-        remote_scripts_path = os.path.join(self.dsi_path, 'clusters', 'remote-scripts')
-        remote_scripts_target = os.path.join(directory, 'remote-scripts')
-        modules_path = os.path.join(self.dsi_path, 'clusters', 'modules')
-        modules_target = os.path.join(directory, 'modules')
-
-        # Check files copied correctly
-        with patch('infrastructure_provisioning.os.getcwd', return_value='temp_test'):
-            provisioner = Provisioner(self.config)
-            provisioner.setup_terraform_tf()
-        for filename in glob.glob(os.path.join(cluster_path, '*')):
-            self.assertTrue(os.path.exists(os.path.join(directory, filename.split('/')[-1])))
-        for filename in glob.glob(os.path.join(remote_scripts_path, '*')):
-            self.assertTrue(os.path.exists(os.path.join(remote_scripts_target, \
-                                                        filename.split('/')[-1])))
-        for filename in glob.glob(os.path.join(modules_path, '*')):
-            self.assertTrue(os.path.exists(os.path.join(modules_target, filename.split('/')[-1])))
-
-        # Remove temporary directory
-        shutil.rmtree(directory)
 
     @patch('infrastructure_provisioning.Provisioner.setup_evg_dir')
     @patch('infrastructure_provisioning.shutil.copyfile')
@@ -173,9 +102,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     @patch('infrastructure_provisioning.rmtree_when_present')
     def test_check_existing_state(self, mock_rmtree, mock_isdir, mock_check_call, mock_copyfile,
                                   mock_setup_evg_dir):
-        """
-        Test Provisioner.existing_state. First case finds a saved state, second doesn't
-        """
+        """ Test Provisioner.existing_state. First case finds a saved state, second doesn't."""
         config = copy.deepcopy(self.config)
         config['infrastructure_provisioning']['tfvars']['cluster_name'] = 'replica'
 
@@ -222,9 +149,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     #pylint: disable=invalid-name
     def test_check_existing_state_initialsync(self, mock_remove, mock_isdir, mock_check_call,
                                               mock_shutil, mock_setup_evg_dir):
-        """
-        Test Provisioner.existing_state, initialsync-logkeeper should force destroy existing
-        """
+        """ Test Provisioner.existing_state, initialsync-logkeeper should force destroy existing"""
         config = copy.deepcopy(self.config)
         config['infrastructure_provisioning']['tfvars']['cluster_name'] = 'initialsync-logkeeper'
 
@@ -276,10 +201,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     #pylint: disable=invalid-name
     def test_check_existing_state_teardown_fails(self, mock_remove, mock_isdir, mock_check_call,
                                                  mock_shutil, mock_setup_evg_dir):
-        """
-        Test Provisioner.existing_state when teardown fails. The code should catch the exception,
-        and continue execution.
-        """
+        """Test Provisioner.existing_state when teardown fails. The code should catch the exception,
+        and continue execution."""
         config = copy.deepcopy(self.config)
         config['infrastructure_provisioning']['tfvars']['cluster_name'] = 'single'
 
@@ -320,9 +243,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     @patch('infrastructure_provisioning.os.path.isdir')
     @patch('infrastructure_provisioning.os.chmod')
     def test_setup_evg_dir(self, mock_chmod, mock_isdir, mock_listdir, mock_shutil):
-        """
-        Test Provisioner.setup_evg_dir
-        """
+        """ Test Provisioner.setup_evg_dir """
         evg_data_dir = self.config['infrastructure_provisioning']['evergreen']['data_dir']
         # Test when evergreen data directories do not exist
         with patch('infrastructure_provisioning.os.makedirs') as mock_makedirs:
@@ -359,19 +280,14 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 os.path.join(evg_data_dir, 'terraform/infrastructure_teardown.py'), 0755)
         self.reset_mock_objects()
 
-    @patch('infrastructure_provisioning.Provisioner.setup_terraform_tf')
-    @patch('infrastructure_provisioning.Provisioner.setup_security_tf')
     @patch('infrastructure_provisioning.Provisioner.save_terraform_state')
     @patch('infrastructure_provisioning.TerraformOutputParser')
     @patch('infrastructure_provisioning.TerraformConfiguration')
     @patch('infrastructure_provisioning.run_and_save_output')
     @patch('infrastructure_provisioning.subprocess')
     def test_setup_cluster(self, mock_subprocess, mock_save_output, mock_terraform_configuration,
-                           mock_terraform_output_parser, mock_save_terraform_state,
-                           mock_setup_security_tf, mock_setup_terraform_tf):
-        """
-        Test Provisioner.setup_cluster
-        """
+                           mock_terraform_output_parser, mock_save_terraform_state):
+        """ Test Provisioner.setup_cluster """
         # NOTE: This tests the majority of the functionality of the infrastructure_provisioning.py
         # mock.mock_open is needed to effectively mock out the open() function in python
         mock_open_file = mock_open()
@@ -380,8 +296,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             provisioner.cluster = 'initialsync-logkeeper'
             provisioner.reuse_cluster = True
             provisioner.setup_cluster()
-            mock_setup_security_tf.assert_called()
-            mock_setup_terraform_tf.assert_called()
             #pylint: disable=line-too-long
             mock_terraform_configuration.return_value.to_json.assert_called_with(
                 file_name='cluster.json')
@@ -408,7 +322,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             self.assertTrue(mock_save_terraform_state.called)
         self.reset_mock_objects()
 
-    @patch('infrastructure_provisioning.Provisioner.setup_terraform_tf')
     @patch('infrastructure_provisioning.shutil.rmtree')
     @patch('infrastructure_provisioning.Provisioner.save_terraform_state')
     @patch('infrastructure_provisioning.TerraformOutputParser')
@@ -416,10 +329,10 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     @patch('infrastructure_provisioning.subprocess')
     def test_setup_cluster_failure(self, mock_subprocess, mock_terraform_configuration,
                                    mock_terraform_output_parser, mock_save_terraform_state,
-                                   mock_rmtree, mock_setup_terraform_tf):
-        """
-        Test Provisioner.setup_cluster when an error happens. Ensure that the cluster is torn
-        down.
+                                   mock_rmtree):
+        """Test Provisioner.setup_cluster when an error happens. Ensure that the cluster is torn
+        down
+
         """
         # NOTE: This tests the majority of the functionality of the infrastructure_provisioning.py
         mock_open_file = mock_open()
@@ -430,7 +343,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 mock_subprocess.check_call.side_effect = [1, CalledProcessError(1, ['cmd'])]
                 with self.assertRaises(CalledProcessError):
                     provisioner.setup_cluster()
-            mock_setup_terraform_tf.assert_called()
             mock_destroy.assert_called()
             mock_rmtree.assert_called()
             self.assertFalse(mock_terraform_output_parser.return_value.write_output_files.called)
@@ -446,9 +358,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     @patch('infrastructure_provisioning.shutil.copyfile')
     def test_save_terraform_state(self, mock_copyfile, mock_getcwd, mock_chdir, mock_remove,
                                   mock_check_call):
-        """
-        Test Provisioner.save_terraform_state
-        """
+        """ Test Provisioner.save_terraform_state """
         provisioned_files = ['provisioned.single', 'provisioned.shard']
         evg_data_dir = self.config['infrastructure_provisioning']['evergreen']['data_dir']
         terraform_dir = os.path.join(evg_data_dir, 'terraform')
@@ -484,9 +394,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     @patch('infrastructure_provisioning.os.getcwd')
     @patch('infrastructure_provisioning.shutil.copyfile')
     def test_userexpand(self, mock_copyfile, mock_getcwd, mock_chdir, mock_remove, mock_check_call):
-        """
-        Test Provisioner.save_terraform_state with ~/.ssh/user_ssh_key.pem
-        """
+        """ Test Provisioner.save_terraform_state with ~/.ssh/user_ssh_key.pem"""
         config = copy.deepcopy(self.config)
         config['infrastructure_provisioning']['tfvars']['ssh_key_file'] = '~/.ssh/user_aws_key.pem'
 
@@ -510,9 +418,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         self.reset_mock_objects()
 
     def test_check_version(self):
-        """
-        Test infrastructure_provisioning.check_version (check a version file in evg_data_dir)
-        """
+        """Test infrastructure_provisioning.check_version (check a version file in evg_data_dir)"""
         evg_data_dir = self.config['infrastructure_provisioning']['evergreen']['data_dir']
 
         # provisioned.single should always have an empty version number.
@@ -535,9 +441,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     @patch('infrastructure_provisioning.os.path.exists', return_value=True)
     @log_capture(level=logging.INFO)
     def test_rmtree_when_present(self, mock_rmtree, mock_exists, capture):
-        """
-        Test infrastructure_provisioning.rmtree_when_present success path
-        """
+        """Test infrastructure_provisioning.rmtree_when_present success path"""
         # pylint: disable=no-self-use
         # self.assertLogs(logger='infrastructure_provisioning')
         rmtree_when_present('')
@@ -547,9 +451,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     @patch('infrastructure_provisioning.os.path.exists', return_value=False)
     @log_capture()
     def test_rmtree_when_present_nopath(self, mock_exists, capture):
-        """
-        Test infrastructure_provisioning.rmtree_when_present path not found
-        """
+        """Test infrastructure_provisioning.rmtree_when_present path not found"""
         # pylint: disable=no-self-use
         # self.assertLogs(logger='infrastructure_provisioning')
         rmtree_when_present('')
@@ -561,9 +463,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     @patch('infrastructure_provisioning.os.path.exists', return_value=True)
     @log_capture(level=logging.INFO)
     def test_rmtree_when_present_error(self, mock_rmtree, mock_exists, capture):
-        """
-        Test infrastructure_provisioning.rmtree_when_present unexpected error
-        """
+        """Test infrastructure_provisioning.rmtree_when_present unexpected error"""
         # pylint: disable=no-self-use
         # self.assertLogs(logger='infrastructure_provisioning')
         with self.assertRaises(OSError):

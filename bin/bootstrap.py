@@ -1,11 +1,25 @@
 #!/usr/bin/env python2.7
-"""
-Setup an work environment. Copy over the appropriate files.
-"""
+'''Setup an work environment. Copy over the appropriate files.
+
+The long term intention is that this script sets up a working
+directory for use with the DP 2.0 operational flow. It will copy in
+the appropriate configuration files into the directory, and whatever
+other local initialization is needed. All local state will then live
+in this directory, while all static content, configuration, and
+scripts/executables will be accessed from the DSI repo.
+
+In the short term, this script will copy over the state needed to run
+the workflow, matching current reality. As new DP 2.0 features come
+online, this script should be updated to pick them up, and to move
+towards the long term intention.
+
+'''
 
 from __future__ import print_function
+import ConfigParser
 import sys
 import argparse
+import glob
 import logging
 import os
 import os.path
@@ -15,15 +29,63 @@ import yaml
 
 from common.config import ConfigDict
 from common.log import setup_logging
-from common.utils import read_aws_credentials
 
 LOGGER = logging.getLogger(__name__)
 
 
+def read_aws_credentials(config, config_dict):
+    '''
+    Read AWS credentials into a config object
+    '''
+    # if we can read variables out of the ~/.aws/credentials file, do so
+    read_aws_credentials_file(config)
+
+    # environment variables should supersede config file reading
+    read_env_vars(config)
+    if 'runtime_secret' in config_dict:
+        if 'aws_access_key' in config_dict['runtime_secret']:
+            config['aws_access_key'] = config_dict['runtime_secret']['aws_access_key']
+        if 'aws_secret_key' in config_dict['runtime_secret']:
+            config['aws_secret_key'] = config_dict['runtime_secret']['aws_secret_key']
+
+    if 'aws_access_key' not in config or 'aws_secret_key' not in config:
+        LOGGER.critical('AWS credentials not found. Please ensure that they are present in '
+                        '~/.aws/credentials or are present in your environment as AWS_ACCESS_KEY_ID'
+                        'and AWS_SECRET_ACCESS_KEY.')
+        assert False
+
+
+def read_aws_credentials_file(config):
+    '''
+    Read AWS credentials from the 'default' field of ~/.aws/credentials, if it exists
+    '''
+    defaults = {}
+    credential_path = os.path.expanduser('~/.aws/credentials')
+    section = 'default'
+    config_parser = ConfigParser.ConfigParser(defaults=defaults)
+    config_parser.read(credential_path)
+    if config_parser.has_section(section):
+        config['aws_access_key'] = config_parser.get(section, 'aws_access_key_id')
+        config['aws_secret_key'] = config_parser.get(section, 'aws_secret_access_key')
+    return config
+
+
+def read_env_vars(config):
+    '''
+    Read AWS access key id and and secret access key from environment variables
+    '''
+    if 'AWS_ACCESS_KEY_ID' in os.environ:
+        config['aws_access_key'] = os.environ.get('AWS_ACCESS_KEY_ID')
+    if 'AWS_SECRET_ACCESS_KEY' in os.environ:
+        config['aws_secret_key'] = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    return config
+
+
 def parse_command_line(config, args=None):
-    """
+    #pylint: disable=line-too-long,too-many-branches
+    '''
     Parse the command line options for setting up a working directory
-    """
+    '''
 
     parser = argparse.ArgumentParser(description='Setup DSI working environment. For instructions \
                     on setting up dsi locally, see \
@@ -52,7 +114,12 @@ def parse_command_line(config, args=None):
     parser.add_argument('--log-file', help='path to log file')
 
     # This option is ignored but allowed for backward compatibility
-    parser.add_argument('--production', action='store_true', default=False, help='(Ignored)')
+    parser.add_argument(
+        '--production',
+        action='store_true',
+        default=False,
+        help='Indicate the script is being called as part of a production run. '
+        'This suppresses certain messages appropriate for local runs (Ignored).')
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
     args = parser.parse_args(args)
 
@@ -66,9 +133,9 @@ def parse_command_line(config, args=None):
 
 
 def copy_config_files(dsipath, config, directory):
-    """
+    '''
     Copy all related config files to the target directory
-    """
+    '''
     # Pairs of ConfigDict module, and bootstrap.yml input.
     # This is all the variable info needed to build the from and to file paths down below.
     configs_to_copy = {
@@ -104,13 +171,13 @@ def copy_config_files(dsipath, config, directory):
 
 
 def setup_overrides(config, directory):
-    """
+    '''
     Generate the overrides.yml file
 
     Note: this only happens when running locally, outside of evergreen. In evergreen runs,
     the relevant variables are set in infrastructure_provisioning.yml and should not be present in
     config at this point.
-    """
+    '''
 
     overrides = {}
     override_path = os.path.join(directory, 'overrides.yml')
@@ -133,10 +200,42 @@ def setup_overrides(config, directory):
         override_file.write(yaml.dump(overrides, default_flow_style=False))
 
 
+def setup_security_tf(config, directory):
+    '''
+    Generate the security.tf file
+    '''
+    # config doesn't include options from infrastructure_provisioning.yml,
+    # because at the start of bootstrap.py, when we read input options with
+    # ConfigDict, it wasn't present.
+    # This method should be moved to infrastructure_provisioning.py.
+    # In the mean time we just hard code the values used in evergreen.
+    if 'ssh_key_name' not in config:
+        config['ssh_key_name'] = 'serverteam-perf-ssh-key'
+        LOGGER.warn("Using default SSH key name from defaults.yml. "
+                    "Please ensure that your own SSH key is being used.")
+    if 'ssh_key_file' not in config:
+        config['ssh_key_file'] = 'aws_ssh_key.pem'
+        LOGGER.warn("Using default SSH key file from defaults.yml. "
+                    "Please ensure that your own SSH key is being used.")
+    # Write security.tf. Used to be done by make_terraform_env.sh
+    with open(os.path.join(directory, 'security.tf'), 'w') as security:
+        security.write('provider "aws" {\n')
+        security.write('    access_key = "{0}"\n'.format(config['aws_access_key']))
+        security.write('    secret_key = "{0}"\n'.format(config['aws_secret_key']))
+        security.write('    region = "${var.region}"\n')
+        security.write('}\n')
+        security.write('variable "key_name" {\n')
+        security.write('    default = "{0}"\n'.format(config['ssh_key_name']))
+        security.write('}\n')
+        security.write('variable "key_file" {\n')
+        security.write('    default = "{0}"\n'.format(config['ssh_key_file']))
+        security.write('}')
+
+
 def find_terraform(config, directory):
-    """
+    '''
     Returns the location of the terraform binary to use
-    """
+    '''
     try:
         system_tf = subprocess.check_output(['which', 'terraform']).strip()
     except subprocess.CalledProcessError:
@@ -158,9 +257,7 @@ def find_terraform(config, directory):
 
 
 def validate_terraform(config):
-    """
-    Asserts that terraform is the correct version
-    """
+    '''Asserts that terraform is the correct version'''
     if not config['production']:
         try:
             version = subprocess.check_output([config['terraform'], "version"]).split('\n')[0]
@@ -181,9 +278,9 @@ def validate_terraform(config):
 
 
 def write_dsienv(directory, dsipath, terraform, config):
-    """
+    '''
     Writes out the dsienv.sh file. It saves the path to DSI repo.
-    """
+    '''
     with open(os.path.join(directory, 'dsienv.sh'), 'w') as dsienv:
         dsienv.write('export DSI_PATH={0}\n'.format(dsipath))
         dsienv.write('export PATH={0}/bin:$PATH\n'.format(dsipath))
@@ -195,9 +292,9 @@ def write_dsienv(directory, dsipath, terraform, config):
 
 
 def load_bootstrap(config, directory):
-    """
+    '''
     Move specified bootstrap.yml file to correct location for read_runtime_values
-    """
+    '''
     # Create directory if it doesn't exist
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -242,9 +339,8 @@ def load_bootstrap(config, directory):
 
 
 def main():
-    """
-    Main function for setting up working directory
-    """
+    ''' Main function for setting up working directory
+    '''
 
     config = {}
     parse_command_line(config)
@@ -258,9 +354,7 @@ def main():
 
     # Copies bootstrap.yml if necessary and then reads values into config
     config_dict = load_bootstrap(config, directory)
-
-    # Checks for aws credentials, fails if cannot find them
-    read_aws_credentials(config_dict)
+    read_aws_credentials(config, config_dict)
 
     # Compute DSI Path based on directory location of this script. Go up one level
     dsipath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -271,12 +365,34 @@ def main():
 
     write_dsienv(directory, dsipath, config['terraform'], config)
 
+    # Copy terraform tf files and remote-scripts to work directory
+    cluster_path = os.path.join(dsipath, 'clusters', 'default')
+    remote_scripts_path = os.path.join(dsipath, 'clusters', 'remote-scripts')
+    LOGGER.debug('Cluster path is %s', cluster_path)
+    for filename in glob.glob(os.path.join(cluster_path, '*')):
+        shutil.copy(filename, directory)
+        LOGGER.debug("Copied %s to work directory %s.", filename, directory)
+
+    remote_scripts_target = os.path.join(directory, 'remote-scripts')
+    LOGGER.debug("remote_scripts_target is %s", remote_scripts_target)
+    LOGGER.debug("remote_scripts_path is %s", remote_scripts_path)
+    os.mkdir(remote_scripts_target)
+    for filename in glob.glob(os.path.join(remote_scripts_path, '*')):
+        shutil.copy(filename, remote_scripts_target)
+
+    # copy modules
+    modules_path = os.path.join(dsipath, 'clusters', 'modules')
+    modules_target = os.path.join(directory, 'modules')
+    shutil.copytree(modules_path, modules_target)
+
     # copy necessary config files to the current directory
     copy_config_files(dsipath, config, directory)
 
     # This writes an overrides.yml with the ssh_key_file, ssh_key_name and owner, if given in
     # bootstrap.yml.
     setup_overrides(config, directory)
+
+    setup_security_tf(config, directory)
 
     LOGGER.info("Local environment setup in %s", directory)
 
