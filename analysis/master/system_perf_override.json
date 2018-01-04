@@ -8238,8 +8238,8 @@
                     ]
                 },
                 "insert_ttl":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
+                    "thread_threshold":0.25,
+                    "threshold":0.2,
                     "ticket":[
                         "BF-4146"
                     ]
