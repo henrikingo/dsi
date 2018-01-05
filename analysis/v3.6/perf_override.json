@@ -7581,8 +7581,8 @@
                     ]
                 },
                 "Aggregation.UnwindThenSkip":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
                     "ticket":[
                         "BF-5974"
                     ]
