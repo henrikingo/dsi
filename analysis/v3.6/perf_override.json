@@ -15582,8 +15582,8 @@
                     ]
                 },
                 "Aggregation.IdentityView.Project":{
-                    "thread_threshold":0.21,
-                    "threshold":0.16,
+                    "thread_threshold":0.25,
+                    "threshold":0.2,
                     "ticket":[
                         "BF-4530"
                     ]
