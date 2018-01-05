@@ -15531,6 +15531,13 @@
                         "BF-7488"
                     ]
                 },
+                "Aggregation.IdentityView.Lookup.UncorrelatedJoin.NoCache":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-6938"
+                    ]
+                },
                 "Aggregation.IdentityView.Lookup.UncorrelatedPrefixJoin":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
