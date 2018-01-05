@@ -94,6 +94,8 @@ class Provisioner(object):
             security.write('    access_key = "{0}"\n'.format(self.aws_access_key))
             security.write('    secret_key = "{0}"\n'.format(self.aws_secret_key))
             security.write('    region = "${var.region}"\n')
+            security.write('    version = "{}"\n'.format(
+                self.config['infrastructure_provisioning']['terraform']['aws_required_version']))
             security.write('}\n')
             security.write('variable "key_name" {\n')
             security.write('    default = "{0}"\n'.format(self.ssh_key_name))

@@ -37,6 +37,7 @@ infrastructure_provisioning:
     data_dir: /data/infrastructure_provisioning
   terraform:
     required_version: Terraform v0.10.4
+    aws_required_version: 1.6.0
 
 mongodb_setup:
   mongo_dir: mongodb

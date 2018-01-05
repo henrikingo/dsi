@@ -36,6 +36,9 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 'infrastructure_provisioning': 'single'
             },
             'infrastructure_provisioning': {
+                'terraform': {
+                    'aws_required_version': 'test_aws_version'
+                },
                 'tfvars': {
                     'cluster_name': 'single',
                     'ssh_key_file': 'aws_ssh_key.pem',
@@ -118,7 +121,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         master_tf_str = ('provider "aws" {{    '
                          'access_key = "test_aws_access_key"    '
                          'secret_key = "test_aws_secret_key"    '
-                         'region = "${{var.region}}"}}'
+                         'region = "${{var.region}}"'
+                         'version = "test_aws_version" }}'
                          'variable "key_name" {{    '
                          'default = "{}"}}'
                          'variable "key_file" {{    '
