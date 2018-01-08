@@ -48,7 +48,6 @@ def read_aws_credentials(config):
         if 'aws_secret_key' in config['runtime_secret']:
             aws_config['aws_secret_key'] = config['runtime_secret']['aws_secret_key']
 
-    print aws_config
     if 'aws_access_key' not in aws_config or 'aws_secret_key' not in aws_config:
         LOG.critical('AWS credentials not found. Please ensure that they are present in '
                      '~/.aws/credentials or are present in your environment as AWS_ACCESS_KEY_ID'
