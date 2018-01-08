@@ -124,8 +124,8 @@ class TestBootstrap(unittest.TestCase):
             os.path.join(test_dsipath, 'configurations', 'test_control', 'test_control.core.yml'),
             'w').close()
         open(
-            os.path.join(test_dsipath, 'configurations', 'workload_setup', 'workload_setup.core.yml'),
-            'w').close()
+            os.path.join(test_dsipath, 'configurations', 'workload_setup',
+                         'workload_setup.core.yml'), 'w').close()
         test_config['infrastructure_provisioning'] = 'single'
         test_config['mongodb_setup'] = 'replica'
         test_config['storageEngine'] = 'wiredTiger'
@@ -133,9 +133,10 @@ class TestBootstrap(unittest.TestCase):
         test_config['workload_setup'] = 'core'
         test_config['production'] = False
         bootstrap.copy_config_files(test_dsipath, test_config, test_directory)
-        master_files = set(
-            ['infrastructure_provisioning.yml', 'mongodb_setup.yml', 'test_control.yml',
-             'workload_setup.yml'])
+        master_files = set([
+            'infrastructure_provisioning.yml', 'mongodb_setup.yml', 'test_control.yml',
+            'workload_setup.yml'
+        ])
         test_files = set(os.listdir(test_directory))
         self.assertEqual(test_files, master_files)
 
