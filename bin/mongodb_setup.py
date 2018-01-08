@@ -107,6 +107,7 @@ class MongoNode(object):
     # 2. It makes things slightly easier to test :)
     @property
     def host(self):
+        """Access to remote or local host."""
         if self._host is None:
             self._host = self._compute_host()
         return self._host
@@ -720,6 +721,9 @@ class MongodbSetup(object):
 
     @property
     def downloader(self):
+        """
+        :return: DownloadMongodb instance
+        """
         if self._downloader is None:
             self._downloader = DownloadMongodb(self.config)
         return self._downloader
