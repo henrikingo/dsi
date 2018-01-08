@@ -25,24 +25,11 @@ from common.thread_runner import run_threads
 LOG = logging.getLogger(__name__)
 
 # Remote files that need to be created.
+# NB: these could/should come from defaults.yml
 DEFAULT_JOURNAL_DIR = '/media/ephemeral1/journal'
 DEFAULT_MONGO_DIR = 'mongodb'
 DEFAULT_MEMBER_PRIORITY = 1
 DEFAULT_CSRS_NAME = 'configSvrRS'
-
-
-def args_list(opts):
-    """Converts options dictionary by prepending '--' to the keys."""
-    args = []
-    for opt, val in opts.items():
-        if opt == 'setParameters':
-            for param, param_val in val.items():
-                args.append('--setParameter={0}={1}'.format(param, param_val))
-        elif val:
-            args.append('--{0}={1}'.format(opt, val))
-        else:
-            args.append('--{0}'.format(opt))
-    return args
 
 
 def merge_dicts(base, override):
@@ -59,31 +46,9 @@ def merge_dicts(base, override):
 class MongoNode(object):
     """Represents a mongo[ds] program on a remote host."""
 
-    ports_allocated = set()
-    """keeps track of which ports have been locally allocated"""
-
-    ssh_user = 'ec2-user'
-    ssh_key_file = '../../keys/aws.pem'
-    """ssh credentials for remote hosts, overrided by config."""
-
-    journal_dir = DEFAULT_JOURNAL_DIR
-    """Directory to symlink mongod journal"""
-
-    clean_logs = True
-    """Delete mongod.log and diagnostic.data before startup"""
-
-    clean_db_dir = True
-    """Delete data directory before startup"""
-
-    numactl_prefix = ""
-    """Set this to execute mongod via numactl"""
-
-    shutdown_options = "{}"
-    """ Set this to pass in options to shutdown"""
-
-    def __init__(self, opts, is_mongos=False):
+    def __init__(self, topology, config, is_mongos=False):
         """
-        :param opts: Read-only options for mongo[ds], example:
+        :param topology: Read-only options for mongo[ds], example:
         {
             'public_ip': '127.0.0.1',
             'private_ip': '127.0.0.1',
@@ -94,41 +59,77 @@ class MongoNode(object):
             'clean_db_dir': True,
             'use_journal_mnt': True
         }
+        :param config: root ConfigDict
         :param is_mongos: True if this node is a mongos
         """
+        self.topology = topology
+        self.config = config
+
         self.mongo_program = 'mongos' if is_mongos else 'mongod'
-        self.public_ip = opts['public_ip']
-        self.private_ip = opts.get('private_ip', self.public_ip)
-        self.bin_dir = os.path.join(opts.get('mongo_dir', DEFAULT_MONGO_DIR), 'bin')
-        self.clean_logs = opts.get('clean_logs', MongoNode.clean_logs)
-        self.clean_db_dir = opts.get('clean_db_dir', (not is_mongos) and MongoNode.clean_db_dir)
-        self.use_journal_mnt = opts.get('use_journal_mnt', not is_mongos)
-        self.mongo_config_file = copy_obj(opts.get('config_file', {}))
+        self.public_ip = topology['public_ip']
+        self.private_ip = topology.get('private_ip', self.public_ip)
+        self.bin_dir = os.path.join(topology.get('mongo_dir', DEFAULT_MONGO_DIR), 'bin')
+
+        setup = self.config.get('mongodb_setup')
+        if not setup:
+            raise ValueError("No mongodb_setup key in config %s" % config)
+
+        # NB: we could specify these defaults in default.yml if not already!
+        # TODO: For the next 2 configs, ConfigDict does not "magically" combine
+        #       the common setting with the node specific one (topology vs
+        #       mongodb_setup). We should add that to ConfigDict to make these
+        #       lines as simple as the rest.
+        self.clean_logs = topology.get('clean_logs', setup.get('clean_logs', True))
+        self.clean_db_dir = topology.get('clean_db_dir', (not is_mongos)
+                                         and setup.get('clean_db_dir', True))
+
+        self.use_journal_mnt = topology.get('use_journal_mnt', not is_mongos)
+        self.mongo_config_file = copy_obj(topology.get('config_file', {}))
         self.logdir = os.path.dirname(self.mongo_config_file['systemLog']['path'])
+        self.port = self.mongo_config_file['net']['port']
+
         if is_mongos:
             self.dbdir = None
         else:
             self.dbdir = self.mongo_config_file['storage']['dbPath']
-        self.port = self.mongo_config_file['net']['port']
-        self.host = self._host()
 
-    @staticmethod
-    def get_open_port(port_hint):
-        """Return an open port for the given hostname."""
-        port = port_hint
-        if port in MongoNode.ports_allocated:
-            port = max(MongoNode.ports_allocated) + 1
-        MongoNode.ports_allocated.add(port)
-        return port
+        self.numactl_prefix = self.config['infrastructure_provisioning'].get('numactl_prefix', "")
+        self.shutdown_options = json.dumps(
+            copy_obj(self.config['mongodb_setup']['shutdown_options']))
 
-    def _host(self):
+        # Accessed via @properties
+        self._host = None
+
+    # This is a @property versus a plain self.host var for 2 reasons:
+    # 1. We don't need to be doing SSH stuff or be reading related
+    #    configs if we never actually access the host var, and the host
+    #    constructors eagerly do this stuff.
+    # 2. It makes things slightly easier to test :)
+    @property
+    def host(self):
+        if self._host is None:
+            self._host = self._compute_host()
+        return self._host
+
+    @host.setter  # only visible for testing - see _commands_run_during_setup_host
+    def host(self, val):
+        self._host = val
+
+    def _compute_host(self):
         """Create host wrapper to run commands."""
-        # TODO: this should not use the Remote and LocalHost classes directly.
+        # TODO: can we use the factory methods in host.py to create this?
         if self.public_ip in ['localhost', '127.0.0.1', '0.0.0.0']:
             return LocalHost()
-        return RemoteHost(self.public_ip, self.ssh_user, self.ssh_key_file)
 
-    # TODO(rtimmons): refactor to MongoStatusChecker or similar to ease mocking
+        (ssh_user, ssh_key_file) = self._ssh_user_and_key_file()
+        return RemoteHost(self.public_ip, ssh_user, ssh_key_file)
+
+    def _ssh_user_and_key_file(self):
+        ssh_user = self.config['infrastructure_provisioning']['tfvars']['ssh_user']
+        ssh_key_file = self.config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+        ssh_key_file = os.path.expanduser(ssh_key_file)
+        return ssh_user, ssh_key_file
+
     def wait_until_up(self):
         """ Checks to make sure node is up and accessible"""
         js_string = '''
@@ -167,7 +168,7 @@ class MongoNode(object):
             'clean_db_dir': _clean_db_dir,
             'clean_logs': _clean_logs,
             'dbdir': self.dbdir,
-            'journal_dir': self.journal_dir,
+            'journal_dir': self.config.get('mongodb_setup.journal_dir', DEFAULT_JOURNAL_DIR),
             'logdir': self.logdir,
             'is_mongos': self.mongo_program == 'mongos',
             'use_journal_mnt': self.use_journal_mnt
@@ -239,7 +240,7 @@ class MongoNode(object):
     def launch(self, initialize=True, numactl=True):
         """Starts this node.
 
-        :param initialize boolean: Initialize the node. This doesn't do anything for the
+        :param boolean initialize: Initialize the node. This doesn't do anything for the
                                      base node"""
 
         # initialize is explicitly not used for now for a single node. We may want to use it in
@@ -311,26 +312,29 @@ class ReplSet(object):
     replsets = 0
     """Counts the number of ReplSets created."""
 
-    def __init__(self, opts):
+    def __init__(self, topology, config):
         """
-
-        :param opts: Read-only options for  replSet, example:
+        :param topology: Read-only options for  replSet, example:
         {
             'id': 'replSetName',
             'configsvr': False,
-            'mongod': [MongoNode opts, ...],
+            'mongod': [MongoNode topology, ...],
         }
+        :param config: root ConfigDict
         """
-        self.name = opts.get('id')
+        self.config = config
+        self.topology = topology
+
+        self.name = topology.get('id')
         if not self.name:
             self.name = 'rs{}'.format(ReplSet.replsets)
             ReplSet.replsets += 1
-        self.configsvr = opts.get('configsvr', False)
-        self.mongod_opts = opts['mongod']
-        self.rs_conf = opts.get('rs_conf', {})
+
+        self.rs_conf = topology.get('rs_conf', {})
         self.rs_conf_members = []
         self.nodes = []
-        for opt in self.mongod_opts:
+
+        for opt in topology['mongod']:
             # save replica set member configs
             self.rs_conf_members.append(copy_obj(opt.get('rs_conf_member', {})))
             # Must add replSetName and clusterRole
@@ -338,13 +342,14 @@ class ReplSet(object):
             config_file = merge_dicts(config_file, {'replication': {'replSetName': self.name}})
 
             mongod_opt = copy_obj(opt)
-            if self.configsvr:
+            if topology.get('configsvr', False):
                 config_file = merge_dicts(config_file, {'sharding': {'clusterRole': 'configsvr'}})
                 # The test infrastructure does not set up a separate journal dir for
                 # the config server machines.
                 mongod_opt['use_journal_mnt'] = False
+
             mongod_opt['config_file'] = config_file
-            self.nodes.append(MongoNode(mongod_opt))
+            self.nodes.append(MongoNode(topology=mongod_opt, config=self.config))
 
     def is_any_priority_set(self):
         """Returns true if a priority is set for any node."""
@@ -413,7 +418,7 @@ class ReplSet(object):
 
     def launch(self, initialize=True, numactl=True):
         """Starts the replica set.
-        :param initialize boolean: Initialize the replica set"""
+        :param boolean initialize: Initialize the replica set"""
         if not all(
                 run_threads(
                     [partial(node.launch, initialize, numactl)
@@ -436,7 +441,7 @@ class ReplSet(object):
         """Return the JavaScript code to configure the replica set."""
         LOG.info('Configuring replica set: %s', self.name)
         config = merge_dicts(self.rs_conf, {'_id': self.name, 'members': []})
-        if self.configsvr:
+        if self.topology.get('configsvr', False):
             config['configsvr'] = True
         for i, node in enumerate(self.nodes):
             member_conf = merge_dicts(self.rs_conf_members[i], {
@@ -487,10 +492,9 @@ class ReplSet(object):
 class ShardedCluster(object):
     """Represents a sharded cluster on remote hosts."""
 
-    def __init__(self, opts):
+    def __init__(self, topology, config):
         """
-
-        :param opts: Read-only options for a sharded cluster:
+        :param topology: Read-only options for a sharded cluster:
         {
             'disable_balancer': False,
             'configsvr_type': 'csrs',
@@ -498,26 +502,34 @@ class ShardedCluster(object):
             'configsvr': [MongoNodeConfig, ...],
             'shard': [ReplSetConfig, ...]
         }
+        :param config: root ConfigDict
         """
-        self.disable_balancer = opts.get('disable_balancer', True)
-        self.mongos_opts = opts['mongos']
-        config_type = opts.get('configsvr_type', 'csrs')
+        self.config = config
+
+        self.disable_balancer = topology.get('disable_balancer', True)
+        self.mongos_opts = topology['mongos']
+
+        config_type = topology.get('configsvr_type', 'csrs')
         if config_type != 'csrs':
             raise NotImplementedError('configsvr_type: {}'.format(config_type))
-        config_opt = {'id': DEFAULT_CSRS_NAME, 'configsvr': True, 'mongod': opts['configsvr']}
-        self.config = ReplSet(config_opt)
+
+        config_opt = {'id': DEFAULT_CSRS_NAME, 'configsvr': True, 'mongod': topology['configsvr']}
+        self.config_svr = ReplSet(topology=config_opt, config=config)
+
         self.shards = []
         self.mongoses = []
-        for opt in opts['shard']:
-            self.shards.append(create_cluster(opt))
-        for opt in opts['mongos']:
+
+        for topo in topology['shard']:
+            self.shards.append(create_cluster(topology=topo, config=config))
+
+        for topo in topology['mongos']:
             # add the connection string for the configdb
-            config_file = copy_obj(opt.get('config_file', {}))
-            configdb_yaml = {'sharding': {'configDB': self.config.connection_string_private()}}
+            config_file = copy_obj(topo.get('config_file', {}))
+            configdb_yaml = {'sharding': {'configDB': self.config_svr.connection_string_private()}}
             config_file = merge_dicts(config_file, configdb_yaml)
-            mongos_opt = copy_obj(opt)
+            mongos_opt = copy_obj(topo)
             mongos_opt['config_file'] = config_file
-            self.mongoses.append(MongoNode(mongos_opt, is_mongos=True))
+            self.mongoses.append(MongoNode(topology=mongos_opt, config=self.config, is_mongos=True))
 
     def wait_until_up(self):
         """Checks to make sure sharded cluster is up and
@@ -545,12 +557,12 @@ class ShardedCluster(object):
         :param restart_clean_logs   Should we clean logs and diagnostic data. If not specified,
         uses value from ConfigDict.
         """
-        commands = []
-        commands.append(
+        commands = [
             partial(
-                self.config.setup_host,
+                self.config_svr.setup_host,
                 restart_clean_db_dir=restart_clean_db_dir,
-                restart_clean_logs=restart_clean_logs))
+                restart_clean_logs=restart_clean_logs)
+        ]
         commands.extend(
             partial(
                 shard.setup_host,
@@ -566,11 +578,10 @@ class ShardedCluster(object):
     def launch(self, initialize=True):
         """Starts the sharded cluster.
 
-        :param initialize boolean: Initialize the cluster
+        :param boolean initialize: Initialize the cluster
         """
         LOG.info('Launching sharded cluster...')
-        commands = []
-        commands.append(partial(self.config.launch, initialize=initialize, numactl=False))
+        commands = [partial(self.config_svr.launch, initialize=initialize, numactl=False)]
         commands.extend(partial(shard.launch, initialize=initialize) for shard in self.shards)
         commands.extend(partial(mongos.launch, initialize=initialize) for mongos in self.mongoses)
         if not all(run_threads(commands, daemon=True)):
@@ -599,20 +610,20 @@ class ShardedCluster(object):
         """Shutdown the mongodb cluster gracefully."""
         commands = []
         commands.extend(shard.shutdown for shard in self.shards)
-        commands.append(self.config.shutdown)
+        commands.append(self.config_svr.shutdown)
         commands.extend(mongos.shutdown for mongos in self.mongoses)
         return all(run_threads(commands, daemon=True))
 
     def destroy(self):
         """Kills the remote cluster members."""
         run_threads([shard.destroy for shard in self.shards], daemon=True)
-        self.config.destroy()
+        self.config_svr.destroy()
         run_threads([mongos.destroy for mongos in self.mongoses], daemon=True)
 
     def close(self):
         """Closes SSH connections to remote hosts."""
         run_threads([shard.close for shard in self.shards], daemon=True)
-        self.config.close()
+        self.config_svr.close()
         run_threads([mongos.close for mongos in self.mongoses], daemon=True)
 
     def __str__(self):
@@ -625,16 +636,20 @@ class ShardedCluster(object):
         return '\n'.join(description)
 
 
-def create_cluster(topology):
-    """Create MongoNode, ReplSet, or ShardCluster from topology config"""
+def create_cluster(topology, config):
+    """
+    Create MongoNode, ReplSet, or ShardCluster from topology config
+    :param topology: topology config to create - see MongoNode, ReplSet, ShardedCluster docs
+    :param config: root ConfigDict
+    """
     cluster_type = topology['cluster_type']
     LOG.info('creating topology: %s', cluster_type)
     if cluster_type == 'standalone':
-        return MongoNode(topology)
+        return MongoNode(topology=topology, config=config)
     elif cluster_type == 'replset':
-        return ReplSet(topology)
+        return ReplSet(topology=topology, config=config)
     elif cluster_type == 'sharded_cluster':
-        return ShardedCluster(topology)
+        return ShardedCluster(topology=topology, config=config)
     else:
         LOG.fatal('unknown cluster_type: %s', cluster_type)
         exit(1)
@@ -645,29 +660,16 @@ class MongodbSetup(object):
 
     def __init__(self, config):
         self.config = config
-        self.mongodb_setup = config['mongodb_setup']
-        journal_dir = self.mongodb_setup.get('journal_dir')
-        if journal_dir:
-            MongoNode.journal_dir = journal_dir
-        MongoNode.ssh_user = config['infrastructure_provisioning']['tfvars']['ssh_user']
-        ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
-        ssh_key_file = os.path.expanduser(ssh_key_file)
-        MongoNode.ssh_key_file = ssh_key_file
-        MongoNode.numactl_prefix = config['infrastructure_provisioning']['numactl_prefix']
-        if MongoNode.numactl_prefix is None:
-            MongoNode.numactl_prefix = ""
-        MongoNode.clean_logs = config['mongodb_setup'].get('clean_logs', True)
-        MongoNode.clean_db_dir = config['mongodb_setup'].get('clean_db_dir', True)
-        MongoNode.shutdown_options = json.dumps(
-            copy_obj(config['mongodb_setup']['shutdown_options']))
+        self.mongodb_setup = self.config['mongodb_setup']
         self.clusters = []
-        self.downloader = DownloadMongodb(config)
         self.parse_topologies()
+
+        self._downloader = None
 
     def parse_topologies(self):
         """Create cluster for each topology"""
-        for topology in self.mongodb_setup['topology']:
-            self.clusters.append(create_cluster(topology))
+        for topology in self.config['mongodb_setup']['topology']:
+            self.clusters.append(create_cluster(topology, self.config))
 
     def start(self):
         """Start all clusters
@@ -716,10 +718,21 @@ class MongodbSetup(object):
             return False
         return True
 
+    @property
+    def downloader(self):
+        if self._downloader is None:
+            self._downloader = DownloadMongodb(self.config)
+        return self._downloader
+
+    @downloader.setter
+    def downloader(self, value):
+        self._downloader = value
+
     @staticmethod
     def start_cluster(cluster, is_restart=False, restart_clean_db_dir=None,
                       restart_clean_logs=None):
         """Start cluster
+        :param cluster         cluster to start
         :param is_restart      This is a restart of the cluster, not the first start.
         :param restart_clean_db_dir Should we clean db dir. If not specified, uses value from
         ConfigDict.
@@ -768,10 +781,11 @@ def main():
     args = parse_command_line()
     setup_logging(args.debug, args.log_file)
 
-    # start a mongodb configuration using config module
     config = ConfigDict('mongodb_setup')
     config.load()
-    mongo = MongodbSetup(config)
+
+    # start a mongodb configuration using config module
+    mongo = MongodbSetup(config=config)
     if not mongo.start():
         LOG.error("Error setting up mongodb")
         exit(1)
