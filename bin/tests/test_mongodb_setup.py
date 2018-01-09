@@ -160,7 +160,6 @@ class TestMongoNode(unittest.TestCase):
 
         node = mongodb_setup.MongoNode(
             topology=self.config['mongodb_setup']['topology'][0], config=self.config)
-        # pylint: disable=protected-access
         (actual_user, actual_key) = node._ssh_user_and_key_file()
         self.assertEquals(actual_key, expected_ssh_key_file)
         self.assertEquals(actual_user, 'ec2-user')
@@ -403,10 +402,8 @@ class TestReplSet(unittest.TestCase):
         self.assertEquals(replset.highest_priority_node(), replset.nodes[1])
 
     def test_constructor_without_config(self):
-        """We get an error if we don't have correct config."""
         self.assertRaises(ValueError, self._constructor_without_config)
 
-    # pylint: disable=no-self-use
     def _constructor_without_config(self):
         repl_set_opts = {
             'name': 'rs',
