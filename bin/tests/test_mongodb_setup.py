@@ -9,69 +9,37 @@ import mock
 import mongodb_setup
 import common.host
 
+# Mock the remote host module.
 mongodb_setup.RemoteHost = mock.MagicMock()
 
 MONGOD_OPTS = {
     'public_ip': '1.2.3.4',
     'mongo_dir': '/usr/',
     'config_file': {
-        'net': {
-            'port': 9999,
-            'bindIp': '0.0.0.0'
-        },
         'systemLog': {
-            'destination': 'file',
             'path': 'mongod.log'
         },
         'storage': {
-            'dbPath': 'data/dbs'
+            'dbPath': 'db'
         },
+        'net': {
+            'port': 9999
+        }
     },
     'rs_conf_member': {}
-}
-
-DEFAULT_CONFIG = {
-    'infrastructure_provisioning': {
-        'tfvars': {
-            'ssh_user': 'ec2-user',
-            'ssh_key_file': '~/.ssh/user_ssh_key.pem'
-        },
-        'numactl_prefix': 'numactl test',
-        'out': []
-    },
-    'mongodb_setup': {
-        'shutdown_options': {
-            'force': True,
-            'timeoutSecs': 5
-        },
-        'journal_dir':
-            '/data/journal',
-        'topology': [{
-            'cluster_type': 'standalone',
-            'id': 'myid1',
-            'public_ip': '1.2.3.4',
-            'private_ip': '10.2.0.1',
-            'config_file': {
-                'net': {
-                    'port': 9999,
-                    'bindIp': '0.0.0.0'
-                },
-                'storage': {
-                    'dbPath': 'data/dbs',
-                    'engine': 'wiredTiger'
-                },
-                'systemLog': {
-                    'destination': 'file',
-                    'path': 'mongod.log'
-                }
-            }
-        }]
-    }
 }
 
 
 class TestHelperFunctions(unittest.TestCase):
     """Basic tests for helper functions in mongodb_setup"""
+
+    def test_args_list(self):
+        """Test args_list correctly formats arguments"""
+        opts = {'a': 1, 'b': 'string', 'c': None, 'setParameters': {'a': 1, 'b': 'string'}}
+        expected_args = {
+            '--a=1', '--b=string', '--c', '--setParameter=a=1', '--setParameter=b=string'
+        }
+        self.assertSetEqual(set(mongodb_setup.args_list(opts)), expected_args)
 
     def test_merge_dicts(self):
         """Test merge_dicts correctly overrides literals."""
@@ -93,10 +61,7 @@ class TestMongoNode(unittest.TestCase):
 
     def setUp(self):
         """Create a MongoNode instance to use throughout tests."""
-        topology = mongodb_setup.copy_obj(MONGOD_OPTS)
-        self.topology = topology
-        self.config = DEFAULT_CONFIG
-        self.mongo_node = mongodb_setup.MongoNode(topology=topology, config=self.config)
+        self.mongo_node = mongodb_setup.MongoNode(mongodb_setup.copy_obj(MONGOD_OPTS))
 
     def test_hostport(self):
         """Test hostport format"""
@@ -131,8 +96,8 @@ class TestMongoNode(unittest.TestCase):
 
         required = [['rm', '-rf', a]
                     for a in [
-                        '*.log', 'core.*', 'data/dbs/diagnostic.data/*', 'diagnostic.data',
-                        'data/dbs', '/media/ephemeral1/journal'
+                        '*.log', 'core.*', 'db/diagnostic.data/*', 'diagnostic.data', 'db',
+                        '/media/ephemeral1/journal'
                     ]]
         for req in required:
             self.assertTrue(req in commands_issued,
@@ -152,17 +117,6 @@ class TestMongoNode(unittest.TestCase):
         # pylint: disable=protected-access
         actual = mongodb_setup.MongoNode._generate_setup_commands(generate_setup_commands_args)
         self.assertEquals(actual, expected, msg=",\n".join([str(x) for x in actual]))
-
-    def test_ssh_key(self):
-        """Test ~/.ssh/user_aws_key.pem"""
-        ssh_key_file = self.config['infrastructure_provisioning']['tfvars']['ssh_key_file']
-        expected_ssh_key_file = os.path.expanduser(ssh_key_file)
-
-        node = mongodb_setup.MongoNode(
-            topology=self.config['mongodb_setup']['topology'][0], config=self.config)
-        (actual_user, actual_key) = node._ssh_user_and_key_file()
-        self.assertEquals(actual_key, expected_ssh_key_file)
-        self.assertEquals(actual_user, 'ec2-user')
 
     # below tests want to be named
     #     test_generate_setup_commands_*
@@ -357,19 +311,12 @@ class TestMongoNode(unittest.TestCase):
 
     def test_launch_cmd(self):
         """Test launch command uses proper config file."""
-        original_prefix = DEFAULT_CONFIG['infrastructure_provisioning']['numactl_prefix']
-        modified_prefix = "numactl --interleave=all --cpunodebind=1"
         expected_cmd = "/usr/bin/mongod --config /tmp/mongo_port_9999.conf"
+        self.assertEqual(self.mongo_node.launch_cmd(), expected_cmd)
 
-        self.assertEqual(self.mongo_node.launch_cmd(), original_prefix + " " + expected_cmd)
-
-        modified_config = mongodb_setup.copy_obj(DEFAULT_CONFIG)
-        modified_config['infrastructure_provisioning']['numactl_prefix'] = modified_prefix
-
-        command_with_modified_prefix = mongodb_setup.MongoNode(self.topology,
-                                                               modified_config).launch_cmd()
-
-        self.assertEqual(command_with_modified_prefix, modified_prefix + " " + expected_cmd)
+        self.mongo_node.numactl_prefix = "numactl --interleave=all --cpunodebind=1"
+        expected_cmd = "numactl --interleave=all --cpunodebind=1 " + expected_cmd
+        self.assertEqual(self.mongo_node.launch_cmd(), expected_cmd)
 
 
 class TestReplSet(unittest.TestCase):
@@ -382,10 +329,10 @@ class TestReplSet(unittest.TestCase):
             'mongod': [mongodb_setup.copy_obj(MONGOD_OPTS),
                        mongodb_setup.copy_obj(MONGOD_OPTS)]
         }
-        replset = mongodb_setup.ReplSet(topology=repl_set_opts, config=DEFAULT_CONFIG)
+        replset = mongodb_setup.ReplSet(repl_set_opts)
         self.assertEquals(replset.is_any_priority_set(), False)
         repl_set_opts['mongod'][1]['rs_conf_member']['priority'] = 5
-        replset = mongodb_setup.ReplSet(topology=repl_set_opts, config=DEFAULT_CONFIG)
+        replset = mongodb_setup.ReplSet(repl_set_opts)
         self.assertEquals(replset.is_any_priority_set(), True)
 
     def test_highest_priority_node(self):
@@ -395,22 +342,11 @@ class TestReplSet(unittest.TestCase):
             'mongod': [mongodb_setup.copy_obj(MONGOD_OPTS),
                        mongodb_setup.copy_obj(MONGOD_OPTS)]
         }
-        replset = mongodb_setup.ReplSet(topology=repl_set_opts, config=DEFAULT_CONFIG)
+        replset = mongodb_setup.ReplSet(repl_set_opts)
         self.assertEquals(replset.highest_priority_node(), replset.nodes[0])
         repl_set_opts['mongod'][1]['rs_conf_member']['priority'] = 5
-        replset = mongodb_setup.ReplSet(topology=repl_set_opts, config=DEFAULT_CONFIG)
+        replset = mongodb_setup.ReplSet(repl_set_opts)
         self.assertEquals(replset.highest_priority_node(), replset.nodes[1])
-
-    def test_constructor_without_config(self):
-        self.assertRaises(ValueError, self._constructor_without_config)
-
-    def _constructor_without_config(self):
-        repl_set_opts = {
-            'name': 'rs',
-            'mongod': [mongodb_setup.copy_obj(MONGOD_OPTS),
-                       mongodb_setup.copy_obj(MONGOD_OPTS)]
-        }
-        mongodb_setup.ReplSet(topology=repl_set_opts, config={})
 
 
 class TestMongodbSetup(unittest.TestCase):
@@ -418,7 +354,54 @@ class TestMongodbSetup(unittest.TestCase):
 
     def setUp(self):
         """Common options"""
-        self.config = DEFAULT_CONFIG
+        self.config = {
+            'infrastructure_provisioning': {
+                'tfvars': {
+                    'ssh_user': 'ec2-user',
+                    'ssh_key_file': '~/.ssh/user_ssh_key.pem'
+                },
+                'numactl_prefix': 'numactl test',
+                'out': []
+            },
+            'mongodb_setup': {
+                'shutdown_options': {
+                    'force': True,
+                    'timeoutSecs': 5
+                },
+                'journal_dir':
+                    '/data/journal',
+                'topology': [{
+                    'cluster_type': 'standalone',
+                    'id': 'myid1',
+                    'public_ip': '1.2.3.4',
+                    'private_ip': '10.2.0.1',
+                    'config_file': {
+                        'net': {
+                            'port': 27017,
+                            'bindIp': '0.0.0.0'
+                        },
+                        'storage': {
+                            'dbPath': 'data/dbs',
+                            'engine': 'wiredTiger'
+                        },
+                        'systemLog': {
+                            'destination': 'file',
+                            'path': 'data/logs/mongod.log'
+                        }
+                    }
+                }]
+            }
+        }
+
+    # pylint: disable=unused-argument
+    @mock.patch('mongodb_setup.DownloadMongodb')
+    def test_ssh_key(self, mock_downloader):
+        """Test ~/.ssh/user_aws_key.pem"""
+        mongodb_setup.MongodbSetup(self.config)
+        ssh_key_file = self.config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+        expected_ssh_key_file = os.path.expanduser(ssh_key_file)
+        self.assertEquals(mongodb_setup.MongoNode.ssh_key_file, expected_ssh_key_file)
+        self.assertEquals(mongodb_setup.MongoNode.ssh_user, 'ec2-user')
 
     @mock.patch.object(common.host, 'Host', autospec=True)
     def test_restart_does_not_download(self, host):
