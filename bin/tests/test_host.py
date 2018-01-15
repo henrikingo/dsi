@@ -3,22 +3,26 @@
 # pylint: disable=wrong-import-order
 
 import collections
+from datetime import datetime
 import os
 import shutil
 import socket
 import sys
 import stat
+import time
 import unittest
 from StringIO import StringIO
 
 import paramiko
 
-from mock import patch, Mock, mock, MagicMock
+from mock import patch, Mock, mock, MagicMock, call, ANY
 
 from common.utils import mkdir_p
 
-from bin.common.host import make_host_runner
+from bin.common.host import make_host_runner, never_timeout, check_timed_out, create_timer, \
+    _stream
 from bin.common.log import TeeStream
+from any_in_string import ANY_IN_STRING
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 
@@ -64,6 +68,26 @@ class HostTestCase(unittest.TestCase):
 
         self._delete_fixtures()
 
+    def test_never_timeout(self):
+        """ test never_timeout"""
+        self.assertFalse(never_timeout())
+        self.assertFalse(never_timeout())
+
+    def test_check_timed_out(self):
+        """ test check_timed_out"""
+        start = datetime.now()
+        self.assertFalse(check_timed_out(start, 50))
+        time.sleep(51 / 1000.0)
+        self.assertTrue(check_timed_out(start, 50))
+
+    def test_create_timer(self):
+        """ test create_timer """
+        start = datetime.now()
+        self.assertEquals(create_timer(start, None), never_timeout)
+        with patch('bin.common.host.partial') as mock_partial:
+            self.assertTrue(create_timer(start, 50))
+            mock_partial.assert_called_once_with(check_timed_out, start, 50)
+
     def test_extract_hosts(self):
         """ Test extract hosts using config info """
         mongods = [host.HostInfo('53.1.1.{}'.format(i + 1), "mongod", i) for i in range(0, 9)]
@@ -84,6 +108,92 @@ class HostTestCase(unittest.TestCase):
         self.assertEqual(
             host.extract_hosts('all_hosts', self.config),
             mongods + mongos + configsvrs + workload_clients)
+
+    def test__stream(self):
+        """ Test _stream, I wouldn't normally test an internal method, but it consumes
+         an exception and it can then be stubbed or mocked later"""
+
+        source = StringIO('source')
+        destination = MagicMock(name="destination")
+        source.next = MagicMock(name="in")
+        source.next.side_effect = socket.timeout('args')
+        _stream(source, destination)
+        destination.write.assert_not_called()
+
+        destination = MagicMock(name="destination")
+        source.next = MagicMock(name="in")
+        source.next.side_effect = ['first', 'second', socket.timeout('args'), 'third']
+        _stream(source, destination)
+
+        calls = [
+            call('first'),
+            call('second'),
+        ]
+
+        destination.write.assert_has_calls(calls)
+
+    def test_kill_remote_procs(self):
+        """ Test kill_remote_procs """
+
+        local_host = host.LocalHost()
+        local_host.run = MagicMock(name="run")
+        local_host.run.return_value = False
+        self.assertTrue(local_host.kill_remote_procs('mongo'))
+
+        calls = [
+            call(['pkill', '-9', 'mongo']),
+            call(['pgrep', 'mongo']),
+        ]
+
+        local_host.run.assert_has_calls(calls)
+
+        with patch('host.create_timer') as mock_create_watchdog:
+
+            local_host.run = MagicMock(name="run")
+            local_host.run.return_value = False
+            local_host.kill_remote_procs('mongo', max_time_ms=None)
+            mock_create_watchdog.assert_called_once_with(ANY, None)
+
+        with patch('host.create_timer') as mock_create_watchdog:
+
+            local_host.run = MagicMock(name="run")
+            local_host.run.return_value = False
+            local_host.kill_remote_procs('mongo', max_time_ms=0, delay_ms=99)
+            mock_create_watchdog.assert_called_once_with(ANY, 99)
+
+        with patch('host.create_timer') as mock_create_watchdog:
+            local_host = host.LocalHost()
+            local_host.run = MagicMock(name="run")
+            local_host.run.return_value = True
+
+            mock_is_timed_out = MagicMock(name="is_timed_out")
+            mock_create_watchdog.return_value = mock_is_timed_out
+            mock_is_timed_out.side_effect = [False, True]
+            self.assertFalse(local_host.kill_remote_procs('mongo', delay_ms=1))
+
+        local_host = host.LocalHost()
+        local_host.run = MagicMock(name="run")
+        local_host.run.side_effect = [False, True, False, False]
+        self.assertTrue(local_host.kill_remote_procs('mongo', signal_number=15, delay_ms=1))
+
+        calls = [
+            call(['pkill', '-15', 'mongo']),
+            call(['pgrep', 'mongo']),
+            call(['pkill', '-15', 'mongo']),
+            call(['pgrep', 'mongo']),
+        ]
+
+        local_host.run.assert_has_calls(calls)
+        # mock_sleep.assert_not_called()
+
+    def test_kill_mongo_procs(self):
+        """ Test kill_mongo_procs """
+        local_host = host.LocalHost()
+        local_host.kill_remote_procs = MagicMock(name="kill_remote_procs")
+        local_host.kill_remote_procs.return_value = True
+        self.assertTrue(local_host.kill_mongo_procs())
+        local_host.kill_remote_procs.assert_called_once_with('mongo', 9, max_time_ms=30000)
+
 
     @patch('paramiko.SSHClient')
     def test_alias(self, mock_ssh):
@@ -224,10 +334,10 @@ class HostTestCase(unittest.TestCase):
             }
             mongod.alias = "workload_client.0"
             host._run_host_command_map(mongod, command)
-            call = mock.call("reports/workload_client.0/../workloads_timestamps.csv",
-                             "workloads/workload_timestamps.csv")
+            calls = [mock.call("reports/workload_client.0/../workloads_timestamps.csv",
+                               "workloads/workload_timestamps.csv")]
 
-            mock_retrieve_file.assert_has_calls([call])
+            mock_retrieve_file.assert_has_calls(calls)
 
     def test_exec(self):
         """ Test run command map upload_repo_files """
@@ -283,14 +393,20 @@ class HostTestCase(unittest.TestCase):
         self.assertFalse(isdir, "expected False")
         remote.ftp.stat.assert_called_with('/exception')
 
-    def test_local_host(self):
-        """ Test run command map retrieve_files """
+    def test_local_host_exec_command(self):
+        """ Test LocalHost.exec_command """
 
         local = host.LocalHost()
         mkdir_p(os.path.dirname(self.filename))
 
         self.assertEqual(local.exec_command('exit 0'), 0)
+
+        # test that the correct warning is issued
+        mock_logger = MagicMock(name='LOG')
+        host.LOG.warn = mock_logger
         self.assertEqual(local.exec_command('exit 1'), 1)
+        mock_logger.assert_called_once_with(ANY_IN_STRING('Failed with exit status'), ANY,
+                                            ANY, ANY)
 
         local.exec_command('touch {}'.format(self.filename))
         self.assertTrue(os.path.isfile(self.filename))
@@ -334,6 +450,18 @@ class HostTestCase(unittest.TestCase):
         local.exec_command(command, out, err)
         self.assertEqual(out.getvalue(), "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\nblast off!\n")
         self.assertEqual(err.getvalue(), "")
+
+        # test timeout and that the correct warning is issued
+        out = StringIO()
+        err = StringIO()
+        command = "sleep 1"
+
+        mock_logger = MagicMock(name='LOG')
+        host.LOG.warn = mock_logger
+        self.assertEqual(local.exec_command(command, out, err, max_time_ms=500), 1)
+        mock_logger.assert_called_once_with(ANY_IN_STRING('Timeout after'), ANY,
+                                            ANY, ANY, ANY)
+
 
     def test_local_host_tee(self):
         """ Test run command map retrieve_files """
@@ -663,7 +791,7 @@ class HostTestCase(unittest.TestCase):
         status_code = remote_host.exec_mongo_command(test_script, test_file, test_connection_string)
         self.assertTrue(status_code == 0)
         mock_create_file.assert_called_with(test_file, test_script)
-        mock_exec_command.assert_called_with(test_argv)
+        mock_exec_command.assert_called_with(test_argv, max_time_ms=None)
 
     @patch('paramiko.SSHClient')
     def test_remote_host(self, mock_paramiko):
@@ -734,41 +862,53 @@ class HostTestCase(unittest.TestCase):
         subject.exec_command.assert_called_once_with(['cowsay Hello World', 'cowsay moo'])
 
     # pylint: disable=too-many-statements
-    def test_exec_command(self):
-        """Test exec_command"""
+    def test_remote_exec_command(self):
+        """Test RemoteHost.exec_command"""
 
         def _test_common(command='cowsay Hello World',
                          expected='cowsay Hello World',
-                         return_value=0):
+                         return_value=0,
+                         recv_exit_status=0,
+                         exit_status_ready=True):
             """ test common code with """
-            remote_host = host.RemoteHost('test_host', 'test_user', 'test_pem_file')
+            with patch('host.create_timer') as mock_create_watchdog, \
+                 patch('host._stream') as mock_stream:
+                remote_host = host.RemoteHost('test_host', 'test_user', 'test_pem_file')
 
-            ssh_instance = mock_ssh.return_value
-            stdin = Mock(name='stdin')
+                ssh_instance = mock_ssh.return_value
+                stdin = Mock(name='stdin')
 
-            # magic mock for iterable support
-            stdout = mock.MagicMock(name='stdout')
-            stdout.__iter__.return_value = ''
+                # magic mock for iterable support
+                stdout = mock.MagicMock(name='stdout')
+                stdout.__iter__.return_value = ''
 
-            stderr = mock.MagicMock(name='stderr')
-            stdout.__iter__.return_value = ''
+                stderr = mock.MagicMock(name='stderr')
+                stdout.__iter__.return_value = ''
+                if recv_exit_status is not None:
+                    stdout.channel.recv_exit_status.return_value = recv_exit_status
+                ssh_instance.exec_command.return_value = [stdin, stdout, stderr]
 
-            stdout.channel.recv_exit_status.return_value = return_value
-            ssh_instance.exec_command.return_value = [stdin, stdout, stderr]
+                # Test a command as string
+                out = StringIO()
+                err = StringIO()
 
-            # Test a command as string
-            out = StringIO()
-            err = StringIO()
+                stdout.channel.exit_status_ready.return_value = exit_status_ready
+                stdout.channel.recv_exit_status.return_value = return_value
 
-            stdout.channel.exit_status_ready.return_value = True
-            stdout.channel.recv_exit_status.return_value = return_value
+                self.assertEqual(remote_host.exec_command(command, out, err), return_value)
+                ssh_instance.exec_command.assert_called_once_with(expected, get_pty=False)
+                stdin.channel.shutdown_write.assert_called_once()
 
-            self.assertEqual(remote_host.exec_command(command, out, err), return_value)
-            ssh_instance.exec_command.assert_called_once_with(expected, get_pty=False)
-            stdin.channel.shutdown_write.assert_called_once()
-            stdin.close.assert_called()
-            stdout.close.assert_called()
-            stderr.close.assert_called()
+                stdout.channel.settimeout.assert_called_once_with(0.5)
+                stderr.channel.settimeout.assert_called_once_with(0.5)
+
+                stdin.close.assert_called()
+                stdout.close.assert_called()
+                stderr.close.assert_called()
+                mock_create_watchdog.assert_called_once_with(ANY, None)
+                mock_stream.assert_has_calls([call(stdout, out), call(stderr, err)])
+                if recv_exit_status is None:
+                    stdout.channel.recv_exit_status.assert_not_called()
 
         # Exceptions
         with patch('paramiko.SSHClient') as mock_ssh:
@@ -776,10 +916,10 @@ class HostTestCase(unittest.TestCase):
 
             # Test error cases
             with self.assertRaises(ValueError):
-                self.assertTrue(remote_host.exec_command(''))
+                remote_host.exec_command('')
 
             with self.assertRaises(ValueError):
-                self.assertTrue(remote_host.exec_command([]))
+                remote_host.exec_command([])
 
             # Anything else should fail
             with self.assertRaises(ValueError):
@@ -793,10 +933,24 @@ class HostTestCase(unittest.TestCase):
             _test_common()
 
         with patch('paramiko.SSHClient') as mock_ssh:
+            mock_logger = MagicMock(name='LOG')
+            host.LOG.warn = mock_logger
             _test_common(command=['cowsay', 'Hello', 'World'])
+            mock_logger.assert_not_called()
 
         with patch('paramiko.SSHClient') as mock_ssh:
-            _test_common(return_value=1)
+            mock_logger = MagicMock(name='LOG')
+            host.LOG.warn = mock_logger
+            _test_common(return_value=1, recv_exit_status=1)
+            mock_logger.assert_called_once_with(ANY_IN_STRING('Failed with exit status'), ANY,
+                                                ANY, ANY)
+
+        with patch('paramiko.SSHClient') as mock_ssh:
+            mock_logger = MagicMock(name='LOG')
+            host.LOG.warn = mock_logger
+            _test_common(exit_status_ready=False, recv_exit_status=None, return_value=1)
+            mock_logger.assert_called_once_with(ANY_IN_STRING('Timeout after'), ANY,
+                                                ANY, ANY, ANY)
 
         with patch('paramiko.SSHClient') as mock_ssh:
             # Test a command as list

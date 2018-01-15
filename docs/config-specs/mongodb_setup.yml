@@ -196,3 +196,17 @@ validate:
     - ${mongodb_setup.topology.0.shard.1.mongod.0.private_ip}:27017
     - ${mongodb_setup.topology.0.shard.2.mongod.0.private_ip}:27017
     - ${mongodb_setup.topology.0.configsvr.0.private_ip}:27017
+
+# These params are passed through to shutdownServer, it allows whatever
+# https://docs.mongodb.com/manual/reference/command/shutdown/#dbcmd.shutdown supports.
+# The values are defaulted (in defaults.yml) so are not required.
+# It is preferrable that
+shutdown_options:
+  force: true
+  timeoutSecs: 119
+
+# these timeouts specify the max amount of milliseconds that the mongo shutdownServer command and
+# pkill mongo commands can run for.
+timeouts:
+  shutdown_ms: 540000
+  sigterm_ms: 60000

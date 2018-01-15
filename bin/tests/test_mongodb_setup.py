@@ -9,6 +9,9 @@ import mock
 import mongodb_setup
 import common.host
 
+from any_in_string import ANY_IN_STRING
+
+# Mock the remote host module.
 mongodb_setup.RemoteHost = mock.MagicMock()
 
 MONGOD_OPTS = {
@@ -88,6 +91,7 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertEqual(mongodb_setup.merge_dicts(base, override), expected_merge)
 
 
+# pylint: disable=too-many-public-methods
 class TestMongoNode(unittest.TestCase):
     """MongoNode tests"""
 
@@ -97,6 +101,27 @@ class TestMongoNode(unittest.TestCase):
         self.topology = topology
         self.config = DEFAULT_CONFIG
         self.mongo_node = mongodb_setup.MongoNode(topology=topology, config=self.config)
+
+    def test_run_mongo_shell(self):
+        """Test hostport format"""
+
+        mock_host = mock.MagicMock(name='host')
+        self.mongo_node.host = mock_host
+        mock_host.exec_mongo_command.return_value = 0
+        self.assertTrue(self.mongo_node.run_mongo_shell('js command'))
+        mock_host.exec_mongo_command.assert_called_once_with(
+            'js command', '/tmp/mongo_port_9999.js', 'localhost:9999', max_time_ms=None)
+
+        mock_host = mock.MagicMock(name='host')
+        mock_dump_mongo_log = mock.MagicMock(name='dump_mongo_log')
+        self.mongo_node.host = mock_host
+        self.mongo_node.dump_mongo_log = mock_dump_mongo_log
+        mock_host.exec_mongo_command.return_value = 1
+
+        self.assertFalse(self.mongo_node.run_mongo_shell('js command', max_time_ms=1))
+        mock_dump_mongo_log.assert_called_once()
+        mock_host.exec_mongo_command.assert_called_once_with(
+            'js command', '/tmp/mongo_port_9999.js', 'localhost:9999', max_time_ms=1)
 
     def test_hostport(self):
         """Test hostport format"""
@@ -372,9 +397,117 @@ class TestMongoNode(unittest.TestCase):
 
         self.assertEqual(command_with_modified_prefix, modified_prefix + " " + expected_cmd)
 
+    def test_shutdown(self):
+        """Test shutdown."""
+
+        mock_logger = mock.MagicMock(name='LOG')
+        mongodb_setup.LOG.warn = mock_logger
+        self.mongo_node.shutdown_options = '{}'
+        self.mongo_node.run_mongo_shell = mock.MagicMock(name='run_mongo_shell')
+        self.mongo_node.run_mongo_shell.return_value = True
+        self.assertTrue(self.mongo_node.shutdown(1))
+        self.mongo_node.run_mongo_shell.assert_called_once_with(
+            'db.getSiblingDB("admin").shutdownServer({})', max_time_ms=1)
+        mock_logger.assert_not_called()
+
+    def test_shutdown_options(self):
+        """Test failed shutdown with options."""
+
+        mock_logger = mock.MagicMock(name='LOG')
+        mongodb_setup.LOG.warn = mock_logger
+        self.mongo_node.run_mongo_shell = mock.MagicMock(name='run_mongo_shell')
+        self.mongo_node.shutdown_options = 'options'
+        self.mongo_node.run_mongo_shell.return_value = False
+        self.assertFalse(self.mongo_node.shutdown(None))
+        self.mongo_node.run_mongo_shell.assert_called_once_with(
+            'db.getSiblingDB("admin").shutdownServer(options)', max_time_ms=None)
+        mock_logger.assert_called_once_with(ANY_IN_STRING('did not shutdown'), mock.ANY,
+                                            mock.ANY)
+
+    def test_shutdown_exception(self):
+        """Test shutdown."""
+
+        mock_logger = mock.MagicMock(name='LOG')
+        mongodb_setup.LOG.error = mock_logger
+        self.mongo_node.run_mongo_shell = mock.MagicMock(name='run_mongo_shell')
+        self.mongo_node.run_mongo_shell.side_effect = Exception()
+        self.assertFalse(self.mongo_node.shutdown(None))
+        mock_logger.assert_called_once_with(ANY_IN_STRING('Error shutting down MongoNode at'),
+                                            mock.ANY, mock.ANY)
+
+    def test_destroy(self):
+        """Test destroy."""
+
+        self.mongo_node.host.kill_mongo_procs = mock.MagicMock(name='kill_mongo_procs')
+        self.mongo_node.host.run = mock.MagicMock(name='run')
+        self.mongo_node.host.kill_mongo_procs.return_value = True
+        self.assertTrue(self.mongo_node.destroy(1))
+        calls = [mock.call(signal_number=15, max_time_ms=1), mock.call()]
+        self.mongo_node.host.kill_mongo_procs.assert_has_calls(calls)
+        self.mongo_node.host.run.assert_called_once_with(['rm', '-rf', 'data/dbs/mongod.lock'])
+
+        self.mongo_node.host.kill_mongo_procs = mock.MagicMock(name='kill_mongo_procs')
+        self.mongo_node.host.run = mock.MagicMock(name='run')
+        self.mongo_node.host.kill_mongo_procs.return_value = False
+        self.mongo_node.dbdir = None
+        self.assertFalse(self.mongo_node.destroy(2))
+        calls = [mock.call(signal_number=15, max_time_ms=2), mock.call()]
+        self.mongo_node.host.kill_mongo_procs.assert_has_calls(calls)
+        self.mongo_node.host.run.assert_not_called()
+
+        self.mongo_node.host.kill_mongo_procs = mock.MagicMock(name='kill_mongo_procs')
+        self.mongo_node.host.kill_mongo_procs.side_effect = [Exception(), True]
+        self.mongo_node.host.run = mock.MagicMock(name='run')
+
+        with self.assertRaises(Exception):
+            self.mongo_node.destroy(2)
+        calls = [mock.call(signal_number=15, max_time_ms=2), mock.call()]
+        self.mongo_node.host.kill_mongo_procs.assert_has_calls(calls)
+
 
 class TestReplSet(unittest.TestCase):
     """ReplSet tests"""
+    def setUp(self):
+        self.repl_set_opts = {
+            'name': 'rs',
+            'mongod': [mongodb_setup.copy_obj(MONGOD_OPTS),
+                       mongodb_setup.copy_obj(MONGOD_OPTS)]
+        }
+        self.replset = mongodb_setup.ReplSet(self.repl_set_opts, config=DEFAULT_CONFIG)
+
+    def test_shutdown(self):
+        """Test shutdown."""
+        with mock.patch('mongodb_setup.run_threads') as mock_run_threads, \
+                mock.patch('mongodb_setup.partial') as mock_partial:
+            mock_run_threads.return_value = [True]
+            self.assertTrue(self.replset.shutdown(1))
+            mock_partial.assert_has_calls([
+                mock.call(self.replset.nodes[0].shutdown, 1),
+                mock.call(self.replset.nodes[1].shutdown, 1)
+            ])
+
+        with mock.patch('mongodb_setup.run_threads') as mock_run_threads, \
+                mock.patch('mongodb_setup.partial') as mock_partial:
+            mock_run_threads.return_value = [True, False]
+            self.assertFalse(self.replset.shutdown(2))
+            mock_partial.assert_has_calls([mock.call(mock.ANY, 2), mock.call(mock.ANY, 2)])
+
+    def test_destroy(self):
+        """Test destroy."""
+        with mock.patch('mongodb_setup.run_threads') as mock_run_threads, \
+                mock.patch('mongodb_setup.partial') as mock_partial:
+            mock_run_threads.return_value = [True]
+            self.replset.destroy(1)
+            mock_partial.assert_has_calls([
+                mock.call(self.replset.nodes[0].destroy, 1),
+                mock.call(self.replset.nodes[1].destroy, 1)
+            ])
+
+        with mock.patch('mongodb_setup.run_threads') as mock_run_threads, \
+                mock.patch('mongodb_setup.partial') as mock_partial:
+            mock_run_threads.return_value = [True, False]
+            self.replset.destroy(2)
+            mock_partial.assert_has_calls([mock.call(mock.ANY, 2), mock.call(mock.ANY, 2)])
 
     def test_is_any_priority_set(self):
         """Test priority handling."""
@@ -403,6 +536,73 @@ class TestReplSet(unittest.TestCase):
         self.assertEquals(replset.highest_priority_node(), replset.nodes[1])
 
 
+class TestShardedCluster(unittest.TestCase):
+    """ReplSet tests"""
+
+    def setUp(self):
+        self.cluster_opts = \
+            {
+                'disable_balancer': False,
+                'configsvr_type': 'csrs',
+                'mongos': [mongodb_setup.copy_obj(MONGOD_OPTS)],
+                'configsvr': [mongodb_setup.copy_obj(MONGOD_OPTS)],
+                'shard': [{'id': 'shard',
+                           'cluster_type': 'replset',
+                           'mongod': [mongodb_setup.copy_obj(MONGOD_OPTS),
+                                      mongodb_setup.copy_obj(MONGOD_OPTS)]}]
+            }
+        self.cluster = mongodb_setup.ShardedCluster(self.cluster_opts, config=DEFAULT_CONFIG)
+
+    def test_shutdown(self):
+        """Test shutdown."""
+        with mock.patch('mongodb_setup.run_threads') as mock_run_threads, \
+                mock.patch('mongodb_setup.partial') as mock_partial:
+            mock_run_threads.return_value = [True]
+            self.assertTrue(self.cluster.shutdown(1))
+            mock_partial.assert_has_calls([
+                mock.call(self.cluster.shards[0].shutdown, 1),
+                mock.call(self.cluster.config_svr.shutdown, 1),
+                mock.call(self.cluster.mongoses[0].shutdown, 1),
+            ])
+
+        with mock.patch('mongodb_setup.run_threads') as mock_run_threads, \
+                mock.patch('mongodb_setup.partial') as mock_partial:
+            mock_run_threads.return_value = [True, False]
+            self.assertFalse(self.cluster.shutdown(2))
+            mock_partial.assert_has_calls([
+                mock.call(mock.ANY, 2),
+                mock.call(mock.ANY, 2),
+                mock.call(mock.ANY, 2),
+            ])
+
+    def test_destroy(self):
+        """Test destroy."""
+        with mock.patch('mongodb_setup.run_threads') as mock_run_threads, \
+                mock.patch('mongodb_setup.partial') as mock_partial:
+            mock_run_threads.return_value = [True]
+            self.cluster.config_svr.destroy = mock.MagicMock(name="config")
+            self.cluster.destroy(1)
+            mock_partial.assert_has_calls(
+                [
+                    mock.call(self.cluster.shards[0].destroy, 1),
+                    mock.call(self.cluster.mongoses[0].destroy, 1),
+                ],
+                any_order=True)
+            self.cluster.config_svr.destroy.assert_called_once_with(1)
+
+        with mock.patch('mongodb_setup.run_threads') as mock_run_threads, \
+                mock.patch('mongodb_setup.partial') as mock_partial:
+            mock_run_threads.return_value = [True, False]
+            self.cluster.config_svr.destroy = mock.MagicMock(name="config")
+            self.cluster.destroy(2)
+            mock_partial.assert_has_calls(
+                [
+                    mock.call(mock.ANY, 2),
+                    mock.call(mock.ANY, 2),
+                ], any_order=True)
+            self.cluster.config_svr.destroy.assert_called_once_with(2)
+
+
 class TestMongodbSetup(unittest.TestCase):
     """MongodbSetup tests"""
 
@@ -410,20 +610,162 @@ class TestMongodbSetup(unittest.TestCase):
         """Common options"""
         self.config = DEFAULT_CONFIG
 
+    def test_timeouts(self):
+        """Test shutdown / sigterm timeouts"""
+        setup = mongodb_setup.MongodbSetup(self.config)
+        self.assertEqual(setup.shutdown_ms, 540000)
+        self.assertEqual(setup.sigterm_ms, 60000)
+
+        self.config['mongodb_setup']['timeouts'] = {
+            'shutdown_ms': 'shutdown',
+            'sigterm_ms': 'sigterm'
+        }
+        setup = mongodb_setup.MongodbSetup(self.config)
+        self.assertEqual(setup.shutdown_ms, 'shutdown')
+        self.assertEqual(setup.sigterm_ms, 'sigterm')
+
     @mock.patch.object(common.host, 'Host', autospec=True)
-    def test_restart_does_not_download(self, host):
-        """Restarting doesn't re-download"""
+    def start(self, host):
+        """Starting ignores shutdown fails """
         setup = mongodb_setup.MongodbSetup(config=self.config)
         setup.host = host
         setup.downloader = mock.MagicMock()
 
         host.run = mock.MagicMock()
         mongodb_setup.MongoNode.wait_until_up = mock.MagicMock()
+        setup.destroy = mock.MagicMock(name='destroy')
+        setup.shutdown = mock.MagicMock(name='shutdown')
+        setup.shutdown.return_value = True
+        setup.downloader = mock.MagicMock()
 
-        out = setup.restart()
-        self.assertIs(out, True)
+        with mock.patch('mongodb_setup.run_threads') as mock_run_threads:
+            mock_run_threads.return_value = [True]
+            self.assertTrue(setup.restart())
+            setup.destroy.assert_called_once_with(60000)
+            setup.shutdown.assert_called_once_with(540000)
+            setup.downloader.download_and_extract.assert_not_called()
+            mock_run_threads.assert_called_once()
 
-        setup.downloader.assert_not_called()
+    # pylint: disable=protected-access
+    def test_start(self):
+        """ test start"""
+        def _test_start(download_status=False):
+            setup = mongodb_setup.MongodbSetup(config=self.config)
+            setup.downloader.download_and_extract = mock.MagicMock(name='downloader')
+
+            setup._start = mock.MagicMock(name='_start')
+            setup._start.return_value = "start clusters"
+            setup.destroy = mock.MagicMock(name='destroy')
+            # shutdown should never be called in this path
+            setup.shutdown = mock.MagicMock(name='shutdown')
+            setup.downloader.download_and_extract.return_value = download_status
+
+            if not download_status:
+                self.assertEquals(setup.start(), False)
+                setup._start.assert_not_called()
+            else:
+                self.assertEquals(setup.start(), "start clusters")
+                setup._start.assert_called_once()
+            setup.destroy.assert_called_once_with(60000)
+            setup.shutdown.assert_not_called()
+            setup.downloader.download_and_extract.assert_called_once()
+
+        _test_start()
+        _test_start(download_status=True)
+
+    def test_restart(self):
+        """ test start"""
+        def _test_restart(shutdown=True):
+            setup = mongodb_setup.MongodbSetup(config=self.config)
+
+            setup._start = mock.MagicMock(name='_start')
+            setup._start.return_value = "start clusters"
+
+            setup.destroy = mock.MagicMock(name='destroy')
+            setup.shutdown = mock.MagicMock(name='shutdown')
+            setup.shutdown.return_value = shutdown
+
+            if not shutdown:
+                self.assertEquals(setup.restart(), False)
+                setup._start.assert_not_called()
+            else:
+                self.assertEquals(setup.restart(), "start clusters")
+                setup._start.assert_called_once_with(is_restart=True,
+                                                     restart_clean_db_dir=None,
+                                                     restart_clean_logs=None)
+            setup.destroy.assert_called_once_with(60000)
+            setup.shutdown.assert_called_once_with(540000)
+
+        _test_restart()
+        _test_restart(shutdown=False)
+
+    def test__start(self):
+        """Restarting fails when shutdown fails"""
+
+        def _test__start(run_threads, success=True):
+
+            setup = mongodb_setup.MongodbSetup(config=self.config)
+            setup.downloader = mock.MagicMock()
+            setup.downloader.download_and_extract.return_value = False
+            mongodb_setup.MongoNode.wait_until_up = mock.MagicMock()
+            setup.destroy = mock.MagicMock(name='destroy')
+            setup.shutdown = mock.MagicMock(name='shutdown')
+            setup.shutdown.return_value = False
+
+            with mock.patch('mongodb_setup.run_threads') as mock_run_threads,\
+                 mock.patch('mongodb_setup.partial') as mock_partial:
+                mock_run_threads.return_value = run_threads
+                mock_partial.return_value = 'threads'
+
+                self.assertEquals(setup._start(), success)
+                calls = [mock.call(setup.start_cluster,
+                                   cluster=setup.clusters[0],
+                                   is_restart=False,
+                                   restart_clean_db_dir=None,
+                                   restart_clean_logs=None)]
+                mock_partial.assert_has_calls(calls)
+                setup.destroy.assert_not_called()
+                if success:
+                    setup.shutdown.assert_not_called()
+                else:
+                    setup.shutdown.assert_called_once_with(540000)
+                setup.downloader.download_and_extract.assert_not_called()
+                mock_run_threads.assert_called_once_with(['threads'], daemon=True)
+        _test__start([True])
+        _test__start([True, True])
+        _test__start([True, False], success=False)
+
+    def test_shutdown(self):
+        """Test MongoDbSetup.shutdown """
+
+        setup = mongodb_setup.MongodbSetup(config=self.config)
+        mock_cluster1 = mock.MagicMock(name='cluster1')
+        mock_cluster2 = mock.MagicMock(name='cluster2')
+        setup.clusters = [mock_cluster1, mock_cluster2]
+        with mock.patch('mongodb_setup.run_threads') as mock_run_threads, \
+                mock.patch('mongodb_setup.partial') as mock_partial:
+
+            mock_run_threads.return_value = [True]
+            self.assertTrue(setup.shutdown(1))
+            mock_partial.assert_has_calls(
+                [mock.call(mock_cluster1.shutdown, 1),
+                 mock.call(mock_cluster2.shutdown, 1)])
+
+    def test_destroy(self):
+        """Test MongoDbSetup.destroy"""
+
+        setup = mongodb_setup.MongodbSetup(config=self.config)
+        mock_cluster1 = mock.MagicMock(name='cluster1')
+        mock_cluster2 = mock.MagicMock(name='cluster2')
+        setup.clusters = [mock_cluster1, mock_cluster2]
+        with mock.patch('mongodb_setup.run_threads') as mock_run_threads, \
+                mock.patch('mongodb_setup.partial') as mock_partial:
+
+            mock_run_threads.return_value = [True]
+            self.assertTrue(setup.destroy(1))
+            mock_partial.assert_has_calls(
+                [mock.call(mock_cluster1.destroy, 1),
+                 mock.call(mock_cluster2.destroy, 1)])
 
 
 if __name__ == '__main__':

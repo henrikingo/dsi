@@ -9,6 +9,7 @@ from functools import partial
 import json
 import logging
 import os
+import signal
 import time
 
 import argparse
@@ -17,7 +18,7 @@ import yaml
 # pylint does not like relative imports but "from bin.common" does not work
 # pylint: disable=too-many-instance-attributes
 from common.download_mongodb import DownloadMongodb
-from common.host import RemoteHost, LocalHost
+from common.host import RemoteHost, LocalHost, ONE_MINUTE_MILLIS
 from common.log import setup_logging
 from common.config import ConfigDict, copy_obj
 from common.thread_runner import run_threads
@@ -250,15 +251,18 @@ class MongoNode(object):
             return False
         return self.wait_until_up()
 
-    def run_mongo_shell(self, js_string):
+    def run_mongo_shell(self, js_string, max_time_ms=None):
         """
         Run JavaScript code in a mongo shell on the underlying host
-        :param js_string: String of JavaScript code.
+        :param str js_string: the javascript to evaluate.
+        For the max_time_ms parameter, see
+            :method:`Host.exec_command`
         :return: True if the mongo shell exits successfully
         """
         remote_file_name = '/tmp/mongo_port_{0}.js'.format(self.port)
         if self.host.exec_mongo_command(js_string, remote_file_name,
-                                        "localhost:" + str(self.port)) != 0:
+                                        "localhost:" + str(self.port),
+                                        max_time_ms=max_time_ms) != 0:
             self.dump_mongo_log()
             return False
         return True
@@ -280,20 +284,39 @@ class MongoNode(object):
 
     connection_string_public = hostport_public
 
-    def shutdown(self):
-        """Shutdown the replset members gracefully"""
+    def shutdown(self, max_time_ms):
+        """Shutdown the replset members gracefully
+        For the max_time_ms parameter, see
+            :method:`Host.exec_command`
+        :return: True if shutdownServer command ran successfully.
+        """
         try:
-            return self.run_mongo_shell('db.getSiblingDB("admin").shutdownServer({})'.format(
-                self.shutdown_options))
+            result = self.run_mongo_shell('db.getSiblingDB("admin").shutdownServer({})'.format(
+                self.shutdown_options), max_time_ms=max_time_ms)
+            if not result:
+                LOG.warn("Mongo %s:%s did not shutdown", self.public_ip, self.port)
+            return result
         except Exception:  # pylint: disable=broad-except
             LOG.error("Error shutting down MongoNode at %s:%s", self.public_ip, self.port)
+        return False
 
-    def destroy(self):
-        """Kills the remote mongo program."""
-        self.host.kill_mongo_procs()
-        # Clean up any old lock files. Server shouldn't be running at this point.
-        if self.dbdir:
-            self.host.run(['rm', '-rf', os.path.join(self.dbdir, 'mongod.lock')])
+    def destroy(self, max_time_ms):
+        """Kills the remote mongo program. First it sends SIGTERM every second for up to
+        max_time_ms. It also always sends a SIGKILL and cleans up dbdir if this attribute is set.
+
+        For the max_time_ms parameter, see
+            :method:`Host.exec_command`
+        :return: bool True if there are no processes matching 'mongo' on completion.
+        """
+        try:
+            return self.host.kill_mongo_procs(signal_number=signal.SIGTERM,
+                                              max_time_ms=max_time_ms)
+        finally:
+            # ensure the processes are dead and cleanup
+            self.host.kill_mongo_procs()
+
+            if self.dbdir:
+                self.host.run(['rm', '-rf', os.path.join(self.dbdir, 'mongod.lock')])
 
     def close(self):
         """Closes SSH connections to remote hosts."""
@@ -455,13 +478,20 @@ class ReplSet(object):
             '''.format(json_config)
         return js_string
 
-    def shutdown(self):
-        """Shutdown the replset members gracefully"""
-        return all(run_threads([node.shutdown for node in self.nodes], daemon=True))
+    def shutdown(self, max_time_ms):
+        """Shutdown gracefully
+        For the max_time_ms parameter, see
+            :method:`Host.exec_command`
+        """
+        return all(run_threads([partial(node.shutdown, max_time_ms) for node in self.nodes],
+                               daemon=True))
 
-    def destroy(self):
-        """Kills the remote replica members."""
-        run_threads([node.destroy for node in self.nodes], daemon=True)
+    def destroy(self, max_time_ms):
+        """Kills the remote replica members.
+        For the max_time_ms parameter, see
+            :method:`Host.exec_command`
+        """
+        run_threads([partial(node.destroy, max_time_ms) for node in self.nodes], daemon=True)
 
     def close(self):
         """Closes SSH connections to remote hosts."""
@@ -604,19 +634,25 @@ class ShardedCluster(object):
             return False
         return True
 
-    def shutdown(self):
-        """Shutdown the mongodb cluster gracefully."""
+    def shutdown(self, max_time_ms):
+        """Shutdown the mongodb cluster gracefully.
+        For the max_time_ms parameter, see
+            :method:`Host.exec_command`
+        """
         commands = []
-        commands.extend(shard.shutdown for shard in self.shards)
-        commands.append(self.config_svr.shutdown)
-        commands.extend(mongos.shutdown for mongos in self.mongoses)
+        commands.extend(partial(shard.shutdown, max_time_ms) for shard in self.shards)
+        commands.append(partial(self.config_svr.shutdown, max_time_ms))
+        commands.extend(partial(mongos.shutdown, max_time_ms) for mongos in self.mongoses)
         return all(run_threads(commands, daemon=True))
 
-    def destroy(self):
-        """Kills the remote cluster members."""
-        run_threads([shard.destroy for shard in self.shards], daemon=True)
-        self.config_svr.destroy()
-        run_threads([mongos.destroy for mongos in self.mongoses], daemon=True)
+    def destroy(self, max_time_ms):
+        """Kills the remote cluster members.
+        For the max_time_ms parameter, see
+            :method:`Host.exec_command`
+        """
+        run_threads([partial(shard.destroy, max_time_ms) for shard in self.shards], daemon=True)
+        self.config_svr.destroy(max_time_ms)
+        run_threads([partial(mongos.destroy, max_time_ms) for mongos in self.mongoses], daemon=True)
 
     def close(self):
         """Closes SSH connections to remote hosts."""
@@ -664,42 +700,62 @@ class MongodbSetup(object):
 
         self._downloader = None
 
+        timeouts = self.config['mongodb_setup'].get('timeouts', {})
+        self.shutdown_ms = timeouts.get('shutdown_ms', 9 * ONE_MINUTE_MILLIS)
+        self.sigterm_ms = timeouts.get('sigterm_ms', ONE_MINUTE_MILLIS)
+
     def parse_topologies(self):
         """Create cluster for each topology"""
         for topology in self.config['mongodb_setup']['topology']:
             self.clusters.append(create_cluster(topology, self.config))
 
     def start(self):
-        """Start all clusters
+        """Start all clusters for the first time.
+           On the first start, we will just kill hard any mongod processes as quickly as
+           possible. (They would most likely be left running by a previous evergreen task
+           and will be wiped out anyway.)
+          See :method:`restart` if this is not a clean start.
         """
+        self.destroy(self.sigterm_ms)
+
+        # The downloader will download MongoDB binaries if a URL was provided in the
+        # ConfigDict.
+        if not self.downloader.download_and_extract():
+            LOG.error("Download and extract failed.")
+            return False
+
         return self._start()
 
     def restart(self, clean_db_dir=None, clean_logs=None):
-        """Restart all clusters
+        """Restart all clusters. Shutdown can fail if there was no mongod process running
+          or if there is no mongo client binary (a clean host). As this is a restart these cases
+          are deemed to be serious failures.
         :param clean_db_dir Should we clean db dir. If not specified, uses value from ConfigDict.
         :param clean_logs   Should we clean logs and diagnostic data. If not specified, uses value
         from ConfigDict.
+
+          See :method:`start` if this is a clean start.
         """
-        # _start() always calls shutdown() and destroy()
+        shutdown = self.shutdown(self.shutdown_ms)
+        self.destroy(self.sigterm_ms)
+        if not shutdown:
+            LOG.error("Shutdown failed on restart.")
+            return False
+
         return self._start(
             is_restart=True, restart_clean_db_dir=clean_db_dir, restart_clean_logs=clean_logs)
 
     def _start(self, is_restart=False, restart_clean_db_dir=None, restart_clean_logs=None):
-        """Shutdown and destroy. Then start all clusters.
+        """ Complete the remaining start (either clean or restart) operations.
+            Any Shutdown, destroy or downloading has been handled by the caller(
+            See :method:`start` or See :method:`restart`).
+
         :param is_restart      This is a restart of the cluster, not the first start.
         :param restart_clean_db_dir Should we clean db dir. If not specified, uses value from
         ConfigDict.
         :param restart_clean_logs   Should we clean logs and diagnostic data. If not specified,
         uses value from ConfigDict.
         """
-        self.shutdown()
-        self.destroy()
-        if not is_restart:
-            # The downloader will download MongoDB binaries if a URL was provided in the
-            # ConfigDict.
-            if not self.downloader.download_and_extract():
-                LOG.error("Download URL was not provided in the ConfigDict.")
-                return False
         if not all(
                 run_threads(
                     [
@@ -712,7 +768,7 @@ class MongodbSetup(object):
                     ],
                     daemon=True)):
             LOG.error("Could not start clusters in _start. Shutting down...")
-            self.shutdown()
+            self.shutdown(self.shutdown_ms)
             return False
         return True
 
@@ -754,13 +810,27 @@ class MongodbSetup(object):
         LOG.info('started topology: %s', cluster)
         return True
 
-    def shutdown(self):
-        """Shutdown all launched mongo programs"""
-        run_threads([cluster.shutdown for cluster in self.clusters], daemon=True)
+    def shutdown(self, max_time_ms):
+        """Shutdown all launched mongo programs
+        For the max_time_ms parameter, see
+            :method:`Host.exec_command`
+        """
+        LOG.info('Calling shutdown for %s clusters', len(self.clusters))
+        result = all(run_threads([partial(cluster.shutdown, max_time_ms)
+                                  for cluster in self.clusters], daemon=True))
+        LOG.warn('shutdown: %s', 'succeeded' if result else 'failed')
+        return result
 
-    def destroy(self):
-        """Kill all launched mongo programs"""
-        run_threads([cluster.destroy for cluster in self.clusters], daemon=True)
+    def destroy(self, max_time_ms):
+        """Kill all launched mongo programs
+        For the max_time_ms parameter, see
+            :method:`Host.exec_command`
+        """
+        LOG.info('calling destroy')
+        result = all(run_threads([partial(cluster.destroy, max_time_ms)
+                                  for cluster in self.clusters], daemon=True))
+        LOG.warn('destroy: %s', 'succeeded' if result else 'failed')
+        return result
 
     def close(self):
         """Close connections to all hosts."""

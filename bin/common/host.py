@@ -1,5 +1,6 @@
 """Provide abstraction over running commands on remote or local machines."""
 from collections import MutableMapping, namedtuple
+from datetime import datetime
 from functools import partial
 import itertools
 import logging
@@ -16,6 +17,10 @@ import paramiko
 
 from common.log import IOLogAdapter
 from thread_runner import run_threads
+
+ONE_SECOND_MILLIS = 1000.0
+ONE_MINUTE_MILLIS = 60 * ONE_SECOND_MILLIS
+TEN_MINUTE_MILLIS = 10 * ONE_MINUTE_MILLIS
 
 HostInfo = namedtuple('HostInfo', ['ip_or_name', 'category', 'offset'])
 
@@ -173,7 +178,7 @@ def _extract_hosts(key, config):
     :param str key: The key to use (mongod, mongod, ...)
     :param ConfigDict config: The configuration
 
-    :returns  list of HostInfo objects
+    :return:  list of HostInfo objects
     '''
     if key in config['infrastructure_provisioning']['out']:
         return [
@@ -231,6 +236,39 @@ def run_host_command(target, command, config, current_test_id=None):
     _run_host_command(hosts, command, config, current_test_id)
 
 
+def never_timeout():
+    """ Function that never times out
+    :return: False
+    """
+    return False
+
+
+def check_timed_out(start, max_time_ms):
+    """ check if max time ms has passed.
+    :param datetime start: the start time
+    :param max_time_ms: the max allowable time to run for or None for no timeout.
+    :type max_time_ms: int, float or None.
+    :return: True when max_time_ms has elapsed.
+    """
+    delta = (datetime.now() - start).total_seconds() * ONE_SECOND_MILLIS
+    return delta > max_time_ms
+
+
+def create_timer(start, max_time_ms):
+    """ create a watchdog timeout function
+    :param datetime start: the start time.
+    :param max_time_ms: the time limit in milliseconds for processing this operation.
+                        Defaults to None (no timeout).
+    :type max_time_ms: int, float or None.
+    :return: function that returns True when max_time_ms has elapsed.
+    """
+    if max_time_ms is None:
+        is_timed_out = never_timeout
+    else:
+        is_timed_out = partial(check_timed_out, start, max_time_ms)
+    return is_timed_out
+
+
 class Host(object):
     """Base class for hosts."""
 
@@ -242,7 +280,7 @@ class Host(object):
     def alias(self):
         """ property getter
 
-        :returns string the alias or the host if alias is not set
+        :return: the alias or the host if alias is not set
         """
         if not self._alias:
             return self.host
@@ -252,9 +290,11 @@ class Host(object):
     def alias(self, alias):
         self._alias = alias
 
-    def exec_command(self, argv, out=None, err=None, pty=False):
+    # pylint: disable=too-many-arguments
+    def exec_command(self, argv, out=None, err=None, pty=False, max_time_ms=None):
         """Execute the command and log the output.
-        :param string or list argv: the command to run.
+        :param argv: the command to run.
+        :type argv: str or list .
         :param IO out: standard out from the command is written to this IO. If None is supplied
         then the INFO_ADAPTER will be used.
         :param IO err: standard err from the command is written to this IO on error. If None is
@@ -262,6 +302,9 @@ class Host(object):
         :param bool pty: only valied for remote commands. if pty is set to True, then the shell
         command is executed in a pseudo terminal. As a result, the commands will be killed if the
         host is closed.
+        :param max_time_ms: the time limit in milliseconds for processing this operation.
+                            Defaults to None (no timeout).
+        :type max_time_ms: int, float or None.
         """
         raise NotImplementedError()
 
@@ -285,29 +328,63 @@ class Host(object):
     def exec_mongo_command(self,
                            script,
                            remote_file_name="script.js",
-                           connection_string="localhost:27017"):
+                           connection_string="localhost:27017",
+                           max_time_ms=None):
         """
         Executes script in the mongo on the
         connection string. Returns the status code of executing the script
-        :param script: String containing javascript to be run
-        :param remote_file_name: Name and path of file to create with script contents
-        :param connection_string: Connection information of mongo instance to run script on
+        :param str script: the javascript to be run
+        :param str remote_file_name: Name and path of file to create with script contents
+        :param str connection_string: Connection information of mongo instance to run script on
+
+        For the max_time_ms parameter, see :method:`Host.exec_command`
         """
         self.create_file(remote_file_name, script)
         self.run(['cat', remote_file_name])
         argv = ['bin/mongo', '--verbose', connection_string, remote_file_name]
-        status_code = self.exec_command(argv)
+        status_code = self.exec_command(argv, max_time_ms=max_time_ms)
         return status_code
 
-    def kill_remote_procs(self, name):
-        """Kills all processes on the remote host by name."""
-        while self.run(['pgrep', name]):
-            self.run(['pkill', '-9', name])
-            time.sleep(1)
+    def kill_remote_procs(self, name, signal_number=signal.SIGKILL, delay_ms=ONE_SECOND_MILLIS,
+                          max_time_ms=TEN_MINUTE_MILLIS):
+        """Kills all processes on the host matching name pattern.
+           :param str name: the process name pattern. This pattern only matches on the process name.
+           :param int signal_number: the signal to send. Defaults to SIGKILL(9), it should be a
+                                 valid signal.
+           :param delay_ms: the milliseconds to sleep for before checking if the processesx
+                         valid shutdown. Defaults to 1 second (in millis), it should be greater
+                         than 0.
+           :type delay_ms: int or float.
+           For the max_time_ms parameter, see :func:`create_timer`
+           :return:  True -- if there are no running processes matching name on completion.
+        """
 
-    def kill_mongo_procs(self):
-        """Kills all mongo processes on the remote host."""
-        self.kill_remote_procs('mongo')
+        signal_number = '-' + str(signal_number)
+        delay_seconds = delay_ms / ONE_SECOND_MILLIS
+        if max_time_ms == 0:
+            max_time_ms = delay_ms
+
+        is_timed_out = create_timer(datetime.now(), max_time_ms)
+
+        while not is_timed_out():
+            self.run(['pkill', signal_number, name])
+            if not self.run(['pgrep', name]):
+                return True
+            time.sleep(delay_seconds)
+
+        return False
+
+    def kill_mongo_procs(self, signal_number=signal.SIGKILL, max_time_ms=30 * ONE_SECOND_MILLIS):
+        """Kills all processes matching the patterm 'mongo' (includes 'mongo', 'mongos', 'mongod')
+            on the host by sending signal_number every second until there are no matching processes
+            or the timeout has elapsed.
+           :param int signal_number: the signal to send. Defaults to SIGKILL(9), it must be
+                                        greater than 0 and a valid signal.
+           For the max_time_ms parameter, see :func:`create_timer`
+        :return: True if there are no processes matching 'mongo' on completion.
+        """
+
+        return self.kill_remote_procs('mongo', signal_number, max_time_ms=max_time_ms)
 
     def create_file(self, remote_path, file_contents):
         """Creates a file on the remote host"""
@@ -323,6 +400,18 @@ class Host(object):
 
     def close(self):
         """Cleanup any connections"""
+        pass
+
+
+def _stream(source, destination):
+    """ stream lines from source to destination. Silently hand socket.timeouts
+    :param IO source: reads lines from this stream.
+    :param IO destination: writes lines to this stream.
+    """
+    try:
+        for line in source:
+            destination.write(line)
+    except socket.timeout:
         pass
 
 
@@ -349,17 +438,10 @@ class RemoteHost(Host):
         self.ftp = ftp
         self.user = user
 
-    def exec_command(self, argv, out=None, err=None, pty=False):
-        """Execute the argv command and log the output.
-        :param string or list argv: the command to execute.
-        :param bool pty: only valied for remote commands. if pty is set to True, then the shell
-        command is executed in a pseudo terminal. As a result, the commands will be killed if the
-        host is closed.
-        :param IO out: standard out from the command is written to this IO. If None is supplied
-        then the INFO_ADAPTER will be used.
-        :param IO err: standard err from the command is written to this IO on error. If None is
-         supplied then the ERROR_ADAPTER will be used.
-        :returns int the exit status of the command.
+    # pylint: disable=too-many-arguments
+    def exec_command(self, argv, out=None, err=None, pty=False, max_time_ms=None):
+        """Execute the argv command on the remote host and log the output.
+           For parameters / returns , see :method:`Host.exec_command`
         """
         # pylint: disable=too-many-branches
         if not argv or not isinstance(argv, (list, basestring)):
@@ -380,22 +462,40 @@ class RemoteHost(Host):
         stdout = None
         stderr = None
         exit_status = 1
+        start = datetime.now()
+        is_timed_out = create_timer(start, max_time_ms)
         try:
             stdin, stdout, stderr = self._ssh.exec_command(command, get_pty=pty)
             stdin.channel.shutdown_write()
             stdin.close()
+
+            # the channel settimeout causes reads to throw 'socket.timeout' if data does not arrive
+            # within that time. This is not necessarily an error, it allows us to implement
+            # max time ms without having to resort to threading.
+            stdout.channel.settimeout(0.5)
+            stderr.channel.settimeout(0.5)
+
             # Stream the output of the command to the log
-            while not stdout.channel.exit_status_ready():
-                for line in stdout:
-                    out.write(line)
+            while not is_timed_out() and not stdout.channel.exit_status_ready():
+                _stream(stdout, out)
+
+            # At this point we have either timed out or the command has finished. The code makes
+            # a best effort to stream any remaining logs but the 'for line in ..' calls will only
+            # block once for a max of 500 millis.
+            #
             # Log the rest of stdout and stderr
-            for line in stdout:
-                out.write(line)
-            exit_status = stdout.channel.recv_exit_status()
-            if exit_status != 0:
-                for line in stderr:
-                    err.write(line)
-                LOG.warn('%s \'%s\': Failed with exit status %s', self.alias, command, exit_status)
+            _stream(stdout, out)
+            _stream(stderr, err)
+
+            if stdout.channel.exit_status_ready():
+                exit_status = stdout.channel.recv_exit_status()
+                if exit_status != 0:
+                    LOG.warn('%s \'%s\': Failed with exit status %s', self.alias, command,
+                             exit_status)
+            else:
+                exit_status = 1
+                LOG.warn('%s \'%s\': Timeout after %f seconds with exit status %s', self.alias,
+                         command, (datetime.now() - start).total_seconds(), exit_status)
             stdout.close()
             stderr.close()
         except paramiko.SSHException:
@@ -495,18 +595,21 @@ class RemoteHost(Host):
         self.ftp.close()
 
 
-def _stream_proc_logs(proc, out, err, timeout=.5):
+# pylint: disable=too-many-arguments
+def _stream_proc_logs(proc, out, err, is_timedout, timeout_s=.5):
     """ stream proc.stdout and proc.stderr to out and err
-    :param proc: the sub process
+    :param subprocess proc: the process to stream the logs for.
     :param IO out: the proc.stdout stream destination.
     :param IO err: the proc.stderr stream destination.
-    :param float timeout: wait for up to a max of this amount of seconds.
+    :param function is_timedout: determine if the max allowable amount of time has elapsed.
+    :param float timeout_s: select waits for up to a max of this amount of seconds.
     """
     try:
         # stream standard out
         while True:
-
-            ready, _, _ = select.select((proc.stdout, proc.stderr), (), (), timeout)
+            if is_timedout():
+                return False
+            ready, _, _ = select.select((proc.stdout, proc.stderr), (), (), timeout_s)
 
             if proc.stdout in ready:
                 line = proc.stdout.readline()
@@ -529,6 +632,7 @@ def _stream_proc_logs(proc, out, err, timeout=.5):
     # closed stream
     except ValueError:
         pass
+    return True
 
 
 class LocalHost(Host):
@@ -537,16 +641,10 @@ class LocalHost(Host):
     def __init__(self):
         super(LocalHost, self).__init__("localhost")
 
-    def exec_command(self, argv, out=None, err=None, pty=False):
-        """Execute the command and log the output.
-        :type argv: string or list containing the command to execute
-        :param IO out: standard out from the command is written to this IO. If None is supplied
-        then the INFO_ADAPTER will be used.
-        :param IO err: standard err from the command is written to this IO on error. If None is
-         supplied then the ERROR_ADAPTER will be used.
-        :param bool pty: only valied for remote commands. if pty is set to True, then the shell
-        command is executed in a pseudo terminal. As a result, the commands will be killed if the
-        host is closed.
+    # pylint: disable=too-many-arguments
+    def exec_command(self, argv, out=None, err=None, pty=False, max_time_ms=None):
+        """Execute the command on the local host and log the output.
+           For parameters / returns , see :method:`Host.exec_command`
         """
         if not argv or not isinstance(argv, (list, basestring)):
             raise ValueError("Argument must be a nonempty list or string.")
@@ -559,18 +657,23 @@ class LocalHost(Host):
         if isinstance(argv, list):
             command = ' '.join(argv)
 
+        start = datetime.now()
         LOG.info('[localhost]$ %s', command)
         proc = subprocess.Popen(
             ['bash', '-c', command],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             preexec_fn=restore_signals)
-
-        _stream_proc_logs(proc, out, err)
-
-        if proc.returncode != 0:
-            LOG.warn('%s \'%s\': Failed with exit status %s', self.alias, command, proc.returncode)
-        return proc.returncode
+        is_timed_out = create_timer(start, max_time_ms)
+        if _stream_proc_logs(proc, out, err, is_timed_out):
+            exit_status = proc.returncode
+            if exit_status != 0:
+                LOG.warn('%s \'%s\': Failed with exit status %s', self.alias, command, exit_status)
+        else:
+            exit_status = 1
+            LOG.warn('%s \'%s\': Timeout after %f seconds with exit status %s', self.alias,
+                     command, (datetime.now() - start).total_seconds(), exit_status)
+        return exit_status
 
     def create_file(self, remote_path, file_contents):
         """Creates a file on the local host"""

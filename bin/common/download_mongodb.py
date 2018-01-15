@@ -77,17 +77,21 @@ class DownloadMongodb(object):
             self.hosts.append(make_host(host_info, self.ssh_user, self.ssh_key_file))
 
     def download_and_extract(self):
-        """Download self.mongodb_binary_archive, extract it, and create some symlinks."""
+        """Download self.mongodb_binary_archive, extract it, and create some symlinks.
+
+        :return: True if no mongodb_binary_archive was provided or all the commands completed
+                      successfully on all servers.
+        """
         if not self.mongodb_binary_archive:
             LOG.warn("DownloadMongodb: download_and_extract() was called, " +
                      "but mongodb_binary_archive isn't defined.")
-            return 1
+            return True
         to_download = []
         for host in self.hosts:
             commands = self._remote_commands(host)
             to_download.append(partial(host.run, commands))
 
-        return run_threads(to_download, daemon=True)
+        return all(run_threads(to_download, daemon=True))
 
     def _remote_commands(self, host):
         mongo_dir = self.config["mongodb_setup"]["mongo_dir"]

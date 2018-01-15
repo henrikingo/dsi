@@ -98,9 +98,16 @@ mongodb_setup:
       public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
       private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
 
+  # these options are passed to the mongo shutdownServer command
   shutdown_options:
     force: true
-    timeoutSecs: 5
+    timeoutSecs: 30
+
+  # these timeouts specify the max amount of milliseconds that the mongo shutdownServer command and
+  # pkill mongo commands can run for.
+  timeouts:
+    shutdown_ms: 540000
+    sigterm_ms: 60000
 
   meta:
     # The list of hosts that can be used in a mongodb connection string
