@@ -194,7 +194,6 @@ class HostTestCase(unittest.TestCase):
         self.assertTrue(local_host.kill_mongo_procs())
         local_host.kill_remote_procs.assert_called_once_with('mongo', 9, max_time_ms=30000)
 
-
     @patch('paramiko.SSHClient')
     def test_alias(self, mock_ssh):
         """ Test alias """
@@ -334,8 +333,10 @@ class HostTestCase(unittest.TestCase):
             }
             mongod.alias = "workload_client.0"
             host._run_host_command_map(mongod, command)
-            calls = [mock.call("reports/workload_client.0/../workloads_timestamps.csv",
-                               "workloads/workload_timestamps.csv")]
+            calls = [
+                mock.call("reports/workload_client.0/../workloads_timestamps.csv",
+                          "workloads/workload_timestamps.csv")
+            ]
 
             mock_retrieve_file.assert_has_calls(calls)
 
@@ -405,8 +406,7 @@ class HostTestCase(unittest.TestCase):
         mock_logger = MagicMock(name='LOG')
         host.LOG.warn = mock_logger
         self.assertEqual(local.exec_command('exit 1'), 1)
-        mock_logger.assert_called_once_with(ANY_IN_STRING('Failed with exit status'), ANY,
-                                            ANY, ANY)
+        mock_logger.assert_called_once_with(ANY_IN_STRING('Failed with exit status'), ANY, ANY, ANY)
 
         local.exec_command('touch {}'.format(self.filename))
         self.assertTrue(os.path.isfile(self.filename))
@@ -459,9 +459,7 @@ class HostTestCase(unittest.TestCase):
         mock_logger = MagicMock(name='LOG')
         host.LOG.warn = mock_logger
         self.assertEqual(local.exec_command(command, out, err, max_time_ms=500), 1)
-        mock_logger.assert_called_once_with(ANY_IN_STRING('Timeout after'), ANY,
-                                            ANY, ANY, ANY)
-
+        mock_logger.assert_called_once_with(ANY_IN_STRING('Timeout after'), ANY, ANY, ANY, ANY)
 
     def test_local_host_tee(self):
         """ Test run command map retrieve_files """
@@ -942,15 +940,14 @@ class HostTestCase(unittest.TestCase):
             mock_logger = MagicMock(name='LOG')
             host.LOG.warn = mock_logger
             _test_common(return_value=1, recv_exit_status=1)
-            mock_logger.assert_called_once_with(ANY_IN_STRING('Failed with exit status'), ANY,
-                                                ANY, ANY)
+            mock_logger.assert_called_once_with(
+                ANY_IN_STRING('Failed with exit status'), ANY, ANY, ANY)
 
         with patch('paramiko.SSHClient') as mock_ssh:
             mock_logger = MagicMock(name='LOG')
             host.LOG.warn = mock_logger
             _test_common(exit_status_ready=False, recv_exit_status=None, return_value=1)
-            mock_logger.assert_called_once_with(ANY_IN_STRING('Timeout after'), ANY,
-                                                ANY, ANY, ANY)
+            mock_logger.assert_called_once_with(ANY_IN_STRING('Timeout after'), ANY, ANY, ANY, ANY)
 
         with patch('paramiko.SSHClient') as mock_ssh:
             # Test a command as list

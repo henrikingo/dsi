@@ -345,7 +345,10 @@ class Host(object):
         status_code = self.exec_command(argv, max_time_ms=max_time_ms)
         return status_code
 
-    def kill_remote_procs(self, name, signal_number=signal.SIGKILL, delay_ms=ONE_SECOND_MILLIS,
+    def kill_remote_procs(self,
+                          name,
+                          signal_number=signal.SIGKILL,
+                          delay_ms=ONE_SECOND_MILLIS,
                           max_time_ms=TEN_MINUTE_MILLIS):
         """Kills all processes on the host matching name pattern.
            :param str name: the process name pattern. This pattern only matches on the process name.
@@ -671,8 +674,8 @@ class LocalHost(Host):
                 LOG.warn('%s \'%s\': Failed with exit status %s', self.alias, command, exit_status)
         else:
             exit_status = 1
-            LOG.warn('%s \'%s\': Timeout after %f seconds with exit status %s', self.alias,
-                     command, (datetime.now() - start).total_seconds(), exit_status)
+            LOG.warn('%s \'%s\': Timeout after %f seconds with exit status %s', self.alias, command,
+                     (datetime.now() - start).total_seconds(), exit_status)
         return exit_status
 
     def create_file(self, remote_path, file_contents):

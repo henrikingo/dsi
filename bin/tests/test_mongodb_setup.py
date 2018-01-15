@@ -421,8 +421,7 @@ class TestMongoNode(unittest.TestCase):
         self.assertFalse(self.mongo_node.shutdown(None))
         self.mongo_node.run_mongo_shell.assert_called_once_with(
             'db.getSiblingDB("admin").shutdownServer(options)', max_time_ms=None)
-        mock_logger.assert_called_once_with(ANY_IN_STRING('did not shutdown'), mock.ANY,
-                                            mock.ANY)
+        mock_logger.assert_called_once_with(ANY_IN_STRING('did not shutdown'), mock.ANY, mock.ANY)
 
     def test_shutdown_exception(self):
         """Test shutdown."""
@@ -432,8 +431,8 @@ class TestMongoNode(unittest.TestCase):
         self.mongo_node.run_mongo_shell = mock.MagicMock(name='run_mongo_shell')
         self.mongo_node.run_mongo_shell.side_effect = Exception()
         self.assertFalse(self.mongo_node.shutdown(None))
-        mock_logger.assert_called_once_with(ANY_IN_STRING('Error shutting down MongoNode at'),
-                                            mock.ANY, mock.ANY)
+        mock_logger.assert_called_once_with(
+            ANY_IN_STRING('Error shutting down MongoNode at'), mock.ANY, mock.ANY)
 
     def test_destroy(self):
         """Test destroy."""
@@ -467,6 +466,7 @@ class TestMongoNode(unittest.TestCase):
 
 class TestReplSet(unittest.TestCase):
     """ReplSet tests"""
+
     def setUp(self):
         self.repl_set_opts = {
             'name': 'rs',
@@ -649,6 +649,7 @@ class TestMongodbSetup(unittest.TestCase):
     # pylint: disable=protected-access
     def test_start(self):
         """ test start"""
+
         def _test_start(download_status=False):
             setup = mongodb_setup.MongodbSetup(config=self.config)
             setup.downloader.download_and_extract = mock.MagicMock(name='downloader')
@@ -675,6 +676,7 @@ class TestMongodbSetup(unittest.TestCase):
 
     def test_restart(self):
         """ test start"""
+
         def _test_restart(shutdown=True):
             setup = mongodb_setup.MongodbSetup(config=self.config)
 
@@ -690,9 +692,8 @@ class TestMongodbSetup(unittest.TestCase):
                 setup._start.assert_not_called()
             else:
                 self.assertEquals(setup.restart(), "start clusters")
-                setup._start.assert_called_once_with(is_restart=True,
-                                                     restart_clean_db_dir=None,
-                                                     restart_clean_logs=None)
+                setup._start.assert_called_once_with(
+                    is_restart=True, restart_clean_db_dir=None, restart_clean_logs=None)
             setup.destroy.assert_called_once_with(60000)
             setup.shutdown.assert_called_once_with(540000)
 
@@ -718,11 +719,14 @@ class TestMongodbSetup(unittest.TestCase):
                 mock_partial.return_value = 'threads'
 
                 self.assertEquals(setup._start(), success)
-                calls = [mock.call(setup.start_cluster,
-                                   cluster=setup.clusters[0],
-                                   is_restart=False,
-                                   restart_clean_db_dir=None,
-                                   restart_clean_logs=None)]
+                calls = [
+                    mock.call(
+                        setup.start_cluster,
+                        cluster=setup.clusters[0],
+                        is_restart=False,
+                        restart_clean_db_dir=None,
+                        restart_clean_logs=None)
+                ]
                 mock_partial.assert_has_calls(calls)
                 setup.destroy.assert_not_called()
                 if success:
@@ -731,6 +735,7 @@ class TestMongodbSetup(unittest.TestCase):
                     setup.shutdown.assert_called_once_with(540000)
                 setup.downloader.download_and_extract.assert_not_called()
                 mock_run_threads.assert_called_once_with(['threads'], daemon=True)
+
         _test__start([True])
         _test__start([True, True])
         _test__start([True, False], success=False)

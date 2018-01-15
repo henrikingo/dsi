@@ -260,9 +260,9 @@ class MongoNode(object):
         :return: True if the mongo shell exits successfully
         """
         remote_file_name = '/tmp/mongo_port_{0}.js'.format(self.port)
-        if self.host.exec_mongo_command(js_string, remote_file_name,
-                                        "localhost:" + str(self.port),
-                                        max_time_ms=max_time_ms) != 0:
+        if self.host.exec_mongo_command(
+                js_string, remote_file_name, "localhost:" + str(self.port),
+                max_time_ms=max_time_ms) != 0:
             self.dump_mongo_log()
             return False
         return True
@@ -291,8 +291,9 @@ class MongoNode(object):
         :return: True if shutdownServer command ran successfully.
         """
         try:
-            result = self.run_mongo_shell('db.getSiblingDB("admin").shutdownServer({})'.format(
-                self.shutdown_options), max_time_ms=max_time_ms)
+            result = self.run_mongo_shell(
+                'db.getSiblingDB("admin").shutdownServer({})'.format(self.shutdown_options),
+                max_time_ms=max_time_ms)
             if not result:
                 LOG.warn("Mongo %s:%s did not shutdown", self.public_ip, self.port)
             return result
@@ -309,8 +310,7 @@ class MongoNode(object):
         :return: bool True if there are no processes matching 'mongo' on completion.
         """
         try:
-            return self.host.kill_mongo_procs(signal_number=signal.SIGTERM,
-                                              max_time_ms=max_time_ms)
+            return self.host.kill_mongo_procs(signal_number=signal.SIGTERM, max_time_ms=max_time_ms)
         finally:
             # ensure the processes are dead and cleanup
             self.host.kill_mongo_procs()
@@ -483,8 +483,8 @@ class ReplSet(object):
         For the max_time_ms parameter, see
             :method:`Host.exec_command`
         """
-        return all(run_threads([partial(node.shutdown, max_time_ms) for node in self.nodes],
-                               daemon=True))
+        return all(
+            run_threads([partial(node.shutdown, max_time_ms) for node in self.nodes], daemon=True))
 
     def destroy(self, max_time_ms):
         """Kills the remote replica members.
@@ -816,8 +816,9 @@ class MongodbSetup(object):
             :method:`Host.exec_command`
         """
         LOG.info('Calling shutdown for %s clusters', len(self.clusters))
-        result = all(run_threads([partial(cluster.shutdown, max_time_ms)
-                                  for cluster in self.clusters], daemon=True))
+        result = all(
+            run_threads(
+                [partial(cluster.shutdown, max_time_ms) for cluster in self.clusters], daemon=True))
         LOG.warn('shutdown: %s', 'succeeded' if result else 'failed')
         return result
 
@@ -827,8 +828,9 @@ class MongodbSetup(object):
             :method:`Host.exec_command`
         """
         LOG.info('calling destroy')
-        result = all(run_threads([partial(cluster.destroy, max_time_ms)
-                                  for cluster in self.clusters], daemon=True))
+        result = all(
+            run_threads(
+                [partial(cluster.destroy, max_time_ms) for cluster in self.clusters], daemon=True))
         LOG.warn('destroy: %s', 'succeeded' if result else 'failed')
         return result
 
