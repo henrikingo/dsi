@@ -1,6 +1,7 @@
-"""Tests for bin/common/host.py"""
+# pylint: disable=too-many-lines
 # pylint: disable=unused-argument, no-self-use, protected-access, wrong-import-position
 # pylint: disable=wrong-import-order
+"""Tests for bin/common/host.py"""
 
 import collections
 from datetime import datetime
@@ -226,6 +227,28 @@ class HostTestCase(unittest.TestCase):
             host_info = host.HostInfo(ip_or_name, "localhost", 0)
             localhost = host.make_host(host_info, "ssh_user", "ssh_key_file")
             self.assertEqual(localhost.alias, 'localhost.0', "alias not set as expected")
+
+    def test_run_host_commands(self):
+        """Test 2-commands host.run_host_commands invocation"""
+        with patch('host.RemoteHost') as mongod:
+            commands = [
+                {
+                    'on_workload_client': {
+                        'upload_files': {
+                            'src1': 'dest1'
+                        }
+                    }
+                },
+                {
+                    'on_workload_client': {
+                        'upload_files': {
+                            'src2': 'dest2'
+                        }
+                    }
+                },
+            ]
+            host.run_host_commands(commands, self.config)
+            assert mongod.call_count == 2
 
     def test_run_host_command_map(self):
         """ Test run command map not known """

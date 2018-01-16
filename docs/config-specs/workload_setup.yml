@@ -1,0 +1,14 @@
+# Factored-out setup for different types of workloads.
+
+# top-level key corresponds to test_control.run.type
+ycsb:  # so these steps would be called if there are any workload runs with type='ycsb'
+  - on_workload_client:  # like usual...
+      download_files:
+        - http://url1
+  - on_workload_client:  # like usual...
+      exec: "echo 'mixing shell and yaml syntax is like translating from Japanese to Orkish'"
+
+
+# The full range of on_* commands is supported, but notably *only* the on_* commands,
+# so no restart_mongodb or others.
+

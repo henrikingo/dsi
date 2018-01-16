@@ -236,6 +236,32 @@ def run_host_command(target, command, config, current_test_id=None):
     _run_host_command(hosts, command, config, current_test_id)
 
 
+def run_host_commands(commands, conf, current_test_id=None):
+    """
+    Plural version of run_host_command: run a list of commands
+
+    Example of commands:
+
+    [
+        { 'on_workload_client': { 'upload_files': { 'src': 'dest' } } }
+    ]
+
+    :param list commands: list of dict actions to run
+    :param dict(ConfigDict) conf: system configuration
+    :param str|None current_test_id: Indicates the id for the test related to the current command.
+    If there is not a specific test related to the current command, the value of current_test_id
+    will be None.
+    :return: None
+    """
+    for command in commands:
+        # Item should be a map with one entry
+        assert isinstance(command, MutableMapping), 'command in list isn\'t a dict'
+        assert len(command.keys()) == 1, 'command has more than one entry'
+        for target, target_command in command.iteritems():
+            target = command.keys()[0]
+            run_host_command(target, target_command, conf, current_test_id)
+
+
 def never_timeout():
     """ Function that never times out
     :return: False

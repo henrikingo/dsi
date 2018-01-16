@@ -73,7 +73,7 @@ I've tried to think about the following use cases when designing the spec:
   * There will be a directory with common configurations. Roughly we will need
     * for each variant a set of `infrastructure_provisioning.yml`,
       `system_setup.yml` and `mongodb_setup.yml`.
-    * for each task a set of `workload_preparation.yml`,
+    * for each task a set of `workload_setup.yml`,
       `test_control.yml` and `analysis.yml`
   * At the beginning of each evergreen task, we copy the relevant ones
     of these files into a working directory (PERF-434). This working directory 

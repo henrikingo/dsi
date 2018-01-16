@@ -1,5 +1,5 @@
 mongoshell:
-  - on_locahost:
+  - on_localhost:
       exec: $DSI_PATH/bin/setup-workloads.sh
   - on_workload_client:
       exec: rm -rf workloads*

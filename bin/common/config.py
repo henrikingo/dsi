@@ -29,8 +29,17 @@ class ConfigDict(dict):
     raise KeyError"""
 
     modules = [
-        'bootstrap', 'runtime', 'runtime_secret', 'infrastructure_provisioning', 'system_setup',
-        'workload_preparation', 'mongodb_setup', 'test_control', 'analysis', '_internal'
+        # These are in the order in which they are used
+        'bootstrap',
+        'runtime',
+        'runtime_secret',
+        'infrastructure_provisioning',
+        'system_setup',
+        'mongodb_setup',
+        'workload_setup',
+        'test_control',
+        'analysis',
+        '_internal'
     ]
 
     def __init__(self, which_module_am_i):

@@ -126,6 +126,9 @@ class TestBootstrap(unittest.TestCase):
         open(
             os.path.join(test_dsipath, 'configurations', 'workload_setup',
                          'workload_setup.core.yml'), 'w').close()
+        open(
+            os.path.join(test_dsipath, 'configurations', 'workload_setup',
+                         'workload_setup.core.yml'), 'w').close()
         test_config['infrastructure_provisioning'] = 'single'
         test_config['mongodb_setup'] = 'replica'
         test_config['storageEngine'] = 'wiredTiger'
