@@ -372,13 +372,6 @@ class ReplSet(object):
             mongod_opt['config_file'] = config_file
             self.nodes.append(MongoNode(topology=mongod_opt, config=self.config))
 
-    def is_any_priority_set(self):
-        """Returns true if a priority is set for any node."""
-        for member in self.rs_conf_members:
-            if 'priority' in member:
-                return True
-        return False
-
     def highest_priority_node(self):
         """Returns the highest priority node."""
         max_node = self.nodes[0]
@@ -445,18 +438,23 @@ class ReplSet(object):
                     [partial(node.launch, initialize, numactl)
                      for node in self.nodes], daemon=True)):
             return False
+        self._set_explicit_priorities()
         if initialize:
-            # Give the first host the highest priority so it will become
-            # primary. This is the default behavior.
-            if not self.is_any_priority_set():
-                for member in self.rs_conf_members:
-                    member['priority'] = DEFAULT_MEMBER_PRIORITY
-                self.rs_conf_members[0]['priority'] = DEFAULT_MEMBER_PRIORITY + 1
             primary = self.highest_priority_node()
             if not primary.run_mongo_shell(self._init_replica_set()):
                 return False
         # Wait for all nodes to be up
         return self.wait_until_up()
+
+    def _set_explicit_priorities(self):
+        """To make other things easier, we set explicit priorities for all replica set nodes."""
+        # Give the first host the highest priority so it will become
+        # primary. This is the default behavior.
+        if not 'priority' in self.rs_conf_members[0]:
+            self.rs_conf_members[0]['priority'] = DEFAULT_MEMBER_PRIORITY + 1
+        for member in self.rs_conf_members:
+            if not 'priority' in member:
+                member['priority'] = DEFAULT_MEMBER_PRIORITY
 
     def _init_replica_set(self):
         """Return the JavaScript code to configure the replica set."""

@@ -84,7 +84,6 @@ topology:
   # Initial sync test would specify one 2-node replica set, and a separate standalone server.
   - id: mycluster                              # Optional. Needed if someone ever would configure more than 1 cluster.
     cluster_type: sharded_cluster
-    configsvr_type: csrs                       # or "sccc", which is currently not supported
     configsvr:
       - public_ip: ${infrastructure_provisioning.out.configsvr.0.public_ip}
         private_ip: ${infrastructure_provisioning.out.configsvr.0.private_ip}
@@ -122,7 +121,7 @@ topology:
           - public_ip: ${infrastructure_provisioning.out.mongod.3.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.3.private_ip}
             rs_conf_member:  # The member specific part of rs.conf() json object,
-              priority: 2                                                     # to go under rs.conf().member[0]
+              priority: 2    # to go under rs.conf().member[0]
           - public_ip: ${infrastructure_provisioning.out.mongod.4.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.4.private_ip}
           - public_ip: ${infrastructure_provisioning.out.mongod.5.public_ip}

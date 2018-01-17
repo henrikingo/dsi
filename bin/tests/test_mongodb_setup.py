@@ -509,19 +509,6 @@ class TestReplSet(unittest.TestCase):
             self.replset.destroy(2)
             mock_partial.assert_has_calls([mock.call(mock.ANY, 2), mock.call(mock.ANY, 2)])
 
-    def test_is_any_priority_set(self):
-        """Test priority handling."""
-        repl_set_opts = {
-            'name': 'rs',
-            'mongod': [mongodb_setup.copy_obj(MONGOD_OPTS),
-                       mongodb_setup.copy_obj(MONGOD_OPTS)]
-        }
-        replset = mongodb_setup.ReplSet(topology=repl_set_opts, config=DEFAULT_CONFIG)
-        self.assertEquals(replset.is_any_priority_set(), False)
-        repl_set_opts['mongod'][1]['rs_conf_member']['priority'] = 5
-        replset = mongodb_setup.ReplSet(topology=repl_set_opts, config=DEFAULT_CONFIG)
-        self.assertEquals(replset.is_any_priority_set(), True)
-
     def test_highest_priority_node(self):
         """Test priority handling."""
         repl_set_opts = {
