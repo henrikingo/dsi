@@ -40,13 +40,20 @@ iperf:
 ycsb:
   - on_workload_client:
       exec: |
-        curl -O --retry 10 https://s3.../jdk-7u71-linux-x64.rpm
+        curl -O --retry 10 \
+          https://s3-us-west-2.amazonaws.com/dsi-donot-remove/java/jdk-7u71-linux-x64.rpm
         sudo rpm -i jdk-7u71-linux-x64.rpm
-        sudo /usr/sbin/alternatives --install /usr/bin/java java \
-              /usr/java/jdk1.7.0_71/bin/java 20000
-        curl -O --retry 10 https://oss.sona.../mongo-java-driver-3.2.2.jar
+        sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.7.0_71/bin/java 20000
+
+        curl -O --retry 10 \
+          https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongo-java-driver/3.2.2/mongo-java-driver-3.2.2.jar
         echo 'export CLASSPATH=~/mongo-java-driver-3.2.2.jar:$CLASSPATH' >> ~/.bashrc
-        curl --retry 10 https://s3.../install_maven.sh | sudo bash
+
+        curl --retry 10 \
+          https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash
+        rm *.rpm || true
+
+        sudo pip install argparse python-dateutil pytz
   - on_localhost:
       exec: $DSI_PATH/bin/setup-ycsb.sh
   - on_workload_client:
