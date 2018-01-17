@@ -88,6 +88,11 @@ def run_validate(config, current_test_id=None, reports_dir='reports'):
         LOG.warning('No jstests_dir specified. Skipping validate')
         return
 
+    # if there is no validate entry in the mongodb_setup config, don't do anything
+    if 'validate' not in config['mongodb_setup']:
+        LOG.warning('No validate entry in mongodb_setup. Skipping validate')
+        return
+
     LOG.info('In run_validate')
     # Run the checks
     if 'standalone' in config['mongodb_setup']['validate']:
