@@ -483,7 +483,33 @@
             }
         },
         "core_workloads_MMAPv1":{
-            "ndays":{},
+            "ndays":{
+                "word_count_doc":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516251571,
+                    "max":33579.11003269934,
+                    "name":"word_count_doc",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":33579.11003269934,
+                            "ops_per_sec_values":[
+                                33579.11003269934
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516243297,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "reference":{
                 "contended_update":{
                     "create_time":"2017-08-20T23:49:29.996Z",
@@ -781,6 +807,31 @@
                         "BF-7431"
                     ],
                     "workload":"mongoshell"
+                },
+                "word_count_doc":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516251571,
+                    "max":33579.11003269934,
+                    "name":"word_count_doc",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":33579.11003269934,
+                            "ops_per_sec_values":[
+                                33579.11003269934
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516243297,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
                 }
             },
             "threshold":{
@@ -987,7 +1038,33 @@
             }
         },
         "core_workloads_WT":{
-            "ndays":{},
+            "ndays":{
+                "word_count_doc":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516251820,
+                    "max":31740.187521027874,
+                    "name":"word_count_doc",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":31740.187521027874,
+                            "ops_per_sec_values":[
+                                31740.187521027874
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516243313,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "reference":{
                 "contended_update":{
                     "create_time":"2017-08-20T23:49:29.996Z",
@@ -1405,6 +1482,31 @@
                         "BF-6743"
                     ],
                     "workload":"shell/benchrun"
+                },
+                "word_count_doc":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516251820,
+                    "max":31740.187521027874,
+                    "name":"word_count_doc",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":31740.187521027874,
+                            "ops_per_sec_values":[
+                                31740.187521027874
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516243313,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
                 }
             },
             "threshold":{
@@ -1888,32 +1990,59 @@
             }
         },
         "non_sharded_workloads_MMAPv1":{
-            "ndays":{},
-            "reference":{
+            "ndays":{
                 "initial_load_capped":{
-                    "create_time":"2017-09-15T17:26:44.233Z",
-                    "end":1505509493.0,
-                    "max":35873.045478566324,
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516253199,
+                    "max":30450.95917882682,
                     "name":"initial_load_capped",
-                    "order":8370,
+                    "order":9572,
                     "results":{
                         "1":{
-                            "ops_per_sec":35873.045478566324,
+                            "ops_per_sec":30450.95917882682,
                             "ops_per_sec_values":[
-                                35873.045478566324
+                                30450.95917882682
                             ]
                         }
                     },
-                    "revision":"33908bf59707e36b43ac58b50da4bde3e9cbae84",
-                    "start":1505508173.0,
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516252083,
                     "tag":"",
                     "threads":[
                         "1"
                     ],
                     "ticket":[
-                        "BF-6792"
+                        "BF-7705"
                     ],
-                    "workload":"shell/benchrun"
+                    "workload":"mongoshell"
+                }
+            },
+            "reference":{
+                "initial_load_capped":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516253199,
+                    "max":30450.95917882682,
+                    "name":"initial_load_capped",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":30450.95917882682,
+                            "ops_per_sec_values":[
+                                30450.95917882682
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516252083,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-6792",
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
                 },
                 "insert_capped":{
                     "create_time":"2017-09-15T17:26:44.233Z",
@@ -2086,32 +2215,59 @@
             }
         },
         "non_sharded_workloads_WT":{
-            "ndays":{},
-            "reference":{
+            "ndays":{
                 "initial_load_capped":{
-                    "create_time":"2017-09-15T17:26:44.233Z",
-                    "end":1505507022.0,
-                    "max":19850.689785667597,
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516253196,
+                    "max":22117.44863538792,
                     "name":"initial_load_capped",
-                    "order":8370,
+                    "order":9572,
                     "results":{
                         "1":{
-                            "ops_per_sec":19850.689785667597,
+                            "ops_per_sec":22117.44863538792,
                             "ops_per_sec_values":[
-                                19850.689785667597
+                                22117.44863538792
                             ]
                         }
                     },
-                    "revision":"33908bf59707e36b43ac58b50da4bde3e9cbae84",
-                    "start":1505505476.0,
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516251876,
                     "tag":"",
                     "threads":[
                         "1"
                     ],
                     "ticket":[
-                        "BF-6792"
+                        "BF-7705"
                     ],
-                    "workload":"shell/benchrun"
+                    "workload":"mongoshell"
+                }
+            },
+            "reference":{
+                "initial_load_capped":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516253196,
+                    "max":22117.44863538792,
+                    "name":"initial_load_capped",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":22117.44863538792,
+                            "ops_per_sec_values":[
+                                22117.44863538792
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516251876,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-6792",
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
                 },
                 "insert_capped":{
                     "create_time":"2017-09-15T17:26:44.233Z",
@@ -2766,7 +2922,33 @@
             }
         },
         "core_workloads_MMAPv1":{
-            "ndays":{},
+            "ndays":{
+                "word_count_doc":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516252619,
+                    "max":33379.820296399455,
+                    "name":"word_count_doc",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":33379.820296399455,
+                            "ops_per_sec_values":[
+                                33379.820296399455
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516243844,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "reference":{
                 "contended_update":{
                     "create_time":"2017-08-20T23:49:29.996Z",
@@ -3064,6 +3246,31 @@
                         "BF-7431"
                     ],
                     "workload":"mongoshell"
+                },
+                "word_count_doc":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516252619,
+                    "max":33379.820296399455,
+                    "name":"word_count_doc",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":33379.820296399455,
+                            "ops_per_sec_values":[
+                                33379.820296399455
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516243844,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
                 }
             },
             "threshold":{
@@ -3262,7 +3469,33 @@
             }
         },
         "core_workloads_WT":{
-            "ndays":{},
+            "ndays":{
+                "word_count_doc":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516252938,
+                    "max":31453.10844780168,
+                    "name":"word_count_doc",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":31453.10844780168,
+                            "ops_per_sec_values":[
+                                31453.10844780168
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516243161,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "reference":{
                 "contended_update":{
                     "create_time":"2017-08-20T23:49:29.996Z",
@@ -3412,6 +3645,31 @@
                         "BF-6743"
                     ],
                     "workload":"shell/benchrun"
+                },
+                "word_count_doc":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516252938,
+                    "max":31453.10844780168,
+                    "name":"word_count_doc",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":31453.10844780168,
+                            "ops_per_sec_values":[
+                                31453.10844780168
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516243161,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
                 }
             },
             "threshold":{
@@ -4069,32 +4327,59 @@
             }
         },
         "non_sharded_workloads_MMAPv1":{
-            "ndays":{},
-            "reference":{
+            "ndays":{
                 "initial_load_capped":{
-                    "create_time":"2017-09-15T17:26:44.233Z",
-                    "end":1505512867.0,
-                    "max":30042.6949911486,
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516260580,
+                    "max":27201.58400905148,
                     "name":"initial_load_capped",
-                    "order":8370,
+                    "order":9572,
                     "results":{
                         "1":{
-                            "ops_per_sec":30042.6949911486,
+                            "ops_per_sec":27201.58400905148,
                             "ops_per_sec_values":[
-                                30042.6949911486
+                                27201.58400905148
                             ]
                         }
                     },
-                    "revision":"33908bf59707e36b43ac58b50da4bde3e9cbae84",
-                    "start":1505511474.0,
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516259401,
                     "tag":"",
                     "threads":[
                         "1"
                     ],
                     "ticket":[
-                        "BF-6792"
+                        "BF-7705"
                     ],
-                    "workload":"shell/benchrun"
+                    "workload":"mongoshell"
+                }
+            },
+            "reference":{
+                "initial_load_capped":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516260580,
+                    "max":27201.58400905148,
+                    "name":"initial_load_capped",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":27201.58400905148,
+                            "ops_per_sec_values":[
+                                27201.58400905148
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516259401,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-6792",
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
                 },
                 "insert_capped":{
                     "create_time":"2017-09-15T17:26:44.233Z",
@@ -4260,32 +4545,59 @@
             }
         },
         "non_sharded_workloads_WT":{
-            "ndays":{},
-            "reference":{
+            "ndays":{
                 "initial_load_capped":{
-                    "create_time":"2017-09-15T17:26:44.233Z",
-                    "end":1505510366.0,
-                    "max":19651.91921256088,
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516259942,
+                    "max":20517.01454325641,
                     "name":"initial_load_capped",
-                    "order":8370,
+                    "order":9572,
                     "results":{
                         "1":{
-                            "ops_per_sec":19651.91921256088,
+                            "ops_per_sec":20517.01454325641,
                             "ops_per_sec_values":[
-                                19651.91921256088
+                                20517.01454325641
                             ]
                         }
                     },
-                    "revision":"33908bf59707e36b43ac58b50da4bde3e9cbae84",
-                    "start":1505508747.0,
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516258571,
                     "tag":"",
                     "threads":[
                         "1"
                     ],
                     "ticket":[
-                        "BF-6792"
+                        "BF-7705"
                     ],
-                    "workload":"shell/benchrun"
+                    "workload":"mongoshell"
+                }
+            },
+            "reference":{
+                "initial_load_capped":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516259942,
+                    "max":20517.01454325641,
+                    "name":"initial_load_capped",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":20517.01454325641,
+                            "ops_per_sec_values":[
+                                20517.01454325641
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516258571,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-6792",
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
                 },
                 "insert_capped":{
                     "create_time":"2017-09-15T17:26:44.233Z",
@@ -7796,7 +8108,33 @@
             }
         },
         "core_workloads_MMAPv1":{
-            "ndays":{},
+            "ndays":{
+                "word_count_doc":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516251837,
+                    "max":32732.1742215798,
+                    "name":"word_count_doc",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":32732.1742215798,
+                            "ops_per_sec_values":[
+                                32732.1742215798
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516243359,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "reference":{
                 "contended_update":{
                     "create_time":"2017-08-20T23:49:29.996Z",
@@ -8094,6 +8432,31 @@
                         "BF-7431"
                     ],
                     "workload":"shell/benchrun"
+                },
+                "word_count_doc":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516251837,
+                    "max":32732.1742215798,
+                    "name":"word_count_doc",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":32732.1742215798,
+                            "ops_per_sec_values":[
+                                32732.1742215798
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516243359,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
                 }
             },
             "threshold":{
@@ -8290,7 +8653,33 @@
             }
         },
         "core_workloads_WT":{
-            "ndays":{},
+            "ndays":{
+                "word_count_doc":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516251800,
+                    "max":32258.39750603877,
+                    "name":"word_count_doc",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":32258.39750603877,
+                            "ops_per_sec_values":[
+                                32258.39750603877
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516243322,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "reference":{
                 "contended_update":{
                     "create_time":"2017-08-20T23:49:29.996Z",
@@ -8465,6 +8854,31 @@
                         "BF-6743"
                     ],
                     "workload":"shell/benchrun"
+                },
+                "word_count_doc":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516251800,
+                    "max":32258.39750603877,
+                    "name":"word_count_doc",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":32258.39750603877,
+                            "ops_per_sec_values":[
+                                32258.39750603877
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516243322,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
                 }
             },
             "threshold":{
@@ -8909,8 +9323,59 @@
             }
         },
         "non_sharded_workloads_MMAPv1":{
-            "ndays":{},
+            "ndays":{
+                "initial_load_capped":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516254156,
+                    "max":43251.752183201526,
+                    "name":"initial_load_capped",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":43251.752183201526,
+                            "ops_per_sec_values":[
+                                43251.752183201526
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516253090,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "reference":{
+                "initial_load_capped":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516254156,
+                    "max":43251.752183201526,
+                    "name":"initial_load_capped",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":43251.752183201526,
+                            "ops_per_sec_values":[
+                                43251.752183201526
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516253090,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
+                },
                 "insert_capped":{
                     "create_time":"2017-10-11T13:35:00.389Z",
                     "end":1507747007.0,
@@ -9068,8 +9533,60 @@
             }
         },
         "non_sharded_workloads_WT":{
-            "ndays":{},
-            "reference":{},
+            "ndays":{
+                "initial_load_capped":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516254167,
+                    "max":34184.4896024646,
+                    "name":"initial_load_capped",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":34184.4896024646,
+                            "ops_per_sec_values":[
+                                34184.4896024646
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516252962,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
+            "reference":{
+                "initial_load_capped":{
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516254167,
+                    "max":34184.4896024646,
+                    "name":"initial_load_capped",
+                    "order":9572,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":34184.4896024646,
+                            "ops_per_sec_values":[
+                                34184.4896024646
+                            ]
+                        }
+                    },
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516252962,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
