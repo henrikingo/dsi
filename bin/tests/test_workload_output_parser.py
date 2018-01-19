@@ -53,7 +53,7 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
                 ]
             }
         } # yapf: disable
-        self.timer = {'start': 1, 'end': 2}
+        self.timer = {'start': 1.001, 'end': 2.002}
 
         self.perf_json_path = self.config['test_control']['perf_json']['path']
         # Need to ensure clean start state

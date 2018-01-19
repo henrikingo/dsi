@@ -1,7 +1,7 @@
 {
     "results":[
         {
-            "end":2,
+            "end":2.002,
             "name":"contended_update",
             "results":{
                 "1":{
@@ -23,11 +23,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"map_reduce_doc",
             "results":{
                 "1":{
@@ -37,11 +37,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"insert_ttl",
             "results":{
                 "1":{
@@ -63,11 +63,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"insert_vector_primary",
             "results":{
                 "1":{
@@ -83,11 +83,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"insert_vector_secondary_load_phase",
             "results":{
                 "1":{
@@ -103,11 +103,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"insert_vector_secondary_overall",
             "results":{
                 "1":{
@@ -123,11 +123,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"word_count_doc",
             "results":{
                 "1":{
@@ -137,11 +137,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"insert_jtrue",
             "results":{
                 "1":{
@@ -163,11 +163,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"updatemulti_jtrue",
             "results":{
                 "1":{
@@ -189,11 +189,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"removemulti_jtrue",
             "results":{
                 "1":{
@@ -215,11 +215,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"index_build",
             "results":{
                 "1":{
@@ -229,11 +229,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"mixed_findOne",
             "results":{
                 "128":{
@@ -267,11 +267,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"mixed_insert",
             "results":{
                 "128":{
@@ -305,11 +305,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"mixed_update",
             "results":{
                 "128":{
@@ -343,11 +343,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"mixed_delete",
             "results":{
                 "128":{
@@ -381,11 +381,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"mixed_total",
             "results":{
                 "128":{
@@ -419,11 +419,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"canary_server-cpuloop-10x",
             "results":{
                 "1":{
@@ -451,11 +451,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"canary_client-cpuloop-1x",
             "results":{
                 "1":{
@@ -483,11 +483,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"canary_client-cpuloop-10x",
             "results":{
                 "1":{
@@ -515,11 +515,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"canary_server-sleep-10ms",
             "results":{
                 "1":{
@@ -547,11 +547,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"repeated_test",
             "results":{
                 "99":{
@@ -563,11 +563,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"shell"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"ycsb-unittest",
             "results":{
                 "64":{
@@ -577,11 +577,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"ycsb"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"fio_latency_test_write_clat_mean",
             "results":{
                 "1":{
@@ -591,11 +591,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"fio"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"fio_latency_test_read_clat_mean",
             "results":{
                 "1":{
@@ -605,11 +605,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"fio"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"fio_iops_test_write_iops",
             "results":{
                 "1":{
@@ -619,11 +619,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"fio"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"fio_iops_test_read_iops",
             "results":{
                 "1":{
@@ -633,11 +633,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"fio"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"fio_streaming_bandwidth_test_write_iops",
             "results":{
                 "1":{
@@ -647,11 +647,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"fio"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"fio_streaming_bandwidth_test_read_iops",
             "results":{
                 "1":{
@@ -661,11 +661,11 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"fio"
         },
         {
-            "end":2,
+            "end":2.002,
             "name":"NetworkBandwidth",
             "results":{
                 "1":{
@@ -675,7 +675,7 @@
                     ]
                 }
             },
-            "start":1,
+            "start":1.001,
             "workload":"iperf"
         }
     ]

@@ -348,6 +348,11 @@ def run_tests(config):
     run_pre_post_commands('pre_task', [mongodb_setup_config, test_control_config], config,
                           EXCEPTION_BEHAVIOR.EXIT)
 
+    if 'test_delay_seconds' in test_control_config:
+        test_delay_seconds = test_control_config['test_delay_seconds']
+    else:
+        test_delay_seconds = 0
+
     # pylint: disable=too-many-nested-blocks
     try:
         if os.path.exists('perf.json'):
@@ -368,6 +373,11 @@ def run_tests(config):
                 run_pre_post_commands('pre_test', [mongodb_setup_config, test_control_config, test],
                                       config, EXCEPTION_BEHAVIOR.RERAISE, test['id'])
                 background_tasks = start_background_tasks(config, test, test['id'])
+
+                if test_delay_seconds:
+                    LOG.info("Sleeping for %s seconds before test %s", test_delay_seconds,
+                             test['id'])
+                    time.sleep(test_delay_seconds)
 
                 LOG.info("Starting test %s", test['id'])
                 timer = {}

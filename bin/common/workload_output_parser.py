@@ -176,8 +176,8 @@ class ResultParser(object):
             new_entry = {
                 "workload": self.test_type,
                 "name": name,
-                "start": int(self.timer['start']),
-                "end": int(self.timer['end']),
+                "start": self.timer['start'],
+                "end": self.timer['end'],
                 "results": {
                     threads: {
                         "ops_per_sec": result,

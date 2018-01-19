@@ -248,3 +248,6 @@ test_control:
     [receiver]
     listen
     rw=read
+
+# add a delay before each test. Units are seconds but the value can be an int or float.
+#  test_delay_seconds: 1

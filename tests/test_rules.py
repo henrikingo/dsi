@@ -358,21 +358,31 @@ class TestLogAnalysisRules(unittest.TestCase):
     def test_is_log_line_bad_time(self):
         """Test `_is_log_line_bad()` when test times are specified."""
 
-        test_times = [(date_parser.parse("2016-07-14T01:00:00.000+0000"),
-                       date_parser.parse("2016-07-14T01:10:00.000+0000")),
-                      (date_parser.parse("2016-07-14T03:00:00.000+0000"),
-                       date_parser.parse("2016-07-14T03:10:00.000+0000"))]
+        test_times = [
+            (date_parser.parse("2016-07-14T01:00:00.000+0000"),
+             date_parser.parse("2016-07-14T01:10:00.000+0000")),
+            (date_parser.parse("2016-07-14T03:00:00.000+0000"),
+             date_parser.parse("2016-07-14T03:10:00.000+0000")),
+            (date_parser.parse("2016-07-14T05:00:00.999+0000"),
+             date_parser.parse("2016-07-14T05:10:00.000+0000")),
+        ]
 
+        # last 2 times are the same time as test start / end (i.e. the times are inclusive)
         bad_lines = [
             "2016-07-14T01:00:04.000+0000 F err-type message",
             "2016-07-14T01:09:00.000+0000 F err-type message",
-            "2016-07-14T03:05:00.000+0000 F err-type message"
+            "2016-07-14T03:05:00.000+0000 F err-type message",
+            "2016-07-14T05:00:00.999+0000 F err-type message",
+            "2016-07-14T05:10:00.000+0000 F err-type message"
         ]
 
+        # last 2 times are just before and after the test started
         bad_lines_to_ignore = [
             "2016-07-14T00:05:00.000+0000 F err-type message",
             "2016-07-14T02:00:00.000+0000 F err-type message",
-            "2016-07-14T03:25:00.000+0000 F err-type message"
+            "2016-07-14T03:25:00.000+0000 F err-type message",
+            "2016-07-14T05:00:00.998+0000 F err-type message",
+            "2016-07-14T05:10:00.001+0000 F err-type message"
         ]
 
         for line in bad_lines:
