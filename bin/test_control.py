@@ -5,6 +5,8 @@ from __future__ import print_function
 
 import argparse
 from collections import MutableMapping
+
+import datetime
 from enum import Enum
 import inspect
 import logging
@@ -16,6 +18,7 @@ import threading
 import time
 import yaml
 
+from dateutil import tz
 from nose.tools import nottest
 
 from common.utils import mkdir_p
@@ -49,12 +52,23 @@ def setup_ssh_agent(config):
     subprocess.check_call(['ssh-add', ssh_key_file])
 
 
-def cleanup_reports():
-    ''' Clean up reports directory and files '''
-    if os.path.exists('reports'):
-        shutil.rmtree('reports')
+def prepare_reports_dir(reports_dir='reports'):
+    """ Prepare the reports directory to receive test data (logs, diagnostics etc).
+    Unlink the current reports directory and remove any tar ball. Then create a timestamped
+    directory and sym link to reports_dir
+    :param str reports_dir: the reports directory name. Defaults to reports
+    :raises OSError: set to Errno 21 when reports_dir exists and it is a directory.
+    """
+
+    if os.path.exists(reports_dir):
+        os.remove(reports_dir)
+
     if os.path.exists('../reports.tgz'):
         os.remove('../reports.tgz')
+
+    real_reports_dir = "{}-{}".format(reports_dir, datetime.datetime.now(tz.tzlocal()).isoformat())
+    mkdir_p(real_reports_dir)
+    os.symlink(real_reports_dir, reports_dir)
 
 
 def legacy_copy_perf_output():
@@ -312,13 +326,13 @@ def stop_background_tasks(background_tasks):
 
 @nottest
 def run_test(test, config, reports_dir='reports'):
-    '''
+    """
     Run one test. This creates a Host object, runs the command, and saves the output to a file
 
     :param test ConfigDict: The ConfigDict object for the test to run
     :param config ConfigDict: The top level ConfigDict
     :param string reports_dir: the report directory.
-'''
+    """
     directory = os.path.join(reports_dir, test['id'])
     filename = os.path.join(directory, 'test_output.log')
     mkdir_p(directory)
@@ -342,7 +356,7 @@ def run_tests(config):
     mongodb_setup_config = config['mongodb_setup']
 
     setup_ssh_agent(config)
-    cleanup_reports()
+    prepare_reports_dir()
 
     validate_config(config)
     run_pre_post_commands('pre_task', [mongodb_setup_config, test_control_config], config,

@@ -6,6 +6,7 @@ import copy
 import logging
 import os
 import re
+import shutil
 import subprocess
 import sys
 import unittest
@@ -20,9 +21,14 @@ from test_control import print_trace
 from test_control import run_pre_post_commands
 from test_control import run_test
 from test_control import run_tests
+from test_control import prepare_reports_dir
+
+from tests import test_utils
 
 from mock import patch, mock_open, Mock
 from testfixtures import LogCapture
+
+from common.utils import mkdir_p, touch
 
 
 class RunTestTestCase(unittest.TestCase):
@@ -103,6 +109,14 @@ class RunTestTestCase(unittest.TestCase):
                 ]
             }
         } # yapf: disable
+        self.reports_container = test_utils.fixture_file_path('container')
+        self.reports_path = os.path.join(self.reports_container, 'reports_tests')
+
+        mkdir_p(self.reports_path)
+
+    def tearDown(self):
+        """Create a dict that looks like a ConfigDict object """
+        shutil.rmtree(self.reports_container)
 
     @patch('os.walk')
     @patch('test_control.extract_hosts')
@@ -407,6 +421,7 @@ class RunTestTestCase(unittest.TestCase):
         # These are just throwaway mocks, pylint wants me to do something with them
         mock_mkdir.assert_called()
 
+    @patch('test_control.prepare_reports_dir')
     @patch('subprocess.check_call')
     @patch('test_control.setup_ssh_agent')
     @patch('test_control.run_validate')
@@ -416,7 +431,7 @@ class RunTestTestCase(unittest.TestCase):
     @patch('test_control.run_pre_post_commands')
     #pylint: disable=too-many-arguments
     def test_run_tests(self, mock_pre_post, mock_copy_perf, mock_generate, mock_run,
-                       mock_run_validate, mock_ssh_agent, mock_check_call):
+                       mock_run_validate, mock_ssh_agent, mock_check_call, mock_prepare_reports):
         """Test run_tests (the top level workhorse for test_control)"""
 
         run_tests(self.config)
@@ -437,8 +452,35 @@ class RunTestTestCase(unittest.TestCase):
         mock_generate.assert_called()
         mock_ssh_agent.assert_called()
         mock_check_call.assert_called()
-
+        mock_prepare_reports.assert_called()
         mock_run_validate.assert_called_once_with(self.config, 'benchRun')
+
+    def test_prepare_reports_dir(self):
+        """Test test_control.run_test where the exec command returns non-zero"""
+
+        previous_directory = os.getcwd()
+        reports_dir = os.path.join(self.reports_path, 'reports')
+        reports_tarball = os.path.join(self.reports_container, 'reports.tgz')
+
+        def _test_prepare_reports_dir():
+            try:
+                os.chdir(self.reports_path)
+                prepare_reports_dir(reports_dir=reports_dir)
+            finally:
+                os.chdir(previous_directory)
+
+            self.assertFalse(os.path.exists(reports_tarball))
+            self.assertTrue(os.path.exists(reports_dir))
+            self.assertTrue(os.path.islink(reports_dir))
+
+        _test_prepare_reports_dir()
+
+        touch(reports_tarball)
+        _test_prepare_reports_dir()
+
+        os.remove(reports_dir)
+        mkdir_p(reports_dir)
+        self.assertRaisesRegexp(OSError, 'Is a directory:', _test_prepare_reports_dir)
 
 
 if __name__ == '__main__':

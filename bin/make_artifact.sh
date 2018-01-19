@@ -37,5 +37,5 @@ else
     # afterwards. Alternatively, we can use the --exclude flag to tar. Can use the following string:
     # TAR_EXCLUDE="--exclude runtime_secret.yml --exclude security.tf --exclude aws_ssh_key.pem"
 
-    tar -zvcf reports.tgz reports
+    tar -hzcf reports.tgz reports
 fi
