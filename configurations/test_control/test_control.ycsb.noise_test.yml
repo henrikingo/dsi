@@ -16,13 +16,15 @@ run:
     pre_test:
       - on_workload_client:
           upload_files:
-            fio.ini: fio.ini
+            - source: fio.ini
+              target: fio.ini
     # Note that the next fio.json file overwrites the previous one, so you only get the last
     # This is harmless, as the file isn't really used for anything.
     post_test:
       - on_workload_client:
           retrieve_files:
-            fio.json: ../fio.json
+            - source: fio.json
+              target: ../fio.json
   - *fio
   - *fio
   - *fio
@@ -36,7 +38,8 @@ run:
     pre_test:
       - on_workload_client:
           upload_files:
-            workloadEvergreen: YCSB/ycsb-mongodb/workloads/workloadEvergreen
+            - source: workloadEvergreen
+              target: YCSB/ycsb-mongodb/workloads/workloadEvergreen
   - &ycsb_load_cleanup
     id: ycsb_load-cleanup
     type: mongoshell
@@ -68,7 +71,8 @@ run:
     pre_test:
       - on_workload_client:
           upload_files:
-            workloadEvergreen_95read5update: YCSB/ycsb-mongodb/workloads/workloadEvergreen_95read5update
+            - source: workloadEvergreen_95read5update
+              target: YCSB/ycsb-mongodb/workloads/workloadEvergreen_95read5update
   - *ycsb_95read5update
   - *ycsb_95read5update
   - *ycsb_95read5update
@@ -82,27 +86,12 @@ run:
     pre_test:
       - on_workload_client:
           upload_files:
-            workloadEvergreen_50read50update: YCSB/ycsb-mongodb/workloads/workloadEvergreen_50read50update
+            - source: workloadEvergreen_50read50update
+              target: YCSB/ycsb-mongodb/workloads/workloadEvergreen_50read50update
   - *ycsb_50read50update
   - *ycsb_50read50update
   - *ycsb_50read50update
   - *ycsb_50read50update
-
-pre_task:
-  - on_localhost:
-      exec: $DSI_PATH/bin/setup-ycsb.sh
-  - on_workload_client:
-      exec: rm -rf ycsb*
-  - on_workload_client:
-      upload_files:
-        ycsb.tar.gz: ycsb.tar.gz
-      upload_repo_files:
-  - on_workload_client:
-      exec: |
-        rm -rf YCSB
-        mkdir YCSB
-        tar zxvf ycsb.tar.gz -C YCSB
-        source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && ./setup.sh
 
 between_tests:
   - restart_mongodb:

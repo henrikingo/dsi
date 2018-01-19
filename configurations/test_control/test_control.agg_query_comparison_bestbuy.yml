@@ -35,11 +35,13 @@ run:
     pre_test:
       - on_workload_client:
           upload_files:
-            workloads.yml: workloads/workloads.yml
+            - source: workloads.yml
+              target: workloads/workloads.yml
     post_test:
       - on_workload_client:
           retrieve_files:
-            workloads/workload_timestamps.csv: ../workloads_timestamps.csv
+            - source: workloads/workload_timestamps.csv
+              target: ../workloads_timestamps.csv
 
   - id: fio
     type: fio
@@ -50,11 +52,13 @@ run:
     pre_test:
       - on_workload_client:
           upload_files:
-            fio.ini: fio.ini
+            - source: fio.ini
+              target: fio.ini
     post_test:
       - on_workload_client:
           retrieve_files:
-            fio.json: ../fio.json
+            - source: fio.json
+              target: ../fio.json
 
   - id: iperf
     type: iperf
@@ -63,20 +67,10 @@ run:
     post_test:
       - on_workload_client:
           retrieve_files:
-            iperf.json: ../iperf.json
+            - source: iperf.json
+              target: ../iperf.json
 
 pre_task:
-  - on_localhost:
-      exec: $DSI_PATH/bin/setup-workloads.sh
-  - on_workload_client:
-      exec: rm -rf workloads*
-  - on_workload_client:
-      # no order is guaranteed between the two upload files. That is okay here
-      upload_files:
-        workloads.tar.gz: workloads.tar.gz
-      upload_repo_files:
-        bin/fio-test.sh: fio-test.sh
-        bin/iperf-test.sh: iperf-test.sh
   - on_workload_client:
       # Preshard the cluster if running on a sharded cluster
       exec_mongo_shell:
@@ -213,27 +207,13 @@ pre_task:
           }
   - on_workload_client:
       exec: |
-        rm -rf workloads
-        mkdir workloads
-        tar zxvf workloads.tar.gz -C workloads
-
         # Download and install the dataset
         # Dataset is from the BestBuy Developer API website: https://bestbuyapis.github.io/api-documentation/#overview
         cd data
         curl -O --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/AggPerformance/bestbuyproducts.bson.gz
         ~/bin/mongorestore -h ${mongodb_setup.meta.hostname} --port=${mongodb_setup.meta.port} --gzip --archive=bestbuyproducts.bson.gz
         ~/bin/mongo --host ${mongodb_setup.meta.hostname} --port=${mongodb_setup.meta.port} --eval 'db.getSiblingDB("bestbuy").products.getShardDistribution()'
-  - on_all_hosts:
-      # Install iperf. It isn't available in yum on AWS instances
-      exec: |
-        sudo killall iperf3
-        rm -rf iperf
-        git clone https://github.com/esnet/iperf
-        cd iperf/
-        git checkout d06415822a
-        ./configure
-        make
-        sudo make install
+
 post_task:
   exec: |
     rm data/bestbuy* # Cleanup download files.

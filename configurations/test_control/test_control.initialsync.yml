@@ -21,11 +21,13 @@ run:
     pre_test: &pretest
       - on_workload_client:
           upload_files:
-            workloads.yml: workloads/workloads.yml
+            - source: workloads.yml
+              target: workloads/workloads.yml
     post_test: &posttest
       - on_workload_client:
           retrieve_files:
-            workloads/workload_timestamps.csv: ../workloads_timestamps.csv
+            - source: workloads/workload_timestamps.csv
+              target: ../workloads_timestamps.csv
 
   - id: initialsync_c_1_d_32_w_f
     type: mongoshell
@@ -184,11 +186,13 @@ run:
     pre_test:
       - on_workload_client:
           upload_files:
-            fio.ini: fio.ini
+            - source: fio.ini
+              target: fio.ini
     post_test:
       - on_workload_client:
           retrieve_files:
-            fio.json: ../fio.json
+            - source: fio.json
+              target: ../fio.json
 
   - id: iperf
     type: iperf
@@ -197,7 +201,8 @@ run:
     post_test:
       - on_workload_client:
           retrieve_files:
-            iperf.json: ../iperf.json
+            - source: iperf.json
+              target: ../iperf.json
 
 # Initial sync test explicitly requests the clean restart of mongodb. Explicitly including here
 # regardless of setting in defaults.yml
@@ -205,31 +210,3 @@ between_tests:
   - restart_mongodb:
       clean_logs: true
       clean_db_dir: true
-
-pre_task:
-  - on_all_hosts:
-      # Install iperf. It isn't available in yum on AWS instances
-      exec: |
-        sudo killall iperf3
-        rm -rf iperf
-        git clone https://github.com/esnet/iperf
-        cd iperf/
-        git checkout d06415822a
-        ./configure
-        make
-        sudo make install
-  - on_localhost:
-      exec: $DSI_PATH/bin/setup-workloads.sh
-  - on_workload_client:
-      exec: rm -rf workloads*
-  - on_workload_client:
-      upload_repo_files:
-        bin/fio-test.sh: fio-test.sh
-        bin/iperf-test.sh: iperf-test.sh
-      upload_files:
-        workloads.tar.gz: workloads.tar.gz
-  - on_workload_client:
-      exec: |
-        rm -rf workloads
-        mkdir workloads
-        tar zxvf workloads.tar.gz -C workloads

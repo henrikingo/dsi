@@ -23,7 +23,8 @@ run:
     pre_test:
       - on_workload_client:
           upload_files:
-            workloadEvergreen: YCSB/ycsb-mongodb/workloads/workloadEvergreen
+            - source: workloadEvergreen
+              target: YCSB/ycsb-mongodb/workloads/workloadEvergreen
 
   - id: ycsb_100read
     type: ycsb
@@ -57,7 +58,8 @@ run:
     pre_test:
       - on_workload_client:
           upload_files:
-            workloadEvergreen_95read5update: YCSB/ycsb-mongodb/workloads/workloadEvergreen_95read5update
+            - source: workloadEvergreen_95read5update
+              target: YCSB/ycsb-mongodb/workloads/workloadEvergreen_95read5update
 
   - id: ycsb_100update
     type: ycsb
@@ -82,7 +84,8 @@ run:
     pre_test:
       - on_workload_client:
           upload_files:
-            workloadEvergreen_100update: YCSB/ycsb-mongodb/workloads/workloadEvergreen_100update
+            - source: workloadEvergreen_100update
+              target: YCSB/ycsb-mongodb/workloads/workloadEvergreen_100update
 
   - id: ycsb_50read50update
     type: ycsb
@@ -107,7 +110,8 @@ run:
     pre_test:
       - on_workload_client:
           upload_files:
-            workloadEvergreen_50read50update: YCSB/ycsb-mongodb/workloads/workloadEvergreen_50read50update
+            - source: workloadEvergreen_50read50update
+              target: YCSB/ycsb-mongodb/workloads/workloadEvergreen_50read50update
 
   - id: fio
     type: fio
@@ -118,11 +122,13 @@ run:
     pre_test:
       - on_workload_client:
           upload_files:
-            fio.ini: fio.ini
+            - source: fio.ini
+              target: fio.ini
     post_test:
       - on_workload_client:
           retrieve_files:
-            fio.json: ../fio.json
+            - source: fio.json
+              target: ../fio.json
 
   - id: iperf
     type: iperf
@@ -131,7 +137,8 @@ run:
     post_test:
       - on_workload_client:
           retrieve_files:
-            iperf.json: ../iperf.json
+            - source: iperf.json
+              target: ../iperf.json
 
 thread_levels:
   load:
@@ -160,48 +167,6 @@ thread_levels:
       wiredTiger: 64
 
 
-pre_task:
-  - on_localhost:
-      exec: $DSI_PATH/bin/setup-ycsb.sh
-  - on_workload_client:
-      exec: rm -rf ycsb*
-  - on_workload_client:
-      upload_files:
-        ycsb.tar.gz: ycsb.tar.gz
-      upload_repo_files:
-        bin/fio-test.sh: fio-test.sh
-        bin/iperf-test.sh: iperf-test.sh
-  - on_workload_client:
-      exec: |
-        rm -rf YCSB
-        mkdir YCSB
-        tar zxvf ycsb.tar.gz -C YCSB
-        export JAVA_HOME="/usr/java/jdk1.7.0_71/jre"
-        source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && mvn clean package
-      exec_mongo_shell:
-        connection_string: "${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}"
-        # Shard the YCSB cluster if sharding is enabled
-        script: |
-          if ("${mongodb_setup.meta.is_sharded}" == "True") {
-            assert.commandWorked(sh.enableSharding("ycsb"));
-            assert.commandWorked(
-              sh.shardCollection("ycsb.usertable", {_id: "hashed"}));
-            db.printShardingStatus();
-          } else {
-            print ("Non-sharded cluster");
-          }
-  - on_all_hosts:
-      # Install iperf. It isn't available in yum on AWS instances
-      exec: |
-        sudo killall iperf3
-        rm -rf iperf
-        git clone https://github.com/esnet/iperf
-        cd iperf/
-        git checkout d06415822a
-        ./configure
-        make
-        sudo make install
-
 between_tests:
   - restart_mongodb:
       clean_logs: true
@@ -210,5 +175,7 @@ between_tests:
 post_task:
   - on_workload_client:
       retrieve_files:
-        fio.json: ../fio.json
-        iperf.json: ../iperf.json
+        - source: fio.json
+          target: ../fio.json
+        - source: iperf.json
+          target: ../iperf.json

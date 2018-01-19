@@ -90,7 +90,7 @@ resource "aws_instance" "seeded_ebs_member" {
         }
         inline = [
             "chmod +x /tmp/provision.sh",
-            "/tmp/provision.sh ${var.type} with_seeded_ebs"
+            "/tmp/provision.sh with_seeded_ebs"
         ]
     }
 }

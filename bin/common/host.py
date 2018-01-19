@@ -59,25 +59,27 @@ def _run_host_command_map(target_host, command, current_test_id=None):
     '''
     for key, value in command.iteritems():
         if key == "upload_repo_files":
-            for local_file, remote_file in value.iteritems():
-                local_file = os.path.join(repo_root(), local_file)
-                LOG.debug('Uploading file %s to %s', local_file, remote_file)
-                target_host.upload_file(local_file, remote_file)
+            for paths in value:
+                source = os.path.join(repo_root(), paths['source'])
+                target = paths['target']
+                LOG.debug('Uploading file %s to %s', source, target)
+                target_host.upload_file(source, target)
         elif key == "upload_files":
-            for local_file, remote_file in value.iteritems():
-                LOG.debug('Uploading file %s to %s', local_file, remote_file)
-                target_host.upload_file(local_file, remote_file)
+            for paths in value:
+                LOG.debug('Uploading file %s to %s', paths['source'], paths['target'])
+                target_host.upload_file(paths['source'], paths['target'])
         elif key == "retrieve_files":
-            for remote_file, local_file in value.iteritems():
+            for paths in value:
+                source = paths['source']
+                target = paths['target']
                 if current_test_id:
-                    local_file = os.path.join('reports', target_host.alias, current_test_id,
-                                              os.path.normpath(local_file))
+                    target = os.path.join('reports', target_host.alias, current_test_id,
+                                          os.path.normpath(target))
                 else:
-                    local_file = os.path.join('reports', target_host.alias,
-                                              os.path.normpath(local_file))
+                    target = os.path.join('reports', target_host.alias, os.path.normpath(target))
 
-                LOG.debug('Retrieving file %s from %s', local_file, remote_file)
-                target_host.retrieve_path(local_file, remote_file)
+                LOG.debug('Retrieving file %s from %s', source, target)
+                target_host.retrieve_path(source, target)
         elif key == "exec":
             LOG.debug('Executing command %s', value)
             target_host.run(value.split(' '))
@@ -230,10 +232,15 @@ def run_host_command(target, command, config, current_test_id=None):
     be None.
     '''
 
+    assert isinstance(command, MutableMapping), "command isn't a dict"
     assert target.startswith('on_')
+
+    keys = command.keys()
     target = target[3:]
     hosts = extract_hosts(target, config)
+    LOG.info("Running command(s) %s on %s", keys, target)
     _run_host_command(hosts, command, config, current_test_id)
+    LOG.debug("Done running command(s) %s on %s", keys, target)
 
 
 def run_host_commands(commands, conf, current_test_id=None):
@@ -243,7 +250,7 @@ def run_host_commands(commands, conf, current_test_id=None):
     Example of commands:
 
     [
-        { 'on_workload_client': { 'upload_files': { 'src': 'dest' } } }
+        { 'on_workload_client': { 'upload_files': [{ 'source': 'path', 'target': 'dest' }] } }
     ]
 
     :param list commands: list of dict actions to run
@@ -255,8 +262,8 @@ def run_host_commands(commands, conf, current_test_id=None):
     """
     for command in commands:
         # Item should be a map with one entry
-        assert isinstance(command, MutableMapping), 'command in list isn\'t a dict'
-        assert len(command.keys()) == 1, 'command has more than one entry'
+        assert isinstance(command, MutableMapping), "command in list isn't a dict"
+        assert len(command.keys()) == 1, "command has more than one entry"
         for target, target_command in command.iteritems():
             target = command.keys()[0]
             run_host_command(target, target_command, conf, current_test_id)
@@ -419,11 +426,12 @@ class Host(object):
         """Creates a file on the remote host"""
         raise NotImplementedError()
 
+    # Note: Try to keep arguments for all these methods in a (source, destination) order
     def upload_file(self, local_path, remote_path):
         """Copy a file to the host"""
         raise NotImplementedError()
 
-    def retrieve_path(self, local_path, remote_path):
+    def retrieve_path(self, remote_path, local_path):
         """Retrieve a file from the host"""
         raise NotImplementedError()
 
@@ -572,12 +580,12 @@ class RemoteHost(Host):
             return False
         return S_ISDIR(stat.st_mode)
 
-    def _retrieve_file(self, local_file, remote_file):
+    def _retrieve_file(self, remote_file, local_file):
         """ retrieve a single remote file. The local directories will
         be created, if required.
 
-        :param str local_file: the local filename. It must be a filename.
         :param str remote_file: the remote file location. It must be a filename.
+        :param str local_file: the local filename. It must be a filename.
         """
         LOG.debug("_retrieve_files: file '%s:%s' ", self.alias, remote_file)
         local_dir = os.path.dirname(local_file)
@@ -586,7 +594,7 @@ class RemoteHost(Host):
             os.makedirs(local_dir)
         self.ftp.get(remote_file, os.path.normpath(local_file))
 
-    def retrieve_path(self, local_path, remote_path):
+    def retrieve_path(self, remote_path, local_path):
         """ retrieve a path from a remote server. If the remote_path is
         a directory, then the contents of the directory are downloaded
         recursively. If not then the single file will be downloaded to the local
@@ -595,11 +603,11 @@ class RemoteHost(Host):
         Any path elements in the local path will only be created if and when a file is
         downloaded. As a result, an empty directory tree will not be created locally.
 
+        :param str remote_path: the remote path, this can be a file or directory location. The
+        path will be normalized immediately.
         :param str local_path: the path (file or directory) to download to. This
         can contain relative paths, these paths will only be normalized at the last possible
         moment.
-        :param str remote_path: the remote path, this can be a file or directory location. The
-        path will be normalized immediately.
         """
         if not self.remote_exists(remote_path):
             LOG.debug("retrieve_files '%s:%s' does not exist.", self.alias, remote_path)
@@ -614,9 +622,9 @@ class RemoteHost(Host):
                 local_file = os.path.join(local_path, filename)
                 local_file = os.path.normpath(local_file)
 
-                self.retrieve_path(local_file, remote)
+                self.retrieve_path(remote, local_file)
         else:
-            self._retrieve_file(local_path, remote_path)
+            self._retrieve_file(remote_path, local_path)
 
     def close(self):
         """Close the ssh connection."""
@@ -717,7 +725,7 @@ class LocalHost(Host):
             shutil.copyfile(local_path, remote_path)
             shutil.copymode(local_path, remote_path)
 
-    def retrieve_path(self, local_path, remote_path):
+    def retrieve_path(self, remote_path, local_path):
         """Retrieve a file from the host"""
         if local_path == remote_path:
             LOG.warning('Retrieving file locally to same path. Skipping step')

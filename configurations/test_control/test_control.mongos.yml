@@ -40,11 +40,13 @@ run:
     pre_test:
       - on_workload_client:
           upload_files:
-            workloads.yml: workloads/workloads.yml
+            - source: workloads.yml
+              target: workloads/workloads.yml
     post_test:
       - on_workload_client:
           retrieve_files:
-            workloads/workload_timestamps.csv: ../workloads_timestamps.csv
+            - source: workloads/workload_timestamps.csv
+              target: ../workloads_timestamps.csv
 
   - id: fio
     type: fio
@@ -55,11 +57,13 @@ run:
     pre_test:
       - on_workload_client:
           upload_files:
-            fio.ini: fio.ini
+            - source: fio.ini
+              target: fio.ini
     post_test:
       - on_workload_client:
           retrieve_files:
-            fio.json: ../fio.json
+            - source: fio.json
+              target: ../fio.json
   - id: iperf
     type: iperf
     cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
@@ -67,33 +71,5 @@ run:
     post_test:
       - on_workload_client:
           retrieve_files:
-            iperf.json: ../iperf.json
-
-pre_task:
-  - on_localhost:
-      exec: $DSI_PATH/bin/setup-workloads.sh
-  - on_workload_client:
-      exec: rm -rf workloads*
-  - on_workload_client:
-      # no order is guaranteed between the two upload files. That is okay here
-      upload_files:
-        workloads.tar.gz: workloads.tar.gz
-      upload_repo_files:
-        bin/fio-test.sh: fio-test.sh
-        bin/iperf-test.sh: iperf-test.sh
-  - on_workload_client:
-      exec: |
-        rm -rf workloads
-        mkdir workloads
-        tar zxvf workloads.tar.gz -C workloads
-  - on_all_hosts:
-      # Install iperf. It isn't available in yum on AWS instances
-      exec: |
-        sudo killall iperf3
-        rm -rf iperf
-        git clone https://github.com/esnet/iperf
-        cd iperf/
-        git checkout d06415822a
-        ./configure
-        make
-        sudo make install
+            - source: iperf.json
+              target: ../iperf.json

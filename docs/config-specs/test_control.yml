@@ -102,17 +102,19 @@ pre_task:
       upload_files:
         # Upload file local_file_path to remote_file_path. Paths
         # should include the file names (not just a target directory_
-        local_file_path: remote_file_path
+        - source: local_file_path
+          target: remote_file_path
       upload_repo_files:
         # This is the same as upload_files, but looks for the files relative to DSI root
-        local_file_path: remote_file_path
+        - source: local_file_path
+          target: remote_file_path
   - on_workload_client:
       exec: |
-  # code to be executed on workload client (when MongoDB cluster is running)
+        # code to be executed on workload client (when MongoDB cluster is running)
   - on_workload_client:
       exec_mongo_shell:
         script: |
-        # JavaScript to be executed in a mongo shell (when MongoDB cluster is running)
+          # JavaScript to be executed in a mongo shell (when MongoDB cluster is running)
         connection_string: ${mongodb_setup.meta.hosts}  # Defaults to localhost
 # Ordered list of things to do after all the runs
 post_task:
@@ -124,19 +126,22 @@ post_task:
         # category: the key name from ConfigDict['infrastructure']['.out'], it is
         # one of "mongod", "mongos", "configsvr" or "workload_client"
         # index: the position in ConfigDict['infrastructure']['out']['category']
-        remote_path: local_path
+        - source: remote_path
+          target: local_path
   - on_workload_client:
       retrieve_files:
-        workloads/workload_timestamps.csv: ./workloads_timestamps.csv
-        fio.json: ./fio.json
+        - source: workloads/workload_timestamps.csv
+          target: workloads_timestamps.csv
+        - source: fio.json
+          target: fio.json
 
-# Ordered list of things to do before each run, after pre_task
+# Ordered list of things to do before each test, after pre_task
 pre_test:
   - on_mongos: (see above)
   - on_mongod: (see above)
   - on_configsvr: (see above)
 
-# Ordered list of things to do after each run, before post_task
+# Ordered list of things to do after each test, before post_task
 post_test:
   - on_mongod: (see above)
   - on_all_hosts: (see above)

@@ -126,13 +126,16 @@ mongodb_setup:
   post_test:
     - on_all_servers:
         retrieve_files:
-          data/logs/: ./
+          - source: data/logs/
+            target: ./
     - on_mongod:
         retrieve_files:
-          data/dbs/diagnostic.data: ./diagnostic.data
+          - source: data/dbs/diagnostic.data
+            target: ./diagnostic.data
     - on_configsvr:
         retrieve_files:
-          data/dbs/diagnostic.data: ./diagnostic.data
+          - source: data/dbs/diagnostic.data
+            target: ./diagnostic.data
   post_task:
     - on_all_servers:
         exec: |
@@ -150,7 +153,8 @@ mongodb_setup:
           sudo TMPDIR=./mdiag bash ./mdiag/mdiag.sh sys-perf
     - on_all_servers:
         retrieve_files:
-          mdiag/: ./
+          - source: mdiag/
+            target: ./
 
 test_control:
   task_name: default_task_name

@@ -234,16 +234,18 @@ class HostTestCase(unittest.TestCase):
             commands = [
                 {
                     'on_workload_client': {
-                        'upload_files': {
-                            'src1': 'dest1'
-                        }
+                        'upload_files': [{
+                            'source': 'src1',
+                            'target': 'dest1'
+                        }]
                     }
                 },
                 {
                     'on_workload_client': {
-                        'upload_files': {
-                            'src2': 'dest2'
-                        }
+                        'upload_files': [{
+                            'source': 'src2',
+                            'target': 'dest2'
+                        }]
                     }
                 },
             ]
@@ -264,15 +266,23 @@ class HostTestCase(unittest.TestCase):
 
         # test upload_repo_files
         with patch('host.RemoteHost') as mongod:
-            command = {"upload_repo_files": {"remote_path": "mongos.log"}}
+            command = {"upload_repo_files": [{"target": "remote_path", "source": "mongos.log"}]}
             host._run_host_command_map(mongod, command)
-            mongod.upload_file.assert_called_once_with(root + "remote_path", "mongos.log")
+            mongod.upload_file.assert_called_once_with(root + "mongos.log", "remote_path")
 
         with patch('host.RemoteHost') as mongod:
-            command = {"upload_repo_files": {"remote_path": "mongos.log", "from": "to"}}
+            command = {
+                "upload_repo_files": [{
+                    "target": "remote_path",
+                    "source": "mongos.log"
+                }, {
+                    "target": "to",
+                    "source": "from"
+                }]
+            }
             host._run_host_command_map(mongod, command)
             calls = [
-                mock.call(root + "remote_path", "mongos.log"),
+                mock.call(root + "mongos.log", "remote_path"),
                 mock.call(root + "from", "to"),
             ]
             mongod.upload_file.assert_has_calls(calls, any_order=True)
@@ -282,17 +292,22 @@ class HostTestCase(unittest.TestCase):
 
         # test upload_files
         with patch('host.RemoteHost') as mongod:
-            command = {"upload_files": {"remote_path": "mongos.log"}}
+            command = {"upload_files": [{"target": "remote_path", "source": "mongos.log"}]}
             host._run_host_command_map(mongod, command)
-            mongod.upload_file.assert_called_once_with("remote_path", "mongos.log")
+            mongod.upload_file.assert_called_once_with("mongos.log", "remote_path")
 
         with patch('host.RemoteHost') as mongod:
-            command = {"upload_files": {"remote_path": "mongos.log", "from": "to"}}
+            command = {
+                "upload_files": [{
+                    "source": "mongos.log",
+                    "target": "remote_path"
+                }, {
+                    "source": "to",
+                    "target": "from"
+                }]
+            }
             host._run_host_command_map(mongod, command)
-            calls = [
-                mock.call("remote_path", "mongos.log"),
-                mock.call("from", "to"),
-            ]
+            calls = [mock.call("mongos.log", "remote_path"), mock.call("to", "from")]
             mongod.upload_file.assert_has_calls(calls, any_order=True)
 
     def test_retrieve_files(self):
@@ -303,29 +318,29 @@ class HostTestCase(unittest.TestCase):
             mock_retrieve_file = Mock()
             mongod.retrieve_path = mock_retrieve_file
 
-            command = {"retrieve_files": {"remote_path": "mongos.log"}}
+            command = {"retrieve_files": [{"source": "remote_path", "target": "mongos.log"}]}
             mongod.alias = 'host'
             host._run_host_command_map(mongod, command)
-            mock_retrieve_file.assert_any_call("reports/host/mongos.log", "remote_path")
+            mock_retrieve_file.assert_any_call("remote_path", "reports/host/mongos.log")
 
         # retrieve_files tests
         with patch('host.RemoteHost') as mongod:
             mock_retrieve_file = Mock()
             mongod.retrieve_path = mock_retrieve_file
 
-            command = {"retrieve_files": {"remote_path": "mongos.log"}}
+            command = {"retrieve_files": [{"source": "remote_path", "target": "mongos.log"}]}
             mongod.alias = 'host'
             host._run_host_command_map(mongod, command, current_test_id="test_id")
-            mock_retrieve_file.assert_any_call("reports/host/test_id/mongos.log", "remote_path")
+            mock_retrieve_file.assert_any_call("remote_path", "reports/host/test_id/mongos.log")
 
         with patch('host.RemoteHost') as mongod:
             mock_retrieve_file = Mock()
             mongod.retrieve_path = mock_retrieve_file
 
-            command = {"retrieve_files": {"remote_path": "local_path"}}
+            command = {"retrieve_files": [{"source": "remote_path", "target": "local_path"}]}
             mongod.alias = 'host'
             host._run_host_command_map(mongod, command)
-            mock_retrieve_file.assert_any_call("reports/host/local_path", "remote_path")
+            mock_retrieve_file.assert_any_call("remote_path", "reports/host/local_path")
 
         with patch('host.RemoteHost') as mongod:
             mock_retrieve_file = Mock()
@@ -333,16 +348,16 @@ class HostTestCase(unittest.TestCase):
 
             mongod.alias = "mongod.0"
             host._run_host_command_map(mongod, command)
-            mock_retrieve_file.assert_any_call("reports/mongod.0/local_path", "remote_path")
+            mock_retrieve_file.assert_any_call("remote_path", "reports/mongod.0/local_path")
 
         with patch('host.RemoteHost') as mongod:
             mock_retrieve_file = Mock()
             mongod.retrieve_path = mock_retrieve_file
 
-            command = {"retrieve_files": {"remote_path": "./local_path"}}
+            command = {"retrieve_files": [{"source": "remote_path", "target": "./local_path"}]}
             mongod.alias = "mongos.0"
             host._run_host_command_map(mongod, command)
-            mock_retrieve_file.assert_any_call("reports/mongos.0/local_path", "remote_path")
+            mock_retrieve_file.assert_any_call("remote_path", "reports/mongos.0/local_path")
 
         with patch('host.RemoteHost') as mongod:
             mock_retrieve_file = Mock()
@@ -350,15 +365,16 @@ class HostTestCase(unittest.TestCase):
 
             # deliberate jail break for workload client backwards compatibility
             command = {
-                "retrieve_files": {
-                    "workloads/workload_timestamps.csv": "../workloads_timestamps.csv"
-                }
+                "retrieve_files": [{
+                    "source": "workloads/workload_timestamps.csv",
+                    "target": "../workloads_timestamps.csv"
+                }]
             }
             mongod.alias = "workload_client.0"
             host._run_host_command_map(mongod, command)
             calls = [
-                mock.call("reports/workload_client.0/../workloads_timestamps.csv",
-                          "workloads/workload_timestamps.csv")
+                mock.call("workloads/workload_timestamps.csv",
+                          "reports/workload_client.0/../workloads_timestamps.csv")
             ]
 
             mock_retrieve_file.assert_has_calls(calls)
@@ -564,28 +580,28 @@ class HostTestCase(unittest.TestCase):
 
         mock_exists.return_value = True
         remote = host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
-        remote._retrieve_file('reports/local_file', 'remote_file')
+        remote._retrieve_file('remote_file', 'reports/local_file')
 
         remote.ftp.get.assert_called_with('remote_file', 'reports/local_file')
         mock_makedirs.assert_not_called()
 
         mock_exists.return_value = True
         remote = host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
-        remote._retrieve_file('reports/mongod.0/local_file', 'remote_file')
+        remote._retrieve_file('remote_file', 'reports/mongod.0/local_file')
 
         remote.ftp.get.assert_called_with('remote_file', 'reports/mongod.0/local_file')
         mock_makedirs.assert_not_called()
 
         mock_exists.return_value = True
         remote = host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
-        remote._retrieve_file('reports/../local_file', 'remote_file')
+        remote._retrieve_file('remote_file', 'reports/../local_file')
 
         remote.ftp.get.assert_called_with('remote_file', 'local_file')
         mock_makedirs.assert_not_called()
 
         mock_exists.return_value = False
         remote = host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
-        remote._retrieve_file('reports/local_file', 'remote_file')
+        remote._retrieve_file('remote_file', 'reports/local_file')
 
         remote.ftp.get.assert_called_with('remote_file', 'reports/local_file')
         mock_makedirs.assert_called_with('reports')
@@ -602,7 +618,7 @@ class HostTestCase(unittest.TestCase):
         remote.ftp.listdir = Mock()
 
         remote.remote_exists.return_value = False
-        remote.retrieve_path('reports/local_file', 'remote_file')
+        remote.retrieve_path('remote_file', 'reports/local_file')
 
         remote.remote_isdir.assert_not_called()
 
@@ -614,8 +630,8 @@ class HostTestCase(unittest.TestCase):
 
         remote.remote_exists.return_value = True
         remote.remote_isdir.return_value = False
-        remote.retrieve_path('reports/local_file', 'remote_file')
-        remote._retrieve_file.assert_called_with('reports/local_file', 'remote_file')
+        remote.retrieve_path('remote_file', 'reports/local_file')
+        remote._retrieve_file.assert_called_with('remote_file', 'reports/local_file')
 
         # remote path is a directory containing a single file
         remote.remote_exists.reset_mock()
@@ -628,11 +644,11 @@ class HostTestCase(unittest.TestCase):
         remote.remote_isdir.side_effect = lambda name: isdir_map.get(name, False)
         remote.ftp.listdir.return_value = ['mongod.log']
 
-        remote.retrieve_path('reports/local_dir', 'remote_dir')
+        remote.retrieve_path('remote_dir', 'reports/local_dir')
 
         remote.ftp.listdir.assert_called_with('remote_dir')
-        remote._retrieve_file.assert_called_with('reports/local_dir/mongod.log',
-                                                 'remote_dir/mongod.log')
+        remote._retrieve_file.assert_called_with('remote_dir/mongod.log',
+                                                 'reports/local_dir/mongod.log')
 
         # remote path is a directory, with multiple files
         remote.remote_exists.reset_mock()
@@ -647,14 +663,14 @@ class HostTestCase(unittest.TestCase):
             'mongod.log', 'metrics.2017-04-27T09-14-33Z-00000', 'metrics.interim'
         ]
 
-        remote.retrieve_path('reports/local_dir', 'remote_dir')
+        remote.retrieve_path('remote_dir', 'reports/local_dir')
 
         remote.ftp.listdir.assert_called_with('remote_dir')
         self.assertTrue(remote._retrieve_file.mock_calls == [
-            mock.call('reports/local_dir/mongod.log', 'remote_dir/mongod.log'),
-            mock.call('reports/local_dir/metrics.2017-04-27T09-14-33Z-00000',
-                      'remote_dir/metrics.2017-04-27T09-14-33Z-00000'),
-            mock.call('reports/local_dir/metrics.interim', 'remote_dir/metrics.interim')
+            mock.call('remote_dir/mongod.log', 'reports/local_dir/mongod.log'),
+            mock.call('remote_dir/metrics.2017-04-27T09-14-33Z-00000',
+                      'reports/local_dir/metrics.2017-04-27T09-14-33Z-00000'),
+            mock.call('remote_dir/metrics.interim', 'reports/local_dir/metrics.interim')
         ])
 
     @patch('paramiko.SSHClient')
@@ -680,7 +696,7 @@ class HostTestCase(unittest.TestCase):
         listdir_map = {'remote_dir': ['data']}
         remote.ftp.listdir.side_effect = lambda name: listdir_map.get(name, [])
 
-        remote.retrieve_path('reports/local_dir', 'remote_dir')
+        remote.retrieve_path('remote_dir', 'reports/local_dir')
         self.assertTrue(
             remote.ftp.listdir.mock_calls ==
             [mock.call('remote_dir'), mock.call('remote_dir/data')])
@@ -700,13 +716,13 @@ class HostTestCase(unittest.TestCase):
         listdir_map = {'remote_dir': ['data'], 'remote_dir/data': ['metrics.interim']}
         remote.ftp.listdir.side_effect = lambda name: listdir_map.get(name, [])
 
-        remote.retrieve_path('reports/local_dir', 'remote_dir')
+        remote.retrieve_path('remote_dir', 'reports/local_dir')
         self.assertTrue(
             remote.ftp.listdir.mock_calls ==
             [mock.call('remote_dir'), mock.call('remote_dir/data')])
         # remote.ftp.listdir.assert_called_with('remote_dir')
-        remote._retrieve_file.assert_called_with('reports/local_dir/data/metrics.interim',
-                                                 'remote_dir/data/metrics.interim')
+        remote._retrieve_file.assert_called_with('remote_dir/data/metrics.interim',
+                                                 'reports/local_dir/data/metrics.interim')
 
         # remote path is a directory, with multiple files
         remote.remote_exists.reset_mock()
@@ -721,11 +737,11 @@ class HostTestCase(unittest.TestCase):
         listdir_map = {'remote_dir': ['data', 'logs']}
         remote.ftp.listdir.side_effect = lambda name: listdir_map.get(name, [])
 
-        remote.retrieve_path('reports/local_dir', 'remote_dir')
+        remote.retrieve_path('remote_dir', 'reports/local_dir')
         remote.ftp.listdir.assert_called_with('remote_dir')
         self.assertTrue(remote._retrieve_file.mock_calls == [
-            mock.call('reports/local_dir/data', 'remote_dir/data'),
-            mock.call('reports/local_dir/logs', 'remote_dir/logs')
+            mock.call('remote_dir/data', 'reports/local_dir/data'),
+            mock.call('remote_dir/logs', 'reports/local_dir/logs')
         ])
 
     @patch('paramiko.SSHClient')
@@ -762,15 +778,15 @@ class HostTestCase(unittest.TestCase):
         }
         remote.ftp.listdir.side_effect = lambda name: listdir_map.get(name, [])
 
-        remote.retrieve_path('reports/local_dir', 'remote_dir')
+        remote.retrieve_path('remote_dir', 'reports/local_dir')
 
         # note empty is not here so it was not called
         self.assertTrue(remote._retrieve_file.mock_calls == [
-            mock.call('reports/local_dir/data/metrics.interim', 'remote_dir/data/metrics.interim'),
-            mock.call('reports/local_dir/data/metrics.2017-04-27T09-14-33Z-00000',
-                      'remote_dir/data/metrics.2017-04-27T09-14-33Z-00000'),
-            mock.call('reports/local_dir/file', 'remote_dir/file'),
-            mock.call('reports/local_dir/logs/mongod.log', 'remote_dir/logs/mongod.log')
+            mock.call('remote_dir/data/metrics.interim', 'reports/local_dir/data/metrics.interim'),
+            mock.call('remote_dir/data/metrics.2017-04-27T09-14-33Z-00000',
+                      'reports/local_dir/data/metrics.2017-04-27T09-14-33Z-00000'),
+            mock.call('remote_dir/file', 'reports/local_dir/file'),
+            mock.call('remote_dir/logs/mongod.log', 'reports/local_dir/logs/mongod.log')
         ])
 
     @patch("bin.common.host._run_host_command_map")

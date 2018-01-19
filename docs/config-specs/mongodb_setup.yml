@@ -32,20 +32,21 @@ configsvr_config_file: ...
 pre_cluster_start:
   - on_all_hosts:
       download_files:
-        - http://url1
-        - http://url2
+        - source: http://url1
+          target: file1
+        - source: http://url2
+          target: file2
   - on_all_hosts:
       upload_files:
-        # Anything? Could download/upload data set or a data directory
-        - remote-scripts/file1
-        - remote-scripts/file2
+        - source: local_path/file1
+          target: remote_path/file1
   - on_all_hosts:
       exec: |
-  # This would execute in OS shell (before MongoDB cluster is running)
+        # This would execute in OS shell (before MongoDB cluster is running)
   - on_workload_client:
       exec_mongo_shell:
         script: |
-        # JavaScript to be executed in a mongo shell (when MongoDB cluster is running)
+          # JavaScript to be executed in a mongo shell (when MongoDB cluster is running)
         connection_string: ${mongodb_setup.meta.hosts}  # Defaults to localhost
   - on_servers: (see above)             # servers = union( mongod, mongos, configsvr) = all_hosts - workload_client
   - on_mongod: (see above)
@@ -57,22 +58,27 @@ pre_cluster_start:
 post_cluster_start:
   - on_all_hosts:
       exec: |
-# This would execute in OS shell (after MongoDB cluster is running)
+        # This would execute in OS shell (after MongoDB cluster is running)
 
 # These are the same as in test_control.yml. Use them here for mongodb related pre and post tasks.
 pre_task: (See example below)
 post_task:
   - on_mongod:
       retrieve_files:
-        data/logs/mongod.log: ./mongod.log
-        data/dbs/diagnostic.data: ./diagnostic.data
+        - source: data/logs/mongod.log
+          target: ./mongod.log
+        - source: data/dbs/diagnostic.data
+          target: ./diagnostic.data
   - on_mongos:
       retrieve_files:
-        data/logs/mongos.log: ./mongos.log
+        - source: data/logs/mongos.log
+          target: ./mongos.log
   - on_configsvr:
       retrieve_files:
-        data/logs/mongod.log: ./mongod.log
-        data/dbs/diagnostic.data: ./diagnostic.data
+        - source: data/logs/mongod.log
+          target: ./mongod.log
+        - source: data/dbs/diagnostic.data
+          target: ./diagnostic.data
 
 
 
@@ -199,7 +205,7 @@ validate:
 # These params are passed through to shutdownServer, it allows whatever
 # https://docs.mongodb.com/manual/reference/command/shutdown/#dbcmd.shutdown supports.
 # The values are defaulted (in defaults.yml) so are not required.
-# It is preferrable that
+# See https://jira.mongodb.org/browse/SERVER-32679 for why timeoutSecs < 120
 shutdown_options:
   force: true
   timeoutSecs: 119

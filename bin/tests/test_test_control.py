@@ -289,7 +289,7 @@ class RunTestTestCase(unittest.TestCase):
         error_regex_str = error_regex_str + "\nException msg: Mock "
         error_regex_str = error_regex_str + "Exception\nrun_pre_post_commands:\n    "
         error_regex_str = error_regex_str + "in task: " + task + "\n        "
-        error_regex_str = error_regex_str + "in command: " + str(command)
+        error_regex_str = error_regex_str + "in command: " + re.escape(str(command))
         error_pattern = re.compile(error_regex_str)
         list_errors = list(log_capture.actual())  # Get actual string held by loc_capture object
         self.assertRegexpMatches(list_errors[0][2], error_pattern)
@@ -302,9 +302,10 @@ class RunTestTestCase(unittest.TestCase):
         mock_command_dicts = [{
             'pre_task': [{
                 'on_workload_client': {
-                    'upload_files': {
-                        'workloads.tar.gz': 'workloads.tar.gz'
-                    }
+                    'upload_files': [{
+                        'source': 'workloads.tar.gz',
+                        'target': 'workloads.tar.gz'
+                    }]
                 }
             }]
         }, {}]
@@ -319,9 +320,10 @@ class RunTestTestCase(unittest.TestCase):
         mock_command_dicts = [{
             'pre_task': [{
                 'on_workload_client': {
-                    'retrieve_files': {
-                        'workloads.tar.gz': 'workloads.tar.gz'
-                    }
+                    'retrieve_files': [{
+                        'source': 'workloads.tar.gz',
+                        'target': 'workloads.tar.gz'
+                    }]
                 }
             }]
         }, {}]

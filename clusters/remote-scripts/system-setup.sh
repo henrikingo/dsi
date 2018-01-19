@@ -2,13 +2,12 @@
 #
 # System setup script (run on each instance after launch by terraform)
 #
-# ./system-setup.sh INSTANCE_TYPE  [WITH_EBS] [FIO]
+# ./system-setup.sh [WITH_EBS]
 #
 # INSTANCE_TYPE:  mongod, mongos, configsvr or workloadclient
 # WITH_EBS:       "with_ebs" or "with_seeded_ebs" to add EBS partition
 #
-INSTANCE_TYPE="${1}"
-WITH_EBS="${2:-false}"
+WITH_EBS="${1:-false}"
 
 sudo yum -y -q install tmux git wget sysstat dstat perf fio xfsprogs
 
@@ -70,6 +69,7 @@ else
     ln -s /media/ephemeral0 data
 fi
 
+# mongodb production recommended configuration
 echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled
 echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag
 echo f | sudo tee /sys/class/net/eth0/queues/rx-0/rps_cpus
@@ -84,42 +84,5 @@ echo "ec2-user   hard   core   unlimited" | sudo tee -a /etc/security/limits.con
 echo "/home/ec2-user/data/logs/core.%e.%p.%h.%t" |sudo tee -a  /proc/sys/kernel/core_pattern
 
 echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCmHUZLsuGvNUlCiaZ83jS9f49S0plAtCH19Z2iATOYPH1XE2T8ULcHdFX2GkYiaEqI+fCf1J1opif45sW/5yeDtIp4BfRAdOu2tOvkKvzlnGZndnLzFKuFfBPcysKyrGxkqBvdupOdUROiSIMwPcFgEzyLHk3pQ8lzURiJNtplQ82g3aDi4wneLDK+zuIVCl+QdP/jCc0kpYyrsWKSbxi0YrdpG3E25Q4Rn9uom58c66/3h6MVlk22w7/lMYXWc5fXmyMLwyv4KndH2u3lV45UAb6cuJ6vn6wowiD9N9J1GS57m8jAKaQC1ZVgcZBbDXMR8fbGdc9AH044JVtXe3lT shardtest@test.mongo' | tee -a ~/.ssh/authorized_keys
-
-echo INSTANCE_TYPE= $INSTANCE_TYPE
-
-# echo
-# echo "Compile fio from source, because the stock fio on Amazon Linux didn't work with ioengine=net"
-
-sudo yum groupinstall -y --quiet "Development tools"
-sudo yum install -y --quiet zlib-devel
-# git clone --quiet https://github.com/axboe/fio
-# cd fio
-# git checkout e8750877dcd5b748cc7100654f9d9dff770d0c83
-# ./configure
-# make
-# mv fio ../netfio
-# cd ..
-# echo
-# echo
-
-# Workload setup
-if [ "$INSTANCE_TYPE" == "workloadclient" ]; then
-    # TODO: For now we setup everything each time. Ideally we'd do the Java install for ycsb only and pip for custom workloads only.
-    # That would require upper layers to pass down the test_control.run[].type parameter.
-
-    # YCSB dependencies
-    curl -O --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/java/jdk-7u71-linux-x64.rpm; sudo rpm -i jdk-7u71-linux-x64.rpm;
-    sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.7.0_71/bin/java 20000
-    curl -O --retry 10 https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongo-java-driver/3.2.2/mongo-java-driver-3.2.2.jar
-    echo 'export CLASSPATH=~/mongo-java-driver-3.2.2.jar:$CLASSPATH' >> ~/.bashrc
-    curl --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash
-    # Remove the jdk rpm
-    rm *.rpm || true
-
-# custom workloads dependencies
-    sudo pip install argparse python-dateutil pytz
-fi
-
-
 
 exit 0

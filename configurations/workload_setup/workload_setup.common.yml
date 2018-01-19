@@ -5,36 +5,42 @@ mongoshell:
       exec: rm -rf workloads*
   - on_workload_client:
       upload_files:
-        workloads.tar.gz: workloads.tar.gz
+        - source: workloads.tar.gz
+          target: workloads.tar.gz
   - on_workload_client:
       exec: |
         rm -rf workloads
         mkdir workloads
         tar zxvf workloads.tar.gz -C workloads
+        sudo pip install argparse python-dateutil pytz
 
 fio:
   - on_workload_client:
       exec: |
         sudo yum -y -q install fio
       upload_repo_files:
-        bin/fio-test.sh: fio-test.sh
+        - source: bin/fio-test.sh
+          target: fio-test.sh
 
 
 iperf:
   - on_workload_client:
       # Install iperf3. It isn't available in yum on AWS instances
-      # TODO: Please change this to yum install from EPEL instead
+      # TODO: This is very verbose. Please change this to yum install from EPEL instead.
       exec: |
+        sudo yum groupinstall -y --quiet "Development tools"
+        sudo yum install -y --quiet zlib-devel
         sudo killall iperf3
         rm -rf iperf
         git clone https://github.com/esnet/iperf
-        git checkout d06415822a
         cd iperf/
+        git checkout d06415822a
         ./configure
         make
         sudo make install
       upload_repo_files:
-        bin/iperf-test.sh: iperf-test.sh
+        - source: bin/iperf-test.sh
+          target: iperf-test.sh
 
 
 ycsb:
@@ -52,15 +58,14 @@ ycsb:
         curl --retry 10 \
           https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash
         rm *.rpm || true
-
-        sudo pip install argparse python-dateutil pytz
   - on_localhost:
       exec: $DSI_PATH/bin/setup-ycsb.sh
   - on_workload_client:
       exec: rm -rf ycsb*
   - on_workload_client:
       upload_files:
-        ycsb.tar.gz: ycsb.tar.gz
+        - source: ycsb.tar.gz
+          target: ycsb.tar.gz
   - on_workload_client:
       exec: |
         rm -rf YCSB

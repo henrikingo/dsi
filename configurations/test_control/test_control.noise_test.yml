@@ -64,7 +64,8 @@ run:
     pre_test:
       - on_workload_client:
           upload_files:
-            fio.ini: fio.ini
+            - source: fio.ini
+              target: fio.ini
   - id: benchRun-${mongodb_setup.mongod_config_file.storage.engine}
     type: mongoshell
 
@@ -114,7 +115,8 @@ run:
     pre_test:
       - on_workload_client:
           upload_files:
-            workloads.yml: workloads/workloads.yml
+            - source: workloads.yml
+              target: workloads/workloads.yml
 
 # This is just a lookup table. Each test may reference some leaf node here from a test parameter.
 thread_levels:
@@ -122,25 +124,18 @@ thread_levels:
     mmapv1: [1, 4]
     wiredTiger: [1, 2]
 
-pre_task:
-  - on_localhost:
-      exec: $DSI_PATH/bin/setup-workloads.sh
-  - on_workload_client:
-      exec: rm -rf workloads*
-  - on_workload_client:
-      upload_files:
-        workloads.tar.gz: workloads.tar.gz
-  - on_workload_client:
-      exec: |
-        rm -rf workloads
-        mkdir workloads
-        tar zxvf workloads.tar.gz -C workloads
 post_task:
   - on_workload_client:
       retrieve_files:
-        workloads/workload_timestamps.csv: ../workloads_timestamps.csv
-        fio.p1.json: ../fio.p1.json
-        fio.p2.json: ../fio.p2.json
-        fio.p3.json: ../fio.p3.json
-        fio.p4.json: ../fio.p4.json
-        fio.p5.json: ../fio.p5.json
+        - source: workloads/workload_timestamps.csv
+          target: ../workloads_timestamps.csv
+        - source: fio.p1.json
+          target: ../fio.p1.json
+        - source: fio.p2.json
+          target: ../fio.p2.json
+        - source: fio.p3.json
+          target: ../fio.p3.json
+        - source: fio.p4.json
+          target: ../fio.p4.json
+        - source: fio.p5.json
+          target: ../fio.p5.json
