@@ -1272,45 +1272,45 @@
                     "workload":"shell/benchrun"
                 },
                 "mixed_findOne":{
-                    "create_time":"2017-09-13T18:33:50.662Z",
-                    "end":1505340834,
-                    "max":26093.405900488775,
+                    "create_time":"2018-01-19T14:15:45.854Z",
+                    "end":1516382513.422184,
+                    "max":27270.299532714587,
                     "name":"mixed_findOne",
-                    "order":8343,
+                    "order":9581,
                     "results":{
                         "128":{
-                            "ops_per_sec":15907.587624960059,
+                            "ops_per_sec":16476.83302628703,
                             "ops_per_sec_values":[
-                                15907.587624960059
+                                16476.83302628703
                             ]
                         },
                         "256":{
-                            "ops_per_sec":16012.528076469522,
+                            "ops_per_sec":19687.35137047987,
                             "ops_per_sec_values":[
-                                16012.528076469522
+                                19687.35137047987
                             ]
                         },
                         "4":{
-                            "ops_per_sec":4334.129287906323,
+                            "ops_per_sec":4174.257726667384,
                             "ops_per_sec_values":[
-                                4334.129287906323
+                                4174.257726667384
                             ]
                         },
                         "512":{
-                            "ops_per_sec":26093.405900488775,
+                            "ops_per_sec":27270.299532714587,
                             "ops_per_sec_values":[
-                                26093.405900488775
+                                27270.299532714587
                             ]
                         },
                         "64":{
-                            "ops_per_sec":16897.43810695238,
+                            "ops_per_sec":17143.886731544146,
                             "ops_per_sec_values":[
-                                16897.43810695238
+                                17143.886731544146
                             ]
                         }
                     },
-                    "revision":"61d1cfbf2c8521126506c12bcd2d187a7926fbe0",
-                    "start":1505334371,
+                    "revision":"71ae3ed5b7e99ddb629ec64b85f4bd75b73aff17",
+                    "start":1516374052.94969,
                     "tag":"",
                     "threads":[
                         "128",
@@ -1320,9 +1320,10 @@
                         "4"
                     ],
                     "ticket":[
-                        "BF-6743"
+                        "BF-6743",
+                        "BF-7729"
                     ],
-                    "workload":"shell/benchrun"
+                    "workload":"mongoshell"
                 },
                 "mixed_insert":{
                     "create_time":"2017-09-13T18:33:50.662Z",
@@ -3645,6 +3646,59 @@
                         "BF-6743"
                     ],
                     "workload":"shell/benchrun"
+                },
+                "mixed_findOne":{
+                    "create_time":"2018-01-19T14:15:45.854Z",
+                    "end":1516384050.524393,
+                    "max":21489.204699299564,
+                    "name":"mixed_findOne",
+                    "order":9581,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":14920.842885064138,
+                            "ops_per_sec_values":[
+                                14920.842885064138
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":15065.242268964195,
+                            "ops_per_sec_values":[
+                                15065.242268964195
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":4085.699869272461,
+                            "ops_per_sec_values":[
+                                4085.699869272461
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":21489.204699299564,
+                            "ops_per_sec_values":[
+                                21489.204699299564
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":15520.167378158178,
+                            "ops_per_sec_values":[
+                                15520.167378158178
+                            ]
+                        }
+                    },
+                    "revision":"71ae3ed5b7e99ddb629ec64b85f4bd75b73aff17",
+                    "start":1516373864.807145,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7729"
+                    ],
+                    "workload":"mongoshell"
                 },
                 "word_count_doc":{
                     "create_time":"2018-01-18T02:06:16.716Z",
@@ -8854,6 +8908,59 @@
                         "BF-6743"
                     ],
                     "workload":"shell/benchrun"
+                },
+                "mixed_findOne":{
+                    "create_time":"2018-01-19T14:15:45.854Z",
+                    "end":1516382428.615398,
+                    "max":19926.380126056447,
+                    "name":"mixed_findOne",
+                    "order":9581,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":16840.50786457446,
+                            "ops_per_sec_values":[
+                                16840.50786457446
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":17862.628247571854,
+                            "ops_per_sec_values":[
+                                17862.628247571854
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":4298.727206110165,
+                            "ops_per_sec_values":[
+                                4298.727206110165
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":19926.380126056447,
+                            "ops_per_sec_values":[
+                                19926.380126056447
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":17259.24166736498,
+                            "ops_per_sec_values":[
+                                17259.24166736498
+                            ]
+                        }
+                    },
+                    "revision":"71ae3ed5b7e99ddb629ec64b85f4bd75b73aff17",
+                    "start":1516374004.516233,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7729"
+                    ],
+                    "workload":"mongoshell"
                 },
                 "word_count_doc":{
                     "create_time":"2018-01-18T02:06:16.716Z",
