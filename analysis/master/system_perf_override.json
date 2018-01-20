@@ -2443,7 +2443,64 @@
         "retryable_writes_workloads_WT":{
             "ndays":{},
             "reference":{},
-            "threshold":{}
+            "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                }
+            }
         }
     },
     "linux-3-node-replSet":{
@@ -4821,10 +4878,59 @@
             "reference":{},
             "threshold":{
                 "NetworkBandwidth":{
-                    "thread_threshold":1.0,
+                    "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-7379"
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
                     ]
                 }
             }
@@ -7392,6 +7498,68 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                }
+            }
+        },
+        "retryable_writes_workloads_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-7379",
+                        "BF-7734"
                     ]
                 }
             }
