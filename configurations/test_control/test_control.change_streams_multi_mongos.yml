@@ -24,12 +24,12 @@ run:
               mongos_hosts: ${infrastructure_provisioning.out.mongos}
           - cpu_noise.js
 
-        # These next five lines match existing workloads.yml.
-        target: ${mongodb_setup.meta.hostname}
-        port: ${mongodb_setup.meta.port}
-        # Hard coding for now. These aren't working right now
-        sharded: ${mongodb_setup.meta.is_sharded}
-        replica: ${mongodb_setup.meta.is_replset}
+      # These next five lines match existing workloads.yml.
+      target: ${mongodb_setup.meta.hostname}
+      port: ${mongodb_setup.meta.port}
+      # Hard coding for now. These aren't working right now
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
     pre_test:
       - on_workload_client:
           upload_files:
