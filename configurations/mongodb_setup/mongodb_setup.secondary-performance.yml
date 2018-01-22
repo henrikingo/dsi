@@ -18,6 +18,10 @@ topology:
         rs_conf_member:  # The member specific part of rs.conf() json object,
           priority: 0    # to go under rs.conf().member[0]
           votes: 0
+  - id: dummy_node  # This avoids BF-7733 for now
+    cluster_type: standalone
+    public_ip: ${infrastructure_provisioning.out.mongod.2.public_ip}
+    private_ip: ${infrastructure_provisioning.out.mongod.2.private_ip}
 
 # Meta data about this mongodb setup
 meta:
