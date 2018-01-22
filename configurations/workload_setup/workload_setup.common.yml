@@ -24,7 +24,7 @@ fio:
 
 
 iperf:
-  - on_workload_client:
+  - on_all_hosts:
       # Install iperf3. It isn't available in yum on AWS instances
       # TODO: This is very verbose. Please change this to yum install from EPEL instead.
       exec: |
