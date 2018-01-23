@@ -57,7 +57,7 @@ def prepare_reports_dir(reports_dir='reports'):
     Unlink the current reports directory and remove any tar ball. Then create a timestamped
     directory and sym link to reports_dir
     :param str reports_dir: the reports directory name. Defaults to reports
-    :raises OSError: set to Errno 21 when reports_dir exists and it is a directory.
+    :raises OSError: when reports_dir exists and it is a directory.
     """
 
     if os.path.exists(reports_dir):

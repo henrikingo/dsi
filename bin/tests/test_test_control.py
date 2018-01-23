@@ -482,7 +482,7 @@ class RunTestTestCase(unittest.TestCase):
 
         os.remove(reports_dir)
         mkdir_p(reports_dir)
-        self.assertRaisesRegexp(OSError, 'Is a directory:', _test_prepare_reports_dir)
+        self.assertRaises(OSError, _test_prepare_reports_dir)
 
 
 if __name__ == '__main__':
