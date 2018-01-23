@@ -4140,28 +4140,29 @@
             "ndays":{},
             "reference":{
                 "ycsb_50read50update":{
-                    "create_time":"2017-12-14T11:18:50.769Z",
-                    "end":1513290724.0,
-                    "max":37976.67852171981,
+                    "create_time":"2018-01-18T02:06:16.716Z",
+                    "end":1516247581,
+                    "max":32017.263708591672,
                     "name":"ycsb_50read50update",
-                    "order":9322,
+                    "order":9572,
                     "results":{
                         "64":{
-                            "ops_per_sec":37976.67852171981,
-                            "replica_avg_lag":0.9214145383104125,
-                            "replica_end_of_test_lag":1,
-                            "replica_max_lag":3
+                            "ops_per_sec":32017.263708591672,
+                            "ops_per_sec_values":[
+                                32017.263708591672
+                            ]
                         }
                     },
-                    "revision":"9611f1368349db2fcbe7a7090d7bb7afe0f789af",
-                    "start":1513290196.0,
+                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
+                    "start":1516246955,
                     "tag":"",
                     "threads":[
                         "64"
                     ],
                     "ticket":[
                         "BF-6941",
-                        "BF-6810"
+                        "BF-6810",
+                        "BF-7749"
                     ],
                     "workload":"ycsb"
                 },
