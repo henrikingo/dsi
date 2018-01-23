@@ -287,6 +287,56 @@ class HostTestCase(unittest.TestCase):
             ]
             mongod.upload_file.assert_has_calls(calls, any_order=True)
 
+    @patch('host._connected_ssh')
+    def test_upload_files_dir(self, mock_connected_ssh):
+        """We can upload directories of files"""
+
+        ssh = mock.MagicMock(name='ssh')
+        ftp = mock.MagicMock(name='ftp')
+        channel = mock.MagicMock(name='channel')
+        ssh.exec_command.return_value = channel, channel, channel
+
+        mock_connected_ssh.return_value = (ssh, ftp)
+
+        remote = host.RemoteHost(host=None, user=None, pem_file=None)
+
+        local_path = os.path.abspath(os.path.dirname(__file__))
+        remote_path = '/foo/bar'
+
+        remote.upload_file(local_path, remote_path)
+
+        ssh.exec_command.assert_has_calls(
+            [
+                call('tar xf /foo/bar/tests.tar -C /foo/bar', get_pty=False),
+                call('rm /foo/bar/tests.tar', get_pty=False)
+            ],
+            any_order=False)
+
+        ftp.assert_has_calls(
+            [call.put(ANY, '/foo/bar/tests.tar'),
+             call.chmod('/foo/bar/tests.tar', 420)],
+            any_order=False)
+
+    @patch('host._connected_ssh')
+    def test_upload_single_file(self, mock_connected_ssh):
+        """We can upload a single file"""
+        ssh = mock.MagicMock(name='ssh')
+        ftp = mock.MagicMock(name='ftp')
+        mock_connected_ssh.return_value = (ssh, ftp)
+
+        remote = host.RemoteHost(host=None, user=None, pem_file=None)
+
+        local_path = os.path.abspath(__file__)
+        remote_path = '/foo/bar/idk.py'
+
+        remote.upload_file(local_path, remote_path)
+
+        ssh.assert_not_called()
+
+        ftp.assert_has_calls(
+            [call.put(ANY, '/foo/bar/idk.py'),
+             call.chmod('/foo/bar/idk.py', 420)], any_order=False)
+
     def test_upload_files(self):
         """ Test run command map upload_repo_files """
 
@@ -909,7 +959,7 @@ class HostTestCase(unittest.TestCase):
                          exit_status_ready=True):
             """ test common code with """
             with patch('host.create_timer') as mock_create_watchdog, \
-                 patch('host._stream') as mock_stream:
+                    patch('host._stream') as mock_stream:
                 remote_host = host.RemoteHost('test_host', 'test_user', 'test_pem_file')
 
                 ssh_instance = mock_ssh.return_value

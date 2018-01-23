@@ -9,6 +9,8 @@ import select
 import shutil
 import signal
 import socket
+import tarfile
+import tempfile
 from stat import S_ISDIR
 import subprocess
 import time
@@ -452,28 +454,48 @@ def _stream(source, destination):
         pass
 
 
+def _connected_ssh(host, user, pem_file):
+    """
+    Create a connected paramiko ssh client and ftp connection
+    or raise if cannot connect
+    :param host: hostname to connect to
+    :param user: username to use
+    :param pem_file: ssh pem file for connection
+    :return: paramiko (SSHClient, SFTPClient) tuple
+    """
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
+    try:
+        ssh.connect(host, username=user, key_filename=pem_file)
+        ftp = ssh.open_sftp()
+        # Setup authentication forwarding. See
+        # https://stackoverflow.com/questions/23666600/ssh-key-forwarding-using-python-paramiko
+        session = ssh.get_transport().open_session()
+        paramiko.agent.AgentRequestHandler(session)
+    except (paramiko.SSHException, socket.error) as err:
+        LOG.exception('failed to connect to %s@%s', user, host)
+        raise err
+    return ssh, ftp
+
+
 class RemoteHost(Host):
     """Represents a SSH connection to a remote host."""
 
     def __init__(self, host, user, pem_file):
+        """
+        :param host: hostname
+        :param user: username
+        :param pem_file: ssh pem file
+        """
         super(RemoteHost, self).__init__(host)
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
         LOG.debug('host: %s, user: %s, pem_file: %s', host, user, pem_file)
         try:
-            ssh.connect(host, username=user, key_filename=pem_file)
-            ftp = ssh.open_sftp()
-
-            # Setup authentication forwarding. See
-            # https://stackoverflow.com/questions/23666600/ssh-key-forwarding-using-python-paramiko
-            session = ssh.get_transport().open_session()
-            paramiko.agent.AgentRequestHandler(session)
+            ssh, ftp = _connected_ssh(host, user, pem_file)
+            self._ssh = ssh
+            self.ftp = ftp
+            self.user = user
         except (paramiko.SSHException, socket.error):
-            LOG.exception('failed to connect to %s@%s', user, host)
             exit(1)
-        self._ssh = ssh
-        self.ftp = ftp
-        self.user = user
 
     # pylint: disable=too-many-arguments
     def exec_command(self, argv, out=None, err=None, pty=False, max_time_ms=None):
@@ -550,7 +572,63 @@ class RemoteHost(Host):
             remote_file.flush()
 
     def upload_file(self, local_path, remote_path):
-        """Copy a file to the host"""
+        """
+        Copy a file or directory to the host.
+        Uploading large files or a directory with lots of files
+        may be slow as we don't do any compression.
+        """
+        if os.path.isdir(local_path):
+            self._upload_dir(local_path, remote_path)
+        else:
+            self._upload_single_file(local_path, remote_path)
+
+    def _upload_dir(self, local_path, remote_path):
+        """
+        Upload a directory local->remote
+        Internally works by creating a tarball and uploading and unpacking that.
+        :param local_path: local directory to upload
+        :param remote_path: destination directory. Must already exist.
+        """
+        temp_dir = tempfile.mkdtemp()
+        try:
+            self.__upload_dir_unsafe(local_path, remote_path, temp_dir)
+        finally:
+            shutil.rmtree(temp_dir)
+
+    def __upload_dir_unsafe(self, local_path, remote_path, temp_dir):
+        """
+        Upload a directory local->remote using temp_dir to
+        store an intermediary tarball. If any exceptions
+        during tar-ing or uploading won't clean up temp_dir.
+        :param local_path: local directory to upload
+        :param remote_path: destination directory. Must already exist.
+        :param temp_dir: temp dir to store intermediary tarball.
+        """
+        tarball_name = "{}.tar".format(os.path.basename(local_path))
+        tarball_path = os.path.join(temp_dir, tarball_name)
+        remote_tarball_path = os.path.join(remote_path, tarball_name)
+
+        # create tarball
+        with open(tarball_path, 'w') as tarball_file:
+            with tarfile.open(fileobj=tarball_file, mode='w') as tarball:
+                tarball.add(local_path, os.path.basename(local_path))
+
+        # upload it
+        self._upload_single_file(tarball_path, remote_tarball_path)
+
+        # untar it. Have to rely on shell because tarfile doesn't operate remotely
+        self.exec_command(['tar', 'xf', remote_tarball_path, '-C', remote_path])
+
+        # cleanup remote
+        self.exec_command(['rm', remote_tarball_path])
+
+    def _upload_single_file(self, local_path, remote_path):
+        """
+        Upload single file local->remote. Must be a single file
+        (not a directory). For type-aware transfer, see upload_file.
+        :param local_path: local file to upload
+        :param remote_path: local file destination
+        """
         self.ftp.put(local_path, remote_path)
 
         # Get standard permissions mask e.g. 0755
