@@ -15,7 +15,7 @@ import yaml
 
 from common.config import ConfigDict
 from common.log import setup_logging
-from common.utils import read_aws_credentials
+import common.utils
 
 LOGGER = logging.getLogger(__name__)
 
@@ -182,18 +182,17 @@ def validate_terraform(config):
             assert False
 
 
-def write_dsienv(directory, dsipath, terraform, config):
+def write_dsienv(directory, terraform):
     """
-    Writes out the dsienv.sh file. It saves the path to DSI repo.
+    Writes out the dsienv.sh file.
+
+    :param str directory: The work directory
+    :param str terraform: Path to terraform
+
     """
     with open(os.path.join(directory, 'dsienv.sh'), 'w') as dsienv:
-        dsienv.write('export DSI_PATH={0}\n'.format(dsipath))
-        dsienv.write('export PATH={0}/bin:$PATH\n'.format(dsipath))
+        dsienv.write('export PATH={0}:$PATH\n'.format(common.utils.get_dsi_bin_dir()))
         dsienv.write('export TERRAFORM={0}'.format(terraform))
-        if "workloads_dir" in config:
-            dsienv.write('\nexport WORKLOADS_DIR={0}'.format(config["workloads_dir"]))
-        if "ycsb_dir" in config:
-            dsienv.write('\nexport YCSB_DIR={0}'.format(config["ycsb_dir"]))
 
 
 def load_bootstrap(config, directory):
@@ -262,19 +261,15 @@ def main():
     config_dict = load_bootstrap(config, directory)
 
     # Checks for aws credentials, fails if cannot find them
-    read_aws_credentials(config_dict)
-
-    # Compute DSI Path based on directory location of this script. Go up one level
-    dsipath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    LOGGER.info('dsipath is %s', dsipath)
+    common.utils.read_aws_credentials(config_dict)
 
     config['terraform'] = find_terraform(config, directory)
     validate_terraform(config)
 
-    write_dsienv(directory, dsipath, config['terraform'], config)
+    write_dsienv(directory, config['terraform'])
 
     # copy necessary config files to the current directory
-    copy_config_files(dsipath, config, directory)
+    copy_config_files(common.utils.get_dsi_path(), config, directory)
 
     # This writes an overrides.yml with the ssh_key_file, ssh_key_name and owner, if given in
     # bootstrap.yml.

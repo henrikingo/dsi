@@ -21,6 +21,7 @@ import paramiko
 
 from common.utils import mkdir_p
 from common.log import IOLogAdapter
+import common.utils
 from thread_runner import run_threads
 
 ONE_SECOND_MILLIS = 1000.0
@@ -71,13 +72,6 @@ def close_safely(stream):
         stream.close()
 
 
-def repo_root():
-    """
-    Return the path to the root of the DSI repo
-    """
-    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-
 def _run_host_command_map(target_host, command, current_test_id=None):
     """
     Run one command against a target host if the command is a mapping.
@@ -93,7 +87,7 @@ def _run_host_command_map(target_host, command, current_test_id=None):
     for key, value in command.iteritems():
         if key == "upload_repo_files":
             for paths in value:
-                source = os.path.join(repo_root(), paths['source'])
+                source = os.path.join(common.utils.get_dsi_path(), paths['source'])
                 target = paths['target']
                 LOG.debug('Uploading file %s to %s', source, target)
                 target_host.upload_file(source, target)
