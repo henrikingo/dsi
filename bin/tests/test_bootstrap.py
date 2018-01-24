@@ -583,7 +583,9 @@ class TestBootstrap(unittest.TestCase):
             'production': False,
             'storageEngine': 'wiredTiger',
             'terraform_version_check': 'Terraform v0.10.4',
-            'test_control': 'core'
+            'test_control': 'core',
+            'workloads_dir': './workloads',
+            'ycsb_dir': './YCSB'
         }
         test_config = {}
         bootstrap.load_bootstrap(test_config, '.')

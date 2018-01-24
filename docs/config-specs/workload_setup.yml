@@ -7,8 +7,17 @@ ycsb:  # so these steps would be called if there are any workload runs with type
         - http://url1
   - on_workload_client:  # like usual...
       exec: "echo 'mixing shell and yaml syntax is like translating from Japanese to Orkish'"
+  - on_localhost:
+      # The checkout_repos command makes a shallow clone of the git repository (currently set to the
+      # latest commit). The `branch` key is optional: when it is set, the specified branch is
+      # cloned, otherwise the default branch is cloned. The branch target can be a branch, tag, or
+      # reference.
+      checkout_repos:
+        - source: git@github.com:mongodb-labs/YSCB.git
+          target: ./YCSB
+          branch: 5742781
+
 
 
 # The full range of on_* commands is supported, but notably *only* the on_* commands,
 # so no restart_mongodb or others.
-

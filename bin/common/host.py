@@ -1,4 +1,7 @@
-"""Provide abstraction over running commands on remote or local machines."""
+"""
+Provide abstraction over running commands on remote or local machines
+"""
+
 from collections import MutableMapping, namedtuple
 from datetime import datetime
 from functools import partial
@@ -9,7 +12,6 @@ import select
 import shutil
 import signal
 import socket
-import tarfile
 import tempfile
 from stat import S_ISDIR
 import subprocess
@@ -17,6 +19,7 @@ import time
 
 import paramiko
 
+from common.utils import mkdir_p
 from common.log import IOLogAdapter
 from thread_runner import run_threads
 
@@ -31,9 +34,27 @@ INFO_ADAPTER = IOLogAdapter(LOG, logging.INFO)
 ERROR_ADAPTER = IOLogAdapter(LOG, logging.ERROR)
 
 
+def setup_ssh_agent(config):
+    """
+    Setup the ssh-agent, and update our environment for it.
+
+    :param ConfigDict config: The system configuration
+    """
+    ssh_agent_info = subprocess.check_output(['ssh-agent', '-s'])
+    # This expansion updates our environment by parsing the info from the previous line. It splits
+    # the data into lines, and then for any line of the form "key=value", adds {key: value} to the
+    # environment.
+    os.environ.update(dict([line.split('=') for line in ssh_agent_info.split(';') if '=' in line]))
+    ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+    ssh_key_file = os.path.expanduser(ssh_key_file)
+    subprocess.check_call(['ssh-add', ssh_key_file])
+
+
 # https://stackoverflow.com/questions/23064636/python-subprocess-popen-blocks-with-shell-and-pipe
 def restore_signals():
-    """ restore signals in the child process or the process block forever"""
+    """
+    Restore signals in the child process or the process block forever
+    """
     signals = ('SIGPIPE', 'SIGXFZ', 'SIGXFSZ')
     for sig in signals:
         if hasattr(signal, sig):
@@ -41,24 +62,34 @@ def restore_signals():
 
 
 def close_safely(stream):
-    ''' close the stream
-    :parameter object stream: the stream instance or None
-    '''
+    """
+    Close the stream.
+
+    :param object stream: The stream instance or None
+    """
     if stream is not None:
         stream.close()
 
 
 def repo_root():
-    ''' Return the path to the root of the DSI repo '''
+    """
+    Return the path to the root of the DSI repo
+    """
     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def _run_host_command_map(target_host, command, current_test_id=None):
-    ''' Run one command against a target host if the command is a mapping.
+    """
+    Run one command against a target host if the command is a mapping.
 
     :param Host target_host: The host to send the command to
     :param dict command: The command to execute
-    '''
+    :param current_test_id: Indicates the id for the test related to the current command. If there
+    is not a specific test related to the current command, the value of current_test_id will be
+    None.
+    :type current_test_id: str, None
+    """
+    # pylint: disable=too-many-branches
     for key, value in command.iteritems():
         if key == "upload_repo_files":
             for paths in value:
@@ -89,23 +120,32 @@ def _run_host_command_map(target_host, command, current_test_id=None):
             LOG.debug('Executing command %s in mongo shell', value)
             connection_string = value.get('connection_string', "")
             target_host.exec_mongo_command(value['script'], connection_string=connection_string)
+        elif key == "checkout_repos":
+            for paths in value:
+                source = paths['source']
+                target = paths['target']
+                branch = paths['branch'] if 'branch' in paths else None
+                LOG.debug('Checking out git repository %s to %s', target, source)
+                target_host.checkout_repos(source, target, str(branch))
         else:
             raise UserWarning("Invalid command type")
 
 
 def _run_host_command(host_list, command, config, current_test_id=None):
-    '''For each host in the list, make a parallelized call to make_host_runner to make the
-    appropriate host and run the set of commands
+    """
+    For each host in the list, make a parallelized call to make_host_runner to make the appropriate
+    host and run the set of commands.
 
     :param list host_list: List of ip addresses to connect to
-    :param str/dict command: The command to execute. If str, run that
-    command. If dict, type is one of upload_repo_files, upload_files,
-    retrieve_files, exec, or exec_mongo_shell
+    :param command: The command to execute. If str, run that command. If dict, type is one of
+    upload_repo_files, upload_files, retrieve_files, exec, or exec_mongo_shell.
+    :type command: str, dict
     :param ConfigDict config: The system configuration
-    :param string current_test_id: Indicates the id for the test related to the current command. If
-    there is not a specific test related to the current command, the value of current_test_id will
-    be None.
-    '''
+    :param current_test_id: Indicates the id for the test related to the current command. If there
+    is not a specific test related to the current command, the value of current_test_id will be
+    None.
+    :type current_test_id: str, None
+    """
     if not host_list:
         return
 
@@ -123,20 +163,20 @@ def _run_host_command(host_list, command, config, current_test_id=None):
 
 
 def make_host_runner(host_info, command, ssh_user, ssh_key_file, current_test_id=None):
-    '''For the host, make an appropriate RemoteHost or
-    LocalHost Object and run the set of commands
+    """
+    For the host, make an appropriate RemoteHost or LocalHost Object and run the set of commands.
 
-    :param namedtuple host_info: Public IP address or the string localhost, category
-    and offset
+    :param namedtuple host_info: Public IP address or the string localhost, category and offset
     :param str ssh_user: The user id to use
     :param str ssh_key_file: The keyfile to use
-    :param str/dict command: The command to execute. If str, run that
-    command. If dict, type is one of upload_repo_files, upload_files,
-    retrieve_files, exec, or exec_mongo_shell
-    :param string current_test_id: Indicates the id for the test related to the current command. If
-    there is not a specific test related to the current command, the value of current_test_id will
-    be None.
-    '''
+    :param command: The command to execute. If str, run that command. If dict, type is one of
+    upload_repo_files, upload_files, retrieve_files, exec, or exec_mongo_shell.
+    :type command: str, dict
+    :param current_test_id: Indicates the id for the test related to the current command. If there
+    is not a specific test related to the current command, the value of current_test_id will be
+    None.
+    :type current_test_id: str, None
+    """
     # Create the appropriate host type
     target_host = make_host(host_info, ssh_user, ssh_key_file)
     try:
@@ -152,18 +192,17 @@ def make_host_runner(host_info, command, ssh_user, ssh_key_file, current_test_id
 
 
 def make_host(host_info, ssh_user, ssh_key_file):
-    '''
+    """
     Create a host object based off of host_ip_or_name. The code that receives the host is
     responsible for calling close on the host instance. Each RemoteHost instance can have 2*n+1 open
-    sockets (where n is the number of exec_command calls with Pty=True) otherwise n is 1 so there
-    is a max of 3 open sockets.
+    sockets (where n is the number of exec_command calls with Pty=True) otherwise n is 1 so there is
+    a max of 3 open sockets.
 
-    :param namedtuple host_info: Public IP address or the string localhost, category
-    and offset
+    :param namedtuple host_info: Public IP address or the string localhost, category and offset
     :param str ssh_user: The user id to use
     :param str ssh_key_file: The keyfile to use
-    :rtype Host
-    '''
+    :rtype: Host
+    """
     if host_info.ip_or_name in ['localhost', '127.0.0.1', '0.0.0.0']:
         LOG.debug("Making localhost for %s", host_info.ip_or_name)
         host = LocalHost()
@@ -175,15 +214,14 @@ def make_host(host_info, ssh_user, ssh_key_file):
 
 
 def _extract_hosts(key, config):
-    '''Extract a list of public IP addresses for hosts based off of the
-    key. Valid keys are mongod, mongos, configsvr, and
-    workload_client.
+    """
+    Extract a list of public IP addresses for hosts based off of the key. Valid keys are mongod,
+    mongos, configsvr, and workload_client.
 
     :param str key: The key to use (mongod, mongod, ...)
-    :param ConfigDict config: The configuration
-
-    :return:  list of HostInfo objects
-    '''
+    :param ConfigDict config: The system configuration
+    :rtype: list of HostInfo objects
+    """
     if key in config['infrastructure_provisioning']['out']:
         return [
             HostInfo(host_info['public_ip'], key, i)
@@ -193,10 +231,11 @@ def _extract_hosts(key, config):
 
 
 def make_workload_runner_host(config):
-    ''' Convenience function to make a host to connect to the workload runner node
+    """
+    Convenience function to make a host to connect to the workload runner node.
 
-    :param ConfigDict config: The configuration
-    '''
+    :param ConfigDict config: The system configuration
+    """
     ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
     ssh_key_file = os.path.expanduser(ssh_key_file)
     ssh_user = config['infrastructure_provisioning']['tfvars']['ssh_user']
@@ -205,10 +244,12 @@ def make_workload_runner_host(config):
 
 
 def extract_hosts(key, config):
-    '''Extract a list of public IP addresses for hosts based off of the
-    key. Valid keys are mongod, mongos, configsvr, workload_client, as
-    well as the helpers all_hosts and all_servers
-    '''
+    """
+    Extract a list of public IP addresses for hosts based off of the key. Valid keys are mongod,
+    mongos, configsvr, workload_client, as well as the helpers all_hosts and all_servers.
+
+    :param ConfigDict config: The system configuration
+    """
 
     if key == 'localhost':
         return [HostInfo('localhost', 'localhost', 0)]
@@ -225,14 +266,17 @@ def extract_hosts(key, config):
 
 
 def run_host_command(target, command, config, current_test_id=None):
-    ''' Sets up and runs a command for use on the appropriate hosts
-    :param string target: The target to run the command on.
-    :param dict command: The action to run.
-    :param dict(ConfigDict) config: The system configuration.
-    :param string current_test_id: Indicates the id for the test related to the current command. If
-    there is not a specific test related to the current command, the value of current_test_id will
-    be None.
-    '''
+    """
+    Sets up and runs a command for use on the appropriate hosts.
+
+    :param str target: The target to run the command on
+    :param dict command: The action to run
+    :param ConfigDict config: The system configuration
+    :param current_test_id: Indicates the id for the test related to the current command. If there
+    is not a specific test related to the current command, the value of current_test_id will be
+    None.
+    :type current_test_id: str, None
+    """
 
     assert isinstance(command, MutableMapping), "command isn't a dict"
     assert target.startswith('on_')
@@ -245,9 +289,9 @@ def run_host_command(target, command, config, current_test_id=None):
     LOG.debug("Done running command(s) %s on %s", keys, target)
 
 
-def run_host_commands(commands, conf, current_test_id=None):
+def run_host_commands(commands, config, current_test_id=None):
     """
-    Plural version of run_host_command: run a list of commands
+    Plural version of run_host_command: run a list of commands.
 
     Example of commands:
 
@@ -255,12 +299,12 @@ def run_host_commands(commands, conf, current_test_id=None):
         { 'on_workload_client': { 'upload_files': [{ 'source': 'path', 'target': 'dest' }] } }
     ]
 
-    :param list commands: list of dict actions to run
-    :param dict(ConfigDict) conf: system configuration
-    :param str|None current_test_id: Indicates the id for the test related to the current command.
-    If there is not a specific test related to the current command, the value of current_test_id
-    will be None.
-    :return: None
+    :param list commands: List of dict actions to run
+    :param ConfigDict config: The system configuration
+    :param current_test_id: Indicates the id for the test related to the current command. If there
+    is not a specific test related to the current command, the value of current_test_id will be
+    None.
+    :type current_test_id: str, None
     """
     for command in commands:
         # Item should be a map with one entry
@@ -268,34 +312,37 @@ def run_host_commands(commands, conf, current_test_id=None):
         assert len(command.keys()) == 1, "command has more than one entry"
         for target, target_command in command.iteritems():
             target = command.keys()[0]
-            run_host_command(target, target_command, conf, current_test_id)
+            run_host_command(target, target_command, config, current_test_id)
 
 
 def never_timeout():
-    """ Function that never times out
-    :return: False
+    """
+    Function that never times out
     """
     return False
 
 
 def check_timed_out(start, max_time_ms):
-    """ check if max time ms has passed.
-    :param datetime start: the start time
-    :param max_time_ms: the max allowable time to run for or None for no timeout.
-    :type max_time_ms: int, float or None.
-    :return: True when max_time_ms has elapsed.
+    """
+    Check if max time ms has passed.
+
+    :param datetime start: The start time
+    :param max_time_ms: The max allowable time to run for or None for no timeout
+    :type max_time_ms: int, float, None
     """
     delta = (datetime.now() - start).total_seconds() * ONE_SECOND_MILLIS
     return delta > max_time_ms
 
 
 def create_timer(start, max_time_ms):
-    """ create a watchdog timeout function
-    :param datetime start: the start time.
-    :param max_time_ms: the time limit in milliseconds for processing this operation.
-                        Defaults to None (no timeout).
-    :type max_time_ms: int, float or None.
-    :return: function that returns True when max_time_ms has elapsed.
+    """
+    Create a watchdog timeout function.
+
+    :param datetime start: The start time
+    :param max_time_ms: The time limit in milliseconds for processing this operation, defaults to
+    None (no timeout)
+    :type max_time_ms: int, float, None
+    :rtype: function that returns True when max_time_ms has elapsed
     """
     if max_time_ms is None:
         is_timed_out = never_timeout
@@ -305,7 +352,9 @@ def create_timer(start, max_time_ms):
 
 
 class Host(object):
-    """Base class for hosts."""
+    """
+    Base class for hosts
+    """
 
     def __init__(self, host):
         self._alias = None
@@ -313,9 +362,10 @@ class Host(object):
 
     @property
     def alias(self):
-        """ property getter
+        """
+        Property getter.
 
-        :return: the alias or the host if alias is not set
+        :rtype: The alias or the host if alias is not set
         """
         if not self._alias:
             return self.host
@@ -327,27 +377,30 @@ class Host(object):
 
     # pylint: disable=too-many-arguments
     def exec_command(self, argv, out=None, err=None, pty=False, max_time_ms=None):
-        """Execute the command and log the output.
-        :param argv: the command to run.
-        :type argv: str or list .
-        :param IO out: standard out from the command is written to this IO. If None is supplied
-        then the INFO_ADAPTER will be used.
-        :param IO err: standard err from the command is written to this IO on error. If None is
-         supplied then the ERROR_ADAPTER will be used.
-        :param bool pty: only valied for remote commands. if pty is set to True, then the shell
+        """
+        Execute the command and log the output.
+
+        :param argv: The command to run
+        :type argv: str, list
+        :param IO out: Standard out from the command is written to this IO. If None is supplied then
+        the INFO_ADAPTER will be used.
+        :param IO err: Standard err from the command is written to this IO on error. If None is
+        supplied then the ERROR_ADAPTER will be used.
+        :param bool pty: Only valid for remote commands. If pty is set to True, then the shell
         command is executed in a pseudo terminal. As a result, the commands will be killed if the
         host is closed.
-        :param max_time_ms: the time limit in milliseconds for processing this operation.
-                            Defaults to None (no timeout).
-        :type max_time_ms: int, float or None.
+        :param max_time_ms: The time limit in milliseconds for processing this operation, defaults
+        to None (no timeout)
+        :type max_time_ms: int, float, None
         """
         raise NotImplementedError()
 
     def run(self, argvs):
         """
-        Runs a command or list of commands
-        :param string or list argvs: The string to execute, or one argument vector or list of
-        argv's [file, arg]
+        Runs a command or list of commands.
+
+        :param argvs: The string to execute, or one argument vector or list of argv's [file, arg]
+        :type argvs: str, list
         """
         if not argvs or not isinstance(argvs, (list, basestring)):
             raise ValueError("Argument must be a nonempty list or string.")
@@ -366,13 +419,15 @@ class Host(object):
                            connection_string="localhost:27017",
                            max_time_ms=None):
         """
-        Executes script in the mongo on the
-        connection string. Returns the status code of executing the script
-        :param str script: the javascript to be run
+        Executes script in the mongo on the connection string. Returns the status code of executing
+        the script.
+
+        :param str script: The javascript to be run
         :param str remote_file_name: Name and path of file to create with script contents
         :param str connection_string: Connection information of mongo instance to run script on
-
-        For the max_time_ms parameter, see :method:`Host.exec_command`
+        :param max_time_ms: The time limit in milliseconds for processing this operations, defaults
+        to None (no timeout)
+        :type max_time_ms: int, float, None
         """
         self.create_file(remote_file_name, script)
         self.run(['cat', remote_file_name])
@@ -385,18 +440,19 @@ class Host(object):
                           signal_number=signal.SIGKILL,
                           delay_ms=ONE_SECOND_MILLIS,
                           max_time_ms=TEN_MINUTE_MILLIS):
-        """Kills all processes on the host matching name pattern.
-           :param str name: the process name pattern. This pattern only matches on the process name.
-           :param int signal_number: the signal to send. Defaults to SIGKILL(9), it should be a
-                                 valid signal.
-           :param delay_ms: the milliseconds to sleep for before checking if the processesx
-                         valid shutdown. Defaults to 1 second (in millis), it should be greater
-                         than 0.
-           :type delay_ms: int or float.
-           For the max_time_ms parameter, see :func:`create_timer`
-           :return:  True -- if there are no running processes matching name on completion.
         """
+        Kills all processes on the host matching name pattern.
 
+        :param str name: The process name pattern. This pattern only matches on the process name.
+        :param int signal_number: The signal to send, defaults to SIGKILL(9). It should be a valid
+        signal.
+        :param delay_ms: The milliseconds to sleep for before checking if the processes valid
+        shutdown. Defaults to 1 second (in millis), it should be greater than 0.
+        :type delay_ms: int, float
+        :param max_time_ms: The time limit in milliseconds for processing this operation, defaults
+        to None (no timeout)
+        :type max_time_ms: int, float, None
+        """
         signal_number = '-' + str(signal_number)
         delay_seconds = delay_ms / ONE_SECOND_MILLIS
         if max_time_ms == 0:
@@ -413,39 +469,71 @@ class Host(object):
         return False
 
     def kill_mongo_procs(self, signal_number=signal.SIGKILL, max_time_ms=30 * ONE_SECOND_MILLIS):
-        """Kills all processes matching the patterm 'mongo' (includes 'mongo', 'mongos', 'mongod')
-            on the host by sending signal_number every second until there are no matching processes
-            or the timeout has elapsed.
-           :param int signal_number: the signal to send. Defaults to SIGKILL(9), it must be
-                                        greater than 0 and a valid signal.
-           For the max_time_ms parameter, see :func:`create_timer`
-        :return: True if there are no processes matching 'mongo' on completion.
         """
+        Kills all processes matching the patterm 'mongo' (includes 'mongo', 'mongos', 'mongod') on
+        the host by sending signal_number every second until there are no matching processes or the
+        timeout has elapsed.
 
+        :param int signal_number: The signal to send, defaults to SIGKILL(9). It must be greater
+        than 0 and a valid signal.
+        :param max_time_ms: The time limit in milliseconds for processing this operation, defaults
+        to None (no timeout)
+        :type max_time_ms: int, float, None
+        """
         return self.kill_remote_procs('mongo', signal_number, max_time_ms=max_time_ms)
 
     def create_file(self, remote_path, file_contents):
-        """Creates a file on the remote host"""
+        """
+        Creates a file on the remote host
+        """
         raise NotImplementedError()
 
     # Note: Try to keep arguments for all these methods in a (source, destination) order
     def upload_file(self, local_path, remote_path):
-        """Copy a file to the host"""
+        """
+        Copy a file to the host
+        """
         raise NotImplementedError()
 
     def retrieve_path(self, remote_path, local_path):
-        """Retrieve a file from the host"""
+        """
+        Retrieve a file from the host
+        """
         raise NotImplementedError()
 
+    def checkout_repos(self, source, target, branch=None):
+        """
+        Clone repository from GitHub into target directory.
+
+        :param str source: Link to GitHub repository
+        :param str target: Path to target directory
+        :param branch: Specific branch to clone, if None clones default branch.
+        :types branch: str, None
+        """
+        if not os.path.isdir(target):
+            LOG.info('checkout_repos target directory %s does not exist', target)
+            mkdir_p(os.path.dirname(target))
+            self.exec_command(['git', 'clone', source, target])
+            if branch is not None:
+                self.exec_command(['cd', target, '&&', 'git', 'checkout', branch])
+        elif self.exec_command(['cd', target, '&&', 'git', 'status']) != 0:
+            raise UserWarning('%s exists and is not a git repository', target)
+        else:
+            LOG.info('checkout_repos target directory %s exists and is a git repository', target)
+
     def close(self):
-        """Cleanup any connections"""
+        """
+        Cleanup any connections
+        """
         pass
 
 
 def _stream(source, destination):
-    """ stream lines from source to destination. Silently hand socket.timeouts
-    :param IO source: reads lines from this stream.
-    :param IO destination: writes lines to this stream.
+    """
+    Stream lines from source to destination. Silently hand socket.timeouts.
+
+    :param IO source: Reads lines from this stream
+    :param IO destination: Writes lines to this stream
     """
     try:
         for line in source:
@@ -479,7 +567,9 @@ def _connected_ssh(host, user, pem_file):
 
 
 class RemoteHost(Host):
-    """Represents a SSH connection to a remote host."""
+    """
+    Represents a SSH connection to a remote host
+    """
 
     def __init__(self, host, user, pem_file):
         """
@@ -499,8 +589,10 @@ class RemoteHost(Host):
 
     # pylint: disable=too-many-arguments
     def exec_command(self, argv, out=None, err=None, pty=False, max_time_ms=None):
-        """Execute the argv command on the remote host and log the output.
-           For parameters / returns , see :method:`Host.exec_command`
+        """
+        Execute the argv command on the remote host and log the output.
+
+        For parameters/returns, see :method: `Host.exec_command`.
         """
         # pylint: disable=too-many-branches
         if not argv or not isinstance(argv, (list, basestring)):
@@ -528,7 +620,7 @@ class RemoteHost(Host):
             stdin.channel.shutdown_write()
             stdin.close()
 
-            # the channel settimeout causes reads to throw 'socket.timeout' if data does not arrive
+            # The channel settimeout causes reads to throw 'socket.timeout' if data does not arrive
             # within that time. This is not necessarily an error, it allows us to implement
             # max time ms without having to resort to threading.
             stdout.channel.settimeout(0.5)
@@ -566,7 +658,9 @@ class RemoteHost(Host):
         return exit_status
 
     def create_file(self, remote_path, file_contents):
-        """Creates a file on the remote host"""
+        """
+        Creates a file on the remote host
+        """
         with self.ftp.file(remote_path, 'w') as remote_file:
             remote_file.write(file_contents)
             remote_file.flush()
@@ -574,8 +668,8 @@ class RemoteHost(Host):
     def upload_file(self, local_path, remote_path):
         """
         Copy a file or directory to the host.
-        Uploading large files or a directory with lots of files
-        may be slow as we don't do any compression.
+        Uploading large files or a directory with lots of files may be slow as we don't do any
+        compression.
         """
         if os.path.isdir(local_path):
             self._upload_dir(local_path, remote_path)
@@ -584,10 +678,11 @@ class RemoteHost(Host):
 
     def _upload_dir(self, local_path, remote_path):
         """
-        Upload a directory local->remote
+        Upload a directory, local->remote.
         Internally works by creating a tarball and uploading and unpacking that.
-        :param local_path: local directory to upload
-        :param remote_path: destination directory. Must already exist.
+
+        :param local_path: Local directory to upload
+        :param remote_path: Destination directory. Must already exist.
         """
         temp_dir = tempfile.mkdtemp()
         try:
@@ -597,37 +692,38 @@ class RemoteHost(Host):
 
     def __upload_dir_unsafe(self, local_path, remote_path, temp_dir):
         """
-        Upload a directory local->remote using temp_dir to
-        store an intermediary tarball. If any exceptions
-        during tar-ing or uploading won't clean up temp_dir.
-        :param local_path: local directory to upload
-        :param remote_path: destination directory. Must already exist.
-        :param temp_dir: temp dir to store intermediary tarball.
+        Upload a directory, local->remote, using a temporary tarball to store an intermediary
+        tarball. If any exceptions during tar-ing or uploading, this won't clean up the temporary
+        directory.
+
+        :param local_path: Local directory to upload
+        :param remote_path: Destination directory. Must already exist.
+        :param temp_dir: Temporary directory to store intermediary tarball
         """
-        tarball_name = "{}.tar".format(os.path.basename(local_path))
-        tarball_path = os.path.join(temp_dir, tarball_name)
-        remote_tarball_path = os.path.join(remote_path, tarball_name)
+        tarball_name = '{}.tar'.format(os.path.basename(remote_path))
+        remote_parent_dir = os.path.dirname(remote_path)
+        remote_tarball_path = os.path.join(remote_parent_dir, tarball_name)
 
-        # create tarball
-        with open(tarball_path, 'w') as tarball_file:
-            with tarfile.open(fileobj=tarball_file, mode='w') as tarball:
-                tarball.add(local_path, os.path.basename(local_path))
+        tarball_path = shutil.make_archive(
+            os.path.join(temp_dir, tarball_name), 'tar', local_path, '.')
 
-        # upload it
+        # Make way and upload it
+        self.exec_command(['mkdir', '-p', remote_path])
         self._upload_single_file(tarball_path, remote_tarball_path)
 
-        # untar it. Have to rely on shell because tarfile doesn't operate remotely
+        # Untar it. Have to rely on shell because tarfile doesn't operate remotely.
         self.exec_command(['tar', 'xf', remote_tarball_path, '-C', remote_path])
 
-        # cleanup remote
+        # Cleanup remote
         self.exec_command(['rm', remote_tarball_path])
 
     def _upload_single_file(self, local_path, remote_path):
         """
-        Upload single file local->remote. Must be a single file
-        (not a directory). For type-aware transfer, see upload_file.
-        :param local_path: local file to upload
-        :param remote_path: local file destination
+        Upload single file, local->remote. Must be a single file (not a directory). For type-aware
+        transfer, see upload_file.
+
+        :param local_path: Local file to upload
+        :param remote_path: Local file destination
         """
         self.ftp.put(local_path, remote_path)
 
@@ -636,9 +732,10 @@ class RemoteHost(Host):
         self.ftp.chmod(remote_path, source_permissions)
 
     def remote_exists(self, remote_path):
-        """Test whether a remote path exists.  Returns False if it doesn't exist or on error
+        """
+        Test whether a remote path exists, returns False if it doesn't exist or on error.
 
-        :param str remote_path: the remote path
+        :param str remote_path: The remote path
         """
         try:
             self.ftp.stat(remote_path)
@@ -647,10 +744,11 @@ class RemoteHost(Host):
         return True
 
     def remote_isdir(self, remote_path):
-        """Test whether a remote path exists and is a directory.  Returns False if it
-        doesn't exist or on error
+        """
+        Test whether a remote path exists and is a directory, returns False if it doesn't exist or
+        on error.
 
-        :param str remote_path: the remote path
+        :param str remote_path: The remote path
         """
         try:
             stat = self.ftp.stat(remote_path)
@@ -659,11 +757,11 @@ class RemoteHost(Host):
         return S_ISDIR(stat.st_mode)
 
     def _retrieve_file(self, remote_file, local_file):
-        """ retrieve a single remote file. The local directories will
-        be created, if required.
+        """
+        Retrieve a single remote file. The local directories will be created, if required.
 
-        :param str remote_file: the remote file location. It must be a filename.
-        :param str local_file: the local filename. It must be a filename.
+        :param str local_file: The local filename, it must be a filename.
+        :param str remote_file: The remote file location, it must be a filename.
         """
         LOG.debug("_retrieve_files: file '%s:%s' ", self.alias, remote_file)
         local_dir = os.path.dirname(local_file)
@@ -673,19 +771,18 @@ class RemoteHost(Host):
         self.ftp.get(remote_file, os.path.normpath(local_file))
 
     def retrieve_path(self, remote_path, local_path):
-        """ retrieve a path from a remote server. If the remote_path is
-        a directory, then the contents of the directory are downloaded
-        recursively. If not then the single file will be downloaded to the local
-        path.
+        """
+        Retrieve a path from a remote server. If the remote_path is a directory, then the contents
+        of the directory are downloaded recursively. If not then the single file will be downloaded
+        to the local path.
 
-        Any path elements in the local path will only be created if and when a file is
-        downloaded. As a result, an empty directory tree will not be created locally.
+        Any path elements in the local path will only be created if and when a
+        file is downloaded. As a result, an empty directory tree will not be created locally.
 
-        :param str remote_path: the remote path, this can be a file or directory location. The
-        path will be normalized immediately.
-        :param str local_path: the path (file or directory) to download to. This
-        can contain relative paths, these paths will only be normalized at the last possible
-        moment.
+        :param str local_path: The path (file or directory) to download to. This can contain
+        relative paths, these paths will only be normalized at the last possible moment.
+        :param str remote_path: The remote path, this can be a file or directory location. The path
+        will be normalized immediately.
         """
         if not self.remote_exists(remote_path):
             LOG.debug("retrieve_files '%s:%s' does not exist.", self.alias, remote_path)
@@ -705,22 +802,26 @@ class RemoteHost(Host):
             self._retrieve_file(remote_path, local_path)
 
     def close(self):
-        """Close the ssh connection."""
+        """
+        Close the ssh connection
+        """
         self._ssh.close()
         self.ftp.close()
 
 
 # pylint: disable=too-many-arguments
 def _stream_proc_logs(proc, out, err, is_timedout, timeout_s=.5):
-    """ stream proc.stdout and proc.stderr to out and err
-    :param subprocess proc: the process to stream the logs for.
-    :param IO out: the proc.stdout stream destination.
-    :param IO err: the proc.stderr stream destination.
-    :param function is_timedout: determine if the max allowable amount of time has elapsed.
-    :param float timeout_s: select waits for up to a max of this amount of seconds.
+    """
+    Stream proc.stdout and proc.stderr to out and err.
+
+    :param subprocess proc: The process to stream the logs for
+    :param IO out: The proc.stdout stream destination
+    :param IO err: The proc.stderr stream destination
+    :param function is_timedout: Determine if the max allowable amount of time has elapsed
+    :param float timeout_s: Select waits for up to a max of this amount of seconds
     """
     try:
-        # stream standard out
+        # Stream standard out
         while True:
             if is_timedout():
                 return False
@@ -744,22 +845,26 @@ def _stream_proc_logs(proc, out, err, is_timedout, timeout_s=.5):
 
             if proc.poll() is not None and not ready:
                 break
-    # closed stream
+    # Closed stream
     except ValueError:
         pass
     return True
 
 
 class LocalHost(Host):
-    """Represents a connection to the local host."""
+    """
+    Represents a connection to the local host
+    """
 
     def __init__(self):
         super(LocalHost, self).__init__("localhost")
 
     # pylint: disable=too-many-arguments
     def exec_command(self, argv, out=None, err=None, pty=False, max_time_ms=None):
-        """Execute the command on the local host and log the output.
-           For parameters / returns , see :method:`Host.exec_command`
+        """
+        Execute the command on the local host and log the output.
+
+        For parameters/returns, see :method: `Host.exec_command`.
         """
         if not argv or not isinstance(argv, (list, basestring)):
             raise ValueError("Argument must be a nonempty list or string.")
@@ -791,12 +896,16 @@ class LocalHost(Host):
         return exit_status
 
     def create_file(self, remote_path, file_contents):
-        """Creates a file on the local host"""
+        """
+        Creates a file on the local host
+        """
         with open(remote_path, 'w') as local_file:
             local_file.write(file_contents)
 
     def upload_file(self, local_path, remote_path):
-        """Copy a file to the host"""
+        """
+        Copy a file to the host
+        """
         if local_path == remote_path:
             LOG.warning('Uploading file locally to same path. Skipping step')
         else:
@@ -804,7 +913,9 @@ class LocalHost(Host):
             shutil.copymode(local_path, remote_path)
 
     def retrieve_path(self, remote_path, local_path):
-        """Retrieve a file from the host"""
+        """
+        Retrieve a file from the host
+        """
         if local_path == remote_path:
             LOG.warning('Retrieving file locally to same path. Skipping step')
         shutil.copyfile(remote_path, local_path)

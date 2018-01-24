@@ -1,17 +1,16 @@
 mongoshell:
   - on_localhost:
-      exec: $DSI_PATH/bin/setup-workloads.sh
+      checkout_repos:
+        - source: git@github.com:10gen/workloads.git
+          target: ${bootstrap.workloads_dir}
   - on_workload_client:
       exec: rm -rf workloads*
   - on_workload_client:
       upload_files:
-        - source: workloads.tar.gz
-          target: workloads.tar.gz
+        - source: ${bootstrap.workloads_dir}
+          target: ./workloads
   - on_workload_client:
       exec: |
-        rm -rf workloads
-        mkdir workloads
-        tar zxvf workloads.tar.gz -C workloads
         sudo pip install argparse python-dateutil pytz
 
 fio:
@@ -42,7 +41,6 @@ iperf:
         - source: bin/iperf-test.sh
           target: iperf-test.sh
 
-
 ycsb:
   - on_workload_client:
       exec: |
@@ -59,18 +57,18 @@ ycsb:
           https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash
         rm *.rpm || true
   - on_localhost:
-      exec: $DSI_PATH/bin/setup-ycsb.sh
+      checkout_repos:
+        - source: git@github.com:mongodb-labs/YCSB.git
+          target: ${bootstrap.ycsb_dir}
+          branch: 5742781
   - on_workload_client:
       exec: rm -rf ycsb*
   - on_workload_client:
       upload_files:
-        - source: ycsb.tar.gz
-          target: ycsb.tar.gz
+        - source: ${bootstrap.ycsb_dir}
+          target: ./YCSB
   - on_workload_client:
       exec: |
-        rm -rf YCSB
-        mkdir YCSB
-        tar zxvf ycsb.tar.gz -C YCSB
         export JAVA_HOME="/usr/java/jdk1.7.0_71/jre"
         source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && mvn clean package
       exec_mongo_shell:

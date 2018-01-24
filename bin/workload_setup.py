@@ -1,5 +1,7 @@
 #!/usr/bin/env python2.7
-"""Setup hosts for running various kinds of workload types."""
+"""
+Setup hosts for running various kinds of workload types
+"""
 
 import argparse
 import logging
@@ -13,51 +15,52 @@ LOG = logging.getLogger(__name__)
 
 
 class WorkloadSetupRunner(object):
-    """Responsible for invoking workload_setup.yml commands before test_control."""
+    """
+    Responsible for invoking workload_setup.yml commands before test_control
+    """
 
-    def __init__(self, conf):
+    def __init__(self, config):
         """
         Constructor.
 
-        :param conf: system config
+        :param config: The system configuration
         """
-        self.conf = conf
+        self.config = config
 
     def test_types(self):
         """
         Indicates which test types we have in test_control.
 
-        :return: test-types for which we need to run the associated
-                 workload_setup blocks.
-        :rtype   set(string)
+        :return: Test-types for which we need to run the associated workload_setup blocks
+        :rtype: set(string)
         """
-        return set([run['type'] for run in self.conf['test_control']['run']])
+        return set([run['type'] for run in self.config['test_control']['run']])
 
     def already_done(self):
         """
         Indicate if we've already completed workload setup.
 
-        :return: boolean if we've already done our job before
-                 as indicated by the config.
+        :rtype: boolean
         """
-        return 'out' in self.conf['workload_setup'] and \
-               self.conf['workload_setup']['out']['done'] is True
+        return 'out' in self.config['workload_setup'] and \
+               self.config['workload_setup']['out']['done'] is True
 
-    # Could make the case that this should actually call self.conf.save(),
+    # Could make the case that this should actually call self.config.save(),
     # but that would make it slightly harder to test with vanilla dicts,
     # plus this class is otherwise entirely in-memory.
     def mark_done(self):
         """
-        Indicate in output configuration that we've completed workload setup.
+        Indicate in output configuration that we've completed workload setup
         """
-        if 'out' not in self.conf['workload_setup']:
-            self.conf['workload_setup']['out'] = {}
-        self.conf['workload_setup']['out']['done'] = True
+        if 'out' not in self.config['workload_setup']:
+            self.config['workload_setup']['out'] = {}
+        self.config['workload_setup']['out']['done'] = True
 
     def setup_workloads(self):
         """
-        Perform setup for all the required workload types.
+        Perform setup for all the required workload types
         """
+        host.setup_ssh_agent(self.config)
         for test_type in self.test_types():
             self.run_setup_for_test_type(test_type)
         self.mark_done()
@@ -66,16 +69,17 @@ class WorkloadSetupRunner(object):
         """
         Run setup for a particular test type.
 
-        :param string test_type: workload_setup key listing commands to run
-        :return: None
+        :param string test_type: Workload_setup key listing commands to run
         """
         LOG.info("Starting workload_setup for test_type %s", test_type)
-        steps = self.conf['workload_setup'][test_type]
-        host.run_host_commands(steps, current_test_id=None, conf=self.conf)
+        steps = self.config['workload_setup'][test_type]
+        host.run_host_commands(steps, current_test_id=None, config=self.config)
 
 
 def main(argv):
-    """Parse args and call workload_setup.yml operations."""
+    """
+    Parse args and call workload_setup.yml operations
+    """
     parser = argparse.ArgumentParser(description='Workload Setup')
 
     parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
@@ -84,13 +88,13 @@ def main(argv):
     args = parser.parse_args(argv)
     setup_logging(args.debug, args.log_file)
 
-    conf = ConfigDict('workload_setup')
-    conf.load()
+    config = ConfigDict('workload_setup')
+    config.load()
 
-    setup = WorkloadSetupRunner(conf)
+    setup = WorkloadSetupRunner(config)
     setup.setup_workloads()
 
-    conf.save()
+    config.save()
 
 
 if __name__ == '__main__':

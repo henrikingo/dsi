@@ -307,15 +307,15 @@ class HostTestCase(unittest.TestCase):
 
         ssh.exec_command.assert_has_calls(
             [
-                call('tar xf /foo/bar/tests.tar -C /foo/bar', get_pty=False),
-                call('rm /foo/bar/tests.tar', get_pty=False)
+                call('mkdir -p /foo/bar', get_pty=False),
+                call('tar xf /foo/bar.tar -C /foo/bar', get_pty=False),
+                call('rm /foo/bar.tar', get_pty=False)
             ],
             any_order=False)
 
         ftp.assert_has_calls(
-            [call.put(ANY, '/foo/bar/tests.tar'),
-             call.chmod('/foo/bar/tests.tar', ANY)],
-            any_order=False)
+            [call.put(ANY, '/foo/bar.tar'),
+             call.chmod('/foo/bar.tar', 420)], any_order=False)
 
     @patch('host._connected_ssh')
     def test_upload_single_file(self, mock_connected_ssh):
@@ -1069,6 +1069,63 @@ class HostTestCase(unittest.TestCase):
 
             self.assertEqual("123321", out.getvalue())
             self.assertEqual("FirstSecondThird", err.getvalue())
+
+    def test_checkout_repos(self):
+        """
+        Test Host.checkout_repos command
+        """
+        # Only testing on LocalHost since `checkout_repos` is implemented in the base class and not
+        # overidden
+        local_host = host.LocalHost()
+
+        # Test with existing target that is not a git repository
+        source = 'git@github.com:mongodb/mongo.git'
+        target = os.path.expanduser('~')
+        command = ['cd', target, '&&', 'git', 'status']
+        with patch('host.mkdir_p') as mock_mkdir_p, \
+             patch('host.LocalHost.exec_command') as mock_exec_command:
+            self.assertRaises(UserWarning, local_host.checkout_repos, source, target)
+            mock_mkdir_p.assert_not_called()
+            mock_exec_command.assert_called_once()
+            mock_exec_command.assert_called_with(command)
+
+        # Test with non-existing target
+        parent_dir = os.path.join(os.path.expanduser('~'), 'checkout_repos_test')
+        source = 'https://github.com/mongodb/stitch-js-sdk.git'
+        target = os.path.join(parent_dir, 'stitch-js-sdk')
+        command = ['git', 'clone', source, target]
+        self.assertFalse(os.path.exists(target))
+        with patch('host.mkdir_p') as mock_mkdir_p, \
+             patch('host.LocalHost.exec_command') as mock_exec_command:
+            local_host.checkout_repos(source, target)
+            mock_mkdir_p.assert_called_with(parent_dir)
+            mock_exec_command.assert_called_once()
+            mock_exec_command.assert_called_with(command)
+
+        # Test with existing target that is a git repository
+        command = ['cd', target, '&&', 'git', 'status']
+        with patch('host.os.path.isdir') as mock_isdir, \
+             patch('host.mkdir_p') as mock_mkdir_p, \
+             patch('host.LocalHost.exec_command') as mock_exec_command:
+            mock_isdir.return_value = True
+            mock_exec_command.return_value = 0
+            local_host.checkout_repos(source, target)
+            mock_mkdir_p.assert_not_called()
+            mock_exec_command.assert_called_once()
+            mock_exec_command.assert_called_with(command)
+
+        # Test with specified branch
+        branch = '2.x.x'
+        commands = [['git', 'clone', source, target],
+                    ['cd', target, '&&', 'git', 'checkout', branch]]
+        self.assertFalse(os.path.exists(target))
+        with patch('host.mkdir_p') as mock_mkdir_p, \
+             patch('host.LocalHost.exec_command') as mock_exec_command:
+            local_host.checkout_repos(source, target, branch)
+            mock_mkdir_p.assert_called_with(parent_dir)
+            self.assertEqual(mock_exec_command.call_count, 2)
+            mock_exec_command.assert_any_call(commands[0])
+            mock_exec_command.assert_any_call(commands[1])
 
 
 if __name__ == '__main__':

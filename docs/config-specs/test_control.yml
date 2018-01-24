@@ -110,11 +110,11 @@ pre_task:
           target: remote_file_path
   - on_workload_client:
       exec: |
-        # code to be executed on workload client (when MongoDB cluster is running)
+  # code to be executed on workload client (when MongoDB cluster is running)
   - on_workload_client:
       exec_mongo_shell:
         script: |
-          # JavaScript to be executed in a mongo shell (when MongoDB cluster is running)
+        # JavaScript to be executed in a mongo shell (when MongoDB cluster is running)
         connection_string: ${mongodb_setup.meta.hosts}  # Defaults to localhost
 # Ordered list of things to do after all the runs
 post_task:

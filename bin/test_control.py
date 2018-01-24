@@ -24,6 +24,7 @@ from nose.tools import nottest
 from common.utils import mkdir_p
 from common.config import ConfigDict
 from common.host import extract_hosts, make_host, run_host_command, make_workload_runner_host
+from common.host import setup_ssh_agent
 from common.host import INFO_ADAPTER
 from common.jstests import run_validate
 import common.log
@@ -34,22 +35,6 @@ from workload_setup import WorkloadSetupRunner
 LOG = logging.getLogger(__name__)
 
 EXCEPTION_BEHAVIOR = Enum('Exception Behavior', 'CONTINUE RERAISE EXIT')
-
-
-def setup_ssh_agent(config):
-    ''' Setup the ssh-agent, and update our environment for it.
-
-    :param ConfigDict config: The system configuration
-    '''
-
-    ssh_agent_info = subprocess.check_output(['ssh-agent', '-s'])
-    # This expansion updates our environment by parsing the info from the previous line
-    # It splits the data into lines, and then for any line of the form
-    # "key=value", adds {key: value} to the environment
-    os.environ.update(dict([line.split('=') for line in ssh_agent_info.split(';') if '=' in line]))
-    ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
-    ssh_key_file = os.path.expanduser(ssh_key_file)
-    subprocess.check_call(['ssh-add', ssh_key_file])
 
 
 def prepare_reports_dir(reports_dir='reports'):

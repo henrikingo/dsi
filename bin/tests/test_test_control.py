@@ -425,7 +425,6 @@ class RunTestTestCase(unittest.TestCase):
 
     @patch('test_control.prepare_reports_dir')
     @patch('subprocess.check_call')
-    @patch('test_control.setup_ssh_agent')
     @patch('test_control.run_validate')
     @patch('test_control.generate_config_file')
     @patch('test_control.run_test')
@@ -433,7 +432,7 @@ class RunTestTestCase(unittest.TestCase):
     @patch('test_control.run_pre_post_commands')
     #pylint: disable=too-many-arguments
     def test_run_tests(self, mock_pre_post, mock_copy_perf, mock_generate, mock_run,
-                       mock_run_validate, mock_ssh_agent, mock_check_call, mock_prepare_reports):
+                       mock_run_validate, mock_check_call, mock_prepare_reports):
         """Test run_tests (the top level workhorse for test_control)"""
 
         run_tests(self.config)
@@ -452,7 +451,6 @@ class RunTestTestCase(unittest.TestCase):
         mock_copy_perf.assert_called()
         mock_run.assert_called()
         mock_generate.assert_called()
-        mock_ssh_agent.assert_called()
         mock_check_call.assert_called()
         mock_prepare_reports.assert_called()
         mock_run_validate.assert_called_once_with(self.config, 'benchRun')
