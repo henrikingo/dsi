@@ -1,5 +1,5 @@
-# -*- coding: UTF-8 -*-
 """ConfigDict class reads yaml config files and presents a dict() get/set API to read configs."""
+# -*- coding: UTF-8 -*-
 # pylint: disable=too-many-public-methods
 
 import copy
@@ -576,11 +576,13 @@ def change_key_name(dictionary, old_key, new_key):
 
 
 class InvalidConfigurationException(Exception):
+    """Indicates invalid configuration either from YAML or from user modifying 'out' config."""
+
     def __init__(self, errors):
         self.errors = errors
         message = "Keys must be strings and match {}. Values must be of type {}. ".format(
             _VALID_KEY_REX_SRC, list((it.__name__ for it in _VALID_SCALAR_TYPES))
-            ) + ", ".join([
+        ) + ", ".join([
             u"😱 {} [{}] of type [{}] at path [{}] in file [{}]".format(
                 err['err_type'],
                 err['item'],
@@ -611,7 +613,7 @@ _VALID_KEY_REX_SRC = r'^[A-Za-z][A-Za-z0-9\-_.]*$'
 _VALID_KEY_REX = re.compile(_VALID_KEY_REX_SRC)
 """Compiled version of `_VALID_KEY_REX_SRC`"""
 
-_VALID_KEY_TYPES = basestring
+_VALID_KEY_TYPES = tuple(basestring)
 """All ConfigDict keys must be one of these types."""
 
 _VALID_SCALAR_TYPES = (basestring, float, int, type(None))

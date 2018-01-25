@@ -13,8 +13,8 @@ from mock import patch
 # TODO: Learn how to do this correctly without complaint from pylint
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 
+import config  #pylint: disable=wrong-import-position,wrong-import-order
 from config import ConfigDict  #pylint: disable=wrong-import-position,wrong-import-order
-import config
 
 
 def dirmarker(into):
@@ -43,12 +43,16 @@ def in_dir(into):
 
 
 class InvalidConfigDictTestCase(unittest.TestCase):
+    """Test that we're as picky as we claim to be with config keys and values"""
+
     def test_load_yaml_invalid_keys(self):
+        """can't even get bad keys from yaml"""
         with in_dir('./invalid-config'):
             with self.assertRaises(config.InvalidConfigurationException):
                 ConfigDict('mongodb_setup').load()
 
     def test_set_invalid_key(self):
+        """can't use conf[key] = X with key invalid"""
         with in_dir('./nested-config'):
             conf = ConfigDict('mongodb_setup')
             conf.load()
@@ -59,6 +63,7 @@ class InvalidConfigDictTestCase(unittest.TestCase):
             self.assertEquals(conf['mongodb_setup']['out']['safe-key'], u'💃')
 
     def causes_exception(self, subdict):
+        """helper method - assert we get an exception when `subdict` is inserted into an out config"""
         with in_dir('./nested-config'):
             conf = ConfigDict('mongodb_setup')
             conf.load()
@@ -68,29 +73,38 @@ class InvalidConfigDictTestCase(unittest.TestCase):
                 }
 
     def test_assigns_invalid_space_key(self):
+        """spaces not allowed"""
         self.causes_exception({
             "this has a space":
                 "and shouldn't work (because it has a back problem not because it's lazy and entitled"
         })
 
+    # pylint: disable=invalid-name
     def test_assigns_invalid_numeric_key(self):
+        """number-only not allowed"""
         self.causes_exception({"1": "woah dude a numeric-only key. get a job, you hippie."})
 
+    # pylint: disable=invalid-name
     def test_assigns_exclamation_point_key(self):
+        """! not allowed"""
         self.causes_exception({"hello!": "is it me you're looking for?"})
 
     @unittest.skip("TODO(rtimmons) PERF-1212 enable once we remove dots from existing configs")
     def test_assigns_dot_key(self):
+        """dots not allowed"""
         self.causes_exception({"so...uh...": "dot dot dot"})
 
     def test_assigns_slashy_key(self):
+        """slashes not allowed"""
         self.causes_exception({"data/logs": "logging kills trees"})
 
+    # pylint: disable=invalid-name
     def test_assigns_invalid_nested_dict_multiple_errors(self):
+        """assign invalid key from a nested dict with multiple errors"""
         with in_dir('./nested-config'):
             conf = ConfigDict('mongodb_setup')
             conf.load()
-            with self.assertRaises(config.InvalidConfigurationException) as cm:
+            with self.assertRaises(config.InvalidConfigurationException) as context:
                 conf['mongodb_setup']['out'] = {
                     'okay': [{
                         'okay': "this is fine",
@@ -100,8 +114,8 @@ class InvalidConfigDictTestCase(unittest.TestCase):
                 }
             # we're non-normative on what the actual message is, but we
             # do care that all the errored keys are there
-            self.assertRegexpMatches(cm.exception.message, r'not okay')
-            self.assertRegexpMatches(cm.exception.message, r'seriously')
+            self.assertRegexpMatches(context.exception.message, r'not okay')
+            self.assertRegexpMatches(context.exception.message, r'seriously')
 
 
 #pylint: disable=too-many-public-methods
@@ -473,11 +487,11 @@ class ConfigDictTestCase(unittest.TestCase):
     def test_lookup_path(self):
         """check that the lookup_path works as expected."""
 
-        config = self.conf['infrastructure_provisioning']['out']
+        conf = self.conf['infrastructure_provisioning']['out']
 
-        self.assertIsInstance(config.lookup_path('mongod'), list)
-        self.assertIsInstance(config.lookup_path('mongod.0'), ConfigDict)
-        self.assertIsInstance(config.lookup_path('mongod.0.public_ip'), str)
+        self.assertIsInstance(conf.lookup_path('mongod'), list)
+        self.assertIsInstance(conf.lookup_path('mongod.0'), ConfigDict)
+        self.assertIsInstance(conf.lookup_path('mongod.0.public_ip'), str)
 
         # hard coded but quick and easy
         mongod = ['53.1.1.{}'.format(i) for i in range(1, 10)]
@@ -485,31 +499,30 @@ class ConfigDictTestCase(unittest.TestCase):
         configsvr = ['53.1.1.{}'.format(i) for i in range(51, 54)]
         workload_client = ['53.1.1.101']
 
-        self.assertEquals(config.lookup_path('mongod.0.public_ip'), mongod[0])
+        self.assertEquals(conf.lookup_path('mongod.0.public_ip'), mongod[0])
 
-        self.assertEquals(config.lookup_path('mongod.1.public_ip'), mongod[1])
-        self.assertEquals(config.lookup_path('mongod.4.public_ip'), mongod[4])
+        self.assertEquals(conf.lookup_path('mongod.1.public_ip'), mongod[1])
+        self.assertEquals(conf.lookup_path('mongod.4.public_ip'), mongod[4])
 
-        self.assertEquals(config.lookup_path('mongos.0.public_ip'), mongos[0])
-        self.assertEquals(config.lookup_path('configsvr.0.public_ip'), configsvr[0])
-        self.assertEquals(config.lookup_path('workload_client.0.public_ip'), workload_client[0])
+        self.assertEquals(conf.lookup_path('mongos.0.public_ip'), mongos[0])
+        self.assertEquals(conf.lookup_path('configsvr.0.public_ip'), configsvr[0])
+        self.assertEquals(conf.lookup_path('workload_client.0.public_ip'), workload_client[0])
 
         # document that this is the current behavior
-        self.assertEquals(config.lookup_path('mongod.-1.public_ip'), mongod[-1])
+        self.assertEquals(conf.lookup_path('mongod.-1.public_ip'), mongod[-1])
 
     def test_lookup_path_ex(self):
         """check that lookup_path throws exceptions for the correct portion of the pathspec."""
 
-        config = self.conf['infrastructure_provisioning']['out']
-        self.assertRaisesRegexp(KeyError, "Key not found: MONGOD'$", config.lookup_path, 'MONGOD')
-        self.assertRaisesRegexp(KeyError, "MONGOD'$", config.lookup_path, 'MONGOD.50')
-        self.assertRaisesRegexp(KeyError, "list index out of range: mongod.50'$",
-                                config.lookup_path, 'mongod.50')
-        self.assertRaisesRegexp(KeyError, "mongod.50e-1'$", config.lookup_path, 'mongod.50e-1')
-        self.assertRaisesRegexp(KeyError, "mongod.50'$", config.lookup_path, 'mongod.50.public_ip')
-        self.assertRaisesRegexp(KeyError, "mongod.0.0'$", config.lookup_path, 'mongod.0.0')
-        self.assertRaisesRegexp(KeyError, "mongod.50'$", config.lookup_path,
-                                'mongod.50.public_ip.0')
+        conf = self.conf['infrastructure_provisioning']['out']
+        self.assertRaisesRegexp(KeyError, "Key not found: MONGOD'$", conf.lookup_path, 'MONGOD')
+        self.assertRaisesRegexp(KeyError, "MONGOD'$", conf.lookup_path, 'MONGOD.50')
+        self.assertRaisesRegexp(KeyError, "list index out of range: mongod.50'$", conf.lookup_path,
+                                'mongod.50')
+        self.assertRaisesRegexp(KeyError, "mongod.50e-1'$", conf.lookup_path, 'mongod.50e-1')
+        self.assertRaisesRegexp(KeyError, "mongod.50'$", conf.lookup_path, 'mongod.50.public_ip')
+        self.assertRaisesRegexp(KeyError, "mongod.0.0'$", conf.lookup_path, 'mongod.0.0')
+        self.assertRaisesRegexp(KeyError, "mongod.50'$", conf.lookup_path, 'mongod.50.public_ip.0')
 
     # Helpers
     # pylint: disable=invalid-name
