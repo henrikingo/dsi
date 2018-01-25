@@ -373,7 +373,12 @@ class ReplSet(object):
             self.nodes.append(MongoNode(topology=mongod_opt, config=self.config))
 
     def highest_priority_node(self):
-        """Returns the highest priority node."""
+        """
+        Returns the highest priority node.
+
+        Requires all self.nodes[] to have a 'priority' field explicitly set, to work correctly.
+        See :method:`ReplSet._set_explicit_priorities`
+        """
         max_node = self.nodes[0]
         max_priority = -1
         for node, member in zip(self.nodes, self.rs_conf_members):

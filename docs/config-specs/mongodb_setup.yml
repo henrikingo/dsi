@@ -153,6 +153,8 @@ topology:
             config_file: *diff_mongod_config
             public_ip: ${infrastructure_provisioning.out.mongod.7.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.7.private_ip}
+  # Note: For replica sets (including shards with more than a single node), the default priorities
+  # are: 2 for the first node and 1 for the rest.
   - cluster_type: replset
     mongod:
       - id: myid1

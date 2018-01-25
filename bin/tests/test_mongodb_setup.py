@@ -511,16 +511,49 @@ class TestReplSet(unittest.TestCase):
 
     def test_highest_priority_node(self):
         """Test priority handling."""
+        # pylint: disable=protected-access
         repl_set_opts = {
-            'name': 'rs',
-            'mongod': [mongodb_setup.copy_obj(MONGOD_OPTS),
-                       mongodb_setup.copy_obj(MONGOD_OPTS)]
+            'name':
+                'rs',
+            'mongod': [
+                mongodb_setup.copy_obj(MONGOD_OPTS),
+                mongodb_setup.copy_obj(MONGOD_OPTS),
+                mongodb_setup.copy_obj(MONGOD_OPTS),
+                mongodb_setup.copy_obj(MONGOD_OPTS)
+            ]
         }
+
+        # All default priorities
         replset = mongodb_setup.ReplSet(topology=repl_set_opts, config=DEFAULT_CONFIG)
+        replset._set_explicit_priorities()
         self.assertEquals(replset.highest_priority_node(), replset.nodes[0])
+        self.assertEquals(replset.rs_conf_members[0]['priority'], 2)
+        self.assertEquals(replset.rs_conf_members[1]['priority'], 1)
+        self.assertEquals(replset.rs_conf_members[2]['priority'], 1)
+        self.assertEquals(replset.rs_conf_members[3]['priority'], 1)
+
+        # Set one priority, others default
         repl_set_opts['mongod'][1]['rs_conf_member']['priority'] = 5
         replset = mongodb_setup.ReplSet(topology=repl_set_opts, config=DEFAULT_CONFIG)
+        replset._set_explicit_priorities()
         self.assertEquals(replset.highest_priority_node(), replset.nodes[1])
+        self.assertEquals(replset.rs_conf_members[0]['priority'], 2)
+        self.assertEquals(replset.rs_conf_members[1]['priority'], 5)
+        self.assertEquals(replset.rs_conf_members[2]['priority'], 1)
+        self.assertEquals(replset.rs_conf_members[3]['priority'], 1)
+
+        # Set all priorities explicitly in rs_conf_member
+        repl_set_opts['mongod'][0]['rs_conf_member']['priority'] = 1
+        repl_set_opts['mongod'][1]['rs_conf_member']['priority'] = 2
+        repl_set_opts['mongod'][2]['rs_conf_member']['priority'] = 3
+        repl_set_opts['mongod'][3]['rs_conf_member']['priority'] = 5
+        replset = mongodb_setup.ReplSet(topology=repl_set_opts, config=DEFAULT_CONFIG)
+        replset._set_explicit_priorities()
+        self.assertEquals(replset.highest_priority_node(), replset.nodes[3])
+        self.assertEquals(replset.rs_conf_members[0]['priority'], 1)
+        self.assertEquals(replset.rs_conf_members[1]['priority'], 2)
+        self.assertEquals(replset.rs_conf_members[2]['priority'], 3)
+        self.assertEquals(replset.rs_conf_members[3]['priority'], 5)
 
 
 class TestShardedCluster(unittest.TestCase):

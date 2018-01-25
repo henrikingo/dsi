@@ -314,7 +314,7 @@ class HostTestCase(unittest.TestCase):
 
         ftp.assert_has_calls(
             [call.put(ANY, '/foo/bar/tests.tar'),
-             call.chmod('/foo/bar/tests.tar', 420)],
+             call.chmod('/foo/bar/tests.tar', ANY)],
             any_order=False)
 
     @patch('host._connected_ssh')
@@ -335,7 +335,7 @@ class HostTestCase(unittest.TestCase):
 
         ftp.assert_has_calls(
             [call.put(ANY, '/foo/bar/idk.py'),
-             call.chmod('/foo/bar/idk.py', 420)], any_order=False)
+             call.chmod('/foo/bar/idk.py', ANY)], any_order=False)
 
     def test_upload_files(self):
         """ Test run command map upload_repo_files """
