@@ -1,5 +1,5 @@
-"""ConfigDict class reads yaml config files and presents a dict() get/set API to read configs."""
 # -*- coding: UTF-8 -*-
+"""ConfigDict class reads yaml config files and presents a dict() get/set API to read configs."""
 # pylint: disable=too-many-public-methods
 
 import copy
@@ -612,8 +612,8 @@ _VALID_KEY_REX_SRC = r'^[A-Za-z][A-Za-z0-9\-_.]*$'
 # Create a separate object since str() of a compiled regex doesn't give you the text.
 _VALID_KEY_REX = re.compile(_VALID_KEY_REX_SRC)
 """Compiled version of `_VALID_KEY_REX_SRC`"""
-
-_VALID_KEY_TYPES = tuple(basestring)
+# pylint: disable=invalid-name
+_VALID_KEY_TYPES = basestring
 """All ConfigDict keys must be one of these types."""
 
 _VALID_SCALAR_TYPES = (basestring, float, int, type(None))
