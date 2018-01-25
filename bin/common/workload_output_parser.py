@@ -274,7 +274,7 @@ class FioParser(ResultParser):
         """Set fio specific attributes"""
         super(FioParser, self).__init__(test, config, timer)
         input_file = config['test_control']['output_file']['fio']
-        self.input_log = os.path.join(self.reports_root, "workload_client.0", input_file)
+        self.input_log = os.path.join(self.reports_root, test['id'], input_file)
         self.prefix = "fio"
 
     def load_input_log(self):
@@ -329,7 +329,7 @@ class IperfParser(ResultParser):
         """Set fio specific attributes"""
         super(IperfParser, self).__init__(test, config, timer)
         input_file = config['test_control']['output_file']['iperf']
-        self.input_log = os.path.join(self.reports_root, "workload_client.0", input_file)
+        self.input_log = os.path.join(self.reports_root, test['id'], input_file)
         self.prefix = "fio"
 
     def load_input_log(self):

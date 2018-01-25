@@ -19,7 +19,14 @@ run:
     type: mongoshell   # or "ycsb"
 
     cmd: $DSI_PATH/workloads/run_workloads.py -c workloads.yml
+    # This specifies the name of the configuration filename to upload onto the client host. The
+    # previous may need to call this file from a different directory if `cd` is called.
     config_filename: workloads.yml  # The name used in previous row
+    # This is a list of files to be retrieved automatically from the workload client and placed in
+    # the reports directory upon completion of a run. This key is optional, if it is not present,
+    # nothing occurs.
+    output_files:
+      - workloads/workload_timestamps.csv
     workload_config:  # This section will be copied out into a file and given as config file to the benchmark tool. Can be yml (run_workloads.py) or a text block (ycsb)
       ########################################################################
       # Test lists. Command line will indicate which list of tests to execute.

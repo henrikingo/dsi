@@ -3,8 +3,10 @@ run:
   - id: benchRun
     type: mongoshell
 
-    cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
+    cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
+    output_files:
+      - workloads/workload_timestamps.csv
     workload_config:
       ########################################################################
       # Test lists. Command line will indicate which list of tests to execute.
@@ -32,43 +34,22 @@ run:
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       test_list: default
-    pre_test:
-      - on_workload_client:
-          upload_files:
-            - source: workloads.yml
-              target: workloads/workloads.yml
-    post_test:
-      - on_workload_client:
-          retrieve_files:
-            - source: workloads/workload_timestamps.csv
-              target: ../workloads_timestamps.csv
 
   - id: fio
     type: fio
     cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
+    output_files:
+      - fio.json
     workload_config: ${test_control.common_fio_config}
     skip_validate: true
-    pre_test:
-      - on_workload_client:
-          upload_files:
-            - source: fio.ini
-              target: fio.ini
-    post_test:
-      - on_workload_client:
-          retrieve_files:
-            - source: fio.json
-              target: ../fio.json
 
   - id: iperf
     type: iperf
+    output_files:
+      - iperf.json
     cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
     skip_validate: true
-    post_test:
-      - on_workload_client:
-          retrieve_files:
-            - source: iperf.json
-              target: ../iperf.json
 
 pre_task:
   - on_workload_client:

@@ -2,7 +2,7 @@ task_name: ycsb.longevity
 run:
   - id: ycsb_load
     type: ycsb
-    "cmd": "cd YCSB/ycsb-mongodb; ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb load mongodb -s -P workloads/workloadLongevity -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32; sleep 1"
+    "cmd": "cd YCSB/ycsb-mongodb; ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb load mongodb -s -P ../../workloadLongevity -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32; sleep 1"
     config_filename: workloadLongevity
     workload_config: |
       recordcount=50000000
@@ -14,42 +14,26 @@ run:
       scanproportion=0
       insertproportion=0.0
       requestdistribution=zipfian
-    pre_test:
-      - on_workload_client:
-          upload_files:
-            - source: workloadLongevity
-              target: YCSB/ycsb-mongodb/workloads/workloadLongevity
 
   - id: ycsb_50read50update
     type: ycsb
-    "cmd": "cd YCSB/ycsb-mongodb; ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s -P workloads/workloadLongevity -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64 -p maxexecutiontime=86400; sleep 1"
+    "cmd": "cd YCSB/ycsb-mongodb; ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s -P ../../workloadLongevity -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64 -p maxexecutiontime=86400; sleep 1"
 
   - id: fio
     type: fio
     cmd: ' ${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
+    output_files:
+      - fio.json
     workload_config: ${test_control.common_fio_config}
     skip_validate: true
-    pre_test:
-      - on_workload_client:
-          upload_files:
-            - source: fio.ini
-              target: fio.ini
-    post_test:
-      - on_workload_client:
-          retrieve_files:
-            - source: fio.json
-              target: ../fio.json
 
   - id: iperf
     type: iperf
     cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    output_files:
+      - iperf.json
     skip_validate: true
-    post_test:
-      - on_workload_client:
-          retrieve_files:
-            - source: iperf.json
-              target: ../iperf.json
 
 between_tests:
   - restart_mongodb:
@@ -70,13 +54,5 @@ pre_task:
           } else {
             print ("Non-sharded cluster");
           }
-
-post_task:
-  - on_workload_client:
-      retrieve_files:
-        - source: fio.json
-          target: ../fio.json
-        - source: iperf.json
-          target: ./reports/iperf.json
 
 numactl: ""

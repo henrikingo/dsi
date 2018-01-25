@@ -818,8 +818,8 @@ class RemoteHost(Host):
         of the directory are downloaded recursively. If not then the single file will be downloaded
         to the local path.
 
-        Any path elements in the local path will only be created if and when a
-        file is downloaded. As a result, an empty directory tree will not be created locally.
+        Any path elements in the local path will only be created if and when a file is downloaded.
+        As a result, an empty directory tree will not be created locally.
 
         :param str local_path: The path (file or directory) to download to. This can contain
         relative paths, these paths will only be normalized at the last possible moment.

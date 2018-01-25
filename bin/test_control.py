@@ -68,26 +68,31 @@ def legacy_copy_perf_output():
             LOG.info(line.rstrip())
 
 
-def generate_config_file(test):
-    ''' Generate configuration files from the test run
+def generate_config_file(test, local_dir, client_host):
+    """
+    Generate configuration files from the test run, save them in the report directory, and upload
+    them to the client host
 
     :param ConfigDict test: The configuration for the test
-    '''
-
+    :param str local_dir: The local directory where the configuration file should be stored
+    :param Host client_host: The client host to which the configuration file will be uploaded
+    """
     try:
+        filepath = os.path.join(local_dir, test['config_filename'])
         workload_config = test['workload_config']
-        with open(test['config_filename'], 'w') as workloads_file:
+        with open(filepath, 'w') as workloads_file:
             if isinstance(workload_config, ConfigDict):
                 # Can't assign into config dict. Need an actual dictionary
                 workload_config_dict = workload_config.as_dict()
-                if 'scale_factor' in workload_config_dict:
-                    if isinstance(workload_config_dict['scale_factor'], str):
-                        #pylint: disable=eval-used
-                        workload_config_dict['scale_factor'] = eval(
-                            workload_config_dict['scale_factor'])
+                if 'scale_factor' in workload_config_dict and isinstance(
+                        workload_config_dict['scale_factor'], str):
+                    #pylint: disable=eval-used
+                    workload_config_dict['scale_factor'] = eval(
+                        workload_config_dict['scale_factor'])
                 workloads_file.write(yaml.dump(workload_config_dict))
             elif isinstance(workload_config, str):
                 workloads_file.write(workload_config)
+        client_host.upload_file(filepath, test['config_filename'])
     except KeyError:
         LOG.warn("No workload config in test control")
 
@@ -312,11 +317,11 @@ def stop_background_tasks(background_tasks):
 @nottest
 def run_test(test, config, reports_dir='reports'):
     """
-    Run one test. This creates a Host object, runs the command, and saves the output to a file
+    Run one test. This creates a Host object, runs the command, and saves the output to a file.
 
     :param test ConfigDict: The ConfigDict object for the test to run
     :param config ConfigDict: The top level ConfigDict
-    :param string reports_dir: the report directory.
+    :param str reports_dir: The report directory
     """
     directory = os.path.join(reports_dir, test['id'])
     filename = os.path.join(directory, 'test_output.log')
@@ -324,6 +329,9 @@ def run_test(test, config, reports_dir='reports'):
     client_host = make_workload_runner_host(config)
 
     no_output_timeout_ms = config['test_control']['timeouts']['no_output_ms']
+
+    # Generate and upload the test's configuration file if there is one
+    generate_config_file(test, directory, client_host)
 
     with open(filename, 'wb+', 0) as out:
         tee_out = common.log.TeeStream(INFO_ADAPTER, out)
@@ -333,6 +341,12 @@ def run_test(test, config, reports_dir='reports'):
             # To match previous behavior, we are raising a CalledProcessError
             # TODO: we should mark the test as failed in perf.json
             raise subprocess.CalledProcessError(error, test['cmd'])
+
+    # Automatically retrieve output files, if specified, and put them into the reports directory
+    if 'output_files' in test:
+        for output_file in test['output_files']:
+            client_host.retrieve_path(output_file,
+                                      os.path.join(directory, os.path.basename(output_file)))
 
     client_host.close()
 
@@ -363,10 +377,8 @@ def run_tests(config):
 
         for index, test in enumerate(test_control_config['run']):
             background_tasks = []
+            LOG.info('running test %s', test)
             try:
-                # Generate the tests configuration file if there is one.
-                generate_config_file(test)
-
                 # Only run between_tests after the first test.
                 if index > 0:
                     run_pre_post_commands('between_tests',

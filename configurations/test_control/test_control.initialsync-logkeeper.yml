@@ -2,10 +2,12 @@ task_name: initialsync-logkeeper
 run:
   - id: benchRun
     type: mongoshell
-    cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
+    cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
     background_tasks:
       background_traffic: LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/media/ephemeral0/ ./mongoreplay play -p /media/ephemeral0/playback.bson --host mongodb://${mongodb_setup.meta.hosts} --no-preprocess
     config_filename: workloads.yml  # The name used in previous row
+    output_files:
+      - workloads/workload_timestamps.csv
     workload_config:
       tests:
         initialsync-logkeeper:
@@ -17,16 +19,6 @@ run:
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
       test_list: initialsync-logkeeper
-    pre_test:
-      - on_workload_client:
-          upload_files:
-            - source: workloads.yml
-              target: workloads/workloads.yml
-    post_test:
-      - on_workload_client:
-          retrieve_files:
-            - source: workloads/workload_timestamps.csv
-              target: ../workloads_timestamps.csv
 
 # Disable jstest validations, it just takes too long to run it for this test.
 jstests_dir: ""

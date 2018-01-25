@@ -4,8 +4,10 @@ run:
     type: mongoshell
 
     # This line to be shortened after the config file is copied from below into the production server.
-    cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
+    cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
+    output_files:
+      - workloads/workload_timestamps.csv
     workload_config:
       ########################################################################
       # Test lists. Command line will indicate which list of tests to execute.
@@ -46,43 +48,22 @@ run:
       # Hard coding for now. These aren't working right now
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
-    pre_test:
-      - on_workload_client:
-          upload_files:
-            - source: workloads.yml
-              target: workloads/workloads.yml
-    post_test:
-      - on_workload_client:
-          retrieve_files:
-            - source: workloads/workload_timestamps.csv
-              target: ../workloads_timestamps.csv
 
   - id: fio
     type: fio
     cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
+    output_files:
+      - fio.json
     workload_config: ${test_control.common_fio_config}
     skip_validate: true
-    pre_test:
-      - on_workload_client:
-          upload_files:
-            - source: fio.ini
-              target: fio.ini
-    post_test:
-      - on_workload_client:
-          retrieve_files:
-            - source: fio.json
-              target: ../fio.json
 
   - id: iperf
     type: iperf
+    output_files:
+      - iperf.json
     cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
     skip_validate: true
-    post_test:
-      - on_workload_client:
-          retrieve_files:
-            - source: iperf.json
-              target: ../iperf.json
 
 # This is just a lookup table. Each test may reference some leaf node here from a test parameter.
 thread_levels:

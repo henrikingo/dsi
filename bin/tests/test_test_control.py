@@ -1,4 +1,6 @@
-"""Tests for bin/common/host.py"""
+"""
+Tests for bin/test_control.py
+"""
 
 # pylint: disable=wrong-import-position, wrong-import-order
 
@@ -25,14 +27,18 @@ from test_control import prepare_reports_dir
 
 from tests import test_utils
 
-from mock import patch, mock_open, Mock
+from mock import patch, mock_open, Mock, call
 from testfixtures import LogCapture
 
 from common.utils import mkdir_p, touch
 
+# pylint: disable=too-many-public-methods
 
-class RunTestTestCase(unittest.TestCase):
-    """ Unit Test for Host library """
+
+class RunTestsTestCase(unittest.TestCase):
+    """
+    Unit Test for test_control.run_tests
+    """
 
     def setUp(self):
         """Create a dict that looks like a ConfigDict object """
@@ -91,7 +97,8 @@ class RunTestTestCase(unittest.TestCase):
                      'type': 'shell',
                      'cmd': '$DSI_PATH/workloads/run_workloads.py -c workloads.yml',
                      'config_filename': 'workloads.yml',
-                     'workload_config':  'mock_workload_config'
+                     'output_files': ['mock_output0.txt', 'mock_output0.txt'],
+                     'workload_config': 'mock_workload_config'
                     },
                     {'id': 'ycsb_load',
                      'type': 'ycsb',
@@ -99,6 +106,12 @@ class RunTestTestCase(unittest.TestCase):
                             'workloads/workloadEvergreen -threads 8; sleep 1;',
                      'config_filename': 'workloadEvergreen',
                      'workload_config': 'mock_workload_config',
+                     'skip_validate': True
+                    },
+                    {'id': 'fio',
+                     'type': 'fio',
+                     'cmd': '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh' +
+                            '${mongodb_setup.meta.hostname}',
                      'skip_validate': True
                     }
                 ],
@@ -395,47 +408,90 @@ class RunTestTestCase(unittest.TestCase):
 
     # pylint: enable=no-value-for-parameter
 
+    # pylint: disable=invalid-name
+
+    @patch('test_control.generate_config_file')
     @patch('test_control.make_workload_runner_host')
     @patch('test_control.mkdir_p')
-    def test_run_test(self, mock_mkdir, mock_make_host):
-        """Test test_control.run_test """
+    def test_run_test_exec_command_success(self, mock_mkdir, mock_make_host,
+                                           mock_generate_config_file):
+        """
+        Test test_control.run_test with 0 return value from exec_command (success)
+        """
         mock_host = Mock(spec=host.RemoteHost)
         mock_host.exec_command = Mock(return_value=0)
         mock_make_host.return_value = mock_host
         test = self.config['test_control']['run'][0]
+        directory = os.path.join('reports', test['id'])
         with patch('test_control.open', mock_open()):
             run_test(test, self.config)
+        mock_mkdir.assert_called_with(directory)
+        mock_host.exec_command.assert_called_once()
+        mock_generate_config_file.assert_called_once_with(test, directory, mock_host)
 
-        mock_host.exec_command.assert_called()
-        # These are just throwaway mocks, pylint wants me to do something with them
-        mock_mkdir.assert_called()
-
+    @patch('test_control.generate_config_file')
     @patch('test_control.make_workload_runner_host')
     @patch('test_control.mkdir_p')
-    def test_run_test_with_error(self, mock_mkdir, mock_make_host):
-        """Test test_control.run_test where the exec command returns non-zero"""
+    def test_run_test_exec_command_failure(self, mock_mkdir, mock_make_host,
+                                           mock_generate_config_file):
+        """
+        Test test_control.run_test with non-zero return value from exec_command (failure)
+        """
+        # Test with non-zero return value from exec_command
         mock_host = Mock(spec=host.RemoteHost)
         mock_host.exec_command = Mock(return_value=1)
         mock_make_host.return_value = mock_host
         test = self.config['test_control']['run'][0]
+        directory = os.path.join('reports', test['id'])
         with patch('test_control.open', mock_open()):
-            with self.assertRaises(subprocess.CalledProcessError):
-                run_test(test, self.config)
+            self.assertRaises(subprocess.CalledProcessError, run_test, test, self.config)
+        mock_host.exec_command.assert_called_once()
+        mock_generate_config_file.assert_called_once_with(test, directory, mock_host)
 
-        mock_host.exec_command.assert_called()
-        # These are just throwaway mocks, pylint wants me to do something with them
-        mock_mkdir.assert_called()
+    @patch('test_control.generate_config_file')
+    @patch('test_control.make_workload_runner_host')
+    @patch('test_control.mkdir_p')
+    def test_run_test_output_files(self, mock_mkdir, mock_make_host, mock_generate_config_file):
+        """
+        Test test_control.run_test with output files specified
+        """
+        mock_host = Mock(spec=host.RemoteHost)
+        mock_host.exec_command = Mock(return_value=0)
+        mock_make_host.return_value = mock_host
+        test = self.config['test_control']['run'][0]
+        directory = os.path.join('reports', test['id'])
+        expected_calls = [call(f, os.path.join(directory, f)) for f in test['output_files']]
+        with patch('test_control.open', mock_open()):
+            run_test(test, self.config)
+        mock_host.retrieve_path.assert_has_calls(expected_calls)
+        mock_generate_config_file.assert_called_once_with(test, directory, mock_host)
+
+    @patch('test_control.generate_config_file')
+    @patch('test_control.make_workload_runner_host')
+    @patch('test_control.mkdir_p')
+    def test_run_test_no_output_files(self, mock_mkdir, mock_make_host, mock_generate_config_file):
+        """
+        Test test_control.run_test with no output files specified
+        """
+        mock_host = Mock(spec=host.RemoteHost)
+        mock_host.exec_command = Mock(return_value=0)
+        mock_make_host.return_value = mock_host
+        test = self.config['test_control']['run'][1]
+        directory = os.path.join('reports', test['id'])
+        with patch('test_control.open', mock_open()):
+            run_test(test, self.config)
+        mock_host.retrieve_path.assert_not_called()
+        mock_generate_config_file.assert_called_once_with(test, directory, mock_host)
 
     @patch('test_control.prepare_reports_dir')
     @patch('subprocess.check_call')
     @patch('test_control.run_validate')
-    @patch('test_control.generate_config_file')
     @patch('test_control.run_test')
     @patch('test_control.legacy_copy_perf_output')
     @patch('test_control.run_pre_post_commands')
     #pylint: disable=too-many-arguments
-    def test_run_tests(self, mock_pre_post, mock_copy_perf, mock_generate, mock_run,
-                       mock_run_validate, mock_check_call, mock_prepare_reports):
+    def test_run_tests(self, mock_pre_post, mock_copy_perf, mock_run, mock_run_validate,
+                       mock_check_call, mock_prepare_reports):
         """Test run_tests (the top level workhorse for test_control)"""
 
         run_tests(self.config)
@@ -443,7 +499,7 @@ class RunTestTestCase(unittest.TestCase):
         # We will check that the calls to run_pre_post_commands() happened in expected order
         expected_args = [
             'pre_task', 'pre_test', 'post_test', 'between_tests', 'pre_test', 'post_test',
-            'post_task'
+            'between_tests', 'pre_test', 'post_test', 'post_task'
         ]
         observed_args = []
         for args in mock_pre_post.call_args_list:
@@ -453,7 +509,6 @@ class RunTestTestCase(unittest.TestCase):
         # These are just throwaway mocks, pylint wants me to do something with them
         mock_copy_perf.assert_called()
         mock_run.assert_called()
-        mock_generate.assert_called()
         mock_check_call.assert_called()
         mock_prepare_reports.assert_called()
         mock_run_validate.assert_called_once_with(self.config, 'benchRun')
