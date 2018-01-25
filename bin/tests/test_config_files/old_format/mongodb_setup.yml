@@ -64,15 +64,20 @@ pre_task: (See example below)
 post_task:
   - on_mongod:
       retrieve_files:
-        data/logs/mongod.log: ./mongod.log
-        data/dbs/diagnostic.data: ./diagnostic.data
+        - src: data/logs/mongod.log
+          dest: /mongod.log
+        - src: data/dbs/diagnostic.data
+          dest: ./diagnostic.data
   - on_mongos:
       retrieve_files:
-        data/logs/mongos.log: ./mongos.log
+        - src: data/logs/mongos.log
+          dest: ./mongos.log
   - on_configsvr:
       retrieve_files:
-        data/logs/mongod.log: ./mongod.log
-        data/dbs/diagnostic.data: ./diagnostic.data
+        - src: data/logs/mongod.log
+          dest: ./mongod.log
+        - src: data/dbs/diagnostic.data
+          dest: ./diagnostic.data
 
 
 

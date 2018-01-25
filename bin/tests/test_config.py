@@ -1,8 +1,10 @@
+# -*- coding: UTF-8 -*-
 """Tests for bin/common/config.py"""
 # pylint: disable=line-too-long
 import os
 import sys
 import unittest
+from contextlib import contextmanager
 
 import yaml
 
@@ -12,6 +14,94 @@ from mock import patch
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 
 from config import ConfigDict  #pylint: disable=wrong-import-position,wrong-import-order
+import config
+
+
+def dirmarker(into):
+    """chdir into `into` (relatie to __file__) and return a function
+    that when called will chdir back to where you were before.
+
+    Example usage:
+
+        marker = dirmarker('subdir')
+        process_file('foo.txt') # inside subdir
+        marker()
+
+    """
+    old_dir = os.getcwd()
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), into)
+    os.chdir(path)
+    return lambda: os.chdir(old_dir)
+
+
+@contextmanager
+def in_dir(into):
+    """perform some operation in context of another dir"""
+    marker = dirmarker(into)
+    yield
+    marker()
+
+
+class InvalidConfigDictTestCase(unittest.TestCase):
+    def test_load_yaml_invalid_keys(self):
+        with in_dir('./invalid-config'):
+            with self.assertRaises(config.InvalidConfigurationException):
+                ConfigDict('mongodb_setup').load()
+
+    def test_set_invalid_key(self):
+        with in_dir('./nested-config'):
+            conf = ConfigDict('mongodb_setup')
+            conf.load()
+            self.assertEquals(conf['mongodb_setup']['this']['is']['quite']['deeply']['nested'],
+                              'okay')
+            conf['mongodb_setup']['out'] = {}
+            conf['mongodb_setup']['out']['safe-key'] = u'💃'
+            self.assertEquals(conf['mongodb_setup']['out']['safe-key'], u'💃')
+
+    def causes_exception(self, subdict):
+        with in_dir('./nested-config'):
+            conf = ConfigDict('mongodb_setup')
+            conf.load()
+            with self.assertRaises(config.InvalidConfigurationException):
+                conf['mongodb_setup']['out'] = {
+                    'okay': [subdict],
+                }
+
+    def test_assigns_invalid_space_key(self):
+        self.causes_exception({
+            "this has a space":
+                "and shouldn't work (because it has a back problem not because it's lazy and entitled"
+        })
+
+    def test_assigns_invalid_numeric_key(self):
+        self.causes_exception({"1": "woah dude a numeric-only key. get a job, you hippie."})
+
+    def test_assigns_exclamation_point_key(self):
+        self.causes_exception({"hello!": "is it me you're looking for?"})
+
+    @unittest.skip("TODO(rtimmons) PERF-1212 enable once we remove dots from existing configs")
+    def test_assigns_dot_key(self):
+        self.causes_exception({"so...uh...": "dot dot dot"})
+
+    def test_assigns_slashy_key(self):
+        self.causes_exception({"data/logs": "logging kills trees"})
+
+    def test_assigns_invalid_nested_dict_multiple_errors(self):
+        with in_dir('./nested-config'):
+            conf = ConfigDict('mongodb_setup')
+            conf.load()
+            with self.assertRaises(config.InvalidConfigurationException) as cm:
+                conf['mongodb_setup']['out'] = {
+                    'okay': [{
+                        'okay': "this is fine",
+                        'not okay': "you're killing me, bro!",
+                        "seriously, just stop now": "but all the cool kids are doing it",
+                    }],
+                }
+            # we're non-normative on what the actual message is, but we
+            # do care that all the errored keys are there
+            self.assertRegexpMatches(cm.exception.message, r'not okay')
+            self.assertRegexpMatches(cm.exception.message, r'seriously')
 
 
 #pylint: disable=too-many-public-methods
@@ -20,17 +110,15 @@ class ConfigDictTestCase(unittest.TestCase):
 
     def setUp(self):
         """Init a ConfigDict object and load the configuration files from docs/config-specs/"""
-        self.old_dir = os.getcwd()  # Save the old path to restore Note
+        self.restore = dirmarker('./../../docs/config-specs/')  # Save the old path to restore Note
         # that this chdir only works without breaking relative imports
         # because it's at the same directory depth
-        os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/../../docs/config-specs/')
         self.conf = ConfigDict('mongodb_setup')
         self.conf.load()
         self.assertEqual(self.conf.module, 'mongodb_setup')
 
     def tearDown(self):
-        """Restore working directory"""
-        os.chdir(self.old_dir)
+        self.restore()
 
     @patch('os.path.join')
     def test_load_old(self, mock_path_join):

@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 """ConfigDict class reads yaml config files and presents a dict() get/set API to read configs."""
 # pylint: disable=too-many-public-methods
 
@@ -84,7 +85,7 @@ class ConfigDict(dict):
             os.path.dirname(os.path.abspath(__file__)), '..', '..', 'configurations',
             'defaults.yml')
         with open(file_name) as file_handle:
-            self.defaults = yaml.safe_load(file_handle)
+            self.defaults = _yaml_load(file_handle, file_name)
             LOG.info('ConfigDict: Loaded: %s', file_name)
 
         # All module_name.yml and module_name.out.yml
@@ -92,13 +93,13 @@ class ConfigDict(dict):
             file_name = module_name + '.yml'
             if os.path.isfile(file_name):
                 with open(file_name) as file_handle:
-                    self.raw[module_name] = yaml.safe_load(file_handle)
+                    self.raw[module_name] = _yaml_load(file_handle, file_name)
                     LOG.info('ConfigDict: Loaded: %s', file_name)
             file_name = module_name + '.out.yml'
             if os.path.isfile(file_name):
                 with open(file_name) as file_handle:
                     # Note: The .out.yml files will add a single key: ['module_name']['out']
-                    out = yaml.safe_load(file_handle)
+                    out = _yaml_load(file_handle, file_name)
                     if isinstance(out, dict):
                         if module_name in self.raw:
                             self.raw[module_name].update(out)
@@ -110,7 +111,7 @@ class ConfigDict(dict):
         file_name = 'overrides.yml'
         if os.path.isfile(file_name):
             file_handle = open(file_name)
-            self.overrides = yaml.safe_load(file_handle)
+            self.overrides = _yaml_load(file_handle, file_name)
             file_handle.close()
             LOG.info('ConfigDict: Loaded: %s', file_name)
 
@@ -244,6 +245,7 @@ class ConfigDict(dict):
         return value
 
     def __setitem__(self, key, value):
+        _check_object({key: value})
         self.assert_writeable_path(key)
         self.raw[key] = value
         # Set the same element in self.root (this is the one that sticks)
@@ -571,3 +573,95 @@ def change_key_name(dictionary, old_key, new_key):
         if key == old_key:
             dictionary[new_key] = val
             del dictionary[old_key]
+
+
+class InvalidConfigurationException(Exception):
+    def __init__(self, errors):
+        self.errors = errors
+        message = "Keys must be strings and match {}. Values must be of type {}. ".format(
+            _VALID_KEY_REX_SRC, list((it.__name__ for it in _VALID_SCALAR_TYPES))
+            ) + ", ".join([
+            u"😱 {} [{}] of type [{}] at path [{}] in file [{}]".format(
+                err['err_type'],
+                err['item'],
+                err['item_type'].__name__,
+                ".".join(str(p) for p in err['path']),
+                err['src_file']
+            ) for err in self.errors
+        ]) # yapf: disable
+        super(InvalidConfigurationException, self).__init__(message)
+
+
+def _yaml_load(handle, path):
+    """
+    Load yaml and check that the object's types and keys are valid.
+    :param handle: file io stream from which to read
+    :return: parsed and checked object
+    :raises InvalidConfigurationException if keys or types are invalid
+    """
+    loaded = yaml.safe_load(handle)
+    _check_object(loaded, path)
+    return loaded
+
+
+# Eventually we should probably disallow . in valid keys
+_VALID_KEY_REX_SRC = r'^[A-Za-z][A-Za-z0-9\-_.]*$'
+"""All ConfigDict keys must match this regex."""
+# Create a separate object since str() of a compiled regex doesn't give you the text.
+_VALID_KEY_REX = re.compile(_VALID_KEY_REX_SRC)
+"""Compiled version of `_VALID_KEY_REX_SRC`"""
+
+_VALID_KEY_TYPES = basestring
+"""All ConfigDict keys must be one of these types."""
+
+_VALID_SCALAR_TYPES = (basestring, float, int, type(None))
+"""All ConfigDict values must be one of these or list/dict (recursive) types"""
+
+
+def _check_object(obj, src_file=None):
+    """
+    :param obj: object to check for validity as use as a ConfigDict entry.
+    :raises InvalidConfigurationExcetion if keys or types are insuitable.
+    """
+
+    def explore(obj, path, errs):
+        """
+        :param obj: object (scalar or complex type) we're traversing
+        :param path: key path we took to get to obj
+        e.g. `{foo:{bar:1}` would result in path of [foo,bar] when obj=1
+        :param errs: any errors we've seen so far. modifies this as an "out" parameter
+        """
+        if isinstance(obj, dict):
+            for key in iter(obj.keys()):
+                path.append(key)
+                if not isinstance(key, _VALID_KEY_TYPES) or not _VALID_KEY_REX.match(key):
+                    errs.append({
+                        'err_type': 'Invalid Key',
+                        'src_file': src_file,
+                        'item': key,
+                        'item_type': type(key),
+                        'path': copy.deepcopy(path),
+                    })
+                explore(obj[key], path, errs)
+                path.pop()
+        elif isinstance(obj, list):
+            index = 0
+            for item in iter(obj):
+                path.append(index)
+                explore(item, path, errs)
+                path.pop()
+                index = index + 1
+        elif not isinstance(obj, _VALID_SCALAR_TYPES):
+            errs.append({
+                'err_type': 'Invalid Value Type',
+                'src_file': src_file,
+                'item': obj,
+                'item_type': type(obj),
+                'path': copy.deepcopy(path)
+            })
+
+    path = []
+    errs = []
+    explore(obj, path, errs)
+    if errs:
+        raise InvalidConfigurationException(errs)

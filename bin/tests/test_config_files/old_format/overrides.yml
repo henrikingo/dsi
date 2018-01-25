@@ -19,9 +19,9 @@ mongodb_setup:
     setParameter:
       foo: true
   topology:
-    -mongos:
-      -
-      -
-      -
-      - public_ip: 127.0.0.1   # Adds a 4th mongos on localhost
-        private_ip: 127.0.0.1
+    - mongos:
+        -
+        -
+        -
+        - public_ip: 127.0.0.1   # Adds a 4th mongos on localhost
+          private_ip: 127.0.0.1

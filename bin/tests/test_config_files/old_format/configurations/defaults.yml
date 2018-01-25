@@ -103,13 +103,16 @@ mongodb_setup:
   post_task:
     - on_all_servers:
         retrieve_files:
-          data/logs/: ./
+          - src: data/logs/
+            dest: ./
     - on_mongod:
         retrieve_files:
-          data/dbs/diagnostic.data: ./diagnostic.data
+          - src: data/dbs/diagnostic.data
+            dest: ./diagnostic.data
     - on_configsvr:
         retrieve_files:
-          data/dbs/diagnostic.data: ./diagnostic.data
+          - src: data/dbs/diagnostic.data
+            dest: ./diagnostic.data
 
 test_control:
   jstests_dir: ./jstests/hooks

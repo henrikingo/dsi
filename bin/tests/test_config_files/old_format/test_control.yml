@@ -69,8 +69,10 @@ post_task:
         remote_path: local_path
   - on_workload_client:
       retrieve_files:
-        workloads/workload_timestamps.csv: ./workloads_timestamps.csv
-        fio.json: ./fio.json
+        - src: workloads/workload_timestamps.csv
+          dest: ./workloads_timestamps.csv
+        - src: fio.json
+          dest: ./fio.json
 
 # Ordered list of things to do before each run, after pre_task
 pre_test:
