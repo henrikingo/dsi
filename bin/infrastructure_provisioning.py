@@ -15,7 +15,7 @@ from common.log import setup_logging
 from common.config import ConfigDict
 from common.terraform_config import TerraformConfiguration
 from common.terraform_output_parser import TerraformOutputParser
-import common.utils
+from common.utils import read_aws_credentials
 from infrastructure_teardown import destroy_resources
 
 CLUSTER_JSON = "cluster.json"
@@ -63,7 +63,7 @@ class Provisioner(object):
         ssh_key_file = os.path.expanduser(ssh_key_file)
         self.ssh_key_file = ssh_key_file
         self.ssh_key_name = config['infrastructure_provisioning']['tfvars']['ssh_key_name']
-        self.aws_access_key, self.aws_secret_key = common.utils.read_aws_credentials(config)
+        self.aws_access_key, self.aws_secret_key = read_aws_credentials(config)
         self.cluster = config['infrastructure_provisioning']['tfvars'].get(
             'cluster_name', 'missing_cluster_name')
         self.reuse_cluster = config['infrastructure_provisioning']['evergreen'].get(
@@ -78,8 +78,8 @@ class Provisioner(object):
             self.terraform = os.environ['TERRAFORM']
         else:
             self.terraform = './terraform'
-        self.dsi_dir = common.utils.get_dsi_path()
-        self.bin_dir = common.utils.get_dsi_bin_dir()
+        self.dsi_dir = os.environ['DSI_PATH']
+        self.bin_dir = os.path.dirname(os.path.abspath(__file__))
 
         os.environ['TF_LOG'] = 'DEBUG'
         os.environ['TF_LOG_PATH'] = './terraform.log'

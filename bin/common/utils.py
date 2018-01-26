@@ -79,23 +79,3 @@ def read_env_vars(aws_config):
         aws_config['aws_access_key'] = os.environ.get('AWS_ACCESS_KEY_ID')
     if 'AWS_SECRET_ACCESS_KEY' in os.environ:
         aws_config['aws_secret_key'] = os.environ.get('AWS_SECRET_ACCESS_KEY')
-
-
-def get_dsi_path():
-    """Get the Path to this source tree
-
-    :returns: The path to this source tree
-    :rtype: str
-
-    """
-    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-
-def get_dsi_bin_dir():
-    """Get the path to the bin directory in this source tree
-
-    :returns: The path to the bin directory in this source tree
-    :rtype: str
-
-    """
-    return os.path.join(get_dsi_path(), 'bin')

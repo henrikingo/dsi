@@ -15,6 +15,27 @@ run:
       ########################################################################
       tests:
         default:
+          - contended_update.js:
+              thread_levels: [1, 32, 64]
+          - map_reduce.js
+          - insert_ttl.js:
+              thread_levels: [1, 16, 32]
+          - insert_vector.js:
+              thread_levels: ${test_control.thread_levels.insert_vector.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
+          - word_count.js
+          - crud.js:
+              thread_levels: ${test_control.thread_levels.crud-jfalse.${mongodb_setup.meta.storageEngine}}
+              j_value: false
+          - crud.js:
+              thread_levels: [1, 64, 128]
+              j_value: true
+          - index_build.js
+          - mix.js:
+              thread_levels: [4, 64, 128, 256, 512]
+          - cpu_noise.js
+        test:
+          -  # Empty list. Put new workloads here for testing
+        short:  # Just does Hello World
           - hello.js:
               parameter1: foo
               parameter2: true
@@ -36,6 +57,32 @@ run:
             - source: workloads/workload_timestamps.csv
               target: ../workloads_timestamps.csv
 
+  - id: fio
+    type: fio
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
+    config_filename: fio.ini
+    workload_config: ${test_control.common_fio_config}
+    skip_validate: true
+    pre_test:
+      - on_workload_client:
+          upload_files:
+            - source: fio.ini
+              target: fio.ini
+    post_test:
+      - on_workload_client:
+          retrieve_files:
+            - source: fio.json
+              target: ../fio.json
+
+  - id: iperf
+    type: iperf
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    skip_validate: true
+    post_test:
+      - on_workload_client:
+          retrieve_files:
+            - source: iperf.json
+              target: ../iperf.json
 
 # This is just a lookup table. Each test may reference some leaf node here from a test parameter.
 thread_levels:
