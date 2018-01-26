@@ -591,7 +591,7 @@ class InvalidConfigurationException(Exception):
                 err['src_file']
             ) for err in self.errors
         ]) # yapf: disable
-        super(InvalidConfigurationException, self).__init__(message)
+        super(InvalidConfigurationException, self).__init__(message.encode('utf-8'))
 
 
 def _yaml_load(handle, path):
@@ -667,3 +667,10 @@ def _check_object(obj, src_file=None):
     explore(obj, path, errs)
     if errs:
         raise InvalidConfigurationException(errs)
+
+
+if __name__ == '__main__':
+    with open(sys.argv[1], 'r') as w:
+        print "CHECKING {}".format(sys.argv[1])
+        _yaml_load(w, sys.argv[1])
+        print "OKAY {}".format(sys.argv[1])

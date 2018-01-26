@@ -41,7 +41,7 @@ run:
       cd YCSB/ycsb-mongodb;
       ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
       -P workloads/workloadEvergreen_95read5update
-      -threads ${test_control.thread_levels.95-5.${mongodb_setup.meta.is_sharded}};
+      -threads ${test_control.thread_levels.level95-5.${mongodb_setup.meta.is_sharded}};
       sleep 1;
     config_filename: workloadEvergreen_95read5update
     workload_config: |
@@ -67,7 +67,7 @@ run:
       cd YCSB/ycsb-mongodb;
       ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
       -P workloads/workloadEvergreen_100update
-      -threads ${test_control.thread_levels.100-0.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}};
+      -threads ${test_control.thread_levels.level100-0.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}};
       sleep 1;
     config_filename: workloadEvergreen_100update
     workload_config: |
@@ -93,7 +93,7 @@ run:
       cd YCSB/ycsb-mongodb;
       ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
       -P workloads/workloadEvergreen_50read50update
-      -threads ${test_control.thread_levels.50-50.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}};
+      -threads ${test_control.thread_levels.level50-50.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}};
       sleep 1;
     config_filename: workloadEvergreen_50read50update
     workload_config: |
@@ -148,17 +148,17 @@ thread_levels:
     "False":  # Not Sharded
       mmapv1: 8
       wiredTiger: 32
-  50-50:
+  level50-50:
     "True":  # Sharded
       mmapv1: 64
       wiredTiger: 64
     "False":  # Not Sharded
       mmapv1: 64
       wiredTiger: 64
-  95-5:
+  level95-5:
     "True": 64  # Sharded
     "False": 32  # Not Sharded
-  100-0:
+  level100-0:
     "True":  # Sharded
       mmapv1: 16
       wiredTiger: 32

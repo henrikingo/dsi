@@ -32,7 +32,7 @@ run:
       cd YCSB/ycsb-mongodb;
       ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
       -P workloads/workloadEvergreen_95read5update
-      -threads ${test_control.thread_levels.95-5.${mongodb_setup.meta.mongodb_setup}};
+      -threads ${test_control.thread_levels.level95-5.${mongodb_setup.meta.mongodb_setup}};
       sleep 1;
     config_filename: workloadEvergreen_95read5update
     workload_config: |
@@ -68,7 +68,7 @@ run:
       cd YCSB/ycsb-mongodb;
       ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
       -P workloads/workloadEvergreen_50read50update
-      -threads ${test_control.thread_levels.50-50.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
+      -threads ${test_control.thread_levels.level50-50.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
       -p maxexecutiontime=600;
       sleep 1;
     config_filename: workloadEvergreen_50read50update
@@ -130,14 +130,14 @@ thread_levels:
   load:
     mmapv1: 256
     wiredTiger: 512
-  50-50:
+  level50-50:
     shard:
       mmapv1: 512
       wiredTiger: 512
     replica:
       mmapv1: 128
       wiredTiger: 512
-  95-5:
+  level95-5:
     shard: 128
     replica: 64
 
