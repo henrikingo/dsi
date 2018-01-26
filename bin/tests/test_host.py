@@ -18,7 +18,7 @@ import paramiko
 
 from mock import patch, Mock, mock, MagicMock, call, ANY
 
-from common.utils import mkdir_p
+import common.utils
 
 from bin.common.host import make_host_runner, never_timeout, check_timed_out, create_timer, \
     _stream
@@ -262,7 +262,7 @@ class HostTestCase(unittest.TestCase):
 
     def test_upload_repo_files(self):
         """ Test run command map upload_repo_files """
-        root = host.repo_root() + os.sep
+        root = common.utils.get_dsi_path() + os.sep
 
         # test upload_repo_files
         with patch('host.RemoteHost') as mongod:
@@ -487,7 +487,7 @@ class HostTestCase(unittest.TestCase):
         """ Test LocalHost.exec_command """
 
         local = host.LocalHost()
-        mkdir_p(os.path.dirname(self.filename))
+        common.utils.mkdir_p(os.path.dirname(self.filename))
 
         self.assertEqual(local.exec_command('exit 0'), 0)
 
@@ -554,7 +554,7 @@ class HostTestCase(unittest.TestCase):
         """ Test run command map retrieve_files """
 
         local = host.LocalHost()
-        mkdir_p(os.path.dirname(self.filename))
+        common.utils.mkdir_p(os.path.dirname(self.filename))
 
         expected = "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\nblast off!\n"
         with open(self.filename, "w") as the_file:
