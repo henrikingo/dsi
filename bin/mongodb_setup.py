@@ -665,7 +665,7 @@ class ShardedCluster(object):
 
     def __str__(self):
         """String describing the sharded cluster"""
-        description = ['ShardedCluster:', 'configsvr: {}'.format(self.config)]
+        description = ['ShardedCluster:', 'configsvr: {}'.format(self.config_svr)]
         for shard in self.shards:
             description.append('shard: {}'.format(shard))
         for mongos in self.mongoses:
