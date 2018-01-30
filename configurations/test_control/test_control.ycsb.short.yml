@@ -23,6 +23,21 @@ run:
     type: ycsb
     "cmd": "cd YCSB/ycsb-mongodb; ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s -P workloads/workloadShort -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
 
+pre_task:
+  - on_workload_client:
+      exec_mongo_shell:
+        connection_string: "${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}"
+        # Shard the YCSB cluster if sharding is enabled
+        script: |
+          if ("${mongodb_setup.meta.is_sharded}" == "True") {
+            assert.commandWorked(sh.enableSharding("ycsb"));
+            assert.commandWorked(
+              sh.shardCollection("ycsb.usertable", {_id: "hashed"}));
+            db.printShardingStatus();
+          } else {
+            print ("Non-sharded cluster");
+          }
+
 between_tests:
   - restart_mongodb:
       clean_logs: true
