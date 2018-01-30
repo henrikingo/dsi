@@ -36,8 +36,8 @@ class ConfigDict(dict):
         'runtime_secret',
         'infrastructure_provisioning',
         'system_setup',
-        'mongodb_setup',
         'workload_setup',
+        'mongodb_setup',
         'test_control',
         'analysis',
         '_internal'
