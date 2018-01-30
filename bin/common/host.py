@@ -630,14 +630,16 @@ class RemoteHost(Host):
         LOG.info('[%s@%s]$ %s', self.user, self.host, command)
 
         # scoping
-        ssh_stdin, ssh_stdout, ssh_stderr, results = None, None, None, None
+        ssh_stdin, ssh_stdout, ssh_stderr = None, None, None
+        exit_status, did_timeout, time_taken_seconds = None, None, None
+
         try:
             ssh_stdin, ssh_stdout, ssh_stderr = self._ssh.exec_command(command, get_pty=get_pty)
             ssh_stdin.channel.shutdown_write()
             ssh_stdin.close()
 
-            results = self._perform_exec(stdout, stderr, ssh_stdout, ssh_stderr,
-                                         no_output_timeout_ms, max_time_ms)
+            exit_status, did_timeout, time_taken_seconds = self._perform_exec(
+                stdout, stderr, ssh_stdout, ssh_stderr, no_output_timeout_ms, max_time_ms)
 
             ssh_stdout.close()
             ssh_stderr.close()
@@ -648,18 +650,21 @@ class RemoteHost(Host):
             close_safely(ssh_stdout)
             close_safely(ssh_stderr)
 
-        if results['did_timeout']:
+        if did_timeout:
             LOG.warn('%s \'%s\': Timeout after %f seconds with exit status %s', self.alias, command,
-                     results['time_taken_seconds'], results['exit_status'])
-        elif results['exit_status'] != 0:
+                     time_taken_seconds, exit_status)
+        elif exit_status != 0:
             LOG.warn('%s \'%s\': Failed after %f seconds with exit status %s', self.alias, command,
-                     results['time_taken_seconds'], results['exit_status'])
+                     time_taken_seconds, exit_status)
 
-        return results['exit_status']
+        return exit_status
 
     # pylint: disable=no-self-use
     def _perform_exec(self, stdout, stderr, ssh_stdout, ssh_stderr, no_output_timeout_ms,
                       max_time_ms):
+        """
+        :return: tuple with (exit_status int, did_timeout bool, time_taken_seconds float)
+        """
         total_operation_start = datetime.now()
         total_operation_is_timed_out = create_timer(total_operation_start, max_time_ms)
         no_output_timed_out = create_timer(datetime.now(), no_output_timeout_ms)
@@ -691,11 +696,8 @@ class RemoteHost(Host):
             exit_status = 1
             did_timeout = True
 
-        return {
-            'exit_status': exit_status,
-            'did_timeout': did_timeout,
-            'time_taken_seconds': (datetime.now() - total_operation_start).total_seconds(),
-        }
+        time_taken_seconds = (datetime.now() - total_operation_start).total_seconds()
+        return exit_status, did_timeout, time_taken_seconds
 
     def create_file(self, remote_path, file_contents):
         """

@@ -1013,7 +1013,7 @@ class HostTestCase(unittest.TestCase):
                     float(given['ssh_interrupt_after_ms']) / 1000, given['with_output'])
 
                 remote_host = host.RemoteHost('test_host', 'test_user', 'test_pem_file')
-                result = remote_host._perform_exec(
+                exit_status, did_timeout, time_taken_seconds = remote_host._perform_exec(
                     stdout,
                     stderr,
                     ssh_stdout,
@@ -1022,7 +1022,12 @@ class HostTestCase(unittest.TestCase):
                     given['max_timeout_ms'],
                 )
 
-                self.assertEqual(then, result)
+                self.assertEqual(
+                    then, {
+                        'exit_status': exit_status,
+                        'did_timeout': did_timeout,
+                        'time_taken_seconds': time_taken_seconds
+                    })
             finally:
                 host._stream = stream_before
 
