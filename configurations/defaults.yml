@@ -161,6 +161,8 @@ mongodb_setup:
 
 test_control:
   task_name: default_task_name
+  timeouts:
+    no_output_ms: 5400000  # 90 minutes
   jstests_dir: ./jstests/hooks
   between_tests:
     - restart_mongodb:

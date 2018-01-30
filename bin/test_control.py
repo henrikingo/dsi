@@ -255,7 +255,7 @@ class BackgroundCommand(object):
         # 0 => no buffering
         mkdir_p(os.path.dirname(self.filename))
         with open(self.filename, 'wb+', 0) as out:
-            self.host.exec_command(self.command, out=out, err=out, pty=True)
+            self.host.exec_command(self.command, stdout=out, stderr=out, get_pty=True)
 
     def stop(self):
         """ stop the process, by closing the connnection to the host. This
@@ -323,9 +323,12 @@ def run_test(test, config, reports_dir='reports'):
     mkdir_p(directory)
     client_host = make_workload_runner_host(config)
 
+    no_output_timeout_ms = config['test_control']['timeouts']['no_output_ms']
+
     with open(filename, 'wb+', 0) as out:
         tee_out = common.log.TeeStream(INFO_ADAPTER, out)
-        error = client_host.exec_command(test['cmd'], out=tee_out, err=tee_out)
+        error = client_host.exec_command(
+            test['cmd'], stdout=tee_out, stderr=tee_out, no_output_timeout_ms=no_output_timeout_ms)
         if error:
             # To match previous behavior, we are raising a CalledProcessError
             # TODO: we should mark the test as failed in perf.json

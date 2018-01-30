@@ -370,22 +370,32 @@ class Host(object):
         self._alias = alias
 
     # pylint: disable=too-many-arguments
-    def exec_command(self, argv, out=None, err=None, pty=False, max_time_ms=None):
+    def exec_command(self,
+                     argv,
+                     stdout=None,
+                     stderr=None,
+                     get_pty=False,
+                     max_time_ms=None,
+                     no_output_timeout_ms=None):
         """
         Execute the command and log the output.
 
         :param argv: The command to run
         :type argv: str, list
-        :param IO out: Standard out from the command is written to this IO. If None is supplied then
-        the INFO_ADAPTER will be used.
-        :param IO err: Standard err from the command is written to this IO on error. If None is
+        :param IO stdout: Standard out from the command is written to this IO. If None is supplied
+        then the INFO_ADAPTER will be used.
+        :param IO stderr: Standard err from the command is written to this IO on error. If None is
         supplied then the ERROR_ADAPTER will be used.
-        :param bool pty: Only valid for remote commands. If pty is set to True, then the shell
+        :param bool get_pty: Only valid for remote commands. If pty is set to True, then the shell
         command is executed in a pseudo terminal. As a result, the commands will be killed if the
         host is closed.
-        :param max_time_ms: The time limit in milliseconds for processing this operation, defaults
-        to None (no timeout)
-        :type max_time_ms: int, float, None
+        :param max_time_ms: the time limit in milliseconds for processing this operation.
+                            Defaults to None (no timeout).
+        :type max_time_ms: int, float or None.
+        :param no_output_timeout_ms: the amount of time the command is allowed to go without
+        any output on stdout. Not all host implementations support this - namely only
+        RemoteHost at the moment
+        :type no_output_timeout_ms: int, float, or None
         """
         raise NotImplementedError()
 
@@ -529,11 +539,14 @@ def _stream(source, destination):
     :param IO source: Reads lines from this stream
     :param IO destination: Writes lines to this stream
     """
+    any_lines = False
     try:
         for line in source:
             destination.write(line)
+            any_lines = True
     except socket.timeout:
         pass
+    return any_lines
 
 
 def _connected_ssh(host, user, pem_file):
@@ -582,7 +595,14 @@ class RemoteHost(Host):
             exit(1)
 
     # pylint: disable=too-many-arguments
-    def exec_command(self, argv, out=None, err=None, pty=False, max_time_ms=None):
+    # pylint: disable=too-many-locals
+    def exec_command(self,
+                     argv,
+                     stdout=None,
+                     stderr=None,
+                     get_pty=False,
+                     max_time_ms=None,
+                     no_output_timeout_ms=None):
         """
         Execute the argv command on the remote host and log the output.
 
@@ -592,64 +612,90 @@ class RemoteHost(Host):
         if not argv or not isinstance(argv, (list, basestring)):
             raise ValueError("Argument must be a nonempty list or string.")
 
-        if out is None:
-            out = INFO_ADAPTER
-        if err is None:
-            err = ERROR_ADAPTER
+        if (max_time_ms is not None and no_output_timeout_ms is not None
+                and no_output_timeout_ms > max_time_ms):
+            LOG.warn("Can't wait %s ms for output when max time is %s ms", no_output_timeout_ms,
+                     max_time_ms)
+
+        if stdout is None:
+            stdout = INFO_ADAPTER
+        if stderr is None:
+            stderr = ERROR_ADAPTER
 
         if isinstance(argv, list):
             command = ' '.join(argv)
-        elif isinstance(argv, basestring):
+        else:
             command = argv
 
         LOG.info('[%s@%s]$ %s', self.user, self.host, command)
-        stdin = None
-        stdout = None
-        stderr = None
-        exit_status = 1
-        start = datetime.now()
-        is_timed_out = create_timer(start, max_time_ms)
+
+        # scoping
+        ssh_stdin, ssh_stdout, ssh_stderr, results = None, None, None, None
         try:
-            stdin, stdout, stderr = self._ssh.exec_command(command, get_pty=pty)
-            stdin.channel.shutdown_write()
-            stdin.close()
+            ssh_stdin, ssh_stdout, ssh_stderr = self._ssh.exec_command(command, get_pty=get_pty)
+            ssh_stdin.channel.shutdown_write()
+            ssh_stdin.close()
 
-            # The channel settimeout causes reads to throw 'socket.timeout' if data does not arrive
-            # within that time. This is not necessarily an error, it allows us to implement
-            # max time ms without having to resort to threading.
-            stdout.channel.settimeout(0.5)
-            stderr.channel.settimeout(0.5)
+            results = self._perform_exec(stdout, stderr, ssh_stdout, ssh_stderr,
+                                         no_output_timeout_ms, max_time_ms)
 
-            # Stream the output of the command to the log
-            while not is_timed_out() and not stdout.channel.exit_status_ready():
-                _stream(stdout, out)
-
-            # At this point we have either timed out or the command has finished. The code makes
-            # a best effort to stream any remaining logs but the 'for line in ..' calls will only
-            # block once for a max of 500 millis.
-            #
-            # Log the rest of stdout and stderr
-            _stream(stdout, out)
-            _stream(stderr, err)
-
-            if stdout.channel.exit_status_ready():
-                exit_status = stdout.channel.recv_exit_status()
-                if exit_status != 0:
-                    LOG.warn('%s \'%s\': Failed with exit status %s', self.alias, command,
-                             exit_status)
-            else:
-                exit_status = 1
-                LOG.warn('%s \'%s\': Timeout after %f seconds with exit status %s', self.alias,
-                         command, (datetime.now() - start).total_seconds(), exit_status)
-            stdout.close()
-            stderr.close()
+            ssh_stdout.close()
+            ssh_stderr.close()
         except paramiko.SSHException:
             LOG.exception('failed to exec command on %s@%s', self.user, self.host)
         finally:
-            close_safely(stdin)
-            close_safely(stdout)
-            close_safely(stderr)
-        return exit_status
+            close_safely(ssh_stdin)
+            close_safely(ssh_stdout)
+            close_safely(ssh_stderr)
+
+        if results['did_timeout']:
+            LOG.warn('%s \'%s\': Timeout after %f seconds with exit status %s', self.alias, command,
+                     results['time_taken_seconds'], results['exit_status'])
+        elif results['exit_status'] != 0:
+            LOG.warn('%s \'%s\': Failed after %f seconds with exit status %s', self.alias, command,
+                     results['time_taken_seconds'], results['exit_status'])
+
+        return results['exit_status']
+
+    # pylint: disable=no-self-use
+    def _perform_exec(self, stdout, stderr, ssh_stdout, ssh_stderr, no_output_timeout_ms,
+                      max_time_ms):
+        total_operation_start = datetime.now()
+        total_operation_is_timed_out = create_timer(total_operation_start, max_time_ms)
+        no_output_timed_out = create_timer(datetime.now(), no_output_timeout_ms)
+
+        # The channel settimeout causes reads to throw 'socket.timeout' if data does not arrive
+        # within that time. This is not necessarily an error, it allows us to implement
+        # max time ms without having to resort to threading.
+        ssh_stdout.channel.settimeout(0.1)
+
+        # Stream the output of the command to the log
+        while (not total_operation_is_timed_out() and not no_output_timed_out()
+               and not ssh_stdout.channel.exit_status_ready()):
+            any_lines = _stream(ssh_stdout, stdout)
+            if any_lines:
+                no_output_timed_out = create_timer(datetime.now(), no_output_timeout_ms)
+
+        # At this point we have either timed out or the command has finished. The code makes
+        # a best effort to stream any remaining logs but the 'for line in ..' calls will
+        # only block once for a max of 100 millis.
+        #
+        # Log the rest of stdout and stderr
+        _stream(ssh_stdout, stdout)
+        _stream(ssh_stderr, stderr)
+
+        if ssh_stdout.channel.exit_status_ready():
+            exit_status = ssh_stdout.channel.recv_exit_status()
+            did_timeout = False
+        else:
+            exit_status = 1
+            did_timeout = True
+
+        return {
+            'exit_status': exit_status,
+            'did_timeout': did_timeout,
+            'time_taken_seconds': (datetime.now() - total_operation_start).total_seconds(),
+        }
 
     def create_file(self, remote_path, file_contents):
         """
@@ -854,18 +900,26 @@ class LocalHost(Host):
         super(LocalHost, self).__init__("localhost")
 
     # pylint: disable=too-many-arguments
-    def exec_command(self, argv, out=None, err=None, pty=False, max_time_ms=None):
+    def exec_command(self,
+                     argv,
+                     stdout=None,
+                     stderr=None,
+                     get_pty=False,
+                     max_time_ms=None,
+                     no_output_timeout_ms=None):
         """
         Execute the command on the local host and log the output.
 
         For parameters/returns, see :method: `Host.exec_command`.
         """
+        if no_output_timeout_ms is not None:
+            LOG.error("no_output_timeout_ms %s not supported on LocalHost", no_output_timeout_ms)
         if not argv or not isinstance(argv, (list, basestring)):
             raise ValueError("Argument must be a nonempty list or string.")
-        if out is None:
-            out = INFO_ADAPTER
-        if err is None:
-            err = ERROR_ADAPTER
+        if stdout is None:
+            stdout = INFO_ADAPTER
+        if stderr is None:
+            stderr = ERROR_ADAPTER
 
         command = str(argv)
         if isinstance(argv, list):
@@ -879,7 +933,7 @@ class LocalHost(Host):
             stderr=subprocess.PIPE,
             preexec_fn=restore_signals)
         is_timed_out = create_timer(start, max_time_ms)
-        if _stream_proc_logs(proc, out, err, is_timed_out):
+        if _stream_proc_logs(proc, stdout, stderr, is_timed_out):
             exit_status = proc.returncode
             if exit_status != 0:
                 LOG.warn('%s \'%s\': Failed with exit status %s', self.alias, command, exit_status)

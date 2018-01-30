@@ -83,6 +83,9 @@ class RunTestTestCase(unittest.TestCase):
             },
             'test_control': {
                 'task_name': 'test_config',
+                'timeouts': {
+                    'no_output_ms': 5000,
+                },
                 'run': [
                     {'id': 'benchRun',
                      'type': 'shell',
@@ -356,7 +359,7 @@ class RunTestTestCase(unittest.TestCase):
             mock_file.assert_called_with('dirname/basename', 'wb+', 0)
             mock_makedirs.assert_called_with('dirname')
             mock_host.exec_command.assert_called_with(
-                'command', out=mock_out, err=mock_out, pty=True)
+                'command', stdout=mock_out, stderr=mock_out, get_pty=True)
 
     # pylint: disable=no-self-use
     @patch("host.RemoteHost")

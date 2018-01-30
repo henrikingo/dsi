@@ -38,8 +38,8 @@ def jstest_one_host(config, mongo_uri, reports_dir, current_test_id, name):
     with open(filename, 'wb+', 0) as out:
         error = client_host.exec_command(
             'bin/mongo {} {}/{}'.format(mongo_uri, config['test_control']['jstests_dir'], script),
-            out=out,
-            err=out)
+            stdout=out,
+            stderr=out)
         if error:
             # The return code of the script call is significant. If it is non-zero we put 1 at the
             # end of the file to indicate failure. The analysis script rules.py checks the number of

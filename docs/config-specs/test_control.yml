@@ -9,6 +9,9 @@ reports_dir_basename: reports
 perf_json:
   path: perf.new.json
 
+timeouts:
+  no_output_ms: 5400000  # the amount of time run cmds are allowed to go without any output before timing out.
+
 # This essentially ports dsi/clusters/*/*.json to yml. Additions are up for debate.
 # Note, unlike other files, this is a list of test runs. Hence, even if there's only a single entry, it is a list.
 run:

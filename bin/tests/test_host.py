@@ -1,5 +1,6 @@
 # pylint: disable=too-many-lines
 # pylint: disable=unused-argument, no-self-use, protected-access, wrong-import-position
+# pylint: disable=invalid-name
 # pylint: disable=wrong-import-order
 """Tests for bin/common/host.py"""
 
@@ -40,6 +41,21 @@ def fixture_file_path(file_path):
     """Return the absolute path of a file at `file_path` inside the fixture files directory."""
 
     return os.path.join(FIXTURE_DIR_PATH, file_path)
+
+
+def sleepy_streamer(sleep_time_sec, outval):
+    """
+    :param sleep_time_sec: how long in seconds to sleep
+    :param outval: forced return value
+    :return: a function that sleeps for `sleep_time_sec` seconds and returns `outval`
+    """
+
+    # pylint: disable=missing-docstring
+    def out(io1, io2):
+        time.sleep(sleep_time_sec)
+        return outval
+
+    return out
 
 
 # pylint: disable=too-many-public-methods
@@ -118,13 +134,15 @@ class HostTestCase(unittest.TestCase):
         destination = MagicMock(name="destination")
         source.next = MagicMock(name="in")
         source.next.side_effect = socket.timeout('args')
-        _stream(source, destination)
+        any_lines = _stream(source, destination)
+        self.assertEquals(False, any_lines)
         destination.write.assert_not_called()
 
         destination = MagicMock(name="destination")
         source.next = MagicMock(name="in")
         source.next.side_effect = ['first', 'second', socket.timeout('args'), 'third']
-        _stream(source, destination)
+        any_lines = _stream(source, destination)
+        self.assertEquals(True, any_lines)
 
         calls = [
             call('first'),
@@ -948,6 +966,157 @@ class HostTestCase(unittest.TestCase):
         self.assertTrue(subject.run(['cowsay Hello World', 'cowsay moo']))
         subject.exec_command.assert_called_once_with(['cowsay Hello World', 'cowsay moo'])
 
+    # normally wouldn't test internal method, but the collaboration with other
+    # objects is complicated within host.exec_command and leads to the core logic
+    # being hard to isolate on its own.
+    def when_perform_exec(self, case):
+        """
+        :param case: contains given/then conditions for behavior of _perform_exec
+
+        Example:
+
+            'given': {
+                # params given to _perform_exec
+                'max_timeout_ms': 750,
+                'no_output_timeout_ms': 20,
+                # mock _stream behavior
+                'ssh_interrupt_after_ms': 5,
+                'with_output': False,
+                # (was exist status ready, actual exit status)
+                'and_exit_status': (True, 0),
+            },
+            'then': {
+                # asserted output of _perform_exec
+                'exit_status': 0,
+                'did_timeout': False,
+                'time_taken_seconds': ANY
+            }
+        """
+
+        given = case['given']
+        then = case['then']
+
+        new_mock = lambda name: MagicMock(autospec=True, name=name)
+        (stdout, stderr, ssh_stdout, ssh_stderr) = (new_mock('stdout'), new_mock('stderr'),
+                                                    new_mock('ssh_stdout'), new_mock('ssh_stderr'))
+
+        ssh_stdout.channel.exit_status_ready.return_value = given['and_exit_status'][0]
+        ssh_stdout.channel.recv_exit_status.return_value = given['and_exit_status'][1]
+
+        stream_before = host._stream
+        with patch('paramiko.SSHClient', autospec=True):
+            try:
+                # monkey-patch here because @patch doesn't let us (easily) change
+                # the actual behavior of the method, just set canned return values and
+                # assert interactions. We actually want _stream() to sleep as well
+                host._stream = sleepy_streamer(
+                    float(given['ssh_interrupt_after_ms']) / 1000, given['with_output'])
+
+                remote_host = host.RemoteHost('test_host', 'test_user', 'test_pem_file')
+                result = remote_host._perform_exec(
+                    stdout,
+                    stderr,
+                    ssh_stdout,
+                    ssh_stderr,
+                    given['no_output_timeout_ms'],
+                    given['max_timeout_ms'],
+                )
+
+                self.assertEqual(then, result)
+            finally:
+                host._stream = stream_before
+
+    def test_perform_exec_no_timeout(self):
+        """test_perform_exec_no_timeout"""
+        self.when_perform_exec({
+            'given': {
+                'max_timeout_ms': 100,
+                'no_output_timeout_ms': 20,
+                'ssh_interrupt_after_ms': 5,
+                'with_output': False,
+                'and_exit_status': (True, 0),
+            },
+            'then': {
+                'exit_status': 0,
+                'did_timeout': False,
+                'time_taken_seconds': ANY
+            }
+        })
+
+    def test_perform_exec_no_output(self):
+        """
+        This one times out because of the
+        False in and_exit_status[0].
+        The ssh never finishes and doesn't produce
+        output, so it's a timeout.
+        """
+
+        self.when_perform_exec({
+            'given': {
+                'max_timeout_ms': 100,
+                'no_output_timeout_ms': 20,
+                'ssh_interrupt_after_ms': 5,
+                'with_output': False,
+                'and_exit_status': (False, 10),
+            },
+            'then': {
+                'exit_status': 1,
+                'did_timeout': True,
+                'time_taken_seconds': ANY
+            }
+        })
+
+    def test_perform_exec_ready(self):
+        """test_perform_exec_ready"""
+        self.when_perform_exec({
+            'given': {
+                'max_timeout_ms': 100,
+                'no_output_timeout_ms': 20,
+                'ssh_interrupt_after_ms': 5,
+                'with_output': False,
+                'and_exit_status': (True, 2),
+            },
+            'then': {
+                'exit_status': 2,
+                'did_timeout': False,
+                'time_taken_seconds': ANY
+            }
+        })
+
+    def test_perform_exec_total_timeout_no_output(self):
+        """test_perform_exec_total_timeout_no_output"""
+        self.when_perform_exec({
+            'given': {
+                'max_timeout_ms': 20,
+                'no_output_timeout_ms': 10,
+                'ssh_interrupt_after_ms': 5,
+                'with_output': False,
+                'and_exit_status': (False, 0),
+            },
+            'then': {
+                'exit_status': 1,
+                'did_timeout': True,
+                'time_taken_seconds': ANY
+            }
+        })
+
+    def test_perform_exec_immediate_fail(self):
+        """test_perform_exec_total_timeout_no_output"""
+        self.when_perform_exec({
+            'given': {
+                'max_timeout_ms': 20,
+                'no_output_timeout_ms': 10,
+                'ssh_interrupt_after_ms': 1,
+                'with_output': True,
+                'and_exit_status': (True, 127),
+            },
+            'then': {
+                'exit_status': 127,
+                'did_timeout': False,
+                'time_taken_seconds': ANY
+            }
+        })
+
     # pylint: disable=too-many-statements
     def test_remote_exec_command(self):
         """Test RemoteHost.exec_command"""
@@ -986,13 +1155,13 @@ class HostTestCase(unittest.TestCase):
                 ssh_instance.exec_command.assert_called_once_with(expected, get_pty=False)
                 stdin.channel.shutdown_write.assert_called_once()
 
-                stdout.channel.settimeout.assert_called_once_with(0.5)
-                stderr.channel.settimeout.assert_called_once_with(0.5)
+                stdout.channel.settimeout.assert_called_once_with(0.1)
+                stderr.channel.settimeout.assert_not_called()
 
                 stdin.close.assert_called()
                 stdout.close.assert_called()
                 stderr.close.assert_called()
-                mock_create_watchdog.assert_called_once_with(ANY, None)
+                mock_create_watchdog.assert_has_calls([call(ANY, None), call(ANY, None)])
                 mock_stream.assert_has_calls([call(stdout, out), call(stderr, err)])
                 if recv_exit_status is None:
                     stdout.channel.recv_exit_status.assert_not_called()
@@ -1030,7 +1199,7 @@ class HostTestCase(unittest.TestCase):
             host.LOG.warn = mock_logger
             _test_common(return_value=1, recv_exit_status=1)
             mock_logger.assert_called_once_with(
-                ANY_IN_STRING('Failed with exit status'), ANY, ANY, ANY)
+                ANY_IN_STRING('with exit status'), ANY, ANY, ANY, ANY)
 
         with patch('paramiko.SSHClient') as mock_ssh:
             mock_logger = MagicMock(name='LOG')
