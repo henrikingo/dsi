@@ -16628,6 +16628,13 @@
                         "PERF-875"
                     ]
                 },
+                "Where.CompareToInt.Where.DoubleEquals":{
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
+                    "ticket":[
+                        "BF-7890"
+                    ]
+                },
                 "Where.ComplexNested":{
                     "thread_threshold":0.2,
                     "threshold":0.15,
