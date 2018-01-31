@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Tests for the mongodb_setup module"""
+import copy
 import os
 import os.path
 import unittest
@@ -670,8 +671,20 @@ class TestMongodbSetup(unittest.TestCase):
     def test_start(self):
         """ test start"""
 
-        def _test_start(download_status=False):
-            setup = mongodb_setup.MongodbSetup(config=self.config)
+        @mock.patch('mongodb_setup.common.host.run_host_commands')
+        def _test_start(mock_run_host_commands, download_status=False, pre_cluster_start=False):
+            test_config = copy.deepcopy(self.config)
+            if pre_cluster_start:
+                test_config['mongodb_setup']['pre_cluster_start'] = [{
+                    'on_all_hosts': {
+                        'download_files': [{
+                            'source': 'foo',
+                            'target': 'bar'
+                        }]
+                    }
+                }]
+
+            setup = mongodb_setup.MongodbSetup(config=test_config)
             setup.downloader.download_and_extract = mock.MagicMock(name='downloader')
 
             setup._start = mock.MagicMock(name='_start')
@@ -687,12 +700,27 @@ class TestMongodbSetup(unittest.TestCase):
             else:
                 self.assertEquals(setup.start(), "start clusters")
                 setup._start.assert_called_once()
+
+            if pre_cluster_start:
+                mock_run_host_commands.assert_called_with(
+                    test_config['mongodb_setup']['pre_cluster_start'], test_config)
+            else:
+                mock_run_host_commands.assert_not_called()
+
             setup.destroy.assert_called_once_with(60000)
             setup.shutdown.assert_not_called()
             setup.downloader.download_and_extract.assert_called_once()
 
+        # Pylint is unable to handle the idea that @patch decorator is filling in a
+        # parameter. Disabling locally.
+
+        # pylint: disable=no-value-for-parameter
         _test_start()
-        _test_start(download_status=True)
+        # The following case will not call run_host_commands because setup will exit before
+        # _test_start(download_status=True)
+        _test_start(download_status=True, pre_cluster_start=True)
+        _test_start(download_status=True, pre_cluster_start=False)
+        # pylint: enable=no-value-for-parameter
 
     def test_restart(self):
         """ test start"""

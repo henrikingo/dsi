@@ -17,6 +17,7 @@ import yaml
 
 # pylint does not like relative imports but "from bin.common" does not work
 # pylint: disable=too-many-instance-attributes
+import common.host
 from common.download_mongodb import DownloadMongodb
 from common.host import RemoteHost, LocalHost, ONE_MINUTE_MILLIS
 from common.log import setup_logging
@@ -726,6 +727,11 @@ class MongodbSetup(object):
         if not self.downloader.download_and_extract():
             LOG.error("Download and extract failed.")
             return False
+
+        if 'pre_cluster_start' in self.config['mongodb_setup']:
+            LOG.info("Mongodb_setup running pre_cluster_start commands")
+            common.host.run_host_commands(self.config['mongodb_setup']['pre_cluster_start'],
+                                          self.config)
 
         return self._start()
 

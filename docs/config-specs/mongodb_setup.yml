@@ -21,9 +21,6 @@ rs_conf:  # The top level settings for rs.conf() / rs.initiate()
 mongos_config_file: ...
 configsvr_config_file: ...
 
-# NOTE: pre and post cluster start steps not implemented yet. See
-# test_control.yml for how they should work when implemented
-
 # Ordered list of steps to take before starting the mongo
 # processes. Each item is guaranteed to complete before the next one
 #
