@@ -11,21 +11,21 @@ run:
     workload_config:
       tests:
         default:
-          - change_streams_crud_throughput.js:
+          - change_streams_crud_throughput:
               thread_levels: [60]
               listener_levels: [15]
               update_lookup: false
               selective_change: false
               nb_collections: 1
               mongos_hosts: ${infrastructure_provisioning.out.mongos}
-          - change_streams_latency.js:
+          - change_streams_latency:
               thread_levels: [60]
               listener_levels: [15]
               update_lookup: false
               selective_change: false
               nb_collections: 1
               mongos_hosts: ${infrastructure_provisioning.out.mongos}
-          - cpu_noise.js
+          - cpu_noise
 
       # These next five lines match existing workloads.yml.
       target: ${mongodb_setup.meta.hostname}

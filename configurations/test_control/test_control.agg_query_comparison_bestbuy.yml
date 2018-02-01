@@ -12,18 +12,18 @@ run:
       # Test lists. Command line will indicate which list of tests to execute.
       # The 'default' list is the default.
       # When testing new test workloads, please put your tests in the
-      # tests.test list, and remove the existing hello.js
+      # tests.test list, and remove the existing hello
       ########################################################################
       tests:
         default:
-          - bestbuy_agg_query_comparison.js:
+          - bestbuy_agg_query_comparison:
               - testDbName: bestbuy
                 testCollName: products
                 useAgg: true
               - testDbName: bestbuy
                 testCollName: products
                 useAgg: false
-          - cpu_noise.js
+          - cpu_noise
 
       # These next five lines match existing
       # workloads.yml. Workloads needs to be updated to consume from

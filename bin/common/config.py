@@ -606,8 +606,7 @@ def _yaml_load(handle, path):
     return loaded
 
 
-# Eventually we should probably disallow . in valid keys
-_VALID_KEY_REX_SRC = r'^[A-Za-z][A-Za-z0-9\-_.]*$'
+_VALID_KEY_REX_SRC = r'^[A-Za-z][A-Za-z0-9\-_]*$'
 """All ConfigDict keys must match this regex."""
 # Create a separate object since str() of a compiled regex doesn't give you the text.
 _VALID_KEY_REX = re.compile(_VALID_KEY_REX_SRC)

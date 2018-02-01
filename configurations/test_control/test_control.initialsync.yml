@@ -9,7 +9,7 @@ run:
     workload_config:
       tests:
         default:
-          - initialsync.js:
+          - initialsync:
               num_collections: 1
               num_dbs: 1
               write_load: false
@@ -31,7 +31,7 @@ run:
     workload_config:
       tests:
         default:
-          - initialsync.js:
+          - initialsync:
               num_collections: 1
               num_dbs: 32
               write_load: false
@@ -53,7 +53,7 @@ run:
     workload_config:
       tests:
         default:
-          - initialsync.js:
+          - initialsync:
               num_collections: 32
               num_dbs: 1
               write_load: false
@@ -75,7 +75,7 @@ run:
     workload_config:
       tests:
         default:
-          - initialsync.js:
+          - initialsync:
               num_collections: 32
               num_dbs: 32
               write_load: false
@@ -97,7 +97,7 @@ run:
     workload_config:
       tests:
         default:
-          - initialsync.js:
+          - initialsync:
               num_collections: 1
               num_dbs: 1
               write_load: true
@@ -119,7 +119,7 @@ run:
     workload_config:
       tests:
         default:
-          - initialsync.js:
+          - initialsync:
               num_collections: 1
               num_dbs: 32
               write_load: true
@@ -141,7 +141,7 @@ run:
     workload_config:
       tests:
         default:
-          - initialsync.js:
+          - initialsync:
               num_collections: 32
               num_dbs: 1
               write_load: true
@@ -163,12 +163,12 @@ run:
     workload_config:
       tests:
         default:
-          - initialsync.js:
+          - initialsync:
               num_collections: 32
               num_dbs: 32
               write_load: true
               third_node_addr: ${mongodb_setup.meta.third_node}
-          - cpu_noise.js
+          - cpu_noise
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}

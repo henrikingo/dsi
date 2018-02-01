@@ -11,7 +11,7 @@ run:
     workload_config:
       tests:
         initialsync-logkeeper:
-          - large_initialsync.js
+          - large_initialsync
 
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}

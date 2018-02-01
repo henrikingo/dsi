@@ -89,7 +89,6 @@ class InvalidConfigDictTestCase(unittest.TestCase):
         """! not allowed"""
         self.causes_exception({"hello!": "is it me you're looking for?"})
 
-    @unittest.skip("TODO(rtimmons) PERF-1212 enable once we remove dots from existing configs")
     def test_assigns_dot_key(self):
         """dots not allowed"""
         self.causes_exception({"so...uh...": "dot dot dot"})
@@ -281,7 +280,7 @@ class ConfigDictTestCase(unittest.TestCase):
 
         # recursive reference ${a.${foo}.c} where "foo: b"
         value = self.conf['test_control']['run'][0]['workload_config']['tests']['default'][2][
-            'insert_vector.js']['thread_levels']
+            'insert_vector']['thread_levels']
         expected = [1, 8, 16]
         self.assertEqual(value, expected)
 

@@ -13,20 +13,20 @@ run:
       # Test lists. Command line will indicate which list of tests to execute.
       # The 'default' list is the default.
       # When testing new test workloads, please put your tests in the
-      # tests.test list, and remove the existing hello.js
+      # tests.test list, and remove the existing hello
       ########################################################################
       tests:
         default:
-          - insert_vector.js:
+          - insert_vector:
               thread_levels: ${test_control.thread_levels.insert_vector.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
               retryable_writes: true
-          - mix.js:
+          - mix:
               thread_levels: [4, 64, 128, 256, 512]
               retryable_writes: true
         test:
           -  # Empty list. Put new workloads here for testing
         short:  # Just does Hello World
-          - hello.js:
+          - hello:
               parameter1: foo
               parameter2: true
 

@@ -32,25 +32,25 @@ run:
       # Test lists. Command line will indicate which list of tests to execute.
       # The 'default' list is the default.
       # When testing new test workloads, please put your tests in the
-      # tests.test list, and remove the existing hello.js
+      # tests.test list, and remove the existing hello
       ########################################################################
       tests:
         default:
-          - contended_update.js
-          - map_reduce.js
-          - insert_vector.js:
+          - contended_update
+          - map_reduce
+          - insert_vector:
               # For clarity(?), thread_levels are in a lookup table further down
               # The following reference is recursive. The intermediate step resolves to
               # something like
               # ${test_control.thread_levels.insert_vector.standalone.wiredTiger}
               thread_levels: ${test_control.thread_levels.insert_vector.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
         initialsync:
-          - initialsync.js
+          - initialsync
         correctness:
-          - election_timing.js
-          - election_timing_workload.js
+          - election_timing
+          - election_timing_workload
         test:  # Put new workloads here when testing
-          - hello.js:
+          - hello:
               parameter1: foo
               parameter2: true
 

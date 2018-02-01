@@ -13,19 +13,19 @@ run:
       # Test lists. Command line will indicate which list of tests to execute.
       # The 'default' list is the default.
       # When testing new test workloads, please put your tests in the
-      # tests.test list, and remove the existing hello.js
+      # tests.test list, and remove the existing hello
       ########################################################################
       tests:
         default:
-          - mongos_read_single.js
-          - mongos_insert_vector.js
-          - mongos_insert_single.js
-          - mongos_50read_50write.js
-          - cpu_noise.js
+          - mongos_read_single
+          - mongos_insert_vector
+          - mongos_insert_single
+          - mongos_50read_50write
+          - cpu_noise
         test:
           -  # Empty list. Put new workloads here for testing
         short:  # Just does Hello World
-          - hello.js:
+          - hello:
               parameter1: foo
               parameter2: [true, false]
 

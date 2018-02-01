@@ -1,23 +1,23 @@
 
-Workloads from config file for None: [{'contended_update.js': {'thread_levels': [1, 32, 64]}}, 'map_reduce.js', {'insert_ttl.js': {'thread_levels': [1, 16, 32]}}, {'insert_vector.js': {'thread_levels': [1, 4]}}, 'word_count.js', {'jtrue.js': {'thread_levels': [1, 64, 128]}}, 'index_build.js', {'mix.js': {'thread_levels': [4, 64, 128, 256, 512]}}, 'cpu_noise.js']
+Workloads from config file for None: [{'contended_update': {'thread_levels': [1, 32, 64]}}, 'map_reduce', {'insert_ttl': {'thread_levels': [1, 16, 32]}}, {'insert_vector': {'thread_levels': [1, 4]}}, 'word_count', {'jtrue': {'thread_levels': [1, 64, 128]}}, 'index_build', {'mix.js': {'thread_levels': [4, 64, 128, 256, 512]}}, 'cpu_noise.js']
 Run test to target server: [None] with isSharded=False
 Using mongo shell: /home/ec2-user/bin/mongo
-Current config: {'tests': {'default': [{'contended_update.js': {'thread_levels': [1, 32, 64]}}, 'map_reduce.js', {'insert_ttl.js': {'thread_levels': [1, 16, 32]}}, {'insert_vector.js': {'thread_levels': [1, 4]}}, 'word_count.js', {'jtrue.js': {'thread_levels': [1, 64, 128]}}, 'index_build.js', {'mix.js': {'thread_levels': [4, 64, 128, 256, 512]}}, 'cpu_noise.js'], 'test': [None], 'short': [{'hello.js': {'parameter1': 'foo', 'parameter2': True}}]}, 'shell': '~/bin/mongo', 'scale_factor': '1', 'target': '10.2.0.200', 'replica': True, 'sharded': False, 'test_list': 'default', 'port': 27017, 'result_prefix': ''}
-Processing workload {'contended_update.js': {'thread_levels': [1, 32, 64]}}
-Processing workload map_reduce.js
-Processing workload {'insert_ttl.js': {'thread_levels': [1, 16, 32]}}
-Processing workload {'insert_vector.js': {'thread_levels': [1, 4]}}
-Processing workload word_count.js
-Processing workload {'jtrue.js': {'thread_levels': [1, 64, 128]}}
-Processing workload index_build.js
+Current config: {'tests': {'default': [{'contended_update': {'thread_levels': [1, 32, 64]}}, 'map_reduce', {'insert_ttl': {'thread_levels': [1, 16, 32]}}, {'insert_vector': {'thread_levels': [1, 4]}}, 'word_count', {'jtrue': {'thread_levels': [1, 64, 128]}}, 'index_build', {'mix.js': {'thread_levels': [4, 64, 128, 256, 512]}}, 'cpu_noise.js'], 'test': [None], 'short': [{'hello': {'parameter1': 'foo', 'parameter2': True}}]}, 'shell': '~/bin/mongo', 'scale_factor': '1', 'target': '10.2.0.200', 'replica': True, 'sharded': False, 'test_list': 'default', 'port': 27017, 'result_prefix': ''}
+Processing workload {'contended_update': {'thread_levels': [1, 32, 64]}}
+Processing workload map_reduce
+Processing workload {'insert_ttl': {'thread_levels': [1, 16, 32]}}
+Processing workload {'insert_vector': {'thread_levels': [1, 4]}}
+Processing workload word_count
+Processing workload {'jtrue': {'thread_levels': [1, 64, 128]}}
+Processing workload index_build
 Processing workload {'mix.js': {'thread_levels': [4, 64, 128, 256, 512]}}
 Processing workload cpu_noise.js
-Running workload contended_update.js with eval string 'var isSharded=false; var isRepl=true;var server="10.2.0.200:27017"; var resultPrefix="";var scaleFactor=1; var thread_levels=[1, 32, 64];'
+Running workload contended_update with eval string 'var isSharded=false; var isRepl=true;var server="10.2.0.200:27017"; var resultPrefix="";var scaleFactor=1; var thread_levels=[1, 32, 64];'
 MongoDB shell version v3.7.0-63-ga7064e0
 connecting to: mongodb://10.2.0.200:27017/
 MongoDB server version: 3.7.0-63-ga7064e0
 loading file: ./utils/mongoshell.js
-loading file: ./workloads/contended_update.js
+loading file: ./workloads/contended_update
 source: 10.2.0.201:27017
 	syncedTo: Mon Nov 20 2017 18:20:19 GMT+0000 (UTC)
 	20 secs (0.01 hrs) behind the primary
@@ -286,12 +286,12 @@ source: 10.2.0.201:27017
 source: 10.2.0.202:27017
 	syncedTo: Mon Nov 20 2017 18:35:39 GMT+0000 (UTC)
 	1 secs (0 hrs) behind the primary
-Running workload map_reduce.js with eval string 'var isSharded=false; var isRepl=true;var server="10.2.0.200:27017"; var resultPrefix="";var scaleFactor=1;'
+Running workload map_reduce with eval string 'var isSharded=false; var isRepl=true;var server="10.2.0.200:27017"; var resultPrefix="";var scaleFactor=1;'
 MongoDB shell version v3.7.0-63-ga7064e0
 connecting to: mongodb://10.2.0.200:27017/
 MongoDB server version: 3.7.0-63-ga7064e0
 loading file: ./utils/mongoshell.js
-loading file: ./workloads/map_reduce.js
+loading file: ./workloads/map_reduce
 inserting 40,000,000 docs in 32 threads
 Server is : 10.2.0.200:27017
 Start staging data: 1511202940276 of 200 distinct uids
@@ -418,12 +418,12 @@ source: 10.2.0.201:27017
 source: 10.2.0.202:27017
 	syncedTo: Mon Nov 20 2017 18:50:39 GMT+0000 (UTC)
 	8 secs (0 hrs) behind the primary
-Running workload insert_ttl.js with eval string 'var isSharded=false; var isRepl=true;var server="10.2.0.200:27017"; var resultPrefix="";var scaleFactor=1; var thread_levels=[1, 16, 32];'
+Running workload insert_ttl with eval string 'var isSharded=false; var isRepl=true;var server="10.2.0.200:27017"; var resultPrefix="";var scaleFactor=1; var thread_levels=[1, 16, 32];'
 MongoDB shell version v3.7.0-63-ga7064e0
 connecting to: mongodb://10.2.0.200:27017/
 MongoDB server version: 3.7.0-63-ga7064e0
 loading file: ./utils/mongoshell.js
-loading file: ./workloads/insert_ttl.js
+loading file: ./workloads/insert_ttl
 Setting ttlMonitorSleepSecs to 5
 source: 10.2.0.201:27017
 	syncedTo: Mon Nov 20 2017 18:50:39 GMT+0000 (UTC)
@@ -601,12 +601,12 @@ source: 10.2.0.201:27017
 source: 10.2.0.202:27017
 	syncedTo: Mon Nov 20 2017 19:01:41 GMT+0000 (UTC)
 	0 secs (0 hrs) behind the primary
-Running workload insert_vector.js with eval string 'var isSharded=false; var isRepl=true;var server="10.2.0.200:27017"; var resultPrefix="";var scaleFactor=1; var thread_levels=[1, 4];'
+Running workload insert_vector with eval string 'var isSharded=false; var isRepl=true;var server="10.2.0.200:27017"; var resultPrefix="";var scaleFactor=1; var thread_levels=[1, 4];'
 MongoDB shell version v3.7.0-63-ga7064e0
 connecting to: mongodb://10.2.0.200:27017/
 MongoDB server version: 3.7.0-63-ga7064e0
 loading file: ./utils/mongoshell.js
-loading file: ./workloads/insert_vector.js
+loading file: ./workloads/insert_vector
 Running thread level 1
 source: 10.2.0.201:27017
 	syncedTo: Mon Nov 20 2017 19:01:37 GMT+0000 (UTC)
@@ -816,12 +816,12 @@ source: 10.2.0.201:27017
 source: 10.2.0.202:27017
 	syncedTo: Mon Nov 20 2017 19:10:36 GMT+0000 (UTC)
 	0 secs (0 hrs) behind the primary
-Running workload word_count.js with eval string 'var isSharded=false; var isRepl=true;var server="10.2.0.200:27017"; var resultPrefix="";var scaleFactor=1;'
+Running workload word_count with eval string 'var isSharded=false; var isRepl=true;var server="10.2.0.200:27017"; var resultPrefix="";var scaleFactor=1;'
 MongoDB shell version v3.7.0-63-ga7064e0
 connecting to: mongodb://10.2.0.200:27017/
 MongoDB server version: 3.7.0-63-ga7064e0
 loading file: ./utils/mongoshell.js
-loading file: ./workloads/word_count.js
+loading file: ./workloads/word_count
 Server is : 10.2.0.200:27017
 inserting 50,000,000 docs in 32 threads
 Start staging data: 1511205045632
@@ -940,12 +940,12 @@ source: 10.2.0.201:27017
 source: 10.2.0.202:27017
 	syncedTo: Mon Nov 20 2017 19:30:09 GMT+0000 (UTC)
 	6 secs (0 hrs) behind the primary
-Running workload jtrue.js with eval string 'var isSharded=false; var isRepl=true;var server="10.2.0.200:27017"; var resultPrefix="";var scaleFactor=1; var thread_levels=[1, 64, 128];'
+Running workload jtrue with eval string 'var isSharded=false; var isRepl=true;var server="10.2.0.200:27017"; var resultPrefix="";var scaleFactor=1; var thread_levels=[1, 64, 128];'
 MongoDB shell version v3.7.0-63-ga7064e0
 connecting to: mongodb://10.2.0.200:27017/
 MongoDB server version: 3.7.0-63-ga7064e0
 loading file: ./utils/mongoshell.js
-loading file: ./workloads/jtrue.js
+loading file: ./workloads/jtrue
 Running thread level 1
 source: 10.2.0.201:27017
 	syncedTo: Mon Nov 20 2017 19:30:09 GMT+0000 (UTC)
@@ -2283,12 +2283,12 @@ source: 10.2.0.201:27017
 source: 10.2.0.202:27017
 	syncedTo: Mon Nov 20 2017 19:39:19 GMT+0000 (UTC)
 	0 secs (0 hrs) behind the primary
-Running workload index_build.js with eval string 'var isSharded=false; var isRepl=true;var server="10.2.0.200:27017"; var resultPrefix="";var scaleFactor=1;'
+Running workload index_build with eval string 'var isSharded=false; var isRepl=true;var server="10.2.0.200:27017"; var resultPrefix="";var scaleFactor=1;'
 MongoDB shell version v3.7.0-63-ga7064e0
 connecting to: mongodb://10.2.0.200:27017/
 MongoDB server version: 3.7.0-63-ga7064e0
 loading file: ./utils/mongoshell.js
-loading file: ./workloads/index_build.js
+loading file: ./workloads/index_build
 setting random seed: 341215145
 source: 10.2.0.201:27017
 	syncedTo: Mon Nov 20 2017 19:43:05 GMT+0000 (UTC)

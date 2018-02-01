@@ -13,13 +13,13 @@ run:
       # Test lists. Command line will indicate which list of tests to execute.
       # The 'default' list is the default.
       # When testing new test workloads, please put your tests in the
-      # tests.test list, and remove the existing hello.js
+      # tests.test list, and remove the existing hello
       ########################################################################
       tests:
         default:
-          - move_chunk_with_load.js
-          - move_chunk.js
-          - cpu_noise.js
+          - move_chunk_with_load
+          - move_chunk
+          - cpu_noise
 
       # These next five lines match existing
       # workloads.yml. Workloads needs to be updated to consume from

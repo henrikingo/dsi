@@ -10,11 +10,11 @@ run:
     workload_config:
       tests:
         default:
-          - insert_capped.js:
+          - insert_capped:
               thread_levels: ${test_control.thread_levels.insert_capped.${mongodb_setup.meta.storageEngine}}
-          - insert_capped_indexes.js:
+          - insert_capped_indexes:
               thread_levels: ${test_control.thread_levels.insert_capped_indexes.${mongodb_setup.meta.storageEngine}}
-          - cpu_noise.js
+          - cpu_noise
 
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}

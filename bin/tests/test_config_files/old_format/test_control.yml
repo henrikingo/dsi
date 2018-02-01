@@ -11,20 +11,20 @@ run:
       # Test lists. Command line will indicate which list of tests to execute.
       # The 'default' list is the default.
       # When testing new test workloads, please put your tests in the
-      # tests.test list, and remove the existing hello.js
+      # tests.test list, and remove the existing hello
       ########################################################################
       tests:
         default:
-          - contended_update.js
-          - map_reduce.js
+          - contended_update
+          - map_reduce
           - ...
         initialsync:
-          - initialsync.js
+          - initialsync
         correctness:
-          - election_timing.js
-          - election_timing_workload.js
+          - election_timing
+          - election_timing_workload
         test:  # Put new workloads here when testing
-          - hello.js
+          - hello
 
       mongo:
         # Note: We shall move to use a connection string for all tests. This allows things like

@@ -11,7 +11,7 @@ run:
     workload_config: &workload_config
       tests:
         default:
-          - change_streams_crud_throughput.js:
+          - change_streams_crud_throughput:
               thread_levels: [4, 60]
               listener_levels: [0, 1, 15, 105]
               update_lookup: false
@@ -31,7 +31,7 @@ run:
       <<: *workload_config
       tests:
         default:
-          - change_streams_crud_throughput.js:
+          - change_streams_crud_throughput:
               thread_levels: [4, 60]
               listener_levels: [15]
               update_lookup: true
@@ -44,7 +44,7 @@ run:
       <<: *workload_config
       tests:
         default:
-          - change_streams_crud_throughput.js:
+          - change_streams_crud_throughput:
               thread_levels: [60]
               listener_levels: [15]
               update_lookup: false
@@ -56,7 +56,7 @@ run:
       <<: *workload_config
       tests:
         default:
-          - change_streams_latency.js:
+          - change_streams_latency:
               thread_levels: [4, 60]
               listener_levels: [0, 1, 15, 105]
               update_lookup: false
@@ -69,7 +69,7 @@ run:
       <<: *workload_config
       tests:
         default:
-          - change_streams_latency.js:
+          - change_streams_latency:
               thread_levels: [4, 60]
               listener_levels: [15]
               update_lookup: true
@@ -82,13 +82,13 @@ run:
       <<: *workload_config
       tests:
         default:
-          - change_streams_latency.js:
+          - change_streams_latency:
               thread_levels: [60]
               listener_levels: [15]
               update_lookup: false
               selective_change: false
               nb_collections: 1
-          - cpu_noise.js
+          - cpu_noise
 
   - id: fio
     type: fio

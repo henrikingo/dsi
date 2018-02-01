@@ -4,11 +4,11 @@ sharded: false
 storageEngine: wiredTiger
 target: 10.2.0.100
 tests:
-  default: [contended_update.js, map_reduce.js, insert_capped.js, insert_ttl.js, insert_capped_indexes.js,
-    insert_vector.js, word_count.js, jtrue.js, move_chunk.js, mongos_read_single.js,
-    mongos_insert_vector.js, mongos_insert_single.js, mongos_50read_50write.js, move_chunk_with_load.js]
+  default: [contended_update, map_reduce, insert_capped, insert_ttl, insert_capped_indexes,
+    insert_vector, word_count, jtrue, move_chunk, mongos_read_single,
+    mongos_insert_vector, mongos_insert_single, mongos_50read_50write, move_chunk_with_load]
   short:
-  - hello.js:
+  - hello:
       parameter1: foo
       parameter2: [true, false]
   test: [null]

@@ -13,32 +13,32 @@ run:
       # Test lists. Command line will indicate which list of tests to execute.
       # The 'default' list is the default.
       # When testing new test workloads, please put your tests in the
-      # tests.test list, and remove the existing hello.js
+      # tests.test list, and remove the existing hello
       ########################################################################
       tests:
         default:
-          - contended_update.js:
+          - contended_update:
               thread_levels: [1, 32, 64]
-          - map_reduce.js
-          - insert_ttl.js:
+          - map_reduce
+          - insert_ttl:
               thread_levels: [1, 16, 32]
-          - insert_vector.js:
+          - insert_vector:
               thread_levels: ${test_control.thread_levels.insert_vector.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
-          - word_count.js
-          - crud.js:
+          - word_count
+          - crud:
               thread_levels: ${test_control.thread_levels.crud-jfalse.${mongodb_setup.meta.storageEngine}}
               j_value: false
-          - crud.js:
+          - crud:
               thread_levels: [1, 64, 128]
               j_value: true
-          - index_build.js
-          - mix.js:
+          - index_build
+          - mix:
               thread_levels: [4, 64, 128, 256, 512]
-          - cpu_noise.js
+          - cpu_noise
         test:
           -  # Empty list. Put new workloads here for testing
         short:  # Just does Hello World
-          - hello.js:
+          - hello:
               parameter1: foo
               parameter2: true
 
