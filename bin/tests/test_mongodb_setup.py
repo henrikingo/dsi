@@ -703,7 +703,8 @@ class TestMongodbSetup(unittest.TestCase):
 
             if pre_cluster_start:
                 mock_run_host_commands.assert_called_with(
-                    test_config['mongodb_setup']['pre_cluster_start'], test_config)
+                    test_config['mongodb_setup']['pre_cluster_start'], test_config,
+                    "pre_cluster_start")
             else:
                 mock_run_host_commands.assert_not_called()
 

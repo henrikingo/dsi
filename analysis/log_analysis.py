@@ -40,11 +40,11 @@ def analyze_logs(reports_dir_path, perf_file_path=None):
 
     bad_logs = _get_bad_log_lines(reports_dir_path, test_times)
 
-    for log_num, (log_path, bad_lines) in enumerate(bad_logs):
+    for _, (log_path, bad_lines) in enumerate(bad_logs):
         result = {
             "status": "fail" if bad_lines else "pass",
             "log_raw": _format_log_raw(log_path, bad_lines),
-            "test_file": "mongod.log.{0}".format(log_num),
+            "test_file": log_path[8:],  # Remove "reports/" prefix
             "start": 0,
             "exit_code": 1 if bad_lines else 0
         }

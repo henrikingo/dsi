@@ -84,11 +84,18 @@ def check_core_file_exists(reports_dir_path, pattern="core.*"):
                 "exit_code": 0
     }
     """
-    reports_dir_paths = []
-    for name in os.listdir(reports_dir_path):
-        if os.path.isdir(os.path.join(reports_dir_path, name)) and \
-                fnmatch.fnmatch(name, 'mongo?.[0-9]') or fnmatch.fnmatch(name, 'configsvr.[0-9]'):
-            reports_dir_paths.append(os.path.basename(name))
+    # List of directories that could contain a core file
+    mongo_dir_paths = []
+
+    # Core files, if they happen, are downloaded into reports/test_id/mongod.0/core.*
+    for test_name in os.listdir(reports_dir_path):
+        test_dir_path = os.path.join(reports_dir_path, test_name)
+        for mongo_name in os.listdir(test_dir_path):
+            mongo_dir_path = os.path.join(test_dir_path, mongo_name)
+            if (os.path.isdir(mongo_dir_path) and fnmatch.fnmatch(mongo_name, 'mongo?.[0-9]')
+                    or fnmatch.fnmatch(mongo_name, 'configsvr.[0-9]')):
+
+                mongo_dir_paths.append(mongo_dir_path)
 
     def _format_msg_body(basenames=None):
         msg_body = "\nNo core files found" if not basenames else \
@@ -97,20 +104,22 @@ def check_core_file_exists(reports_dir_path, pattern="core.*"):
         return msg_body
 
     results = []
-    if reports_dir_paths:
+    if mongo_dir_paths:
         cores_lookup = {}
-        for mongo in reports_dir_paths:
-            cores_lookup[mongo] = []
+        for mongo_dir_path in mongo_dir_paths:
+            cores_lookup[mongo_dir_path] = []
 
-            for basename in os.listdir(os.path.join(reports_dir_path, mongo)):
-                if fnmatch.fnmatch(basename, pattern):
-                    cores_lookup[mongo].append(basename)
+            for potential_corefile in os.listdir(mongo_dir_path):
+                if fnmatch.fnmatch(potential_corefile, pattern):
+                    cores_lookup[mongo_dir_path].append(potential_corefile)
 
-        for mongo in sorted(cores_lookup.iterkeys()):
-            cores = [core for core in cores_lookup[mongo]]
+        for mongo_dir_path in sorted(cores_lookup.iterkeys()):
+            cores = [core for core in cores_lookup[mongo_dir_path]]
+            mongo_host = os.path.basename(mongo_dir_path)
+            test_id = os.path.basename(os.path.dirname(mongo_dir_path))
             results.append({
                 "status": "fail" if cores else "pass",
-                "test_file": 'core.{}'.format(mongo),
+                "test_file": 'core.{}.{}'.format(test_id, mongo_host),
                 "log_raw": _format_msg_body(cores),
                 "start": 0,
                 "exit_code": 1 if cores else 0
@@ -519,26 +528,6 @@ def main(args):  # pylint: disable=too-many-locals,too-many-statements,too-many-
 
     # flush stdout to the log file
     sys.stdout.flush()
-
-    # use the stderr to print replica_lag table
-    if replica_lag_line:
-        print('\n==============================', file=sys.stderr)
-        print('Replication Lag Summary:', file=sys.stderr)
-        printing_test = ''
-        for line in replica_lag_line:
-            if line[0] != printing_test:
-                printing_test = line[0]
-                print('\n%s' % printing_test, file=sys.stderr)
-                print(
-                    '%10s|%16s|%16s|%16s' % ('Thread', 'Avg_lag', 'Max_lag', 'End_of_test_lag'),
-                    file=sys.stderr)
-                print('-' * 10 + '+' + '-' * 16 + '+' + '-' * 16 + '+' + '-' * 16, file=sys.stderr)
-            print_line = '{0:>10}'.format(line[1])
-            for data in line[2:]:
-                formatted = '|{0:16.2f}'.format(data) if isinstance(data, float) else \
-                    '|{0:>16}'.format(data)
-                print_line = print_line + formatted
-            print(print_line, file=sys.stderr)
 
     if args.reports_analysis is not None:
         results = check_core_file_exists(args.reports_analysis)

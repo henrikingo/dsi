@@ -17,6 +17,7 @@ class TestFtdcAnalysis(unittest.TestCase):
     Test suite
     """
 
+    @unittest.skip("TODO: Reorder fixture files in separate commit.")
     def test_resource_rules_fail(self):
         """
         Specifically test that we get the expected report info for resource sanity checks upon
@@ -154,30 +155,14 @@ class TestFtdcAnalysis(unittest.TestCase):
                 'graphs': {
                     'test_false.txt': None
                 },
-                'mongod.0': {
-                    'mdiag.sh': None,
-                    'iperf': {
+                'fio': {
+                    'mongod.0': {
                         'diagnostic.data': {
                             'test_true.txt': None
                         },
                         'mongod.log': None
                     },
-                    'fio': {
-                        'diagnostic.data': {
-                            'test_true.txt': None
-                        },
-                        'mongod.log': None
-                    }
-                },
-                'mongod.1': {
-                    'mdiag.sh': None,
-                    'iperf': {
-                        'diagnostic.data': {
-                            'test_true.txt': None
-                        },
-                        'mongod.log': None
-                    },
-                    'fio': {
+                    'mongod.1': {
                         'diagnostic.data': {
                             'test_true.txt': None
                         },
@@ -191,7 +176,27 @@ class TestFtdcAnalysis(unittest.TestCase):
                             'test_false.txt': None
                         }
                     },
+                    'mongod.0': {
+                        'diagnostic.data': {
+                            'test_true.txt': None
+                        },
+                        'mongod.log': None
+                    },
+                    'mongod.1': {
+                        'diagnostic.data': {
+                            'test_true.txt': None
+                        },
+                        'mongod.log': None
+                    },
                     'test_false.txt': None
+                },
+                '_post_task': {
+                    'mongod.0': {
+                        'mdiag.sh': None
+                    },
+                    'mongod.1': {
+                        'mdiag.sh': None
+                    }
                 }
             }
         }
@@ -212,30 +217,19 @@ class TestFtdcAnalysis(unittest.TestCase):
         expected_result = {
             'mongod.0': {
                 'iperf':
-                    os.path.abspath('test_reports/mongod.0/iperf/diagnostic.data/test_true.txt'),
+                    os.path.abspath('test_reports/iperf/mongod.0/diagnostic.data/test_true.txt'),
                 'fio':
-                    os.path.abspath('test_reports/mongod.0/fio/diagnostic.data/test_true.txt')
+                    os.path.abspath('test_reports/fio/mongod.0/diagnostic.data/test_true.txt')
             },
             'mongod.1': {
                 'iperf':
-                    os.path.abspath('test_reports/mongod.1/iperf/diagnostic.data/test_true.txt'),
+                    os.path.abspath('test_reports/iperf/mongod.1/diagnostic.data/test_true.txt'),
                 'fio':
-                    os.path.abspath('test_reports/mongod.1/fio/diagnostic.data/test_true.txt')
+                    os.path.abspath('test_reports/fio/mongod.1/diagnostic.data/test_true.txt')
             }
         }
         self.assertEqual(ftdc_metric_paths, expected_result)
         shutil.rmtree(dir_path)
-
-    def test__get_host_ip_info(self):
-        """
-        Test correct and incorrect host names
-        """
-        return_value = ftdc_analysis._get_host_ip_info('diag-p1-54.83.180.179')
-        self.assertTrue(return_value is None)
-
-        return_value = ftdc_analysis._get_host_ip_info('mongod.0')
-        expected = 'mongod.0'
-        self.assertEqual(return_value, expected)
 
 
 if __name__ == '__main__':

@@ -72,16 +72,15 @@ def close_safely(stream):
         stream.close()
 
 
-def _run_host_command_map(target_host, command, current_test_id=None):
+def _run_host_command_map(target_host, command, prefix):
     """
     Run one command against a target host if the command is a mapping.
 
     :param Host target_host: The host to send the command to
     :param dict command: The command to execute
-    :param current_test_id: Indicates the id for the test related to the current command. If there
-    is not a specific test related to the current command, the value of current_test_id will be
-    None.
-    :type current_test_id: str, None
+    :param str prefix: The id for the test related to the current command. If there
+    is not a specific test related to the current command, the value of prefix should reflect the
+    hook that the command belongs to, such as between_tests, post_task, and so on.
     """
     # pylint: disable=too-many-branches
     for key, value in command.iteritems():
@@ -99,8 +98,8 @@ def _run_host_command_map(target_host, command, current_test_id=None):
             for paths in value:
                 source = paths['source']
                 target = paths['target']
-                if current_test_id:
-                    target = os.path.join('reports', target_host.alias, current_test_id,
+                if prefix:
+                    target = os.path.join('reports', prefix, target_host.alias,
                                           os.path.normpath(target))
                 else:
                     target = os.path.join('reports', target_host.alias, os.path.normpath(target))
@@ -125,7 +124,7 @@ def _run_host_command_map(target_host, command, current_test_id=None):
             raise UserWarning("Invalid command type")
 
 
-def _run_host_command(host_list, command, config, current_test_id=None):
+def _run_host_command(host_list, command, config, prefix):
     """
     For each host in the list, make a parallelized call to make_host_runner to make the appropriate
     host and run the set of commands.
@@ -135,10 +134,9 @@ def _run_host_command(host_list, command, config, current_test_id=None):
     upload_repo_files, upload_files, retrieve_files, exec, or exec_mongo_shell.
     :type command: str, dict
     :param ConfigDict config: The system configuration
-    :param current_test_id: Indicates the id for the test related to the current command. If there
-    is not a specific test related to the current command, the value of current_test_id will be
-    None.
-    :type current_test_id: str, None
+    :param str prefix: The id for the test related to the current command. If there
+    is not a specific test related to the current command, the value of prefix should reflect the
+    hook that the command belongs to, such as between_tests, post_task, and so on.
     """
     if not host_list:
         return
@@ -151,12 +149,12 @@ def _run_host_command(host_list, command, config, current_test_id=None):
     thread_commands = []
     for host_info in host_list:
         thread_commands.append(
-            partial(make_host_runner, host_info, command, ssh_user, ssh_key_file, current_test_id))
+            partial(make_host_runner, host_info, command, ssh_user, ssh_key_file, prefix))
 
     run_threads(thread_commands, daemon=True)
 
 
-def make_host_runner(host_info, command, ssh_user, ssh_key_file, current_test_id=None):
+def make_host_runner(host_info, command, ssh_user, ssh_key_file, prefix):
     """
     For the host, make an appropriate RemoteHost or LocalHost Object and run the set of commands.
 
@@ -166,10 +164,9 @@ def make_host_runner(host_info, command, ssh_user, ssh_key_file, current_test_id
     :param command: The command to execute. If str, run that command. If dict, type is one of
     upload_repo_files, upload_files, retrieve_files, exec, or exec_mongo_shell.
     :type command: str, dict
-    :param current_test_id: Indicates the id for the test related to the current command. If there
-    is not a specific test related to the current command, the value of current_test_id will be
-    None.
-    :type current_test_id: str, None
+    :param str prefix: The id for the test related to the current command. If there
+    is not a specific test related to the current command, the value of prefix should reflect the
+    hook that the command belongs to, such as between_tests, post_task, and so on.
     """
     # Create the appropriate host type
     target_host = make_host(host_info, ssh_user, ssh_key_file)
@@ -180,7 +177,7 @@ def make_host_runner(host_info, command, ssh_user, ssh_key_file, current_test_id
 
         # If command is a dictionary, parse it
         elif isinstance(command, MutableMapping):
-            _run_host_command_map(target_host, command, current_test_id)
+            _run_host_command_map(target_host, command, prefix)
     finally:
         target_host.close()
 
@@ -259,17 +256,16 @@ def extract_hosts(key, config):
     return _extract_hosts(key, config)
 
 
-def run_host_command(target, command, config, current_test_id=None):
+def run_host_command(target, command, config, prefix):
     """
     Sets up and runs a command for use on the appropriate hosts.
 
     :param str target: The target to run the command on
     :param dict command: The action to run
     :param ConfigDict config: The system configuration
-    :param current_test_id: Indicates the id for the test related to the current command. If there
-    is not a specific test related to the current command, the value of current_test_id will be
-    None.
-    :type current_test_id: str, None
+    :param str prefix: The id for the test related to the current command. If there
+    is not a specific test related to the current command, the value of prefix should reflect the
+    hook that the command belongs to, such as between_tests, post_task, and so on.
     """
 
     assert isinstance(command, MutableMapping), "command isn't a dict"
@@ -279,11 +275,11 @@ def run_host_command(target, command, config, current_test_id=None):
     target = target[3:]
     hosts = extract_hosts(target, config)
     LOG.info("Running command(s) %s on %s", keys, target)
-    _run_host_command(hosts, command, config, current_test_id)
+    _run_host_command(hosts, command, config, prefix)
     LOG.debug("Done running command(s) %s on %s", keys, target)
 
 
-def run_host_commands(commands, config, current_test_id=None):
+def run_host_commands(commands, config, prefix):
     """
     Plural version of run_host_command: run a list of commands.
 
@@ -295,10 +291,9 @@ def run_host_commands(commands, config, current_test_id=None):
 
     :param list commands: List of dict actions to run
     :param ConfigDict config: The system configuration
-    :param current_test_id: Indicates the id for the test related to the current command. If there
-    is not a specific test related to the current command, the value of current_test_id will be
-    None.
-    :type current_test_id: str, None
+    :param str prefix: The id for the test related to the current command. If there
+    is not a specific test related to the current command, the value of prefix should reflect the
+    hook that the command belongs to, such as between_tests, post_task, and so on.
     """
     for command in commands:
         # Item should be a map with one entry
@@ -306,7 +301,7 @@ def run_host_commands(commands, config, current_test_id=None):
         assert len(command.keys()) == 1, "command has more than one entry"
         for target, target_command in command.iteritems():
             target = command.keys()[0]
-            run_host_command(target, target_command, config, current_test_id)
+            run_host_command(target, target_command, config, prefix)
 
 
 def never_timeout():

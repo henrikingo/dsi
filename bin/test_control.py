@@ -105,14 +105,14 @@ def run_pre_post_commands(command_key,
     ''' Runs all commands with the specified command key. If exit on exception is
     true, exit from the script. Otherwise, print the trace and continue.
 
-    :param string command_key: The key to use to find a command list to execute in each of the
+    :param str command_key: The key to use to find a command list to execute in each of the
     command_dicts.
     :param list(ConfigDict) command_dicts: List of ConfigDict objects that may have the specified
     command_section.
     :param dict(ConfigDict) config: The system configuration.
     :param EXCEPTION_BEHAVIOR exception_behavior: Indicates the proper action to take upon catching
     an exception.
-    :param string current_test_id: Indicates the id for the test related to the current set of
+    :param str current_test_id: Indicates the id for the test related to the current set of
     commands. If there is not a specific test related to the current set of commands, the value of
     current_test_id will be None.
     '''
@@ -133,24 +133,28 @@ def run_pre_post_commands(command_key,
                     LOG.error("Invalid exception_behavior entry")
 
 
-def dispatch_commands(command_key, command_list, config, currrent_test_id=None):
+def dispatch_commands(command_key, command_list, config, current_test_id=None):
     ''' Routes commands to the appropriate command runner. The command runner will run the command.
 
-    :param string command_key: The key to use to find a command list to execute in each of the
+    :param str command_key: The key to use to find a command list to execute in each of the
     command_dicts. Used for error handling only.
     :param list(dict) command_list: A list of commands to run
     :param dict(ConfigDict) config: The system configuration.
-    :param string current_test_id: Indicates the id for the test related to the current set of
+    :param str current_test_id: Indicates the id for the test related to the current set of
     commands. If there is not a specific test related to the current set of commands, the value of
     current_test_id will be None.
     '''
+    # Most notably, the prefix is used for directory name under reports/.
+    # It is either the test id (fio, ycsb_load...) or the command itself (post_task).
+    prefix = current_test_id if current_test_id else command_key
+
     for item in command_list:
         # Item should be a map with one entry
         assert isinstance(item, MutableMapping), 'item in list isn\'t a dict'
         assert len(item.keys()) == 1, 'item has more than one entry'
         for target, command in item.iteritems():
             if target.startswith('on_'):
-                run_host_command(target, command, config, currrent_test_id)
+                run_host_command(target, command, config, prefix)
             elif target == "restart_mongodb":
                 mongo_controller = mongodb_setup.MongodbSetup(config)
                 clean_db_dir = command['clean_db_dir']
@@ -243,8 +247,8 @@ class BackgroundCommand(object):
 
         :param RemoteHost host: the remote host to run the command on. This host will be closed
         at the end of it's life span so must not be used for anything else.
-        :param string or list command: the shell command to execute.
-        :param string filename: the location to write the logs to. Any missing directories will be
+        :param str or list command: the shell command to execute.
+        :param str filename: the location to write the logs to. Any missing directories will be
         created. The file will be closed on completion of the command or when close is called.
 
         """
@@ -274,8 +278,8 @@ def start_background_tasks(config, command_dict, test_id, reports_dir='./reports
     create any directories that are required and then evaluate the list of background task.
     :param dict(configDic) config: the overall configuration.
     :param dict command_dict: the command dict.
-    :param string test: the name of the current test.
-    :param string reports_dir: the report directory.
+    :param str test: the name of the current test.
+    :param str reports_dir: the report directory.
     """
     background_tasks = []
     if 'background_tasks' not in command_dict:

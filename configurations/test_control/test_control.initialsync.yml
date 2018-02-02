@@ -23,9 +23,8 @@ run:
 
   - id: initialsync_c_1_d_32_w_f
     type: mongoshell
-    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
+    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
-    config_target: workloads/workloads.yml
     output_files:
       - workloads/workloads.yml
     workload_config:
@@ -45,7 +44,7 @@ run:
 
   - id: initialsync_c_32_d_1_w_f
     type: mongoshell
-    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
+    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     config_target: workloads/workloads.yml
     output_files:
@@ -67,7 +66,7 @@ run:
 
   - id: initialsync_c_32_d_32_w_f
     type: mongoshell
-    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
+    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     config_target: workloads/workloads.yml
     output_files:
@@ -89,7 +88,7 @@ run:
 
   - id: initialsync_c_1_d_1_w_t
     type: mongoshell
-    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
+    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     config_target: workloads/workloads.yml
     output_files:
@@ -111,7 +110,7 @@ run:
 
   - id: initialsync_c_1_d_32_w_t
     type: mongoshell
-    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
+    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     config_target: workloads/workloads.yml
     output_files:
@@ -133,7 +132,7 @@ run:
 
   - id: initialsync_c_32_d_1_w_t
     type: mongoshell
-    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
+    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     config_target: workloads/workloads.yml
     output_files:
@@ -155,7 +154,7 @@ run:
 
   - id: initialsync_c_32_d_32_w_t
     type: mongoshell
-    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
+    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     config_target: workloads/workloads.yml
     output_files:

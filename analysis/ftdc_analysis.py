@@ -454,12 +454,12 @@ def _get_ftdc_file_paths(dir_path):
 
     The expected structure of the directory is as follows:
     - reports
-        - <host_name>
-            - <test_name>
+        - <test_id>
+            - <host_name>
                 - diagnostic.data
-            - <test_name>
+            - <host_name>
                 - diagnostic.data
-        - <host_name>
+        - <test_id>
         ...
 
     :param type dir_path: str
@@ -468,41 +468,19 @@ def _get_ftdc_file_paths(dir_path):
     dir_path = os.path.abspath(dir_path)
     find_directory = 'diagnostic.data'
     ftdc_metrics_paths = {}
-    for root_directory, sub_directory, _ in os.walk(dir_path):
-        if find_directory in sub_directory:
-            parent_directory_name = os.path.basename(root_directory)
-            grandparent_directory_name = os.path.basename(os.path.dirname(root_directory))
-            host_alias = _get_host_ip_info(grandparent_directory_name)
-            # In the short term, there are also diag-p*-*-* directories with diagnostic data. The
-            # previous line and the following check skips analysis for the diag-p* directories (this
-            # check can probably be removed later).
-            if host_alias:
-                ftdc_files = os.listdir(os.path.join(root_directory, find_directory))
-                files = [fi for fi in ftdc_files if not fi.endswith(".interim")]
-                if len(files) != 1:
-                    LOGGER.info('%s FTDC metrics files in %s: %s. Skipping.', len(files),
-                                parent_directory_name, str(files))
+    for root_directory, sub_directories, _ in os.walk(dir_path):
+        if find_directory in sub_directories:
+            host_alias = os.path.basename(root_directory)
+            test_id = os.path.basename(os.path.dirname(root_directory))
+            ftdc_files = os.listdir(os.path.join(root_directory, find_directory))
+            files = [file_name for file_name in ftdc_files if not file_name.endswith(".interim")]
+            if len(files) != 1:
+                LOGGER.info('%s FTDC metrics files in %s/%s: %s. Skipping.', len(files), test_id,
+                            host_alias, str(files))
+            else:
+                ftdc_file_path = os.path.join(root_directory, find_directory, files[0])
+                if host_alias in ftdc_metrics_paths:
+                    ftdc_metrics_paths[host_alias][test_id] = ftdc_file_path
                 else:
-                    ftdc_file_path = os.path.join(root_directory, find_directory, files[0])
-                    if host_alias in ftdc_metrics_paths:
-                        ftdc_metrics_paths[host_alias][parent_directory_name] = ftdc_file_path
-                    else:
-                        ftdc_metrics_paths[host_alias] = {parent_directory_name: ftdc_file_path}
+                    ftdc_metrics_paths[host_alias] = {test_id: ftdc_file_path}
     return ftdc_metrics_paths
-
-
-def _get_host_ip_info(diagnostic_dir_name):
-    """
-    Directory names follow the naming convention: <CATEGORY>-<INDEX> where INDEX is
-    between 0 and (# of instances of that category) and CATEGORY is one of
-    'mongod', 'mongos', 'configsvr', or 'workload_client'. In this instance
-    only 'mongod' or 'configsvr' could be valid.
-
-    :param str diagnostic_dir_name: directory name, parent directory enclosing the
-               diagnostic.data directory containing FTDC files
-    :rtype: str the diagnostic directory name if no '-' otherwise it is legacy and
-    None is returned for the moment.
-    """
-    if '-' in diagnostic_dir_name:
-        return None
-    return diagnostic_dir_name

@@ -23,9 +23,8 @@ class TestPostRunCheck(unittest.TestCase):
     def cleanup(self):
         """ common clean up code. It is called from both setup and teardown to be sure to be sure.
         """
-        self.core_file = os.path.join(test_utils.FIXTURE_DIR_PATH,
-                                      'core_workloads_reports/mongod.0/'
-                                      'core.file')
+        self.core_file = os.path.join(test_utils.FIXTURE_DIR_PATH, 'core_workloads_reports',
+                                      'test_id', 'mongod.0', 'core.file')
         if os.path.exists(self.core_file):
             os.remove(self.core_file)
 
@@ -68,6 +67,7 @@ class TestPostRunCheck(unittest.TestCase):
             "--report-file {0}/report_ftdc.json --out-file /dev/null".format(
                 test_utils.FIXTURE_DIR_PATH)
 
+        mkdir_p(os.path.dirname(self.core_file))
         touch(self.core_file)
         post_run_check.main(arg_string.split(" "))
         self.assertTrue(
@@ -120,7 +120,7 @@ class TestPostRunCheck(unittest.TestCase):
         self.assertEquals(post_run_check.check_core_file_exists(core_path), [])
 
         # matching directories but no core files
-        log_filename = os.path.join(core_path, 'mongod.0', 'mongod.log')
+        log_filename = os.path.join(core_path, 'test_id', 'mongod.0', 'mongod.log')
         mkdir_p(os.path.dirname(log_filename))
         touch(log_filename)
 
@@ -128,7 +128,7 @@ class TestPostRunCheck(unittest.TestCase):
             post_run_check.check_core_file_exists(core_path), [{
                 'status': 'pass',
                 'start': 0,
-                'test_file': 'core.mongod.0',
+                'test_file': 'core.test_id.mongod.0',
                 'log_raw': '\nNo core files found',
                 'exit_code': 0
             }])
@@ -139,14 +139,14 @@ class TestPostRunCheck(unittest.TestCase):
         mkdir_p(core_path)
 
         # single matching mongod core file and default pattern
-        core_filename = os.path.join(core_path, 'mongod.0', 'core.test.mongod.0')
+        core_filename = os.path.join(core_path, 'test_id', 'mongod.0', 'core.test.mongod.0')
         mkdir_p(os.path.dirname(core_filename))
         touch(core_filename)
 
         expected = [[{
             'status': 'fail',
             'start': 0,
-            'test_file': 'core.mongod.0',
+            'test_file': 'core.test_id.mongod.0',
             'exit_code': 1
         }, core_filename]]
         check_failures(post_run_check.check_core_file_exists(core_path), expected)
@@ -157,14 +157,14 @@ class TestPostRunCheck(unittest.TestCase):
         shutil.rmtree(core_path, ignore_errors=True)
         mkdir_p(core_path)
 
-        core_filename = os.path.join(core_path, 'mongos.0', 'core.test.mongos.0')
+        core_filename = os.path.join(core_path, 'test_id', 'mongos.0', 'core.test.mongos.0')
         mkdir_p(os.path.dirname(core_filename))
         touch(core_filename)
 
         expected = [[{
             'status': 'fail',
             'start': 0,
-            'test_file': 'core.mongos.0',
+            'test_file': 'core.test_id.mongos.0',
             'exit_code': 1
         }, core_filename]]
         check_failures(post_run_check.check_core_file_exists(core_path), expected)
@@ -175,14 +175,14 @@ class TestPostRunCheck(unittest.TestCase):
         mkdir_p(core_path)
 
         # single matching core file and default pattern
-        core_filename = os.path.join(core_path, 'configsvr.0', 'core.test.configsvr.0')
+        core_filename = os.path.join(core_path, 'test_id', 'configsvr.0', 'core.test.configsvr.0')
         mkdir_p(os.path.dirname(core_filename))
         touch(core_filename)
 
         expected = [[{
             'status': 'fail',
             'start': 0,
-            'test_file': 'core.configsvr.0',
+            'test_file': 'core.test_id.configsvr.0',
             'exit_code': 1
         }, core_filename]]
         check_failures(post_run_check.check_core_file_exists(core_path), expected)
@@ -193,17 +193,17 @@ class TestPostRunCheck(unittest.TestCase):
         mkdir_p(core_path)
 
         # single matching core file and default pattern
-        core_filename = os.path.join(core_path, 'mongod.0', 'core.test.mongod.0')
+        core_filename = os.path.join(core_path, 'test_id', 'mongod.0', 'core.test.mongod.0')
         mkdir_p(os.path.dirname(core_filename))
         touch(core_filename)
-        core_filename_1 = os.path.join(core_path, 'mongod.0', 'core.test.mongod.1')
+        core_filename_1 = os.path.join(core_path, 'test_id', 'mongod.0', 'core.test.mongod.1')
         mkdir_p(os.path.dirname(core_filename_1))
         touch(core_filename_1)
 
         expected = [[{
             'status': 'fail',
             'start': 0,
-            'test_file': 'core.mongod.0',
+            'test_file': 'core.test_id.mongod.0',
             'exit_code': 1
         }, core_filename, core_filename_1]]
         check_failures(post_run_check.check_core_file_exists(core_path), expected)
@@ -213,27 +213,27 @@ class TestPostRunCheck(unittest.TestCase):
         shutil.rmtree(core_path, ignore_errors=True)
         mkdir_p(core_path)
 
-        core_filename = os.path.join(core_path, 'mongod.0', 'core.test.mongod.0')
+        core_filename = os.path.join(core_path, 'test_id', 'mongod.0', 'core.test.mongod.0')
         mkdir_p(os.path.dirname(core_filename))
         touch(core_filename)
 
-        core_filename_1 = os.path.join(core_path, 'mongod.1', 'core.test.mongod.1')
+        core_filename_1 = os.path.join(core_path, 'test_id', 'mongod.1', 'core.test.mongod.1')
         mkdir_p(os.path.dirname(core_filename_1))
         touch(core_filename_1)
 
-        core_filename_2 = os.path.join(core_path, 'mongos.0', 'core.test.mongos.2')
+        core_filename_2 = os.path.join(core_path, 'test_id', 'mongos.0', 'core.test.mongos.2')
         mkdir_p(os.path.dirname(core_filename_2))
         touch(core_filename_2)
 
-        core_filename_3 = os.path.join(core_path, 'mongos.0', 'core.test.mongos.3')
+        core_filename_3 = os.path.join(core_path, 'test_id', 'mongos.0', 'core.test.mongos.3')
         mkdir_p(os.path.dirname(core_filename_3))
         touch(core_filename_3)
 
-        core_filename_4 = os.path.join(core_path, 'configsvr.0', 'core.test.configsvr.4')
+        core_filename_4 = os.path.join(core_path, 'test_id', 'configsvr.0', 'core.test.configsvr.4')
         mkdir_p(os.path.dirname(core_filename_4))
         touch(core_filename_4)
 
-        core_filename_5 = os.path.join(core_path, 'configsvr.0', 'core.test.configsvr.5')
+        core_filename_5 = os.path.join(core_path, 'test_id', 'configsvr.0', 'core.test.configsvr.5')
         mkdir_p(os.path.dirname(core_filename_5))
         touch(core_filename_5)
 
@@ -241,7 +241,7 @@ class TestPostRunCheck(unittest.TestCase):
             {
                 'status': 'fail',
                 'start': 0,
-                'test_file': 'core.configsvr.0',
+                'test_file': 'core.test_id.configsvr.0',
                 'exit_code': 1
             },
             core_filename_4,
@@ -249,17 +249,17 @@ class TestPostRunCheck(unittest.TestCase):
         ], [{
             'status': 'fail',
             'start': 0,
-            'test_file': 'core.mongod.0',
+            'test_file': 'core.test_id.mongod.0',
             'exit_code': 1
         }, core_filename], [{
             'status': 'fail',
             'start': 0,
-            'test_file': 'core.mongod.1',
+            'test_file': 'core.test_id.mongod.1',
             'exit_code': 1
         }, core_filename_1], [{
             'status': 'fail',
             'start': 0,
-            'test_file': 'core.mongos.0',
+            'test_file': 'core.test_id.mongos.0',
             'exit_code': 1
         }, core_filename_3]]
         results = post_run_check.check_core_file_exists(core_path)
@@ -272,22 +272,22 @@ class TestPostRunCheck(unittest.TestCase):
         expected = [[{
             'status': 'pass',
             'start': 0,
-            'test_file': 'core.configsvr.0',
+            'test_file': 'core.test_id.configsvr.0',
             'exit_code': 0
         }], [{
             'status': 'fail',
             'start': 0,
-            'test_file': 'core.mongod.0',
+            'test_file': 'core.test_id.mongod.0',
             'exit_code': 1
         }, core_filename], [{
             'status': 'fail',
             'start': 0,
-            'test_file': 'core.mongod.1',
+            'test_file': 'core.test_id.mongod.1',
             'exit_code': 1
         }, core_filename_1], [{
             'status': 'fail',
             'start': 0,
-            'test_file': 'core.mongos.0',
+            'test_file': 'core.test_id.mongos.0',
             'exit_code': 1
         }, core_filename_3]]
         results = post_run_check.check_core_file_exists(core_path)

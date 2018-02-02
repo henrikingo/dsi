@@ -3,9 +3,8 @@ run:
   - id: change_streams_multi_mongos
     type: mongoshell
 
-    cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c workloads.yml
+    cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
-    config_target: workloads/workloads.yml
     output_files:
       - workloads/workload_timestamps.csv
     workload_config:

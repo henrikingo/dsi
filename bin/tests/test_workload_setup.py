@@ -101,13 +101,13 @@ class TestWorkloadSetup(unittest.TestCase):
 
             expected_calls = [
                 call('on_localhost', self.config['workload_setup']['foo'][0]['on_localhost'],
-                     expected_call_config, None),
+                     expected_call_config, "workload_setup"),
                 call('on_workload_client',
                      self.config['workload_setup']['foo'][1]['on_workload_client'],
-                     expected_call_config, None),
+                     expected_call_config, "workload_setup"),
                 call('on_workload_client',
                      self.config['workload_setup']['bar'][0]['on_workload_client'],
-                     expected_call_config, None),
+                     expected_call_config, "workload_setup"),
             ]
             self.mock_run_host.assert_has_calls(expected_calls)
             mock_setup_ssh_agent.assert_called()

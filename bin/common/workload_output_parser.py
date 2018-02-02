@@ -99,7 +99,6 @@ class ResultParser(object):
         self.reports_root = config['test_control']['reports_dir_basename']
         self.perf_json_path = config['test_control']['perf_json']['path']
         self.load_perf_json()
-        self.reports_log_dir = os.path.join(self.reports_root, self.test_id)
         self.timer = timer
         self.input_log = None
 
@@ -205,7 +204,7 @@ class MongoShellParser(ResultParser):
         """Set mongoshell specific attributes"""
         super(MongoShellParser, self).__init__(test, config, timer)
         input_file = config['test_control']['output_file']['mongoshell']
-        self.input_log = os.path.join(self.reports_log_dir, input_file)
+        self.input_log = os.path.join(self.reports_root, test['id'], input_file)
 
     def parse(self):
         """
@@ -233,7 +232,7 @@ class YcsbParser(ResultParser):
         """Set ycsb specific attributes"""
         super(YcsbParser, self).__init__(test, config, timer)
         input_file = config['test_control']['output_file']['ycsb']
-        self.input_log = os.path.join(self.reports_log_dir, input_file)
+        self.input_log = os.path.join(self.reports_root, test['id'], input_file)
         self.threads = None  # We postpone this to _parse()
 
     def parse(self):

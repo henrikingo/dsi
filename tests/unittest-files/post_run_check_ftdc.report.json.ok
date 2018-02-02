@@ -146,7 +146,7 @@
         {
             "status": "pass",
             "log_raw": "\nNo core files found",
-            "test_file": "core.mongod.0",
+            "test_file": "core.test_id.mongod.0",
             "exit_code": 0,
             "start": 0
         },

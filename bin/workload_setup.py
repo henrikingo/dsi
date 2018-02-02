@@ -73,7 +73,7 @@ class WorkloadSetupRunner(object):
         """
         LOG.info("Starting workload_setup for test_type %s", test_type)
         steps = self.config['workload_setup'][test_type]
-        host.run_host_commands(steps, current_test_id=None, config=self.config)
+        host.run_host_commands(steps, self.config, 'workload_setup')
 
 
 def main(argv):

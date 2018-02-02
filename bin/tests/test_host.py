@@ -267,7 +267,7 @@ class HostTestCase(unittest.TestCase):
                     }
                 },
             ]
-            host.run_host_commands(commands, self.config)
+            host.run_host_commands(commands, self.config, "test_id")
             assert mongod.call_count == 2
 
     def test_run_host_command_map(self):
@@ -276,7 +276,7 @@ class HostTestCase(unittest.TestCase):
         with self.assertRaises(UserWarning):
             with patch('host.RemoteHost') as mongod:
                 command = {"garbage": {"remote_path": "mongos.log"}}
-                host._run_host_command_map(mongod, command)
+                host._run_host_command_map(mongod, command, "test_id")
 
     def test_upload_repo_files(self):
         """ Test run command map upload_repo_files """
@@ -285,7 +285,7 @@ class HostTestCase(unittest.TestCase):
         # test upload_repo_files
         with patch('host.RemoteHost') as mongod:
             command = {"upload_repo_files": [{"target": "remote_path", "source": "mongos.log"}]}
-            host._run_host_command_map(mongod, command)
+            host._run_host_command_map(mongod, command, "test_id")
             mongod.upload_file.assert_called_once_with(root + "mongos.log", "remote_path")
 
         with patch('host.RemoteHost') as mongod:
@@ -298,7 +298,7 @@ class HostTestCase(unittest.TestCase):
                     "source": "from"
                 }]
             }
-            host._run_host_command_map(mongod, command)
+            host._run_host_command_map(mongod, command, "test_id")
             calls = [
                 mock.call(root + "mongos.log", "remote_path"),
                 mock.call(root + "from", "to"),
@@ -333,7 +333,7 @@ class HostTestCase(unittest.TestCase):
 
         ftp.assert_has_calls(
             [call.put(ANY, '/foo/bar.tar'),
-             call.chmod('/foo/bar.tar', 420)], any_order=False)
+             call.chmod('/foo/bar.tar', ANY)], any_order=False)
 
     @patch('host._connected_ssh')
     def test_upload_single_file(self, mock_connected_ssh):
@@ -361,7 +361,7 @@ class HostTestCase(unittest.TestCase):
         # test upload_files
         with patch('host.RemoteHost') as mongod:
             command = {"upload_files": [{"target": "remote_path", "source": "mongos.log"}]}
-            host._run_host_command_map(mongod, command)
+            host._run_host_command_map(mongod, command, "test_id")
             mongod.upload_file.assert_called_once_with("mongos.log", "remote_path")
 
         with patch('host.RemoteHost') as mongod:
@@ -374,7 +374,7 @@ class HostTestCase(unittest.TestCase):
                     "target": "from"
                 }]
             }
-            host._run_host_command_map(mongod, command)
+            host._run_host_command_map(mongod, command, "test_id")
             calls = [mock.call("mongos.log", "remote_path"), mock.call("to", "from")]
             mongod.upload_file.assert_has_calls(calls, any_order=True)
 
@@ -388,8 +388,8 @@ class HostTestCase(unittest.TestCase):
 
             command = {"retrieve_files": [{"source": "remote_path", "target": "mongos.log"}]}
             mongod.alias = 'host'
-            host._run_host_command_map(mongod, command)
-            mock_retrieve_file.assert_any_call("remote_path", "reports/host/mongos.log")
+            host._run_host_command_map(mongod, command, "test_id")
+            mock_retrieve_file.assert_any_call("remote_path", "reports/test_id/host/mongos.log")
 
         # retrieve_files tests
         with patch('host.RemoteHost') as mongod:
@@ -398,8 +398,8 @@ class HostTestCase(unittest.TestCase):
 
             command = {"retrieve_files": [{"source": "remote_path", "target": "mongos.log"}]}
             mongod.alias = 'host'
-            host._run_host_command_map(mongod, command, current_test_id="test_id")
-            mock_retrieve_file.assert_any_call("remote_path", "reports/host/test_id/mongos.log")
+            host._run_host_command_map(mongod, command, "test_id")
+            mock_retrieve_file.assert_any_call("remote_path", "reports/test_id/host/mongos.log")
 
         with patch('host.RemoteHost') as mongod:
             mock_retrieve_file = Mock()
@@ -407,16 +407,16 @@ class HostTestCase(unittest.TestCase):
 
             command = {"retrieve_files": [{"source": "remote_path", "target": "local_path"}]}
             mongod.alias = 'host'
-            host._run_host_command_map(mongod, command)
-            mock_retrieve_file.assert_any_call("remote_path", "reports/host/local_path")
+            host._run_host_command_map(mongod, command, "test_id")
+            mock_retrieve_file.assert_any_call("remote_path", "reports/test_id/host/local_path")
 
         with patch('host.RemoteHost') as mongod:
             mock_retrieve_file = Mock()
             mongod.retrieve_path = mock_retrieve_file
 
             mongod.alias = "mongod.0"
-            host._run_host_command_map(mongod, command)
-            mock_retrieve_file.assert_any_call("remote_path", "reports/mongod.0/local_path")
+            host._run_host_command_map(mongod, command, "test_id")
+            mock_retrieve_file.assert_any_call("remote_path", "reports/test_id/mongod.0/local_path")
 
         with patch('host.RemoteHost') as mongod:
             mock_retrieve_file = Mock()
@@ -424,28 +424,8 @@ class HostTestCase(unittest.TestCase):
 
             command = {"retrieve_files": [{"source": "remote_path", "target": "./local_path"}]}
             mongod.alias = "mongos.0"
-            host._run_host_command_map(mongod, command)
-            mock_retrieve_file.assert_any_call("remote_path", "reports/mongos.0/local_path")
-
-        with patch('host.RemoteHost') as mongod:
-            mock_retrieve_file = Mock()
-            mongod.retrieve_path = mock_retrieve_file
-
-            # deliberate jail break for workload client backwards compatibility
-            command = {
-                "retrieve_files": [{
-                    "source": "workloads/workload_timestamps.csv",
-                    "target": "../workloads_timestamps.csv"
-                }]
-            }
-            mongod.alias = "workload_client.0"
-            host._run_host_command_map(mongod, command)
-            calls = [
-                mock.call("workloads/workload_timestamps.csv",
-                          "reports/workload_client.0/../workloads_timestamps.csv")
-            ]
-
-            mock_retrieve_file.assert_has_calls(calls)
+            host._run_host_command_map(mongod, command, "test_id")
+            mock_retrieve_file.assert_any_call("remote_path", "reports/test_id/mongos.0/local_path")
 
     def test_exec(self):
         """ Test run command map upload_repo_files """
@@ -453,7 +433,7 @@ class HostTestCase(unittest.TestCase):
         # test exec
         with patch('host.RemoteHost') as mongod:
             command = {"exec": "this is a command"}
-            host._run_host_command_map(mongod, command)
+            host._run_host_command_map(mongod, command, "test_id")
             mongod.run.assert_called_once_with(["this", "is", "a", "command"])
 
     def test_exec_mongo_shell(self):
@@ -467,13 +447,13 @@ class HostTestCase(unittest.TestCase):
                     "connection_string": "connection string"
                 }
             }
-            host._run_host_command_map(mongod, command)
+            host._run_host_command_map(mongod, command, "test_id")
             mongod.exec_mongo_command.assert_called_once_with(
                 "this is a script", connection_string="connection string")
 
         with patch('host.RemoteHost') as mongod:
             command = {"exec_mongo_shell": {"script": "this is a script"}}
-            host._run_host_command_map(mongod, command)
+            host._run_host_command_map(mongod, command, "test_id")
             mongod.exec_mongo_command.assert_called_once_with(
                 "this is a script", connection_string="")
 
@@ -864,7 +844,7 @@ class HostTestCase(unittest.TestCase):
         with patch('bin.common.host.make_host') as mock_make_host:
             mock_target_host = Mock()
             mock_make_host.return_value = mock_target_host
-            make_host_runner("host_info", 'command', "ssh_user", "ssh_key_file")
+            make_host_runner("host_info", 'command', "ssh_user", "ssh_key_file", "test_id")
             mock_make_host.assert_called_once_with("host_info", "ssh_user", "ssh_key_file")
             mock_target_host.run.assert_called_once_with('command')
             mock_target_host.close.assert_called_once()
@@ -873,8 +853,7 @@ class HostTestCase(unittest.TestCase):
             command = {}
             mock_target_host = Mock()
             mock_make_host.return_value = mock_target_host
-            make_host_runner(
-                "host_info", command, "ssh_user", "ssh_key_file", current_test_id='test_id')
+            make_host_runner("host_info", command, "ssh_user", "ssh_key_file", 'test_id')
             mock_make_host.assert_called_once_with("host_info", "ssh_user", "ssh_key_file")
             mock_run_host_command_map.assert_called_once_with(mock_target_host, command, 'test_id')
             mock_target_host.close.assert_called_once()

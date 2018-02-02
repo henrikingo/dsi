@@ -49,12 +49,12 @@ def parse_command_line(config, args=None):
         'bootstrap.yml in the current directory. ')
     parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
     parser.add_argument(
-        '--directory', default='.', help="Directory to setup. Defaults to current directory")
+        '-D', '--directory', default='.', help="Directory to setup. Defaults to current directory")
     parser.add_argument('--log-file', help='path to log file')
 
-    # This option is ignored but allowed for backward compatibility
+    # These options are ignored but allowed for backward compatibility
     parser.add_argument('--production', action='store_true', default=False, help='(Ignored)')
-    parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
+    parser.add_argument('-v', '--verbose', action='store_true', help='(Ignored, use -d instead.)')
     args = parser.parse_args(args)
 
     setup_logging(args.debug, args.log_file)  # pylint: disable=no-member

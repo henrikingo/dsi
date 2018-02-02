@@ -147,7 +147,7 @@
             "status": "fail",
             "start": 0,
             "log_raw": "\ncore files found: 1\nNames: \ncore.file",
-            "test_file": "core.mongod.0",
+            "test_file": "core.test_id.mongod.0",
             "exit_code": 1
         },
         {
