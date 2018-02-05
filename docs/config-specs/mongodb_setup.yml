@@ -1,38 +1,38 @@
-# String that will be used in the path of the installation directory
-# Useful to test multiple versions of MongoDB on same infrastructure (manual
-# runs for analysing build failures)
+# String that will be used in the path of the installation directory.
+# Useful to test multiple versions of MongoDB on same infrastructure (manual runs for analysing
+# build failures).
 # Note: mongo_root is the directory where a mongodb.tar.gz was extracted.
 mongo_dir: mongodb
 
-journal_dir: /media/ephemeral1/journal   # If specified, create a symlink to have journal at this path
+journal_dir: /media/ephemeral1/journal  # If specified, create a symlink to have journal at this path
 clean_db_dir: true
 
 mongod_config_file:  # This section is literally a mongod config file
-  replication:  # as specified in https://docs.mongodb.org/manual/reference/configuration-options/
-    replSetName: myrs0         # We will use this and completely cease using command line options
+  replication:  # As specified in https://docs.mongodb.org/manual/reference/configuration-options/
+    replSetName: myrs0  # We will use this and completely cease using command line options
   storage:  # A test can specify any option supported by mongod, including undocumented ones
     engine: wiredTiger
 # etc...
 rs_conf:  # The top level settings for rs.conf() / rs.initiate()
-  protocolVersion: 1             # See also node specific settings under topology
+  protocolVersion: 1  # See also node specific settings under topology
   settings:
     heartbeatTimeoutSecs: 10
 
 mongos_config_file: ...
 configsvr_config_file: ...
 
-# Ordered list of steps to take before starting the mongo
-# processes. Each item is guaranteed to complete before the next one
+# Ordered list of steps to take before starting the mongo processes. Each item is guaranteed to
+# complete before the next one.
 #
-# Keys in the list can be on_all_hosts, on_workload_client, on_mongod,
-# on_mongos, on_configsvr, on_host, on_servers
+# Keys in the list can be on_all_hosts, on_workload_client, on_mongod, on_mongos, on_configsvr,
+# on_host, on_servers.
 pre_cluster_start:
   - on_all_hosts:
       download_files:
         - source: http://url1
-          target: file1
+          target: remote_file_path1
         - source: http://url2
-          target: file2
+          target: remote_file_path2
   - on_all_hosts:
       upload_files:
         - source: local_path/file1
@@ -45,7 +45,7 @@ pre_cluster_start:
         script: |
         # JavaScript to be executed in a mongo shell (when MongoDB cluster is running)
         connection_string: ${mongodb_setup.meta.hosts}  # Defaults to localhost
-  - on_servers: (see above)             # servers = union( mongod, mongos, configsvr) = all_hosts - workload_client
+  - on_servers: (see above)  # servers = union( mongod, mongos, configsvr) = all_hosts - workload_client
   - on_mongod: (see above)
   - on_mongos: (see above)
   - on_configsvr: (see above)
@@ -78,19 +78,18 @@ post_task:
           target: ./diagnostic.data
 
 
-
 # This defines the cluster topology to deploy, and what to deploy on which IP address.
-# Note that it is also possible to override mongod/mongos config file entries on a per-node basis.
+# Note: it is also possible to override mongod/mongos config file entries on a per-node basis.
 topology:
-  # Note: It is allowed to, even if most tests wouldn't, specify multiple
-  # sharded clusters, replica sets and/or standalone mongod's. Hence a list is used.
+  # Note: It is allowed to, even if most tests wouldn't, specify multiple sharded clusters, replica
+  # sets and/or standalone mongod's. Hence a list is used.
   # Initial sync test would specify one 2-node replica set, and a separate standalone server.
-  - id: mycluster                              # Optional. Needed if someone ever would configure more than 1 cluster.
+  - id: mycluster  # Optional. Needed if someone ever would configure more than 1 cluster.
     cluster_type: sharded_cluster
     configsvr:
       - public_ip: ${infrastructure_provisioning.out.configsvr.0.public_ip}
         private_ip: ${infrastructure_provisioning.out.configsvr.0.private_ip}
-        config_file: ...                                                  # See the last mongod's below for an example of node specific config
+        config_file: ...  # See the last mongod's below for an example of node specific config
       - public_ip: ${infrastructure_provisioning.out.configsvr.1.public_ip}
         private_ip: ${infrastructure_provisioning.out.configsvr.1.private_ip}
       - public_ip: ${infrastructure_provisioning.out.configsvr.2.public_ip}
@@ -98,7 +97,7 @@ topology:
     mongos:
       - public_ip: ${infrastructure_provisioning.out.mongos.0.public_ip}
         private_ip: ${infrastructure_provisioning.out.mongos.0.private_ip}
-        config_file: ...                                                     # See the last mongod's below for an example of node specific config
+        config_file: ...  # See the last mongod's below for an example of node specific config
       - public_ip: ${infrastructure_provisioning.out.mongos.1.public_ip}
         private_ip: ${infrastructure_provisioning.out.mongos.1.private_ip}
       - public_ip: ${infrastructure_provisioning.out.mongos.2.public_ip}
@@ -106,12 +105,12 @@ topology:
     shard:
       - id: myrs0
         # If specified, used as shard name when deploying the cluster.
-        # Note that replset name = config_file.replication.replSetName
+        # Note: replset name = config_file.replication.replSetName.
         cluster_type: replset
         mongod:
           - public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
-            id: my_unique_id      # Shards, replica sets and mongod/mongos processes can have a unique id.
+            id: my_unique_id  # Shards, replica sets and mongod/mongos processes can have a unique id
           - public_ip: ${infrastructure_provisioning.out.mongod.1.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.1.private_ip}
           - public_ip: ${infrastructure_provisioning.out.mongod.2.public_ip}
@@ -123,8 +122,8 @@ topology:
         mongod:
           - public_ip: ${infrastructure_provisioning.out.mongod.3.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.3.private_ip}
-            rs_conf_member:  # The member specific part of rs.conf() json object,
-              priority: 2    # to go under rs.conf().member[0]
+            rs_conf_member:  # The member specific part of rs.conf() json object, to go under rs.conf().member[0]
+              priority: 2
           - public_ip: ${infrastructure_provisioning.out.mongod.4.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.4.private_ip}
           - public_ip: ${infrastructure_provisioning.out.mongod.5.public_ip}
@@ -132,12 +131,12 @@ topology:
       - id: myrs2
         cluster_type: replset
         mongod:
-          # Testing a cluster where some nodes are of a different version
-          # This references mongodb_binary_archive from bootstrap.yml
+          # Testing a cluster where some nodes are of a different version.
+          # This references mongodb_binary_archive from bootstrap.yml.
           - mongodb_binary_archive: ${bootstrap.mongodb_binary_archive}
-            config_file: &diff_mongod_config           # And a different config.
-              storage:  # Note: These are merged (or "upserted") into the
-                engine: inMemory                       # global/common mongod_config_file specified above
+            config_file: &diff_mongod_config  # And a different config
+              storage:  # Note: These are merged (or "upserted") into the global/common mongod_config_file specified above
+                engine: inMemory
             public_ip: ${infrastructure_provisioning.out.mongod.6.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.6.private_ip}
           # The mongodb binary used is the pinned version listed below
@@ -151,7 +150,7 @@ topology:
             public_ip: ${infrastructure_provisioning.out.mongod.7.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.7.private_ip}
   # Note: For replica sets (including shards with more than a single node), the default priorities
-  # are: 2 for the first node and 1 for the rest.
+  # are 2 for the first node and 1 for the rest
   - cluster_type: replset
     mongod:
       - id: myid1
@@ -169,13 +168,14 @@ topology:
     private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
 
 
-# Meta data about this mongodb setup
-# It is possible to provide meta data that is not used by mongodb_setup itself, but that can be convenient to reference
-# from the other modules. In particular, see the test_control module doing that in run.0.workload_config.mongo
+# Meta data about this mongodb setup.
+# It is possible to provide meta data that is not used by mongodb_setup itself, but that can be
+# convenient to reference from the other modules. In particular, see the test_control module doing
+# that in run.0.workload_config.mongo
 meta:
   # The list of hosts that can be used in a mongodb connection string
   hosts: ${mongodb_setup.topology.0.mongos.0.private_ip}:27017,${mongodb_setup.topology.0.mongos.1.private_ip}:27017,${mongodb_setup.topology.0.mongos.2.private_ip}:27017
-  # A single host, as in "host:port". Use the primary or first mongos
+  # A single host, as in "host:port". Use the primary or first mongos.
   hostname: ${mongodb_setup.topology.0.mongos.0.private_ip}
   port: 27017
   username: myusername
@@ -184,14 +184,13 @@ meta:
   is_replset: false
   storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
 
-  # Same name as used in bootstrap.mongodb_setup, but out of convention,
-  # we don't reference bootstrap.yml from elsewhere, as it's not a
-  # required file.
+  # Same name as used in bootstrap.mongodb_setup, but out of convention, we avoid referencing
+  # bootstrap.yml from elsewhere, as it's not a required file
   mongodb_setup: standalone
 
-# Hosts to run correctness tests on.
+# Hosts to run correctness tests on
 validate:
-  # Standalone hosts will have validate called on them.
+  # Standalone hosts will have validate called on them
   standalone:
     - ${mongodb_setup.topology.2.private_ip}:27017
   # Primaries will run validate and dbhash
@@ -204,13 +203,13 @@ validate:
 # These params are passed through to shutdownServer, it allows whatever
 # https://docs.mongodb.com/manual/reference/command/shutdown/#dbcmd.shutdown supports.
 # The values are defaulted (in defaults.yml) so are not required.
-# See https://jira.mongodb.org/browse/SERVER-32679 for why timeoutSecs < 120
+# See https://jira.mongodb.org/browse/SERVER-32679 for why timeoutSecs < 120.
 shutdown_options:
   force: true
   timeoutSecs: 119
 
-# these timeouts specify the max amount of milliseconds that the mongo shutdownServer command and
-# pkill mongo commands can run for.
+# These timeouts specify the max amount of milliseconds that the mongo shutdownServer command and
+# pkill mongo commands can run for
 timeouts:
   shutdown_ms: 540000
   sigterm_ms: 60000

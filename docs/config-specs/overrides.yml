@@ -1,15 +1,9 @@
-# Can override any of the values in the input or output file above. If specified, the config
-# library will return this value in place of the above keys.
-# Typical use case would be to use a standard config file as base, but then override a
-# single value in this separate file.
+# Can override any of the values in the input or output file above. If specified, the config library
+# will return this value in place of the above keys. Typical use case would be to use a standard
+# config file as base, but then override a single value in this separate file.
 infrastructure_provisioning:
   tfvars:
-    configsvr_instance_type: t1.micro   # Use even smaller instance type to save money
-
-
-
-
-
+    configsvr_instance_type: t1.micro  # Use even smaller instance type to save money
 
 # Below section tests that overrides.yml works together with magic per_node_mongo_config()
 mongodb_setup:

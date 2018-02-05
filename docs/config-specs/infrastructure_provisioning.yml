@@ -1,5 +1,5 @@
-# Contents of this is transformed into input JSON to override terraform default values
-# Note that all tfvars values have defaults, and are therefore optional
+# Contents of this is transformed into input JSON to override terraform default values.
+# Note: all tfvars values have defaults, and are therefore optional.
 tfvars:
   cluster_name: shard
   mongod_instance_count: 9
@@ -16,14 +16,14 @@ tfvars:
   availability_zone: us-west-2a
 
   ssh_user: ec2-user
-  ssh_key_name: serverteam-perf-ssh-key   # The name of the SSH key as known to EC2 (e.g. rui.zhang)
-  ssh_key_file: aws_ssh_key.pem           # The actual SSH key, the .pem file downloaded from EC2
+  ssh_key_name: linus.torvalds  # The name of the SSH key as known to EC2
+  ssh_key_file: ~/.ssh/linustorvalds.pem  # The actual SSH key, the .pem file downloaded from EC2
 
-  # List of supported tags (at this point, you cannot add your own)
-  # Note: Name is generated per instance, cannot be set in config file
+  # List of supported tags (at this point, you cannot add your own).
+  # Note: Name is generated per instance, cannot be set in config file.
   tags:
-    owner: serverteam-perf@10gen.com  # valid email address.
-    expire-on-delta: 1                # Set expire-on tag used by reaper script. Note: must be lower case. delta is days added to current date. Default: 1
+    owner: linus.torvalds@10gen.com  # Valid email address
+    expire-on-delta: 1  # Set expire-on tag used by reaper script. Note: must be lower case. Delta is days added to current date (default: 1).
     Variant: Linux 3-shard cluster
     Project: sys-perf
 
@@ -31,17 +31,19 @@ tfvars:
 numactl_prefix: numactl --interleave=all --cpunodebind=1
 
 evergreen:
-  # Whether terraform state files should be stored outside the work dir
-  # Used to reuse clusters during the lifecycle of an evergreen runner
+  # Whether terraform state files should be stored outside the work dir.
+  # Used to reuse clusters during the lifecycle of an evergreen runner.
   reuse_cluster: ${bootstrap.production}
   data_dir: /data/infrastructure_provisioning
 terraform:
   # A string, or False
   required_version: Terraform v0.9.11
 
-custom_terraform: |                                      # Longer term, I would hope to see a mechanism where user can add
-  resource "aws_ebs_volume" "my_ebs_volume" {         # custom terraform code. Probably depends on how using a separate
-  #  working dir is implemented.
-  # This can contain arbitrary terraform declarations, that are appended
-  # to the terraform config that's already there for the variant that is the base for this config
+# Note: this does not exist yet.
+# Longer term, I would hope to see a mechanism where user can add custom terraform code. Probably
+# depends on how using a separate working dir is implemented. This can contain arbitrary terraform
+# declarations, that are appended to the terraform config that's already there for the variant
+# that is the base for this config.
+custom_terraform: |
+  resource "aws_ebs_volume" "my_ebs_volume" {
   }

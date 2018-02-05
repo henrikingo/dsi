@@ -176,27 +176,43 @@ class ConfigDictTestCase(unittest.TestCase):
         complete_dict = dict(self.conf)
         sub_dict = dict(self.conf['workload_setup']['tasks'][0]['on_workload_client'])
         self.assertEqual(
-            complete_dict['workload_setup']['tasks'][0]['on_workload_client']['download_files'][0],
-            'http://url1')
-        self.assertEqual(sub_dict['download_files'][0], 'http://url1')
+            complete_dict['workload_setup']['tasks'][0]['on_workload_client']['retrieve_files'][0],
+            {
+                'source': 'http://url1',
+                'target': 'file'
+            })
+        self.assertEqual(sub_dict['retrieve_files'][0], {
+            'source': 'remote_file_path',
+            'target': 'local_file_path'
+        })
 
     def test_convert_to_dict(self):
         """It is possible to convert a ConfigDict to a dict with self.as_dict()"""
         complete_dict = self.conf.as_dict()
         sub_dict = self.conf['workload_setup']['ycsb'][0]['on_workload_client'].as_dict()
         self.assertEqual(
-            complete_dict['workload_setup']['ycsb'][0]['on_workload_client']['download_files'][0],
-            'http://url1')
-        self.assertEqual(sub_dict['download_files'][0], 'http://url1')
+            complete_dict['workload_setup']['ycsb'][0]['on_workload_client']['retrieve_files'][0], {
+                'source': 'remote_file_path',
+                'target': 'local_file_path'
+            })
+        self.assertEqual(sub_dict['retrieve_files'][0], {
+            'source': 'remote_file_path',
+            'target': 'local_file_path'
+        })
 
     def test_basic_checks(self):
         """Basic checks"""
-        self.assertEqual(
-            self.conf['workload_setup']['ycsb'][0]['on_workload_client']['download_files'][0],
-            'http://url1')
-        self.assertEqual(
-            self.conf['workload_setup']['ycsb'][0]['on_workload_client']['download_files'],
-            ['http://url1'])
+        self.assertEqualDicts(
+            self.conf['workload_setup']['ycsb'][0]['on_workload_client']['retrieve_files'][0], {
+                'source': 'remote_file_path',
+                'target': 'local_file_path'
+            })
+        expected_result = [{'source': 'remote_file_path', 'target': 'local_file_path'}]
+        actual_result = self.conf['workload_setup']['ycsb'][0]['on_workload_client'][
+            'retrieve_files']
+        self.assertEqual(len(actual_result), len(expected_result))
+        for actual, expected in zip(actual_result, expected_result):
+            self.assertEqualDicts(actual, expected)
         self.assertEqualDicts(self.conf['infrastructure_provisioning']['out']['mongos'][2], {
             'public_ip': '53.1.1.102',
             'private_ip': '10.2.1.102'
@@ -220,14 +236,14 @@ class ConfigDictTestCase(unittest.TestCase):
                 'mongod_instance_count': 9,
                 'configsvr_instance_count': 3,
                 'mongos_instance_count': 3,
-                'ssh_key_file': 'aws_ssh_key.pem',
+                'ssh_key_file': '~/.ssh/linustorvalds.pem',
                 'ssh_user': 'ec2-user',
                 'mongod_instance_type': 'c3.8xlarge',
-                'ssh_key_name': 'serverteam-perf-ssh-key',
+                'ssh_key_name': 'linus.torvalds',
                 'workload_instance_type': 'c3.8xlarge',
                 'tags': {
                     'Project': 'sys-perf',
-                    'owner': 'serverteam-perf@10gen.com',
+                    'owner': 'linus.torvalds@10gen.com',
                     'Variant': 'Linux 3-shard cluster',
                     'expire-on-delta': 1
                 },
@@ -443,14 +459,15 @@ class ConfigDictTestCase(unittest.TestCase):
         """Test that iterators .keys() and .values() work"""
         mycluster = self.conf['mongodb_setup']['topology'][0]
         self.assertEqualLists(self.conf.keys(), [
-            'system_setup', 'test_control', 'workload_setup', 'runtime_secret', 'bootstrap',
-            'mongodb_setup', 'analysis', 'infrastructure_provisioning', 'runtime'
+            'test_control', 'workload_setup', 'runtime_secret', 'bootstrap', 'mongodb_setup',
+            'analysis', 'infrastructure_provisioning', 'runtime'
         ])
+        print self.conf['infrastructure_provisioning']['tfvars'].values()
         self.assertEqualLists(self.conf['infrastructure_provisioning']['tfvars'].values(), [
-            'c3.8xlarge', 'us-west-2a', 1, 'us-west-2', 9, 3, 'shard', 3, 'aws_ssh_key.pem',
-            'ec2-user', 'c3.8xlarge', 'serverteam-perf-ssh-key', 'c3.8xlarge', {
+            'c3.8xlarge', 'us-west-2a', 1, 'us-west-2', 9, 3, 'shard', 3,
+            '~/.ssh/linustorvalds.pem', 'ec2-user', 'c3.8xlarge', 'linus.torvalds', 'c3.8xlarge', {
                 'Project': 'sys-perf',
-                'owner': 'serverteam-perf@10gen.com',
+                'owner': 'linus.torvalds@10gen.com',
                 'Variant': 'Linux 3-shard cluster',
                 'expire-on-delta': 1
             }, 't1.micro'

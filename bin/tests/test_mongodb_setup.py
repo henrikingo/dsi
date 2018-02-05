@@ -677,7 +677,7 @@ class TestMongodbSetup(unittest.TestCase):
             if pre_cluster_start:
                 test_config['mongodb_setup']['pre_cluster_start'] = [{
                     'on_all_hosts': {
-                        'download_files': [{
+                        'retrieve_files': [{
                             'source': 'foo',
                             'target': 'bar'
                         }]

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Make the test log artifact. Assumes it is run in the working
-# directory. If dsi-artifacts.tgz already exists, will delete and recreate.
+# Make the test log artifact. Assumes it is run in the working directory. If dsi-artifacts.tgz
+# already exists, will delete and recreate
 
 source ./dsienv.sh
 

@@ -1,16 +1,17 @@
-# Factored-out setup for different types of workloads.
+# Input for workload_setup.py
 
-# top-level key corresponds to test_control.run.type
-ycsb:  # so these steps would be called if there are any workload runs with type='ycsb'
-  - on_workload_client:  # like usual...
-      download_files:
-        - http://url1
-  - on_workload_client:  # like usual...
+# Top-level key corresponds to test_control.run.type
+ycsb:  # So these steps would be called if there are any workload runs with type='ycsb'
+  - on_workload_client:  # Like usual...
+      retrieve_files:
+        - source: remote_file_path
+          target: local_file_path
+  - on_workload_client:  # Like usual...
       exec: "echo 'mixing shell and yaml syntax is like translating from Japanese to Orkish'"
   - on_localhost:
-      # The checkout_repos command makes a shallow clone of the git repository (currently set to the
-      # latest commit). The `branch` key is optional: when it is set, the specified branch is
-      # cloned, otherwise the default branch is cloned. The branch target can be a branch, tag, or
+      # The checkout_repos command makes a clone of the git repository `source`. The `branch` key is
+      # optional: when it is set, the specified branch is checked out after cloning, otherwise the
+      # default branch is the checked out repo. The branch target can be a branch, tag, or
       # reference.
       checkout_repos:
         - source: git@github.com:mongodb-labs/YSCB.git
@@ -18,6 +19,5 @@ ycsb:  # so these steps would be called if there are any workload runs with type
           branch: 5742781
 
 
-
-# The full range of on_* commands is supported, but notably *only* the on_* commands,
-# so no restart_mongodb or others.
+# The full range of on_* commands is supported, but notably *only* the on_* commands, so no
+# restart_mongodb or others.
