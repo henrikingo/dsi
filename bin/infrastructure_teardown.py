@@ -11,6 +11,7 @@ import argparse
 import glob
 import logging
 import os
+import shutil
 import subprocess
 from subprocess import CalledProcessError
 
@@ -52,6 +53,12 @@ def destroy_resources():
         subprocess.check_call([terraform, 'destroy', var_file, '-force'])
     if previous_directory is not None:
         os.chdir(previous_directory)
+
+    # Hard coding, since we cannot use ConfigDict yet. (PERF-1241 and TODO PERF-1298 to remove)
+    evg_data_dir = "/data/infrastructure_provisioning"
+    LOG.info("Cleaning up %s", evg_data_dir)
+    if os.path.exists(evg_data_dir):
+        shutil.rmtree(evg_data_dir)
 
 
 def parse_command_line():
