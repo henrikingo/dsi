@@ -2,7 +2,7 @@ task_name: ycsb.short
 run:
   - id: ycsb_load
     type: ycsb
-    "cmd": "cd YCSB/ycsb-mongodb; ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb load mongodb -s -P ../../workloadShort -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32; sleep 1"
+    "cmd": "cd YCSB/ycsb-mongodb; ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb load mongodb -s -P ../../workloadShort -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32"
     config_filename: workloadShort
     workload_config: |
       recordcount=2500000
@@ -17,7 +17,7 @@ run:
 
   - id: ycsb_50read50update
     type: ycsb
-    "cmd": "cd YCSB/ycsb-mongodb; ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s -P ../../workloadShort -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64; sleep 1"
+    "cmd": "cd YCSB/ycsb-mongodb; ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s -P ../../workloadShort -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64"
 
 pre_task:
   - on_workload_client:

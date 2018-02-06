@@ -10,11 +10,14 @@ import shutil
 import sys
 
 from common.utils import mkdir_p, touch
+from nose.tools import nottest
+
+from tests import test_utils
+from tests.any_in_string import ANY_IN_STRING
 
 sys.path.append(
     os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "analysis"))
 import post_run_check
-from tests import test_utils
 
 
 class TestPostRunCheck(unittest.TestCase):
@@ -27,6 +30,11 @@ class TestPostRunCheck(unittest.TestCase):
                                       'test_id', 'mongod.0', 'core.file')
         if os.path.exists(self.core_file):
             os.remove(self.core_file)
+
+        self.reports_path = test_utils.fixture_file_path('reports')
+        self.fixtures_path = os.path.dirname(self.reports_path)
+        shutil.rmtree(self.reports_path, ignore_errors=True)
+        mkdir_p(self.reports_path)
 
     def setUp(self):
         self.cleanup()
@@ -294,6 +302,230 @@ class TestPostRunCheck(unittest.TestCase):
         check_failures(results, expected)
 
         shutil.rmtree(core_path, ignore_errors=True)
+
+    @nottest
+    def when_check_test_output_files(self, case):
+        """
+        :param case: contains given/then conditions for behavior of _perform_exec
+
+        Example:
+
+            'given': {
+                # params given to _perform_exec
+                'command': 'cowsay HellowWorld',
+                'max_timeout_ms': 750,
+                'no_output_timeout_ms': 20,
+                # mock _stream behavior
+                'ssh_interrupt_after_ms': 5,
+                'with_output': False,
+                # (was exist status ready, actual exit status)
+                'and_exit_status': (True, 0),
+            },
+            'then': {
+                # asserted output of _perform_exec
+                'exit_status': 0,
+                'did_timeout': False,
+                'time_taken_seconds': ANY
+            }
+        """
+
+        current_path = os.getcwd()
+        os.chdir(self.fixtures_path)
+
+        given = case['given']
+        then = case['then']
+
+        return_value = post_run_check.check_test_output_files(given['reports_dir_path'])
+        self.assertItemsEqual(return_value, then)
+
+        os.chdir(current_path)
+
+    def test_check_exit_status_no_files(self):
+        """
+        test exit status check with no files.
+        """
+
+        self.when_check_test_output_files({
+            'given': {
+                'reports_dir_path': os.path.basename(self.reports_path)
+            },
+            'then': []
+        })
+
+    def test_check_exit_status_no_match(self):
+        """
+        test exit status check with no matching file names.
+        """
+
+        filename = os.path.join(self.reports_path, 'foo', 'buzz.bar')
+        mkdir_p(os.path.dirname(filename))
+        touch(filename)
+        self.when_check_test_output_files({
+            'given': {
+                'reports_dir_path': self.reports_path
+            },
+            'then': []
+        })
+
+    def test_check_exit_status_empty(self):
+        """
+        test exit status check with matching file name and no content (this is an error).
+        """
+
+        reports_path = os.path.basename(self.reports_path)
+        filename = os.path.join(reports_path, 'foo', 'test_output.log')
+        full_filename = os.path.join(self.fixtures_path, filename)
+        mkdir_p(os.path.dirname(full_filename))
+        touch(full_filename)
+        self.when_check_test_output_files({
+            'given': {
+                'reports_dir_path': reports_path
+            },
+            'then': [{
+                'exit_code':
+                    1,
+                'log_raw':
+                    ANY_IN_STRING("Command Failed: status=1 message=Unknown Error: empty file"),
+                'start':
+                    0,
+                'status':
+                    'fail',
+                'test_file':
+                    'foo test_output.log'
+            }]
+        })
+
+    def test_check_exit_status_0(self):
+        """
+        test exit status check with matching file name and exit status 0.
+        """
+
+        reports_path = os.path.basename(self.reports_path)
+        filename = os.path.join(reports_path, 'foo', 'test_output.log')
+        full_filename = os.path.join(self.fixtures_path, filename)
+        mkdir_p(os.path.dirname(full_filename))
+        touch(full_filename)
+
+        with open(full_filename, 'w+') as file_handle:
+            file_handle.write("exit_status: 0")
+
+        self.when_check_test_output_files({
+            'given': {
+                'reports_dir_path': reports_path
+            },
+            'then': [{
+                'exit_code': 0,
+                'start': 0,
+                'status': 'pass',
+                'test_file': 'foo test_output.log',
+                'log_raw': "Command Succeeded: status=0",
+            }]
+        })
+
+    def test_check_exit_status_message(self):
+        """
+        test exit status check with matching file name and exit status 0.
+        """
+
+        reports_path = os.path.basename(self.reports_path)
+        filename = os.path.join(reports_path, 'foo', 'test_output.log')
+        full_filename = os.path.join(self.fixtures_path, filename)
+        mkdir_p(os.path.dirname(full_filename))
+        touch(full_filename)
+
+        with open(full_filename, 'w+') as file_handle:
+            file_handle.write("exit_status: 0 this is a message")
+
+        self.when_check_test_output_files({
+            'given': {
+                'reports_dir_path': reports_path
+            },
+            'then': [{
+                'exit_code': 0,
+                'start': 0,
+                'status': 'pass',
+                'log_raw': 'Command Succeeded: status=0 message=this is a message',
+                'test_file': 'foo test_output.log'
+            }]
+        })
+
+    def test_check_exit_status_2(self):
+        """
+        test exit status check with matching file name and exit status 2.
+        """
+
+        reports_path = os.path.basename(self.reports_path)
+        filename = os.path.join(reports_path, 'foo', 'test_output.log')
+        full_filename = os.path.join(self.fixtures_path, filename)
+        mkdir_p(os.path.dirname(full_filename))
+        touch(full_filename)
+        with open(full_filename, 'w+') as file_handle:
+            file_handle.write("exit_status: 2 test")
+
+        self.when_check_test_output_files({
+            'given': {
+                'reports_dir_path': reports_path
+            },
+            'then': [{
+                'exit_code': 2,
+                'log_raw': 'Command Failed: status=2 message=test',
+                'start': 0,
+                'status': 'fail',
+                'test_file': 'foo test_output.log'
+            }]
+        })
+
+    def test_check_exit_status_multiple(self):
+        """
+        test exit status check with matching files and various status.
+        """
+
+        reports_path = os.path.basename(self.reports_path)
+        foo_filename = os.path.join(reports_path, 'foo', 'test_output.log')
+        full_filename = os.path.join(self.fixtures_path, foo_filename)
+        mkdir_p(os.path.dirname(full_filename))
+        touch(full_filename)
+
+        bar_filename = os.path.join(reports_path, 'bar', 'test_output.log')
+        full_filename = os.path.join(self.fixtures_path, bar_filename)
+        mkdir_p(os.path.dirname(full_filename))
+        touch(full_filename)
+
+        with open(full_filename, 'w+') as file_handle:
+            file_handle.write("exit_status: 2 test")
+
+        buz_filename = os.path.join(reports_path, 'buz', 'test_output.log')
+        full_filename = os.path.join(self.fixtures_path, buz_filename)
+        mkdir_p(os.path.dirname(full_filename))
+        touch(full_filename)
+
+        with open(full_filename, 'w+') as file_handle:
+            file_handle.write("exit_status: 0")
+
+        self.when_check_test_output_files({
+            'given': {
+                'reports_dir_path': reports_path
+            },
+            'then': [{
+                'exit_code': 1,
+                'log_raw': ANY_IN_STRING("Unknown Error: empty file"),
+                'start': 0,
+                'status': 'fail',
+                'test_file': 'foo test_output.log'
+            }, {
+                'exit_code': 2,
+                'log_raw': ANY_IN_STRING("message=test"),
+                'start': 0,
+                'status': 'fail',
+                'test_file': 'bar test_output.log'
+            }, {
+                'exit_code': 0,
+                'start': 0,
+                'status': 'pass',
+                'test_file': 'buz test_output.log',
+                'log_raw': "Command Succeeded: status=0",
+            }]
+        })
 
 
 if __name__ == '__main__':

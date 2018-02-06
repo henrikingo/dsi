@@ -21,6 +21,7 @@ import yaml
 from dateutil import tz
 from nose.tools import nottest
 
+from common.exit_status import write_exit_status, ExitStatus, EXIT_STATUS_OK
 from common.utils import mkdir_p
 from common.config import ConfigDict
 from common.host import extract_hosts, make_host, run_host_command, make_workload_runner_host
@@ -339,25 +340,51 @@ def run_test(test, config, reports_dir='reports'):
 
     with open(filename, 'wb+', 0) as out:
         tee_out = common.log.TeeStream(INFO_ADAPTER, out)
-        error = client_host.exec_command(
-            test['cmd'], stdout=tee_out, stderr=tee_out, no_output_timeout_ms=no_output_timeout_ms)
-        if error:
-            # To match previous behavior, we are raising a CalledProcessError
-            # TODO: we should mark the test as failed in perf.json
-            raise subprocess.CalledProcessError(error, test['cmd'])
+        try:
+            exit_status = client_host.exec_command(
+                test['cmd'],
+                stdout=tee_out,
+                stderr=tee_out,
+                no_output_timeout_ms=no_output_timeout_ms)
+            error = ExitStatus(exit_status, test['cmd'])
+        except Exception as e:  # pylint: disable=broad-except
+            error = get_error_from_exception(e)
+
+        write_exit_status(tee_out, error)
 
     # Automatically retrieve output files, if specified, and put them into the reports directory
     if 'output_files' in test:
         for output_file in test['output_files']:
             client_host.retrieve_path(output_file,
                                       os.path.join(directory, os.path.basename(output_file)))
-
     client_host.close()
 
+    if error.status != EXIT_STATUS_OK:
+        raise subprocess.CalledProcessError(error.status, test['id'], output=error.message)
 
+
+def get_error_from_exception(exception):
+    """ create an error object from an exception.
+
+    :param Exception exception: the exception instance.
+    :returns: ErrorStatus containing the error message and status.
+    """
+    if isinstance(exception, subprocess.CalledProcessError):
+        status = exception.returncode  # pylint: disable=no-member
+        output = exception.output  # pylint: disable=no-member
+    else:
+        status = 1
+        output = repr(exception)
+    return ExitStatus(status, output)
+
+
+# pylint: disable=too-many-branches,too-many-statements,too-many-nested-blocks
 @nottest
 def run_tests(config):
-    """Main logic to run tests"""
+    """Main logic to run tests
+
+    :return: True if all tests passed
+    """
     test_control_config = config['test_control']
     mongodb_setup_config = config['mongodb_setup']
 
@@ -373,15 +400,20 @@ def run_tests(config):
     else:
         test_delay_seconds = 0
 
-    # pylint: disable=too-many-nested-blocks
+    # array containing the status of each test
+    statuses = []
+
     try:
         if os.path.exists('perf.json'):
             os.remove('perf.json')
             LOG.warning("Found old perf.json file. Overwriting.")
 
         for index, test in enumerate(test_control_config['run']):
+            # the exit code for the current test
+            error = False
             background_tasks = []
             LOG.info('running test %s', test)
+            timer = {}
             try:
                 # Only run between_tests after the first test.
                 if index > 0:
@@ -398,22 +430,26 @@ def run_tests(config):
                     time.sleep(test_delay_seconds)
 
                 LOG.info("Starting test %s", test['id'])
-                timer = {}
                 timer['start'] = time.time()
                 # Run the actual task
                 run_test(test, config)
-                timer['end'] = time.time()
+            except:  # pylint: disable=bare-except
+                LOG.error("test %s failed.", test['id'], exc_info=1)
+                error = True
 
-            finally:
-                stop_background_tasks(background_tasks)
-                if 'skip_validate' not in test or not test['skip_validate']:
-                    run_validate(config, test['id'])
-                run_pre_post_commands('post_test',
-                                      [test, test_control_config, mongodb_setup_config], config,
-                                      EXCEPTION_BEHAVIOR.CONTINUE, test['id'])
+            statuses.append(error)
 
-            # Parse test output (on successful test exit)
-            LOG.info("After successful test run for test %s. Parsing results now", test['id'])
+            timer['end'] = time.time()
+
+            stop_background_tasks(background_tasks)
+            if 'skip_validate' not in test or not test['skip_validate']:
+                run_validate(config, test['id'])
+            run_pre_post_commands('post_test', [test, test_control_config, mongodb_setup_config],
+                                  config, EXCEPTION_BEHAVIOR.CONTINUE, test['id'])
+            if error:
+                LOG.warn("Unsuccessful test run for test %s. Parsing results now", test['id'])
+            else:
+                LOG.info("Successful test run for test %s. Parsing results now", test['id'])
             parse_test_results(test, config, timer)
 
     finally:
@@ -424,6 +460,9 @@ def run_tests(config):
         # Previously this was set to 777. I can't come up with a good reason.
         subprocess.check_call(['chmod', '555', 'perf.json'])
         legacy_copy_perf_output()
+
+    LOG.info("%s of %s tests passed", sum(statuses), len(statuses))
+    return all(statuses)
 
 
 def call_workload_setup():
@@ -449,7 +488,10 @@ def call_workload_setup():
 
 
 def main(argv):
-    ''' Main function. Parse command line options, and run tests '''
+    """ Main function. Parse command line options, and run tests.
+
+    :returns: int the exit status to return to the caller (0 for OK)
+    """
     parser = argparse.ArgumentParser(description='DSI Test runner')
 
     # These were left here for backward compatibility.
@@ -467,8 +509,13 @@ def main(argv):
 
     config = ConfigDict('test_control')
     config.load()
-    run_tests(config)
+    return 0 if run_tests(config) else 1
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    exit_code = main(sys.argv[1:])  # pylint: disable=invalid-name
+    if exit_code != 0:
+        LOG.error("main() call failed: exiting with %s", exit_code)
+    # test_control needs to return 0 or evergreen will skip all subsequent steps (like
+    # upload, analysis etc.)
+    sys.exit(0)

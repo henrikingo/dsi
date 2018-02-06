@@ -24,23 +24,17 @@ def parse_test_results(test, config, timer):
     :param ConfigDict test: The test that just finished running
     :param ConfigDict config: The entire ConfigDict
     :param dict(time) timer: A dict with the start and end times of the test being reported
+    :returns: bool True on success else False
     """
     # We want to catch and log all exceptions here, so that we don't raise
     # any exceptions to test_control.py
-    try:
-        parser = parser_factory(test, config, timer)
-        parser.parse_and_save()
-    except:  # pylint: disable=bare-except
-        LOG.error("parser.parse_test_results() encountered an error. " +
-                  "At least some results are likely missing.")
-        LOG.error(
-            "I will now print the error and then try to gracefully continue to the end.",
-            exc_info=1)
+    parser = parser_factory(test, config, timer)
+    return parser.parse_and_save()
 
 
 def parser_factory(test, config, timer):
     """
-    Instantiate a ResultParser instance, based on test['type']
+    Instantiate a ResultParser instance, based on test['type'].
 
     :param ConfigDict test: The test that just finished running
     :param ConfigDict config: The entire ConfigDict
@@ -126,13 +120,35 @@ class ResultParser(object):
                 yield line
 
     def parse_and_save(self):
-        """Parse self.input_log and merge it into self.perf_json"""
-        self.parse()
+        """Parse self.input_log and merge it into self.perf_json.
+
+        :return: bool True on success else False
+        """
+        passed = self.parse()
         self.save_perf_json()
+        return passed
 
     def parse(self):
         """
-        The actual test_type specific parser.
+        Common code to call _parse and handle errors and sanity checking. The sub class needs to
+        implement _parse.
+
+        :return: bool True on success else False
+        """
+        try:
+            self._parse()
+        except:  # pylint: disable=bare-except
+            LOG.error(
+                "ResultParser.parse() encountered an error. At least some results are likely "
+                "missing. I will now print the error and then try to gracefully continue to "
+                "the end.",
+                exc_info=1)
+            return False
+
+        return True
+
+    def _parse(self):
+        """ The actual test_type specific parser.
 
         To be implemented by child class. Child class should read its own input from wherever,
         then call `self.add_result(name, result, threads)` for each result.
@@ -141,7 +157,7 @@ class ResultParser(object):
 
     def add_result(self, name, result, threads="1"):
         """
-        Merge new result into (potentially) existing perf_json structure
+        Merge new result into (potentially) existing perf_json structure.
 
         There are 3 scenarios:
         1. If the same name+threads exists, we need to find it and add the result to
@@ -206,7 +222,7 @@ class MongoShellParser(ResultParser):
         input_file = config['test_control']['output_file']['mongoshell']
         self.input_log = os.path.join(self.reports_root, test['id'], input_file)
 
-    def parse(self):
+    def _parse(self):
         """
         Parse mongoshell (benchrun) results as we report them in the workloads repo.
 
@@ -235,7 +251,7 @@ class YcsbParser(ResultParser):
         self.input_log = os.path.join(self.reports_root, test['id'], input_file)
         self.threads = None  # We postpone this to _parse()
 
-    def parse(self):
+    def _parse(self):
         """
         Parse ycsb results
 
@@ -297,7 +313,7 @@ class FioParser(ResultParser):
         if matcher.search(name):
             return self.add_result(name, result, threads)
 
-    def parse(self):
+    def _parse(self):
         """Parse fio.json"""
         fio_output = json.loads(self.load_input_log())
 
@@ -329,13 +345,12 @@ class IperfParser(ResultParser):
         super(IperfParser, self).__init__(test, config, timer)
         input_file = config['test_control']['output_file']['iperf']
         self.input_log = os.path.join(self.reports_root, test['id'], input_file)
-        self.prefix = "fio"
 
     def load_input_log(self):
         """Override super() to return a huge string instead of list of lines"""
         return "".join(super(IperfParser, self).load_input_log())
 
-    def parse(self):
+    def _parse(self):
         """Parse iperf.json"""
         iperf_output = json.loads(self.load_input_log())
         result = iperf_output['end']['sum_sent']['bits_per_second']

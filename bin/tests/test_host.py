@@ -24,7 +24,7 @@ import common.utils
 from bin.common.host import make_host_runner, never_timeout, check_timed_out, create_timer, \
     _stream
 from bin.common.log import TeeStream
-from any_in_string import ANY_IN_STRING
+from tests.any_in_string import ANY_IN_STRING
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 
@@ -956,6 +956,7 @@ class HostTestCase(unittest.TestCase):
 
             'given': {
                 # params given to _perform_exec
+                'command': 'cowsay HellowWorld',
                 'max_timeout_ms': 750,
                 'no_output_timeout_ms': 20,
                 # mock _stream behavior
@@ -971,9 +972,8 @@ class HostTestCase(unittest.TestCase):
                 'time_taken_seconds': ANY
             }
         """
-
         given = case['given']
-        then = case['then']
+        then = case.get('then', None)
 
         new_mock = lambda name: MagicMock(autospec=True, name=name)
         (stdout, stderr, ssh_stdout, ssh_stderr) = (new_mock('stdout'), new_mock('stderr'),
@@ -992,21 +992,18 @@ class HostTestCase(unittest.TestCase):
                     float(given['ssh_interrupt_after_ms']) / 1000, given['with_output'])
 
                 remote_host = host.RemoteHost('test_host', 'test_user', 'test_pem_file')
-                exit_status, did_timeout, time_taken_seconds = remote_host._perform_exec(
+                exit_status = remote_host._perform_exec(
+                    given['command'],
                     stdout,
                     stderr,
                     ssh_stdout,
                     ssh_stderr,
-                    given['no_output_timeout_ms'],
                     given['max_timeout_ms'],
+                    given['no_output_timeout_ms'],
                 )
 
-                self.assertEqual(
-                    then, {
-                        'exit_status': exit_status,
-                        'did_timeout': did_timeout,
-                        'time_taken_seconds': time_taken_seconds
-                    })
+                if then:
+                    self.assertEqual(then, {'exit_status': exit_status})
             finally:
                 host._stream = stream_before
 
@@ -1014,6 +1011,7 @@ class HostTestCase(unittest.TestCase):
         """test_perform_exec_no_timeout"""
         self.when_perform_exec({
             'given': {
+                'command': 'cowsay Hello World',
                 'max_timeout_ms': 100,
                 'no_output_timeout_ms': 20,
                 'ssh_interrupt_after_ms': 5,
@@ -1021,9 +1019,7 @@ class HostTestCase(unittest.TestCase):
                 'and_exit_status': (True, 0),
             },
             'then': {
-                'exit_status': 0,
-                'did_timeout': False,
-                'time_taken_seconds': ANY
+                'exit_status': 0
             }
         })
 
@@ -1035,25 +1031,43 @@ class HostTestCase(unittest.TestCase):
         output, so it's a timeout.
         """
 
-        self.when_perform_exec({
-            'given': {
-                'max_timeout_ms': 100,
-                'no_output_timeout_ms': 20,
-                'ssh_interrupt_after_ms': 5,
-                'with_output': False,
-                'and_exit_status': (False, 10),
-            },
-            'then': {
-                'exit_status': 1,
-                'did_timeout': True,
-                'time_taken_seconds': ANY
-            }
-        })
+        with self.assertRaisesRegexp(host.HostException, r'^No Output'):
+            self.when_perform_exec({
+                'given': {
+                    'command': 'cowsay Hello World',
+                    'max_timeout_ms': 100,
+                    'no_output_timeout_ms': 20,
+                    'ssh_interrupt_after_ms': 5,
+                    'with_output': False,
+                    'and_exit_status': (False, 10),
+                }
+            })
+
+    def test_perform_exec_max_timeout(self):
+        """
+        This one times out because of the
+        False in and_exit_status[0].
+        The ssh never finishes and doesn't produce
+        output, so it's a timeout.
+        """
+
+        with self.assertRaisesRegexp(host.HostException, r'exceeded [0-9\.]+ allowable seconds on'):
+            self.when_perform_exec({
+                'given': {
+                    'command': 'cowsay Hello World',
+                    'max_timeout_ms': 200,
+                    'no_output_timeout_ms': 1000000,
+                    'ssh_interrupt_after_ms': 5,
+                    'with_output': True,
+                    'and_exit_status': (False, 10),
+                }
+            })
 
     def test_perform_exec_ready(self):
         """test_perform_exec_ready"""
         self.when_perform_exec({
             'given': {
+                'command': 'cowsay Hello World',
                 'max_timeout_ms': 100,
                 'no_output_timeout_ms': 20,
                 'ssh_interrupt_after_ms': 5,
@@ -1061,33 +1075,29 @@ class HostTestCase(unittest.TestCase):
                 'and_exit_status': (True, 2),
             },
             'then': {
-                'exit_status': 2,
-                'did_timeout': False,
-                'time_taken_seconds': ANY
+                'exit_status': 2
             }
         })
 
     def test_perform_exec_total_timeout_no_output(self):
         """test_perform_exec_total_timeout_no_output"""
-        self.when_perform_exec({
-            'given': {
-                'max_timeout_ms': 20,
-                'no_output_timeout_ms': 10,
-                'ssh_interrupt_after_ms': 5,
-                'with_output': False,
-                'and_exit_status': (False, 0),
-            },
-            'then': {
-                'exit_status': 1,
-                'did_timeout': True,
-                'time_taken_seconds': ANY
-            }
-        })
+        with self.assertRaisesRegexp(host.HostException, r'^No Output'):
+            self.when_perform_exec({
+                'given': {
+                    'command': 'cowsay Hello World',
+                    'max_timeout_ms': 20,
+                    'no_output_timeout_ms': 10,
+                    'ssh_interrupt_after_ms': 5,
+                    'with_output': False,
+                    'and_exit_status': (False, 0),
+                }
+            })
 
     def test_perform_exec_immediate_fail(self):
         """test_perform_exec_total_timeout_no_output"""
         self.when_perform_exec({
             'given': {
+                'command': 'cowsay Hello World',
                 'max_timeout_ms': 20,
                 'no_output_timeout_ms': 10,
                 'ssh_interrupt_after_ms': 1,
@@ -1095,9 +1105,7 @@ class HostTestCase(unittest.TestCase):
                 'and_exit_status': (True, 127),
             },
             'then': {
-                'exit_status': 127,
-                'did_timeout': False,
-                'time_taken_seconds': ANY
+                'exit_status': 127
             }
         })
 
@@ -1108,47 +1116,35 @@ class HostTestCase(unittest.TestCase):
         def _test_common(command='cowsay Hello World',
                          expected='cowsay Hello World',
                          return_value=0,
-                         recv_exit_status=0,
-                         exit_status_ready=True):
+                         exit_status=0):
             """ test common code with """
-            with patch('host.create_timer') as mock_create_watchdog, \
-                    patch('host._stream') as mock_stream:
-                remote_host = host.RemoteHost('test_host', 'test_user', 'test_pem_file')
+            remote_host = host.RemoteHost('test_host', 'test_user', 'test_pem_file')
 
-                ssh_instance = mock_ssh.return_value
-                stdin = Mock(name='stdin')
+            ssh_instance = mock_ssh.return_value
+            stdin = Mock(name='stdin')
 
-                # magic mock for iterable support
-                stdout = mock.MagicMock(name='stdout')
-                stdout.__iter__.return_value = ''
+            # magic mock for iterable support
+            stdout = mock.MagicMock(name='stdout')
+            stdout.__iter__.return_value = ''
 
-                stderr = mock.MagicMock(name='stderr')
-                stdout.__iter__.return_value = ''
-                if recv_exit_status is not None:
-                    stdout.channel.recv_exit_status.return_value = recv_exit_status
-                ssh_instance.exec_command.return_value = [stdin, stdout, stderr]
+            stderr = mock.MagicMock(name='stderr')
+            stdout.__iter__.return_value = ''
+            ssh_instance.exec_command.return_value = [stdin, stdout, stderr]
 
-                # Test a command as string
-                out = StringIO()
-                err = StringIO()
+            # Test a command as string
+            out = StringIO()
+            err = StringIO()
 
-                stdout.channel.exit_status_ready.return_value = exit_status_ready
-                stdout.channel.recv_exit_status.return_value = return_value
+            remote_host._perform_exec = mock.MagicMock(name='_perform_exec')
+            remote_host._perform_exec.return_value = exit_status
 
-                self.assertEqual(remote_host.exec_command(command, out, err), return_value)
-                ssh_instance.exec_command.assert_called_once_with(expected, get_pty=False)
-                stdin.channel.shutdown_write.assert_called_once()
+            self.assertEqual(remote_host.exec_command(command, out, err), return_value)
+            ssh_instance.exec_command.assert_called_once_with(expected, get_pty=False)
+            stdin.channel.shutdown_write.assert_called_once()
 
-                stdout.channel.settimeout.assert_called_once_with(0.1)
-                stderr.channel.settimeout.assert_not_called()
-
-                stdin.close.assert_called()
-                stdout.close.assert_called()
-                stderr.close.assert_called()
-                mock_create_watchdog.assert_has_calls([call(ANY, None), call(ANY, None)])
-                mock_stream.assert_has_calls([call(stdout, out), call(stderr, err)])
-                if recv_exit_status is None:
-                    stdout.channel.recv_exit_status.assert_not_called()
+            stdin.close.assert_called()
+            stdout.close.assert_called()
+            stderr.close.assert_called()
 
         # Exceptions
         with patch('paramiko.SSHClient') as mock_ssh:
@@ -1181,15 +1177,8 @@ class HostTestCase(unittest.TestCase):
         with patch('paramiko.SSHClient') as mock_ssh:
             mock_logger = MagicMock(name='LOG')
             host.LOG.warn = mock_logger
-            _test_common(return_value=1, recv_exit_status=1)
-            mock_logger.assert_called_once_with(
-                ANY_IN_STRING('with exit status'), ANY, ANY, ANY, ANY)
-
-        with patch('paramiko.SSHClient') as mock_ssh:
-            mock_logger = MagicMock(name='LOG')
-            host.LOG.warn = mock_logger
-            _test_common(exit_status_ready=False, recv_exit_status=None, return_value=1)
-            mock_logger.assert_called_once_with(ANY_IN_STRING('Timeout after'), ANY, ANY, ANY, ANY)
+            _test_common(return_value=1, exit_status=1)
+            mock_logger.assert_called_once_with(ANY_IN_STRING('with exit status'), ANY, ANY, ANY)
 
         with patch('paramiko.SSHClient') as mock_ssh:
             # Test a command as list
@@ -1213,15 +1202,24 @@ class HostTestCase(unittest.TestCase):
             # Test a command as string
             out = StringIO()
             err = StringIO()
-            remote_host.exec_command('command', out, err)
+
+            remote_host._perform_exec = mock.MagicMock(name='_perform_exec')
+            remote_host._perform_exec.return_value = 0
+
+            remote_host.exec_command(
+                'command',
+                out,
+                err,
+                max_time_ms='max_time_ms',
+                no_output_timeout_ms='no_output_timeout_ms')
             ssh_instance.exec_command.assert_called_once_with('command', get_pty=False)
             stdin.channel.shutdown_write.assert_called_once()
             stdin.close.assert_called()
             stdout.close.assert_called()
             stderr.close.assert_called()
 
-            self.assertEqual("123321", out.getvalue())
-            self.assertEqual("FirstSecondThird", err.getvalue())
+            remote_host._perform_exec.assert_called_once_with('command', out, err, stdout, stderr,
+                                                              'max_time_ms', 'no_output_timeout_ms')
 
     def test_checkout_repos(self):
         """

@@ -35,6 +35,11 @@ INFO_ADAPTER = IOLogAdapter(LOG, logging.INFO)
 ERROR_ADAPTER = IOLogAdapter(LOG, logging.ERROR)
 
 
+class HostException(Exception):
+    """ Raise for exec command timeouts and use it to wraps ssh exceptions. """
+    pass
+
+
 def setup_ssh_agent(config):
     """
     Setup the ssh-agent, and update our environment for it.
@@ -391,6 +396,9 @@ class Host(object):
         any output on stdout. Not all host implementations support this - namely only
         RemoteHost at the moment
         :type no_output_timeout_ms: int, float, or None
+
+        :return: int or None (the exit status) 0 or None implies success anything else is an error.
+        :raises: HostException for timeouts or implementation specific issues.
         """
         raise NotImplementedError()
 
@@ -547,7 +555,8 @@ def _stream(source, destination):
 def _connected_ssh(host, user, pem_file):
     """
     Create a connected paramiko ssh client and ftp connection
-    or raise if cannot connect
+    or raise if cannot connect.
+
     :param host: hostname to connect to
     :param user: username to use
     :param pem_file: ssh pem file for connection
@@ -590,7 +599,6 @@ class RemoteHost(Host):
             exit(1)
 
     # pylint: disable=too-many-arguments
-    # pylint: disable=too-many-locals
     def exec_command(self,
                      argv,
                      stdout=None,
@@ -602,6 +610,7 @@ class RemoteHost(Host):
         Execute the argv command on the remote host and log the output.
 
         For parameters/returns, see :method: `Host.exec_command`.
+        :raises: HostException for timeouts and to wrap paramiko.SSHException
         """
         # pylint: disable=too-many-branches
         if not argv or not isinstance(argv, (list, basestring)):
@@ -625,40 +634,37 @@ class RemoteHost(Host):
         LOG.info('[%s@%s]$ %s', self.user, self.host, command)
 
         # scoping
-        ssh_stdin, ssh_stdout, ssh_stderr = None, None, None
-        exit_status, did_timeout, time_taken_seconds = None, None, None
+        ssh_stdout, ssh_stderr = None, None
 
         try:
             ssh_stdin, ssh_stdout, ssh_stderr = self._ssh.exec_command(command, get_pty=get_pty)
             ssh_stdin.channel.shutdown_write()
             ssh_stdin.close()
 
-            exit_status, did_timeout, time_taken_seconds = self._perform_exec(
-                stdout, stderr, ssh_stdout, ssh_stderr, no_output_timeout_ms, max_time_ms)
+            exit_status = self._perform_exec(command, stdout, stderr, ssh_stdout, ssh_stderr,
+                                             max_time_ms, no_output_timeout_ms)
 
-            ssh_stdout.close()
-            ssh_stderr.close()
-        except paramiko.SSHException:
-            LOG.exception('failed to exec command on %s@%s', self.user, self.host)
+        except paramiko.SSHException as e:
+            raise HostException("failed to exec '{}' on {}@{}: '{}'".format(
+                command, self.user, self.host, e))
         finally:
-            close_safely(ssh_stdin)
             close_safely(ssh_stdout)
             close_safely(ssh_stderr)
 
-        if did_timeout:
-            LOG.warn('%s \'%s\': Timeout after %f seconds with exit status %s', self.alias, command,
-                     time_taken_seconds, exit_status)
-        elif exit_status != 0:
-            LOG.warn('%s \'%s\': Failed after %f seconds with exit status %s', self.alias, command,
-                     time_taken_seconds, exit_status)
-
+        if exit_status != 0:
+            LOG.warn('%s \'%s\': Failed with exit status %s', self.alias, command, exit_status)
         return exit_status
 
     # pylint: disable=no-self-use
-    def _perform_exec(self, stdout, stderr, ssh_stdout, ssh_stderr, no_output_timeout_ms,
-                      max_time_ms):
+    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-locals
+    def _perform_exec(self, command, stdout, stderr, ssh_stdout, ssh_stderr, max_time_ms,
+                      no_output_timeout_ms):
         """
-        :return: tuple with (exit_status int, did_timeout bool, time_taken_seconds float)
+        For parameters/returns, see :method: `Host.exec_command`.
+
+        :return: exit_status int 0 or None implies success
+        :raises: HostException for timeouts.
         """
         total_operation_start = datetime.now()
         total_operation_is_timed_out = create_timer(total_operation_start, max_time_ms)
@@ -686,13 +692,22 @@ class RemoteHost(Host):
 
         if ssh_stdout.channel.exit_status_ready():
             exit_status = ssh_stdout.channel.recv_exit_status()
-            did_timeout = False
         else:
-            exit_status = 1
-            did_timeout = True
+            time_taken = (datetime.now() - total_operation_start).total_seconds()
+            if no_output_timed_out():
+                no_output = no_output_timeout_ms / ONE_SECOND_MILLIS
+                msg = "No Output in {} s (see test_control.timeouts.no_output_ms). {} s elapsed " \
+                      "on {} for '{}'".format(no_output,
+                                              time_taken,
+                                              self.alias,
+                                              command)
+            else:
+                max_time = max_time_ms / ONE_SECOND_MILLIS
+                msg = "{} exceeded {} allowable seconds on {} for '{}'".format(
+                    time_taken, max_time, self.alias, command)
+            raise HostException(msg)
 
-        time_taken_seconds = (datetime.now() - total_operation_start).total_seconds()
-        return exit_status, did_timeout, time_taken_seconds
+        return exit_status
 
     def create_file(self, remote_path, file_contents):
         """

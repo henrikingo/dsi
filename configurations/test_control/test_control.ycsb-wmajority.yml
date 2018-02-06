@@ -7,7 +7,6 @@ run:
       ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb load mongodb -s
       -P ../../workloadEvergreen
       -threads ${test_control.thread_levels.load.${mongodb_setup.meta.storageEngine}};
-      sleep 1;
     config_filename: workloadEvergreen
     workload_config: |
       mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb?w=majority
@@ -28,7 +27,6 @@ run:
       ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
       -P ../../workloadEvergreen_95read5update
       -threads ${test_control.thread_levels.level95-5.${mongodb_setup.meta.mongodb_setup}};
-      sleep 1;
     config_filename: workloadEvergreen_95read5update
     workload_config: |
       mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb?w=majority
@@ -50,7 +48,6 @@ run:
       -P workloads/workloadEvergreen_95read5update
       -threads 1
       -p maxexecutiontime=600;
-      sleep 1;
 
   - id: ycsb_50read50update_w_majority
     type: ycsb
@@ -60,7 +57,6 @@ run:
       -P ../../workloadEvergreen_50read50update
       -threads ${test_control.thread_levels.level50-50.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
       -p maxexecutiontime=600;
-      sleep 1;
     config_filename: workloadEvergreen_50read50update
     workload_config: |
       mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb?w=majority
@@ -81,8 +77,7 @@ run:
       ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
       -P ../../workloadEvergreen_50read50update
       -threads 1
-      -p maxexecutiontime=600;
-      sleep 1;
+      -p maxexecutiontime=600
 
   - id: fio
     type: fio

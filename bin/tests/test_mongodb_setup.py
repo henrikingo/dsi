@@ -10,7 +10,7 @@ import mock
 import mongodb_setup
 import common.host
 
-from any_in_string import ANY_IN_STRING
+from tests.any_in_string import ANY_IN_STRING
 
 # Mock the remote host module.
 mongodb_setup.RemoteHost = mock.MagicMock()

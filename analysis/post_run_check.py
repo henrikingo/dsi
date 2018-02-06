@@ -26,6 +26,7 @@ import os
 from dateutil import parser as date_parser
 
 import rules
+from exit_status import read_exit_status, EXIT_STATUS_OK
 from util import read_histories, compare_one_result, log_header, \
                  read_threshold_overrides, get_project_variant_rules
 import ftdc_analysis
@@ -34,6 +35,86 @@ import ycsb_throughput_analysis
 import arg_parsing
 
 logging.basicConfig(level=logging.INFO)
+
+
+def unique_post_check_name(filename, omit='reports'):
+    """ convert filename to a unique exit status check name. Just using the file name would
+    result in multiple ambiguous checks called 'test_output.log'. This extra processing is
+    required to generate some more meaningful names.
+
+    For example, 'reports/benchRun/test_output.log'
+    will be converted to 'benchRun test_output.log'
+
+    :param str filename: the full path of the file.
+    :param str omit: remove this if it is the first part of the path (defaults to reports).
+
+    :return: str a more human readable test check name.
+    """
+    parts = os.path.normpath(filename).split(os.path.sep)
+    if parts[0] == omit:
+        parts = parts[1:]
+    return " ".join(parts)
+
+
+# TODO: PERF-1299 should be implemented in the following function
+def check_test_output_files(reports_dir_path, pattern='test_output.log'):
+    """
+    This function scans the reports subdirectories for files that match the *pattern* (defaults to
+    'test_output.log'). These log files contain the stdout and stderr streams for the test
+    processes.
+
+    In certain cases, these files contain the test output (e.g. benchRun). But in other cases, the
+    actual test results are elsewhere (e.g. fio / iperf where the results are in json files).
+
+    Currently we only analyze the test output log files for the exit status (which is encoded on
+    the last line of the file).
+
+    The line must be the last in the file and of the format:
+        exit_status: [0-9] .*
+
+    If there is no matching line, then this is an unknown error.
+
+    The following output is generated for 'reports/ycsb_50read50update/test_output.log':
+    Failing result:
+    {
+                "status": "fail",
+                "test_file": 'reports/ycsb_50read50update/test_output.log',
+                "log_raw": 'message',
+                "start": 0,
+                "exit_code": 1
+    }
+
+    passing result:
+    {
+                "status": "pass",
+                "test_file": 'reports/ycsb_50read50update/test_output.log',
+                "start": 0,
+                "exit_code": 0
+    }
+
+
+    :param str reports_dir_path: the report directory.
+    :param str pattern: the output filename pattern.
+    :returns: array of checks of the format shown above (empty if no error).
+    """
+    test_output_log_files = []
+    for root, _, filenames in os.walk(reports_dir_path):
+        for filename in fnmatch.filter(filenames, pattern):
+            test_output_log_files.append(os.path.join(root, filename))
+
+    results = []
+    for test_output_log_file in test_output_log_files:
+        exit_status = read_exit_status(test_output_log_file)
+
+        result = {
+            "status": "pass" if exit_status.status == EXIT_STATUS_OK else "fail",
+            "test_file": unique_post_check_name(test_output_log_file),
+            "start": 0,
+            "exit_code": exit_status.status,
+            "log_raw": str(exit_status)
+        }
+        results.append(result)
+    return results
 
 
 def check_core_file_exists(reports_dir_path, pattern="core.*"):
@@ -530,6 +611,9 @@ def main(args):  # pylint: disable=too-many-locals,too-many-statements,too-many-
     sys.stdout.flush()
 
     if args.reports_analysis is not None:
+        results = check_test_output_files(args.reports_analysis)
+        report['results'].extend(results)
+
         results = check_core_file_exists(args.reports_analysis)
         report['results'].extend(results)
 

@@ -17,8 +17,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/
 
 import host
 from test_control import BackgroundCommand, start_background_tasks
-from test_control import EXCEPTION_BEHAVIOR
 from test_control import copy_timeseries
+from test_control import EXCEPTION_BEHAVIOR
+from test_control import get_error_from_exception, ExitStatus
 from test_control import print_trace
 from test_control import run_pre_post_commands
 from test_control import run_test
@@ -89,6 +90,16 @@ class RunTestsTestCase(unittest.TestCase):
             },
             'test_control': {
                 'task_name': 'test_config',
+                'reports_dir_basename': 'reports',
+                'perf_json': {
+                    'path': 'perf.json'
+                },
+                'output_file': {
+                    'mongoshell': 'test_output.log',
+                    'ycsb': 'test_output.log',
+                    'fio': 'fio.json',
+                    'iperf': 'iperf.json'
+                },
                 'timeouts': {
                     'no_output_ms': 5000,
                 },
@@ -429,6 +440,11 @@ class RunTestsTestCase(unittest.TestCase):
         mock_host.exec_command.assert_called_once()
         mock_generate_config_file.assert_called_once_with(test, directory, mock_host)
 
+        mock_host.exec_command.assert_called()
+        mock_host.close.assert_called()
+        # These are just throwaway mocks, pylint wants me to do something with them
+        mock_mkdir.assert_called()
+
     @patch('test_control.generate_config_file')
     @patch('test_control.make_workload_runner_host')
     @patch('test_control.mkdir_p')
@@ -466,6 +482,11 @@ class RunTestsTestCase(unittest.TestCase):
         mock_host.retrieve_path.assert_has_calls(expected_calls)
         mock_generate_config_file.assert_called_once_with(test, directory, mock_host)
 
+        mock_host.exec_command.assert_called()
+        # These are just throwaway mocks, pylint wants me to do something with them
+        mock_host.close.assert_called()
+        mock_mkdir.assert_called()
+
     @patch('test_control.generate_config_file')
     @patch('test_control.make_workload_runner_host')
     @patch('test_control.mkdir_p')
@@ -482,6 +503,46 @@ class RunTestsTestCase(unittest.TestCase):
             run_test(test, self.config)
         mock_host.retrieve_path.assert_not_called()
         mock_generate_config_file.assert_called_once_with(test, directory, mock_host)
+
+    # normally wouldn't test internal method, but the collaboration with other
+    # objects is complicated within host.exec_command and leads to the core logic
+    # being hard to isolate on its own.
+    def when_get_error_from_exception(self, case):
+        """
+        :param case: contains given/then conditions for behavior of _perform_exec
+
+        Example:
+
+            'given': {
+                # params given to _perform_exec
+                'exception': Exception('cowsay HellowWorld'),
+            },
+            'then': ErrorStatus(1, 'cowsay HellowWorld')
+        """
+        given = case['given']
+        then = case.get('then', None)
+
+        error = get_error_from_exception(given['exception'])
+
+        self.assertEqual(then, error)
+
+    def test_error_from_exception(self):
+        """Test test_control.get_error_from_exception for exception"""
+        self.when_get_error_from_exception({
+            'given': {
+                'exception': Exception('cowsay Hello World'),
+            },
+            'then': ExitStatus(1, "Exception('cowsay Hello World',)")
+        })
+
+    def test_error_from_called_process(self):
+        """Test test_control.get_error_from_exception for process error"""
+        self.when_get_error_from_exception({
+            'given': {
+                'exception': subprocess.CalledProcessError(2, 'command', 'process Hello World'),
+            },
+            'then': ExitStatus(2, "process Hello World")
+        })
 
     @patch('test_control.prepare_reports_dir')
     @patch('subprocess.check_call')
