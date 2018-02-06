@@ -26,6 +26,7 @@ class TestInfrastructureTeardown(unittest.TestCase):
         mock_os.environ.__contains__.side_effect = self.os_environ.__contains__
         mock_os.getcwd.return_value = 'previous/directory'
         mock_os.path.isfile.return_value = True
+        mock_os.path.exists.return_value = False  # The /data/infrastructure_provisioning check
         mock_glob.return_value = True
         destroy_resources()
         mock_glob.assert_called_with('teardown/script/path/provisioned.*')
