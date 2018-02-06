@@ -17,7 +17,6 @@ class TestFtdcAnalysis(unittest.TestCase):
     Test suite
     """
 
-    @unittest.skip("TODO: Reorder fixture files in separate commit.")
     def test_resource_rules_fail(self):
         """
         Specifically test that we get the expected report info for resource sanity checks upon
