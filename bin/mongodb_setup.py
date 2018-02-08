@@ -75,8 +75,6 @@ class MongodbSetup(object):
 
         """
 
-        # Note that format interprets { and } as part of formats. To keep an actual { in the string
-        # it needs to be doubled.
         script_template = jinja2.Template('''
             db.getSiblingDB("admin").createUser(
               {
