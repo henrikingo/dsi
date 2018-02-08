@@ -6,6 +6,8 @@ PYTHONPATH=analysis:bin:. python tests/update_override_responses.py
 import os
 import unittest
 import shelve
+
+from functools import partial
 from mock import patch
 import requests
 #pylint: disable=unused-import
@@ -20,32 +22,50 @@ from tests import test_utils
 RESPONSES_SHELVE = None
 
 
+def update_persistent_dict(database, url, **kwargs):
+    """
+    This function is used to replace ContextShelve.get so that
+    requests are made to update the persistent dictionary.
+
+    :param dict database: A shelve persistent dictionary. This parameter is assigned with :method:
+    `functools.partial`
+
+    For more details on **url** / kwargs / returns, see :method: `ContextShelve.get`.
+    """
+    response = requests.get(url, **kwargs)
+    database[url] = response.json()
+    assert database[url] is not None
+    return database[url]
+
+
 def main():
     """
-    This function updates the persistent dictionary
-    override_responses with latest data from the Evergreen API
+    This function updates the persistent dictionary override_responses with latest data from the
+    Evergreen API.
+
+    The captured traffic is written to **override_responses**, see :method:
+    `test_utils.fixture_file_path`. This current implementation will try to persist as much as
+    possible (even on an exception or signal). But an error case is likely to result in an
+    incomplete override_responses file and anything then depends on the overrides file will also
+    likely fail (with something like **error: (35, 'Resource temporarily unavailable')**).
+
+    The call to unittest.main is buffered, as a result stdout and stderr are only printed  on
+    error.  See ` unittest.main cmd options
+    <https://docs.python.org/2/library/unittest.html#cmdoption-unittest-b>'.
+
+    If reinstating this code into evergreen-dsitest.yml then the cp calls should look like:
+        cp ./tests/unittest-files/override_responses /data/dsitest/override_responses || true
     """
     persistent_dict_path = test_utils.fixture_file_path('override_responses')
     persistent_dict_new_path = test_utils.fixture_file_path('override_responses.new')
-    #pylint: disable=global-statement
-    global RESPONSES_SHELVE
-    RESPONSES_SHELVE = shelve.open(persistent_dict_new_path)
+    database = shelve.open(persistent_dict_new_path)
     with patch('tests.test_requests_parent.ContextShelve.get') as mock_get:
-        mock_get.side_effect = update_persistent_dict
-        unittest.main(exit=False)
+        mock_get.side_effect = partial(update_persistent_dict, database)
+        unittest.main(exit=False, buffer=True, failfast=True)
         assert mock_get.called is True
+
+    database.close()
     os.rename(persistent_dict_new_path, persistent_dict_path)
-
-
-def update_persistent_dict(url, **kwargs):
-    """
-    This function is used to replace ContextShelve.get so that
-    requests are made to update the persistent dictionary
-    """
-    response = requests.get(url, **kwargs)
-    RESPONSES_SHELVE[url] = response.json()
-    assert RESPONSES_SHELVE[url] != None
-    return RESPONSES_SHELVE[url]
 
 
 if __name__ == '__main__':

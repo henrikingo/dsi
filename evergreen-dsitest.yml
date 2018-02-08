@@ -65,39 +65,12 @@ functions:
 
   nosetests:
     - command: shell.exec
-      params:
-        working_dir: src
-        script: |
-          source ./venv/bin/activate
-          if [ -f /data/dsitest/override_responses ]
-          # If the file is found, save it to the src directory
-          # so it does not have to be reproduced for nosetests
-          then
-            echo "Cached override_responses found; using cached file for nosetests"
-            cp /data/dsitest/override_responses ./tests/unittest-files/override_responses
-          else
-            # If the file is not found, generate it and save to
-            # /data/dsitest/override_responses and to the src directory
-            echo "Cached override_responses not found"
-            echo "generating file and saving it to /data/dsitest/override_responses"
-            PYTHONPATH=analysis:bin:. python ./tests/update_override_responses.py
-            mkdir -p /data/dsitest
-            cp ./tests/unittest-files/override_responses /data/dsitest/override_responses
-          fi
-
-    - command: shell.exec
       type: test
       params:
         working_dir: src
         script: |
           source ./venv/bin/activate
           bash testscripts/run-nosetest.sh
-
-    - command: shell.exec
-      params:
-        working_dir: src
-        script: |
-          cp ./tests/unittest-files/override_responses /data/dsitest/override_responses
 
   validate_overrides:
     - command: shell.exec
@@ -142,9 +115,14 @@ buildvariants:
     display_name: Linux
     run_on:
       - "rhel70-perf-standalone"
-    tasks:
+    tasks: &dsi_tasks
       - name: check_python_formatting
       - name: lint_python_scripts
       - name: lint_yml
       - name: nosetests
       - name: validate_overrides
+  - name: osx-runner
+    display_name: OSX
+    run_on:
+      - "macos-1012"
+    tasks: *dsi_tasks
