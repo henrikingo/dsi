@@ -20,7 +20,7 @@ import paramiko
 from mock import patch, Mock, mock, MagicMock, call, ANY
 
 import common.utils
-
+from common.mongodb_setup_helpers import MongoDBAuthSettings
 from bin.common.host import make_host_runner, never_timeout, check_timed_out, create_timer, \
     _stream
 from bin.common.log import TeeStream
@@ -437,7 +437,7 @@ class HostTestCase(unittest.TestCase):
             mongod.run.assert_called_once_with(["this", "is", "a", "command"])
 
     def test_exec_mongo_shell(self):
-        """ Test run command map upload_repo_files """
+        """ Test run exec mongo shell command """
 
         # test exec_mongo_shell
         with patch('host.RemoteHost') as mongod:
@@ -838,14 +838,13 @@ class HostTestCase(unittest.TestCase):
         ])
 
     @patch("bin.common.host._run_host_command_map")
-    def test_exec_mongo_command(self, mock_run_host_command_map):
+    def test_make_host_runner(self, mock_run_host_command_map):
         """ Test run RemoteHost.exec_mongo_command """
-
         with patch('bin.common.host.make_host') as mock_make_host:
             mock_target_host = Mock()
             mock_make_host.return_value = mock_target_host
             make_host_runner("host_info", 'command', "ssh_user", "ssh_key_file", "test_id")
-            mock_make_host.assert_called_once_with("host_info", "ssh_user", "ssh_key_file")
+            mock_make_host.assert_called_once_with("host_info", "ssh_user", "ssh_key_file", None)
             mock_target_host.run.assert_called_once_with('command')
             mock_target_host.close.assert_called_once()
 
@@ -854,15 +853,17 @@ class HostTestCase(unittest.TestCase):
             mock_target_host = Mock()
             mock_make_host.return_value = mock_target_host
             make_host_runner("host_info", command, "ssh_user", "ssh_key_file", 'test_id')
-            mock_make_host.assert_called_once_with("host_info", "ssh_user", "ssh_key_file")
+            mock_make_host.assert_called_once_with("host_info", "ssh_user", "ssh_key_file", None)
             mock_run_host_command_map.assert_called_once_with(mock_target_host, command, 'test_id')
             mock_target_host.close.assert_called_once()
 
     @patch("host.RemoteHost.exec_command")
     @patch("host.RemoteHost.create_file")
     @patch('paramiko.SSHClient')
-    def test_make_host_runner(self, mock_ssh, mock_create_file, mock_exec_command):
+    def helper_exec_mongo_command(self, mongodb_auth_settings, mock_ssh, mock_create_file,
+                                  mock_exec_command):
         """ Test run RemoteHost.exec_mongo_command """
+
         mock_exec_command.return_value = 0
         test_file = 'test_file'
         test_user = 'test_user'
@@ -870,12 +871,23 @@ class HostTestCase(unittest.TestCase):
         test_host = 'test_host'
         test_script = 'test_script'
         test_connection_string = 'test_connection_string'
-        test_argv = ['bin/mongo', '--verbose', test_connection_string, test_file]
-        remote_host = host.RemoteHost(test_host, test_user, test_pem_file)
+        test_argv = ['bin/mongo', '--verbose']
+        if mongodb_auth_settings is not None:
+            test_argv.extend(
+                ['-u', 'username', '-p', 'password', '--authenticationDatabase', 'admin'])
+        test_argv.extend([test_connection_string, test_file])
+        remote_host = host.RemoteHost(test_host, test_user, test_pem_file, mongodb_auth_settings)
         status_code = remote_host.exec_mongo_command(test_script, test_file, test_connection_string)
         self.assertTrue(status_code == 0)
         mock_create_file.assert_called_with(test_file, test_script)
         mock_exec_command.assert_called_with(test_argv, max_time_ms=None)
+
+    #pylint: disable=missing-docstring
+    def test_exec_mongo_command_no_auth(self):
+        self.helper_exec_mongo_command(None)  #pylint: disable=no-value-for-parameter
+
+    def test_exec_mongo_command_with_auth(self):
+        self.helper_exec_mongo_command(MongoDBAuthSettings('username', 'password'))  #pylint: disable=no-value-for-parameter
 
     @patch('paramiko.SSHClient')
     def test_remote_host(self, mock_paramiko):

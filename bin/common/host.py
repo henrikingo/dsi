@@ -21,6 +21,7 @@ import paramiko
 
 from common.utils import mkdir_p
 from common.log import IOLogAdapter
+import common.mongodb_setup_helpers
 import common.utils
 from thread_runner import run_threads
 
@@ -151,15 +152,21 @@ def _run_host_command(host_list, command, config, prefix):
     ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
     ssh_key_file = os.path.expanduser(ssh_key_file)
 
+    mongodb_auth_settings = common.mongodb_setup_helpers.mongodb_auth_settings(config)
     thread_commands = []
     for host_info in host_list:
         thread_commands.append(
-            partial(make_host_runner, host_info, command, ssh_user, ssh_key_file, prefix))
+            partial(make_host_runner, host_info, command, ssh_user, ssh_key_file, prefix,
+                    mongodb_auth_settings))
 
     run_threads(thread_commands, daemon=True)
 
 
-def make_host_runner(host_info, command, ssh_user, ssh_key_file, prefix):
+# https://jira.mongodb.org/browse/PERF-1311 will replace ssh_user and ssh_key_file with a
+# NamedTuple, and remove the need for this pylint disable.
+#pylint: disable=too-many-arguments
+def make_host_runner(host_info, command, ssh_user, ssh_key_file, prefix,
+                     mongodb_auth_settings=None):
     """
     For the host, make an appropriate RemoteHost or LocalHost Object and run the set of commands.
 
@@ -174,7 +181,7 @@ def make_host_runner(host_info, command, ssh_user, ssh_key_file, prefix):
     hook that the command belongs to, such as between_tests, post_task, and so on.
     """
     # Create the appropriate host type
-    target_host = make_host(host_info, ssh_user, ssh_key_file)
+    target_host = make_host(host_info, ssh_user, ssh_key_file, mongodb_auth_settings)
     try:
         # If command is a string, pass it directly to run
         if isinstance(command, str):
@@ -187,7 +194,7 @@ def make_host_runner(host_info, command, ssh_user, ssh_key_file, prefix):
         target_host.close()
 
 
-def make_host(host_info, ssh_user, ssh_key_file):
+def make_host(host_info, ssh_user, ssh_key_file, mongodb_auth_settings=None):
     """
     Create a host object based off of host_ip_or_name. The code that receives the host is
     responsible for calling close on the host instance. Each RemoteHost instance can have 2*n+1 open
@@ -201,10 +208,10 @@ def make_host(host_info, ssh_user, ssh_key_file):
     """
     if host_info.ip_or_name in ['localhost', '127.0.0.1', '0.0.0.0']:
         LOG.debug("Making localhost for %s", host_info.ip_or_name)
-        host = LocalHost()
+        host = LocalHost(mongodb_auth_settings)
     else:
         LOG.debug("Making remote host for %s", host_info.ip_or_name)
-        host = RemoteHost(host_info.ip_or_name, ssh_user, ssh_key_file)
+        host = RemoteHost(host_info.ip_or_name, ssh_user, ssh_key_file, mongodb_auth_settings)
     host.alias = "{category}.{offset}".format(category=host_info.category, offset=host_info.offset)
     return host
 
@@ -236,7 +243,8 @@ def make_workload_runner_host(config):
     ssh_key_file = os.path.expanduser(ssh_key_file)
     ssh_user = config['infrastructure_provisioning']['tfvars']['ssh_user']
     host_info = extract_hosts('workload_client', config)[0]
-    return make_host(host_info, ssh_user, ssh_key_file)
+    mongodb_auth_settings = common.mongodb_setup_helpers.mongodb_auth_settings(config)
+    return make_host(host_info, ssh_user, ssh_key_file, mongodb_auth_settings)
 
 
 def extract_hosts(key, config):
@@ -350,9 +358,10 @@ class Host(object):
     Base class for hosts
     """
 
-    def __init__(self, host):
+    def __init__(self, host, mongodb_auth_settings=None):
         self._alias = None
         self.host = host
+        self.mongodb_auth_settings = mongodb_auth_settings
 
     @property
     def alias(self):
@@ -438,7 +447,13 @@ class Host(object):
         """
         self.create_file(remote_file_name, script)
         self.run(['cat', remote_file_name])
-        argv = ['bin/mongo', '--verbose', connection_string, remote_file_name]
+        argv = ['bin/mongo', '--verbose']
+        if self.mongodb_auth_settings:
+            argv.extend([
+                '-u', self.mongodb_auth_settings.mongo_user, '-p',
+                self.mongodb_auth_settings.mongo_password, '--authenticationDatabase', 'admin'
+            ])
+        argv.extend([connection_string, remote_file_name])
         status_code = self.exec_command(argv, max_time_ms=max_time_ms)
         return status_code
 
@@ -582,13 +597,13 @@ class RemoteHost(Host):
     Represents a SSH connection to a remote host
     """
 
-    def __init__(self, host, user, pem_file):
+    def __init__(self, host, user, pem_file, mongodb_auth_settings=None):
         """
         :param host: hostname
         :param user: username
         :param pem_file: ssh pem file
         """
-        super(RemoteHost, self).__init__(host)
+        super(RemoteHost, self).__init__(host, mongodb_auth_settings)
         LOG.debug('host: %s, user: %s, pem_file: %s', host, user, pem_file)
         try:
             ssh, ftp = _connected_ssh(host, user, pem_file)
@@ -908,8 +923,8 @@ class LocalHost(Host):
     Represents a connection to the local host
     """
 
-    def __init__(self):
-        super(LocalHost, self).__init__("localhost")
+    def __init__(self, mongodb_auth_settings=None):
+        super(LocalHost, self).__init__("localhost", mongodb_auth_settings)
 
     # pylint: disable=too-many-arguments
     def exec_command(self,

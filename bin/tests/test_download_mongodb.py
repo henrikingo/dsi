@@ -111,7 +111,7 @@ class DownloadMongodbTestCase(unittest.TestCase):
         self.assertEqual(downloader.ssh_user, expected_ssh_user)
 
         calls = [
-            mock.call("10.2.3.{}".format(i), expected_ssh_user, expected_ssh_key_file)
+            mock.call("10.2.3.{}".format(i), expected_ssh_user, expected_ssh_key_file, None)
             for i in range(4, 16)
         ]
         mock_remote_host.assert_has_calls(calls=calls, any_order=True)

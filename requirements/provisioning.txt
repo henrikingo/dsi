@@ -1,3 +1,4 @@
+jinja2==2.10
 paramiko==2.4.0
 pycparser==2.18
 pyyaml==3.12

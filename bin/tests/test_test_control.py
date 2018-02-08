@@ -285,7 +285,8 @@ class RunTestsTestCase(unittest.TestCase):
                     'ssh_user': 'mock_ssh_user',
                     'ssh_key_file': 'mock_ssh_key'
                 }
-            }
+            },
+            'mongodb_setup': {}
         }
         with LogCapture(level=logging.ERROR) as log_capture:
             # LogCapture captures all log output into the object log_capture. level specifies which
