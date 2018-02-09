@@ -3419,6 +3419,13 @@
                     "ticket":[
                         "PERF-737"
                     ]
+                },
+                "removemulti_jtrue":{
+                    "thread_threshold":0.214,
+                    "threshold":0.3209,
+                    "ticket":[
+                        "BFG-50958"
+                    ]
                 }
             }
         },
