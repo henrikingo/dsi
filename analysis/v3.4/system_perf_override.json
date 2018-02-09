@@ -1695,6 +1695,13 @@
                         "BF-5520"
                     ]
                 },
+                "Secondary_size_10K_count_1M":{
+                    "thread_threshold":0.1951,
+                    "threshold":0.2926,
+                    "ticket":[
+                        "BFG-50782"
+                    ]
+                },
                 "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
