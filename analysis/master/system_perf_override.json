@@ -9479,10 +9479,11 @@
                     ]
                 },
                 "map_reduce_doc":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.1043,
+                    "threshold":0.1565,
                     "ticket":[
-                        "BF-6979"
+                        "BF-6979",
+                        "BFG-50422"
                     ]
                 },
                 "mixed_delete":{
