@@ -1548,6 +1548,13 @@
                         "BFG-50775"
                     ]
                 },
+                "ycsb_95read5update_w_majority":{
+                    "thread_threshold":0.124,
+                    "threshold":0.1861,
+                    "ticket":[
+                        "BFG-50775"
+                    ]
+                },
                 "ycsb_load":{
                     "thread_threshold":0.1561,
                     "threshold":0.2342,
