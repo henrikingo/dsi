@@ -7357,6 +7357,13 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":0.2321,
+                    "threshold":0.3482,
+                    "ticket":[
+                        "BFG-49699"
+                    ]
+                },
                 "fio_iops_test_write_iops":{
                     "thread_threshold":0.2326,
                     "threshold":0.3489,
