@@ -2569,10 +2569,11 @@
                     ]
                 },
                 "count_with_type_predicate-useAgg":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.11,
+                    "threshold":0.165,
                     "ticket":[
-                        "BF-6270"
+                        "BF-6270",
+                        "BFG-50269"
                     ]
                 },
                 "distinct_types_no_predicate-useAgg":{
