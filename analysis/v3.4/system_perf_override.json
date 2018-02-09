@@ -1540,6 +1540,13 @@
                         "PERF-723",
                         "BF-5520"
                     ]
+                },
+                "ycsb_50read50update_w_majority":{
+                    "thread_threshold":0.0799,
+                    "threshold":0.1199,
+                    "ticket":[
+                        "BFG-50775"
+                    ]
                 }
             }
         },
