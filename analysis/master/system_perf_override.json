@@ -7652,6 +7652,13 @@
                         "PERF-873"
                     ]
                 },
+                "moveChunkWithLoad_secondaryThrottle_false":{
+                    "thread_threshold":0.2017,
+                    "threshold":0.3025,
+                    "ticket":[
+                        "BFG-50684"
+                    ]
+                },
                 "moveChunk_secondaryThrottle_false_waitForDelete_false":{
                     "thread_threshold":0.1417,
                     "threshold":0.2126,
