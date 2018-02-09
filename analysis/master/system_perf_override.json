@@ -5008,10 +5008,11 @@
                     ]
                 },
                 "mixed_findOne_retry":{
-                    "thread_threshold":0.36,
-                    "threshold":0.25,
+                    "thread_threshold":0.1819,
+                    "threshold":0.2729,
                     "ticket":[
-                        "BF-7748"
+                        "BF-7748",
+                        "BFG-50410"
                     ]
                 },
                 "mixed_insert_retry":{
