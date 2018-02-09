@@ -2263,6 +2263,13 @@
                         "PERF-723",
                         "BF-5520"
                     ]
+                },
+                "initial_load_capped":{
+                    "thread_threshold":0.0853,
+                    "threshold":0.128,
+                    "ticket":[
+                        "BFG-50517"
+                    ]
                 }
             }
         }
