@@ -1258,6 +1258,13 @@
                         "PERF-719"
                     ]
                 },
+                "mixed_insert":{
+                    "thread_threshold":0.0926,
+                    "threshold":0.1389,
+                    "ticket":[
+                        "BFG-50819"
+                    ]
+                },
                 "removemulti_jtrue":{
                     "thread_threshold":0.75,
                     "threshold":0.6,
