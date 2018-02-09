@@ -75,6 +75,86 @@ def validate_config(config):
             raise NotImplementedError("No parser exists for test type {}".format(test['type']))
 
 
+class Results(object):
+    """Holds a list of result objects"""
+
+    def __init__(self, path):
+        self.path = path
+        self.results = []
+        LOG.debug("Trying to read %s", self.path)
+        if os.path.isfile(path):
+            with open(path) as file_handle:
+                self.results = json.load(file_handle)['results']
+
+    # pylint: disable=too-many-arguments
+    def add_result(self, test_type, start, end, name, result, threads="1"):
+        """
+        Merge new result into (potentially) existing perf_json structure.
+
+        There are 3 scenarios:
+        1. If the same name+threads exists, we need to find it and add the result to
+           ops_per_sec_values list, then recompute ops_per_sec as an average of that.
+        2. If the same name exists, but doesn't have this thread level, then add this thread level
+        3. If same name+threads doesn't yet exist, we append the new entry to the end of the list.
+
+        :param test_type: aka "workload name"
+        :param start: workload timer start
+        :param end: workload timer end
+        :param str name: Unique name for this test result. (1 test can produce more than 1 result.)
+        :param float result: The ops/sec result. (Note, sometimes we actually report latency or
+                             duration. In such cases use negative values to preserve "higher is
+                             better" semantics.
+        :param str threads": The number of client threads the test (name) was run with. Note that
+                             this is used as a json key, and therefore must be a string. The
+                             combination name+threads defines a unique result in the sense that if
+                             there is more than one occurrence, the ops_per_sec field will contain
+                             the average of them.
+        """
+        assert isinstance(name, basestring)
+        assert isinstance(threads, basestring)
+
+        existing_entry = self._find_existing_result(name)
+        if existing_entry:
+            if threads in existing_entry['results']:
+                existing_entry['results'][threads]["ops_per_sec_values"].append(result)
+                values = existing_entry['results'][threads]["ops_per_sec_values"]
+                existing_entry['results'][threads]["ops_per_sec"] = sum(values) / float(len(values))
+            else:
+                new_thread = {"ops_per_sec": result, "ops_per_sec_values": [result]}
+                existing_entry['results'][threads] = new_thread
+        else:
+            new_entry = {
+                "workload": test_type,
+                "name": name,
+                "start": start,
+                "end": end,
+                "results": {
+                    threads: {
+                        "ops_per_sec": result,
+                        "ops_per_sec_values": [result]
+                    }
+                }
+            } # yapf: disable
+            self.results.append(new_entry)
+
+    def _find_existing_result(self, name):
+        """
+        Linear scan over self.perf_json to find name.
+
+        :param str name: The test result to find
+        """
+        for entry in self.results:
+            if entry['name'] == name:
+                return entry
+
+    def save(self):
+        """Save perf.json into self.perf_json_path"""
+
+        to_serialize = {'results': self.results}
+        with open(self.path, "w") as file_handle:
+            json.dump(to_serialize, file_handle, indent=4, separators=[',', ':'], sort_keys=True)
+
+
 class ResultParser(object):
     """Parent class for all parser types"""
 
@@ -91,23 +171,9 @@ class ResultParser(object):
         self.test_type = test['type']
         self.task_name = config['test_control']['task_name']
         self.reports_root = config['test_control']['reports_dir_basename']
-        self.perf_json_path = config['test_control']['perf_json']['path']
-        self.load_perf_json()
+        self.results = Results(config['test_control']['perf_json']['path'])
         self.timer = timer
         self.input_log = None
-
-    def load_perf_json(self):
-        """Load perf.json into self.perf_json"""
-        self.perf_json = {'results': []}
-        LOG.debug("Trying to read %s", self.perf_json_path)
-        if os.path.isfile(self.perf_json_path):
-            with open(self.perf_json_path) as file_handle:
-                self.perf_json = json.load(file_handle)
-
-    def save_perf_json(self):
-        """Save perf.json into self.perf_json_path"""
-        with open(self.perf_json_path, "w") as file_handle:
-            json.dump(self.perf_json, file_handle, indent=4, separators=[',', ':'], sort_keys=True)
 
     def load_input_log(self):
         """Load self.input_log and return it"""
@@ -125,8 +191,15 @@ class ResultParser(object):
         :return: bool True on success else False
         """
         passed = self.parse()
-        self.save_perf_json()
+        self.results.save()
         return passed
+
+    def add_result(self, name, result, threads="1"):
+        """
+        For parameters/returns, see :method: `Results.add_result`
+        """
+        self.results.add_result(self.test_type, self.timer['start'], self.timer['end'], name,
+                                result, threads)
 
     def parse(self):
         """
@@ -154,63 +227,6 @@ class ResultParser(object):
         then call `self.add_result(name, result, threads)` for each result.
         """
         raise NotImplementedError()
-
-    def add_result(self, name, result, threads="1"):
-        """
-        Merge new result into (potentially) existing perf_json structure.
-
-        There are 3 scenarios:
-        1. If the same name+threads exists, we need to find it and add the result to
-           ops_per_sec_values list, then recompute ops_per_sec as an average of that.
-        2. If the same name exists, but doesn't have this thread level, then add this thread level
-        3. If same name+threads doesn't yet exist, we append the new entry to the end of the list.
-
-        :param str name: Unique name for this test result. (1 test can produce more than 1 result.)
-        :param float result: The ops/sec result. (Note, sometimes we actually report latency or
-                             duration. In such cases use negative values to preserve "higher is
-                             better" semantics.
-        :param str threads": The number of client threads the test (name) was run with. Note that
-                             this is used as a json key, and therefore must be a string. The
-                             combination name+threads defines a unique result in the sense that if
-                             there is more than one occurrence, the ops_per_sec field will contain
-                             the average of them.
-        """
-        assert isinstance(name, basestring)
-        assert isinstance(threads, basestring)
-
-        existing_entry = self._find_existing_result(name)
-        if existing_entry:
-            if threads in existing_entry['results']:
-                existing_entry['results'][threads]["ops_per_sec_values"].append(result)
-                values = existing_entry['results'][threads]["ops_per_sec_values"]
-                existing_entry['results'][threads]["ops_per_sec"] = sum(values) / float(len(values))
-            else:
-                new_thread = {"ops_per_sec": result, "ops_per_sec_values": [result]}
-                existing_entry['results'][threads] = new_thread
-        else:
-            new_entry = {
-                "workload": self.test_type,
-                "name": name,
-                "start": self.timer['start'],
-                "end": self.timer['end'],
-                "results": {
-                    threads: {
-                        "ops_per_sec": result,
-                        "ops_per_sec_values": [result]
-                    }
-                }
-            } # yapf: disable
-            self.perf_json['results'].append(new_entry)
-
-    def _find_existing_result(self, name):
-        """
-        Linear scan over self.perf_json to find name.
-
-        :param str name: The test result to find
-        """
-        for entry in self.perf_json['results']:
-            if entry['name'] == name:
-                return entry
 
 
 class MongoShellParser(ResultParser):
