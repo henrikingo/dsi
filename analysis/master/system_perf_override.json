@@ -8931,6 +8931,13 @@
                         "BF-5520"
                     ]
                 },
+                "index_build":{
+                    "thread_threshold":0.0561,
+                    "threshold":0.0841,
+                    "ticket":[
+                        "BFG-51142"
+                    ]
+                },
                 "insert_jtrue":{
                     "thread_threshold":0.5,
                     "threshold":0.18,
