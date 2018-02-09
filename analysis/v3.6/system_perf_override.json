@@ -6853,6 +6853,13 @@
                     "ticket":[
                         "PERF-873"
                     ]
+                },
+                "moveChunkWithLoad_secondaryThrottle_true":{
+                    "thread_threshold":0.2327,
+                    "threshold":0.349,
+                    "ticket":[
+                        "BFG-50315"
+                    ]
                 }
             }
         }
