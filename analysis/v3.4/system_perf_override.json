@@ -1547,6 +1547,13 @@
                     "ticket":[
                         "BFG-50775"
                     ]
+                },
+                "ycsb_load":{
+                    "thread_threshold":0.1561,
+                    "threshold":0.2342,
+                    "ticket":[
+                        "BFG-50775"
+                    ]
                 }
             }
         },
