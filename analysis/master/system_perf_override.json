@@ -482,6 +482,19 @@
                 }
             }
         },
+        "change_streams":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "15_1c_findOne":{
+                    "thread_threshold":0.181,
+                    "threshold":0.2715,
+                    "ticket":[
+                        "BFG-50748"
+                    ]
+                }
+            }
+        },
         "core_workloads_MMAPv1":{
             "ndays":{
                 "word_count_doc":{
