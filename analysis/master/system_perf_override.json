@@ -7221,11 +7221,12 @@
                     ]
                 },
                 "word_count_doc":{
-                    "thread_threshold":0.1092,
-                    "threshold":0.1638,
+                    "thread_threshold":0.1218,
+                    "threshold":0.1827,
                     "ticket":[
                         "BF-6979",
-                        "BFG-50233"
+                        "BFG-50233",
+                        "BFG-50201"
                     ]
                 }
             }
