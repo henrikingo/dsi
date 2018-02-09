@@ -5980,6 +5980,13 @@
                         "BFG-50294"
                     ]
                 },
+                "count_with_type_predicate-noAgg":{
+                    "thread_threshold":0.1563,
+                    "threshold":0.2345,
+                    "ticket":[
+                        "BFG-50294"
+                    ]
+                },
                 "distinct_types_with_in_predicate-useAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
