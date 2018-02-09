@@ -1526,10 +1526,11 @@
                     ]
                 },
                 "insert_vector_secondary_overall":{
-                    "thread_threshold":0.3,
-                    "threshold":0.1,
+                    "thread_threshold":0.1877,
+                    "threshold":0.2815,
                     "ticket":[
-                        "BF-7147"
+                        "BF-7147",
+                        "BFG-50925"
                     ]
                 },
                 "map_reduce_doc":{
