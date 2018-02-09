@@ -5973,6 +5973,13 @@
                         "BF-6162"
                     ]
                 },
+                "count_no_predicate-useAgg":{
+                    "thread_threshold":0.0864,
+                    "threshold":0.1296,
+                    "ticket":[
+                        "BFG-50294"
+                    ]
+                },
                 "distinct_types_with_in_predicate-useAgg":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
