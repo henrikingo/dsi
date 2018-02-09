@@ -2193,6 +2193,13 @@
                     "ticket":[
                         "BF-5520"
                     ]
+                },
+                "ycsb_load":{
+                    "thread_threshold":0.1847,
+                    "threshold":0.2771,
+                    "ticket":[
+                        "BFG-50856"
+                    ]
                 }
             }
         },
