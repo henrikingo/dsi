@@ -2,7 +2,273 @@
     "linux-1-node-replSet":{
         "core_workloads_MMAPv1":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "mixed_delete":{
+                    "create_time":"2017-12-07T03:35:12.771Z",
+                    "end":1512769561,
+                    "max":2751.285083650792,
+                    "name":"mixed_delete",
+                    "order":765,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":2641.71351200416,
+                            "ops_per_sec_values":[
+                                2641.71351200416
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":2498.889537777945,
+                            "ops_per_sec_values":[
+                                2498.889537777945
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":2751.285083650792,
+                            "ops_per_sec_values":[
+                                2751.285083650792
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":2416.712714978219,
+                            "ops_per_sec_values":[
+                                2416.712714978219
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":2698.156215721036,
+                            "ops_per_sec_values":[
+                                2698.156215721036
+                            ]
+                        }
+                    },
+                    "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
+                    "start":1512762583,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7546"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "mixed_findOne":{
+                    "create_time":"2017-12-07T03:35:12.771Z",
+                    "end":1512769561,
+                    "max":2796.391012355602,
+                    "name":"mixed_findOne",
+                    "order":765,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":2649.733298059066,
+                            "ops_per_sec_values":[
+                                2649.733298059066
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":2507.947554620006,
+                            "ops_per_sec_values":[
+                                2507.947554620006
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":2796.391012355602,
+                            "ops_per_sec_values":[
+                                2796.391012355602
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":2453.6013591971273,
+                            "ops_per_sec_values":[
+                                2453.6013591971273
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":2704.98654480766,
+                            "ops_per_sec_values":[
+                                2704.98654480766
+                            ]
+                        }
+                    },
+                    "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
+                    "start":1512762583,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7546"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "mixed_insert":{
+                    "create_time":"2017-12-07T03:35:12.771Z",
+                    "end":1512769561,
+                    "max":2754.4503395937973,
+                    "name":"mixed_insert",
+                    "order":765,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":2654.2350398298636,
+                            "ops_per_sec_values":[
+                                2654.2350398298636
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":2522.989938940178,
+                            "ops_per_sec_values":[
+                                2522.989938940178
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":2754.4503395937973,
+                            "ops_per_sec_values":[
+                                2754.4503395937973
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":2452.9726961172764,
+                            "ops_per_sec_values":[
+                                2452.9726961172764
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":2700.9357137432057,
+                            "ops_per_sec_values":[
+                                2700.9357137432057
+                            ]
+                        }
+                    },
+                    "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
+                    "start":1512762583,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7546"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "mixed_total":{
+                    "create_time":"2017-12-07T03:35:12.771Z",
+                    "end":1512769561,
+                    "max":11049.645058097827,
+                    "name":"mixed_total",
+                    "order":765,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":10585.417266456192,
+                            "ops_per_sec_values":[
+                                10585.417266456192
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":10022.159044136059,
+                            "ops_per_sec_values":[
+                                10022.159044136059
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":11049.645058097827,
+                            "ops_per_sec_values":[
+                                11049.645058097827
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":9723.006599042552,
+                            "ops_per_sec_values":[
+                                9723.006599042552
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":10801.727763034552,
+                            "ops_per_sec_values":[
+                                10801.727763034552
+                            ]
+                        }
+                    },
+                    "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
+                    "start":1512762583,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7546"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "mixed_update":{
+                    "create_time":"2017-12-07T03:35:12.771Z",
+                    "end":1512769561,
+                    "max":2747.518622497637,
+                    "name":"mixed_update",
+                    "order":765,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":2639.7354165631023,
+                            "ops_per_sec_values":[
+                                2639.7354165631023
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":2492.3320127979287,
+                            "ops_per_sec_values":[
+                                2492.3320127979287
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":2747.518622497637,
+                            "ops_per_sec_values":[
+                                2747.518622497637
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":2399.719828749928,
+                            "ops_per_sec_values":[
+                                2399.719828749928
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":2697.6492887626523,
+                            "ops_per_sec_values":[
+                                2697.6492887626523
+                            ]
+                        }
+                    },
+                    "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
+                    "start":1512762583,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7546"
+                    ],
+                    "workload":"shell/benchrun"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -499,7 +765,273 @@
     "linux-3-node-replSet":{
         "core_workloads_MMAPv1":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "mixed_delete":{
+                    "create_time":"2017-12-07T03:35:12.771Z",
+                    "end":1512755614,
+                    "max":2644.0039871352988,
+                    "name":"mixed_delete",
+                    "order":765,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":2562.6176282560555,
+                            "ops_per_sec_values":[
+                                2562.6176282560555
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":2409.4666227996527,
+                            "ops_per_sec_values":[
+                                2409.4666227996527
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":2644.0039871352988,
+                            "ops_per_sec_values":[
+                                2644.0039871352988
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":2346.800819423048,
+                            "ops_per_sec_values":[
+                                2346.800819423048
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":2607.0442007034067,
+                            "ops_per_sec_values":[
+                                2607.0442007034067
+                            ]
+                        }
+                    },
+                    "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
+                    "start":1512747567,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7546"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "mixed_findOne":{
+                    "create_time":"2017-12-07T03:35:12.771Z",
+                    "end":1512755614,
+                    "max":2693.4520359727144,
+                    "name":"mixed_findOne",
+                    "order":765,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":2571.105194789655,
+                            "ops_per_sec_values":[
+                                2571.105194789655
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":2430.653477047522,
+                            "ops_per_sec_values":[
+                                2430.653477047522
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":2693.4520359727144,
+                            "ops_per_sec_values":[
+                                2693.4520359727144
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":2386.792537949559,
+                            "ops_per_sec_values":[
+                                2386.792537949559
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":2612.711987272238,
+                            "ops_per_sec_values":[
+                                2612.711987272238
+                            ]
+                        }
+                    },
+                    "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
+                    "start":1512747567,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7546"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "mixed_insert":{
+                    "create_time":"2017-12-07T03:35:12.771Z",
+                    "end":1512755614,
+                    "max":2647.317459941124,
+                    "name":"mixed_insert",
+                    "order":765,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":2573.6591160206353,
+                            "ops_per_sec_values":[
+                                2573.6591160206353
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":2431.938469404348,
+                            "ops_per_sec_values":[
+                                2431.938469404348
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":2647.317459941124,
+                            "ops_per_sec_values":[
+                                2647.317459941124
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":2383.539966222596,
+                            "ops_per_sec_values":[
+                                2383.539966222596
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":2612.4152361170686,
+                            "ops_per_sec_values":[
+                                2612.4152361170686
+                            ]
+                        }
+                    },
+                    "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
+                    "start":1512747567,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7546"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "mixed_total":{
+                    "create_time":"2017-12-07T03:35:12.771Z",
+                    "end":1512755614,
+                    "max":10620.960325482894,
+                    "name":"mixed_total",
+                    "order":765,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":10267.250055060867,
+                            "ops_per_sec_values":[
+                                10267.250055060867
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":9674.088116807508,
+                            "ops_per_sec_values":[
+                                9674.088116807508
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":10620.960325482894,
+                            "ops_per_sec_values":[
+                                10620.960325482894
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":9447.993424248756,
+                            "ops_per_sec_values":[
+                                9447.993424248756
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":10438.407512176993,
+                            "ops_per_sec_values":[
+                                10438.407512176993
+                            ]
+                        }
+                    },
+                    "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
+                    "start":1512747567,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7546"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "mixed_update":{
+                    "create_time":"2017-12-07T03:35:12.771Z",
+                    "end":1512755614,
+                    "max":2636.186842433757,
+                    "name":"mixed_update",
+                    "order":765,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":2559.8681159945227,
+                            "ops_per_sec_values":[
+                                2559.8681159945227
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":2402.0295475559847,
+                            "ops_per_sec_values":[
+                                2402.0295475559847
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":2636.186842433757,
+                            "ops_per_sec_values":[
+                                2636.186842433757
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":2330.860100653553,
+                            "ops_per_sec_values":[
+                                2330.860100653553
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":2606.2360880842784,
+                            "ops_per_sec_values":[
+                                2606.2360880842784
+                            ]
+                        }
+                    },
+                    "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
+                    "start":1512747567,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7546"
+                    ],
+                    "workload":"shell/benchrun"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -2421,7 +2953,273 @@
     "linux-3-shard":{
         "core_workloads_MMAPv1":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "mixed_delete":{
+                    "create_time":"2017-12-07T03:35:12.771Z",
+                    "end":1512859591,
+                    "max":6028.209288273192,
+                    "name":"mixed_delete",
+                    "order":765,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":5993.221152513117,
+                            "ops_per_sec_values":[
+                                5993.221152513117
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":5873.02608779343,
+                            "ops_per_sec_values":[
+                                5873.02608779343
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":1754.630989169887,
+                            "ops_per_sec_values":[
+                                1754.630989169887
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":5772.5259743191955,
+                            "ops_per_sec_values":[
+                                5772.5259743191955
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":6028.209288273192,
+                            "ops_per_sec_values":[
+                                6028.209288273192
+                            ]
+                        }
+                    },
+                    "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
+                    "start":1512852219,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7546"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "mixed_findOne":{
+                    "create_time":"2017-12-07T03:35:12.771Z",
+                    "end":1512859591,
+                    "max":6290.739390972389,
+                    "name":"mixed_findOne",
+                    "order":765,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":6142.8669884866895,
+                            "ops_per_sec_values":[
+                                6142.8669884866895
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":5930.218209785933,
+                            "ops_per_sec_values":[
+                                5930.218209785933
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":1965.394111696479,
+                            "ops_per_sec_values":[
+                                1965.394111696479
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":5792.196931684706,
+                            "ops_per_sec_values":[
+                                5792.196931684706
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":6290.739390972389,
+                            "ops_per_sec_values":[
+                                6290.739390972389
+                            ]
+                        }
+                    },
+                    "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
+                    "start":1512852219,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7546"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "mixed_insert":{
+                    "create_time":"2017-12-07T03:35:12.771Z",
+                    "end":1512859591,
+                    "max":6157.321532452194,
+                    "name":"mixed_insert",
+                    "order":765,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":6088.505653775294,
+                            "ops_per_sec_values":[
+                                6088.505653775294
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":5958.653784017188,
+                            "ops_per_sec_values":[
+                                5958.653784017188
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":1937.7841021738102,
+                            "ops_per_sec_values":[
+                                1937.7841021738102
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":5888.718694293292,
+                            "ops_per_sec_values":[
+                                5888.718694293292
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":6157.321532452194,
+                            "ops_per_sec_values":[
+                                6157.321532452194
+                            ]
+                        }
+                    },
+                    "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
+                    "start":1512852219,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7546"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "mixed_total":{
+                    "create_time":"2017-12-07T03:35:12.771Z",
+                    "end":1512859591,
+                    "max":24462.8264506308,
+                    "name":"mixed_total",
+                    "order":765,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":24192.10927522654,
+                            "ops_per_sec_values":[
+                                24192.10927522654
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":23592.315876517783,
+                            "ops_per_sec_values":[
+                                23592.315876517783
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":7360.637740604227,
+                            "ops_per_sec_values":[
+                                7360.637740604227
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":23180.612959921094,
+                            "ops_per_sec_values":[
+                                23180.612959921094
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":24462.8264506308,
+                            "ops_per_sec_values":[
+                                24462.8264506308
+                            ]
+                        }
+                    },
+                    "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
+                    "start":1512852219,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7546"
+                    ],
+                    "workload":"shell/benchrun"
+                },
+                "mixed_update":{
+                    "create_time":"2017-12-07T03:35:12.771Z",
+                    "end":1512859591,
+                    "max":5986.556238933028,
+                    "name":"mixed_update",
+                    "order":765,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":5967.5154804514395,
+                            "ops_per_sec_values":[
+                                5967.5154804514395
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":5830.417794921231,
+                            "ops_per_sec_values":[
+                                5830.417794921231
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":1702.8285375640503,
+                            "ops_per_sec_values":[
+                                1702.8285375640503
+                            ]
+                        },
+                        "512":{
+                            "ops_per_sec":5727.1713596239,
+                            "ops_per_sec_values":[
+                                5727.1713596239
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":5986.556238933028,
+                            "ops_per_sec_values":[
+                                5986.556238933028
+                            ]
+                        }
+                    },
+                    "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
+                    "start":1512852219,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "64",
+                        "512",
+                        "256",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-7546"
+                    ],
+                    "workload":"shell/benchrun"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -3137,7 +3935,7 @@
             "reference":{
                 "mixed_delete":{
                     "create_time":"2017-12-07T03:35:12.771Z",
-                    "end":1512754611.0,
+                    "end":1512754611,
                     "max":3036.3457462678994,
                     "name":"mixed_delete",
                     "order":765,
@@ -3174,7 +3972,7 @@
                         }
                     },
                     "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
-                    "start":1512747835.0,
+                    "start":1512747835,
                     "tag":"",
                     "threads":[
                         "128",
@@ -3190,7 +3988,7 @@
                 },
                 "mixed_findOne":{
                     "create_time":"2017-12-07T03:35:12.771Z",
-                    "end":1512754611.0,
+                    "end":1512754611,
                     "max":3093.861783991815,
                     "name":"mixed_findOne",
                     "order":765,
@@ -3227,7 +4025,7 @@
                         }
                     },
                     "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
-                    "start":1512747835.0,
+                    "start":1512747835,
                     "tag":"",
                     "threads":[
                         "128",
@@ -3243,7 +4041,7 @@
                 },
                 "mixed_insert":{
                     "create_time":"2017-12-07T03:35:12.771Z",
-                    "end":1512754611.0,
+                    "end":1512754611,
                     "max":3040.953332970938,
                     "name":"mixed_insert",
                     "order":765,
@@ -3280,7 +4078,7 @@
                         }
                     },
                     "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
-                    "start":1512747835.0,
+                    "start":1512747835,
                     "tag":"",
                     "threads":[
                         "128",
@@ -3296,7 +4094,7 @@
                 },
                 "mixed_total":{
                     "create_time":"2017-12-07T03:35:12.771Z",
-                    "end":1512754611.0,
+                    "end":1512754611,
                     "max":12188.621194579067,
                     "name":"mixed_total",
                     "order":765,
@@ -3333,7 +4131,7 @@
                         }
                     },
                     "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
-                    "start":1512747835.0,
+                    "start":1512747835,
                     "tag":"",
                     "threads":[
                         "128",
@@ -3349,7 +4147,7 @@
                 },
                 "mixed_update":{
                     "create_time":"2017-12-07T03:35:12.771Z",
-                    "end":1512754611.0,
+                    "end":1512754611,
                     "max":3035.7598338323037,
                     "name":"mixed_update",
                     "order":765,
@@ -3386,7 +4184,7 @@
                         }
                     },
                     "revision":"ae67a97771562a9576963a902f481f6a9b484e51",
-                    "start":1512747835.0,
+                    "start":1512747835,
                     "tag":"",
                     "threads":[
                         "128",
