@@ -7353,6 +7353,19 @@
                 }
             }
         },
+        "industry_benchmarks_wmajority_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":0.2326,
+                    "threshold":0.3489,
+                    "ticket":[
+                        "BFG-49699"
+                    ]
+                }
+            }
+        },
         "mongos_workloads_MMAPv1":{
             "ndays":{},
             "reference":{},
