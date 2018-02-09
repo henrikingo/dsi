@@ -3045,6 +3045,13 @@
                 }
             },
             "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":0.0549,
+                    "threshold":0.0823,
+                    "ticket":[
+                        "BFG-50501"
+                    ]
+                },
                 "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
