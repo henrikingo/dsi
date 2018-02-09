@@ -4288,6 +4288,13 @@
                         "BF-5520"
                     ]
                 },
+                "ycsb_50read50update":{
+                    "thread_threshold":0.2076,
+                    "threshold":0.3114,
+                    "ticket":[
+                        "BFG-50968"
+                    ]
+                },
                 "ycsb_load":{
                     "thread_threshold":0.32,
                     "threshold":0.15,
