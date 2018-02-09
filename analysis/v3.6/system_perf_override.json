@@ -3534,6 +3534,13 @@
                     "ticket":[
                         "BF-6272"
                     ]
+                },
+                "word_count_doc":{
+                    "thread_threshold":0.1534,
+                    "threshold":0.2301,
+                    "ticket":[
+                        "BFG-51087"
+                    ]
                 }
             }
         },
