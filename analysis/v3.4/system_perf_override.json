@@ -1265,6 +1265,13 @@
                         "BFG-50819"
                     ]
                 },
+                "mixed_update":{
+                    "thread_threshold":0.0818,
+                    "threshold":0.1227,
+                    "ticket":[
+                        "BFG-50819"
+                    ]
+                },
                 "removemulti_jtrue":{
                     "thread_threshold":0.75,
                     "threshold":0.6,
