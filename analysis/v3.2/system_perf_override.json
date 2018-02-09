@@ -2441,6 +2441,13 @@
                     "ticket":[
                         "BF-5520"
                     ]
+                },
+                "moveChunk_secondaryThrottle_true_waitForDelete_false":{
+                    "thread_threshold":0.0685,
+                    "threshold":0.1028,
+                    "ticket":[
+                        "BFG-50872"
+                    ]
                 }
             }
         }
