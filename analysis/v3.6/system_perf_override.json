@@ -8409,6 +8409,13 @@
                         "PERF-1157"
                     ]
                 },
+                "removemulti_jfalse":{
+                    "thread_threshold":0.0722,
+                    "threshold":0.1082,
+                    "ticket":[
+                        "BFG-50924"
+                    ]
+                },
                 "removemulti_jtrue":{
                     "thread_threshold":0.5,
                     "threshold":0.18,
