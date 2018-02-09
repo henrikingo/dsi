@@ -8417,6 +8417,13 @@
                         "BF-7146"
                     ]
                 },
+                "updatemulti_jfalse":{
+                    "thread_threshold":0.064,
+                    "threshold":0.0959,
+                    "ticket":[
+                        "BFG-50924"
+                    ]
+                },
                 "updatemulti_jtrue":{
                     "thread_threshold":0.5,
                     "threshold":0.18,
