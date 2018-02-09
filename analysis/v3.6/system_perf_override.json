@@ -6539,6 +6539,19 @@
                 }
             }
         },
+        "industry_benchmarks_wmajority_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "ycsb_load":{
+                    "thread_threshold":0.2197,
+                    "threshold":0.3296,
+                    "ticket":[
+                        "BFG-50342"
+                    ]
+                }
+            }
+        },
         "mongos_workloads_MMAPv1":{
             "ndays":{},
             "reference":{},
