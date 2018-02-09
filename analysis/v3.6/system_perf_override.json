@@ -3538,6 +3538,13 @@
                         "BF-6272"
                     ]
                 },
+                "updatemulti_jfalse":{
+                    "thread_threshold":0.1694,
+                    "threshold":0.2541,
+                    "ticket":[
+                        "BFG-50507"
+                    ]
+                },
                 "updatemulti_jtrue":{
                     "thread_threshold":0.18,
                     "threshold":0.12,
