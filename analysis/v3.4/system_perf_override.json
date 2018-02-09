@@ -3399,6 +3399,13 @@
                         "BF-5520"
                     ]
                 },
+                "map_reduce_doc":{
+                    "thread_threshold":0.104,
+                    "threshold":0.156,
+                    "ticket":[
+                        "BFG-50958"
+                    ]
+                },
                 "moveChunkWithLoad_secondaryThrottle_true":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
