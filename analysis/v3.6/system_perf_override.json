@@ -304,7 +304,7 @@
                     "threshold":0.1463,
                     "ticket":[
                         "BF-6270",
-                        "BFG-50274"
+                        "BF-7995"
                     ]
                 },
                 "distinct_types_no_predicate-useAgg":{
@@ -1498,7 +1498,7 @@
                     "thread_threshold":0.1052,
                     "threshold":0.1578,
                     "ticket":[
-                        "BFG-50492"
+                        "BF-7999"
                     ]
                 },
                 "insert_jtrue":{
@@ -1522,7 +1522,7 @@
                     "threshold":0.2815,
                     "ticket":[
                         "BF-7147",
-                        "BFG-50925"
+                        "BF-8006"
                     ]
                 },
                 "insert_vector_secondary_load_phase":{
@@ -1530,7 +1530,7 @@
                     "threshold":0.2815,
                     "ticket":[
                         "BF-7147",
-                        "BFG-50925"
+                        "BF-8006"
                     ]
                 },
                 "insert_vector_secondary_overall":{
@@ -1538,7 +1538,7 @@
                     "threshold":0.2815,
                     "ticket":[
                         "BF-7147",
-                        "BFG-50925"
+                        "BF-8006"
                     ]
                 },
                 "map_reduce_doc":{
@@ -2276,7 +2276,7 @@
                     "thread_threshold":0.0853,
                     "threshold":0.128,
                     "ticket":[
-                        "BFG-50517"
+                        "BF-8004"
                     ]
                 }
             }
@@ -2573,7 +2573,7 @@
                     "threshold":0.165,
                     "ticket":[
                         "BF-6270",
-                        "BFG-50269"
+                        "BF-7994"
                     ]
                 },
                 "distinct_types_no_predicate-useAgg":{
@@ -3058,7 +3058,7 @@
                     "thread_threshold":0.0549,
                     "threshold":0.0823,
                     "ticket":[
-                        "BFG-50501"
+                        "BF-8002"
                     ]
                 },
                 "canary_client-cpuloop-10x":{
@@ -3558,7 +3558,7 @@
                     "thread_threshold":0.1694,
                     "threshold":0.2541,
                     "ticket":[
-                        "BFG-50507"
+                        "BF-8003"
                     ]
                 },
                 "updatemulti_jtrue":{
@@ -3572,7 +3572,7 @@
                     "thread_threshold":0.1534,
                     "threshold":0.2301,
                     "ticket":[
-                        "BFG-51087"
+                        "BF-8007"
                     ]
                 }
             }
@@ -5979,14 +5979,14 @@
                     "thread_threshold":0.0864,
                     "threshold":0.1296,
                     "ticket":[
-                        "BFG-50294"
+                        "BF-7997"
                     ]
                 },
                 "count_with_type_predicate-noAgg":{
                     "thread_threshold":0.1563,
                     "threshold":0.2345,
                     "ticket":[
-                        "BFG-50294"
+                        "BF-7997"
                     ]
                 },
                 "distinct_types_with_in_predicate-useAgg":{
@@ -6414,7 +6414,7 @@
                     "thread_threshold":0.0706,
                     "threshold":0.1059,
                     "ticket":[
-                        "BFG-50292"
+                        "BF-7996"
                     ]
                 },
                 "removemulti_jtrue":{
@@ -6428,7 +6428,7 @@
                     "thread_threshold":0.0882,
                     "threshold":0.1323,
                     "ticket":[
-                        "BFG-50292"
+                        "BF-7996"
                     ]
                 },
                 "updatemulti_jtrue":{
@@ -6577,7 +6577,7 @@
                     "thread_threshold":0.2197,
                     "threshold":0.3296,
                     "ticket":[
-                        "BFG-50342"
+                        "BF-7977"
                     ]
                 }
             }
@@ -6888,7 +6888,7 @@
                     "thread_threshold":0.2327,
                     "threshold":0.349,
                     "ticket":[
-                        "BFG-50315"
+                        "BF-7998"
                     ]
                 }
             }
@@ -7480,7 +7480,7 @@
                     "threshold":0.1638,
                     "ticket":[
                         "BF-6270",
-                        "BFG-50499"
+                        "BF-8000"
                     ]
                 },
                 "distinct_types_no_predicate-useAgg":{
@@ -8492,7 +8492,7 @@
                     "thread_threshold":0.0722,
                     "threshold":0.1082,
                     "ticket":[
-                        "BFG-50924"
+                        "BF-8005"
                     ]
                 },
                 "removemulti_jtrue":{
@@ -8507,7 +8507,7 @@
                     "thread_threshold":0.064,
                     "threshold":0.0959,
                     "ticket":[
-                        "BFG-50924"
+                        "BF-8005"
                     ]
                 },
                 "updatemulti_jtrue":{

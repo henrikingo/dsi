@@ -1978,7 +1978,7 @@
                     "thread_threshold":0.1901,
                     "threshold":0.2852,
                     "ticket":[
-                        "BFG-50850"
+                        "BF-7989"
                     ]
                 }
             }
@@ -2205,7 +2205,7 @@
                     "thread_threshold":0.1847,
                     "threshold":0.2771,
                     "ticket":[
-                        "BFG-50856"
+                        "BF-7978"
                     ]
                 }
             }
@@ -2460,7 +2460,7 @@
                     "thread_threshold":0.0685,
                     "threshold":0.1028,
                     "ticket":[
-                        "BFG-50872"
+                        "BF-7990"
                     ]
                 }
             }

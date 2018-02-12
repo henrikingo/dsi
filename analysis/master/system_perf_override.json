@@ -490,14 +490,14 @@
                     "thread_threshold":0.181,
                     "threshold":0.2715,
                     "ticket":[
-                        "BFG-50748"
+                        "BF-7984"
                     ]
                 },
                 "1_1c_findOne":{
                     "thread_threshold":0.0602,
                     "threshold":0.0903,
                     "ticket":[
-                        "BFG-50748"
+                        "BF-7984"
                     ]
                 }
             }
@@ -4312,7 +4312,7 @@
                     "thread_threshold":0.2076,
                     "threshold":0.3114,
                     "ticket":[
-                        "BFG-50968"
+                        "BF-7986"
                     ]
                 },
                 "ycsb_load":{
@@ -5012,7 +5012,7 @@
                     "threshold":0.2729,
                     "ticket":[
                         "BF-7748",
-                        "BFG-50410"
+                        "BF-7987"
                     ]
                 },
                 "mixed_insert_retry":{
@@ -7225,8 +7225,8 @@
                     "threshold":0.1827,
                     "ticket":[
                         "BF-6979",
-                        "BFG-50233",
-                        "BFG-50201"
+                        "BF-7980",
+                        "BF-7891"
                     ]
                 }
             }
@@ -7361,14 +7361,14 @@
                     "thread_threshold":0.2321,
                     "threshold":0.3482,
                     "ticket":[
-                        "BFG-49699"
+                        "BF-7979"
                     ]
                 },
                 "fio_iops_test_write_iops":{
                     "thread_threshold":0.2326,
                     "threshold":0.3489,
                     "ticket":[
-                        "BFG-49699"
+                        "BF-7979"
                     ]
                 }
             }
@@ -7679,14 +7679,14 @@
                     "thread_threshold":0.2017,
                     "threshold":0.3025,
                     "ticket":[
-                        "BFG-50684"
+                        "BF-7982"
                     ]
                 },
                 "moveChunk_secondaryThrottle_false_waitForDelete_false":{
                     "thread_threshold":0.1417,
                     "threshold":0.2126,
                     "ticket":[
-                        "BFG-50684"
+                        "BF-7982"
                     ]
                 }
             }
@@ -8999,7 +8999,7 @@
                     "thread_threshold":0.0561,
                     "threshold":0.0841,
                     "ticket":[
-                        "BFG-51142"
+                        "BF-7983"
                     ]
                 },
                 "insert_jtrue":{
@@ -9506,7 +9506,7 @@
                     "threshold":0.1565,
                     "ticket":[
                         "BF-6979",
-                        "BFG-50422"
+                        "BF-7988"
                     ]
                 },
                 "mixed_delete":{

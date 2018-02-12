@@ -1262,14 +1262,14 @@
                     "thread_threshold":0.0926,
                     "threshold":0.1389,
                     "ticket":[
-                        "BFG-50819"
+                        "BF-7992"
                     ]
                 },
                 "mixed_update":{
                     "thread_threshold":0.0818,
                     "threshold":0.1227,
                     "ticket":[
-                        "BFG-50819"
+                        "BF-7992"
                     ]
                 },
                 "removemulti_jtrue":{
@@ -1545,21 +1545,21 @@
                     "thread_threshold":0.0799,
                     "threshold":0.1199,
                     "ticket":[
-                        "BFG-50775"
+                        "BF-7976"
                     ]
                 },
                 "ycsb_95read5update_w_majority":{
                     "thread_threshold":0.124,
                     "threshold":0.1861,
                     "ticket":[
-                        "BFG-50775"
+                        "BF-7976"
                     ]
                 },
                 "ycsb_load":{
                     "thread_threshold":0.1561,
                     "threshold":0.2342,
                     "ticket":[
-                        "BFG-50775"
+                        "BF-7976"
                     ]
                 }
             }
@@ -1720,7 +1720,7 @@
                     "thread_threshold":0.1951,
                     "threshold":0.2926,
                     "ticket":[
-                        "BFG-50782"
+                        "BF-7991"
                     ]
                 },
                 "canary_server-sleep-10ms":{
@@ -3445,7 +3445,7 @@
                     "thread_threshold":0.104,
                     "threshold":0.156,
                     "ticket":[
-                        "BFG-50958"
+                        "BF-7993"
                     ]
                 },
                 "moveChunkWithLoad_secondaryThrottle_true":{
@@ -3466,7 +3466,7 @@
                     "thread_threshold":0.214,
                     "threshold":0.3209,
                     "ticket":[
-                        "BFG-50958"
+                        "BF-7993"
                     ]
                 }
             }
