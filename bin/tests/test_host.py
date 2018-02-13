@@ -317,6 +317,8 @@ class HostTestCase(unittest.TestCase):
         mock_connected_ssh.return_value = (ssh, ftp)
 
         remote = host.RemoteHost(host=None, user=None, pem_file=None)
+        remote._perform_exec = mock.MagicMock(name='_perform_exec')
+        remote._perform_exec.return_value = 0
 
         local_path = os.path.abspath(os.path.dirname(__file__))
         remote_path = '/foo/bar'
@@ -354,6 +356,64 @@ class HostTestCase(unittest.TestCase):
         ftp.assert_has_calls(
             [call.put(ANY, '/foo/bar/idk.py'),
              call.chmod('/foo/bar/idk.py', ANY)], any_order=False)
+
+    def __run_host_command_map_ex(self, command, run_return_value=False, exec_return_value=None):
+        with patch('host.RemoteHost') as mongod:
+            if run_return_value is not None:
+                mongod.run.return_value = run_return_value
+            else:
+                mongod.exec_mongo_command.return_value = exec_return_value
+            host._run_host_command_map(mongod, command, "test_id")
+
+    def test__exec_ex(self):
+        """ Test run command map excpetion """
+
+        # test upload_files
+        with self.assertRaisesRegexp(host.HostException, r'^\(1, .*cowsay moo'):
+            command = {"exec": 'cowsay moo'}
+            self.__run_host_command_map_ex(command)
+
+    def test__exec_mongo_shell_ex(self):
+        """ Test run command map excpetion """
+
+        with self.assertRaisesRegexp(host.HostException, r'^\(1, .*this is a script'):
+            command = {
+                "exec_mongo_shell": {
+                    "script": "this is a script",
+                    "connection_string": "connection string"
+                }
+            }
+            self.__run_host_command_map_ex(command, run_return_value=None, exec_return_value=1)
+
+    @patch('paramiko.SSHClient')
+    def test__upload_files_host_ex(self, ssh_client):
+        """ Test run command map excpetion """
+
+        with self.assertRaisesRegexp(host.HostException, r'wrapped exception'):
+            remote = host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
+            command = {"upload_files": [{"target": "remote_path", "source": "."}]}
+            remote.exec_command = MagicMock(name='exec_command')
+            remote.exec_command.return_value = 0
+
+            remote._upload_single_file = MagicMock(name='_upload_single_file')
+            remote._upload_single_file.side_effect = paramiko.ssh_exception.SSHException(
+                "wrapped exception")
+            host._run_host_command_map(remote, command, "test_id")
+
+    @patch('paramiko.SSHClient')
+    def test__upload_files_wrapped_ex(self, ssh_client):
+        """ Test run command map excpetion """
+
+        with self.assertRaisesRegexp(host.HostException, r"'mkdir', '-p', 'remote_path'"):
+            remote = host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
+            command = {"upload_files": [{"target": "remote_path", "source": "."}]}
+            remote.exec_command = MagicMock(name='exec_command')
+            remote.exec_command.return_value = 1
+
+            remote._upload_single_file = MagicMock(name='_upload_single_file')
+            remote._upload_single_file.side_effect = paramiko.ssh_exception.SSHException(
+                "wrapped exception")
+            host._run_host_command_map(remote, command, "test_id")
 
     def test_upload_files(self):
         """ Test run command map upload_repo_files """
@@ -428,11 +488,12 @@ class HostTestCase(unittest.TestCase):
             mock_retrieve_file.assert_any_call("remote_path", "reports/test_id/mongos.0/local_path")
 
     def test_exec(self):
-        """ Test run command map upload_repo_files """
+        """ Test _run_host_command_map """
 
         # test exec
         with patch('host.RemoteHost') as mongod:
             command = {"exec": "this is a command"}
+            mongod.run.return_value = True
             host._run_host_command_map(mongod, command, "test_id")
             mongod.run.assert_called_once_with(["this", "is", "a", "command"])
 
@@ -447,19 +508,21 @@ class HostTestCase(unittest.TestCase):
                     "connection_string": "connection string"
                 }
             }
+            mongod.exec_mongo_command.return_value = 0
             host._run_host_command_map(mongod, command, "test_id")
             mongod.exec_mongo_command.assert_called_once_with(
                 "this is a script", connection_string="connection string")
 
         with patch('host.RemoteHost') as mongod:
             command = {"exec_mongo_shell": {"script": "this is a script"}}
+            mongod.exec_mongo_command.return_value = 0
             host._run_host_command_map(mongod, command, "test_id")
             mongod.exec_mongo_command.assert_called_once_with(
                 "this is a script", connection_string="")
 
     @patch('paramiko.SSHClient')
     def test_remote_host_isdir(self, mock_ssh):
-        """ Test run command map retrieve_files """
+        """ Test remote_isdir """
 
         remote = host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
         remote.ftp.stat.return_value = FakeStat(st_mode=stat.S_IFDIR)

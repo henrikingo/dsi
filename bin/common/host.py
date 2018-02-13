@@ -1,6 +1,7 @@
 """
 Provide abstraction over running commands on remote or local machines
 """
+# pylint: disable=too-many-lines
 
 from collections import MutableMapping, namedtuple
 from datetime import datetime
@@ -22,6 +23,7 @@ import paramiko
 from common.utils import mkdir_p
 from common.log import IOLogAdapter
 import common.mongodb_setup_helpers
+from common.exit_status import EXIT_STATUS_OK
 import common.utils
 from thread_runner import run_threads
 
@@ -78,6 +80,31 @@ def close_safely(stream):
         stream.close()
 
 
+def _raise_if_not_ok(status, message):
+    """ raise a HostExceptipn if status is not EXIT_STATUS_OK."""
+    assert isinstance(status, (int, float)), "success must be int or float"
+    if status != EXIT_STATUS_OK:
+        raise HostException(status, message)
+
+
+def _raise_if_not_success(success, message):
+    """ raise a HostExceptipn if success is False."""
+    assert isinstance(success, bool), "success must be boolean"
+    if success is False:
+        raise HostException(1, message)
+
+
+def _reraise_as_host_exception(exception):
+    """ wrap a exception as a HostException."""
+    if isinstance(exception, subprocess.CalledProcessError):
+        status = exception.returncode  # pylint: disable=no-member
+        message = exception.output  # pylint: disable=no-member
+    else:
+        status = 1
+        message = repr(exception)
+    raise HostException(status, message)
+
+
 def _run_host_command_map(target_host, command, prefix):
     """
     Run one command against a target host if the command is a mapping.
@@ -87,6 +114,9 @@ def _run_host_command_map(target_host, command, prefix):
     :param str prefix: The id for the test related to the current command. If there
     is not a specific test related to the current command, the value of prefix should reflect the
     hook that the command belongs to, such as between_tests, post_task, and so on.
+
+    :raises: UserWarning on error, HostException when there is a cmd or paramiko issue.
+    **Note: retrieve_files does not directly raise exceptions on error**.
     """
     # pylint: disable=too-many-branches
     for key, value in command.iteritems():
@@ -114,11 +144,14 @@ def _run_host_command_map(target_host, command, prefix):
                 target_host.retrieve_path(source, target)
         elif key == "exec":
             LOG.debug('Executing command %s', value)
-            target_host.run(value.split(' '))
+            success = target_host.run(value.split(' '))
+            _raise_if_not_success(success, value)
         elif key == "exec_mongo_shell":
             LOG.debug('Executing command %s in mongo shell', value)
             connection_string = value.get('connection_string', "")
-            target_host.exec_mongo_command(value['script'], connection_string=connection_string)
+            exit_status = target_host.exec_mongo_command(
+                value['script'], connection_string=connection_string)
+            _raise_if_not_ok(exit_status, value)
         elif key == "checkout_repos":
             for paths in value:
                 source = paths['source']
@@ -417,6 +450,12 @@ class Host(object):
 
         :param argvs: The string to execute, or one argument vector or list of argv's [file, arg]
         :type argvs: str, list
+
+        :return: True if all the command succeeded. This method returns a boolean (rather than
+        raising an exception) because this allows the caller to determine if a failure is
+        expected or accepted. For example 'pgrep mongod' can fail if no mongod is running. This
+        is not an error / exceptional.
+        Note: exceptions may be raised by the lower layer, see :method: `Host.exec_command`.
         """
         if not argvs or not isinstance(argvs, (list, basestring)):
             raise ValueError("Argument must be a nonempty list or string.")
@@ -737,6 +776,8 @@ class RemoteHost(Host):
         Copy a file or directory to the host.
         Uploading large files or a directory with lots of files may be slow as we don't do any
         compression.
+
+        :raises: HostException on error
         """
         if os.path.isdir(local_path):
             self._upload_dir(local_path, remote_path)
@@ -750,6 +791,7 @@ class RemoteHost(Host):
 
         :param local_path: Local directory to upload
         :param remote_path: Destination directory. Must already exist.
+        :raises: HostException on error
         """
         temp_dir = tempfile.mkdtemp()
         try:
@@ -766,6 +808,7 @@ class RemoteHost(Host):
         :param local_path: Local directory to upload
         :param remote_path: Destination directory. Must already exist.
         :param temp_dir: Temporary directory to store intermediary tarball
+        :raises: HostException on error
         """
         tarball_name = '{}.tar'.format(os.path.basename(remote_path))
         remote_parent_dir = os.path.dirname(remote_path)
@@ -775,11 +818,20 @@ class RemoteHost(Host):
             os.path.join(temp_dir, tarball_name), 'tar', local_path, '.')
 
         # Make way and upload it
-        self.exec_command(['mkdir', '-p', remote_path])
-        self._upload_single_file(tarball_path, remote_tarball_path)
+        cmd = ['mkdir', '-p', remote_path]
+        exit_status = self.exec_command(cmd)
+        _raise_if_not_ok(exit_status, cmd)
+
+        try:
+            # should raise an exception on error
+            self._upload_single_file(tarball_path, remote_tarball_path)
+        except Exception as e:  # pylint: disable=broad-except
+            _reraise_as_host_exception(e)
 
         # Untar it. Have to rely on shell because tarfile doesn't operate remotely.
-        self.exec_command(['tar', 'xf', remote_tarball_path, '-C', remote_path])
+        cmd = ['tar', 'xf', remote_tarball_path, '-C', remote_path]
+        exit_status = self.exec_command(cmd)
+        _raise_if_not_ok(exit_status, cmd)
 
         # Cleanup remote
         self.exec_command(['rm', remote_tarball_path])
