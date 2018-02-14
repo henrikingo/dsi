@@ -1,0 +1,72 @@
+task_name: linkbench
+run:
+
+  - id: linkbench_load
+    type: linkbench
+    cmd: |
+      cd linkbench
+      ./bin/linkbench -c config/LinkConfigMongoDb.properties \
+            -csvstats "../load-phase-stats.csv" \
+            -csvstream "../load-phase-stream-stats.csv" \
+            -L ../load-phase.log \
+            -D host="${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}" \
+            -D loaders=1 \
+            -D maxid1=1000001 \
+            -D requests=50000000 \
+            -l
+    output_files:
+      - load-phase-stats.csv
+
+  - id: linkbench_request
+    type: linkbench
+    cmd: |
+      cd linkbench
+      ./bin/linkbench -c config/LinkConfigMongoDb.properties \
+            -csvstats "../request-phase-stats.csv" \
+            -csvstream "../request-phase-stream-stats.csv" \
+            -L ../request-phase.log \
+            -D host="${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}" \
+            -D requesters=2 \
+            -D maxid1=1000001 \
+            -D requests=50000000 \
+            -D maxtime=360 \
+            -r
+    output_files:
+      - request-phase-stats.csv
+
+pre_task:
+  - on_workload_client:
+      exec_mongo_shell:
+        connection_string: "${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}"
+        script: |
+          db = db.getSiblingDB('linkdb0');
+
+          db.linktable.drop();
+          db.nodetable.drop();
+
+          db.createCollection("linktable");
+          db.createCollection("nodetable");
+          db.createCollection("counttable");
+
+          db.linktable.createIndex({id1: 1, link_type: 1, time: 1, visibility: 1});
+          db.counttable.createIndex({id1: 1, link_type: 1})
+
+  - on_workload_client:
+      exec_mongo_shell:
+        connection_string: "${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}"
+        # TODO: this is copy/pasta from ycsb - need to figure out sharding for linkbench
+        # Shard the YCSB cluster if sharding is enabled
+        script: |
+          if ("${mongodb_setup.meta.is_sharded}" == "True") {
+            assert.commandWorked(sh.enableSharding("ycsb"));
+            assert.commandWorked(
+              sh.shardCollection("ycsb.usertable", {_id: "hashed"}));
+            db.printShardingStatus();
+          } else {
+            print ("Non-sharded cluster");
+          }
+
+between_tests:
+  - restart_mongodb:
+      clean_logs: true
+      clean_db_dir: false

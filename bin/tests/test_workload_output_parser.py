@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 import unittest
+import json_diff
 
 # TODO: Learn how to do this correctly without complaint from pylint
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
@@ -16,6 +17,31 @@ LOG = logging.getLogger(__name__)
 class WorkloadOutputParserTestCase(unittest.TestCase):
     """Unit tests for workload_output_parser.py."""
 
+    def assert_json_files_equal(self, expect, actual):
+        """
+        Pretty-print a json diff report if contents if
+        expect != actual
+
+        :param IO expect: expected json file IO
+        :param IO actual: acttual json file IO
+        """
+        # While not strictly necessary, giving a nice diff view
+        # of the json differences helps immensely in debugging these tests
+        # versus just being able to see
+        #     {...some-huge-string...} != {...some-other-huge-string....}
+        diff = json_diff.Comparator(open(expect), open(actual))
+        diff_res = diff.compare_dicts()
+        outs = unicode(json_diff.HTMLFormatter(diff_res))
+
+        with open(actual) as file_handle:
+            result_perf_json = json.load(file_handle)
+        with open(expect) as file_handle:
+            expected_perf_json = json.load(file_handle)
+
+        # pylint: disable=invalid-name
+        self.maxDiff = None
+        self.assertEqual(result_perf_json, expected_perf_json, outs)
+
     def setUp(self):
         """Set some common input data"""
         self.tests = [
@@ -26,7 +52,13 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
             {'id': 'fio-unittest',
              'type': 'fio'},
             {'id': 'iperf-unittest',
-             'type': 'iperf'}
+             'type': 'iperf'},
+            {'id': 'linkbench-load-unittest',
+             'type': 'linkbench',
+             'output_files': ['load-phase-stats.csv']},
+            {'id': 'linkbench-request-unittest',
+             'type': 'linkbench',
+             'output_files': ['request-phase-stats.csv']},
         ] # yapf: disable
         self.config = {
             'test_control': {
@@ -39,7 +71,7 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
                     'mongoshell': 'test_output.log',
                     'ycsb': 'test_output.log',
                     'fio': 'fio.json',
-                    'iperf': 'iperf.json'
+                    'iperf': 'iperf.json',
                 },
                 'run': [
                     {'id': 'mock-test-foo',
@@ -49,7 +81,11 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
                     {'id': 'mock-test-fio',
                      'type': 'fio'},
                     {'id': 'mock-test-iperf',
-                     'type': 'iperf'}
+                     'type': 'iperf'},
+                    {'id': 'mock-test-linkbench-load',
+                     'type': 'linkbench'},
+                    {'id': 'mock-test-linkbench-request',
+                     'type': 'linkbench'},
                 ]
             }
         } # yapf: disable
@@ -70,12 +106,10 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
         for test in self.tests:
             LOG.debug("Parsing results for test %s", test['id'])
             parse_test_results(test, self.config, self.timer)
+
         # Verify output file
-        with open(self.perf_json_path) as file_handle:
-            result_perf_json = json.load(file_handle)
-        with open("{}.ok".format(self.perf_json_path)) as file_handle:
-            expected_perf_json = json.load(file_handle)
-        self.assertEqual(result_perf_json, expected_perf_json)
+        self.assert_json_files_equal(
+            expect="{}.ok".format(self.perf_json_path), actual=self.perf_json_path)
 
     def test_validate_config(self):
         """Test workload_output_parser.validate_config()"""

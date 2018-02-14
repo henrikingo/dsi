@@ -4,6 +4,7 @@ Parser classes for parsing test output into a perf.json file. One parser for eac
 See SUPPORTED_TYPES below for a list of types you can use.
 """
 
+import csv
 import json
 import logging
 import os
@@ -13,7 +14,7 @@ from nose.tools import nottest
 
 LOG = logging.getLogger(__name__)
 
-SUPPORTED_TYPES = set(['shell', 'mongoshell', 'ycsb', 'fio', 'iperf'])
+SUPPORTED_TYPES = {'shell', 'mongoshell', 'ycsb', 'fio', 'iperf', 'linkbench'}
 
 
 @nottest
@@ -47,7 +48,8 @@ def parser_factory(test, config, timer):
         'shell': MongoShellParser,
         'ycsb': YcsbParser,
         'fio': FioParser,
-        'iperf': IperfParser
+        'iperf': IperfParser,
+        'linkbench': CSVResultParser,
     }
 
     if test['type'] not in parsers:
@@ -227,6 +229,37 @@ class ResultParser(object):
         then call `self.add_result(name, result, threads)` for each result.
         """
         raise NotImplementedError()
+
+
+class InvalidConfigurationException(ValueError):
+    """We have bad configuration for the parser."""
+    pass
+
+
+class CSVResultParser(ResultParser):
+    """
+    A ResultParser for csv files
+    """
+
+    def __init__(self, test, config, timer):
+        """Set linkbench specific attributes"""
+        super(CSVResultParser, self).__init__(test, config, timer)
+        self.input_dir = os.path.join(self.reports_root, test['id'])
+
+        output_files = test.get('output_files')
+        if not output_files:
+            raise InvalidConfigurationException(
+                'Need single output_files entry. Got {}'.format(output_files))
+        if output_files and len(output_files) > 1:
+            LOG.info("Got csv files %s but will only report on first one", output_files)
+
+        self.input_log = os.path.join(self.input_dir, output_files[0])
+
+    def _parse(self):
+        """Read csv file and emit results for the line's [op,mean] values"""
+        reader = csv.DictReader(self.load_input_log())
+        for row in reader:
+            self.add_result(row['op'], float(row['mean']))
 
 
 class MongoShellParser(ResultParser):

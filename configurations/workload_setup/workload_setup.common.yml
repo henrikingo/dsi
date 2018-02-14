@@ -41,6 +41,35 @@ iperf:
         - source: bin/iperf-test.sh
           target: iperf-test.sh
 
+linkbench:
+  - on_workload_client:
+      exec: |
+        curl -O --retry 10 --silent \
+          https://s3-us-west-2.amazonaws.com/dsi-donot-remove/java/jdk-7u71-linux-x64.rpm
+        sudo rpm -i jdk-7u71-linux-x64.rpm
+        sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.7.0_71/bin/java 20000
+
+        curl --retry 10 --silent \
+          https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash
+        rm *.rpm || true
+  - on_localhost:
+      checkout_repos:
+        - source: git@github.com:10gen/linkbench.git
+          target: ${bootstrap.linkbench_dir}
+          branch: a1c7f628cb8631a0c2d1af5a26a9b13d64a50d52
+  - on_workload_client:
+      exec: rm -rf linkbench*
+  - on_workload_client:
+      upload_files:
+        - source: ${bootstrap.linkbench_dir}
+          target: ./linkbench
+  - on_workload_client:
+      # mvn -q = mvn queit
+      exec: |
+        export JAVA_HOME="/usr/java/jdk1.7.0_71/jre"
+        source /etc/profile.d/maven.sh && cd /home/ec2-user/linkbench
+        mvn -q clean package -DskipTests
+
 ycsb:
   - on_workload_client:
       exec: |
