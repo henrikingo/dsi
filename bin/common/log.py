@@ -14,8 +14,10 @@ def setup_logging(verbose, filename=None):
     root_logger = logging.getLogger()
     root_logger.setLevel(loglevel)
     root_logger.addHandler(handler)
-    # we don't want to see info from paramiko
+    # we don't want to see info from paramiko or boto3
     logging.getLogger('paramiko').setLevel(logging.WARNING)
+    logging.getLogger('boto3').setLevel(logging.WARNING)
+    logging.getLogger('botocore').setLevel(logging.WARNING)
 
 
 class IOLogAdapter(StringIO):
