@@ -21,9 +21,7 @@ from mock import patch, Mock, mock, MagicMock, call, ANY
 
 import common.utils
 from common.mongodb_setup_helpers import MongoDBAuthSettings
-from bin.common.host import make_host_runner, never_timeout, check_timed_out, create_timer, \
-    _stream
-from bin.common.log import TeeStream
+from common.log import TeeStream
 from tests.any_in_string import ANY_IN_STRING
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
@@ -87,23 +85,23 @@ class HostTestCase(unittest.TestCase):
 
     def test_never_timeout(self):
         """ test never_timeout"""
-        self.assertFalse(never_timeout())
-        self.assertFalse(never_timeout())
+        self.assertFalse(host.never_timeout())
+        self.assertFalse(host.never_timeout())
 
     def test_check_timed_out(self):
         """ test check_timed_out"""
         start = datetime.now()
-        self.assertFalse(check_timed_out(start, 50))
+        self.assertFalse(host.check_timed_out(start, 50))
         time.sleep(51 / 1000.0)
-        self.assertTrue(check_timed_out(start, 50))
+        self.assertTrue(host.check_timed_out(start, 50))
 
     def test_create_timer(self):
         """ test create_timer """
         start = datetime.now()
-        self.assertEquals(create_timer(start, None), never_timeout)
-        with patch('bin.common.host.partial') as mock_partial:
-            self.assertTrue(create_timer(start, 50))
-            mock_partial.assert_called_once_with(check_timed_out, start, 50)
+        self.assertEquals(host.create_timer(start, None), host.never_timeout)
+        with patch('host.partial') as mock_partial:
+            self.assertTrue(host.create_timer(start, 50))
+            mock_partial.assert_called_once_with(host.check_timed_out, start, 50)
 
     def test_extract_hosts(self):
         """ Test extract hosts using config info """
@@ -134,14 +132,14 @@ class HostTestCase(unittest.TestCase):
         destination = MagicMock(name="destination")
         source.next = MagicMock(name="in")
         source.next.side_effect = socket.timeout('args')
-        any_lines = _stream(source, destination)
+        any_lines = host._stream(source, destination)
         self.assertEquals(False, any_lines)
         destination.write.assert_not_called()
 
         destination = MagicMock(name="destination")
         source.next = MagicMock(name="in")
         source.next.side_effect = ['first', 'second', socket.timeout('args'), 'third']
-        any_lines = _stream(source, destination)
+        any_lines = host._stream(source, destination)
         self.assertEquals(True, any_lines)
 
         calls = [
@@ -900,22 +898,26 @@ class HostTestCase(unittest.TestCase):
             mock.call('remote_dir/logs/mongod.log', 'reports/local_dir/logs/mongod.log')
         ])
 
-    @patch("bin.common.host._run_host_command_map")
-    def test_make_host_runner(self, mock_run_host_command_map):
-        """ Test run RemoteHost.exec_mongo_command """
-        with patch('bin.common.host.make_host') as mock_make_host:
+    @patch("host._run_host_command_map")
+    def test_make_host_runner_str(self, mock_run_host_command_map):
+        """ Test run RemoteHost.make_host_runner with str"""
+        with patch('host.make_host') as mock_make_host:
             mock_target_host = Mock()
             mock_make_host.return_value = mock_target_host
-            make_host_runner("host_info", 'command', "ssh_user", "ssh_key_file", "test_id")
+            host.make_host_runner("host_info", 'command', "ssh_user", "ssh_key_file", "test_id")
             mock_make_host.assert_called_once_with("host_info", "ssh_user", "ssh_key_file", None)
             mock_target_host.run.assert_called_once_with('command')
             mock_target_host.close.assert_called_once()
 
-        with patch('bin.common.host.make_host') as mock_make_host:
+    @patch("host._run_host_command_map")
+    def test_make_host_runner_map(self, mock_run_host_command_map):
+        """ Test run RemoteHost.make_host_runner with map"""
+
+        with patch('host.make_host') as mock_make_host:
             command = {}
             mock_target_host = Mock()
             mock_make_host.return_value = mock_target_host
-            make_host_runner("host_info", command, "ssh_user", "ssh_key_file", 'test_id')
+            host.make_host_runner("host_info", command, "ssh_user", "ssh_key_file", 'test_id')
             mock_make_host.assert_called_once_with("host_info", "ssh_user", "ssh_key_file", None)
             mock_run_host_command_map.assert_called_once_with(mock_target_host, command, 'test_id')
             mock_target_host.close.assert_called_once()
@@ -945,39 +947,34 @@ class HostTestCase(unittest.TestCase):
         mock_create_file.assert_called_with(test_file, test_script)
         mock_exec_command.assert_called_with(test_argv, max_time_ms=None)
 
-    #pylint: disable=missing-docstring
+    # pylint: disable=missing-docstring
     def test_exec_mongo_command_no_auth(self):
-        self.helper_exec_mongo_command(None)  #pylint: disable=no-value-for-parameter
+        self.helper_exec_mongo_command(None)  # pylint: disable=no-value-for-parameter
 
     def test_exec_mongo_command_with_auth(self):
-        self.helper_exec_mongo_command(MongoDBAuthSettings('username', 'password'))  #pylint: disable=no-value-for-parameter
+        # pylint: disable=no-value-for-parameter
+        self.helper_exec_mongo_command(MongoDBAuthSettings('username', 'password'))
 
-    @patch('paramiko.SSHClient')
-    def test_remote_host(self, mock_paramiko):
+    def helper_remote_host_ssh_ex(self, exception=Exception()):
+        """Test RemoteHost constructor ssh exception handling"""
+        with patch('paramiko.SSHClient') as mock_paramiko:
+            mock_ssh = MagicMock(name='connection')
+            mock_paramiko.return_value = mock_ssh
+
+            mock_ssh.connect.side_effect = exception
+            host.RemoteHost('test_host', 'test_user', 'test_pem_file')
+
+    def test_remote_host_ssh_ex(self):
+        """Test RemoteHost constructor ssh exception handling"""
+        self.assertRaises(SystemExit, self.helper_remote_host_ssh_ex, paramiko.SSHException())
+
+    def test_remote_host_sock_ex(self):
+        """Test RemoteHost constructor socket exception handling"""
+        self.assertRaises(SystemExit, self.helper_remote_host_ssh_ex, socket.error())
+
+    def test_remote_host_ex(self):
         """Test RemoteHost constructor exception handling"""
-
-        # test exit call on paramiko and socket exceptions
-        with self.assertRaises(SystemExit):
-            mock_ssh = MagicMock(name='connection')
-            mock_paramiko.return_value = mock_ssh
-
-            mock_ssh.connect.side_effect = paramiko.SSHException()
-            host.RemoteHost('test_host', 'test_user', 'test_pem_file')
-
-        with self.assertRaises(SystemExit):
-            mock_ssh = MagicMock(name='connection')
-            mock_paramiko.return_value = mock_ssh
-
-            mock_ssh.connect.side_effect = socket.error()
-            host.RemoteHost('test_host', 'test_user', 'test_pem_file')
-
-        # test other exceptions are thrown to caller
-        with self.assertRaises(Exception):
-            mock_ssh = MagicMock(name='connection')
-            mock_paramiko.return_value = mock_ssh
-
-            mock_ssh.connect.side_effect = Exception()
-            host.RemoteHost('test_host', 'test_user', 'test_pem_file')
+        self.assertRaises(Exception, self.helper_remote_host_ssh_ex)
 
     @patch('paramiko.SSHClient')
     def test_run(self, mock_ssh):
@@ -1184,76 +1181,89 @@ class HostTestCase(unittest.TestCase):
             }
         })
 
-    # pylint: disable=too-many-statements
+    # pylint: disable=too-many-arguments
+    @patch('paramiko.SSHClient')
+    def helper_remote_exec_command(self,
+                                   mock_ssh,
+                                   command='cowsay Hello World',
+                                   expected='cowsay Hello World',
+                                   return_value=0,
+                                   exit_status=0,
+                                   out=StringIO(),
+                                   err=StringIO()):
+        """ test common code with """
+        remote_host = host.RemoteHost('test_host', 'test_user', 'test_pem_file')
+
+        ssh_instance = mock_ssh.return_value
+        stdin = Mock(name='stdin')
+
+        # magic mock for iterable support
+        stdout = mock.MagicMock(name='stdout')
+        stdout.__iter__.return_value = ''
+
+        stderr = mock.MagicMock(name='stderr')
+        stdout.__iter__.return_value = ''
+        ssh_instance.exec_command.return_value = [stdin, stdout, stderr]
+
+        remote_host._perform_exec = mock.MagicMock(name='_perform_exec')
+        remote_host._perform_exec.return_value = exit_status
+
+        self.assertEqual(remote_host.exec_command(command, out, err), return_value)
+        ssh_instance.exec_command.assert_called_once_with(expected, get_pty=False)
+        stdin.channel.shutdown_write.assert_called_once()
+
+        stdin.close.assert_called()
+        stdout.close.assert_called()
+        stderr.close.assert_called()
+
+    def helper_remote_exec_command_ex(self, params='', exception=ValueError):
+        """Test RemoteHost.exec_command"""
+        # Exceptions
+        with patch('paramiko.SSHClient'):
+            remote_host = host.RemoteHost('test_host', 'test_user', 'test_pem_file')
+            self.assertRaises(exception, remote_host.exec_command, params)
+
+    def test_remote_exec_command_ex_str(self):
+        """Test RemoteHost.exec_command exceptions '' param """
+        self.helper_remote_exec_command_ex()
+
+    def test_remote_exec_command_ex_array(self):
+        """Test RemoteHost.exec_command exceptions [] param  """
+        self.helper_remote_exec_command_ex(params=[])
+
+    def test_remote_exec_command_ex_none(self):
+        """Test RemoteHost.exec_command exceptions None  param  """
+        self.helper_remote_exec_command_ex(params=None)
+
+    def test_remote_exec_command_ex_zero(self):
+        """Test RemoteHost.exec_command exceptions 0  param   """
+        self.helper_remote_exec_command_ex(params=0)
+
     def test_remote_exec_command(self):
         """Test RemoteHost.exec_command"""
+        # pylint: disable=no-value-for-parameter
+        self.helper_remote_exec_command()
 
-        def _test_common(command='cowsay Hello World',
-                         expected='cowsay Hello World',
-                         return_value=0,
-                         exit_status=0):
-            """ test common code with """
-            remote_host = host.RemoteHost('test_host', 'test_user', 'test_pem_file')
+    def test_remote_exec_command_no_warn(self):
+        """Test RemoteHost.exec_command no warnings on success"""
 
-            ssh_instance = mock_ssh.return_value
-            stdin = Mock(name='stdin')
+        mock_logger = MagicMock(name='LOG')
+        host.LOG.warn = mock_logger
+        # pylint: disable=no-value-for-parameter
+        self.helper_remote_exec_command(command=['cowsay', 'Hello', 'World'])
+        mock_logger.assert_not_called()
 
-            # magic mock for iterable support
-            stdout = mock.MagicMock(name='stdout')
-            stdout.__iter__.return_value = ''
+    def test_remote_exec_command_warning_on_falure(self):
+        """Test RemoteHost.exec_command warning on failure"""
 
-            stderr = mock.MagicMock(name='stderr')
-            stdout.__iter__.return_value = ''
-            ssh_instance.exec_command.return_value = [stdin, stdout, stderr]
+        mock_logger = MagicMock(name='LOG')
+        host.LOG.warn = mock_logger
+        # pylint: disable=no-value-for-parameter
+        self.helper_remote_exec_command(return_value=1, exit_status=1)
+        mock_logger.assert_called_once_with(ANY_IN_STRING('with exit status'), ANY, ANY, ANY)
 
-            # Test a command as string
-            out = StringIO()
-            err = StringIO()
-
-            remote_host._perform_exec = mock.MagicMock(name='_perform_exec')
-            remote_host._perform_exec.return_value = exit_status
-
-            self.assertEqual(remote_host.exec_command(command, out, err), return_value)
-            ssh_instance.exec_command.assert_called_once_with(expected, get_pty=False)
-            stdin.channel.shutdown_write.assert_called_once()
-
-            stdin.close.assert_called()
-            stdout.close.assert_called()
-            stderr.close.assert_called()
-
-        # Exceptions
-        with patch('paramiko.SSHClient') as mock_ssh:
-            remote_host = host.RemoteHost('test_host', 'test_user', 'test_pem_file')
-
-            # Test error cases
-            with self.assertRaises(ValueError):
-                remote_host.exec_command('')
-
-            with self.assertRaises(ValueError):
-                remote_host.exec_command([])
-
-            # Anything else should fail
-            with self.assertRaises(ValueError):
-                remote_host.exec_command(None)
-
-            with self.assertRaises(ValueError):
-                remote_host.exec_command(0)
-
-        # list and string
-        with patch('paramiko.SSHClient') as mock_ssh:
-            _test_common()
-
-        with patch('paramiko.SSHClient') as mock_ssh:
-            mock_logger = MagicMock(name='LOG')
-            host.LOG.warn = mock_logger
-            _test_common(command=['cowsay', 'Hello', 'World'])
-            mock_logger.assert_not_called()
-
-        with patch('paramiko.SSHClient') as mock_ssh:
-            mock_logger = MagicMock(name='LOG')
-            host.LOG.warn = mock_logger
-            _test_common(return_value=1, exit_status=1)
-            mock_logger.assert_called_once_with(ANY_IN_STRING('with exit status'), ANY, ANY, ANY)
+    def helper_remote_exec_command_streams(self, out=None, err=None):
+        """Test RemoteHost.exec_command steam out """
 
         with patch('paramiko.SSHClient') as mock_ssh:
             # Test a command as list
@@ -1274,10 +1284,6 @@ class HostTestCase(unittest.TestCase):
 
             stdout.channel.exit_status_ready.return_value = True
 
-            # Test a command as string
-            out = StringIO()
-            err = StringIO()
-
             remote_host._perform_exec = mock.MagicMock(name='_perform_exec')
             remote_host._perform_exec.return_value = 0
 
@@ -1293,8 +1299,27 @@ class HostTestCase(unittest.TestCase):
             stdout.close.assert_called()
             stderr.close.assert_called()
 
-            remote_host._perform_exec.assert_called_once_with('command', out, err, stdout, stderr,
-                                                              'max_time_ms', 'no_output_timeout_ms')
+            if out is None:
+                expected_out = host.INFO_ADAPTER
+            else:
+                expected_out = out
+
+            if err is None:
+                expected_err = host.WARN_ADAPTER
+            else:
+                expected_err = err
+
+            remote_host._perform_exec.assert_called_once_with('command', expected_out, expected_err,
+                                                              stdout, stderr, 'max_time_ms',
+                                                              'no_output_timeout_ms')
+
+    def test_remote_exec_command_default_streams(self):
+        """ test remote exec uses the correct default info and err streams """
+        self.helper_remote_exec_command_streams()
+
+    def test_exec_mongo_warn(self):
+        """ test remote exec uses the correct custom info and err streams """
+        self.helper_remote_exec_command_streams(out=StringIO(), err=StringIO())
 
     def test_checkout_repos(self):
         """

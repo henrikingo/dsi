@@ -36,6 +36,7 @@ HostInfo = namedtuple('HostInfo', ['ip_or_name', 'category', 'offset'])
 LOG = logging.getLogger(__name__)
 INFO_ADAPTER = IOLogAdapter(LOG, logging.INFO)
 ERROR_ADAPTER = IOLogAdapter(LOG, logging.ERROR)
+WARN_ADAPTER = IOLogAdapter(LOG, logging.WARN)
 
 
 class HostException(Exception):
@@ -427,7 +428,7 @@ class Host(object):
         :param IO stdout: Standard out from the command is written to this IO. If None is supplied
         then the INFO_ADAPTER will be used.
         :param IO stderr: Standard err from the command is written to this IO on error. If None is
-        supplied then the ERROR_ADAPTER will be used.
+        supplied then the WARN_ADAPTER will be used.
         :param bool get_pty: Only valid for remote commands. If pty is set to True, then the shell
         command is executed in a pseudo terminal. As a result, the commands will be killed if the
         host is closed.
@@ -678,7 +679,7 @@ class RemoteHost(Host):
         if stdout is None:
             stdout = INFO_ADAPTER
         if stderr is None:
-            stderr = ERROR_ADAPTER
+            stderr = WARN_ADAPTER
 
         if isinstance(argv, list):
             command = ' '.join(argv)
@@ -998,7 +999,7 @@ class LocalHost(Host):
         if stdout is None:
             stdout = INFO_ADAPTER
         if stderr is None:
-            stderr = ERROR_ADAPTER
+            stderr = WARN_ADAPTER
 
         command = str(argv)
         if isinstance(argv, list):
