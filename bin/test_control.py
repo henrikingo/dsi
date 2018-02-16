@@ -437,15 +437,20 @@ def run_tests(config):
                 LOG.error("test %s failed.", test['id'], exc_info=1)
                 error = True
 
-            statuses.append(error)
-
             timer['end'] = time.time()
 
-            stop_background_tasks(background_tasks)
-            if 'skip_validate' not in test or not test['skip_validate']:
-                run_validate(config, test['id'])
-            run_pre_post_commands('post_test', [test, test_control_config, mongodb_setup_config],
-                                  config, EXCEPTION_BEHAVIOR.CONTINUE, test['id'])
+            try:
+                stop_background_tasks(background_tasks)
+                if 'skip_validate' not in test or not test['skip_validate']:
+                    run_validate(config, test['id'])
+                run_pre_post_commands('post_test',
+                                      [test, test_control_config, mongodb_setup_config], config,
+                                      EXCEPTION_BEHAVIOR.CONTINUE, test['id'])
+            except:  # pylint: disable=bare-except
+                LOG.error("Post-test activities failed after test %s.", test['id'], exc_info=1)
+                error = True
+
+            statuses.append(error)
             if error:
                 LOG.warn("Unsuccessful test run for test %s. Parsing results now", test['id'])
             else:
@@ -461,7 +466,7 @@ def run_tests(config):
         subprocess.check_call(['chmod', '555', 'perf.json'])
         legacy_copy_perf_output()
 
-    LOG.info("%s of %s tests passed", sum(statuses), len(statuses))
+    LOG.info("%s of %s tests exited with an error.", sum(statuses), len(statuses))
     return all(statuses)
 
 
@@ -509,7 +514,8 @@ def main(argv):
 
     config = ConfigDict('test_control')
     config.load()
-    return 0 if run_tests(config) else 1
+    error = run_tests(config)
+    return 0 if not error else 1
 
 
 if __name__ == '__main__':

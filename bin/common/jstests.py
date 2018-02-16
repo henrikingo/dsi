@@ -5,7 +5,7 @@ from functools import partial
 import logging
 import os
 
-from host import make_workload_runner_host
+from host import make_workload_runner_host, extract_hosts, make_host
 from thread_runner import run_threads
 from utils import mkdir_p
 
@@ -83,14 +83,21 @@ def run_validate(config, current_test_id=None, reports_dir='reports'):
     '''
 
     LOG.debug('In run_validate before jstests_dir check')
-    # If jstests_dir doesn't exist or is falsey, don't do anything
+    # If jstests_dir doesn't exist or is falsey, don't do anything.
     if 'jstests_dir' not in config['test_control'] or not config['test_control']['jstests_dir']:
-        LOG.warning('No jstests_dir specified. Skipping validate')
+        LOG.info('No jstests_dir specified. Skipping validate.')
         return
 
-    # if there is no validate entry in the mongodb_setup config, don't do anything
+    # If there is no validate entry in the mongodb_setup config, don't do anything.
     if 'validate' not in config['mongodb_setup']:
-        LOG.warning('No validate entry in mongodb_setup. Skipping validate')
+        LOG.warning('No validate entry in mongodb_setup. Skipping validate.')
+        return
+
+    # If jstests_dir doesn't actually exist, skip validate.
+    # (v3.2 branch as well as official release archives.)
+    # We check this on the workload_client, not locally.
+    if not _remote_exists(config):
+        LOG.warning("%s not found. Skipping validate.", config['test_control']['jstests_dir'])
         return
 
     LOG.info('In run_validate')
@@ -105,3 +112,16 @@ def run_validate(config, current_test_id=None, reports_dir='reports'):
             partial(validate_one_host, config, primary, reports_dir, current_test_id, True)
             for primary in config['mongodb_setup']['validate']['primaries']
         ])
+
+
+def _remote_exists(config):
+    """
+    Check on remote workload_client whether jstests_dir exists.
+    """
+    tfvars = config['infrastructure_provisioning']['tfvars']
+    ssh_user = tfvars['ssh_user']
+    ssh_key_file = os.path.expanduser(tfvars['ssh_key_file'])
+    host_info = extract_hosts('workload_client', config)[0]
+    remote_host = make_host(host_info, ssh_user, ssh_key_file)
+    remote_command = ["[ -e {} ]".format(config['test_control']['jstests_dir'])]
+    return remote_host.run(remote_command)
