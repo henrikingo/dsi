@@ -49,7 +49,7 @@ def parser_factory(test, config, timer):
         'ycsb': YcsbParser,
         'fio': FioParser,
         'iperf': IperfParser,
-        'linkbench': CSVResultParser,
+        'linkbench': LinkbenchResultParser,
     }
 
     if test['type'] not in parsers:
@@ -236,14 +236,14 @@ class InvalidConfigurationException(ValueError):
     pass
 
 
-class CSVResultParser(ResultParser):
+class LinkbenchResultParser(ResultParser):
     """
-    A ResultParser for csv files
+    A ResultParser for linkbench csv files.
     """
 
     def __init__(self, test, config, timer):
         """Set linkbench specific attributes"""
-        super(CSVResultParser, self).__init__(test, config, timer)
+        super(LinkbenchResultParser, self).__init__(test, config, timer)
         self.input_dir = os.path.join(self.reports_root, test['id'])
 
         output_files = test.get('output_files')
@@ -259,7 +259,18 @@ class CSVResultParser(ResultParser):
         """Read csv file and emit results for the line's [op,mean] values"""
         reader = csv.DictReader(self.load_input_log())
         for row in reader:
-            self.add_result(row['op'], float(row['mean']))
+            operation = row['op']
+            mean = float(row['mean'])
+            if mean <= 0:
+                LOG.warn("Non-positive mean value reported for row %s", row)
+                continue
+
+            inverse = float(1000) / mean
+            # linkbench reports non-LOAD values as mean request time (ms/rq)
+            # and we want rq/second.
+            result = mean if operation.startswith('LOAD_') else inverse
+
+            self.add_result(row['op'], result)
 
 
 class MongoShellParser(ResultParser):

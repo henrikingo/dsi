@@ -725,9 +725,9 @@
             "name":"ADD_NODE",
             "results":{
                 "1":{
-                    "ops_per_sec":0.32,
+                    "ops_per_sec":3125.0,
                     "ops_per_sec_values":[
-                        0.32
+                        3125.0
                     ]
                 }
             },
@@ -739,9 +739,9 @@
             "name":"UPDATE_NODE",
             "results":{
                 "1":{
-                    "ops_per_sec":0.3,
+                    "ops_per_sec":3333.3333333333335,
                     "ops_per_sec_values":[
-                        0.3
+                        3333.3333333333335
                     ]
                 }
             },
@@ -753,9 +753,9 @@
             "name":"DELETE_NODE",
             "results":{
                 "1":{
-                    "ops_per_sec":0.34,
+                    "ops_per_sec":2941.176470588235,
                     "ops_per_sec_values":[
-                        0.34
+                        2941.176470588235
                     ]
                 }
             },
@@ -767,9 +767,9 @@
             "name":"GET_NODE",
             "results":{
                 "1":{
-                    "ops_per_sec":0.3,
+                    "ops_per_sec":3333.3333333333335,
                     "ops_per_sec_values":[
-                        0.3
+                        3333.3333333333335
                     ]
                 }
             },
@@ -781,9 +781,9 @@
             "name":"ADD_LINK",
             "results":{
                 "1":{
-                    "ops_per_sec":0.59,
+                    "ops_per_sec":1694.9152542372883,
                     "ops_per_sec_values":[
-                        0.59
+                        1694.9152542372883
                     ]
                 }
             },
@@ -795,9 +795,9 @@
             "name":"DELETE_LINK",
             "results":{
                 "1":{
-                    "ops_per_sec":0.65,
+                    "ops_per_sec":1538.4615384615383,
                     "ops_per_sec_values":[
-                        0.65
+                        1538.4615384615383
                     ]
                 }
             },
@@ -809,9 +809,9 @@
             "name":"UPDATE_LINK",
             "results":{
                 "1":{
-                    "ops_per_sec":0.73,
+                    "ops_per_sec":1369.86301369863,
                     "ops_per_sec_values":[
-                        0.73
+                        1369.86301369863
                     ]
                 }
             },
@@ -823,9 +823,9 @@
             "name":"COUNT_LINK",
             "results":{
                 "1":{
-                    "ops_per_sec":0.3,
+                    "ops_per_sec":3333.3333333333335,
                     "ops_per_sec_values":[
-                        0.3
+                        3333.3333333333335
                     ]
                 }
             },
@@ -837,9 +837,9 @@
             "name":"MULTIGET_LINK",
             "results":{
                 "1":{
-                    "ops_per_sec":0.92,
+                    "ops_per_sec":1086.9565217391305,
                     "ops_per_sec_values":[
-                        0.92
+                        1086.9565217391305
                     ]
                 }
             },
@@ -851,9 +851,9 @@
             "name":"GET_LINKS_LIST",
             "results":{
                 "1":{
-                    "ops_per_sec":0.4,
+                    "ops_per_sec":2500.0,
                     "ops_per_sec_values":[
-                        0.4
+                        2500.0
                     ]
                 }
             },
