@@ -34049,18 +34049,20 @@
                 },
                 "Queries.IdentityView.FindProjection":{
                     "thread_threshold":0.18,
-                    "threshold":0.12,
+                    "threshold":0.15,
                     "ticket":[
                         "BF-5316",
-                        "BF-6994"
+                        "BF-6994",
+                        "BF-8150"
                     ]
                 },
                 "Queries.IdentityView.FindProjectionDottedField":{
                     "thread_threshold":0.18,
-                    "threshold":0.12,
+                    "threshold":0.15,
                     "ticket":[
                         "BF-5316",
-                        "BF-6994"
+                        "BF-6994",
+                        "BF-8150"
                     ]
                 },
                 "Queries.IdentityView.FindProjectionDottedField.Indexed":{
