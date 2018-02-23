@@ -34086,10 +34086,11 @@
                     ]
                 },
                 "Queries.IdentityView.IntIDRange":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.15,
+                    "threshold":0.25,
                     "ticket":[
-                        "BF-5316"
+                        "BF-5316",
+                        "BF-8150"
                     ]
                 },
                 "Queries.IdentityView.IntIdFindOne":{
@@ -34121,10 +34122,11 @@
                     ]
                 },
                 "Queries.IdentityView.IntNonIdFindProjectionCovered":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.2,
+                    "threshold":0.15,
                     "ticket":[
-                        "BF-5316"
+                        "BF-5316",
+                        "BF-8150"
                     ]
                 },
                 "Queries.IdentityView.NoMatch":{
