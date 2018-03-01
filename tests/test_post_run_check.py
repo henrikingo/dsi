@@ -100,6 +100,30 @@ class TestPostRunCheck(unittest.TestCase):
             test_utils.eq_fixture_json_files("report.json", "post_run_check.report.json.ok"))
         os.remove(test_utils.fixture_file_path("report.json"))
 
+    def test_skip_files(self):
+        """
+        test check_core_file_exists skips listdir on files (and avoids an exception).
+        """
+
+        core_path = test_utils.fixture_file_path('cores')
+        shutil.rmtree(core_path, ignore_errors=True)
+        mkdir_p(core_path)
+
+        # matching directories but no core files
+        log_filename = os.path.join(core_path, 'infrastructure_provisioning.out.yml')
+        touch(log_filename)
+
+        try:
+            post_run_check.check_core_file_exists(core_path), [{
+                'status': 'pass',
+                'start': 0,
+                'test_file': 'core.test_id.mongod.0',
+                'log_raw': '\nNo core files found',
+                'exit_code': 0
+            }]
+        except:  # pylint: disable=bare-except
+            self.fail("check_core_file_exists() raised Exception!")
+
     # pylint: disable=too-many-statements
     def test_check_core_file_exists(self):
         """

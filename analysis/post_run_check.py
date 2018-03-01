@@ -171,12 +171,12 @@ def check_core_file_exists(reports_dir_path, pattern="core.*"):
     # Core files, if they happen, are downloaded into reports/test_id/mongod.0/core.*
     for test_name in os.listdir(reports_dir_path):
         test_dir_path = os.path.join(reports_dir_path, test_name)
-        for mongo_name in os.listdir(test_dir_path):
-            mongo_dir_path = os.path.join(test_dir_path, mongo_name)
-            if (os.path.isdir(mongo_dir_path) and fnmatch.fnmatch(mongo_name, 'mongo?.[0-9]')
-                    or fnmatch.fnmatch(mongo_name, 'configsvr.[0-9]')):
-
-                mongo_dir_paths.append(mongo_dir_path)
+        if os.path.isdir(test_dir_path):
+            for mongo_name in os.listdir(test_dir_path):
+                mongo_dir_path = os.path.join(test_dir_path, mongo_name)
+                if (os.path.isdir(mongo_dir_path) and fnmatch.fnmatch(mongo_name, 'mongo?.[0-9]')
+                        or fnmatch.fnmatch(mongo_name, 'configsvr.[0-9]')):
+                    mongo_dir_paths.append(mongo_dir_path)
 
     def _format_msg_body(basenames=None):
         msg_body = "\nNo core files found" if not basenames else \

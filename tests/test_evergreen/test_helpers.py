@@ -1,6 +1,7 @@
 """Unit tests for evergreen.helper functions. Using nosetest, run from dsi directory."""
-
+import platform
 import unittest
+
 import requests
 
 from evergreen import helpers
@@ -64,6 +65,7 @@ class TestEvergreenHelpers(unittest.TestCase):
                                                      self.creds['github']['token'])
         self.assertEqual(retrieved, self.expected_full_hash)
 
+    @unittest.skipIf('darwin' in platform.system().lower(), "evergreen osx runners fail, PERF-1363")
     def test_git_hash_error(self):
         """Test for an input that is an invalid hash"""
         with self.assertRaises(requests.exceptions.HTTPError):
