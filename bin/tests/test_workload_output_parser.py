@@ -67,7 +67,7 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
                 'perf_json': {
                     'path': 'bin/tests/artifacts/perf.unittest-out.json'
                 },
-                'output_file' : {
+                'output_file': {
                     'mongoshell': 'test_output.log',
                     'ycsb': 'test_output.log',
                     'fio': 'fio.json',
@@ -87,6 +87,13 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
                     {'id': 'mock-test-linkbench-request',
                      'type': 'linkbench'},
                 ]
+            },
+            'mongodb_setup': {
+                'mongod_config_file': {
+                    'storage': {
+                        'engine': 'wiredTiger'
+                    }
+                }
             }
         } # yapf: disable
         self.timer = {'start': 1.001, 'end': 2.002}

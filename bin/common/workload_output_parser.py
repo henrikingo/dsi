@@ -80,8 +80,9 @@ def validate_config(config):
 class Results(object):
     """Holds a list of result objects"""
 
-    def __init__(self, path):
+    def __init__(self, path, storage_engine):
         self.path = path
+        self.storage_engine = storage_engine
         self.results = []
         LOG.debug("Trying to read %s", self.path)
         if os.path.isfile(path):
@@ -152,7 +153,7 @@ class Results(object):
     def save(self):
         """Save perf.json into self.perf_json_path"""
 
-        to_serialize = {'results': self.results}
+        to_serialize = {'results': self.results, 'storageEngine': self.storage_engine}
         with open(self.path, "w") as file_handle:
             json.dump(to_serialize, file_handle, indent=4, separators=[',', ':'], sort_keys=True)
 
@@ -173,7 +174,8 @@ class ResultParser(object):
         self.test_type = test['type']
         self.task_name = config['test_control']['task_name']
         self.reports_root = config['test_control']['reports_dir_basename']
-        self.results = Results(config['test_control']['perf_json']['path'])
+        self.results = Results(config['test_control']['perf_json']['path'],
+                               config['mongodb_setup']['mongod_config_file']['storage']['engine'])
         self.timer = timer
         self.input_log = None
 

@@ -860,5 +860,6 @@
             "start":1.001,
             "workload":"linkbench"
         }
-    ]
+    ],
+    "storageEngine": "wiredTiger"
 }

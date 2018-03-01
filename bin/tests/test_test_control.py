@@ -86,7 +86,12 @@ class RunTestsTestCase(unittest.TestCase):
                             'data/dbs/diagnostic.data': './diagnostic.data'}
                         }
                     }
-                ]
+                ],
+                'mongod_config_file': {
+                    'storage': {
+                        'engine': 'wiredTiger'
+                    }
+                }
             },
             'test_control': {
                 'task_name': 'test_config',
