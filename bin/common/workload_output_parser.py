@@ -153,6 +153,9 @@ class Results(object):
     def save(self):
         """Save perf.json into self.perf_json_path"""
 
+        # In DSI we output perf.json with a structure of { results: [], storageEngine: '...' }
+        # Evergreen populates this with more top level meta data, so that when returned by
+        # the Evergreen API, it also includes revision, task_id, variant, timestamps, etc.
         to_serialize = {'results': self.results, 'storageEngine': self.storage_engine}
         with open(self.path, "w") as file_handle:
             json.dump(to_serialize, file_handle, indent=4, separators=[',', ':'], sort_keys=True)
