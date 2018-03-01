@@ -548,7 +548,7 @@ class TestBootstrap(unittest.TestCase):
         """
         Testing that load_bootstrap loads defaults without bootstrap.yml
         """
-        mongodb_url = 'https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.4.6.tgz'
+        mongodb_url = 'https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.6.3.tgz'
         master_config = {
             'workload_setup': 'common',
             'infrastructure_provisioning': 'single',

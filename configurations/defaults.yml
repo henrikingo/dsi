@@ -10,7 +10,7 @@ bootstrap:
   production: false
   # Note: It's also allowed to upload your own binary. You can unset this by setting to the empty
   # string "" in bootstrap.yml
-  mongodb_binary_archive: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.4.6.tgz
+  mongodb_binary_archive: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.6.3.tgz
   workloads_dir: ./workloads
   ycsb_dir: ./YCSB
   linkbench_dir: ./linkbench
