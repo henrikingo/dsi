@@ -9485,6 +9485,13 @@
                         "BF-5520"
                     ]
                 },
+                "index_build":{
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
+                    "ticket":[
+                        "BF-8249"
+                    ]
+                },
                 "insert_jtrue":{
                     "thread_threshold":0.5,
                     "threshold":0.18,
@@ -9554,6 +9561,13 @@
                     "ticket":[
                         "BF-6272",
                         "BF-7146"
+                    ]
+                },
+                "updatemulti_jfalse":{
+                    "thread_threshold":0.37,
+                    "threshold":0.18,
+                    "ticket":[
+                        "BF-8249"
                     ]
                 },
                 "updatemulti_jtrue":{
