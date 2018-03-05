@@ -25,7 +25,7 @@ run:
     type: fio
     cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
-    output_target:
+    output_files:
       - fio.json
     workload_config: ${test_control.common_fio_config}
     skip_validate: true
