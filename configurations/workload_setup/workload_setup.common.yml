@@ -44,10 +44,7 @@ iperf:
 linkbench:
   - on_workload_client:
       exec: |
-        curl -O --retry 10 --silent \
-          https://s3-us-west-2.amazonaws.com/dsi-donot-remove/java/jdk-7u71-linux-x64.rpm
-        sudo rpm -i jdk-7u71-linux-x64.rpm
-        sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.7.0_71/bin/java 20000
+        ${workload_setup.install_java}
 
         curl --retry 10 --silent \
           https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash
@@ -66,17 +63,14 @@ linkbench:
   - on_workload_client:
       # mvn -q = mvn queit
       exec: |
-        export JAVA_HOME="/usr/java/jdk1.7.0_71/jre"
+        export JAVA_HOME="/usr/java/jdk1.8.0_162/jre"
         source /etc/profile.d/maven.sh && cd /home/ec2-user/linkbench
         mvn -q clean package -DskipTests
 
 ycsb:
   - on_workload_client:
       exec: |
-        curl -O --retry 10 \
-          https://s3-us-west-2.amazonaws.com/dsi-donot-remove/java/jdk-7u71-linux-x64.rpm
-        sudo rpm -i jdk-7u71-linux-x64.rpm
-        sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.7.0_71/bin/java 20000
+        ${workload_setup.install_java}
 
         curl -O --retry 10 \
           https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongo-java-driver/3.2.2/mongo-java-driver-3.2.2.jar
@@ -98,5 +92,11 @@ ycsb:
           target: ./YCSB
   - on_workload_client:
       exec: |
-        export JAVA_HOME="/usr/java/jdk1.7.0_71/jre"
+        export JAVA_HOME="/usr/java/jdk1.8.0_162/jre"
         source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && mvn clean package
+
+install_java: |
+  curl -O --retry 10 \
+    https://s3-us-west-2.amazonaws.com/dsi-donot-remove/java/jdk-8u162-linux-x64.rpm
+  sudo rpm -i jdk-8u162-linux-x64.rpm
+  sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.8.0_162/bin/java 20000
