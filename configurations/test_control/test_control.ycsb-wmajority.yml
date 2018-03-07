@@ -45,7 +45,7 @@ run:
     cmd: >
       cd YCSB/ycsb-mongodb;
       ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
-      -P workloads/workloadEvergreen_95read5update
+      -P ../../workloadEvergreen_95read5update
       -threads 1
       -p maxexecutiontime=600;
 
