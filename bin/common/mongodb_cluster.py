@@ -282,7 +282,10 @@ class MongoNode(MongoCluster):
         config_contents = yaml.dump(self.mongo_config_file, default_flow_style=False)
         self.host.create_file(remote_file_name, config_contents)
         self.host.run(['cat', remote_file_name])
-        mongodb_args = " --auth" if auth_enabled and self.mongo_program != 'mongos' else ""
+        if auth_enabled and self.mongo_program != 'mongos':
+            mongodb_args = ' --clusterAuthMode x509'
+        else:
+            mongodb_args = ''
         cmd = '{}{} --config {}'.format(
             os.path.join(self.bin_dir, self.mongo_program), mongodb_args, remote_file_name)
         numactl_prefix = self.numactl_prefix
@@ -460,9 +463,10 @@ class ReplSet(MongoCluster):
         """ Checks and waits for all nodes in replica set to be either PRIMARY or SECONDARY"""
         primary_js_string = '''
             i = 0;
-            while (!rs.isMaster().ismaster && i < 20) {{
-                print("Waiting for expected primary to become master...");
+            while (!rs.isMaster().ismaster && i < 120) {{
+                print("Waiting for expected primary to become master... attempt = " + i);
                 sleep(1000);
+                i += 1;
             }}
             assert(rs.isMaster().ismaster);
             rs.slaveOk();

@@ -84,8 +84,8 @@ class MongodbSetup(object):
               });''')
 
         add_user_script = script_template.render(
-            user=self.config['mongodb_setup']['username'],
-            password=self.config['mongodb_setup']['password'])
+            user=self.config['mongodb_setup']['authentication']['enabled']['username'],
+            password=self.config['mongodb_setup']['authentication']['enabled']['password'])
         for cluster in self.clusters:
             cluster.run_mongo_shell(add_user_script)
 

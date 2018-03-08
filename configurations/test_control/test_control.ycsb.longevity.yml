@@ -2,7 +2,7 @@ task_name: ycsb.longevity
 run:
   - id: ycsb_load
     type: ycsb
-    "cmd": "cd YCSB/ycsb-mongodb; ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb load mongodb -s -P ../../workloadLongevity -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 32"
+    "cmd": "cd YCSB/ycsb-mongodb; ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb load mongodb -s -P ../../workloadLongevity -p mongodb.url=${mongodb_setup.meta.mongodb_url} -threads 32"
     config_filename: workloadLongevity
     workload_config: |
       recordcount=50000000
@@ -17,7 +17,7 @@ run:
 
   - id: ycsb_50read50update
     type: ycsb
-    "cmd": "cd YCSB/ycsb-mongodb; ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s -P ../../workloadLongevity -p mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb -threads 64 -p maxexecutiontime=86400"
+    "cmd": "cd YCSB/ycsb-mongodb; ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s -P ../../workloadLongevity -p mongodb.url=${mongodb_setup.meta.mongodb_url} -threads 64 -p maxexecutiontime=86400"
 
   - id: fio
     type: fio

@@ -13,6 +13,9 @@ import mongodb_setup
 mongodb_setup.RemoteHost = mock.MagicMock()
 
 DEFAULT_CONFIG = {
+    'bootstrap': {
+        'authentication': 'disabled'
+    },
     'infrastructure_provisioning': {
         'tfvars': {
             'ssh_user': 'ec2-user',
@@ -47,7 +50,13 @@ DEFAULT_CONFIG = {
                     'path': 'mongod.log'
                 }
             }
-        }]
+        }],
+        'authentication': {
+            'enabled': {
+                'username': 'username',
+                'password': 'password'
+            }
+        }
     }
 }
 
@@ -181,8 +190,7 @@ class TestMongodbSetup(unittest.TestCase):
 
     def test_restart_auth_enabled(self):
         """ Test restart when auth is enabled. Make sure shutdown is called with auth enabled. """
-        self.config['mongodb_setup']['username'] = 'username'
-        self.config['mongodb_setup']['password'] = 'password'
+        self.config['bootstrap']['authentication'] = 'enabled'
         setup = mongodb_setup.MongodbSetup(config=self.config)
 
         setup._start = mock.MagicMock(name='_start')
@@ -236,8 +244,7 @@ class TestMongodbSetup(unittest.TestCase):
 
     def test__start_with_auth1(self):
         """ Test _start with auth enabled for is_restart=False """
-        self.config['mongodb_setup']['username'] = 'username'
-        self.config['mongodb_setup']['password'] = 'password'
+        self.config['bootstrap']['authentication'] = 'enabled'
         setup = mongodb_setup.MongodbSetup(config=self.config)
         mock_add_default_user = mock.MagicMock(name='default_user')
         mock_shutdown = mock.MagicMock(name='shutdown')
@@ -269,8 +276,7 @@ class TestMongodbSetup(unittest.TestCase):
 
     def test__start_with_auth2(self):
         """ Test _start with auth enabled for is_restart=True, and clean_db_dir=True"""
-        self.config['mongodb_setup']['username'] = 'username'
-        self.config['mongodb_setup']['password'] = 'password'
+        self.config['bootstrap']['authentication'] = 'enabled'
         setup = mongodb_setup.MongodbSetup(config=self.config)
         mock_add_default_user = mock.MagicMock(name='default_user')
         mock_shutdown = mock.MagicMock(name='shutdown')
@@ -304,8 +310,7 @@ class TestMongodbSetup(unittest.TestCase):
 
     def test__start_with_auth3(self):
         """ Test _start with auth enabled for is_restart=True and clean_db_dir=False."""
-        self.config['mongodb_setup']['username'] = 'username'
-        self.config['mongodb_setup']['password'] = 'password'
+        self.config['bootstrap']['authentication'] = 'enabled'
         setup = mongodb_setup.MongodbSetup(config=self.config)
         mock_add_default_user = mock.MagicMock(name='default_user')
         mock_shutdown = mock.MagicMock(name='shutdown')

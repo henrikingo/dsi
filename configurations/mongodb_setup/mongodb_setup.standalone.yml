@@ -3,6 +3,7 @@ journal_dir: /media/ebs2/journal
 mongod_config_file:
   storage:
     engine: ${bootstrap.storageEngine}
+  net: ${mongodb_setup.authentication.${bootstrap.authentication}.net}
 
 topology:
   - cluster_type: standalone
@@ -19,6 +20,7 @@ meta:
   is_sharded: false
   is_replset: false
   mongodb_setup: standalone
+  mongodb_url: ${mongodb_setup.authentication.${bootstrap.authentication}.mongodb_url}
 
 # Hosts to run correctness checks on.
 validate:

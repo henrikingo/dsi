@@ -9,7 +9,7 @@ run:
       -threads ${test_control.thread_levels.load.${mongodb_setup.meta.storageEngine}};
     config_filename: workloadEvergreen
     workload_config: |
-      mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb?w=majority
+      mongodb.url=${mongodb_setup.meta.mongodb_url}&w=majority
       recordcount=5000000
       operationcount=20000000
       workload=com.yahoo.ycsb.workloads.CoreWorkload
@@ -29,7 +29,7 @@ run:
       -threads ${test_control.thread_levels.level95-5.${mongodb_setup.meta.mongodb_setup}};
     config_filename: workloadEvergreen_95read5update
     workload_config: |
-      mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb?w=majority
+      mongodb.url=${mongodb_setup.meta.mongodb_url}&w=majority
       recordcount=5000000
       operationcount=20000000
       workload=com.yahoo.ycsb.workloads.CoreWorkload
@@ -59,7 +59,7 @@ run:
       -p maxexecutiontime=600;
     config_filename: workloadEvergreen_50read50update
     workload_config: |
-      mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb?w=majority
+      mongodb.url=${mongodb_setup.meta.mongodb_url}&w=majority
       recordcount=5000000
       operationcount=20000000
       workload=com.yahoo.ycsb.workloads.CoreWorkload

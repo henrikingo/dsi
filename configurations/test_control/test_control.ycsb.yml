@@ -9,7 +9,7 @@ run:
       -threads ${test_control.thread_levels.load.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}};
     config_filename: workloadEvergreen
     workload_config: |
-      mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb
+      mongodb.url=${mongodb_setup.meta.mongodb_url}
       recordcount=5000000
       operationcount=20000000
       workload=com.yahoo.ycsb.workloads.CoreWorkload
@@ -37,7 +37,7 @@ run:
       -threads ${test_control.thread_levels.level95-5.${mongodb_setup.meta.is_sharded}};
     config_filename: workloadEvergreen_95read5update
     workload_config: |
-      mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb
+      mongodb.url=${mongodb_setup.meta.mongodb_url}
       recordcount=5000000
       operationcount=20000000
       workload=com.yahoo.ycsb.workloads.CoreWorkload
@@ -57,7 +57,7 @@ run:
       -threads ${test_control.thread_levels.level100-0.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}};
     config_filename: workloadEvergreen_100update
     workload_config: |
-      mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb
+      mongodb.url=${mongodb_setup.meta.mongodb_url}
       recordcount=5000000
       operationcount=20000000
       workload=com.yahoo.ycsb.workloads.CoreWorkload
@@ -77,7 +77,7 @@ run:
       -threads ${test_control.thread_levels.level50-50.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}};
     config_filename: workloadEvergreen_50read50update
     workload_config: |
-      mongodb.url=mongodb://${mongodb_setup.meta.hosts}/ycsb
+      mongodb.url=${mongodb_setup.meta.mongodb_url}
       recordcount=5000000
       operationcount=20000000
       workload=com.yahoo.ycsb.workloads.CoreWorkload

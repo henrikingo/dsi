@@ -77,3 +77,6 @@ terraform: ~/path/to/terraform
 
 # Specify if running DSI in production mode. Set by Evergreen.
 production: false
+
+# Specify mongod authentication 'enabled' or 'disabled', this will also enable or disable SSL.
+authentication: disabled

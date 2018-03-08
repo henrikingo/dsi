@@ -10,34 +10,35 @@ MongoDBAuthSettings = namedtuple('MongoDBAuthSettings', ['mongo_user', 'mongo_pa
 
 
 def mongodb_auth_configured(config):
-    """Determine if authentication should be enabled.
+    """
+    Determine if authentication should be enabled.
 
-    :param ConfigDict config: the configuration object
-    :returns: True if authentication should be enabled, otherwise false
-    :rtype: boolean
-
+    :param ConfigDict config: The configuration object.
+    :returns: True if authentication should be enabled, otherwise false.
+    :rtype: boolean.
     """
 
-    if 'username' in config['mongodb_setup'] and 'password' in config['mongodb_setup']:
-        return True
-    assert 'username' not in config['mongodb_setup'], "both username and password MUST be set"
-    assert 'password' not in config['mongodb_setup'], "both username and password MUST be set"
-    return False
+    if config['bootstrap']['authentication'] == 'disabled':
+        return False
+    auth_config = config['mongodb_setup']['authentication']['enabled']
+    assert 'username' in auth_config, 'both username and password MUST be set'
+    assert 'password' in auth_config, 'both username and password MUST be set'
+    return True
 
 
 def mongodb_auth_settings(config):
-    """ Read the config file and return a tuple with the authentication settings
+    """
+    Read the config file and return a namedtuple with the authentication settings.
 
-    :param ConfigDict config: The configuration
-    :returns: The mongo user and password information
-    :rtype: None or namedtuple
-
+    :param ConfigDict config: The configuration.
+    :returns: The mongo user and password information.
+    :rtype: None or namedtuple.
     """
 
     if not mongodb_auth_configured(config):
         return None
-    return MongoDBAuthSettings(config['mongodb_setup']['username'],
-                               config['mongodb_setup']['password'])
+    return MongoDBAuthSettings(config['mongodb_setup']['authentication']['enabled']['username'],
+                               config['mongodb_setup']['authentication']['enabled']['password'])
 
 
 def merge_dicts(base, override):

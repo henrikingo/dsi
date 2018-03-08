@@ -285,6 +285,9 @@ class RunTestsTestCase(unittest.TestCase):
         argument into the function
         """
         mock_config = {
+            'bootstrap': {
+                'authentication': 'disabled'
+            },
             'infrastructure_provisioning': {
                 'tfvars': {
                     'ssh_user': 'mock_ssh_user',

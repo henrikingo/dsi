@@ -29,34 +29,65 @@ class TestHelperFunctions(unittest.TestCase):
     def test_mongodb_auth_configured_true(self):
         """
         Test mongodb_auth_configured with auth settings supplied.
-
         """
-        config = {'mongodb_setup': {'username': 'username', 'password': 'password'}}
+        config = {
+            'bootstrap': {
+                'authentication': 'enabled'
+            },
+            'mongodb_setup': {
+                'authentication': {
+                    'enabled': {
+                        'username': 'username',
+                        'password': 'password'
+                    }
+                }
+            }
+        }
         self.assertTrue(common.mongodb_setup_helpers.mongodb_auth_configured(config))
 
     def test_mongodb_auth_configured_false(self):
         """
         Test mongodb_auth_configured with not auth settings supplied.
-
         """
-        config = {'mongodb_setup': {}}
+        config = {'bootstrap': {'authentication': 'disabled'}}
         self.assertFalse(common.mongodb_setup_helpers.mongodb_auth_configured(config))
 
     def test_auth_configured_throws(self):
         """
         Test mongodb_auth_configured with incomplete auth settings.
-
         """
-        config = {'mongodb_setup': {'username': 'username'}}
+        config = {
+            'bootstrap': {
+                'authentication': 'enabled'
+            },
+            'mongodb_setup': {
+                'authentication': {
+                    'enabled': {
+                        'username': 'username'
+                    }
+                }
+            }
+        }
         with self.assertRaises(exceptions.AssertionError):
             common.mongodb_setup_helpers.mongodb_auth_configured(config)
 
     def test_mongodb_auth_settings_enabled(self):
         """
         Test mongodb_auth_settings_enbaled with auth settings supplied.
-
         """
-        config = {'mongodb_setup': {'username': 'username', 'password': 'password'}}
+        config = {
+            'bootstrap': {
+                'authentication': 'enabled'
+            },
+            'mongodb_setup': {
+                'authentication': {
+                    'enabled': {
+                        'username': 'username',
+                        'password': 'password'
+                    }
+                }
+            }
+        }
         self.assertEqual(
             common.mongodb_setup_helpers.mongodb_auth_settings(config),
             common.mongodb_setup_helpers.MongoDBAuthSettings('username', 'password'))
@@ -64,7 +95,6 @@ class TestHelperFunctions(unittest.TestCase):
     def test_mongodb_auth_settings_missing(self):
         """
         Test mongodb_auth_settings_enbaled with auth settings supplied.
-
         """
-        config = {'mongodb_setup': {}}
+        config = {'bootstrap': {'authentication': 'disabled'}}
         self.assertEqual(common.mongodb_setup_helpers.mongodb_auth_settings(config), None)

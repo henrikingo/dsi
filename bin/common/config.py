@@ -340,7 +340,15 @@ class ConfigDict(dict):
             return value
 
     def variable_references(self, key, value):
-        """For leaf node that is a string, substitute ${variable.references}"""
+        """
+        For any ConfigDict item that needs to be referenced, substitute ${module.item}.
+
+        In any ConfigDict module, a reference can be made to an item in another ConfigDict module,
+        including that module itself. These references can also be recursive. For example,
+        `${mongodb_setup.authetication.${boostrap.authentication}.mongodb_url}` can expand out to
+        `${monogdb_setup.authentication.disabled.mongodb_url}` and then, finally, to
+        `mongodb://${mongodb_setup.meta.hosts}/admin`.
+        """
         # This while loop resolves recursive references until all are taken care of.
         # Example: ${a.${foo}.c} (where foo: b)
         while True:

@@ -72,18 +72,11 @@ ycsb:
       exec: |
         ${workload_setup.install_java}
 
-        curl -O --retry 10 \
-          https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongo-java-driver/3.2.2/mongo-java-driver-3.2.2.jar
-        echo 'export CLASSPATH=~/mongo-java-driver-3.2.2.jar:$CLASSPATH' >> ~/.bashrc
-
         curl --retry 10 \
           https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash
         rm *.rpm || true
   - on_localhost:
-      checkout_repos:
-        - source: git@github.com:mongodb-labs/YCSB.git
-          target: ${bootstrap.ycsb_dir}
-          branch: 5742781
+      checkout_repos: ${workload_setup.authentication.${bootstrap.authentication}}
   - on_workload_client:
       exec: rm -rf ycsb*
   - on_workload_client:
@@ -100,3 +93,14 @@ install_java: |
     https://s3-us-west-2.amazonaws.com/dsi-donot-remove/java/jdk-8u162-linux-x64.rpm
   sudo rpm -i jdk-8u162-linux-x64.rpm
   sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.8.0_162/bin/java 20000
+
+# This is temporary, until we put auth into production.
+authentication:
+  enabled:
+    - source: git@github.com:mongodb-labs/YCSB.git
+      target: ${bootstrap.ycsb_dir}
+      branch: PERF-1293-ssl
+  disabled:
+    - source: git@github.com:mongodb-labs/YCSB.git
+      target: ${bootstrap.ycsb_dir}
+      branch: 5742781

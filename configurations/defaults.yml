@@ -14,7 +14,7 @@ bootstrap:
   workloads_dir: ./workloads
   ycsb_dir: ./YCSB
   linkbench_dir: ./linkbench
-
+  authentication: disabled
 
 infrastructure_provisioning:
   tfvars:
@@ -159,6 +159,55 @@ mongodb_setup:
         retrieve_files:
           - source: mdiag/
             target: ./
+
+  # Enabled and disabled authentication and SSL settings.
+  authentication:
+    enabled:
+      net:
+        port: 27017
+        bindIp: 0.0.0.0
+        ssl:
+          mode: preferSSL
+          PEMKeyFile: ${mongodb_setup.mongo_dir}/member.pem
+          PEMKeyPassword: server-perf
+          CAFile: ${mongodb_setup.mongo_dir}/root.crt
+      username: username
+      password: password
+      mongodb_url: mongodb://${mongodb_setup.authentication.enabled.username}:${mongodb_setup.authentication.enabled.password}@${mongodb_setup.meta.hosts}/admin?ssl=true
+      # Get necessary SSL keys.
+      pre_cluster_start:
+        - on_all_hosts:
+            upload_repo_files:
+              - source: configurations/mongodb_setup/ssl/member.pem
+                target: ${mongodb_setup.mongo_dir}/member.pem
+              - source: configurations/mongodb_setup/ssl/root.crt
+                target: ${mongodb_setup.mongo_dir}/root.crt
+        - on_workload_client:
+            upload_repo_files:
+              - source: configurations/mongodb_setup/ssl/client.crt
+                target: ${mongodb_setup.mongo_dir}/client.crt
+              - source: configurations/mongodb_setup/ssl/client.key
+                target: ${mongodb_setup.mongo_dir}/client.key
+              - source: configurations/mongodb_setup/ssl/keystore.jks
+                target: ${mongodb_setup.mongo_dir}/keystore.jks
+              - source: configurations/mongodb_setup/ssl/root.crt
+                target: ${mongodb_setup.mongo_dir}/root.crt
+        - on_workload_client:
+            exec: |
+              export JAVA_HOME="/usr/java/jdk1.8.0_162"
+              sudo $JAVA_HOME/bin/keytool -importcert -trustcacerts -file ${mongodb_setup.mongo_dir}/root.crt -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -noprompt
+    disabled:
+      net:
+        port: 27017
+        bindIp: 0.0.0.0
+      mongodb_url: mongodb://${mongodb_setup.meta.hosts}/admin
+      # This is just a placeholder for pre_cluster_start when we are not using SSL.
+      pre_cluster_start:
+        - on_workload_client:
+            exec: |
+              ls
+
+  pre_cluster_start: ${mongodb_setup.authentication.${bootstrap.authentication}.pre_cluster_start}
 
 test_control:
   task_name: default_task_name

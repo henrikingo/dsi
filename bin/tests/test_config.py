@@ -324,7 +324,7 @@ class ConfigDictTestCase(unittest.TestCase):
                 },
                 'net': {
                     'port': 27017,
-                    'bindIp': '0.0.0.0'
+                    'bindIp': '0.0.0.0',
                 },
                 'processManagement': {
                     'fork': True
@@ -350,7 +350,7 @@ class ConfigDictTestCase(unittest.TestCase):
                 },
                 'net': {
                     'port': 27017,
-                    'bindIp': '0.0.0.0'
+                    'bindIp': '0.0.0.0',
                 },
                 'processManagement': {
                     'fork': True
@@ -396,7 +396,7 @@ class ConfigDictTestCase(unittest.TestCase):
                 },
                 'net': {
                     'port': 27017,
-                    'bindIp': '0.0.0.0'
+                    'bindIp': '0.0.0.0',
                 },
                 'processManagement': {
                     'fork': True
@@ -462,7 +462,6 @@ class ConfigDictTestCase(unittest.TestCase):
             'test_control', 'workload_setup', 'runtime_secret', 'bootstrap', 'mongodb_setup',
             'analysis', 'infrastructure_provisioning', 'runtime'
         ])
-        print self.conf['infrastructure_provisioning']['tfvars'].values()
         self.assertEqualLists(self.conf['infrastructure_provisioning']['tfvars'].values(), [
             'c3.8xlarge', 'us-west-2a', 1, 'us-west-2', 9, 3, 'shard', 3,
             '~/.ssh/linustorvalds.pem', 'ec2-user', 'c3.8xlarge', 'linus.torvalds', 'c3.8xlarge', {
@@ -488,7 +487,7 @@ class ConfigDictTestCase(unittest.TestCase):
                 },
                 'net': {
                     'port': 27017,
-                    'bindIp': '0.0.0.0'
+                    'bindIp': '0.0.0.0',
                 },
                 'processManagement': {
                     'fork': True
