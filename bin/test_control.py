@@ -345,7 +345,8 @@ def run_test(test, config, reports_dir='reports'):
                 test['cmd'],
                 stdout=tee_out,
                 stderr=tee_out,
-                no_output_timeout_ms=no_output_timeout_ms)
+                no_output_timeout_ms=no_output_timeout_ms,
+                get_pty=True)
             error = ExitStatus(exit_status, test['cmd'])
         except Exception as e:  # pylint: disable=broad-except
             error = get_error_from_exception(e)

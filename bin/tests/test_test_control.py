@@ -499,6 +499,24 @@ class RunTestsTestCase(unittest.TestCase):
     @patch('test_control.generate_config_file')
     @patch('test_control.make_workload_runner_host')
     @patch('test_control.mkdir_p')
+    def test_run_test_get_pty(self, mock_mkdir, mock_make_host, mock_generate_config_file):
+        """
+        Test test_control.run_test with get_pty=True see PERF-1375
+        """
+        mock_host = Mock(spec=host.RemoteHost)
+        mock_host.exec_command = Mock(return_value=0)
+        mock_make_host.return_value = mock_host
+        test = self.config['test_control']['run'][0]
+        with patch('test_control.open', mock_open()):
+            run_test(test, self.config)
+        mock_host.exec_command.assert_called_once()
+        self.assertDictContainsSubset({
+            'get_pty': True
+        }, mock_host.exec_command.call_args_list[0][-1])
+
+    @patch('test_control.generate_config_file')
+    @patch('test_control.make_workload_runner_host')
+    @patch('test_control.mkdir_p')
     def test_run_test_no_output_files(self, mock_mkdir, mock_make_host, mock_generate_config_file):
         """
         Test test_control.run_test with no output files specified
