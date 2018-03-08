@@ -7,6 +7,7 @@ import glob
 import logging
 import os
 import pprint
+import re
 import sys
 import subprocess
 import shutil
@@ -18,14 +19,15 @@ from common.terraform_output_parser import TerraformOutputParser
 import common.utils
 from infrastructure_teardown import destroy_resources
 
-CLUSTER_JSON = "cluster.json"
-
 LOG = logging.getLogger(__name__)
 
 # Set terraform parallelism so it can create multiple resources
 # The number determines the number it can create at a time together
 TERRAFORM_PARALLELISM = 20
+TF_LOG_PATH = "terraform.log"
+CLUSTER_JSON = "cluster.json"
 
+# Increase this to force a teardown of clusters whose evg_data_dir is from a previous version.
 VERSION = "3"
 
 
@@ -78,11 +80,13 @@ class Provisioner(object):
             self.terraform = os.environ['TERRAFORM']
         else:
             self.terraform = './terraform'
-        self.dsi_dir = common.utils.get_dsi_path()
-        self.bin_dir = common.utils.get_dsi_bin_dir()
+        self.tf_log_path = TF_LOG_PATH
 
         os.environ['TF_LOG'] = 'DEBUG'
-        os.environ['TF_LOG_PATH'] = './terraform.log'
+        os.environ['TF_LOG_PATH'] = TF_LOG_PATH
+
+        self.dsi_dir = common.utils.get_dsi_path()
+        self.bin_dir = common.utils.get_dsi_bin_dir()
 
     def setup_security_tf(self):
         """
@@ -274,6 +278,7 @@ class Provisioner(object):
                 self.save_terraform_state()
         except Exception as exception:
             LOG.info("Failed to provision EC2 resources.")
+            self.print_terraform_errors()
             LOG.info("Releasing any EC2 resources that did deploy.")
             destroy_resources()
             rmtree_when_present(self.evg_data_dir)
@@ -308,6 +313,47 @@ class Provisioner(object):
             LOG.info('Created provisioned.%s with version %s', self.cluster, VERSION)
         os.chdir(previous_working_directory)
         LOG.info("EC2 provisioning state saved on Evergreen host.")
+
+    def print_terraform_errors(self):
+        """
+        Grep and print errors from terraform.log
+
+        Since Summer 2017, Terraform usually fails to print the actual EC2 error that caused a
+        deployment to fail, and instead just keeps spinning until you get a timeout error instead.
+        The real error, such as InsufficientInstanceCapacity, is however logged in our very verbose
+        terraform.log file. As a convenience to the user, we will find and print errors from it.
+        See PERF-1095 for more info.
+        """
+        # pylint: disable=too-many-nested-blocks
+        strings_to_grep = set(["<Response><Errors><Error>"])
+        strings_to_ignore = set(["The specified rule does not exist in this security group."])
+        seen_errors = set()
+
+        for line in open(self.tf_log_path):
+            for to_grep in strings_to_grep:
+                if to_grep in line:
+                    print_it = True
+                    for to_ignore in strings_to_ignore:
+                        if to_ignore in line:
+                            print_it = False
+
+                    if print_it:
+                        line = line.strip()
+                        # Terraform is very persistent, so it will often retry a non-recoverable
+                        # error multiple times, and the verbose log is then full with the same
+                        # error. We print each kind of error only once. So we need to keep track
+                        # of them.
+                        result = re.search(r'\<Code\>(.+)\</Code\>', line)
+                        if result:
+                            error_code = result.group(1)
+                            if error_code not in seen_errors:
+                                seen_errors.add(error_code)
+                                LOG.error(line)
+                        else:
+                            LOG.error(line)
+
+        if seen_errors:
+            LOG.error("See %s for more info.", self.tf_log_path)
 
 
 # pylint: enable=too-many-instance-attributes
