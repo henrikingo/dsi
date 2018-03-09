@@ -8996,8 +8996,8 @@
                     ]
                 },
                 "index_build":{
-                    "thread_threshold":0.0561,
-                    "threshold":0.0841,
+                    "thread_threshold":0.15,
+                    "threshold":0.1,
                     "ticket":[
                         "BF-7983"
                     ]
