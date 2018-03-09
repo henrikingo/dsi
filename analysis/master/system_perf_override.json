@@ -9506,6 +9506,13 @@
                         "BF-8249"
                     ]
                 },
+                "insert_jfalse":{
+                    "thread_threshold":0.23,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-8303"
+                    ]
+                },
                 "insert_jtrue":{
                     "thread_threshold":0.5,
                     "threshold":0.18,
@@ -9569,6 +9576,13 @@
                         "PERF-1157"
                     ]
                 },
+                "removemulti_jfalse":{
+                    "thread_threshold":0.27,
+                    "threshold":0.18,
+                    "ticket":[
+                        "BF-8303"
+                    ]
+                },
                 "removemulti_jtrue":{
                     "thread_threshold":0.5,
                     "threshold":0.18,
@@ -9578,10 +9592,11 @@
                     ]
                 },
                 "updatemulti_jfalse":{
-                    "thread_threshold":0.37,
-                    "threshold":0.18,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
-                        "BF-8249"
+                        "BF-8249",
+                        "BF-8303"
                     ]
                 },
                 "updatemulti_jtrue":{
