@@ -1,3 +1,4 @@
+#pylint: skip-file
 """
 NOTE: This is a local copy of the readers module, taken from the
 support-tools/timeseries repository.
