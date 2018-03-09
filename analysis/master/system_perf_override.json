@@ -9081,12 +9081,26 @@
                         "BF-5125"
                     ]
                 },
+                "removemulti_jfalse":{
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
+                    "ticket":[
+                        "BF-8299"
+                    ]
+                },
                 "removemulti_jtrue":{
                     "thread_threshold":0.5,
                     "threshold":0.18,
                     "ticket":[
                         "BF-6272",
                         "BF-7146"
+                    ]
+                },
+                "updatemulti_jfalse":{
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
+                    "ticket":[
+                        "BF-8299"
                     ]
                 },
                 "updatemulti_jtrue":{
