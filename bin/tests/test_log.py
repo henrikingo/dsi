@@ -1,7 +1,4 @@
 """Tests for bin/common/host.py"""
-# pylint: disable=unused-argument, no-self-use, protected-access, wrong-import-position
-# pylint: disable=wrong-import-order
-
 import os
 import sys
 import unittest

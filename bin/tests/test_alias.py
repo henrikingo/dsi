@@ -1,5 +1,4 @@
 """Tests for bin/alias.py"""
-# pylint: disable=wrong-import-position
 
 import os
 import sys

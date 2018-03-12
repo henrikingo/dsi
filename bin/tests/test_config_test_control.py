@@ -13,7 +13,7 @@ import yaml
 
 from common.config import ConfigDict
 import common.host as host
-import test_control  #pylint: disable=wrong-import-position
+import test_control
 
 
 def load_json(filename, directory=None):

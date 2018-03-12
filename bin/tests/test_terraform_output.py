@@ -1,4 +1,3 @@
-# pylint: disable=protected-access
 """test file for terraform_env"""
 
 from __future__ import print_function

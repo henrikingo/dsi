@@ -1,6 +1,5 @@
 """test file for terraform_env"""
 
-# pylint: disable=invalid-name
 from __future__ import print_function
 import datetime
 import logging
@@ -188,6 +187,7 @@ class TestTerraformConfiguration(unittest.TestCase):
     @patch('common.terraform_config.uuid4')
     @patch('common.terraform_config.generate_runner')
     @patch('common.terraform_config.retrieve_runner_instance_id')
+    # pylint: disable=invalid-name
     def test_default(self, mock_retrieve_runner_instance_id, mock_generate_runner, mock_uuid4):
         """Test default terraform configuration."""
         #pylint: disable=line-too-long

@@ -10,11 +10,6 @@ import delete_overrides
 from tests import test_utils
 from tests.test_requests_parent import TestRequestsParent
 
-#pylint: disable=no-value-for-parameter
-# @patch decorators cause pylint to throw false no-value-for-parameter errors
-# This is due to the fact that, when the functions are called, the variables passed
-# in by the decorator do not need to be passed in by the calling functions
-
 
 class TestDeleteOverrides(TestRequestsParent):
     """Test class evaluates correctness of the delete_overrides script.

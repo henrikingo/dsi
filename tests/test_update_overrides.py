@@ -12,9 +12,6 @@ import update_overrides
 from tests import test_utils
 from tests.test_requests_parent import TestRequestsParent
 
-#pylint: disable=no-value-for-parameter
-# pylint is confused by the patch decorators
-
 
 class TestUpdateOverrides(TestRequestsParent):
     """Test class evaluates correctness of the update_overrides script.

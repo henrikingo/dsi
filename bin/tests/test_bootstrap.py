@@ -1,8 +1,6 @@
 """
 Unit tests for 'bootstrap.py'.
 """
-# pylint: disable=invalid-name
-# pylint: disable=too-many-public-methods
 import copy
 import logging
 import os

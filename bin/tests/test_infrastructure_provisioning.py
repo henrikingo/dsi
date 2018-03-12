@@ -15,9 +15,6 @@ from testfixtures import LogCapture, log_capture
 from infrastructure_provisioning import Provisioner, check_version, rmtree_when_present
 
 #pylint: disable=too-many-locals
-#pylint: disable=too-many-arguments
-#pylint: disable=too-many-public-methods
-#pylint: disable=invalid-name
 
 ARTIFACTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "artifacts")
 
@@ -64,11 +61,9 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         Used to reset environment variables and mock objects
         """
         self.os_environ = {'TERRAFORM': 'test/path/terraform', 'DSI_PATH': self.dsi_path}
-        #pylint: disable=no-member
         self.mock_environ.__getitem__.side_effect = self.os_environ.__getitem__
         self.mock_environ.__contains__.side_effect = self.os_environ.__contains__
         self.mock_environ.__delitem__.side_effect = self.os_environ.__delitem__
-        #pylint: enable=no-member
 
     def check_subprocess_call(self, command_to_check, command, env=None):
         """
@@ -239,7 +234,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     @patch('infrastructure_provisioning.subprocess.check_call')
     @patch('infrastructure_provisioning.os.path.isdir')
     @patch('infrastructure_provisioning.os.remove')
-    #pylint: disable=invalid-name
     def test_check_existing_state_initialsync(self, mock_remove, mock_isdir, mock_check_call,
                                               mock_shutil):
         """
@@ -290,7 +284,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     @patch('infrastructure_provisioning.subprocess.check_call')
     @patch('infrastructure_provisioning.os.path.isdir')
     @patch('infrastructure_provisioning.os.remove')
-    #pylint: disable=invalid-name
     def test_check_existing_state_teardown_fails(self, mock_remove, mock_isdir, mock_check_call,
                                                  mock_shutil):
         """
@@ -399,10 +392,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             provisioner.setup_cluster()
             mock_setup_security_tf.assert_called()
             mock_setup_terraform_tf.assert_called()
-            #pylint: disable=line-too-long
             mock_terraform_configuration.return_value.to_json.assert_called_with(
                 file_name='cluster.json')
-            #pylint: enable=line-too-long
             # __enter__ and __exit__ are checked to see if the files were opened
             # as context managers.
             open_file_calls = [call('infrastructure_provisioning.out.yml', 'r'), call().read()]
@@ -495,7 +486,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 mock_open_file.assert_called_with('provisioned.single', 'w')
         self.reset_mock_objects()
 
-    # pylint: disable=unused-argument
     @patch('infrastructure_provisioning.subprocess.check_call')
     @patch('infrastructure_provisioning.os.remove')
     @patch('infrastructure_provisioning.os.chdir')
@@ -556,8 +546,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         """
         Test infrastructure_provisioning.rmtree_when_present success path
         """
-        # pylint: disable=no-self-use
-        # self.assertLogs(logger='infrastructure_provisioning')
         rmtree_when_present('')
         capture.check(('infrastructure_provisioning', 'INFO',
                        "rmtree_when_present: Cleaning '' ..."))
@@ -568,8 +556,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         """
         Test infrastructure_provisioning.rmtree_when_present path not found
         """
-        # pylint: disable=no-self-use
-        # self.assertLogs(logger='infrastructure_provisioning')
         rmtree_when_present('')
         capture.check(
             ('infrastructure_provisioning', 'INFO', "rmtree_when_present: Cleaning '' ..."),
@@ -582,8 +568,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         """
         Test infrastructure_provisioning.rmtree_when_present unexpected error
         """
-        # pylint: disable=no-self-use
-        # self.assertLogs(logger='infrastructure_provisioning')
         with self.assertRaises(OSError):
             rmtree_when_present('')
         capture.check(('infrastructure_provisioning', 'INFO',

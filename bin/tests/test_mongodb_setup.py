@@ -60,8 +60,6 @@ DEFAULT_CONFIG = {
     }
 }
 
-# pylint: disable=too-many-public-methods
-
 
 class TestMongodbSetup(unittest.TestCase):
     """MongodbSetup tests"""
@@ -106,7 +104,6 @@ class TestMongodbSetup(unittest.TestCase):
             setup.downloader.download_and_extract.assert_not_called()
             mock_run_threads.assert_called_once()
 
-    # pylint: disable=protected-access
     def test_start(self):
         """ test start"""
 
@@ -151,16 +148,11 @@ class TestMongodbSetup(unittest.TestCase):
             setup.shutdown.assert_not_called()
             setup.downloader.download_and_extract.assert_called_once()
 
-        # Pylint is unable to handle the idea that @patch decorator is filling in a
-        # parameter. Disabling locally.
-
-        # pylint: disable=no-value-for-parameter
         _test_start()
         # The following case will not call run_host_commands because setup will exit before
         # _test_start(download_status=True)
         _test_start(download_status=True, pre_cluster_start=True)
         _test_start(download_status=True, pre_cluster_start=False)
-        # pylint: enable=no-value-for-parameter
 
     def test_restart(self):
         """ test start"""

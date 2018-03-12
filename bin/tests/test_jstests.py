@@ -1,5 +1,4 @@
 """Tests for bin/common/config.py"""
-# pylint: disable=line-too-long
 import unittest
 
 from mock import patch, call

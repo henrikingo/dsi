@@ -10,13 +10,12 @@ import setup_baselines
 from tests import test_utils
 
 
-#pylint: disable=too-few-public-methods
 class BaselineUpdaterTest(setup_baselines.BaselineUpdater):
     ''' Subclassed BaselineUpdater to use different baseline_config.yml file
 
     All tests for BaselineUpdater should use this class instead'''
 
-    def __init__(self):  #pylint: disable=super-init-not-called
+    def __init__(self):
         ''' init. Load different file than parent '''
         self.config = test_utils.read_fixture_yaml_file('baseline_config.yml')
 
@@ -115,7 +114,6 @@ class TestSetupBaselines(unittest.TestCase):
                 }]
             }
         }
-        # pylint: enable=line-too-long
         output_yaml = setup_baselines.patch_sysperf_mongod_link(input_object, 'test_link')
         script = output_yaml['functions']["prepare environment"][3]["params"]["script"]
         script = textwrap.dedent(script)

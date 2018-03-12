@@ -38,7 +38,6 @@ class TestInfrastructureTeardown(unittest.TestCase):
 
     @patch('infrastructure_teardown.glob.glob')
     @patch('infrastructure_teardown.os')
-    #pylint: disable=invalid-name
     def test_destroy_resources_no_cluster_json(self, mock_os, mock_glob):
         """ Test infrastructure_teardown.destroy_resources when there is no cluster.json file """
         mock_os.path.dirname.return_value = 'teardown/script/path'

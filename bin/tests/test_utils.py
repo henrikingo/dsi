@@ -8,10 +8,7 @@ from mock import patch
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 
-#pylint: disable=wrong-import-position,wrong-import-order
 from utils import read_aws_credentials, read_aws_credentials_file, read_env_vars
-
-#pylint: disable=invalid-name
 
 
 class TestUtils(unittest.TestCase):

@@ -15,7 +15,6 @@ class TestResourceRules(unittest.TestCase):
     """Test class evaluates correctness of resource sanity check rules.
     """
 
-    # pylint: disable=too-many-instance-attributes,too-many-public-methods
     def setUp(self):
         """Specifies the paths used to fetch JSON testing files. Additionally,
         sets up the common parameters for each operation being tested.
@@ -228,7 +227,7 @@ class TestResourceRules(unittest.TestCase):
                 self.assertIsNone(primary)
             chunks_until_primary -= 1
 
-    def test_ftdc_replica_lag_check_success(self):  #pylint: disable=invalid-name
+    def test_ftdc_replica_lag_check_success(self):
         """Test expected success for repl set secondary member lag check
         """
         path_ftdc = os.path.join(self.path_3shard_directory, 'metrics.3shard_p1_repl')
@@ -238,7 +237,7 @@ class TestResourceRules(unittest.TestCase):
         expected = []
         self.assertEqual(observed, expected)
 
-    def test_ftdc_replica_lag_check_fail(self):  #pylint: disable=invalid-name
+    def test_ftdc_replica_lag_check_fail(self):
         """Test expected failure for repl set secondary member lag check
 
            The diagnostic.data file metrics.mongod.0 contains ftdc data from the primary on a

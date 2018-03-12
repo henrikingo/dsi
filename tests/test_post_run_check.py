@@ -1,7 +1,6 @@
 """
 Unit tests for `post_run_check.py`.
 """
-# pylint: disable=wrong-import-position, wrong-import-order
 import os
 import unittest
 
@@ -121,10 +120,9 @@ class TestPostRunCheck(unittest.TestCase):
                 'log_raw': '\nNo core files found',
                 'exit_code': 0
             }]
-        except:  # pylint: disable=bare-except
+        except:
             self.fail("check_core_file_exists() raised Exception!")
 
-    # pylint: disable=too-many-statements
     def test_check_core_file_exists(self):
         """
         test check_core_file_exists directly.

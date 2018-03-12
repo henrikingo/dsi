@@ -1,8 +1,6 @@
 """
 Unit tests for `ftdc_analysis.py`
 """
-# pylint: disable=protected-access, invalid-name
-
 import os
 import Queue
 import shutil
@@ -207,8 +205,8 @@ class TestFtdcAnalysis(unittest.TestCase):
             os.mkdir(path)
             for sub_dir in curr_dir:
                 if curr_dir[sub_dir] is None:
-                    with open(os.path.join(path, sub_dir), 'w') as f:
-                        f.write('test')
+                    with open(os.path.join(path, sub_dir), 'w') as handle:
+                        handle.write('test')
                 else:
                     queue.put((os.path.join(path, sub_dir), curr_dir[sub_dir]))
 

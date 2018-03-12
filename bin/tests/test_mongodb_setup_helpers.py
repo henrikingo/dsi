@@ -6,8 +6,6 @@ import unittest
 
 import common.mongodb_setup_helpers
 
-#pylint: disable=invalid-name
-
 
 class TestHelperFunctions(unittest.TestCase):
     """Basic tests for helper functions in mongodb_setup"""

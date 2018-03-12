@@ -6,9 +6,7 @@ import sys
 import unittest
 import json_diff
 
-# TODO: Learn how to do this correctly without complaint from pylint
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
-#pylint: disable=wrong-import-position,wrong-import-order
 from workload_output_parser import parse_test_results, validate_config
 
 LOG = logging.getLogger(__name__)

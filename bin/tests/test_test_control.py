@@ -2,8 +2,6 @@
 Tests for bin/test_control.py
 """
 
-# pylint: disable=wrong-import-position, wrong-import-order
-
 import copy
 import logging
 import os
@@ -32,8 +30,6 @@ from mock import patch, mock_open, Mock, call
 from testfixtures import LogCapture
 
 from common.utils import mkdir_p, touch
-
-# pylint: disable=too-many-public-methods
 
 
 class RunTestsTestCase(unittest.TestCase):
@@ -330,8 +326,6 @@ class RunTestsTestCase(unittest.TestCase):
         list_errors = list(log_capture.actual())  # Get actual string held by loc_capture object
         self.assertRegexpMatches(list_errors[0][2], error_pattern)
 
-    # pylint: disable=no-value-for-parameter
-    # pylint is confused by the patch decorator on help_test_trace_function()
     @patch('host.RemoteHost.upload_file')
     def test_print_trace_upload_file(self, mock_upload_file):
         """ Test test_control.print_trace with exception in upload_file"""
@@ -379,7 +373,6 @@ class RunTestsTestCase(unittest.TestCase):
         }, {}]
         self.help_trace_function(mock_create_file, mock_command_dicts)
 
-    # pylint: disable=no-self-use
     @patch("host.RemoteHost")
     @patch("os.makedirs")
     def test_background_command_run(self, mock_makedirs, mock_host):
@@ -394,7 +387,6 @@ class RunTestsTestCase(unittest.TestCase):
             mock_host.exec_command.assert_called_with(
                 'command', stdout=mock_out, stderr=mock_out, get_pty=True)
 
-    # pylint: disable=no-self-use
     @patch("host.RemoteHost")
     def test_background_command_stop(self, mock_host):
         """ Test BackgroundCommand  stop"""
@@ -402,7 +394,6 @@ class RunTestsTestCase(unittest.TestCase):
         subject.stop()
         mock_host.close.assert_called_once()
 
-    # pylint: disable=unused-argument
     @patch('test_control.make_host')
     @patch('test_control.extract_hosts')
     def test_start_background_tasks(self, mock_extract_hosts, mock_make_host):
@@ -425,10 +416,6 @@ class RunTestsTestCase(unittest.TestCase):
             mock_make_host.return_value = Mock()
             result = start_background_tasks(config, command_dict, test_id)
             self.assertEqual(len(result), 3)
-
-    # pylint: enable=no-value-for-parameter
-
-    # pylint: disable=invalid-name
 
     @patch('test_control.generate_config_file')
     @patch('test_control.make_workload_runner_host')
@@ -577,7 +564,6 @@ class RunTestsTestCase(unittest.TestCase):
     @patch('test_control.run_test')
     @patch('test_control.legacy_copy_perf_output')
     @patch('test_control.run_pre_post_commands')
-    #pylint: disable=too-many-arguments
     def test_run_tests(self, mock_pre_post, mock_copy_perf, mock_run, mock_run_validate,
                        mock_check_call, mock_prepare_reports):
         """Test run_tests (the top level workhorse for test_control)"""

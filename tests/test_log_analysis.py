@@ -6,8 +6,6 @@ import unittest
 import log_analysis
 from tests import test_utils
 
-# pylint: disable=protected-access
-
 
 class TestLogAnalysis(unittest.TestCase):
     """Test suite."""

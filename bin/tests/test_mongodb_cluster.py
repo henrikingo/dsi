@@ -12,8 +12,6 @@ import common.host
 
 from tests.any_in_string import ANY_IN_STRING
 
-#pylint: disable=missing-docstring,invalid-name
-
 # Mock the remote host module.
 common.mongodb_cluster.RemoteHost = mock.MagicMock()
 
@@ -76,7 +74,6 @@ DEFAULT_CONFIG = {
 }
 
 
-# pylint: disable=too-many-public-methods
 class TestMongoNode(unittest.TestCase):
     """MongoNode tests"""
 
@@ -159,7 +156,6 @@ class TestMongoNode(unittest.TestCase):
         """Runs _generate_setup_commands with given args
         and asserts the output == expected. If not, prints it out in a form
         that you can copy/paste into an 'expected' var"""
-        # pylint: disable=protected-access
         actual = common.mongodb_cluster.MongoNode._generate_setup_commands(
             generate_setup_commands_args)
         self.assertEquals(actual, expected, msg=",\n".join([str(x) for x in actual]))
@@ -171,7 +167,6 @@ class TestMongoNode(unittest.TestCase):
 
         node = common.mongodb_cluster.MongoNode(
             topology=self.config['mongodb_setup']['topology'][0], config=self.config)
-        # pylint: disable=protected-access
         (actual_user, actual_key) = node._ssh_user_and_key_file()
         self.assertEquals(actual_key, expected_ssh_key_file)
         self.assertEquals(actual_user, 'ec2-user')
@@ -517,7 +512,6 @@ class TestReplSet(unittest.TestCase):
 
     def test_highest_priority_node(self):
         """Test priority handling."""
-        # pylint: disable=protected-access
         repl_set_opts = {
             'name':
                 'rs',

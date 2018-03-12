@@ -437,7 +437,7 @@ class TestMultiEvergreenAnalysis(TestRequestsParent):
                 }
             }
         }]
-        client._ycsb_fix()  #pylint: disable=protected-access
+        client._ycsb_fix()
         print(client.results)
 
         expected_results = [{
@@ -466,7 +466,6 @@ class TestMultiEvergreenAnalysis(TestRequestsParent):
 
     def test_main(self):
         """MultiEvergreenAnalysis: Fetch real Evergreen results and write output files."""
-        #pylint: disable=no-self-use
         evergreen_config = test_utils.repo_root_file_path('config.yml')
         args = [
             '--evergreen-config', evergreen_config, '--json', '--out', 'test_outfile.json',

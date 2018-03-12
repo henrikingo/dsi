@@ -1,7 +1,3 @@
-# pylint: disable=too-many-lines
-# pylint: disable=unused-argument, no-self-use, protected-access, wrong-import-position
-# pylint: disable=invalid-name
-# pylint: disable=wrong-import-order
 """Tests for bin/common/host.py"""
 
 import collections
@@ -26,6 +22,7 @@ from tests.any_in_string import ANY_IN_STRING
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 
+# pylint: disable=wrong-import-order
 from config import ConfigDict
 import host
 
@@ -48,7 +45,6 @@ def sleepy_streamer(sleep_time_sec, outval):
     :return: a function that sleeps for `sleep_time_sec` seconds and returns `outval`
     """
 
-    # pylint: disable=missing-docstring
     def out(io1, io2):
         time.sleep(sleep_time_sec)
         return outval
@@ -56,7 +52,6 @@ def sleepy_streamer(sleep_time_sec, outval):
     return out
 
 
-# pylint: disable=too-many-public-methods
 class HostTestCase(unittest.TestCase):
     """ Unit Test for Host library """
 
@@ -947,12 +942,10 @@ class HostTestCase(unittest.TestCase):
         mock_create_file.assert_called_with(test_file, test_script)
         mock_exec_command.assert_called_with(test_argv, max_time_ms=None)
 
-    # pylint: disable=missing-docstring
     def test_exec_mongo_command_no_auth(self):
-        self.helper_exec_mongo_command(None)  # pylint: disable=no-value-for-parameter
+        self.helper_exec_mongo_command(None)
 
     def test_exec_mongo_command_with_auth(self):
-        # pylint: disable=no-value-for-parameter
         self.helper_exec_mongo_command(MongoDBAuthSettings('username', 'password'))
 
     def helper_remote_host_ssh_ex(self, exception=Exception()):
@@ -1181,7 +1174,6 @@ class HostTestCase(unittest.TestCase):
             }
         })
 
-    # pylint: disable=too-many-arguments
     @patch('paramiko.SSHClient')
     def helper_remote_exec_command(self,
                                    mock_ssh,
@@ -1241,7 +1233,6 @@ class HostTestCase(unittest.TestCase):
 
     def test_remote_exec_command(self):
         """Test RemoteHost.exec_command"""
-        # pylint: disable=no-value-for-parameter
         self.helper_remote_exec_command()
 
     def test_remote_exec_command_no_warn(self):
@@ -1249,7 +1240,6 @@ class HostTestCase(unittest.TestCase):
 
         mock_logger = MagicMock(name='LOG')
         host.LOG.warn = mock_logger
-        # pylint: disable=no-value-for-parameter
         self.helper_remote_exec_command(command=['cowsay', 'Hello', 'World'])
         mock_logger.assert_not_called()
 
@@ -1258,7 +1248,6 @@ class HostTestCase(unittest.TestCase):
 
         mock_logger = MagicMock(name='LOG')
         host.LOG.warn = mock_logger
-        # pylint: disable=no-value-for-parameter
         self.helper_remote_exec_command(return_value=1, exit_status=1)
         mock_logger.assert_called_once_with(ANY_IN_STRING('with exit status'), ANY, ANY, ANY)
 

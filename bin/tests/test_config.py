@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 """Tests for bin/common/config.py"""
-# pylint: disable=line-too-long
 import os
 import sys
 import unittest
@@ -10,11 +9,11 @@ import yaml
 
 from mock import patch
 
-# TODO: Learn how to do this correctly without complaint from pylint
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 
-import config  #pylint: disable=wrong-import-position,wrong-import-order
-from config import ConfigDict  #pylint: disable=wrong-import-position,wrong-import-order
+# pylint: disable=wrong-import-order
+import config
+from config import ConfigDict
 
 
 def dirmarker(into):
@@ -79,12 +78,10 @@ class InvalidConfigDictTestCase(unittest.TestCase):
                 "and shouldn't work (because it has a back problem not because it's lazy and entitled"
         })
 
-    # pylint: disable=invalid-name
     def test_assigns_invalid_numeric_key(self):
         """number-only not allowed"""
         self.causes_exception({"1": "woah dude a numeric-only key. get a job, you hippie."})
 
-    # pylint: disable=invalid-name
     def test_assigns_exclamation_point_key(self):
         """! not allowed"""
         self.causes_exception({"hello!": "is it me you're looking for?"})
@@ -97,7 +94,6 @@ class InvalidConfigDictTestCase(unittest.TestCase):
         """slashes not allowed"""
         self.causes_exception({"data/logs": "logging kills trees"})
 
-    # pylint: disable=invalid-name
     def test_assigns_invalid_nested_dict_multiple_errors(self):
         """assign invalid key from a nested dict with multiple errors"""
         with in_dir('./nested-config'):
@@ -117,7 +113,6 @@ class InvalidConfigDictTestCase(unittest.TestCase):
             self.assertRegexpMatches(context.exception.message, r'seriously')
 
 
-#pylint: disable=too-many-public-methods
 class ConfigDictTestCase(unittest.TestCase):
     """Unit tests for ConfigDict library."""
 
@@ -202,7 +197,7 @@ class ConfigDictTestCase(unittest.TestCase):
 
     def test_basic_checks(self):
         """Basic checks"""
-        self.assertEqualDicts(
+        self.assert_equal_dicts(
             self.conf['workload_setup']['ycsb'][0]['on_workload_client']['retrieve_files'][0], {
                 'source': 'remote_file_path',
                 'target': 'local_file_path'
@@ -212,8 +207,8 @@ class ConfigDictTestCase(unittest.TestCase):
             'retrieve_files']
         self.assertEqual(len(actual_result), len(expected_result))
         for actual, expected in zip(actual_result, expected_result):
-            self.assertEqualDicts(actual, expected)
-        self.assertEqualDicts(self.conf['infrastructure_provisioning']['out']['mongos'][2], {
+            self.assert_equal_dicts(actual, expected)
+        self.assert_equal_dicts(self.conf['infrastructure_provisioning']['out']['mongos'][2], {
             'public_ip': '53.1.1.102',
             'private_ip': '10.2.1.102'
         })
@@ -263,25 +258,26 @@ class ConfigDictTestCase(unittest.TestCase):
             'private_ip'] = "foo"
         out.raw['workload_client'][0]['public_ip'] = "bar"
         self.assertTrue(isinstance(out, ConfigDict))
-        self.assertEqualLists(
+        self.assert_equal_lists(
             self.conf.raw['infrastructure_provisioning']['out']['workload_client'], [{
                 'public_ip': 'bar',
                 'private_ip': 'foo'
             }])
-        self.assertEqualLists(
+        self.assert_equal_lists(
             self.conf.root['infrastructure_provisioning']['out']['workload_client'], [{
                 'public_ip': 'bar',
                 'private_ip': 'foo'
             }])
-        self.assertEqualLists(out.raw['workload_client'], [{
+        self.assert_equal_lists(out.raw['workload_client'], [{
             'public_ip': 'bar',
             'private_ip': 'foo'
         }])
-        self.assertEqualLists(out.root['infrastructure_provisioning']['out']['workload_client'], [{
-            'public_ip': 'bar',
-            'private_ip': 'foo'
-        }])
-        self.assertEqualDicts(out.overrides, {})
+        self.assert_equal_lists(out.root['infrastructure_provisioning']['out']['workload_client'],
+                                [{
+                                    'public_ip': 'bar',
+                                    'private_ip': 'foo'
+                                }])
+        self.assert_equal_dicts(out.overrides, {})
         self.assertEqual(out['workload_client'][0]['public_ip'], 'bar')
 
     def test_variable_references(self):
@@ -308,7 +304,7 @@ class ConfigDictTestCase(unittest.TestCase):
         """Test magic per_node_mongod_config() (merging the common mongod_config_file with per node config_file)"""
         mycluster = self.conf['mongodb_setup']['topology'][0]
         mongod = mycluster['shard'][2]['mongod'][0]
-        self.assertEqualDicts(
+        self.assert_equal_dicts(
             mycluster['shard'][0]['mongod'][0]['config_file'], {
                 'replication': {
                     'oplogSizeMB': 153600,
@@ -334,7 +330,7 @@ class ConfigDictTestCase(unittest.TestCase):
                     'dbPath': 'data/dbs'
                 }
             })
-        self.assertEqualDicts(
+        self.assert_equal_dicts(
             mycluster['shard'][2]['mongod'][0]['config_file'], {
                 'replication': {
                     'oplogSizeMB': 153600,
@@ -360,7 +356,7 @@ class ConfigDictTestCase(unittest.TestCase):
                     'dbPath': 'data/dbs'
                 }
             })
-        self.assertEqualDicts(mycluster['shard'][2]['mongod'][0]['config_file'].overrides, {})
+        self.assert_equal_dicts(mycluster['shard'][2]['mongod'][0]['config_file'].overrides, {})
         self.assertEqual(mycluster['shard'][2]['mongod'][0]['config_file']['storage']['engine'],
                          "inMemory")
         self.assertEqual(mycluster['shard'][2]['mongod'][0]['config_file']['net']['port'], 27017)
@@ -380,7 +376,7 @@ class ConfigDictTestCase(unittest.TestCase):
                 'private_ip': '${infrastructure_provisioning.out.mongod.6.private_ip}'
             })
         # Standalone node
-        self.assertEqualDicts(
+        self.assert_equal_dicts(
             self.conf['mongodb_setup']['topology'][2]['config_file'], {
                 'replication': {
                     'oplogSizeMB': 153600,
@@ -434,11 +430,11 @@ class ConfigDictTestCase(unittest.TestCase):
         """Set some values and write out file"""
         self.conf['mongodb_setup']['out'] = {'foo': 'bar'}
         # Read the value multiple times, because once upon a time that didn't work (believe it or not)
-        self.assertEqualDicts(self.conf['mongodb_setup']['out'], {'foo': 'bar'})
-        self.assertEqualDicts(self.conf['mongodb_setup']['out'], {'foo': 'bar'})
-        self.assertEqualDicts(self.conf['mongodb_setup']['out'], {'foo': 'bar'})
+        self.assert_equal_dicts(self.conf['mongodb_setup']['out'], {'foo': 'bar'})
+        self.assert_equal_dicts(self.conf['mongodb_setup']['out'], {'foo': 'bar'})
+        self.assert_equal_dicts(self.conf['mongodb_setup']['out'], {'foo': 'bar'})
         self.conf['mongodb_setup']['out']['zoo'] = 'zar'
-        self.assertEqualDicts(self.conf['mongodb_setup']['out'], {'foo': 'bar', 'zoo': 'zar'})
+        self.assert_equal_dicts(self.conf['mongodb_setup']['out'], {'foo': 'bar', 'zoo': 'zar'})
         with self.assertRaises(KeyError):
             self.conf['foo'] = 'bar'
         # Write the out file only if it doesn't already exist, and delete it when done
@@ -452,17 +448,17 @@ class ConfigDictTestCase(unittest.TestCase):
             file_handle = open(file_name)
             saved_out_file = yaml.safe_load(file_handle)
             file_handle.close()
-            self.assertEqualDicts({'out': self.conf['mongodb_setup']['out']}, saved_out_file)
+            self.assert_equal_dicts({'out': self.conf['mongodb_setup']['out']}, saved_out_file)
             os.remove(file_name)
 
     def test_iterators(self):
         """Test that iterators .keys() and .values() work"""
         mycluster = self.conf['mongodb_setup']['topology'][0]
-        self.assertEqualLists(self.conf.keys(), [
+        self.assert_equal_lists(self.conf.keys(), [
             'test_control', 'workload_setup', 'runtime_secret', 'bootstrap', 'mongodb_setup',
             'analysis', 'infrastructure_provisioning', 'runtime'
         ])
-        self.assertEqualLists(self.conf['infrastructure_provisioning']['tfvars'].values(), [
+        self.assert_equal_lists(self.conf['infrastructure_provisioning']['tfvars'].values(), [
             'c3.8xlarge', 'us-west-2a', 1, 'us-west-2', 9, 3, 'shard', 3,
             '~/.ssh/linustorvalds.pem', 'ec2-user', 'c3.8xlarge', 'linus.torvalds', 'c3.8xlarge', {
                 'Project': 'sys-perf',
@@ -471,7 +467,7 @@ class ConfigDictTestCase(unittest.TestCase):
                 'expire-on-delta': 1
             }, 't1.micro'
         ])
-        self.assertEqualLists(mycluster['shard'][2]['mongod'][0].values(), [
+        self.assert_equal_lists(mycluster['shard'][2]['mongod'][0].values(), [
             '53.1.1.7', 'https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.4.6.tgz', {
                 'replication': {
                     'oplogSizeMB': 153600,
@@ -540,9 +536,7 @@ class ConfigDictTestCase(unittest.TestCase):
         self.assertRaisesRegexp(KeyError, "mongod.50'$", conf.lookup_path, 'mongod.50.public_ip.0')
 
     # Helpers
-    # pylint: disable=invalid-name
-    # ...to follow conventions of unnittest.TestCase API
-    def assertEqualDicts(self, dict1, dict2):
+    def assert_equal_dicts(self, dict1, dict2):
         """Compare 2 dicts element by element for equal values."""
         dict1keys = dict1.keys()
         dict2keys = dict2.keys()
@@ -550,26 +544,26 @@ class ConfigDictTestCase(unittest.TestCase):
         for dict1key in dict1keys:
             # Pop the corresponding key from dict2, note that they won't be in the same order.
             dict2key = dict2keys.pop(dict2keys.index(dict1key))
-            self.assertEqual(dict1key, dict2key, 'assertEqualDicts failed: mismatch in keys: ' +
+            self.assertEqual(dict1key, dict2key, 'assert_equal_dicts failed: mismatch in keys: ' +
                              str(dict1key) + '!=' + str(dict2key))
             if isinstance(dict1[dict1key], dict):
-                self.assertEqualDicts(dict1[dict1key], dict2[dict2key])
+                self.assert_equal_dicts(dict1[dict1key], dict2[dict2key])
             elif isinstance(dict1[dict1key], list):
-                self.assertEqualLists(dict1[dict1key], dict2[dict2key])
+                self.assert_equal_lists(dict1[dict1key], dict2[dict2key])
             else:
                 self.assertEqual(dict1[dict1key], dict2[dict2key],
-                                 'assertEqualDicts failed: mismatch in values.')
+                                 'assert_equal_dicts failed: mismatch in values.')
         self.assertEqual(len(dict2keys), 0)
 
-    def assertEqualLists(self, list1, list2):
+    def assert_equal_lists(self, list1, list2):
         """Compare 2 lists element by element for equal values."""
         self.assertEqual(len(list1), len(list2))
         for list1value in list1:
             list2value = list2.pop(0)
             if isinstance(list1value, dict):
-                self.assertEqualDicts(list1value, list2value)
+                self.assert_equal_dicts(list1value, list2value)
             elif isinstance(list1value, list):
-                self.assertEqualLists(list1value, list2value)
+                self.assert_equal_lists(list1value, list2value)
             else:
                 self.assertEqual(list1value, list2value, '{} != {}'.format(list1, list2))
         self.assertEqual(len(list2), 0)

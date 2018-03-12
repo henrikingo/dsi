@@ -50,7 +50,6 @@ class TestMultiEvergreen(TestRequestsParent):
         client.parse_options()
         self.assertEqual(client.config, expected)
 
-    #pylint: disable=invalid-name
     def test_evergreen_patch_compile_cmd(self):
         """MultiEvergreen: compile cmd for evergreen patch."""
         expected1 = [
@@ -78,7 +77,6 @@ class TestMultiEvergreen(TestRequestsParent):
             'evergreen_config': test_utils.repo_root_file_path('config.yml'),
             'n': 2
         }
-        #pylint: disable=protected-access
         cmd1 = client._evergreen_patch_compile_cmd(1)
         cmd2 = client._evergreen_patch_compile_cmd(2)
         self.assertEqual(cmd1, expected1)

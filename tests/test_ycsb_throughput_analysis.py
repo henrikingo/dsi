@@ -1,7 +1,5 @@
 """Unit tests for `ycsb_throughput_analysis.py`."""
 
-# pylint: disable=protected-access
-
 from os import path
 import unittest
 import ycsb_throughput_analysis as ycsb_throughput
