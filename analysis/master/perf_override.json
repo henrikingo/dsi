@@ -32899,11 +32899,12 @@
                     ]
                 },
                 "Aggregation.IdentityView.DistinctWithoutIndexAndQuery":{
-                    "thread_threshold":0.35,
-                    "threshold":0.25,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "BF-5316",
-                        "BF-5575"
+                        "BF-5575",
+                        "BF-8336"
                     ]
                 },
                 "Aggregation.IdentityView.ExpressionObject":{
