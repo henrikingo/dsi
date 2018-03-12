@@ -33,4 +33,3 @@ meta:
   is_sharded: false
   is_replset: true
   mongodb_setup: initialsync-logkeeper
-

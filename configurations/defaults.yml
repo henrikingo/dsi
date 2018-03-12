@@ -195,7 +195,7 @@ mongodb_setup:
         - on_workload_client:
             exec: |
               export JAVA_HOME="/usr/java/jdk1.8.0_162"
-              sudo $JAVA_HOME/bin/keytool -importcert -trustcacerts -file ${mongodb_setup.mongo_dir}/root.crt -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -noprompt
+              sudo $JAVA_HOME/bin/keytool -importcert -trustcacerts -file ${mongodb_setup.mongo_dir}/root.crt -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -noprompt || true
     disabled:
       net:
         port: 27017
