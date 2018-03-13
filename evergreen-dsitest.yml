@@ -71,6 +71,32 @@ functions:
         script: |
           source ./venv/bin/activate
           bash testscripts/run-nosetest.sh
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: src/coverage.xml
+        remote_file: ${project}/${build_variant}/${revision}/${version_id}/coverage.xml
+        bucket: mciuploads
+        permissions: public-read
+        content_type: ${content_type|text/xml}
+        display_name: coverage.xml - Execution ${execution}
+
+  compare_coverage:
+    - command: s3.get
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: src/coverage.xml
+        remote_file: ${project}/${build_variant}/${revision}/${version_id}/coverage.xml
+        bucket: mciuploads
+    - command: shell.exec
+      type: test
+      params:
+        working_dir: src
+        script: |
+          source ./venv/bin/activate
+          testscripts/compare_coverage.py
 
   validate_overrides:
     - command: shell.exec
@@ -88,6 +114,12 @@ tasks:
     commands:
       - func: setup_tests
       - func: check_python_formatting
+  - name: compare_coverage
+    depends_on:
+      - name: nosetests
+    commands:
+      - func: setup_tests
+      - func: compare_coverage
   - name: lint_python_scripts
     commands:
       - func: setup_tests
@@ -117,6 +149,7 @@ buildvariants:
       - "rhel70-perf-standalone"
     tasks: &dsi_tasks
       - name: check_python_formatting
+      - name: compare_coverage
       - name: lint_python_scripts
       - name: lint_yml
       - name: nosetests

@@ -4,6 +4,8 @@
 # Python
 *.pyc
 venv
+.coverage
+coverage.xml
 
 # Python Shelve
 tests/unittest-files/override_responses
