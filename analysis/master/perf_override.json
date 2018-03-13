@@ -24893,6 +24893,41 @@
                         "BF-6431"
                     ]
                 },
+                "Aggregation.Sample.SmallSample":{
+                    "create_time":"2018-03-01T19:05:23Z",
+                    "max":778.9547248999789,
+                    "name":"Aggregation.Sample.SmallSample",
+                    "order":11330,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":778.9547248999789,
+                            "ops_per_sec_values":[
+                                762.9734978147216,
+                                789.2142320833577,
+                                780.7855590252694,
+                                783.4195714561009,
+                                778.3807641204447
+                            ]
+                        },
+                        "end":"2018-03-02T00:13:10.191Z",
+                        "start":"2018-03-02T00:12:44.889Z"
+                    },
+                    "revision":"acc197d5e68b0844ee429a695d46817c9b97174f",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-8352"
+                    ]
+                },
                 "Aggregation.Skip":{
                     "create_time":"2017-05-30T17:24:51.885Z",
                     "max":178.42258215410897,
