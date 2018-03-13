@@ -31,11 +31,11 @@ iperf:
         sudo yum install -y --quiet zlib-devel
         sudo killall iperf3
         rm -rf iperf
-        git clone https://github.com/esnet/iperf
+        git clone --quiet https://github.com/esnet/iperf
         cd iperf/
-        git checkout d06415822a
-        ./configure
-        make
+        git checkout --quiet d06415822a
+        ./configure --quiet
+        make --quiet
         sudo make install
       upload_repo_files:
         - source: bin/iperf-test.sh
@@ -46,7 +46,7 @@ linkbench:
       exec: |
         ${workload_setup.install_java}
 
-        curl --retry 10 --silent \
+        curl --retry 10 -fsS  \
           https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash
         rm *.rpm || true
   - on_localhost:
@@ -61,18 +61,17 @@ linkbench:
         - source: ${bootstrap.linkbench_dir}
           target: ./linkbench
   - on_workload_client:
-      # mvn -q = mvn queit
       exec: |
         export JAVA_HOME="/usr/java/jdk1.8.0_162/jre"
         source /etc/profile.d/maven.sh && cd /home/ec2-user/linkbench
-        mvn -q clean package -DskipTests
+        mvn --quiet clean package -DskipTests
 
 ycsb:
   - on_workload_client:
       exec: |
         ${workload_setup.install_java}
 
-        curl --retry 10 \
+        curl --retry 10 -fsS \
           https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash
         rm *.rpm || true
   - on_localhost:
@@ -86,10 +85,10 @@ ycsb:
   - on_workload_client:
       exec: |
         export JAVA_HOME="/usr/java/jdk1.8.0_162/jre"
-        source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && mvn clean package
+        source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && mvn --quiet clean package
 
 install_java: |
-  curl -O --retry 10 \
+  curl -O --retry 10 -fsS \
     https://s3-us-west-2.amazonaws.com/dsi-donot-remove/java/jdk-8u162-linux-x64.rpm
   sudo rpm -i jdk-8u162-linux-x64.rpm
   sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.8.0_162/bin/java 20000

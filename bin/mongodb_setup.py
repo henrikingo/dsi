@@ -231,7 +231,8 @@ class MongodbSetup(object):
         result = all(
             run_threads(
                 [partial(cluster.destroy, max_time_ms) for cluster in self.clusters], daemon=True))
-        LOG.warn('destroy: %s', 'succeeded' if result else 'failed')
+        if not result:
+            LOG.warn('destroy: failed')
         return result
 
     def close(self):

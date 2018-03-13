@@ -101,7 +101,7 @@ class DownloadMongodb(object):
                 ['rm', '-rf', 'bin'],
                 ['rm', '-rf', 'jstests'],
                 ['mkdir', mongo_dir],
-                ['curl', '--retry', '10', self.mongodb_binary_archive, '-o', tmp_file],
+                ['curl', '--retry', '10', '-fsS', self.mongodb_binary_archive, '-o', tmp_file],
                 ['tar', '-C', mongo_dir, '-zxf', tmp_file],
                 ['rm', '-f', tmp_file],
                 ['cd', '..'],

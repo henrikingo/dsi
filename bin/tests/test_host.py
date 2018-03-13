@@ -18,6 +18,8 @@ from mock import patch, Mock, mock, MagicMock, call, ANY
 import common.utils
 from common.mongodb_setup_helpers import MongoDBAuthSettings
 from common.log import TeeStream
+from nose.tools import nottest
+
 from tests.any_in_string import ANY_IN_STRING
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
@@ -69,6 +71,7 @@ class HostTestCase(unittest.TestCase):
         os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/../../docs/config-specs/')
         self.config = ConfigDict('mongodb_setup')
         self.config.load()
+        self.parent_dir = os.path.join(os.path.expanduser('~'), 'checkout_repos_test')
 
         self._delete_fixtures()
 
@@ -153,8 +156,8 @@ class HostTestCase(unittest.TestCase):
         self.assertTrue(local_host.kill_remote_procs('mongo'))
 
         calls = [
-            call(['pkill', '-9', 'mongo']),
-            call(['pgrep', 'mongo']),
+            call(['pkill', '-9', 'mongo'], quiet=True),
+            call(['pgrep', 'mongo'], quiet=True),
         ]
 
         local_host.run.assert_has_calls(calls)
@@ -189,10 +192,10 @@ class HostTestCase(unittest.TestCase):
         self.assertTrue(local_host.kill_remote_procs('mongo', signal_number=15, delay_ms=1))
 
         calls = [
-            call(['pkill', '-15', 'mongo']),
-            call(['pgrep', 'mongo']),
-            call(['pkill', '-15', 'mongo']),
-            call(['pgrep', 'mongo']),
+            call(['pkill', '-15', 'mongo'], quiet=True),
+            call(['pgrep', 'mongo'], quiet=True),
+            call(['pkill', '-15', 'mongo'], quiet=True),
+            call(['pgrep', 'mongo'], quiet=True),
         ]
 
         local_host.run.assert_has_calls(calls)
@@ -940,7 +943,7 @@ class HostTestCase(unittest.TestCase):
         status_code = remote_host.exec_mongo_command(test_script, test_file, test_connection_string)
         self.assertTrue(status_code == 0)
         mock_create_file.assert_called_with(test_file, test_script)
-        mock_exec_command.assert_called_with(test_argv, max_time_ms=None)
+        mock_exec_command.assert_called_with(test_argv, max_time_ms=None, quiet=False)
 
     def test_exec_mongo_command_no_auth(self):
         self.helper_exec_mongo_command(None)
@@ -977,21 +980,27 @@ class HostTestCase(unittest.TestCase):
         # test string command
         subject.exec_command = MagicMock(name='exec_command')
         subject.exec_command.return_value = 0
+        self.assertTrue(subject.run('cowsay Hello World', quiet=True))
+        subject.exec_command.assert_called_once_with('cowsay Hello World', quiet=True)
+
+        # test string command
+        subject.exec_command = MagicMock(name='exec_command')
+        subject.exec_command.return_value = 0
         self.assertTrue(subject.run('cowsay Hello World'))
-        subject.exec_command.assert_called_once_with('cowsay Hello World')
+        subject.exec_command.assert_called_once_with('cowsay Hello World', quiet=False)
 
         # Test fail
         subject.exec_command = MagicMock(name='exec_command')
         subject.exec_command.return_value = 1
         self.assertFalse(subject.run('cowsay Hello World'))
-        subject.exec_command.assert_called_once_with('cowsay Hello World')
+        subject.exec_command.assert_called_once_with('cowsay Hello World', quiet=False)
 
         # test list command success
         subject.exec_command = MagicMock(name='exec_command')
         subject.exec_command.return_value = 0
         self.assertTrue(subject.run([['cowsay', 'Hello', 'World'], ['cowsay', 'moo']]))
-        subject.exec_command.assert_any_call(['cowsay', 'Hello', 'World'])
-        subject.exec_command.assert_any_call(['cowsay', 'moo'])
+        subject.exec_command.assert_any_call(['cowsay', 'Hello', 'World'], quiet=False)
+        subject.exec_command.assert_any_call(['cowsay', 'moo'], quiet=False)
 
         # test list command failure
         subject.exec_command = MagicMock(name='exec_command')
@@ -999,8 +1008,8 @@ class HostTestCase(unittest.TestCase):
         self.assertFalse(
             subject.run([['cowsay', 'Hello', 'World'], ['cowsay', 'moo'], ['cowsay', 'boo']]))
         calls = [
-            mock.call(['cowsay', 'Hello', 'World']),
-            mock.call(['cowsay', 'moo']),
+            mock.call(['cowsay', 'Hello', 'World'], quiet=False),
+            mock.call(['cowsay', 'moo'], quiet=False),
         ]
         subject.exec_command.assert_has_calls(calls)
 
@@ -1008,7 +1017,8 @@ class HostTestCase(unittest.TestCase):
         subject.exec_command = MagicMock(name='exec_command')
         subject.exec_command.return_value = 0
         self.assertTrue(subject.run(['cowsay Hello World', 'cowsay moo']))
-        subject.exec_command.assert_called_once_with(['cowsay Hello World', 'cowsay moo'])
+        subject.exec_command.assert_called_once_with(
+            ['cowsay Hello World', 'cowsay moo'], quiet=False)
 
     # normally wouldn't test internal method, but the collaboration with other
     # objects is complicated within host.exec_command and leads to the core logic
@@ -1310,6 +1320,24 @@ class HostTestCase(unittest.TestCase):
         """ test remote exec uses the correct custom info and err streams """
         self.helper_remote_exec_command_streams(out=StringIO(), err=StringIO())
 
+    @nottest
+    def helper_test_checkout_repos(self, source, target, commands, branch=None, verbose=True):
+        """ test_checkout_repos common test code """
+        local_host = host.LocalHost()
+
+        # Test with non-existing target
+        self.assertFalse(os.path.exists(target))
+        with patch('host.mkdir_p') as mock_mkdir_p, \
+             patch('host.LocalHost.exec_command') as mock_exec_command:
+            local_host.checkout_repos(source, target, verbose=verbose, branch=branch)
+            mock_mkdir_p.assert_called_with(self.parent_dir)
+            if len(commands) == 1:
+                mock_exec_command.assert_called_once()
+                mock_exec_command.assert_called_with(commands[0])
+            else:
+                for command in commands:
+                    mock_exec_command.assert_any_call(command)
+
     def test_checkout_repos(self):
         """
         Test Host.checkout_repos command
@@ -1329,20 +1357,34 @@ class HostTestCase(unittest.TestCase):
             mock_exec_command.assert_called_once()
             mock_exec_command.assert_called_with(command)
 
-        # Test with non-existing target
-        parent_dir = os.path.join(os.path.expanduser('~'), 'checkout_repos_test')
+    def test_checkout_repos_non_existing_target(self):
+
+        # # Test with non-existing target
         source = 'https://github.com/mongodb/stitch-js-sdk.git'
-        target = os.path.join(parent_dir, 'stitch-js-sdk')
-        command = ['git', 'clone', source, target]
-        self.assertFalse(os.path.exists(target))
-        with patch('host.mkdir_p') as mock_mkdir_p, \
-             patch('host.LocalHost.exec_command') as mock_exec_command:
-            local_host.checkout_repos(source, target)
-            mock_mkdir_p.assert_called_with(parent_dir)
-            mock_exec_command.assert_called_once()
-            mock_exec_command.assert_called_with(command)
+        target = os.path.join(self.parent_dir, 'stitch-js-sdk')
+        commands = [['git', 'clone', '', source, target]]
+        self.helper_test_checkout_repos(source, target, commands, verbose=True)
+
+        commands = [['git', 'clone', '--quiet', source, target]]
+        self.helper_test_checkout_repos(source, target, commands, verbose=None)
+
+    def test_checkout_repos_branch(self):
+
+        # Test with specified branch
+        source = 'https://github.com/mongodb/stitch-js-sdk.git'
+        target = os.path.join(self.parent_dir, 'stitch-js-sdk')
+        branch = '2.x.x'
+        commands = [['git', 'clone', '--quiet', source, target],
+                    ['cd', target, '&&', 'git', 'checkout', '--quiet', branch]]
+        self.helper_test_checkout_repos(source, target, commands, branch=branch, verbose=None)
+
+    def test_checkout_repos_existing_target(self):
 
         # Test with existing target that is a git repository
+        local_host = host.LocalHost()
+
+        source = 'https://github.com/mongodb/stitch-js-sdk.git'
+        target = os.path.join(self.parent_dir, 'stitch-js-sdk')
         command = ['cd', target, '&&', 'git', 'status']
         with patch('host.os.path.isdir') as mock_isdir, \
              patch('host.mkdir_p') as mock_mkdir_p, \
@@ -1353,19 +1395,6 @@ class HostTestCase(unittest.TestCase):
             mock_mkdir_p.assert_not_called()
             mock_exec_command.assert_called_once()
             mock_exec_command.assert_called_with(command)
-
-        # Test with specified branch
-        branch = '2.x.x'
-        commands = [['git', 'clone', source, target],
-                    ['cd', target, '&&', 'git', 'checkout', branch]]
-        self.assertFalse(os.path.exists(target))
-        with patch('host.mkdir_p') as mock_mkdir_p, \
-             patch('host.LocalHost.exec_command') as mock_exec_command:
-            local_host.checkout_repos(source, target, branch)
-            mock_mkdir_p.assert_called_with(parent_dir)
-            self.assertEqual(mock_exec_command.call_count, 2)
-            mock_exec_command.assert_any_call(commands[0])
-            mock_exec_command.assert_any_call(commands[1])
 
 
 if __name__ == '__main__':

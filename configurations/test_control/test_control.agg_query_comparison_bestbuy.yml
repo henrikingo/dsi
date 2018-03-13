@@ -191,8 +191,8 @@ pre_task:
         # Download and install the dataset
         # Dataset is from the BestBuy Developer API website: https://bestbuyapis.github.io/api-documentation/#overview
         cd data
-        curl -O --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/AggPerformance/bestbuyproducts.bson.gz
-        ~/bin/mongorestore -h ${mongodb_setup.meta.hostname} --port=${mongodb_setup.meta.port} --gzip --archive=bestbuyproducts.bson.gz
+        curl -O --retry 10 -fsS https://s3-us-west-2.amazonaws.com/dsi-donot-remove/AggPerformance/bestbuyproducts.bson.gz
+        ~/bin/mongorestore --quiet -h ${mongodb_setup.meta.hostname} --port=${mongodb_setup.meta.port} --gzip --archive=bestbuyproducts.bson.gz  || exit $?
         ~/bin/mongo --host ${mongodb_setup.meta.hostname} --port=${mongodb_setup.meta.port} --eval 'db.getSiblingDB("bestbuy").products.getShardDistribution()'
 
 post_task:

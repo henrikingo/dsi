@@ -25,6 +25,7 @@ LOG = logging.getLogger(__name__)
 # The number determines the number it can create at a time together
 TERRAFORM_PARALLELISM = 20
 TF_LOG_PATH = "terraform.log"
+PROVISON_LOG_PATH = './provision.log'
 CLUSTER_JSON = "cluster.json"
 
 # Increase this to force a teardown of clusters whose evg_data_dir is from a previous version.
@@ -48,7 +49,7 @@ def check_version(file_path):
 
 def rmtree_when_present(tree_path):
     """Remove the given tree only if present"""
-    LOG.info("rmtree_when_present: Cleaning '%s' ...", tree_path)
+    LOG.debug("rmtree_when_present: Cleaning '%s' ...", tree_path)
     if os.path.exists(tree_path):
         shutil.rmtree(tree_path)
     else:
@@ -59,7 +60,11 @@ def rmtree_when_present(tree_path):
 class Provisioner(object):
     """ Used to provision AWS resources """
 
-    def __init__(self, config):
+    def __init__(self,
+                 config,
+                 log_file=TF_LOG_PATH,
+                 provisioning_file=PROVISON_LOG_PATH,
+                 verbose=False):
         self.config = config
         ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
         ssh_key_file = os.path.expanduser(ssh_key_file)
@@ -87,6 +92,19 @@ class Provisioner(object):
 
         self.dsi_dir = common.utils.get_dsi_path()
         self.bin_dir = common.utils.get_dsi_bin_dir()
+
+        self.log_file = log_file
+        self.verbose = verbose
+        self.provisioning_file = provisioning_file
+
+        # Counter-intuitively, _None_ has the following stream semantics.
+        # "With the default settings of None, no redirection will occur; the child's file handles
+        # will be inherited from the parent"
+        # @see subprocess.Popen
+        if self.verbose:
+            self.stdout = self.stderr = None
+        else:
+            self.stdout = self.stderr = open(self.provisioning_file, 'w')
 
     def setup_security_tf(self):
         """
@@ -160,11 +178,11 @@ class Provisioner(object):
 
             teardown_py = os.path.join(self.evg_data_dir, 'terraform/infrastructure_teardown.py')
             if os.path.isfile(teardown_py):
-                subprocess.check_call(['python', teardown_py], env=temp_environ)
-            else:
-                teardown_script = os.path.join(self.evg_data_dir,
-                                               'terraform/infrastructure_teardown.sh')
-                subprocess.check_call([teardown_script], env=temp_environ)
+                subprocess.check_call(
+                    ['python', teardown_py],
+                    env=temp_environ,
+                    stdout=self.stdout,
+                    stderr=self.stderr)
         except subprocess.CalledProcessError as exception:
             LOG.error("Teardown of existing resources failed. Catching exception and continuing")
             LOG.error(exception)
@@ -245,8 +263,9 @@ class Provisioner(object):
         self.setup_terraform_tf()
         if self.reuse_cluster:
             self.setup_evg_dir()
-
-        subprocess.check_call([self.terraform, 'init', '-upgrade'])
+        LOG.info('terraform: init')
+        subprocess.check_call(
+            [self.terraform, 'init', '-upgrade'], stdout=self.stdout, stderr=self.stderr)
         tf_config = TerraformConfiguration(self.config)
         tf_config.to_json(file_name=CLUSTER_JSON)  # pylint: disable=no-member
         self.var_file = '-var-file={}'.format(CLUSTER_JSON)
@@ -254,6 +273,7 @@ class Provisioner(object):
             LOG.info('Reusing AWS cluster for %s', self.cluster)
         else:
             LOG.info('Creating AWS cluster for %s', self.cluster)
+        LOG.info('terraform: apply')
         terraform_command = [self.terraform, 'apply', self.var_file, self.parallelism]
         # Disk warmup for initialsync-logkeeper takes about 4 hours. This will save
         # about $12 by delaying deployment of the two other nodes.
@@ -261,11 +281,21 @@ class Provisioner(object):
             terraform_command.extend(
                 ['-var="mongod_ebs_instance_count=0"', '-var="workload_instance_count=0"'])
         try:
-            subprocess.check_call(terraform_command)
+            subprocess.check_call(terraform_command, stdout=self.stdout, stderr=self.stderr)
             if not self.existing and self.cluster == 'initialsync-logkeeper':
-                subprocess.check_call([self.terraform, 'apply', self.var_file, self.parallelism])
-            subprocess.check_call([self.terraform, 'refresh', self.var_file])
-            subprocess.check_call([self.terraform, 'plan', '-detailed-exitcode', self.var_file])
+                subprocess.check_call(
+                    [self.terraform, 'apply', self.var_file, self.parallelism],
+                    stdout=self.stdout,
+                    stderr=self.stderr)
+            LOG.info('terraform: refresh')
+            subprocess.check_call(
+                [self.terraform, 'refresh', self.var_file], stdout=self.stdout, stderr=self.stderr)
+            LOG.info('terraform: plan')
+            subprocess.check_call(
+                [self.terraform, 'plan', '-detailed-exitcode', self.var_file],
+                stdout=self.stdout,
+                stderr=self.stderr)
+            LOG.info('terraform: output')
             terraform_output = run_and_save_output([self.terraform, 'output'])
             tf_parser = TerraformOutputParser(terraform_output=terraform_output)
             tf_parser.write_output_files()
@@ -278,6 +308,8 @@ class Provisioner(object):
                 self.save_terraform_state()
         except Exception as exception:
             LOG.info("Failed to provision EC2 resources.")
+            # We could dump the terraform log here but it will be large.
+            self.stderr.close()
             self.print_terraform_errors()
             LOG.info("Releasing any EC2 resources that did deploy.")
             destroy_resources()
@@ -305,7 +337,9 @@ class Provisioner(object):
 
         previous_working_directory = os.getcwd()
         os.chdir(terraform_dir)
-        subprocess.check_call(['./terraform', 'init', '-upgrade'])
+        LOG.info('terraform: init in %s', terraform_dir)
+        subprocess.check_call(
+            ['./terraform', 'init', '-upgrade'], stdout=self.stdout, stderr=self.stderr)
         for file_path in glob.glob('provisioned.*'):
             os.remove(file_path)
         with open('provisioned.' + self.cluster, 'w') as file_handle:
@@ -392,7 +426,7 @@ def main():
     setup_logging(args.debug, args.log_file)
     config = ConfigDict('infrastructure_provisioning')
     config.load()
-    provisioner = Provisioner(config)
+    provisioner = Provisioner(config, verbose=args.debug)
     provisioner.provision_resources()
 
 

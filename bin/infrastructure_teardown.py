@@ -41,14 +41,16 @@ def destroy_resources():
         raise (UserWarning(
             "In infrastructure_teardown.py and cluster.json does not exist. Giving up."))
 
+    LOG.info('Destroy starting')
     try:
         # Destroy instances first.
         subprocess.check_call([terraform, 'destroy', var_file, '-force', '-target=module.cluster'])
         # Then destroy the rest, which is the placement group.
         # This is a workaround for the fact that depends_on doesn't work with modules.
+        LOG.info('Attempting to destroy remaining resources')
         subprocess.check_call([terraform, 'destroy', var_file, '-force'])
     except CalledProcessError:
-        LOG.info('Failed destroying resources, retrying')
+        LOG.warn('Failed destroying resources, retrying')
         subprocess.check_call([terraform, 'destroy', var_file, '-force'])
     if previous_directory is not None:
         os.chdir(previous_directory)

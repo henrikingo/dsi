@@ -26,9 +26,9 @@ jstests_dir: ""
 pre_task:
   - on_workload_client:
       exec: |
-        curl -O --retry 10 https://s3.amazonaws.com/mciuploads/mongo-tools/binaries/mongo_tools_ubuntu_b3187697d342563efd9b90bdd1aa574aec4d2e00_16_12_08_22_07_30/community/mongoreplay
+        curl -O --retry 10 -fsS https://s3.amazonaws.com/mciuploads/mongo-tools/binaries/mongo_tools_ubuntu_b3187697d342563efd9b90bdd1aa574aec4d2e00_16_12_08_22_07_30/community/mongoreplay
         chmod +x mongoreplay
-        curl -o /media/ephemeral0/initialsync.playback.tgz --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/initialsync.playback.tgz
-        curl -o /media/ephemeral0/libpcap.so.0.8  --retry 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/libpcap/libpcap.so.0.8
+        curl -o /media/ephemeral0/initialsync.playback.tgz --retry 10 -fsS https://s3-us-west-2.amazonaws.com/dsi-donot-remove/initialsync.playback.tgz
+        curl -o /media/ephemeral0/libpcap.so.0.8  --retry -fsS 10 https://s3-us-west-2.amazonaws.com/dsi-donot-remove/libpcap/libpcap.so.0.8
         cd /media/ephemeral0
-        tar zxvf initialsync.playback.tgz
+        tar zxf initialsync.playback.tgz

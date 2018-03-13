@@ -9,7 +9,7 @@ import os
 import shutil
 import unittest
 from subprocess import CalledProcessError
-from mock import patch, call, mock_open, MagicMock
+from mock import patch, call, mock_open, MagicMock, ANY
 from testfixtures import LogCapture, log_capture
 
 from infrastructure_provisioning import Provisioner, check_version, rmtree_when_present
@@ -247,11 +247,12 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         # Run check_existing_state when existing state exists
         with patch('infrastructure_provisioning.os.path.isfile') as mock_isfile:
             expected_command = ['python', evg_data_dir + '/terraform/infrastructure_teardown.py']
-            mock_check_call.side_effect = partial(self.check_subprocess_call, expected_command)
+            # mock_check_call.side_effect = partial(self.check_subprocess_call, expected_command)
             mock_isfile.return_value = True
             provisioner = Provisioner(config)
             self.assertEqual(provisioner.evg_data_dir, evg_data_dir)
             provisioner.check_existing_state()
+            mock_check_call.assert_called_with(expected_command, env=ANY, stdout=ANY, stderr=ANY)
             mock_shutil.rmtree.assert_called_with(evg_data_dir)
             isfile_calls = [
                 call('bin/tests/artifacts/terraform/infrastructure_teardown.py'),
@@ -401,14 +402,29 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             # If the cluster is initialsync-logkeeper, then terraform should be run twice
             terraform = self.os_environ['TERRAFORM']
             check_call_calls = [
-                call([terraform, 'init', '-upgrade']),
-                call([
-                    terraform, 'apply', '-var-file=cluster.json', provisioner.parallelism,
-                    '-var="mongod_ebs_instance_count=0"', '-var="workload_instance_count=0"'
-                ]),
-                call([terraform, 'apply', '-var-file=cluster.json', provisioner.parallelism]),
-                call([terraform, 'refresh', '-var-file=cluster.json']),
-                call([terraform, 'plan', '-detailed-exitcode', '-var-file=cluster.json'])
+                call(
+                    [terraform, 'init', '-upgrade'],
+                    stdout=provisioner.stdout,
+                    stderr=provisioner.stderr),
+                call(
+                    [
+                        terraform, 'apply', '-var-file=cluster.json', provisioner.parallelism,
+                        '-var="mongod_ebs_instance_count=0"', '-var="workload_instance_count=0"'
+                    ],
+                    stdout=provisioner.stdout,
+                    stderr=provisioner.stderr),
+                call(
+                    [terraform, 'apply', '-var-file=cluster.json', provisioner.parallelism],
+                    stdout=provisioner.stdout,
+                    stderr=provisioner.stderr),
+                call(
+                    [terraform, 'refresh', '-var-file=cluster.json'],
+                    stdout=provisioner.stdout,
+                    stderr=provisioner.stderr),
+                call(
+                    [terraform, 'plan', '-detailed-exitcode', '-var-file=cluster.json'],
+                    stdout=provisioner.stdout,
+                    stderr=provisioner.stderr)
             ]
             mock_subprocess.check_call.assert_has_calls(check_call_calls)
             mock_save_output.assert_called_with([terraform, 'output'])
@@ -436,7 +452,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             with patch('infrastructure_provisioning.destroy_resources') as mock_destroy:
                 provisioner = Provisioner(self.config)
                 provisioner.reuse_cluster = True
-                mock_subprocess.check_call.side_effect = [1, CalledProcessError(1, ['cmd'])]
+                mock_subprocess.check_call.side_effect = [1, CalledProcessError(1, ['cmd']), 1]
                 with self.assertRaises(CalledProcessError):
                     provisioner.setup_cluster()
             mock_setup_terraform_tf.assert_called()
@@ -480,7 +496,10 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 mock_copyfile.assert_has_calls(copyfile_calls)
                 chdir_calls = [call(terraform_dir), call(mock_getcwd.return_value)]
                 mock_chdir.assert_has_calls(chdir_calls)
-                mock_check_call.assert_called_with(['./terraform', 'init', '-upgrade'])
+                mock_check_call.assert_called_with(
+                    ['./terraform', 'init', '-upgrade'],
+                    stdout=provisioner.stdout,
+                    stderr=provisioner.stderr)
                 remove_calls = [call('provisioned.single'), call('provisioned.shard')]
                 mock_remove.assert_has_calls(remove_calls)
                 mock_open_file.assert_called_with('provisioned.single', 'w')
@@ -540,6 +559,19 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             check_version(evg_data_dir + '/terraform/provisioned.initialsync-logkeeper'))
 
     @patch('infrastructure_provisioning.shutil.rmtree')
+    @patch('infrastructure_provisioning.os.path.exists', return_value=False)
+    @log_capture(level=logging.INFO)
+    def test_rmtree_when_not_present(self, mock_rmtree, mock_exists, capture):
+        """
+        Test infrastructure_provisioning.rmtree_when_present fail path
+        """
+        # pylint: disable=no-self-use
+        # self.assertLogs(logger='infrastructure_provisioning')
+        rmtree_when_present('')
+        capture.check(('infrastructure_provisioning', 'INFO',
+                       "rmtree_when_present: No such path=''"))
+
+    @patch('infrastructure_provisioning.shutil.rmtree')
     @patch('infrastructure_provisioning.os.path.exists', return_value=True)
     @log_capture(level=logging.INFO)
     def test_rmtree_when_present(self, mock_rmtree, mock_exists, capture):
@@ -547,8 +579,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         Test infrastructure_provisioning.rmtree_when_present success path
         """
         rmtree_when_present('')
-        capture.check(('infrastructure_provisioning', 'INFO',
-                       "rmtree_when_present: Cleaning '' ..."))
+        capture.check()
 
     @patch('infrastructure_provisioning.os.path.exists', return_value=False)
     @log_capture()
@@ -558,7 +589,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         """
         rmtree_when_present('')
         capture.check(
-            ('infrastructure_provisioning', 'INFO', "rmtree_when_present: Cleaning '' ..."),
+            ('infrastructure_provisioning', 'DEBUG', "rmtree_when_present: Cleaning '' ..."),
             ('infrastructure_provisioning', 'INFO', "rmtree_when_present: No such path=''"))
 
     @patch('infrastructure_provisioning.shutil.rmtree', side_effect=OSError)
@@ -570,8 +601,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         """
         with self.assertRaises(OSError):
             rmtree_when_present('')
-        capture.check(('infrastructure_provisioning', 'INFO',
-                       "rmtree_when_present: Cleaning '' ..."))
+        capture.check()
 
     @log_capture()
     def test_print_terraform_errors(self, log_output):

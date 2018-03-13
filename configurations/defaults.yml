@@ -146,7 +146,7 @@ mongodb_setup:
           set -v
           rm -rf ./mdiag
           mkdir -p ./mdiag
-          wget -O-  https://raw.githubusercontent.com/mongodb/support-tools/master/mdiag/mdiag.sh > ./mdiag/mdiag.sh
+          wget -q -O-  https://raw.githubusercontent.com/mongodb/support-tools/master/mdiag/mdiag.sh > ./mdiag/mdiag.sh
           # The "sys-perf" paramter to mdiag.sh is the 'reference'. As this is a support
           # tool, the reference would normally be a support case identifier.
           # For this example, it can be anything so that we don't

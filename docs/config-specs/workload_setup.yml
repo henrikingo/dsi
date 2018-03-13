@@ -12,11 +12,13 @@ ycsb:  # So these steps would be called if there are any workload runs with type
       # The checkout_repos command makes a clone of the git repository `source`. The `branch` key is
       # optional: when it is set, the specified branch is checked out after cloning, otherwise the
       # default branch is the checked out repo. The branch target can be a branch, tag, or
-      # reference.
+      # reference. The `verbose` flag is optional: when omitted it is false, otherwise it is true if set to
+      # true.
       checkout_repos:
-        - source: git@github.com:mongodb-labs/YSCB.git
+        - source: git@github.com:mongodb-labs/YCSB.git
           target: ./YCSB
           branch: 5742781
+          verbose: false
 
 
 # The full range of on_* commands is supported, but notably *only* the on_* commands, so no

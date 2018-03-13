@@ -34,8 +34,10 @@ TEN_MINUTE_MILLIS = 10 * ONE_MINUTE_MILLIS
 HostInfo = namedtuple('HostInfo', ['ip_or_name', 'category', 'offset'])
 
 LOG = logging.getLogger(__name__)
+# This stream only log error or above messages
+ERROR_ONLY = logging.getLogger('error_only')
+
 INFO_ADAPTER = IOLogAdapter(LOG, logging.INFO)
-ERROR_ADAPTER = IOLogAdapter(LOG, logging.ERROR)
 WARN_ADAPTER = IOLogAdapter(LOG, logging.WARN)
 
 
@@ -158,8 +160,9 @@ def _run_host_command_map(target_host, command, prefix):
                 source = paths['source']
                 target = paths['target']
                 branch = paths['branch'] if 'branch' in paths else None
+                verbose = paths['verbose'] if 'verbose' in paths else False
                 LOG.debug('Checking out git repository %s to %s', target, source)
-                target_host.checkout_repos(source, target, str(branch))
+                target_host.checkout_repos(source, target, str(branch), verbose=verbose)
         else:
             raise UserWarning("Invalid command type")
 
@@ -419,7 +422,8 @@ class Host(object):
                      stderr=None,
                      get_pty=False,
                      max_time_ms=None,
-                     no_output_timeout_ms=None):
+                     no_output_timeout_ms=None,
+                     quiet=False):
         """
         Execute the command and log the output.
 
@@ -439,18 +443,20 @@ class Host(object):
         any output on stdout. Not all host implementations support this - namely only
         RemoteHost at the moment
         :type no_output_timeout_ms: int, float, or None
+        :param bool quiet: don't log failure if this is set to True. Defaults to False.
 
         :return: int or None (the exit status) 0 or None implies success anything else is an error.
         :raises: HostException for timeouts or implementation specific issues.
         """
         raise NotImplementedError()
 
-    def run(self, argvs):
+    def run(self, argvs, quiet=False):
         """
         Runs a command or list of commands.
 
         :param argvs: The string to execute, or one argument vector or list of argv's [file, arg]
         :type argvs: str, list
+        :param bool quiet: don't log failures if set to True. Defaults to False.
 
         :return: True if all the command succeeded. This method returns a boolean (rather than
         raising an exception) because this allows the caller to determine if a failure is
@@ -462,18 +468,19 @@ class Host(object):
             raise ValueError("Argument must be a nonempty list or string.")
 
         if isinstance(argvs, basestring):
-            return self.exec_command(argvs) == 0
+            return self.exec_command(argvs, quiet=quiet) == 0
 
         if not isinstance(argvs[0], list):
             argvs = [argvs]
 
-        return all(self.exec_command(argv) == 0 for argv in argvs)
+        return all(self.exec_command(argv, quiet=quiet) == 0 for argv in argvs)
 
     def exec_mongo_command(self,
                            script,
                            remote_file_name="script.js",
                            connection_string="localhost:27017",
-                           max_time_ms=None):
+                           max_time_ms=None,
+                           quiet=False):
         """
         Executes script in the mongo on the connection string. Returns the status code of executing
         the script.
@@ -484,6 +491,7 @@ class Host(object):
         :param max_time_ms: The time limit in milliseconds for processing this operations, defaults
         to None (no timeout)
         :type max_time_ms: int, float, None
+        :param bool quiet: don't log failures if set to True. Defaults to False.
         """
         self.create_file(remote_file_name, script)
         self.run(['cat', remote_file_name])
@@ -494,7 +502,7 @@ class Host(object):
                 self.mongodb_auth_settings.mongo_password, '--authenticationDatabase', 'admin'
             ])
         argv.extend([connection_string, remote_file_name])
-        status_code = self.exec_command(argv, max_time_ms=max_time_ms)
+        status_code = self.exec_command(argv, max_time_ms=max_time_ms, quiet=quiet)
         return status_code
 
     def kill_remote_procs(self,
@@ -523,8 +531,8 @@ class Host(object):
         is_timed_out = create_timer(datetime.now(), max_time_ms)
 
         while not is_timed_out():
-            self.run(['pkill', signal_number, name])
-            if not self.run(['pgrep', name]):
+            self.run(['pkill', signal_number, name], quiet=True)
+            if not self.run(['pgrep', name], quiet=True):
                 return True
             time.sleep(delay_seconds)
 
@@ -563,7 +571,7 @@ class Host(object):
         """
         raise NotImplementedError()
 
-    def checkout_repos(self, source, target, branch=None):
+    def checkout_repos(self, source, target, branch=None, verbose=False):
         """
         Clone repository from GitHub into target directory.
 
@@ -571,13 +579,16 @@ class Host(object):
         :param str target: Path to target directory
         :param branch: Specific branch to clone, if None clones default branch.
         :types branch: str, None
+        :param bool verbose: Use the --quiet flag for clone and checkout if verbose is False.
+        Defaults to False.
         """
+        quiet_arg = '' if verbose else '--quiet'
         if not os.path.isdir(target):
             LOG.info('checkout_repos target directory %s does not exist', target)
             mkdir_p(os.path.dirname(target))
-            self.exec_command(['git', 'clone', source, target])
+            self.exec_command(['git', 'clone', quiet_arg, source, target])
             if branch is not None:
-                self.exec_command(['cd', target, '&&', 'git', 'checkout', branch])
+                self.exec_command(['cd', target, '&&', 'git', 'checkout', quiet_arg, branch])
         elif self.exec_command(['cd', target, '&&', 'git', 'status']) != 0:
             raise UserWarning('%s exists and is not a git repository', target)
         else:
@@ -660,21 +671,27 @@ class RemoteHost(Host):
                      stderr=None,
                      get_pty=False,
                      max_time_ms=None,
-                     no_output_timeout_ms=None):
+                     no_output_timeout_ms=None,
+                     quiet=False):
         """
         Execute the argv command on the remote host and log the output.
 
         For parameters/returns, see :method: `Host.exec_command`.
         :raises: HostException for timeouts and to wrap paramiko.SSHException
         """
+        if quiet:
+            logger = ERROR_ONLY
+        else:
+            logger = LOG
+
         # pylint: disable=too-many-branches
         if not argv or not isinstance(argv, (list, basestring)):
             raise ValueError("Argument must be a nonempty list or string.")
 
         if (max_time_ms is not None and no_output_timeout_ms is not None
                 and no_output_timeout_ms > max_time_ms):
-            LOG.warn("Can't wait %s ms for output when max time is %s ms", no_output_timeout_ms,
-                     max_time_ms)
+            logger.warn("Can't wait %s ms for output when max time is %s ms", no_output_timeout_ms,
+                        max_time_ms)
 
         if stdout is None:
             stdout = INFO_ADAPTER
@@ -686,7 +703,7 @@ class RemoteHost(Host):
         else:
             command = argv
 
-        LOG.info('[%s@%s]$ %s', self.user, self.host, command)
+        logger.info('[%s@%s]$ %s', self.user, self.host, command)
 
         # scoping
         ssh_stdout, ssh_stderr = None, None
@@ -707,7 +724,7 @@ class RemoteHost(Host):
             close_safely(ssh_stderr)
 
         if exit_status != 0:
-            LOG.warn('%s \'%s\': Failed with exit status %s', self.alias, command, exit_status)
+            logger.warn('%s \'%s\': Failed with exit status %s', self.alias, command, exit_status)
         return exit_status
 
     # pylint: disable=no-self-use
@@ -986,14 +1003,20 @@ class LocalHost(Host):
                      stderr=None,
                      get_pty=False,
                      max_time_ms=None,
-                     no_output_timeout_ms=None):
+                     no_output_timeout_ms=None,
+                     quiet=False):
         """
         Execute the command on the local host and log the output.
 
         For parameters/returns, see :method: `Host.exec_command`.
         """
+        if quiet:
+            logger = ERROR_ONLY
+        else:
+            logger = LOG
+
         if no_output_timeout_ms is not None:
-            LOG.error("no_output_timeout_ms %s not supported on LocalHost", no_output_timeout_ms)
+            logger.error("no_output_timeout_ms %s not supported on LocalHost", no_output_timeout_ms)
         if not argv or not isinstance(argv, (list, basestring)):
             raise ValueError("Argument must be a nonempty list or string.")
         if stdout is None:
@@ -1006,7 +1029,7 @@ class LocalHost(Host):
             command = ' '.join(argv)
 
         start = datetime.now()
-        LOG.info('[localhost]$ %s', command)
+        logger.info('[localhost]$ %s', command)
         proc = subprocess.Popen(
             ['bash', '-c', command],
             stdout=subprocess.PIPE,
@@ -1016,11 +1039,12 @@ class LocalHost(Host):
         if _stream_proc_logs(proc, stdout, stderr, is_timed_out):
             exit_status = proc.returncode
             if exit_status != 0:
-                LOG.warn('%s \'%s\': Failed with exit status %s', self.alias, command, exit_status)
+                logger.warn('%s \'%s\': Failed with exit status %s', self.alias, command,
+                            exit_status)
         else:
             exit_status = 1
-            LOG.warn('%s \'%s\': Timeout after %f seconds with exit status %s', self.alias, command,
-                     (datetime.now() - start).total_seconds(), exit_status)
+            logger.warn('%s \'%s\': Timeout after %f seconds with exit status %s', self.alias,
+                        command, (datetime.now() - start).total_seconds(), exit_status)
         return exit_status
 
     def create_file(self, remote_path, file_contents):

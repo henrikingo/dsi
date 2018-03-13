@@ -14,10 +14,14 @@ def setup_logging(verbose, filename=None):
     root_logger = logging.getLogger()
     root_logger.setLevel(loglevel)
     root_logger.addHandler(handler)
-    # we don't want to see info from paramiko or boto3
+
+    # The following sets the minimum level that we will see for the given component. So we will
+    # only see warnings and higher for paramiko, boto3 and botocore. We will only see errors / fatal
+    # / critical log messages for /dev/null
     logging.getLogger('paramiko').setLevel(logging.WARNING)
     logging.getLogger('boto3').setLevel(logging.WARNING)
     logging.getLogger('botocore').setLevel(logging.WARNING)
+    logging.getLogger('error_only').setLevel(logging.ERROR)
 
 
 class IOLogAdapter(StringIO):

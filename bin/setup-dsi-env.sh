@@ -9,8 +9,8 @@ export DSI_PATH=${DSI_PATH:-.}
 mkdir terraform
 
 cd terraform
-curl  -O --retry 10 https://releases.hashicorp.com/terraform/0.10.4/terraform_0.10.4_linux_amd64.zip
-unzip terraform_0.10.4_linux_amd64.zip
+curl  -O --retry 10 -fsS https://releases.hashicorp.com/terraform/0.10.4/terraform_0.10.4_linux_amd64.zip
+unzip -q terraform_0.10.4_linux_amd64.zip
 cd ..
 
 cp terraform/terraform work
