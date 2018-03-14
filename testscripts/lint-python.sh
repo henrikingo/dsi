@@ -24,6 +24,7 @@ test_paths=(
     bin/tests
     tests
     tests/test_evergreen
+    testscripts
 )
 
 run_pylint() {

@@ -3,7 +3,6 @@
 import glob
 import json
 import os
-import sys
 import unittest
 
 class TestJsonFiles(unittest.TestCase):
