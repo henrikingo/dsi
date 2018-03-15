@@ -1,4 +1,19 @@
 {
+    "linux-3-node-replSet":{
+        "secondary_performance_MMAPv1":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "Primary_size_10K_count_1M":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8410"
+                    ]
+                }
+            }
+        }
+    },
     "linux-mmap-repl":{
         "insert":{
             "ndays":{},
