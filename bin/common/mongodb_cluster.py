@@ -88,6 +88,17 @@ class MongoCluster(object):
         """
         raise NotImplementedError()
 
+    def add_default_users(self):
+        """
+        Add the default users.
+
+        Required for authentication to work properly. Assumes that the cluster is already up and
+        running. It must connect to the appropriate node before authentication is enabled. Once the
+        users are added, the cluster is rebooted with authentication enabled and any connections
+        from there on out must use the authentication string.
+        """
+        mongodb_setup_helpers.add_user(self, self.config)
+
     def __str__(self):
         """ String describing the cluster """
         raise NotImplementedError()
@@ -282,7 +293,7 @@ class MongoNode(MongoCluster):
         config_contents = yaml.dump(self.mongo_config_file, default_flow_style=False)
         self.host.create_file(remote_file_name, config_contents)
         self.host.run(['cat', remote_file_name])
-        if auth_enabled and self.mongo_program != 'mongos':
+        if auth_enabled:
             mongodb_args = ' --clusterAuthMode x509'
         else:
             mongodb_args = ''
@@ -657,11 +668,11 @@ class ShardedCluster(MongoCluster):
         js_string = '''
             db = db.getSiblingDB("config");
             i = 0;
-            while (db.shards.count() < {0} && i < 10) {{
-                print ("Waiting for mongos {1} to see {0} shards");
+            while (db.shards.find().itcount() < {0} && i < 10) {{
+                print ("Waiting for mongos {1} to see {0} shards attempt= " + i);
                 sleep(1000);
                 i += 1; }}
-            assert (db.shards.count() == {0}) '''
+            assert (db.shards.find().itcount() == {0}) '''
         for mongos in self.mongoses:
             if not mongos.run_mongo_shell(js_string.format(num_shards, mongos.public_ip)):
                 LOG.error("Mongos %s does not see right number of shards at end of wait_until_up",
@@ -744,6 +755,17 @@ class ShardedCluster(MongoCluster):
         :return: True if the mongo shell exits successfully
         """
         return self.mongoses[0].run_mongo_shell(js_string, max_time_ms)
+
+    def add_default_users(self):
+        """
+        See :method:`MongoCluster.add_default_user`.
+        On a sharded cluster we must add the default user to the config servers and each of the
+        shards, in addition to the mongos.
+        """
+        super(ShardedCluster, self).add_default_users()
+        self.config_svr.add_default_users()
+        for shard in self.shards:
+            shard.add_default_users()
 
     def shutdown(self, max_time_ms, auth_enabled=None):
         """Shutdown the mongodb cluster gracefully.

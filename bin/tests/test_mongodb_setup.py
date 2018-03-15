@@ -238,9 +238,9 @@ class TestMongodbSetup(unittest.TestCase):
         """ Test _start with auth enabled for is_restart=False """
         self.config['bootstrap']['authentication'] = 'enabled'
         setup = mongodb_setup.MongodbSetup(config=self.config)
-        mock_add_default_user = mock.MagicMock(name='default_user')
+        mock_add_default_users = mock.MagicMock(name='add_default_users')
         mock_shutdown = mock.MagicMock(name='shutdown')
-        setup.add_default_user = mock_add_default_user
+        setup.add_default_users = mock_add_default_users
         setup.shutdown = mock_shutdown
         with mock.patch('mongodb_setup.run_threads') as mock_run_threads,\
              mock.patch('mongodb_setup.partial') as mock_partial:
@@ -264,15 +264,15 @@ class TestMongodbSetup(unittest.TestCase):
                     restart_clean_logs=False,
                     enable_auth=True)
             ])
-        mock_add_default_user.assert_called()
+        mock_add_default_users.assert_called_once()
 
     def test__start_with_auth2(self):
         """ Test _start with auth enabled for is_restart=True, and clean_db_dir=True"""
         self.config['bootstrap']['authentication'] = 'enabled'
         setup = mongodb_setup.MongodbSetup(config=self.config)
-        mock_add_default_user = mock.MagicMock(name='default_user')
+        mock_add_default_users = mock.MagicMock(name='add_default_users')
         mock_shutdown = mock.MagicMock(name='shutdown')
-        setup.add_default_user = mock_add_default_user
+        setup.add_default_users = mock_add_default_users
         setup.shutdown = mock_shutdown
         with mock.patch('mongodb_setup.run_threads') as mock_run_threads,\
              mock.patch('mongodb_setup.partial') as mock_partial:
@@ -298,15 +298,15 @@ class TestMongodbSetup(unittest.TestCase):
                     restart_clean_logs=False,
                     enable_auth=True)
             ])
-        mock_add_default_user.assert_called()
+        mock_add_default_users.assert_called_once()
 
     def test__start_with_auth3(self):
         """ Test _start with auth enabled for is_restart=True and clean_db_dir=False."""
         self.config['bootstrap']['authentication'] = 'enabled'
         setup = mongodb_setup.MongodbSetup(config=self.config)
-        mock_add_default_user = mock.MagicMock(name='default_user')
+        mock_add_default_users = mock.MagicMock(name='add_default_users')
         mock_shutdown = mock.MagicMock(name='shutdown')
-        setup.add_default_user = mock_add_default_user
+        setup.add_default_users = mock_add_default_users
         setup.shutdown = mock_shutdown
         with mock.patch('mongodb_setup.run_threads') as mock_run_threads, \
              mock.patch('mongodb_setup.partial') as mock_partial:
@@ -325,7 +325,19 @@ class TestMongodbSetup(unittest.TestCase):
                     restart_clean_logs=True,
                     enable_auth=True)
             ])
-        mock_add_default_user.assert_not_called()
+        mock_add_default_users.assert_not_called()
+
+    def test_add_default_users(self):
+        """
+        Test MongodbSetup.add_default_users.
+        """
+        setup = mongodb_setup.MongodbSetup(config=self.config)
+        mock_cluster1 = mock.MagicMock(name='cluster1')
+        mock_cluster2 = mock.MagicMock(name='cluster2')
+        setup.clusters = [mock_cluster1, mock_cluster2]
+        setup.add_default_users()
+        for cluster in setup.clusters:
+            cluster.add_default_users.assert_called_once()
 
     def test_shutdown(self):
         """Test MongoDbSetup.shutdown """

@@ -50,9 +50,7 @@ mongodb_setup:
   clean_db_dir: true
   mongodb_binary_archive: ${bootstrap.mongodb_binary_archive}
   mongod_config_file:  # Note these defaults can be overridden by user, but not unset.
-    net:
-      port: 27017
-      bindIp: 0.0.0.0
+    net: ${mongodb_setup.authentication.${bootstrap.authentication}.net}
     processManagement:
       fork: true
     replication:
@@ -67,9 +65,7 @@ mongodb_setup:
       path: data/logs/mongod.log
 
   mongos_config_file:
-    net:
-      port: 27017
-      bindIp: 0.0.0.0
+    net: ${mongodb_setup.authentication.${bootstrap.authentication}.net}
     processManagement:
       fork: true
     setParameter:
@@ -83,9 +79,7 @@ mongodb_setup:
       chainingAllowed: false
 
   configsvr_config_file:
-    net:
-      port: 27017
-      bindIp: 0.0.0.0
+    net: ${mongodb_setup.authentication.${bootstrap.authentication}.net}
     processManagement:
       fork: true
     setParameter:

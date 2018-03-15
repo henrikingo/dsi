@@ -3,7 +3,6 @@ journal_dir: /media/ebs2/journal
 mongod_config_file:
   storage:
     engine: ${bootstrap.storageEngine}
-  net: ${mongodb_setup.authentication.${bootstrap.authentication}.net}
 
 topology:
   - cluster_type: standalone

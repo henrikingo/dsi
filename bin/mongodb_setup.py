@@ -9,7 +9,6 @@ from functools import partial
 import logging
 
 import argparse
-import jinja2
 
 import common.host
 from common.download_mongodb import DownloadMongodb
@@ -43,6 +42,13 @@ class MongodbSetup(object):
         for topology in self.config['mongodb_setup']['topology']:
             self.clusters.append(common.mongodb_cluster.create_cluster(topology, self.config))
 
+    def add_default_users(self):
+        """
+        Call MongoCluster.add_default_users() on each cluster.
+        """
+        for cluster in self.clusters:
+            cluster.add_default_users()
+
     def start(self):
         """Start all clusters for the first time.
            On the first start, we will just kill hard any mongod processes as quickly as
@@ -64,30 +70,6 @@ class MongodbSetup(object):
                                           self.config, 'pre_cluster_start')
 
         return self._start()
-
-    def add_default_user(self):
-        """Add the default user.
-
-        Required for authentication to work properly. Assumes that the cluster is already up and
-        running. It must connect to the appropriate node through the local host, using the local
-        host exception to add the user. Any future connections to the cluster must use the
-        authentication string.
-
-        """
-
-        script_template = jinja2.Template('''
-            db.getSiblingDB("admin").createUser(
-              {
-                user: {{user|tojson}},
-                pwd: {{password|tojson}},
-                roles: [ { role: "root", db: "admin" } ]
-              });''')
-
-        add_user_script = script_template.render(
-            user=self.config['mongodb_setup']['authentication']['enabled']['username'],
-            password=self.config['mongodb_setup']['authentication']['enabled']['password'])
-        for cluster in self.clusters:
-            cluster.run_mongo_shell(add_user_script)
 
     def restart(self, clean_db_dir=None, clean_logs=None):
         """
@@ -120,8 +102,8 @@ class MongodbSetup(object):
             LOG.info("Auth configured. Starting Cluster without Auth first")
             self._start_auth_explicit(
                 is_restart, restart_clean_db_dir, restart_clean_logs, enable_auth=False)
-            LOG.info("Adding default user for all clusters")
-            self.add_default_user()
+            LOG.info("Adding default users for all clusters")
+            self.add_default_users()
             self.shutdown(self.shutdown_ms)
             LOG.info("Restarting MongoDB Clusters with authentication enabled")
 

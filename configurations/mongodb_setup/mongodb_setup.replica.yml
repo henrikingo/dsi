@@ -5,7 +5,6 @@ mongod_config_file:
     engine: ${bootstrap.storageEngine}
   replication:
     replSetName: rs0
-  net: ${mongodb_setup.authentication.${bootstrap.authentication}.net}
 
 topology:
   - cluster_type: replset

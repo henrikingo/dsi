@@ -4,7 +4,7 @@ import os
 import os.path
 import unittest
 
-import mock
+from mock import MagicMock, mock
 
 import common.mongodb_cluster
 import common.mongodb_setup_helpers
@@ -459,6 +459,15 @@ class TestMongoNode(unittest.TestCase):
         calls = [mock.call(signal_number=15, max_time_ms=2), mock.call()]
         self.mongo_node.host.kill_mongo_procs.assert_has_calls(calls)
 
+    def test_add_default_users(self):
+        """
+        Test that add_default_users adds users on the correct clusters for a mongo node.
+        """
+        mock_add_user = MagicMock(name='add_user')
+        common.mongodb_cluster.mongodb_setup_helpers.add_user = mock_add_user
+        self.mongo_node.add_default_users()
+        mock_add_user.assert_called_once_with(self.mongo_node, self.mongo_node.config)
+
 
 class TestReplSet(unittest.TestCase):
     """ReplSet tests"""
@@ -555,6 +564,15 @@ class TestReplSet(unittest.TestCase):
         self.assertEquals(replset.rs_conf_members[2]['priority'], 3)
         self.assertEquals(replset.rs_conf_members[3]['priority'], 5)
 
+    def test_add_default_users(self):
+        """
+        Test that add_default_users adds users on the correct clusters a replset.
+        """
+        mock_add_user = MagicMock(name='add_user')
+        common.mongodb_cluster.mongodb_setup_helpers.add_user = mock_add_user
+        self.replset.add_default_users()
+        mock_add_user.assert_called_once_with(self.replset, self.replset.config)
+
 
 class TestShardedCluster(unittest.TestCase):
     """ReplSet tests"""
@@ -622,6 +640,21 @@ class TestShardedCluster(unittest.TestCase):
                     mock.call(mock.ANY, 2),
                 ], any_order=True)
             self.cluster.config_svr.destroy.assert_called_once_with(2)
+
+    def test_add_default_users(self):
+        """
+        Test that add_default_users adds users on the correct clusters for a sharded cluster.
+        """
+        mock_add_user = MagicMock(name='add_user')
+        mock_add_default_users = MagicMock('add_default_users')
+        common.mongodb_cluster.mongodb_setup_helpers.add_user = mock_add_user
+        common.mongodb_cluster.add_default_users = mock_add_default_users
+        self.cluster.add_default_users()
+        add_user_calls = [mock.call(self.cluster, self.cluster.config)]
+        add_default_users_calls = [mock.call(self.cluster.config_svr, self.cluster.config)] + \
+                            [mock.call(shard, self.cluster.config) for shard in self.cluster.shards]
+        mock_add_user.assert_has_calls(add_user_calls)
+        mock_add_default_users(add_default_users_calls)
 
 
 if __name__ == '__main__':

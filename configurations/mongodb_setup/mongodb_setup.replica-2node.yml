@@ -30,7 +30,7 @@ meta:
   is_replset: true
   secondaries: 1  # Only 1 secondary at start
   mongodb_setup: replica-2node
-  monogdb_url: ${mongodb_setup.authentication.${bootstrap.authentication}.mongodb_url}
+  mongodb_url: ${mongodb_setup.authentication.${bootstrap.authentication}.mongodb_url}
 
 # Hosts to run correctness tests on.
 # It is expected that the second standalone cluster will be part of the replica set at the end of

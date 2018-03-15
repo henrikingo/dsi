@@ -4,6 +4,8 @@ Helper functions related to mongodb_setup.
 
 from collections import namedtuple
 
+import jinja2
+
 from config import copy_obj
 
 MongoDBAuthSettings = namedtuple('MongoDBAuthSettings', ['mongo_user', 'mongo_password'])
@@ -39,6 +41,28 @@ def mongodb_auth_settings(config):
         return None
     return MongoDBAuthSettings(config['mongodb_setup']['authentication']['enabled']['username'],
                                config['mongodb_setup']['authentication']['enabled']['password'])
+
+
+def add_user(cluster, config):
+    """
+    Database command to add a root user to the given cluster. The username and password of the user
+    are found in the config file.
+
+    :param MongoCluster cluster: The cluster to which the user will be added.
+    """
+
+    script_template = jinja2.Template('''
+        db.getSiblingDB("admin").createUser(
+          {
+            user: {{user|tojson}},
+            pwd: {{password|tojson}},
+            roles: [ { role: "root", db: "admin" } ]
+          });''')
+
+    add_user_script = script_template.render(
+        user=config['mongodb_setup']['authentication']['enabled']['username'],
+        password=config['mongodb_setup']['authentication']['enabled']['password'])
+    cluster.run_mongo_shell(add_user_script)
 
 
 def merge_dicts(base, override):
