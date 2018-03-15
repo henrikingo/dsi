@@ -7,6 +7,8 @@ from dateutil import parser as date_parser
 
 import readers
 import rules
+from nose.tools import nottest
+
 from tests import test_utils
 import util
 
@@ -25,6 +27,15 @@ class TestResourceRules(unittest.TestCase):
         self.single_chunk_3node = self._first_chunk(self.path_ftdc_3node_repl)
         self.times_3node = self.single_chunk_3node[rules.FTDC_KEYS['time']]
         self.members_3node = ['0', '1', '2']
+
+        self.times_1node = [self.single_chunk_3node[rules.FTDC_KEYS['time']][0]]
+        length = len(self.times_1node)
+
+        self.single_chunk_1node = {
+            key: self.single_chunk_3node[key][0:length]
+            for key in self.single_chunk_3node
+        }
+        self.members_1node = ['0']
 
         path_ftdc_standalone = test_utils.fixture_file_path('core_workloads_wt.ftdc.metrics')
         self.single_chunk_standalone = self._first_chunk(path_ftdc_standalone)
@@ -161,25 +172,163 @@ class TestResourceRules(unittest.TestCase):
         expected = {}
         self.assertEqual(observed, expected)
 
-    def test_max_connections_fail(self):
-        """Test expected failure for current # connections above our specified upper bound
+    @nottest
+    def helper_test_max_connections_equal(self,
+                                          chunk,
+                                          times,
+                                          max_thread_level,
+                                          repl_member_list,
+                                          current_connections=42,
+                                          expected=None):
+        """Test expected success for current # connections below our specified upper bound: BF-8357
         """
-        max_thread_level = -13
-        observed = rules.max_connections(self.single_chunk_3node, self.times_3node,
-                                         max_thread_level, self.members_3node)
-        expected = {
-            'times': self.times_3node,
-            'compared_values': [(3, ), (3, )],
-            'labels': ('number of current connections', ),
-            'additional': {
-                'max thread level for this task': max_thread_level,
-                'connections between members? (4 * N)': 12,
-                'connections to MC and shell': 2,
-                'fudge_factor': 20,
-                'rule': '# connections <= (2 * max thread level + 2 + 12 + 20)'
-            }
-        }
+        if expected is None:
+            expected = {}
+        key = rules.FTDC_KEYS['curr_connections']
+        length = len(chunk[key])
+        chunk[key] = [current_connections] * length
+        observed = rules.max_connections(chunk, times, max_thread_level, repl_member_list)
         self.assertEqual(observed, expected)
+
+    def test_max_connections_lte(self):
+        """Test expected success for current # connections less than or equal to specified upper
+        bound: BF-8357
+        """
+        max_thread_level = 8
+        self.helper_test_max_connections_equal(
+            self.single_chunk_1node,
+            self.times_1node,
+            max_thread_level,
+            self.members_1node,
+            current_connections=41)
+        self.helper_test_max_connections_equal(self.single_chunk_1node, self.times_1node,
+                                               max_thread_level, self.members_1node)
+
+    def test_max_connections_greater(self):
+        """Test expected success for current # connections above our specified upper bound: BF-8357
+        """
+        max_thread_level = 8
+        self.helper_test_max_connections_equal(
+            self.single_chunk_1node,
+            self.times_1node,
+            max_thread_level,
+            self.members_1node,
+            current_connections=43,
+            expected={
+                'times': self.times_1node,
+                'compared_values': [(43, )],
+                'labels': ('number of current connections', ),
+                'additional': {
+                    'max thread level for this task': max_thread_level,
+                    'connections between members? (4 * N)': 4,
+                    'connections to MC and shell': 2,
+                    'fudge_factor': 20,
+                    'rule': '# connections <= (2 * max thread level + 2 + 4 + 20)'
+                }
+            })
+
+    # fudge factor behavior changes between 20 and 21 threads. lte 20 the fudge factor is 20,
+    # above this value the fudge factor is 1.75 * max thread level.
+    # PERF-1389 should fix this by identifying the tests (change stream and probably
+    # snapshot_reads) with other source of connections (e.g. listener threads) and passing this
+    # value to the max connections checks
+    def test_max_20_connections_lte(self):
+        """Test expected success for current # connections less than or equal to specified upper
+        bound: BF-8357
+        """
+        max_thread_level = 20
+        self.helper_test_max_connections_equal(
+            self.single_chunk_1node,
+            self.times_1node,
+            max_thread_level,
+            self.members_1node,
+            current_connections=66)
+        self.helper_test_max_connections_equal(self.single_chunk_1node, self.times_1node,
+                                               max_thread_level, self.members_1node)
+
+    def test_max_20_connections_greater(self):
+        """Test expected success for current # connections above our specified upper bound: BF-8357
+        """
+        max_thread_level = 20
+        self.helper_test_max_connections_equal(
+            self.single_chunk_1node,
+            self.times_1node,
+            max_thread_level,
+            self.members_1node,
+            current_connections=67,
+            expected={
+                'times': self.times_1node,
+                'compared_values': [(67, )],
+                'labels': ('number of current connections', ),
+                'additional': {
+                    'max thread level for this task': max_thread_level,
+                    'connections between members? (4 * N)': 4,
+                    'connections to MC and shell': 2,
+                    'fudge_factor': 20,
+                    'rule': '# connections <= (2 * max thread level + 2 + 4 + 20)'
+                }
+            })
+
+    def test_max_21_connections_lte(self):
+        """Test expected success for current # connections less than or equal to specified upper
+        bound: BF-8357
+        """
+        max_thread_level = 21
+        self.helper_test_max_connections_equal(
+            self.single_chunk_1node,
+            self.times_1node,
+            max_thread_level,
+            self.members_1node,
+            current_connections=84)
+        self.helper_test_max_connections_equal(self.single_chunk_1node, self.times_1node,
+                                               max_thread_level, self.members_1node)
+
+    def test_max_21_connections_greater(self):
+        """Test expected success for current # connections above our specified upper bound: BF-8357
+        """
+        max_thread_level = 21
+        self.helper_test_max_connections_equal(
+            self.single_chunk_1node,
+            self.times_1node,
+            max_thread_level,
+            self.members_1node,
+            current_connections=85,
+            expected={
+                'times': self.times_1node,
+                'compared_values': [(85, )],
+                'labels': ('number of current connections', ),
+                'additional': {
+                    'max thread level for this task': max_thread_level,
+                    'connections between members? (4 * N)': 4,
+                    'connections to MC and shell': 2,
+                    'fudge_factor': 36,
+                    'rule': '# connections <= (2 * max thread level + 2 + 4 + 36)'
+                }
+            })
+
+    # this test will need to change if PERF-1389 is fixed
+    def test_max_connections_fail(self):
+        """Test expected failure for current # connections well above our specified upper bound
+        """
+        max_thread_level = 60
+        self.helper_test_max_connections_equal(
+            self.single_chunk_3node,
+            self.times_3node,
+            max_thread_level,
+            self.members_3node,
+            current_connections=240,
+            expected={
+                'times': self.times_3node,
+                'compared_values': [(240, ), (240, )],
+                'labels': ('number of current connections', ),
+                'additional': {
+                    'max thread level for this task': max_thread_level,
+                    'connections between members? (4 * N)': 12,
+                    'connections to MC and shell': 2,
+                    'fudge_factor': 105,
+                    'rule': '# connections <= (2 * max thread level + 2 + 12 + 105)'
+                }
+            })
 
     def test_member_state_success(self):
         """Test expected success for members all in 'healthy' states

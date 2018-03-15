@@ -297,7 +297,10 @@ def max_connections(chunk, times, max_thread_level, repl_member_list):
     else:
         upper_bound_factor = 4 * len(repl_member_list)
 
+    # TODO: fix this as part of PERF-1389
     fudge_factor = 20
+    if max_thread_level > fudge_factor:
+        fudge_factor = int(max_thread_level * 1.75)
     failure_times = []
     labels = ('number of current connections', )
     compared_values = []
@@ -314,8 +317,9 @@ def max_connections(chunk, times, max_thread_level, repl_member_list):
             '# connections <= (2 * max thread level + 2 + {0} + {1})'.format(
                 upper_bound_factor, fudge_factor)
     }
+    threshold = (max_thread_level * 2) + 2 + upper_bound_factor + fudge_factor
     for index, num_connections in enumerate(curr_connection_values):
-        if num_connections > (max_thread_level * 2) + 2 + upper_bound_factor:
+        if num_connections > threshold:
             failure_times.append(times[index])
             compared_values.append((num_connections, ))
     return failure_collection(failure_times, compared_values, labels, additional)
