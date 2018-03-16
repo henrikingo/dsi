@@ -479,6 +479,8 @@ class Host(object):
                            script,
                            remote_file_name="script.js",
                            connection_string="localhost:27017",
+                           stdout=None,
+                           stderr=None,
                            max_time_ms=None,
                            quiet=False):
         """
@@ -502,7 +504,8 @@ class Host(object):
                 self.mongodb_auth_settings.mongo_password, '--authenticationDatabase', 'admin'
             ])
         argv.extend([connection_string, remote_file_name])
-        status_code = self.exec_command(argv, max_time_ms=max_time_ms, quiet=quiet)
+        status_code = self.exec_command(
+            argv, stdout=stdout, stderr=stderr, max_time_ms=max_time_ms, quiet=quiet)
         return status_code
 
     def kill_remote_procs(self,

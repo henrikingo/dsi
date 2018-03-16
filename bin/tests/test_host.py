@@ -943,7 +943,8 @@ class HostTestCase(unittest.TestCase):
         status_code = remote_host.exec_mongo_command(test_script, test_file, test_connection_string)
         self.assertTrue(status_code == 0)
         mock_create_file.assert_called_with(test_file, test_script)
-        mock_exec_command.assert_called_with(test_argv, max_time_ms=None, quiet=False)
+        mock_exec_command.assert_called_with(
+            test_argv, stdout=None, stderr=None, max_time_ms=None, quiet=False)
 
     def test_exec_mongo_command_no_auth(self):
         self.helper_exec_mongo_command(None)

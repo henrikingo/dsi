@@ -5,6 +5,8 @@ from functools import partial
 import logging
 import os
 
+import jinja2
+
 from host import make_workload_runner_host, extract_hosts, make_host
 from thread_runner import run_threads
 from utils import mkdir_p
@@ -27,19 +29,40 @@ def jstest_one_host(config, mongo_uri, reports_dir, current_test_id, name):
     :param string current_test_id: The identifier for this test.
     :param string name: The name of the jstest to run.
     Valid names are the keys from SCRIPT_NAMES.
- '''
+    '''
 
     directory = os.path.join(reports_dir, current_test_id, 'db-correctness', name)
     filename = os.path.join(directory, mongo_uri)
     mkdir_p(directory)
     client_host = make_workload_runner_host(config)
-    script = SCRIPT_NAMES[name]
+    script_path = os.path.join(config['test_control']['jstests_dir'], SCRIPT_NAMES[name])
 
     with open(filename, 'wb+', 0) as out:
-        error = client_host.exec_command(
-            'bin/mongo {} {}/{}'.format(mongo_uri, config['test_control']['jstests_dir'], script),
-            stdout=out,
-            stderr=out)
+        if name == 'db-hash-check' and config['bootstrap']['authentication'] == 'enabled':
+            enabled = config['mongodb_setup']['authentication']['enabled']
+            script_template = jinja2.Template('''
+                TestData = new Object();
+                TestData.authMechanism = "SCRAM-SHA-1";
+                TestData.auth = true;
+                TestData.keyFile = {{key_file|tojson}};
+                TestData.authUser = {{user|tojson}};
+                TestData.keyFileData = {{password|tojson}};
+                load({{jstests_script_file|tojson}});
+                ''')
+            jstests_script = script_template.render(
+                key_file=enabled['net']['ssl']['PEMKeyFile'],
+                user=enabled['username'],
+                password=enabled['password'],
+                jstests_script_file=script_path)
+            error = client_host.exec_mongo_command(
+                script=jstests_script,
+                remote_file_name='jstests_script.js',
+                connection_string=mongo_uri,
+                stdout=out,
+                stderr=out)
+        else:
+            error = client_host.exec_command(
+                'bin/mongo {} {}'.format(mongo_uri, script_path), stdout=out, stderr=out)
         if error:
             # The return code of the script call is significant. If it is non-zero we put 1 at the
             # end of the file to indicate failure. The analysis script rules.py checks the number of
