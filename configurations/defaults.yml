@@ -194,7 +194,7 @@ mongodb_setup:
       net:
         port: 27017
         bindIp: 0.0.0.0
-      mongodb_url: mongodb://${mongodb_setup.meta.hosts}/admin
+      mongodb_url: mongodb://${mongodb_setup.meta.hosts}/admin?ssl=false
       # This is just a placeholder for pre_cluster_start when we are not using SSL.
       pre_cluster_start:
         - on_workload_client:
