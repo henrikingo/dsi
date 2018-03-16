@@ -19,6 +19,7 @@
 # you have https:// in your link, you need to remove the leading
 # characters
 mongod_links:
+  3.4.13: perf-3.4/performance_3.4_fbdef2ccc53e0fcc9afb570063633d992b2aae42/fbdef2ccc53e0fcc9afb570063633d992b2aae42/mongod-performance_3.4_fbdef2ccc53e0fcc9afb570063633d992b2aae42
   3.4.9: perf-3.4/performance_3.4_876ebee8c7dd0e2d992f36a848ff4dc50ee6603e/876ebee8c7dd0e2d992f36a848ff4dc50ee6603e/mongod-performance_3.4_876ebee8c7dd0e2d992f36a848ff4dc50ee6603e
   3.4.2: perf-3.4/performance_3.4_3f76e40c105fc223b3e5aac3e20dcd026b83b38b/3f76e40c105fc223b3e5aac3e20dcd026b83b38b/mongod-performance_3.4_3f76e40c105fc223b3e5aac3e20dcd026b83b38b
   3.4.1: perf-3.4/performance_3.4_5e103c4f5583e2566a45d740225dc250baacfbd7/5e103c4f5583e2566a45d740225dc250baacfbd7/mongod-performance_3.4_5e103c4f5583e2566a45d740225dc250baacfbd7
@@ -27,6 +28,7 @@ mongod_links:
   3.2.11: perf-3.2/585147523ff122031e000295/009580ad490190ba33d1c6253ebd8d91808923e4/mongod-585147523ff122031e000295  # Patch build
   3.2.12: perf-3.2/performance_3.2_ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14/ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14/mongod-performance_3.2_ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14
   3.2.17: perf-3.2/performance_3.2_186656d79574f7dfe0831a7e7821292ab380f667/186656d79574f7dfe0831a7e7821292ab380f667/mongod-performance_3.2_186656d79574f7dfe0831a7e7821292ab380f667
+  3.2.19: perf-3.2/performance_3.2_a9f574de6a566a58b24d126b44a56718d181e989/a9f574de6a566a58b24d126b44a56718d181e989/mongod-performance_3.2_a9f574de6a566a58b24d126b44a56718d181e989
   3.0.14: perf-3.0/582526d23ff1227828006b48/08352afcca24bfc145240a0fac9d28b978ab77f3/mongod-582526d23ff1227828006b48
   3.0.15: perf-3.0/performance_3.0_b8ff507269c382bc100fc52f75f48d54cd42ec3b/b8ff507269c382bc100fc52f75f48d54cd42ec3b/mongod-performance_3.0_b8ff507269c382bc100fc52f75f48d54cd42ec3b
 
@@ -43,10 +45,11 @@ mongod_flags:
 
 # These shell versions should be updated to something recent when reused.
 mongo_shells:
-  performance: perf/performance_cea80793198c198fc2819808982ac3d5ef7c1105/cea80793198c198fc2819808982ac3d5ef7c1105/mongo-performance_cea80793198c198fc2819808982ac3d5ef7c1105
-  performance-3.4: perf-3.4/performance_3.4_3dacffb42142b0255e1a0dbb99bb5d946a3ffb45/3dacffb42142b0255e1a0dbb99bb5d946a3ffb45/mongo-performance_3.4_3dacffb42142b0255e1a0dbb99bb5d946a3ffb45
-  performance-3.2: perf-3.2/performance_3.2_0995b9e67328b0478a7b8407000a000ff8854ceb/0995b9e67328b0478a7b8407000a000ff8854ceb/mongo-performance_3.2_0995b9e67328b0478a7b8407000a000ff8854ceb
-  performance-3.0: performance_3.0_e4714d328466884fdbfc6750fa3bde40280cf855/e4714d328466884fdbfc6750fa3bde40280cf855/mongo-performance_3.0_e4714d328466884fdbfc6750fa3bde40280cf855
+  performance: perf/performance_3.6_5d4887d65850f2c1bdb8b2168f348752a1db5015/5d4887d65850f2c1bdb8b2168f348752a1db5015/mongo-performance_3.6_5d4887d65850f2c1bdb8b2168f348752a1db5015
+  performance-3.6: perf/performance_3.6_5d4887d65850f2c1bdb8b2168f348752a1db5015/5d4887d65850f2c1bdb8b2168f348752a1db5015/mongo-performance_3.6_5d4887d65850f2c1bdb8b2168f348752a1db5015
+  performance-3.4: perf-3.4/performance_3.4_4762f668cb23027de1201b5a30f32eac9f35ab60/4762f668cb23027de1201b5a30f32eac9f35ab60/mongo-performance_3.4_4762f668cb23027de1201b5a30f32eac9f35ab60
+  performance-3.2: perf-3.2/performance_3.2_2ecda906b90007568f3ccbbfda06f1bcde689eee/2ecda906b90007568f3ccbbfda06f1bcde689eee/mongo-performance_3.2_2ecda906b90007568f3ccbbfda06f1bcde689eee
+  performance-3.0: perf-3.0/performance_3.0_9606f607a9c556fed25a8025e0945e7f8b60d494/9606f607a9c556fed25a8025e0945e7f8b60d494/mongo-performance_3.0_9606f607a9c556fed25a8025e0945e7f8b60d494
 
 sysperf_mongod_links:
   3.2.12: https://s3.amazonaws.com/mciuploads/dsi-v3.2/sys_perf_3.2_ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14/ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14/linux/mongod-sys_perf_3.2_ef3e1bc78e997f0d9f22f45aeb1d8e3b6ac14a14.tar.gz
@@ -67,6 +70,7 @@ base_projects:
   performance-3.0: performance
   performance-3.2: performance
   performance-3.4: performance
+  performance-3.6: performance
   sys-perf: sys-perf
   sys-perf-3.2: sys-perf
   sys-perf-3.4: sys-perf
