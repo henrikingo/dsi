@@ -1,5 +1,36 @@
 {
     "linux-3-shard":{
+        "agg_query_comparison_bestbuy_WT":{
+            "ndays":{},
+            "reference":{
+                "count_with_type_predicate-noAgg":{
+                    "create_time":"2018-03-05T17:49:18Z",
+                    "end":1520330953.79022,
+                    "max":4.058448308841263,
+                    "name":"count_with_type_predicate-noAgg",
+                    "order":10602,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":4.058448308841263,
+                            "ops_per_sec_values":[
+                                4.058448308841263
+                            ]
+                        }
+                    },
+                    "revision":"72ce569dd87b2eaf9d0a04ccb4c373037fd59fd4",
+                    "start":1520326809.923413,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-8358"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
+            "threshold":{}
+        },
         "mongos_workloads_WT":{
             "ndays":{},
             "reference":{
