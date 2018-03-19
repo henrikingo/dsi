@@ -1,4 +1,37 @@
 {
+    "linux-1-node-replSet":{
+        "industry_benchmarks_WT":{
+            "ndays":{},
+            "reference":{
+                "ycsb_100update":{
+                    "create_time":"2018-03-13T14:05:43Z",
+                    "end":1520982227.776684,
+                    "max":27606.997821807872,
+                    "name":"ycsb_100update",
+                    "order":418,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":27606.997821807872,
+                            "ops_per_sec_values":[
+                                27606.997821807872
+                            ]
+                        }
+                    },
+                    "revision":"5c10f93d5835013c97724efa69f35a7e946e9de4",
+                    "start":1520981501.101057,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-8360"
+                    ],
+                    "workload":"ycsb"
+                }
+            },
+            "threshold":{}
+        }
+    },
     "linux-3-node-replSet":{
         "secondary_performance_MMAPv1":{
             "ndays":{},
