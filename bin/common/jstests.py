@@ -40,17 +40,19 @@ def jstest_one_host(config, mongo_uri, reports_dir, current_test_id, name):
     with open(filename, 'wb+', 0) as out:
         if name == 'db-hash-check' and config['bootstrap']['authentication'] == 'enabled':
             enabled = config['mongodb_setup']['authentication']['enabled']
+            mongo_uri += ' --ssl --sslPEMKeyFile {} --sslPEMKeyPassword {} --sslCAFile {}'.format(
+                enabled['net']['ssl']['PEMKeyFile'], enabled['net']['ssl']['PEMKeyPassword'],
+                enabled['net']['ssl']['CAFile'])
             script_template = jinja2.Template('''
                 TestData = new Object();
-                TestData.authMechanism = "SCRAM-SHA-1";
+                TestData.clusterAuthMode = "x509";
                 TestData.auth = true;
-                TestData.keyFile = {{key_file|tojson}};
+                TestData.keyFile = "dummyKeyFile";
                 TestData.authUser = {{user|tojson}};
                 TestData.keyFileData = {{password|tojson}};
                 load({{jstests_script_file|tojson}});
                 ''')
             jstests_script = script_template.render(
-                key_file=enabled['net']['ssl']['PEMKeyFile'],
                 user=enabled['username'],
                 password=enabled['password'],
                 jstests_script_file=script_path)
