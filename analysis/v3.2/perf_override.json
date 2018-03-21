@@ -1,4 +1,19 @@
 {
+    "linux-3-node-replSet":{
+        "core_workloads_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "mixed_update":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-8487"
+                    ]
+                }
+            }
+        }
+    },
     "linux-mmap-repl":{
         "insert":{
             "ndays":{},
