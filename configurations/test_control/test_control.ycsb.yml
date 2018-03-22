@@ -143,6 +143,12 @@ pre_task:
         # Shard the YCSB cluster if sharding is enabled
         script: |
           if ("${mongodb_setup.meta.is_sharded}" == "True") {
+            // Temporary fix for BF-8489.
+            // If do not sleep before executing sharding commands when auth is enabled, these
+            // commands may fail.
+            if ("${bootstrap.authentication}" == "enabled") {
+              sleep(2000);
+            }
             assert.commandWorked(sh.enableSharding("ycsb"));
             assert.commandWorked(
               sh.shardCollection("ycsb.usertable", {_id: "hashed"}));
