@@ -25744,6 +25744,13 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "Geo.geoJSON.nearSphere.2dsphere.find":{
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
+                    "ticket":[
+                        "BF-8545"
+                    ]
+                },
                 "Geo.geoJSON.nearSphere.2dsphere.findOne":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
