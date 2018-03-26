@@ -9097,8 +9097,8 @@
                     ]
                 },
                 "updatemulti_jfalse":{
-                    "thread_threshold":0.18,
-                    "threshold":0.12,
+                    "thread_threshold":0.275,
+                    "threshold":0.18,
                     "ticket":[
                         "BF-8299"
                     ]
