@@ -1638,27 +1638,30 @@
                     ]
                 },
                 "insert_vector_primary":{
-                    "thread_threshold":0.5,
-                    "threshold":0.35,
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
                     "ticket":[
                         "BF-7147",
-                        "BF-7379"
+                        "BF-7379",
+                        "BF-8571"
                     ]
                 },
                 "insert_vector_secondary_load_phase":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
                     "ticket":[
                         "BF-7147",
-                        "BF-6862"
+                        "BF-6862",
+                        "BF-8571"
                     ]
                 },
                 "insert_vector_secondary_overall":{
-                    "thread_threshold":0.5,
-                    "threshold":0.35,
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
                     "ticket":[
                         "BF-7147",
-                        "BF-7379"
+                        "BF-7379",
+                        "BF-8571"
                     ]
                 },
                 "map_reduce_doc":{
