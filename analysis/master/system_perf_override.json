@@ -1919,6 +1919,41 @@
                         "PERF-723",
                         "BF-5520"
                     ]
+                },
+                "ycsb_100read":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_100update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_50read50update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_95read5update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_load":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
                 }
             }
         },
@@ -2047,6 +2082,41 @@
                     "ticket":[
                         "PERF-723",
                         "BF-5520"
+                    ]
+                },
+                "ycsb_100read":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_100update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_50read50update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_95read5update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_load":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
                     ]
                 }
             }
@@ -4265,11 +4335,39 @@
                         "BF-5520"
                     ]
                 },
-                "ycsb_load":{
-                    "thread_threshold":0.32,
-                    "threshold":0.15,
+                "ycsb_100read":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
                     "ticket":[
-                        "BF-7200"
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_100update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_50read50update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_95read5update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_load":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
                     ]
                 }
             }
@@ -4387,18 +4485,39 @@
                         "BF-5520"
                     ]
                 },
-                "ycsb_50read50update":{
-                    "thread_threshold":0.2076,
-                    "threshold":0.3114,
+                "ycsb_100read":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
                     "ticket":[
-                        "BF-7986"
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_100update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_50read50update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_95read5update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
                     ]
                 },
                 "ycsb_load":{
-                    "thread_threshold":0.32,
-                    "threshold":0.15,
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
                     "ticket":[
-                        "BF-7200"
+                        "BF-8590"
                     ]
                 }
             }
@@ -4464,31 +4583,38 @@
                     ]
                 },
                 "ycsb_50read50update_single_w_majority":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
                     "ticket":[
-                        "BF-7379"
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_50read50update_w_majority":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
                     ]
                 },
                 "ycsb_95read5update_single_w_majority":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
                     "ticket":[
-                        "BF-7430"
+                        "BF-8590"
                     ]
                 },
                 "ycsb_95read5update_w_majority":{
-                    "thread_threshold":0.36,
-                    "threshold":0.25,
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
                     "ticket":[
-                        "BF-7430"
+                        "BF-8590"
                     ]
                 },
                 "ycsb_load":{
-                    "thread_threshold":0.32,
-                    "threshold":0.15,
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
                     "ticket":[
-                        "BF-7200"
+                        "BF-8590"
                     ]
                 }
             }
@@ -4554,31 +4680,38 @@
                     ]
                 },
                 "ycsb_50read50update_single_w_majority":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
                     "ticket":[
-                        "BF-7379"
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_50read50update_w_majority":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
                     ]
                 },
                 "ycsb_95read5update_single_w_majority":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
                     "ticket":[
-                        "BF-7430"
+                        "BF-8590"
                     ]
                 },
                 "ycsb_95read5update_w_majority":{
-                    "thread_threshold":0.36,
-                    "threshold":0.25,
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
                     "ticket":[
-                        "BF-7430"
+                        "BF-8590"
                     ]
                 },
                 "ycsb_load":{
-                    "thread_threshold":0.32,
-                    "threshold":0.15,
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
                     "ticket":[
-                        "BF-7200"
+                        "BF-8590"
                     ]
                 }
             }
@@ -9885,6 +10018,41 @@
                         "PERF-723",
                         "BF-5520"
                     ]
+                },
+                "ycsb_100read":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_100update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_50read50update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_95read5update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_load":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
                 }
             }
         },
@@ -9991,6 +10159,41 @@
                     "ticket":[
                         "PERF-723",
                         "BF-5520"
+                    ]
+                },
+                "ycsb_100read":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_100update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_50read50update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_95read5update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_load":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
                     ]
                 }
             }
@@ -10379,6 +10582,47 @@
                     ]
                 }
             }
+        },
+        "industry_benchmarks_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "ycsb_100read":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_100update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_50read50update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_95read5update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_load":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                }
+            }
         }
     },
     "wtdevelop-3-node-replSet":{
@@ -10429,6 +10673,88 @@
                     ]
                 }
             }
+        },
+        "industry_benchmarks_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "ycsb_100read":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_100update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_50read50update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_95read5update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_load":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                }
+            }
+        },
+        "industry_benchmarks_wmajority_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "ycsb_50read50update_single_w_majority":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_50read50update_w_majority":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_95read5update_single_w_majority":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_95read5update_w_majority":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_load":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                }
+            }
         }
     },
     "wtdevelop-standalone":{
@@ -10476,6 +10802,47 @@
                     "threshold":1.0,
                     "ticket":[
                         "BF-8587"
+                    ]
+                }
+            }
+        },
+        "industry_benchmarks_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "ycsb_100read":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_100update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_50read50update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_95read5update":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
+                    ]
+                },
+                "ycsb_load":{
+                    "thread_threshold":0.9,
+                    "threshold":0.6,
+                    "ticket":[
+                        "BF-8590"
                     ]
                 }
             }
