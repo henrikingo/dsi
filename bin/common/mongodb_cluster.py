@@ -13,7 +13,8 @@ import yaml
 
 # pylint: disable=too-many-instance-attributes
 import mongodb_setup_helpers
-from host import RemoteHost, LocalHost
+from remote_host import RemoteHost
+from local_host import LocalHost
 from config import copy_obj
 from thread_runner import run_threads
 

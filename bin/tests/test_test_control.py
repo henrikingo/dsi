@@ -8,12 +8,11 @@ import os
 import re
 import shutil
 import subprocess
-import sys
 import unittest
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
-
-import host
+import common.host_utils
+from common.remote_host import RemoteHost
+from common.utils import mkdir_p, touch
 from test_control import BackgroundCommand, start_background_tasks
 from test_control import copy_timeseries
 from test_control import EXCEPTION_BEHAVIOR
@@ -28,8 +27,6 @@ from tests import test_utils
 
 from mock import patch, mock_open, Mock, call
 from testfixtures import LogCapture
-
-from common.utils import mkdir_p, touch
 
 
 class RunTestsTestCase(unittest.TestCase):
@@ -169,7 +166,7 @@ class RunTestsTestCase(unittest.TestCase):
         mock_walk.return_value = [
             ('/dirpath', ('dirnames', ), ()),
         ]
-        mock_hosts.return_value = [host.HostInfo('10.0.0.0', 'mongod', 0)]
+        mock_hosts.return_value = [common.host_utils.HostInfo('10.0.0.0', 'mongod', 0)]
 
         copy_timeseries(self.config)
         self.assertFalse(mock_copyfile.called)
@@ -180,7 +177,7 @@ class RunTestsTestCase(unittest.TestCase):
         mock_walk.return_value = [
             ('/dirpath', ('dirnames', ), ('baz', )),
         ]
-        mock_hosts.return_value = [host.HostInfo('10.0.0.0', 'mongod', 0)]
+        mock_hosts.return_value = [common.host_utils.HostInfo('10.0.0.0', 'mongod', 0)]
 
         copy_timeseries(self.config)
         self.assertFalse(mock_copyfile.called)
@@ -192,7 +189,7 @@ class RunTestsTestCase(unittest.TestCase):
             ('/dirpath', ('dirnames', ), ('10.0.0.0--notmatching', )),
             ('/foo/bar', (), ('spam', 'eggs')),
         ]
-        mock_hosts.return_value = [host.HostInfo('10.0.0.0', 'mongod', 0)]
+        mock_hosts.return_value = [common.host_utils.HostInfo('10.0.0.0', 'mongod', 0)]
 
         copy_timeseries(self.config)
         self.assertFalse(mock_copyfile.called)
@@ -203,7 +200,7 @@ class RunTestsTestCase(unittest.TestCase):
         mock_walk.return_value = [
             ('/dirpath', ('dirnames', ), ('matching--10.0.0.0', )),
         ]
-        mock_hosts.return_value = [host.HostInfo('10.0.0.0', 'mongod', 0)]
+        mock_hosts.return_value = [common.host_utils.HostInfo('10.0.0.0', 'mongod', 0)]
 
         copy_timeseries(self.config)
         self.assertTrue(
@@ -219,8 +216,8 @@ class RunTestsTestCase(unittest.TestCase):
             ('/dirpath2', ('dirnames2', ), ('file2--10.0.0.2', )),
         ]
         mock_hosts.return_value = [
-            host.HostInfo('10.0.0.0', 'mongod', 0),
-            host.HostInfo('10.0.0.1', 'mongod', 1)
+            common.host_utils.HostInfo('10.0.0.0', 'mongod', 0),
+            common.host_utils.HostInfo('10.0.0.1', 'mongod', 1)
         ]
 
         copy_timeseries(self.config)
@@ -265,7 +262,7 @@ class RunTestsTestCase(unittest.TestCase):
         self.assertEqual(error_msg, list_errors[0][2])
 
     @patch('paramiko.SSHClient')
-    @patch('common.host.extract_hosts', return_value=(-1, -1))
+    @patch('common.host_utils.extract_hosts', return_value=(-1, -1))
     def help_trace_function(self, mock_function, mock_command_dicts, mock_extract_hosts, mock_ssh):
         """
         Test test_control.print_trace by calling run_pre_post_commands with a 'pre_task' key, with a
@@ -295,8 +292,8 @@ class RunTestsTestCase(unittest.TestCase):
         with LogCapture(level=logging.ERROR) as log_capture:
             # LogCapture captures all log output into the object log_capture. level specifies which
             # log level to detect. logging.ERROR will cause log_capture to only contain logs
-            # outputted with the ERROR level or higher. The patch on common.host.make_host mocks
-            # the function and is called within run_commands:
+            # outputted with the ERROR level or higher. The patch on common.host_factory.make_host
+            # mocks the function and is called within run_commands:
             # (pre_task -> dispatch_commands -> run_host_command -> make_host)
             # The mock_function.side_effect causes it to raise an Exception causing print_trace
             # to log the proper information. mock_function will be called within run_command or
@@ -304,8 +301,12 @@ class RunTestsTestCase(unittest.TestCase):
             # with code 1 on exception when given EXCEPTION_BEHAVIOR.EXIT, so self.assertRaises()
             # catches this. The asserts check if the mock_function, extract_hosts, and make_host
             # were called along with asserting the error code was 1.
-            return_value = host.RemoteHost(None, None, None)
-            with patch('common.host.make_host', return_value=return_value) as mock_make_host:
+            return_value = RemoteHost(None, None, None)
+            # disabling yapf here because pylint and yapf disagree on indentation convention
+            # yapf: disable
+            with patch(
+                'common.host_factory.make_host', return_value=return_value) as mock_make_host:
+                # yapf: enable
                 mock_function.side_effect = Exception("Mock Exception")
                 with self.assertRaises(SystemExit) as exception:
                     run_pre_post_commands('pre_task', mock_command_dicts, mock_config,
@@ -326,7 +327,7 @@ class RunTestsTestCase(unittest.TestCase):
         list_errors = list(log_capture.actual())  # Get actual string held by loc_capture object
         self.assertRegexpMatches(list_errors[0][2], error_pattern)
 
-    @patch('host.RemoteHost.upload_file')
+    @patch('common.remote_host.RemoteHost.upload_file')
     def test_print_trace_upload_file(self, mock_upload_file):
         """ Test test_control.print_trace with exception in upload_file"""
         mock_command_dicts = [{
@@ -342,7 +343,7 @@ class RunTestsTestCase(unittest.TestCase):
         self.help_trace_function(mock_upload_file, mock_command_dicts)
 
     @patch('os.path')
-    @patch('host.RemoteHost.retrieve_path')
+    @patch('common.remote_host.RemoteHost.retrieve_path')
     def test_print_trace_retrieve_path(self, mock_retrieve_path, mock_path):
         """ Test test_control.print_trace with exception in retrieve_path"""
         mock_path.return_value.join.return_value = ""
@@ -359,7 +360,7 @@ class RunTestsTestCase(unittest.TestCase):
         }, {}]
         self.help_trace_function(mock_retrieve_path, mock_command_dicts)
 
-    @patch('host.RemoteHost.create_file')
+    @patch('common.remote_host.RemoteHost.create_file')
     def test_print_trace_create_file(self, mock_create_file):
         """ Test test_control.print_trace with exception in create_file"""
         mock_command_dicts = [{
@@ -373,7 +374,7 @@ class RunTestsTestCase(unittest.TestCase):
         }, {}]
         self.help_trace_function(mock_create_file, mock_command_dicts)
 
-    @patch("host.RemoteHost")
+    @patch("common.remote_host.RemoteHost")
     @patch("os.makedirs")
     def test_background_command_run(self, mock_makedirs, mock_host):
         """ Test BackgroundCommand run"""
@@ -387,7 +388,7 @@ class RunTestsTestCase(unittest.TestCase):
             mock_host.exec_command.assert_called_with(
                 'command', stdout=mock_out, stderr=mock_out, get_pty=True)
 
-    @patch("host.RemoteHost")
+    @patch("common.remote_host.RemoteHost")
     def test_background_command_stop(self, mock_host):
         """ Test BackgroundCommand  stop"""
         subject = BackgroundCommand(mock_host, 'command', 'dirname/basename')
@@ -425,7 +426,7 @@ class RunTestsTestCase(unittest.TestCase):
         """
         Test test_control.run_test with 0 return value from exec_command (success)
         """
-        mock_host = Mock(spec=host.RemoteHost)
+        mock_host = Mock(spec=RemoteHost)
         mock_host.exec_command = Mock(return_value=0)
         mock_make_host.return_value = mock_host
         test = self.config['test_control']['run'][0]
@@ -450,7 +451,7 @@ class RunTestsTestCase(unittest.TestCase):
         Test test_control.run_test with non-zero return value from exec_command (failure)
         """
         # Test with non-zero return value from exec_command
-        mock_host = Mock(spec=host.RemoteHost)
+        mock_host = Mock(spec=RemoteHost)
         mock_host.exec_command = Mock(return_value=1)
         mock_make_host.return_value = mock_host
         test = self.config['test_control']['run'][0]
@@ -467,7 +468,7 @@ class RunTestsTestCase(unittest.TestCase):
         """
         Test test_control.run_test with output files specified
         """
-        mock_host = Mock(spec=host.RemoteHost)
+        mock_host = Mock(spec=RemoteHost)
         mock_host.exec_command = Mock(return_value=0)
         mock_make_host.return_value = mock_host
         test = self.config['test_control']['run'][0]
@@ -490,7 +491,7 @@ class RunTestsTestCase(unittest.TestCase):
         """
         Test test_control.run_test with get_pty=True see PERF-1375
         """
-        mock_host = Mock(spec=host.RemoteHost)
+        mock_host = Mock(spec=RemoteHost)
         mock_host.exec_command = Mock(return_value=0)
         mock_make_host.return_value = mock_host
         test = self.config['test_control']['run'][0]
@@ -508,7 +509,7 @@ class RunTestsTestCase(unittest.TestCase):
         """
         Test test_control.run_test with no output files specified
         """
-        mock_host = Mock(spec=host.RemoteHost)
+        mock_host = Mock(spec=RemoteHost)
         mock_host.exec_command = Mock(return_value=0)
         mock_make_host.return_value = mock_host
         test = self.config['test_control']['run'][1]

@@ -24,8 +24,9 @@ from nose.tools import nottest
 from common.exit_status import write_exit_status, ExitStatus, EXIT_STATUS_OK
 from common.utils import mkdir_p
 from common.config import ConfigDict
-from common.host import extract_hosts, make_host, run_host_command, make_workload_runner_host
-from common.host import setup_ssh_agent
+from common.host_utils import extract_hosts, setup_ssh_agent
+from common.command_runner import run_host_command, make_workload_runner_host
+from common.host_factory import make_host
 from common.host import INFO_ADAPTER
 from common.jstests import run_validate
 import common.log

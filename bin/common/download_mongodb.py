@@ -7,7 +7,8 @@ import re
 from uuid import uuid4
 
 #pylint: disable=too-few-public-methods
-from host import make_host, extract_hosts
+import common.host_factory
+import common.host_utils
 from thread_runner import run_threads
 
 LOG = logging.getLogger(__name__)
@@ -73,8 +74,9 @@ class DownloadMongodb(object):
         #
         # We are flexible / future proof and accept anything that comes with a
         # public_ip.
-        for host_info in extract_hosts('all_hosts', self.config):
-            self.hosts.append(make_host(host_info, self.ssh_user, self.ssh_key_file))
+        for host_info in common.host_utils.extract_hosts('all_hosts', self.config):
+            self.hosts.append(
+                common.host_factory.make_host(host_info, self.ssh_user, self.ssh_key_file))
 
     def download_and_extract(self):
         """Download self.mongodb_binary_archive, extract it, and create some symlinks.

@@ -1,0 +1,258 @@
+"""
+Utilities shared by different types of host objects
+"""
+
+from collections import namedtuple
+from datetime import datetime
+from functools import partial
+import itertools
+import logging
+import select
+import signal
+import socket
+import subprocess
+import os
+
+import paramiko
+
+from common.exit_status import EXIT_STATUS_OK
+from common.log import IOLogAdapter
+
+ONE_SECOND_MILLIS = 1000.0
+ONE_MINUTE_MILLIS = 60 * ONE_SECOND_MILLIS
+TEN_MINUTE_MILLIS = 10 * ONE_MINUTE_MILLIS
+
+HostInfo = namedtuple('HostInfo', ['ip_or_name', 'category', 'offset'])
+
+LOG = logging.getLogger(__name__)
+# This stream only log error or above messages
+ERROR_ONLY = logging.getLogger('error_only')
+
+INFO_ADAPTER = IOLogAdapter(LOG, logging.INFO)
+WARN_ADAPTER = IOLogAdapter(LOG, logging.WARN)
+
+
+class HostException(Exception):
+    """ Raise for exec command timeouts and use it to wraps ssh exceptions. """
+    pass
+
+
+def setup_ssh_agent(config):
+    """
+    Setup the ssh-agent, and update our environment for it.
+
+    :param ConfigDict config: The system configuration
+    """
+    ssh_agent_info = subprocess.check_output(['ssh-agent', '-s'])
+    # This expansion updates our environment by parsing the info from the previous line. It splits
+    # the data into lines, and then for any line of the form "key=value", adds {key: value} to the
+    # environment.
+    os.environ.update(dict([line.split('=') for line in ssh_agent_info.split(';') if '=' in line]))
+    ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+    ssh_key_file = os.path.expanduser(ssh_key_file)
+    subprocess.check_call(['ssh-add', ssh_key_file])
+
+
+# https://stackoverflow.com/questions/23064636/python-subprocess-popen-blocks-with-shell-and-pipe
+def restore_signals():
+    """
+    Restore signals in the child process or the process block forever
+    """
+    signals = ('SIGPIPE', 'SIGXFZ', 'SIGXFSZ')
+    for sig in signals:
+        if hasattr(signal, sig):
+            signal.signal(getattr(signal, sig), signal.SIG_DFL)
+
+
+def close_safely(stream):
+    """
+    Close the stream.
+
+    :param object stream: The stream instance or None
+    """
+    if stream is not None:
+        stream.close()
+
+
+def raise_if_not_ok(status, message):
+    """ raise a HostExceptipn if status is not EXIT_STATUS_OK."""
+    assert isinstance(status, (int, float)), "success must be int or float"
+    if status != EXIT_STATUS_OK:
+        raise HostException(status, message)
+
+
+def raise_if_not_success(success, message):
+    """ raise a HostExceptipn if success is False."""
+    assert isinstance(success, bool), "success must be boolean"
+    if success is False:
+        raise HostException(1, message)
+
+
+def reraise_as_host_exception(exception):
+    """ wrap a exception as a HostException."""
+    if isinstance(exception, subprocess.CalledProcessError):
+        status = exception.returncode  # pylint: disable=no-member
+        message = exception.output  # pylint: disable=no-member
+    else:
+        status = 1
+        message = repr(exception)
+    raise HostException(status, message)
+
+
+def _extract_hosts(key, config):
+    """
+    Extract a list of public IP addresses for hosts based off of the key. Valid keys are mongod,
+    mongos, configsvr, and workload_client.
+
+    :param str key: The key to use (mongod, mongod, ...)
+    :param ConfigDict config: The system configuration
+    :rtype: list of HostInfo objects
+    """
+    if key in config['infrastructure_provisioning']['out']:
+        return [
+            HostInfo(host_info['public_ip'], key, i)
+            for i, host_info in enumerate(config['infrastructure_provisioning']['out'][key])
+        ]
+    return list()
+
+
+def extract_hosts(key, config):
+    """
+    Extract a list of public IP addresses for hosts based off of the key. Valid keys are mongod,
+    mongos, configsvr, workload_client, as well as the helpers all_hosts and all_servers.
+
+    :param ConfigDict config: The system configuration
+    """
+
+    if key == 'localhost':
+        return [HostInfo('localhost', 'localhost', 0)]
+    if key == 'all_servers':
+        return list(
+            itertools.chain.from_iterable(
+                (_extract_hosts(key, config) for key in ['mongod', 'mongos', 'configsvr'])))
+    if key == 'all_hosts':
+        return list(
+            itertools.chain.from_iterable(
+                (_extract_hosts(key, config)
+                 for key in ['mongod', 'mongos', 'configsvr', 'workload_client'])))
+    return _extract_hosts(key, config)
+
+
+def never_timeout():
+    """
+    Function that never times out
+    """
+    return False
+
+
+def check_timed_out(start, max_time_ms):
+    """
+    Check if max time ms has passed.
+
+    :param datetime start: The start time
+    :param max_time_ms: The max allowable time to run for or None for no timeout
+    :type max_time_ms: int, float, None
+    """
+    delta = (datetime.now() - start).total_seconds() * ONE_SECOND_MILLIS
+    return delta > max_time_ms
+
+
+def create_timer(start, max_time_ms):
+    """
+    Create a watchdog timeout function.
+
+    :param datetime start: The start time
+    :param max_time_ms: The time limit in milliseconds for processing this operation, defaults to
+    None (no timeout)
+    :type max_time_ms: int, float, None
+    :rtype: function that returns True when max_time_ms has elapsed
+    """
+    if max_time_ms is None:
+        is_timed_out = never_timeout
+    else:
+        is_timed_out = partial(check_timed_out, start, max_time_ms)
+    return is_timed_out
+
+
+# pylint: disable=too-many-arguments
+def stream_proc_logs(proc, out, err, is_timedout, timeout_s=.5):
+    """
+    Stream proc.stdout and proc.stderr to out and err.
+
+    :param subprocess proc: The process to stream the logs for
+    :param IO out: The proc.stdout stream destination
+    :param IO err: The proc.stderr stream destination
+    :param function is_timedout: Determine if the max allowable amount of time has elapsed
+    :param float timeout_s: Select waits for up to a max of this amount of seconds
+    """
+    try:
+        # Stream standard out
+        while True:
+            if is_timedout():
+                return False
+            ready, _, _ = select.select((proc.stdout, proc.stderr), (), (), timeout_s)
+
+            if proc.stdout in ready:
+                line = proc.stdout.readline()
+                if line:
+                    out.write(line)
+                elif proc.returncode is not None:
+                    # The program has exited, and we have read everything written to stdout
+                    ready.remove(proc.stdout)
+
+            if proc.stderr in ready:
+                line = proc.stderr.readline()
+                if line:
+                    err.write(line)
+                elif proc.returncode is not None:
+                    # The program has exited, and we have read everything written to stderr
+                    ready.remove(proc.stderr)
+
+            if proc.poll() is not None and not ready:
+                break
+    # Closed stream
+    except ValueError:
+        pass
+    return True
+
+
+def stream_lines(source, destination):
+    """
+    Stream lines from source to destination. Silently hand socket.timeouts.
+
+    :param IO source: Reads lines from this stream
+    :param IO destination: Writes lines to this stream
+    """
+    any_lines = False
+    try:
+        for line in source:
+            destination.write(line)
+            any_lines = True
+    except socket.timeout:
+        pass
+    return any_lines
+
+
+def connected_ssh(host, user, pem_file):
+    """
+    Create a connected paramiko ssh client and ftp connection
+    or raise if cannot connect.
+
+    :param host: hostname to connect to
+    :param user: username to use
+    :param pem_file: ssh pem file for connection
+    :return: paramiko (SSHClient, SFTPClient) tuple
+    """
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
+    try:
+        ssh.connect(host, username=user, key_filename=pem_file)
+        ftp = ssh.open_sftp()
+        # Setup authentication forwarding. See
+        # https://stackoverflow.com/questions/23666600/ssh-key-forwarding-using-python-paramiko
+        session = ssh.get_transport().open_session()
+        paramiko.agent.AgentRequestHandler(session)
+    except (paramiko.SSHException, socket.error) as err:
+        LOG.exception('failed to connect to %s@%s', user, host)
+        raise err
+    return ssh, ftp

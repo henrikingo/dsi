@@ -7,7 +7,9 @@ import os
 
 import jinja2
 
-from host import make_workload_runner_host, extract_hosts, make_host
+from command_runner import make_workload_runner_host
+from host_factory import make_host
+from host_utils import extract_hosts
 from thread_runner import run_threads
 from utils import mkdir_p
 

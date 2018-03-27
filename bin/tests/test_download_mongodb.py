@@ -95,7 +95,7 @@ class DownloadMongodbTestCase(unittest.TestCase):
         }
         # self.downloader = None
 
-    @patch('host.RemoteHost')
+    @patch('common.host_factory.RemoteHost')
     def test_basic_use(self, mock_remote_host):
         """
         Init DownloadMongodb with ConfigDict structure with
@@ -116,7 +116,7 @@ class DownloadMongodbTestCase(unittest.TestCase):
         ]
         mock_remote_host.assert_has_calls(calls=calls, any_order=True)
 
-    @patch('download_mongodb.make_host')
+    @patch('download_mongodb.common.host_factory.make_host')
     def test_mongodb_binary(self, mock_make_host):
         """
         Init DownloadMongodb with ConfigDict structure with
@@ -159,7 +159,7 @@ class DownloadMongodbTestCase(unittest.TestCase):
         _test_temp_file(self, temp_file(path=path, sanitize=lambda x: x), "foo.tgz?test=ing")
 
     @patch('download_mongodb.temp_file')
-    @patch('download_mongodb.make_host')
+    @patch('download_mongodb.common.host_factory.make_host')
     def test_remove_temp_file(self, mock_make_host, mock_temp_file):
         """test that mongo_dir and tmp_file removal."""
         # mongodb_binary_archive = self.config['mongodb_setup']['mongodb_binary_archive']

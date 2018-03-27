@@ -107,7 +107,7 @@ class TestMongodbSetup(unittest.TestCase):
     def test_start(self):
         """ test start"""
 
-        @mock.patch('mongodb_setup.common.host.run_host_commands')
+        @mock.patch('mongodb_setup.common.command_runner.run_host_commands')
         def _test_start(mock_run_host_commands, download_status=False, pre_cluster_start=False):
             test_config = copy.deepcopy(self.config)
             if pre_cluster_start:

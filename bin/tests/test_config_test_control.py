@@ -12,7 +12,7 @@ from testfixtures import LogCapture
 import yaml
 
 from common.config import ConfigDict
-import common.host as host
+from common.remote_host import RemoteHost
 import test_control
 
 
@@ -65,7 +65,7 @@ class TestConfigTestControl(unittest.TestCase):
         Test that generate_config_files works with a benchrun workload
         """
         test = self.config['test_control']['run'][0]
-        mock_host = Mock(spec=host.RemoteHost)
+        mock_host = Mock(spec=RemoteHost)
         test_control.generate_config_file(test, '.', mock_host)
         self.assertEqual(
             load_yaml('workloads.yml'), load_yaml('workloads.benchrun.yml.ok', self.artifact_dir),
@@ -78,7 +78,7 @@ class TestConfigTestControl(unittest.TestCase):
         Test that generate_config_files works with a ycsb run
         """
         test = self.config['test_control']['run'][1]
-        mock_host = Mock(spec=host.RemoteHost)
+        mock_host = Mock(spec=RemoteHost)
         test_control.generate_config_file(test, '.', mock_host)
         self.assertEqual(
             load_yaml('workloadEvergreen'), load_yaml('workloadEvergreen.ok', self.artifact_dir),
@@ -93,7 +93,7 @@ class TestConfigTestControl(unittest.TestCase):
         if there is no config file
         """
         test = self.config['test_control']['run'][2]
-        mock_host = Mock(spec=host.RemoteHost)
+        mock_host = Mock(spec=RemoteHost)
         with LogCapture(level=logging.WARNING) as warning:
             test_control.generate_config_file(test, '.', mock_host)
         warning.check(('test_control', 'WARNING', 'No workload config in test control'))

@@ -10,11 +10,11 @@ import logging
 
 import argparse
 
-import common.host
+import common.host_utils
+import common.command_runner
 from common.download_mongodb import DownloadMongodb
 import common.mongodb_setup_helpers
 import common.mongodb_cluster
-from common.host import ONE_MINUTE_MILLIS
 from common.log import setup_logging
 from common.config import ConfigDict
 from common.thread_runner import run_threads
@@ -34,8 +34,8 @@ class MongodbSetup(object):
         self._downloader = None
 
         timeouts = self.config['mongodb_setup'].get('timeouts', {})
-        self.shutdown_ms = timeouts.get('shutdown_ms', 9 * ONE_MINUTE_MILLIS)
-        self.sigterm_ms = timeouts.get('sigterm_ms', ONE_MINUTE_MILLIS)
+        self.shutdown_ms = timeouts.get('shutdown_ms', 9 * common.host_utils.ONE_MINUTE_MILLIS)
+        self.sigterm_ms = timeouts.get('sigterm_ms', common.host_utils.ONE_MINUTE_MILLIS)
 
     def parse_topologies(self):
         """Create cluster for each topology"""
@@ -66,8 +66,8 @@ class MongodbSetup(object):
 
         if 'pre_cluster_start' in self.config['mongodb_setup']:
             LOG.info("Mongodb_setup running pre_cluster_start commands")
-            common.host.run_host_commands(self.config['mongodb_setup']['pre_cluster_start'],
-                                          self.config, 'pre_cluster_start')
+            common.command_runner.run_host_commands(
+                self.config['mongodb_setup']['pre_cluster_start'], self.config, 'pre_cluster_start')
 
         return self._start()
 
