@@ -5211,6 +5211,27 @@
                         "BF-7734"
                     ]
                 },
+                "insert_vector_primary_retry":{
+                    "thread_threshold":1.5,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-8592"
+                    ]
+                },
+                "insert_vector_secondary_load_phase_retry":{
+                    "thread_threshold":1.5,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-8592"
+                    ]
+                },
+                "insert_vector_secondary_overall_retry":{
+                    "thread_threshold":1.5,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-8592"
+                    ]
+                },
                 "mixed_delete_retry":{
                     "thread_threshold":0.36,
                     "threshold":0.25,
@@ -10770,6 +10791,33 @@
                     "threshold":0.6,
                     "ticket":[
                         "BF-8590"
+                    ]
+                }
+            }
+        },
+        "retryable_writes_workloads_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "insert_vector_primary_retry":{
+                    "thread_threshold":1.5,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-8592"
+                    ]
+                },
+                "insert_vector_secondary_load_phase_retry":{
+                    "thread_threshold":1.5,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-8592"
+                    ]
+                },
+                "insert_vector_secondary_overall_retry":{
+                    "thread_threshold":1.5,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-8592"
                     ]
                 }
             }
