@@ -4069,11 +4069,10 @@
                     ]
                 },
                 "insert_ttl":{
-                    "thread_threshold":0.3,
-                    "threshold":0.1,
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
                     "ticket":[
-                        "PERF-738",
-                        "PERF-1157"
+                        "BF-8586"
                     ]
                 },
                 "insert_vector_primary":{
@@ -10642,6 +10641,13 @@
                     "threshold":1.0,
                     "ticket":[
                         "BF-8587"
+                    ]
+                },
+                "insert_ttl":{
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
+                    "ticket":[
+                        "BF-8586"
                     ]
                 },
                 "removemulti_jfalse":{
