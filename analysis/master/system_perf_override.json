@@ -5614,12 +5614,13 @@
                     ]
                 },
                 "Primary_size_1_count_10M":{
-                    "thread_threshold":0.27,
-                    "threshold":0.18,
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
                     "ticket":[
                         "BF-5525",
                         "BF-7430",
-                        "BF-7440"
+                        "BF-7440",
+                        "BF-8632"
                     ]
                 },
                 "Secondary_size_100_count_10M":{
