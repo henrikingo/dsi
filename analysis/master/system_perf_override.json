@@ -11446,6 +11446,27 @@
                         "BF-8587"
                     ]
                 },
+                "insert_vector_primary":{
+                    "thread_threshold":0.375,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-8571"
+                    ]
+                },
+                "insert_vector_secondary_load_phase":{
+                    "thread_threshold":0.375,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-8571"
+                    ]
+                },
+                "insert_vector_secondary_overall":{
+                    "thread_threshold":0.375,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-8571"
+                    ]
+                },
                 "removemulti_jfalse":{
                     "thread_threshold":1.5,
                     "threshold":1.0,
