@@ -1068,7 +1068,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "insert_jtrue":{
@@ -1156,7 +1157,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "removemulti_jtrue":{
@@ -1170,7 +1172,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "updatemulti_jtrue":{
@@ -1756,7 +1759,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "insert_jtrue":{
@@ -1851,7 +1855,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "removemulti_jtrue":{
@@ -1865,7 +1870,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "updatemulti_jtrue":{
@@ -3880,7 +3886,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "insert_jtrue":{
@@ -3964,7 +3971,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "removemulti_jtrue":{
@@ -3978,7 +3986,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "updatemulti_jtrue":{
@@ -4344,7 +4353,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "insert_jtrue":{
@@ -4433,7 +4443,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "removemulti_jtrue":{
@@ -4447,7 +4458,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "updatemulti_jtrue":{
@@ -9800,7 +9812,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "insert_jtrue":{
@@ -9885,7 +9898,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "removemulti_jtrue":{
@@ -9899,7 +9913,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "updatemulti_jtrue":{
@@ -10308,7 +10323,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "insert_jtrue":{
@@ -10377,7 +10393,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "removemulti_jtrue":{
@@ -10391,7 +10408,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "updatemulti_jtrue":{
@@ -11205,8 +11223,8 @@
                     ]
                 },
                 "105_1c_max_latency":{
-                    "thread_threshold":0.375,
-                    "threshold":0.25,
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
                     "ticket":[
                         "BF-8621"
                     ]
@@ -11406,6 +11424,14 @@
                         "BF-7734"
                     ]
                 },
+                "insert_jfalse":{
+                    "thread_threshold":1.5,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-8587",
+                        "BF-8589"
+                    ]
+                },
                 "insert_jtrue":{
                     "thread_threshold":1.5,
                     "threshold":1.0,
@@ -11413,11 +11439,27 @@
                         "BF-8587"
                     ]
                 },
+                "removemulti_jfalse":{
+                    "thread_threshold":1.5,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-8587",
+                        "BF-8589"
+                    ]
+                },
                 "removemulti_jtrue":{
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
                         "BF-8587"
+                    ]
+                },
+                "updatemulti_jfalse":{
+                    "thread_threshold":1.5,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "updatemulti_jtrue":{
@@ -11945,7 +11987,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "insert_jtrue":{
@@ -11966,7 +12009,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "removemulti_jtrue":{
@@ -11980,7 +12024,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "updatemulti_jtrue":{
@@ -12584,7 +12629,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "insert_jtrue":{
@@ -12598,7 +12644,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "removemulti_jtrue":{
@@ -12612,7 +12659,8 @@
                     "thread_threshold":1.5,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-8587"
+                        "BF-8587",
+                        "BF-8589"
                     ]
                 },
                 "updatemulti_jtrue":{
