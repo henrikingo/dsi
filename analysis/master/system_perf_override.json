@@ -11264,6 +11264,13 @@
                         "BF-8621"
                     ]
                 },
+                "1_1c_avg_latency":{
+                    "thread_threshold":1.65,
+                    "threshold":1.1,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
