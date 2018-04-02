@@ -10313,10 +10313,10 @@
                     ]
                 },
                 "index_build":{
-                    "thread_threshold":0.18,
-                    "threshold":0.12,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
-                        "BF-8249"
+                        "BF-5832"
                     ]
                 },
                 "insert_jfalse":{
@@ -12791,6 +12791,13 @@
                     "threshold":1.0,
                     "ticket":[
                         "BF-7734"
+                    ]
+                },
+                "index_build":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-5832"
                     ]
                 },
                 "insert_jfalse":{
