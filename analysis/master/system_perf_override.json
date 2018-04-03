@@ -12576,6 +12576,13 @@
                         "BF-7734"
                     ]
                 },
+                "Primary_size_10K_count_1M":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "BF-8661"
+                    ]
+                },
                 "canary_client-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
