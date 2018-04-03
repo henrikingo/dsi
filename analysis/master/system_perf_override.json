@@ -12103,6 +12103,27 @@
                         "BF-8586"
                     ]
                 },
+                "insert_vector_primary":{
+                    "thread_threshold":0.375,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-8659"
+                    ]
+                },
+                "insert_vector_secondary_load_phase":{
+                    "thread_threshold":0.375,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-8659"
+                    ]
+                },
+                "insert_vector_secondary_overall":{
+                    "thread_threshold":0.375,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-8659"
+                    ]
+                },
                 "mixed_delete":{
                     "thread_threshold":0.45,
                     "threshold":0.3,
