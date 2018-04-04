@@ -7397,6 +7397,13 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "15_lookup_1c_avg_latency":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
