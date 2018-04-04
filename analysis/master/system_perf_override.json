@@ -7723,38 +7723,43 @@
                     ]
                 },
                 "mixed_delete":{
-                    "thread_threshold":0.25,
-                    "threshold":0.15,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
-                        "BF-5125"
+                        "BF-5125",
+                        "BF-8689"
                     ]
                 },
                 "mixed_findOne":{
-                    "thread_threshold":0.25,
-                    "threshold":0.15,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
-                        "BF-5125"
+                        "BF-5125",
+                        "BF-8689"
                     ]
                 },
                 "mixed_insert":{
-                    "thread_threshold":0.25,
-                    "threshold":0.15,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
-                        "BF-5125"
+                        "BF-5125",
+                        "BF-8689"
                     ]
                 },
                 "mixed_total":{
-                    "thread_threshold":0.25,
-                    "threshold":0.15,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
-                        "BF-5125"
+                        "BF-5125",
+                        "BF-8689"
                     ]
                 },
                 "mixed_update":{
-                    "thread_threshold":0.25,
-                    "threshold":0.15,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
-                        "BF-5125"
+                        "BF-5125",
+                        "BF-8689"
                     ]
                 },
                 "moveChunkWithLoad_secondaryThrottle_true":{
