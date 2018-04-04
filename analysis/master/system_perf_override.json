@@ -10382,10 +10382,11 @@
                     ]
                 },
                 "mixed_total":{
-                    "thread_threshold":0.225,
-                    "threshold":0.15,
+                    "thread_threshold":0.375,
+                    "threshold":0.25,
                     "ticket":[
-                        "BF-5125"
+                        "BF-5125",
+                        "BF-8567"
                     ]
                 },
                 "mixed_update":{
