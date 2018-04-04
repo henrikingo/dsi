@@ -7715,10 +7715,11 @@
                     ]
                 },
                 "insert_ttl":{
-                    "thread_threshold":0.2,
-                    "threshold":0.1,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
-                        "BF-6271"
+                        "BF-6271",
+                        "BF-8687"
                     ]
                 },
                 "mixed_delete":{
