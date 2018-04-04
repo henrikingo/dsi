@@ -7722,6 +7722,27 @@
                         "BF-8687"
                     ]
                 },
+                "insert_vector_primary":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-8692"
+                    ]
+                },
+                "insert_vector_secondary_load_phase":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-8692"
+                    ]
+                },
+                "insert_vector_secondary_overall":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-8692"
+                    ]
+                },
                 "map_reduce_doc":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
@@ -7971,6 +7992,27 @@
                     "ticket":[
                         "BF-6272",
                         "BF-8587"
+                    ]
+                },
+                "insert_vector_primary":{
+                    "thread_threshold":0.675,
+                    "threshold":0.45,
+                    "ticket":[
+                        "BF-8692"
+                    ]
+                },
+                "insert_vector_secondary_load_phase":{
+                    "thread_threshold":0.675,
+                    "threshold":0.45,
+                    "ticket":[
+                        "BF-8692"
+                    ]
+                },
+                "insert_vector_secondary_overall":{
+                    "thread_threshold":0.675,
+                    "threshold":0.45,
+                    "ticket":[
+                        "BF-8692"
                     ]
                 },
                 "mixed_delete":{
