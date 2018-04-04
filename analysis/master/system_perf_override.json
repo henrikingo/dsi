@@ -7726,7 +7726,8 @@
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
-                        "BF-8689"
+                        "BF-8689",
+                        "BF-8690"
                     ]
                 },
                 "mixed_delete":{
