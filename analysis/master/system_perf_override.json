@@ -7722,6 +7722,13 @@
                         "BF-8687"
                     ]
                 },
+                "map_reduce_doc":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-8689"
+                    ]
+                },
                 "mixed_delete":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
