@@ -3,6 +3,7 @@
 
 from datetime import datetime
 import logging
+import math
 import os
 import re
 from dateutil import parser as date_parser
@@ -300,7 +301,7 @@ def max_connections(chunk, times, max_thread_level, repl_member_list):
     # TODO: fix this as part of PERF-1389
     fudge_factor = 20
     if max_thread_level > fudge_factor:
-        fudge_factor = int(max_thread_level * 1.75)
+        fudge_factor = int(math.ceil(max_thread_level * 1.8))
     failure_times = []
     labels = ('number of current connections', )
     compared_values = []
