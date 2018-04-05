@@ -521,6 +521,13 @@
                         "BF-8621"
                     ]
                 },
+                "15_lookup_1c_max_latency":{
+                    "thread_threshold":4.5,
+                    "threshold":3.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
                 "1_1c_avg_latency":{
                     "thread_threshold":2.25,
                     "threshold":1.5,
