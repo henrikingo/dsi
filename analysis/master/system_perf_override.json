@@ -13045,7 +13045,33 @@
         },
         "non_sharded_workloads_WT":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "initial_load_capped":{
+                    "create_time":"2018-04-04T14:25:01Z",
+                    "end":1522872871.504005,
+                    "max":34284.016636957815,
+                    "name":"initial_load_capped",
+                    "order":11579,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":34284.016636957815,
+                            "ops_per_sec_values":[
+                                34284.016636957815
+                            ]
+                        }
+                    },
+                    "revision":"cbf3e5344f50e5e84a77e01d8db6e535e1f60c72",
+                    "start":1522871648.210302,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
