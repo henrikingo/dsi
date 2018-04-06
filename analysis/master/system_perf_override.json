@@ -11598,7 +11598,47 @@
         },
         "core_workloads_WT":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "contended_update":{
+                    "create_time":"2018-03-26T22:45:43Z",
+                    "end":1522221529.645364,
+                    "max":18207.20803478066,
+                    "name":"contended_update",
+                    "order":11366,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":3668.490451430587,
+                            "ops_per_sec_values":[
+                                3668.490451430587
+                            ]
+                        },
+                        "32":{
+                            "ops_per_sec":18207.20803478066,
+                            "ops_per_sec_values":[
+                                18207.20803478066
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":18196.80107653607,
+                            "ops_per_sec_values":[
+                                18196.80107653607
+                            ]
+                        }
+                    },
+                    "revision":"152885358a4ecab312c690b2ffee5dfb7c37311a",
+                    "start":1522212553.10387,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "32",
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -12373,7 +12413,47 @@
         },
         "core_workloads_WT":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "contended_update":{
+                    "create_time":"2018-03-26T22:45:43Z",
+                    "end":1522225955.648613,
+                    "max":18168.35737966532,
+                    "name":"contended_update",
+                    "order":11366,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":3640.4114797328853,
+                            "ops_per_sec_values":[
+                                3640.4114797328853
+                            ]
+                        },
+                        "32":{
+                            "ops_per_sec":18168.35737966532,
+                            "ops_per_sec_values":[
+                                18168.35737966532
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":17683.144392333677,
+                            "ops_per_sec_values":[
+                                17683.144392333677
+                            ]
+                        }
+                    },
+                    "revision":"152885358a4ecab312c690b2ffee5dfb7c37311a",
+                    "start":1522215384.291907,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "32",
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -13238,7 +13318,47 @@
         },
         "core_workloads_WT":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "contended_update":{
+                    "create_time":"2018-03-26T22:45:43Z",
+                    "end":1522221047.472646,
+                    "max":28041.924898177436,
+                    "name":"contended_update",
+                    "order":11366,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":4059.2604533236613,
+                            "ops_per_sec_values":[
+                                4059.2604533236613
+                            ]
+                        },
+                        "32":{
+                            "ops_per_sec":26711.47561625835,
+                            "ops_per_sec_values":[
+                                26711.47561625835
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":28041.924898177436,
+                            "ops_per_sec_values":[
+                                28041.924898177436
+                            ]
+                        }
+                    },
+                    "revision":"152885358a4ecab312c690b2ffee5dfb7c37311a",
+                    "start":1522212449.947382,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "32",
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6743"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
