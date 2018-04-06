@@ -3699,6 +3699,45 @@
                     ],
                     "workload":"shell/benchrun"
                 },
+                "insert_ttl":{
+                    "create_time":"2018-04-06T09:00:34Z",
+                    "end":1523014913.078802,
+                    "max":188656.34970270641,
+                    "name":"insert_ttl",
+                    "order":478,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":64051.5491311574,
+                            "ops_per_sec_values":[
+                                64051.5491311574
+                            ]
+                        },
+                        "16":{
+                            "ops_per_sec":171611.0438384885,
+                            "ops_per_sec_values":[
+                                171611.0438384885
+                            ]
+                        },
+                        "32":{
+                            "ops_per_sec":188656.34970270641,
+                            "ops_per_sec_values":[
+                                188656.34970270641
+                            ]
+                        }
+                    },
+                    "revision":"3a8fefae44c0687781a034d3650176d24499f413",
+                    "start":1523007370.906054,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "32",
+                        "16"
+                    ],
+                    "ticket":[
+                        "BF-7729"
+                    ],
+                    "workload":"mongoshell"
+                },
                 "insert_vector_primary":{
                     "create_time":"2017-08-24T20:50:24.213Z",
                     "end":1503684577.0,
