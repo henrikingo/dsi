@@ -26,6 +26,8 @@ process when deploying mongodb.
   variables for their values.
 * Paths (example: ../keys/aws.pem) are relative to a work directory where the user has cd into 
   before executing the DP2.0 modules. These configuration files also reside in that work directory.
+* Values associated with the key 'id' must be unique in a given file, and cannot be equivalent
+  to any reserved strings (enumerated in [bin/common/config.py](../../bin/common/config.py)).
 
 **Empty values (python None)**
 

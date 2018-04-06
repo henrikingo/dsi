@@ -49,7 +49,7 @@ class ConfigDict(dict):
         the substructure as well."""
 
         self.defaults = {}
-        """The dictionary holding defaults, set in dsi/docs/config-specs/defaults.yml.
+        """The dictionary holding defaults, set in dsi/configurations/defaults.yml.
 
         If neither raw nor overrides specified a value for a key, the default value is returned from
         here."""
@@ -78,7 +78,12 @@ class ConfigDict(dict):
         self.root = self
 
     def load(self):
-        """Populate with contents of module_name.yml, module_name.out.yml, overrides.yml."""
+        """
+        Populate with contents of module_name.yml, module_name.out.yml, overrides.yml.
+
+        Note: exceptions may be raised by the lower layer, see :method:
+        `ConfigDict.assert_valid_ids`, `_yaml_load`.
+        """
 
         # defaults.yml
         file_name = os.path.join(
@@ -115,6 +120,8 @@ class ConfigDict(dict):
             file_handle.close()
             LOG.info('ConfigDict: Loaded: %s', file_name)
 
+        self.assert_valid_ids()
+
         if 'bootstrap' in self.raw:
             change_key_name(self.raw['bootstrap'], 'cluster_type', 'infrastructure_provisioning')
             change_key_name(self.raw['bootstrap'], 'setup', 'mongodb_setup')
@@ -134,6 +141,62 @@ class ConfigDict(dict):
         """Check that module_name is one of Distributed Performance 2.0 modules, or _internal."""
         if module_name not in self.modules:
             raise ValueError('This is not a valid DSI module: ' + module_name)
+
+    def assert_valid_ids(self):
+        """
+        Check that ids in this config file are allowed and unique.
+
+        :raises InvalidConfigurationException if id values are invalid.
+        """
+        errs = []
+        self[self.module].find_and_validate_ids(errs=errs)
+        if errs:
+            raise InvalidConfigurationException(errs)
+
+    def find_and_validate_ids(self, seen_ids=None, path=None, errs=None):
+        """
+        Recursively find and validate that all ids are allowed and unique.
+        This is used to validate the ConfigDict instance dynamically. Most importantly, this is
+        called after variable references are expanded in `ConfigDict.load`.
+
+        :param set seen_ids: Id values seen so far in the traversal.
+        :param list path: Key path we took to get to the current id.
+        :param list errs: Errors seen so far.
+        """
+        if seen_ids is None:
+            seen_ids = set()
+        if path is None:
+            path = []
+        if errs is None:
+            errs = []
+
+        for key, value in self.iteritems():
+            if key == 'id':
+                validate_id(value, path, seen_ids, errs, self.module)
+            else:
+                if isinstance(value, ConfigDict):
+                    value.find_and_validate_ids(seen_ids, path, errs)
+                elif isinstance(value, list):
+                    for elem in self.find_nested_config_dicts(value):
+                        if key == 'topology':
+                            LOG.info('ConfigDict: %s', elem)
+                        elem.find_and_validate_ids(seen_ids, path, errs)
+
+    def find_nested_config_dicts(self, obj):
+        """
+        Finds and returns the ConfigDict objects nested within an object.
+
+        :param object obj: Object to find ConfigDicts in.
+        :return: List of nested ConfigDict objects.
+        """
+        config_dicts = []
+        if isinstance(obj, ConfigDict):
+            return [obj]
+        elif isinstance(obj, list):
+            for elem in obj:
+                config_dicts.extend(self.find_nested_config_dicts(elem))
+
+        return config_dicts
 
     def lookup_path(self, path):
         """ lookup the path. This is a convenience method for converting
@@ -583,22 +646,74 @@ def change_key_name(dictionary, old_key, new_key):
             del dictionary[old_key]
 
 
+def is_reserved_word(word):
+    """
+    Return True if given word is reserved.
+
+    :param str word: Word to match against resrved strings.
+    :return: True if the word is reserved, False otherwise
+    """
+    return word in _RESERVED_WORDS or _RESERVED_REX.match(word)
+
+
+def validate_id(value, path, ids, errs, src_file):
+    """
+    Check that id field is not reserved and is unique in this file.
+
+    :param str value: Value to validate.
+    :param list path: Key path we took to get to value.
+    :param set ids: Id values that have already been seen in this traversal.
+    :param list errs: Any errors we've seen so far - modifies this as an "out" parameter.
+    :param str src_file: Source file name.
+    """
+
+    if not isinstance(value, basestring):
+        errs.append({
+            'err_type': 'Invalid Id Type',
+            'src_file': src_file,
+            'item': value,
+            'item_type': type(value),
+            'path': copy.deepcopy(path)
+        })
+    else:
+        # check reserved words
+        if is_reserved_word(value):
+            errs.append({
+                'err_type': 'Id is Reserved',
+                'src_file': src_file,
+                'item': value,
+                'item_type': type(value),
+                'path': copy.deepcopy(path)
+            })
+
+        # check uniqueness
+        if value in ids:
+            errs.append({
+                'err_type': 'Duplicate Id',
+                'src_file': src_file,
+                'item': value,
+                'item_type': type(value),
+                'path': copy.deepcopy(path)
+            })
+        else:
+            ids.add(value)
+
+
 class InvalidConfigurationException(Exception):
     """Indicates invalid configuration either from YAML or from user modifying 'out' config."""
 
     def __init__(self, errors):
         self.errors = errors
-        message = "Keys must be strings and match {}. Values must be of type {}. ".format(
-            _VALID_KEY_REX_SRC, list((it.__name__ for it in _VALID_SCALAR_TYPES))
-        ) + ", ".join([
+        key_info = "Keys must be strings and match {}.".format(_VALID_KEY_REX_SRC)
+        value_info = "Values must be of type {}.".format(
+            list((it.__name__ for it in _VALID_SCALAR_TYPES)))
+        id_info = "Id fields must be unique in a file and cannot be reserved words."
+        errs = ", ".join([
             u"😱 {} [{}] of type [{}] at path [{}] in file [{}]".format(
-                err['err_type'],
-                err['item'],
-                err['item_type'].__name__,
-                ".".join(str(p) for p in err['path']),
-                err['src_file']
-            ) for err in self.errors
-        ]) # yapf: disable
+                err['err_type'], err['item'], err['item_type'].__name__, ".".join(
+                    str(p) for p in err['path']), err['src_file']) for err in self.errors
+        ])
+        message = " ".join([key_info, value_info, id_info, errs])
         super(InvalidConfigurationException, self).__init__(message.encode('utf-8'))
 
 
@@ -626,18 +741,33 @@ _VALID_KEY_TYPES = basestring
 _VALID_SCALAR_TYPES = (basestring, float, int, type(None))
 """All ConfigDict values must be one of these or list/dict (recursive) types"""
 
+# Words matching /on_.*/ as well as those enumerated below (in alphabetical order) are reserved in
+# config files. Use is_reserved_word to test if a word is reserved.
+_RESERVED_REX = re.compile(r'on_.*')
+
+_RESERVED_WORDS = [
+    'between_tests', 'post_cluster_restart', 'post_cluster_start', 'post_cluster_stop', 'post_task',
+    'post_test', 'pre_cluster_restart', 'pre_cluster_start', 'pre_cluster_stop', 'pre_task',
+    'pre_test', 'workload_setup'
+]
+
 
 def _check_object(obj, src_file=None):
     """
+    Validates yaml objects prior to variable expansion and translation into a ConfigDict object.
+    Called through `_yaml_load` in `_main_` (used in lint-yaml.sh) for static validity checks. Also
+    used during ConfigDict loading and update (`__setitem__`).
+
     :param obj: object to check for validity as use as a ConfigDict entry.
     :raises InvalidConfigurationExcetion if keys or types are insuitable.
     """
 
-    def explore(obj, path, errs):
+    def explore(obj, path, ids, errs):
         """
         :param obj: object (scalar or complex type) we're traversing
         :param path: key path we took to get to obj
         e.g. `{foo:{bar:1}` would result in path of [foo,bar] when obj=1
+        :param ids: id values that have already been seen in this traversal
         :param errs: any errors we've seen so far. modifies this as an "out" parameter
         """
         if isinstance(obj, dict):
@@ -651,13 +781,15 @@ def _check_object(obj, src_file=None):
                         'item_type': type(key),
                         'path': copy.deepcopy(path),
                     })
-                explore(obj[key], path, errs)
+                if key == 'id':
+                    validate_id(obj[key], path, ids, errs, src_file)
+                explore(obj[key], path, ids, errs)
                 path.pop()
         elif isinstance(obj, list):
             index = 0
             for item in iter(obj):
                 path.append(index)
-                explore(item, path, errs)
+                explore(item, path, ids, errs)
                 path.pop()
                 index = index + 1
         elif not isinstance(obj, _VALID_SCALAR_TYPES):
@@ -670,8 +802,9 @@ def _check_object(obj, src_file=None):
             })
 
     path = []
+    ids = set()
     errs = []
-    explore(obj, path, errs)
+    explore(obj, path, ids, errs)
     if errs:
         raise InvalidConfigurationException(errs)
 

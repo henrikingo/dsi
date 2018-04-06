@@ -155,17 +155,17 @@ topology:
   # are 2 for the first node and 1 for the rest
   - cluster_type: replset
     mongod:
-      - id: myid1
+      - id: myreplica1
         public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
         private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
-      - id: myid2
+      - id: myreplica2
         public_ip: ${infrastructure_provisioning.out.mongod.1.public_ip}
         private_ip: ${infrastructure_provisioning.out.mongod.1.private_ip}
-      - id: myid3
+      - id: myreplica3
         public_ip: ${infrastructure_provisioning.out.mongod.2.public_ip}
         private_ip: ${infrastructure_provisioning.out.mongod.2.private_ip}
   - cluster_type: standalone
-    id: myid1
+    id: mynode1
     public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
     private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
 

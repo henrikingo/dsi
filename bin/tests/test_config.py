@@ -1,19 +1,14 @@
 # -*- coding: UTF-8 -*-
 """Tests for bin/common/config.py"""
 import os
-import sys
 import unittest
 from contextlib import contextmanager
 
 import yaml
-
 from mock import patch
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
-
-# pylint: disable=wrong-import-order
-import config
-from config import ConfigDict
+import common.config as config
+from common.config import ConfigDict
 
 
 def dirmarker(into):
@@ -41,6 +36,19 @@ def in_dir(into):
     marker()
 
 
+def load_config_dict(module):
+    """
+    Load ConfigDict for the given module with id checks mocked out.
+
+    :param str module: Name of module for ConfigDict.
+    """
+    with patch('common.config.ConfigDict.assert_valid_ids') as mock_assert_valid_ids:
+        conf = ConfigDict(module)
+        conf.load()
+        mock_assert_valid_ids.assert_called_once()
+        return conf
+
+
 class InvalidConfigDictTestCase(unittest.TestCase):
     """Test that we're as picky as we claim to be with config keys and values"""
 
@@ -53,8 +61,7 @@ class InvalidConfigDictTestCase(unittest.TestCase):
     def test_set_invalid_key(self):
         """can't use conf[key] = X with key invalid"""
         with in_dir('./nested-config'):
-            conf = ConfigDict('mongodb_setup')
-            conf.load()
+            conf = load_config_dict('mongodb_setup')
             self.assertEquals(conf['mongodb_setup']['this']['is']['quite']['deeply']['nested'],
                               'okay')
             conf['mongodb_setup']['out'] = {}
@@ -62,10 +69,11 @@ class InvalidConfigDictTestCase(unittest.TestCase):
             self.assertEquals(conf['mongodb_setup']['out']['safe-key'], u'💃')
 
     def causes_exception(self, subdict):
-        """helper method - assert we get an exception when `subdict` is inserted into an out config"""
+        """
+        Helper method - assert we get an exception when `subdict` is inserted into an out config
+        """
         with in_dir('./nested-config'):
-            conf = ConfigDict('mongodb_setup')
-            conf.load()
+            conf = load_config_dict('mongodb_setup')
             with self.assertRaises(config.InvalidConfigurationException):
                 conf['mongodb_setup']['out'] = {
                     'okay': [subdict],
@@ -97,8 +105,7 @@ class InvalidConfigDictTestCase(unittest.TestCase):
     def test_assigns_invalid_nested_dict_multiple_errors(self):
         """assign invalid key from a nested dict with multiple errors"""
         with in_dir('./nested-config'):
-            conf = ConfigDict('mongodb_setup')
-            conf.load()
+            conf = load_config_dict('mongodb_setup')
             with self.assertRaises(config.InvalidConfigurationException) as context:
                 conf['mongodb_setup']['out'] = {
                     'okay': [{
@@ -111,6 +118,84 @@ class InvalidConfigDictTestCase(unittest.TestCase):
             # do care that all the errored keys are there
             self.assertRegexpMatches(context.exception.message, r'not okay')
             self.assertRegexpMatches(context.exception.message, r'seriously')
+
+    def causes_id_exception(self, subdict):
+        """
+        Helper method - assert we get an exception when subdict is inserted into a config.
+        Note: These tests explicitly test `validate_id` when called from `_yaml_load` (as opposed to
+        when it's called from `assert_valid_ids`).
+        """
+        with in_dir('./invalid-ids'):
+            conf = load_config_dict('mongodb_setup')
+            with self.assertRaises(config.InvalidConfigurationException):
+                conf['mongodb_setup']['test'] = {
+                    'okay': [subdict],
+                }
+
+    def test_id_is_reserved_word(self):
+        """
+        Cannot use a reserved word (enumerated in `config.py`) as an id.
+        """
+        self.causes_id_exception({"id": "pre_task"})
+
+    def test_id_matches_reserved_pattern(self):
+        """
+        Cannot use a word matching the pattern /on_.*/ as an id.
+        """
+        self.causes_id_exception({"id": "on_load"})
+
+    def test_id_value_type_incorrect(self):
+        """
+        Cannot have an id value that is not a scalar.
+        """
+        self.causes_id_exception({"id": {"wrong": "format"}})
+
+    def test_duplicate_id_same_level(self):
+        """
+        Cannot have duplicate ids on the same level.
+        """
+        self.causes_id_exception({
+            "stuff": [{
+                "id": "myname",
+                "hey": "greetings"
+            }, {
+                "id": "myname",
+                "bye": "see ya"
+            }]
+        })
+
+    def test_nested_duplicate_ids(self):
+        """
+        Ids must be globally unique in config files.
+        """
+        self.causes_id_exception({"id": "myname", "test": {"id": "myname"}})
+
+    def test_variable_reference_is_invalid_id(self):
+        """
+        Variable references cannot evaluate to duplicate ids.
+        """
+        with in_dir('./invalid-ids'):
+            with self.assertRaises(config.InvalidConfigurationException):
+                conf = ConfigDict('mongodb_setup')
+                conf.load()
+
+    def test_variable_reference_comtains_invalid_id(self):
+        """
+        Variable references cannot evaluate to blocks containing duplicate ids.
+        """
+        with in_dir('./nested-invalid-ids'):
+            with self.assertRaises(config.InvalidConfigurationException):
+                conf = ConfigDict('mongodb_setup')
+                conf.load()
+
+    def test_find_nested_config_dicts(self):
+        """
+        We check for duplicate ids in lists of lists correctly.
+        """
+        with in_dir('./invalid-ids-in-lists'):
+            with self.assertRaises(config.InvalidConfigurationException):
+                conf = ConfigDict('mongodb_setup')
+                conf.load()
 
 
 class ConfigDictTestCase(unittest.TestCase):

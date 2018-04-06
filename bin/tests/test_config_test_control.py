@@ -46,8 +46,13 @@ class TestConfigTestControl(unittest.TestCase):
         for filename in glob.glob(os.path.join(self.artifact_dir, '*.yml')):
             shutil.copy(filename, '.')
             self.copied_files.append(os.path.basename(filename))
-        self.config = ConfigDict('test_control')
-        self.config.load()
+
+        # Mocking `ConfigDict.assert_valid_ids` because it enforces structural constraints on yaml
+        # files that aren't necessary here.
+        with patch('common.config.ConfigDict.assert_valid_ids') as mock_assert_valid_ids:
+            self.config = ConfigDict('test_control')
+            self.config.load()
+            mock_assert_valid_ids.assert_called_once()
 
     def tearDown(self):
         """
