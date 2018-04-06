@@ -11637,6 +11637,31 @@
                         "BF-6743"
                     ],
                     "workload":"mongoshell"
+                },
+                "word_count_doc":{
+                    "create_time":"2018-03-29T14:28:35Z",
+                    "end":1522720192.288298,
+                    "max":31476.156182168885,
+                    "name":"word_count_doc",
+                    "order":11451,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":31476.156182168885,
+                            "ops_per_sec_values":[
+                                31476.156182168885
+                            ]
+                        }
+                    },
+                    "revision":"29bd1eb185a983703bc6d02e7e4c5c3ebd96e6cb",
+                    "start":1522711382.648008,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7413"
+                    ],
+                    "workload":"mongoshell"
                 }
             },
             "threshold":{
@@ -12450,6 +12475,31 @@
                     ],
                     "ticket":[
                         "BF-6743"
+                    ],
+                    "workload":"mongoshell"
+                },
+                "word_count_doc":{
+                    "create_time":"2018-03-29T14:28:35Z",
+                    "end":1522735805.647457,
+                    "max":32721.656501138714,
+                    "name":"word_count_doc",
+                    "order":11451,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":32721.656501138714,
+                            "ops_per_sec_values":[
+                                32721.656501138714
+                            ]
+                        }
+                    },
+                    "revision":"29bd1eb185a983703bc6d02e7e4c5c3ebd96e6cb",
+                    "start":1522726808.648902,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7413"
                     ],
                     "workload":"mongoshell"
                 }
@@ -13355,6 +13405,31 @@
                     ],
                     "ticket":[
                         "BF-6743"
+                    ],
+                    "workload":"mongoshell"
+                },
+                "word_count_doc":{
+                    "create_time":"2018-03-29T14:28:35Z",
+                    "end":1522720462.838076,
+                    "max":32894.0226955599,
+                    "name":"word_count_doc",
+                    "order":11451,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":32894.0226955599,
+                            "ops_per_sec_values":[
+                                32894.0226955599
+                            ]
+                        }
+                    },
+                    "revision":"29bd1eb185a983703bc6d02e7e4c5c3ebd96e6cb",
+                    "start":1522712008.398611,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7413"
                     ],
                     "workload":"mongoshell"
                 }
