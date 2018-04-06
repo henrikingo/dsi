@@ -1837,6 +1837,31 @@
                     ],
                     "workload":"ycsb"
                 },
+                "ycsb_100update":{
+                    "create_time":"2018-03-29T18:03:19Z",
+                    "end":1522424167.288097,
+                    "max":10154.366682304391,
+                    "name":"ycsb_100update",
+                    "order":464,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":10154.366682304391,
+                            "ops_per_sec_values":[
+                                10154.366682304391
+                            ]
+                        }
+                    },
+                    "revision":"fdbd4b112f1cba6498149781eddd1e7db6500a2c",
+                    "start":1522422195.623954,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-6941"
+                    ],
+                    "workload":"ycsb"
+                },
                 "ycsb_50read50update":{
                     "create_time":"2017-10-24T13:26:41.263Z",
                     "end":1508870500.0,
@@ -1966,6 +1991,31 @@
         "industry_benchmarks_WT":{
             "ndays":{},
             "reference":{
+                "ycsb_100update":{
+                    "create_time":"2018-03-29T18:03:19Z",
+                    "end":1522423778.99334,
+                    "max":27483.47556031936,
+                    "name":"ycsb_100update",
+                    "order":464,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":27483.47556031936,
+                            "ops_per_sec_values":[
+                                27483.47556031936
+                            ]
+                        }
+                    },
+                    "revision":"fdbd4b112f1cba6498149781eddd1e7db6500a2c",
+                    "start":1522423049.173165,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6941"
+                    ],
+                    "workload":"ycsb"
+                },
                 "ycsb_50read50update":{
                     "create_time":"2017-11-18T23:47:40.449Z",
                     "end":1511101624.0,
@@ -4001,6 +4051,31 @@
                     ],
                     "workload":"ycsb"
                 },
+                "ycsb_100update":{
+                    "create_time":"2018-03-29T18:03:19Z",
+                    "end":1522428434.094079,
+                    "max":9650.427731083111,
+                    "name":"ycsb_100update",
+                    "order":463,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":9650.427731083111,
+                            "ops_per_sec_values":[
+                                9650.427731083111
+                            ]
+                        }
+                    },
+                    "revision":"fdbd4b112f1cba6498149781eddd1e7db6500a2c",
+                    "start":1522426361.08341,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-6941"
+                    ],
+                    "workload":"ycsb"
+                },
                 "ycsb_50read50update":{
                     "create_time":"2017-10-24T13:26:41.263Z",
                     "end":1508875373.0,
@@ -4139,6 +4214,31 @@
         "industry_benchmarks_WT":{
             "ndays":{},
             "reference":{
+                "ycsb_100update":{
+                    "create_time":"2018-03-29T18:03:19Z",
+                    "end":1522427530.57074,
+                    "max":21613.4435618955,
+                    "name":"ycsb_100update",
+                    "order":463,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":21613.4435618955,
+                            "ops_per_sec_values":[
+                                21613.4435618955
+                            ]
+                        }
+                    },
+                    "revision":"fdbd4b112f1cba6498149781eddd1e7db6500a2c",
+                    "start":1522426604.635516,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6941"
+                    ],
+                    "workload":"ycsb"
+                },
                 "ycsb_50read50update":{
                     "create_time":"2017-11-18T23:47:40.449Z",
                     "end":1511127840.0,
@@ -7211,6 +7311,31 @@
         "industry_benchmarks_WT":{
             "ndays":{},
             "reference":{
+                "ycsb_100update":{
+                    "create_time":"2018-03-29T18:03:19Z",
+                    "end":1522485474.644627,
+                    "max":35143.57909238193,
+                    "name":"ycsb_100update",
+                    "order":464,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":35143.57909238193,
+                            "ops_per_sec_values":[
+                                35143.57909238193
+                            ]
+                        }
+                    },
+                    "revision":"fdbd4b112f1cba6498149781eddd1e7db6500a2c",
+                    "start":1522484903.268071,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-6941"
+                    ],
+                    "workload":"ycsb"
+                },
                 "ycsb_50read50update":{
                     "create_time":"2017-11-18T23:47:40.449Z",
                     "end":1511152655.0,
@@ -9305,6 +9430,31 @@
                     ],
                     "workload":"ycsb"
                 },
+                "ycsb_100update":{
+                    "create_time":"2018-03-29T18:03:19Z",
+                    "end":1522423633.937779,
+                    "max":11757.69967660447,
+                    "name":"ycsb_100update",
+                    "order":464,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":11757.69967660447,
+                            "ops_per_sec_values":[
+                                11757.69967660447
+                            ]
+                        }
+                    },
+                    "revision":"fdbd4b112f1cba6498149781eddd1e7db6500a2c",
+                    "start":1522421930.64791,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-6941"
+                    ],
+                    "workload":"ycsb"
+                },
                 "ycsb_50read50update":{
                     "create_time":"2017-10-24T13:26:41.263Z",
                     "end":1508874313.0,
@@ -9434,6 +9584,31 @@
         "industry_benchmarks_WT":{
             "ndays":{},
             "reference":{
+                "ycsb_100update":{
+                    "create_time":"2018-03-29T18:03:19Z",
+                    "end":1522424622.610908,
+                    "max":35446.28646979799,
+                    "name":"ycsb_100update",
+                    "order":464,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":35446.28646979799,
+                            "ops_per_sec_values":[
+                                35446.28646979799
+                            ]
+                        }
+                    },
+                    "revision":"fdbd4b112f1cba6498149781eddd1e7db6500a2c",
+                    "start":1522424056.056127,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6941"
+                    ],
+                    "workload":"ycsb"
+                },
                 "ycsb_50read50update":{
                     "create_time":"2017-11-17T23:52:03.98Z",
                     "end":1511234691.0,
