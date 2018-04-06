@@ -255,6 +255,9 @@ test_control:
     filesize=1G
     nrfiles=16
     filename_format=fiofile.$filenum.0
+    write_bw_log=fiolatency
+    write_lat_log=fiolatency
+    write_iops_log=fiolatency
 
     [iops_test]
     stonewall
@@ -263,6 +266,9 @@ test_control:
     numjobs=32
     bs=4k
     iodepth=32
+    write_bw_log=fioiops
+    write_lat_log=fioiops
+    write_iops_log=fioiops
 
     [streaming_bandwidth_test]
     stonewall
@@ -271,6 +277,9 @@ test_control:
     numjobs=16
     bs=16k
     iodepth=32
+    write_bw_log=fiostreaming
+    write_lat_log=fiostreaming
+    write_iops_log=fiostreaming
 
   common_fio_net_config: |
     [global]

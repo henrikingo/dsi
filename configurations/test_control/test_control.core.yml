@@ -55,6 +55,7 @@ run:
     config_filename: fio.ini
     output_files:
       - fio.json
+      - fio_results.tgz
     workload_config: ${test_control.common_fio_config}
     skip_validate: true
 
