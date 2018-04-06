@@ -487,6 +487,76 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "0_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "0_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "105_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "105_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "15_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "15_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "15_lookup_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "15_lookup_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "1_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "1_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
                 "canary_client-cpuloop-10x":{
                     "thread_threshold":1.5,
                     "threshold":1.0,
@@ -2886,6 +2956,76 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "0_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "0_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "105_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "105_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "15_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "15_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "15_lookup_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "15_lookup_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "1_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "1_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
                 "canary_client-cpuloop-10x":{
                     "thread_threshold":1.5,
                     "threshold":1.0,
@@ -6349,6 +6489,76 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "0_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "0_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "105_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "105_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "15_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "15_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "15_lookup_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "15_lookup_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "1_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "1_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
                 "canary_client-cpuloop-10x":{
                     "thread_threshold":1.5,
                     "threshold":1.0,
@@ -6425,6 +6635,20 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "15_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
+                "15_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
+                    "ticket":[
+                        "BF-8621"
+                    ]
+                },
                 "canary_client-cpuloop-10x":{
                     "thread_threshold":1.5,
                     "threshold":1.0,
