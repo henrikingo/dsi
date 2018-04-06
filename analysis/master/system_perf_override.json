@@ -501,8 +501,8 @@
                     ]
                 },
                 "15_1c_avg_latency":{
-                    "thread_threshold":1.5,
-                    "threshold":1.0,
+                    "thread_threshold":4.5,
+                    "threshold":3.0,
                     "ticket":[
                         "BF-8621"
                     ]
