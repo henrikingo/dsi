@@ -4137,6 +4137,45 @@
                     ],
                     "workload":"shell/benchrun"
                 },
+                "insert_ttl":{
+                    "create_time":"2018-03-26T19:54:16Z",
+                    "end":1522819569.858077,
+                    "max":154967.51205031143,
+                    "name":"insert_ttl",
+                    "order":11361,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":76043.68372713664,
+                            "ops_per_sec_values":[
+                                76043.68372713664
+                            ]
+                        },
+                        "16":{
+                            "ops_per_sec":145275.47485792462,
+                            "ops_per_sec_values":[
+                                145275.47485792462
+                            ]
+                        },
+                        "32":{
+                            "ops_per_sec":154967.51205031143,
+                            "ops_per_sec_values":[
+                                154967.51205031143
+                            ]
+                        }
+                    },
+                    "revision":"af600c3876a26f62d8dde93bf769fc4ca3054072",
+                    "start":1522809556.853637,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "32",
+                        "16"
+                    ],
+                    "ticket":[
+                        "BF-7729"
+                    ],
+                    "workload":"mongoshell"
+                },
                 "insert_vector_primary":{
                     "create_time":"2017-08-24T20:50:24.213Z",
                     "end":1503684577.0,
@@ -4435,10 +4474,11 @@
                     ]
                 },
                 "insert_ttl":{
-                    "thread_threshold":0.75,
-                    "threshold":0.5,
+                    "thread_threshold":0.375,
+                    "threshold":0.25,
                     "ticket":[
-                        "BF-8586"
+                        "BF-8586",
+                        "BF-7729"
                     ]
                 },
                 "insert_vector_primary":{
@@ -8020,6 +8060,45 @@
                         "BF-6743"
                     ],
                     "workload":"shell/benchrun"
+                },
+                "insert_ttl":{
+                    "create_time":"2018-03-26T19:54:16Z",
+                    "end":1522324383.377208,
+                    "max":72643.97273246574,
+                    "name":"insert_ttl",
+                    "order":11361,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":3381.8251708225694,
+                            "ops_per_sec_values":[
+                                3381.8251708225694
+                            ]
+                        },
+                        "16":{
+                            "ops_per_sec":45454.118420978055,
+                            "ops_per_sec_values":[
+                                45454.118420978055
+                            ]
+                        },
+                        "32":{
+                            "ops_per_sec":72643.97273246574,
+                            "ops_per_sec_values":[
+                                72643.97273246574
+                            ]
+                        }
+                    },
+                    "revision":"af600c3876a26f62d8dde93bf769fc4ca3054072",
+                    "start":1522316170.152787,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "32",
+                        "16"
+                    ],
+                    "ticket":[
+                        "BF-7729"
+                    ],
+                    "workload":"mongoshell"
                 },
                 "word_count_doc":{
                     "create_time":"2018-01-22T15:22:23.19Z",
@@ -12478,6 +12557,45 @@
                     ],
                     "workload":"mongoshell"
                 },
+                "insert_ttl":{
+                    "create_time":"2018-03-26T19:54:16Z",
+                    "end":1522818603.481651,
+                    "max":179371.59259719396,
+                    "name":"insert_ttl",
+                    "order":11361,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":78569.3897957201,
+                            "ops_per_sec_values":[
+                                78569.3897957201
+                            ]
+                        },
+                        "16":{
+                            "ops_per_sec":179371.59259719396,
+                            "ops_per_sec_values":[
+                                179371.59259719396
+                            ]
+                        },
+                        "32":{
+                            "ops_per_sec":167953.76375256828,
+                            "ops_per_sec_values":[
+                                167953.76375256828
+                            ]
+                        }
+                    },
+                    "revision":"af600c3876a26f62d8dde93bf769fc4ca3054072",
+                    "start":1522809502.666142,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "32",
+                        "16"
+                    ],
+                    "ticket":[
+                        "BF-7729"
+                    ],
+                    "workload":"mongoshell"
+                },
                 "word_count_doc":{
                     "create_time":"2018-03-29T14:28:35Z",
                     "end":1522735805.647457,
@@ -12598,10 +12716,11 @@
                     ]
                 },
                 "insert_ttl":{
-                    "thread_threshold":0.75,
-                    "threshold":0.5,
+                    "thread_threshold":0.375,
+                    "threshold":0.25,
                     "ticket":[
-                        "BF-8586"
+                        "BF-8586",
+                        "BF-7729"
                     ]
                 },
                 "insert_vector_primary":{
