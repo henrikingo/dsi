@@ -1,6 +1,4 @@
-# This file is deprecated and will be removed by PERF-1432. It's here for now for backward compatibility
-
-task_name: agg_query_comparison_bestbuy
+task_name: bestbuy_query
 run:
   - id: benchRun
     type: mongoshell
@@ -19,9 +17,6 @@ run:
       tests:
         default:
           - bestbuy_agg_query_comparison:
-              - testDbName: bestbuy
-                testCollName: products
-                useAgg: true
               - testDbName: bestbuy
                 testCollName: products
                 useAgg: false

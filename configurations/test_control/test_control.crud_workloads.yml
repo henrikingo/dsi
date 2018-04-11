@@ -1,6 +1,4 @@
-# This file is deprecated and will be removed by PERF-1432. It's here for now for backward compatibility
-
-task_name: core
+task_name: crud_workloads
 run:
   - id: benchRun
     type: mongoshell
@@ -19,30 +17,13 @@ run:
       ########################################################################
       tests:
         default:
-          - contended_update:
-              thread_levels: [1, 32, 64]
-          - map_reduce
-          - insert_ttl:
-              thread_levels: [1, 16, 32]
-          - insert_vector:
-              thread_levels: ${test_control.thread_levels.insert_vector.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
-          - word_count
           - crud:
               thread_levels: ${test_control.thread_levels.crud-jfalse.${mongodb_setup.meta.storageEngine}}
               j_value: false
           - crud:
               thread_levels: [1, 64, 128]
               j_value: true
-          - index_build
-          - mix:
-              thread_levels: [4, 64, 128, 256, 512]
           - cpu_noise
-        test:
-          -  # Empty list. Put new workloads here for testing
-        short:  # Just does Hello World
-          - hello:
-              parameter1: foo
-              parameter2: true
 
       # These next five lines match existing workloads.yml.
       target: ${mongodb_setup.meta.hostname}

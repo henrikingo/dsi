@@ -1,9 +1,7 @@
-# This file is deprecated and will be removed by PERF-1432. It's here for now for backward compatibility
-
-task_name: change_streams
+task_name: change_streams_latency
 run:
-  - &change_streams_base
-    id: change_streams_base
+  - &change_streams_latency_base
+    id: change_streams_latency_base
     type: mongoshell
 
     cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
@@ -13,7 +11,7 @@ run:
     workload_config: &workload_config
       tests:
         default:
-          - change_streams_crud_throughput:
+          - change_streams_latency:
               thread_levels: [4, 60]
               listener_levels: [0, 1, 15, 105]
               update_lookup: false
@@ -27,45 +25,7 @@ run:
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
 
-  - <<: *change_streams_base
-    id: change_streams_update_lookup
-    workload_config:
-      <<: *workload_config
-      tests:
-        default:
-          - change_streams_crud_throughput:
-              thread_levels: [4, 60]
-              listener_levels: [15]
-              update_lookup: true
-              nb_collections: 1
-
-
-  - <<: *change_streams_base
-    id: change_streams_5collections
-    workload_config:
-      <<: *workload_config
-      tests:
-        default:
-          - change_streams_crud_throughput:
-              thread_levels: [60]
-              listener_levels: [15]
-              update_lookup: false
-              nb_collections: 5
-
-  - <<: *change_streams_base
-    id: change_streams_latency_base
-    workload_config:
-      <<: *workload_config
-      tests:
-        default:
-          - change_streams_latency:
-              thread_levels: [4, 60]
-              listener_levels: [0, 1, 15, 105]
-              update_lookup: false
-              selective_change: false
-              nb_collections: 1
-
-  - <<: *change_streams_base
+  - <<: *change_streams_latency_base
     id: change_streams_latency_update_lookup
     workload_config:
       <<: *workload_config
@@ -78,7 +38,7 @@ run:
               selective_change: false
               nb_collections: 1
 
-  - <<: *change_streams_base
+  - <<: *change_streams_latency_base
     id: change_streams_latency_5collections
     workload_config:
       <<: *workload_config

@@ -1,6 +1,4 @@
-# This file is deprecated and will be removed by PERF-1432. It's here for now for backward compatibility
-
-task_name: change_streams
+task_name: change_streams_throughput
 run:
   - &change_streams_base
     id: change_streams_base
@@ -51,46 +49,6 @@ run:
               listener_levels: [15]
               update_lookup: false
               nb_collections: 5
-
-  - <<: *change_streams_base
-    id: change_streams_latency_base
-    workload_config:
-      <<: *workload_config
-      tests:
-        default:
-          - change_streams_latency:
-              thread_levels: [4, 60]
-              listener_levels: [0, 1, 15, 105]
-              update_lookup: false
-              selective_change: false
-              nb_collections: 1
-
-  - <<: *change_streams_base
-    id: change_streams_latency_update_lookup
-    workload_config:
-      <<: *workload_config
-      tests:
-        default:
-          - change_streams_latency:
-              thread_levels: [4, 60]
-              listener_levels: [15]
-              update_lookup: true
-              selective_change: false
-              nb_collections: 1
-
-  - <<: *change_streams_base
-    id: change_streams_latency_5collections
-    workload_config:
-      <<: *workload_config
-      tests:
-        default:
-          - change_streams_latency:
-              thread_levels: [60]
-              listener_levels: [15]
-              update_lookup: false
-              selective_change: false
-              nb_collections: 1
-          - cpu_noise
 
   - id: fio
     type: fio
