@@ -178,8 +178,6 @@ class ConfigDict(dict):
                     value.find_and_validate_ids(seen_ids, path, errs)
                 elif isinstance(value, list):
                     for elem in self.find_nested_config_dicts(value):
-                        if key == 'topology':
-                            LOG.info('ConfigDict: %s', elem)
                         elem.find_and_validate_ids(seen_ids, path, errs)
 
     def find_nested_config_dicts(self, obj):
