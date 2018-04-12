@@ -11,17 +11,16 @@ import subprocess
 import unittest
 
 import common.host_utils
+from common.command_runner import EXCEPTION_BEHAVIOR
+from common.command_runner import print_trace
+from common.command_runner import run_pre_post_commands
 from common.remote_host import RemoteHost
-from common.utils import mkdir_p, touch
+from common.utils import mkdir_p
 from test_control import BackgroundCommand, start_background_tasks
 from test_control import copy_timeseries
-from test_control import EXCEPTION_BEHAVIOR
 from test_control import get_error_from_exception, ExitStatus
-from test_control import print_trace
-from test_control import run_pre_post_commands
 from test_control import run_test
 from test_control import run_tests
-from test_control import prepare_reports_dir
 
 from tests import test_utils
 
@@ -229,18 +228,6 @@ class RunTestsTestCase(unittest.TestCase):
             mock_copyfile.called_with('/dirpath1/file1--10.0.0.1',
                                       'reports/mongod.1/matching-dirpath1'))
 
-    @patch('test_control.run_host_command')
-    def test_run_pre_post(self, mock_run_host_command):
-        """Test test_control.run_pre_post_commands()"""
-        command_dicts = [self.config['test_control'], self.config['mongodb_setup']]
-        run_pre_post_commands('post_test', command_dicts, self.config, EXCEPTION_BEHAVIOR.EXIT)
-
-        expected_args = ['on_workload_client', 'on_all_servers', 'on_mongod', 'on_configsvr']
-        observed_args = []
-        for args in mock_run_host_command.call_args_list:
-            observed_args.append(args[0][0])
-        self.assertEquals(observed_args, expected_args)
-
     @patch('types.FrameType')
     def test_print_trace_mock_exception(self, mock_frame):
         """ Test test_control.print_trace with mock frame and mock exception"""
@@ -419,7 +406,7 @@ class RunTestsTestCase(unittest.TestCase):
             self.assertEqual(len(result), 3)
 
     @patch('test_control.generate_config_file')
-    @patch('test_control.make_workload_runner_host')
+    @patch('common.command_runner.make_workload_runner_host')
     @patch('test_control.mkdir_p')
     def test_run_test_exec_command_success(self, mock_mkdir, mock_make_host,
                                            mock_generate_config_file):
@@ -443,7 +430,7 @@ class RunTestsTestCase(unittest.TestCase):
         mock_mkdir.assert_called()
 
     @patch('test_control.generate_config_file')
-    @patch('test_control.make_workload_runner_host')
+    @patch('common.command_runner.make_workload_runner_host')
     @patch('test_control.mkdir_p')
     def test_run_test_exec_command_failure(self, mock_mkdir, mock_make_host,
                                            mock_generate_config_file):
@@ -462,7 +449,7 @@ class RunTestsTestCase(unittest.TestCase):
         mock_generate_config_file.assert_called_once_with(test, directory, mock_host)
 
     @patch('test_control.generate_config_file')
-    @patch('test_control.make_workload_runner_host')
+    @patch('common.command_runner.make_workload_runner_host')
     @patch('test_control.mkdir_p')
     def test_run_test_output_files(self, mock_mkdir, mock_make_host, mock_generate_config_file):
         """
@@ -485,7 +472,7 @@ class RunTestsTestCase(unittest.TestCase):
         mock_mkdir.assert_called()
 
     @patch('test_control.generate_config_file')
-    @patch('test_control.make_workload_runner_host')
+    @patch('common.command_runner.make_workload_runner_host')
     @patch('test_control.mkdir_p')
     def test_run_test_get_pty(self, mock_mkdir, mock_make_host, mock_generate_config_file):
         """
@@ -503,7 +490,7 @@ class RunTestsTestCase(unittest.TestCase):
         }, mock_host.exec_command.call_args_list[0][-1])
 
     @patch('test_control.generate_config_file')
-    @patch('test_control.make_workload_runner_host')
+    @patch('common.command_runner.make_workload_runner_host')
     @patch('test_control.mkdir_p')
     def test_run_test_no_output_files(self, mock_mkdir, mock_make_host, mock_generate_config_file):
         """
@@ -559,6 +546,7 @@ class RunTestsTestCase(unittest.TestCase):
             'then': ExitStatus(2, "process Hello World")
         })
 
+    @patch('test_control.parse_test_results')
     @patch('test_control.prepare_reports_dir')
     @patch('subprocess.check_call')
     @patch('test_control.run_validate')
@@ -566,7 +554,7 @@ class RunTestsTestCase(unittest.TestCase):
     @patch('test_control.legacy_copy_perf_output')
     @patch('test_control.run_pre_post_commands')
     def test_run_tests(self, mock_pre_post, mock_copy_perf, mock_run, mock_run_validate,
-                       mock_check_call, mock_prepare_reports):
+                       mock_check_call, mock_prepare_reports, mock_parse_test_results):
         """Test run_tests (the top level workhorse for test_control)"""
 
         run_tests(self.config)
@@ -587,33 +575,7 @@ class RunTestsTestCase(unittest.TestCase):
         mock_check_call.assert_called()
         mock_prepare_reports.assert_called()
         mock_run_validate.assert_called_once_with(self.config, 'benchRun')
-
-    def test_prepare_reports_dir(self):
-        """Test test_control.run_test where the exec command returns non-zero"""
-
-        previous_directory = os.getcwd()
-        reports_dir = os.path.join(self.reports_path, 'reports')
-        reports_tarball = os.path.join(self.reports_container, 'reports.tgz')
-
-        def _test_prepare_reports_dir():
-            try:
-                os.chdir(self.reports_path)
-                prepare_reports_dir(reports_dir=reports_dir)
-            finally:
-                os.chdir(previous_directory)
-
-            self.assertFalse(os.path.exists(reports_tarball))
-            self.assertTrue(os.path.exists(reports_dir))
-            self.assertTrue(os.path.islink(reports_dir))
-
-        _test_prepare_reports_dir()
-
-        touch(reports_tarball)
-        _test_prepare_reports_dir()
-
-        os.remove(reports_dir)
-        mkdir_p(reports_dir)
-        self.assertRaises(OSError, _test_prepare_reports_dir)
+        mock_parse_test_results.assert_called()
 
 
 if __name__ == '__main__':

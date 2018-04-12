@@ -15,6 +15,7 @@ from testfixtures import LogCapture, log_capture
 from infrastructure_provisioning import Provisioner, check_version, rmtree_when_present
 
 #pylint: disable=too-many-locals
+from tests import test_utils
 
 ARTIFACTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "artifacts")
 
@@ -52,9 +53,13 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 'aws_secret_key': 'test_secret_key'
             }
         }
+        # create a provision log path that can be safely deleted post test
+        self.provision_log_path = os.path.join(test_utils.FIXTURE_DIR_PATH, 'provision.log')
 
     def tearDown(self):
         self.os_environ_patcher.stop()
+        if os.path.exists(self.provision_log_path):
+            os.remove(self.provision_log_path)
 
     def reset_mock_objects(self):
         """
@@ -86,8 +91,14 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         """
         Test Provisioner.__init__
         """
+        # Check that the correct default provisioning log is created
+        mock_open_file = mock_open()
+        with patch('infrastructure_provisioning.open', mock_open_file, create=True):
+            Provisioner(self.config)
+            mock_open_file.assert_called_with("./provision.log", "w")
+
         # Check when TERRAFORM is an environment variable
-        provisioner = Provisioner(self.config)
+        provisioner = Provisioner(self.config, provisioning_file=self.provision_log_path)
         self.assertEqual(provisioner.cluster, 'single')
         self.assertFalse(provisioner.reuse_cluster)
         self.assertEqual(provisioner.dsi_dir, self.dsi_path)
@@ -100,7 +111,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         del os_environ_missing_terraform['TERRAFORM']
         self.mock_environ.__getitem__.side_effect = os_environ_missing_terraform.__getitem__
         self.mock_environ.__contains__.side_effect = os_environ_missing_terraform.__contains__
-        provisioner_missing_terraform = Provisioner(self.config)
+        provisioner_missing_terraform = Provisioner(
+            self.config, provisioning_file=self.provision_log_path)
         self.assertEqual(provisioner_missing_terraform.cluster, 'single')
         self.assertFalse(provisioner_missing_terraform.reuse_cluster)
         self.assertEqual(provisioner_missing_terraform.dsi_dir, self.dsi_path)
@@ -125,7 +137,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                          'variable "key_file" {{    '
                          'default = "{}"}}').format(key_name, key_file)
         master_tf_str = master_tf_str.replace('\n', '').replace(' ', '')
-        provisioner = Provisioner(self.config)
+        provisioner = Provisioner(self.config, provisioning_file=self.provision_log_path)
         provisioner.aws_access_key = 'test_aws_access_key'
         provisioner.aws_secret_key = 'test_aws_secret_key'
 
@@ -156,7 +168,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
 
         # Check files copied correctly
         with patch('infrastructure_provisioning.os.getcwd', return_value='temp_test'):
-            provisioner = Provisioner(self.config)
+            provisioner = Provisioner(self.config, provisioning_file=self.provision_log_path)
             provisioner.setup_terraform_tf()
         for filename in glob.glob(os.path.join(cluster_path, '*')):
             self.assertTrue(os.path.exists(os.path.join(directory, filename.split('/')[-1])))
@@ -185,7 +197,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         # Run check_existing_state when existing state exists
         with patch('infrastructure_provisioning.os.path.isfile') as mock_isfile:
             mock_isfile.return_value = True
-            provisioner = Provisioner(config)
+            provisioner = Provisioner(config, provisioning_file=self.provision_log_path)
             mock_teardown_old_cluster = MagicMock(name="teardown_old_cluster")
             self.assertEqual(provisioner.evg_data_dir, evg_data_dir)
             provisioner.check_existing_state()
@@ -208,7 +220,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             with patch('infrastructure_provisioning.check_version') as mock_check_version:
                 mock_check_version.return_value = False
                 mock_isfile.return_value = True
-                provisioner = Provisioner(config)
+                provisioner = Provisioner(config, provisioning_file=self.provision_log_path)
                 mock_teardown_old_cluster = MagicMock(name="teardown_old_cluster")
                 provisioner.teardown_old_cluster = mock_teardown_old_cluster
                 self.assertEqual(provisioner.evg_data_dir, evg_data_dir)
@@ -221,7 +233,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         # Run check_existing_state when no existing state exists
         with patch('infrastructure_provisioning.os.path.isfile') as mock_isfile:
             mock_isfile.return_value = False
-            provisioner = Provisioner(config)
+            provisioner = Provisioner(config, provisioning_file=self.provision_log_path)
             provisioner.check_existing_state()
             isfile_calls = [call(evg_data_dir + '/terraform/terraform.tfstate')]
             mock_isfile.assert_has_calls(isfile_calls)
@@ -249,7 +261,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             expected_command = ['python', evg_data_dir + '/terraform/infrastructure_teardown.py']
             # mock_check_call.side_effect = partial(self.check_subprocess_call, expected_command)
             mock_isfile.return_value = True
-            provisioner = Provisioner(config)
+            provisioner = Provisioner(config, provisioning_file=self.provision_log_path)
             self.assertEqual(provisioner.evg_data_dir, evg_data_dir)
             provisioner.check_existing_state()
             mock_check_call.assert_called_with(expected_command, env=ANY, stdout=ANY, stderr=ANY)
@@ -271,7 +283,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             expected_command = ['bin/tests/artifacts/terraform/infrastructure_teardown.sh']
             mock_check_call.side_effect = partial(self.check_subprocess_call, expected_command)
             mock_isfile.return_value = False
-            provisioner = Provisioner(config)
+            provisioner = Provisioner(config, provisioning_file=self.provision_log_path)
             provisioner.check_existing_state()
             mock_shutil.rmtree.assert_called_with(evg_data_dir)
             isfile_calls = [call(evg_data_dir + '/terraform/terraform.tfstate')]
@@ -299,7 +311,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         with patch('infrastructure_provisioning.os.path.isfile') as mock_isfile:
             mock_check_call.side_effect = CalledProcessError(1, ['cmd'])
             mock_isfile.return_value = True
-            provisioner = Provisioner(config)
+            provisioner = Provisioner(config, provisioning_file=self.provision_log_path)
             self.assertEqual(provisioner.evg_data_dir, evg_data_dir)
             with LogCapture(level=logging.ERROR) as error:
                 provisioner.check_existing_state()
@@ -337,7 +349,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         # Test when evergreen data directories do not exist
         with patch('infrastructure_provisioning.os.makedirs') as mock_makedirs:
             mock_isdir.return_value = False
-            provisioner = Provisioner(self.config)
+            provisioner = Provisioner(self.config, provisioning_file=self.provision_log_path)
             provisioner.bin_dir = 'test/bin'
             provisioner.setup_evg_dir()
             mock_makedirs.assert_called_with(evg_data_dir)
@@ -361,7 +373,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         # Test when evergreen data directories do exist
         with patch('infrastructure_provisioning.os.makedirs') as mock_makedirs:
             mock_isdir.return_value = True
-            provisioner = Provisioner(self.config)
+            provisioner = Provisioner(self.config, provisioning_file=self.provision_log_path)
             provisioner.bin_dir = 'test/bin'
             provisioner.setup_evg_dir()
             self.assertFalse(mock_makedirs.called)
@@ -387,7 +399,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         # mock.mock_open is needed to effectively mock out the open() function in python
         mock_open_file = mock_open()
         with patch('infrastructure_provisioning.open', mock_open_file, create=True):
-            provisioner = Provisioner(self.config)
+            provisioner = Provisioner(self.config, provisioning_file=self.provision_log_path)
             provisioner.cluster = 'initialsync-logkeeper'
             provisioner.reuse_cluster = True
             provisioner.setup_cluster()
@@ -450,7 +462,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         mock_open_file = mock_open()
         with patch('infrastructure_provisioning.open', mock_open_file, create=True):
             with patch('infrastructure_provisioning.destroy_resources') as mock_destroy:
-                provisioner = Provisioner(self.config)
+                provisioner = Provisioner(self.config, provisioning_file=self.provision_log_path)
                 provisioner.reuse_cluster = True
                 mock_subprocess.check_call.side_effect = [1, CalledProcessError(1, ['cmd']), 1]
                 with self.assertRaises(CalledProcessError):
@@ -482,7 +494,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             with patch('infrastructure_provisioning.open', mock_open_file, create=True):
                 mock_glob.return_value = provisioned_files
                 mock_getcwd.return_value = 'fake/path'
-                provisioner = Provisioner(self.config)
+                provisioner = Provisioner(self.config, provisioning_file=self.provision_log_path)
                 provisioner.production = True
                 provisioner.save_terraform_state()
                 files_to_copy = [
@@ -525,7 +537,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             with patch('infrastructure_provisioning.open', mock_open_file, create=True):
                 mock_glob.return_value = provisioned_files
                 mock_getcwd.return_value = 'fake/path'
-                provisioner = Provisioner(config)
+                provisioner = Provisioner(config, provisioning_file=self.provision_log_path)
                 provisioner.production = True
                 provisioner.save_terraform_state()
                 files_to_copy = ['terraform.tfstate', 'cluster.tf', 'security.tf', 'cluster.json']
@@ -609,7 +621,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         Test infrastructure_provisioning.print_terraform_errors()
         """
         # pylint: disable=line-too-long
-        provisioner = Provisioner(self.config)
+        provisioner = Provisioner(self.config, provisioning_file=self.provision_log_path)
         provisioner.tf_log_path = os.path.join(ARTIFACTS, 'terraform.log.short')
         provisioner.print_terraform_errors()
 
@@ -621,6 +633,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             ("infrastructure_provisioning", "ERROR", "2018-03-05T15:49:29.084+0200 [DEBUG] plugin.terraform-provider-aws_v1.6.0_x4: <Response><Errors><Error><Code>InvalidPlacementGroup.Unknown</Code><Message>The Placement Group 'shard-8665ea69-9e76-483a-937b-af68d41d54dd' is unknown.</Message></Error></Errors><RequestID>4264aef8-ae91-40f0-bc16-d914a8dc2cf8</RequestID></Response>"),
             ("infrastructure_provisioning", "ERROR", "See {} for more info.".format(provisioner.tf_log_path))
         ) # yapf: disable
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -8,8 +8,11 @@ from mock import patch, Mock, mock
 
 import common.command_runner
 from common.config import ConfigDict
+from common.command_runner import EXCEPTION_BEHAVIOR, run_upon_error, run_pre_post_commands, \
+    prepare_reports_dir
+from common.utils import mkdir_p, touch
+from tests import test_utils
 
-# Useful absolute directory paths.
 FIXTURE_DIR_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "unittest-files")
 
 
@@ -39,9 +42,15 @@ class CommandRunnerTestCase(unittest.TestCase):
         self.parent_dir = os.path.join(os.path.expanduser('~'), 'checkout_repos_test')
 
         self._delete_fixtures()
+        self.reports_container = test_utils.fixture_file_path('container')
+        self.reports_path = os.path.join(self.reports_container, 'reports_tests')
+
+        mkdir_p(self.reports_path)
 
     def tearDown(self):
         """ Restore working directory """
+        shutil.rmtree(self.reports_container)
+
         os.chdir(self.old_dir)
 
         self._delete_fixtures()
@@ -263,6 +272,68 @@ class CommandRunnerTestCase(unittest.TestCase):
             common.command_runner._run_host_command_map(mongod, command, "test_id")
             mongod.exec_mongo_command.assert_called_once_with(
                 "this is a script", connection_string="")
+
+    def test_run_upon_error(self):
+        """ test run_upon_error """
+
+        @mock.patch('common.command_runner.prepare_reports_dir')
+        @mock.patch('common.command_runner.run_pre_post_commands')
+        def _test_run_upon_error(behave, mock_run_pre_post_commands, mock_prepare_reports_dir):
+
+            config = {'mongodb_setup': 'setup'}
+            if behave:
+                run_upon_error('mongodb_setup', [], config)
+                expected = EXCEPTION_BEHAVIOR.EXIT
+            else:
+                run_upon_error('mongodb_setup', [], config, EXCEPTION_BEHAVIOR.CONTINUE)
+                expected = EXCEPTION_BEHAVIOR.CONTINUE
+
+            mock_prepare_reports_dir.assert_called_once()
+            mock_run_pre_post_commands.assert_called_with('upon_error', [], config, expected,
+                                                          'upon_error/mongodb_setup')
+
+        _test_run_upon_error(True)
+        _test_run_upon_error(False)
+
+    @patch('common.command_runner.run_host_command')
+    def test_run_pre_post(self, mock_run_host_command):
+        """Test test_control.run_pre_post_commands()"""
+        command_dicts = [self.config['test_control'], self.config['mongodb_setup']]
+        run_pre_post_commands('post_test', command_dicts, self.config, EXCEPTION_BEHAVIOR.EXIT)
+
+        # expected_args = ['on_workload_client', 'on_all_servers', 'on_mongod', 'on_configsvr']
+        expected_args = ['on_mongod', 'on_all_hosts', 'on_all_servers', 'on_mongod', 'on_configsvr']
+        observed_args = []
+        for args in mock_run_host_command.call_args_list:
+            observed_args.append(args[0][0])
+        self.assertEquals(observed_args, expected_args)
+
+    def test_prepare_reports_dir(self):
+        """Test test_control.run_test where the exec command returns non-zero"""
+
+        previous_directory = os.getcwd()
+        reports_dir = os.path.join(self.reports_path, 'reports')
+        reports_tarball = os.path.join(self.reports_container, 'reports.tgz')
+
+        def _test_prepare_reports_dir():
+            try:
+                os.chdir(self.reports_path)
+                prepare_reports_dir(reports_dir=reports_dir)
+            finally:
+                os.chdir(previous_directory)
+
+            self.assertFalse(os.path.exists(reports_tarball))
+            self.assertTrue(os.path.exists(reports_dir))
+            self.assertTrue(os.path.islink(reports_dir))
+
+        _test_prepare_reports_dir()
+
+        touch(reports_tarball)
+        _test_prepare_reports_dir()
+
+        os.remove(reports_dir)
+        mkdir_p(reports_dir)
+        self.assertRaises(OSError, _test_prepare_reports_dir)
 
 
 if __name__ == '__main__':

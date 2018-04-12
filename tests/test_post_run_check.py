@@ -39,7 +39,8 @@ class TestPostRunCheck(unittest.TestCase):
         self.cleanup()
 
     def tearDown(self):
-        self.cleanup()
+        shutil.rmtree(os.path.join(test_utils.FIXTURE_DIR_PATH, 'cores'), ignore_errors=True)
+        shutil.rmtree(self.reports_path, ignore_errors=True)
 
     def test_post_run_check_ftdc(self):
         """

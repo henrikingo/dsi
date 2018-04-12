@@ -238,3 +238,21 @@ authentication:
       port: 27017
       bindIp: 0.0.0.0
     mongodb_url: mongodb://${mongodb_setup.meta.hosts}/admin
+
+# defaults.yml contains the following but it can be over-ridden
+upon_error:
+  - on_all_servers:
+      exec: |
+        df
+        du  --si  --max-depth 1 ./data
+      retrieve_files:
+        - source: data/logs/
+          target: ./
+  - on_mongod:
+      retrieve_files:
+        - source: data/dbs/diagnostic.data
+          target: ./diagnostic.data
+  - on_configsvr:
+      retrieve_files:
+        - source: data/dbs/diagnostic.data
+          target: ./diagnostic.data

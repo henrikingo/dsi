@@ -746,7 +746,7 @@ _RESERVED_REX = re.compile(r'on_.*')
 _RESERVED_WORDS = [
     'between_tests', 'post_cluster_restart', 'post_cluster_start', 'post_cluster_stop', 'post_task',
     'post_test', 'pre_cluster_restart', 'pre_cluster_start', 'pre_cluster_stop', 'pre_task',
-    'pre_test', 'workload_setup'
+    'pre_test', 'workload_setup', 'upon_error'
 ]
 
 

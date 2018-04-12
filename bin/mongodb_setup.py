@@ -5,13 +5,14 @@ MongoDB Setup
 This file takes as input a YAML configuration of the AWS instances and
 MongoDB cluster topology and brings up a cluster on the remote machines.
 """
+import sys
 from functools import partial
 import logging
 
 import argparse
 
 import common.host_utils
-import common.command_runner
+from common.command_runner import run_host_commands, run_upon_error
 from common.download_mongodb import DownloadMongodb
 import common.mongodb_setup_helpers
 import common.mongodb_cluster
@@ -66,8 +67,8 @@ class MongodbSetup(object):
 
         if 'pre_cluster_start' in self.config['mongodb_setup']:
             LOG.info("Mongodb_setup running pre_cluster_start commands")
-            common.command_runner.run_host_commands(
-                self.config['mongodb_setup']['pre_cluster_start'], self.config, 'pre_cluster_start')
+            run_host_commands(self.config['mongodb_setup']['pre_cluster_start'], self.config,
+                              'pre_cluster_start')
 
         return self._start()
 
@@ -232,8 +233,21 @@ def parse_command_line():
     return parser.parse_args()
 
 
+def start_cluster(mongo, config):
+    """Start the mongodb cluster and handle any errors. This function calls sys.exit on error.
+    :param MongodbSetup mongo: the mongodb setup instance.
+    :param ConfigDict config: the config dict containing the task configuration.
+    """
+    if not mongo.start():
+        LOG.error("Error in mongodb_setup.")
+        LOG.warn("Attempting to execute error handling tasks.")
+        run_upon_error('mongodb_setup', [config['mongodb_setup']], config)
+        sys.exit(1)
+
+
 def main():
-    """Start a mongodb cluster."""
+    """ Handle the main functionality (parse args /setup logging ) and then start the mongodb
+    cluster."""
     args = parse_command_line()
     setup_logging(args.debug, args.log_file)
 
@@ -242,9 +256,7 @@ def main():
 
     # start a mongodb configuration using config module
     mongo = MongodbSetup(config=config)
-    if not mongo.start():
-        LOG.error("Error setting up mongodb")
-        exit(1)
+    start_cluster(mongo, config)
 
 
 if __name__ == '__main__':

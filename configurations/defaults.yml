@@ -203,6 +203,22 @@ mongodb_setup:
 
   pre_cluster_start: ${mongodb_setup.authentication.${bootstrap.authentication}.pre_cluster_start}
 
+  upon_error:
+    - on_all_servers:
+        exec: |
+          (df; du  --max-depth 1 ./data) | sed "s/^/$(hostname): /"
+        retrieve_files:
+          - source: data/logs/
+            target: ./
+    - on_mongod:
+        retrieve_files:
+          - source: data/dbs/diagnostic.data
+            target: ./diagnostic.data
+    - on_configsvr:
+        retrieve_files:
+          - source: data/dbs/diagnostic.data
+            target: ./diagnostic.data
+
 test_control:
   task_name: default_task_name
   timeouts:

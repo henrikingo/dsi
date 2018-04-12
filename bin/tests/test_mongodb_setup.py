@@ -7,6 +7,7 @@ import mock
 
 import common.host
 import common.mongodb_cluster
+import common.command_runner
 import mongodb_setup
 
 # Mock the remote host module.
@@ -107,7 +108,7 @@ class TestMongodbSetup(unittest.TestCase):
     def test_start(self):
         """ test start"""
 
-        @mock.patch('mongodb_setup.common.command_runner.run_host_commands')
+        @mock.patch('mongodb_setup.run_host_commands')
         def _test_start(mock_run_host_commands, download_status=False, pre_cluster_start=False):
             test_config = copy.deepcopy(self.config)
             if pre_cluster_start:
@@ -371,6 +372,28 @@ class TestMongodbSetup(unittest.TestCase):
             mock_partial.assert_has_calls(
                 [mock.call(mock_cluster1.destroy, 1),
                  mock.call(mock_cluster2.destroy, 1)])
+
+    def test_start_cluster(self):
+        """ test start and correctly handles run on error"""
+
+        @mock.patch('sys.exit')
+        @mock.patch('mongodb_setup.run_upon_error')
+        def _test_start_cluster(success, mock_run_upon_error, mock_exit):
+
+            mongo = mock.MagicMock(name='mongo')
+            config = {'mongodb_setup': 'value'}
+            mongo.start.return_value = success
+            mongodb_setup.start_cluster(mongo, config)
+            if not success:
+                mock_run_upon_error.assert_called_once()
+                mock_run_upon_error.assert_called_with('mongodb_setup', ['value'], config)
+                mock_exit.assert_called_with(1)
+            else:
+                mock_run_upon_error.assert_not_called()
+                mock_exit.assert_not_called()
+
+        _test_start_cluster(True)  # success
+        _test_start_cluster(False)  # failure
 
 
 if __name__ == '__main__':
