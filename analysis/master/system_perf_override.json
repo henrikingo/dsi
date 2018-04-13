@@ -1929,90 +1929,131 @@
             "ndays":{},
             "reference":{
                 "ycsb_100read":{
-                    "create_time":"2017-10-24T13:26:41.263Z",
-                    "end":1508868604.0,
-                    "max":129219.0003618132,
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523115700.780204,
+                    "max":71224.05663736984,
                     "name":"ycsb_100read",
-                    "order":8835,
+                    "order":11670,
                     "results":{
                         "64":{
-                            "ops_per_sec":129219.0003618132
+                            "ops_per_sec":71224.05663736984,
+                            "ops_per_sec_values":[
+                                71224.05663736984
+                            ]
                         }
                     },
-                    "revision":"2ff0f268538b713b457a16eb3e8f731bd2e63028",
-                    "start":1508868447.0,
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523115418.28468,
                     "tag":"",
                     "threads":[
                         "64"
                     ],
                     "ticket":[
-                        "BF-6981"
+                        "BF-6981",
+                        "BF-8590"
                     ],
                     "workload":"ycsb"
                 },
-                "ycsb_50read50update":{
-                    "create_time":"2017-12-14T11:18:50.769Z",
-                    "end":1513271693.0,
-                    "max":15630.030916201153,
-                    "name":"ycsb_50read50update",
-                    "order":9322,
-                    "results":{
-                        "64":{
-                            "ops_per_sec":15630.030916201153
-                        }
-                    },
-                    "revision":"9611f1368349db2fcbe7a7090d7bb7afe0f789af",
-                    "start":1513270412.0,
-                    "tag":"",
-                    "threads":[
-                        "64"
-                    ],
-                    "ticket":[
-                        "BF-6981"
-                    ],
-                    "workload":"ycsb"
-                },
-                "ycsb_95read5update":{
-                    "create_time":"2017-10-24T13:26:41.263Z",
-                    "end":1508869084.0,
-                    "max":52439.89732268104,
-                    "name":"ycsb_95read5update",
-                    "order":8835,
+                "ycsb_100update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523118286.762786,
+                    "max":9993.674004355244,
+                    "name":"ycsb_100update",
+                    "order":11670,
                     "results":{
                         "32":{
-                            "ops_per_sec":52439.89732268104
+                            "ops_per_sec":9993.674004355244,
+                            "ops_per_sec_values":[
+                                9993.674004355244
+                            ]
                         }
                     },
-                    "revision":"2ff0f268538b713b457a16eb3e8f731bd2e63028",
-                    "start":1508868701.0,
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523116283.26485,
                     "tag":"",
                     "threads":[
                         "32"
                     ],
                     "ticket":[
-                        "BF-6981"
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_50read50update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523119705.391902,
+                    "max":14660.456497294414,
+                    "name":"ycsb_50read50update",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":14660.456497294414,
+                            "ops_per_sec_values":[
+                                14660.456497294414
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523118338.841048,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6981",
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_95read5update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523116229.582216,
+                    "max":42264.44440218,
+                    "name":"ycsb_95read5update",
+                    "order":11670,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":42264.44440218,
+                            "ops_per_sec_values":[
+                                42264.44440218
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523115754.030195,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-6981",
+                        "BF-8590"
                     ],
                     "workload":"ycsb"
                 },
                 "ycsb_load":{
-                    "create_time":"2017-10-24T13:26:41.263Z",
-                    "end":1508868350.0,
-                    "max":11435.027318280263,
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523115365.000571,
+                    "max":10811.582231813298,
                     "name":"ycsb_load",
-                    "order":8835,
+                    "order":11670,
                     "results":{
                         "8":{
-                            "ops_per_sec":11435.027318280263
+                            "ops_per_sec":10811.582231813298,
+                            "ops_per_sec_values":[
+                                10811.582231813298
+                            ]
                         }
                     },
-                    "revision":"2ff0f268538b713b457a16eb3e8f731bd2e63028",
-                    "start":1508867911.0,
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523114900.272254,
                     "tag":"",
                     "threads":[
                         "8"
                     ],
                     "ticket":[
-                        "BF-6981"
+                        "BF-6981",
+                        "BF-8590"
                     ],
                     "workload":"ycsb"
                 }
@@ -2072,41 +2113,6 @@
                     "ticket":[
                         "PERF-723",
                         "BF-5520"
-                    ]
-                },
-                "ycsb_100read":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_100update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_50read50update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_95read5update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_load":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
                     ]
                 }
             }
@@ -2114,69 +2120,131 @@
         "industry_benchmarks_WT":{
             "ndays":{},
             "reference":{
-                "ycsb_50read50update":{
-                    "create_time":"2017-12-14T11:18:50.769Z",
-                    "end":1513273250.0,
-                    "max":41019.66687928527,
-                    "name":"ycsb_50read50update",
-                    "order":9322,
+                "ycsb_100read":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523125229.333983,
+                    "max":62253.90254151557,
+                    "name":"ycsb_100read",
+                    "order":11670,
                     "results":{
                         "64":{
-                            "ops_per_sec":41019.66687928527
+                            "ops_per_sec":62253.90254151557,
+                            "ops_per_sec_values":[
+                                62253.90254151557
+                            ]
                         }
                     },
-                    "revision":"9611f1368349db2fcbe7a7090d7bb7afe0f789af",
-                    "start":1513272760.0,
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523124906.374874,
                     "tag":"",
                     "threads":[
                         "64"
                     ],
                     "ticket":[
-                        "BF-6941"
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_100update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523126603.389485,
+                    "max":22628.01801190234,
+                    "name":"ycsb_100update",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":22628.01801190234,
+                            "ops_per_sec_values":[
+                                22628.01801190234
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523125717.362924,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_50read50update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523127269.41166,
+                    "max":32837.055960910766,
+                    "name":"ycsb_50read50update",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":32837.055960910766,
+                            "ops_per_sec_values":[
+                                32837.055960910766
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523126658.032562,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6941",
+                        "BF-8590"
                     ],
                     "workload":"ycsb"
                 },
                 "ycsb_95read5update":{
-                    "create_time":"2017-07-30T14:41:40.093Z",
-                    "end":1501432817.0,
-                    "max":79541.20632193508,
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523125663.008514,
+                    "max":53013.274523940796,
                     "name":"ycsb_95read5update",
-                    "order":7793,
+                    "order":11670,
                     "results":{
                         "32":{
-                            "ops_per_sec":79541.20632193508
+                            "ops_per_sec":53013.274523940796,
+                            "ops_per_sec_values":[
+                                53013.274523940796
+                            ]
                         }
                     },
-                    "revision":"dcb9dbffa65d8ddcf5be80e88868fd11c01397df",
-                    "start":1501432563.0,
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523125283.382448,
                     "tag":"",
                     "threads":[
                         "32"
                     ],
                     "ticket":[
-                        "BF-6161"
+                        "BF-6161",
+                        "BF-8590"
                     ],
                     "workload":"ycsb"
                 },
                 "ycsb_load":{
-                    "create_time":"2017-08-09T02:45:24.009Z",
-                    "end":1503610521.0,
-                    "max":36250.79751754538,
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523124847.223888,
+                    "max":38805.41413137961,
                     "name":"ycsb_load",
-                    "order":7942,
+                    "order":11670,
                     "results":{
                         "32":{
-                            "ops_per_sec":36250.79751754538
+                            "ops_per_sec":38805.41413137961,
+                            "ops_per_sec_values":[
+                                38805.41413137961
+                            ]
                         }
                     },
-                    "revision":"c7661b14867cd058e1a67986b8e05a7020fc0a5e",
-                    "start":1503610380.0,
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523124716.075728,
                     "tag":"",
                     "threads":[
                         "32"
                     ],
                     "ticket":[
-                        "BF-6941"
+                        "BF-6941",
+                        "BF-8590"
                     ],
                     "workload":"ycsb"
                 }
@@ -2236,41 +2304,6 @@
                     "ticket":[
                         "PERF-723",
                         "BF-5520"
-                    ]
-                },
-                "ycsb_100read":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_100update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_50read50update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_95read5update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_load":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
                     ]
                 }
             }
@@ -4585,102 +4618,131 @@
             "ndays":{},
             "reference":{
                 "ycsb_100read":{
-                    "create_time":"2017-10-24T13:26:41.263Z",
-                    "end":1508873234.0,
-                    "max":123251.37117150429,
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523116046.173463,
+                    "max":68745.53154044987,
                     "name":"ycsb_100read",
-                    "order":8835,
+                    "order":11670,
                     "results":{
                         "64":{
-                            "ops_per_sec":123251.37117150429,
-                            "replica_avg_lag":1.4935064935064934,
-                            "replica_end_of_test_lag":10,
-                            "replica_max_lag":10
+                            "ops_per_sec":68745.53154044987,
+                            "ops_per_sec_values":[
+                                68745.53154044987
+                            ]
                         }
                     },
-                    "revision":"2ff0f268538b713b457a16eb3e8f731bd2e63028",
-                    "start":1508873070.0,
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523115754.652287,
                     "tag":"",
                     "threads":[
                         "64"
                     ],
                     "ticket":[
-                        "BF-6981"
+                        "BF-6981",
+                        "BF-8590"
                     ],
                     "workload":"ycsb"
                 },
-                "ycsb_50read50update":{
-                    "create_time":"2017-12-14T11:18:50.769Z",
-                    "end":1513275125.0,
-                    "max":14806.873943159373,
-                    "name":"ycsb_50read50update",
-                    "order":9322,
-                    "results":{
-                        "64":{
-                            "ops_per_sec":14806.873943159373,
-                            "replica_avg_lag":0.8656716417910447,
-                            "replica_end_of_test_lag":1,
-                            "replica_max_lag":2
-                        }
-                    },
-                    "revision":"9611f1368349db2fcbe7a7090d7bb7afe0f789af",
-                    "start":1513273773.0,
-                    "tag":"",
-                    "threads":[
-                        "64"
-                    ],
-                    "ticket":[
-                        "BF-6981"
-                    ],
-                    "workload":"ycsb"
-                },
-                "ycsb_95read5update":{
-                    "create_time":"2017-10-24T13:26:41.263Z",
-                    "end":1508873803.0,
-                    "max":50304.973904294784,
-                    "name":"ycsb_95read5update",
-                    "order":8835,
+                "ycsb_100update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523120352.201885,
+                    "max":5518.106009438168,
+                    "name":"ycsb_100update",
+                    "order":11670,
                     "results":{
                         "32":{
-                            "ops_per_sec":50304.973904294784,
-                            "replica_avg_lag":1.0876288659793814,
-                            "replica_end_of_test_lag":2,
-                            "replica_max_lag":2
+                            "ops_per_sec":5518.106009438168,
+                            "ops_per_sec_values":[
+                                5518.106009438168
+                            ]
                         }
                     },
-                    "revision":"2ff0f268538b713b457a16eb3e8f731bd2e63028",
-                    "start":1508873404.0,
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523116727.195975,
                     "tag":"",
                     "threads":[
                         "32"
                     ],
                     "ticket":[
-                        "BF-6981"
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_50read50update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523122563.422623,
+                    "max":9455.884751676647,
+                    "name":"ycsb_50read50update",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":9455.884751676647,
+                            "ops_per_sec_values":[
+                                9455.884751676647
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523120447.626782,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6981",
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_95read5update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523116646.602478,
+                    "max":38128.57336223479,
+                    "name":"ycsb_95read5update",
+                    "order":11670,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":38128.57336223479,
+                            "ops_per_sec_values":[
+                                38128.57336223479
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523116121.357977,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-6981",
+                        "BF-8590"
                     ],
                     "workload":"ycsb"
                 },
                 "ycsb_load":{
-                    "create_time":"2017-10-24T13:26:41.263Z",
-                    "end":1508872896.0,
-                    "max":10580.93569330523,
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523115664.644134,
+                    "max":9438.824149042808,
                     "name":"ycsb_load",
-                    "order":8835,
+                    "order":11670,
                     "results":{
                         "8":{
-                            "ops_per_sec":10580.93569330523,
-                            "replica_avg_lag":0.8146551724137931,
-                            "replica_end_of_test_lag":1,
-                            "replica_max_lag":2
+                            "ops_per_sec":9438.824149042808,
+                            "ops_per_sec_values":[
+                                9438.824149042808
+                            ]
                         }
                     },
-                    "revision":"2ff0f268538b713b457a16eb3e8f731bd2e63028",
-                    "start":1508872422.0,
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523115134.400839,
                     "tag":"",
                     "threads":[
                         "8"
                     ],
                     "ticket":[
-                        "BF-6981"
+                        "BF-6981",
+                        "BF-8590"
                     ],
                     "workload":"ycsb"
                 }
@@ -4740,41 +4802,6 @@
                     "ticket":[
                         "PERF-723",
                         "BF-5520"
-                    ]
-                },
-                "ycsb_100read":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_100update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_50read50update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_95read5update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_load":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
                     ]
                 }
             }
@@ -4782,22 +4809,72 @@
         "industry_benchmarks_WT":{
             "ndays":{},
             "reference":{
-                "ycsb_50read50update":{
-                    "create_time":"2018-01-18T02:06:16.716Z",
-                    "end":1516247581,
-                    "max":32017.263708591672,
-                    "name":"ycsb_50read50update",
-                    "order":9572,
+                "ycsb_100read":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523124609.027564,
+                    "max":62085.19330224935,
+                    "name":"ycsb_100read",
+                    "order":11670,
                     "results":{
                         "64":{
-                            "ops_per_sec":32017.263708591672,
+                            "ops_per_sec":62085.19330224935,
                             "ops_per_sec_values":[
-                                32017.263708591672
+                                62085.19330224935
                             ]
                         }
                     },
-                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
-                    "start":1516246955,
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523124286.235328,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_100update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523126201.569652,
+                    "max":21003.020234309693,
+                    "name":"ycsb_100update",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":21003.020234309693,
+                            "ops_per_sec_values":[
+                                21003.020234309693
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523125248.635013,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_50read50update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523127549.266246,
+                    "max":30641.854935330364,
+                    "name":"ycsb_50read50update",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":30641.854935330364,
+                            "ops_per_sec_values":[
+                                30641.854935330364
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523126895.944748,
                     "tag":"",
                     "threads":[
                         "64"
@@ -4805,32 +4882,59 @@
                     "ticket":[
                         "BF-6941",
                         "BF-6810",
-                        "BF-7749"
+                        "BF-7749",
+                        "BF-8590"
                     ],
                     "workload":"ycsb"
                 },
                 "ycsb_95read5update":{
-                    "create_time":"2017-07-30T14:41:40.093Z",
-                    "end":1501535626.0,
-                    "max":73988.02873695036,
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523125126.456623,
+                    "max":50757.04127055026,
                     "name":"ycsb_95read5update",
-                    "order":7793,
+                    "order":11670,
                     "results":{
                         "32":{
-                            "ops_per_sec":73988.02873695036,
-                            "replica_avg_lag":1.5333333333333334,
-                            "replica_end_of_test_lag":1,
-                            "replica_max_lag":15
+                            "ops_per_sec":50757.04127055026,
+                            "ops_per_sec_values":[
+                                50757.04127055026
+                            ]
                         }
                     },
-                    "revision":"dcb9dbffa65d8ddcf5be80e88868fd11c01397df",
-                    "start":1501535354.0,
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523124731.704813,
                     "tag":"",
                     "threads":[
                         "32"
                     ],
                     "ticket":[
-                        "BF-6161"
+                        "BF-6161",
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_load":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523124165.363806,
+                    "max":35019.4007480144,
+                    "name":"ycsb_load",
+                    "order":11670,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":35019.4007480144,
+                            "ops_per_sec_values":[
+                                35019.4007480144
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523124021.964331,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-8590"
                     ],
                     "workload":"ycsb"
                 }
@@ -4891,47 +4995,138 @@
                         "PERF-723",
                         "BF-5520"
                     ]
-                },
-                "ycsb_100read":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_100update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_50read50update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_95read5update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_load":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
                 }
             }
         },
         "industry_benchmarks_wmajority_MMAPv1":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "ycsb_50read50update_single_w_majority":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523129002.385197,
+                    "max":177.555187040108,
+                    "name":"ycsb_50read50update_single_w_majority",
+                    "order":11670,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":177.555187040108,
+                            "ops_per_sec_values":[
+                                177.555187040108
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523128401.637788,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_50read50update_w_majority":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523128307.118104,
+                    "max":9074.9195059029,
+                    "name":"ycsb_50read50update_w_majority",
+                    "order":11670,
+                    "results":{
+                        "128":{
+                            "ops_per_sec":9074.9195059029,
+                            "ops_per_sec_values":[
+                                9074.9195059029
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523127706.405529,
+                    "tag":"",
+                    "threads":[
+                        "128"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_95read5update_single_w_majority":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523127619.398275,
+                    "max":1438.477807610962,
+                    "name":"ycsb_95read5update_single_w_majority",
+                    "order":11670,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":1438.477807610962,
+                            "ops_per_sec_values":[
+                                1438.477807610962
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523127018.725031,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_95read5update_w_majority":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523126929.719823,
+                    "max":36227.74936918431,
+                    "name":"ycsb_95read5update_w_majority",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":36227.74936918431,
+                            "ops_per_sec_values":[
+                                36227.74936918431
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523126376.960279,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_load":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523126299.371035,
+                    "max":8263.441899822665,
+                    "name":"ycsb_load",
+                    "order":11670,
+                    "results":{
+                        "256":{
+                            "ops_per_sec":8263.441899822665,
+                            "ops_per_sec_values":[
+                                8263.441899822665
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523125693.758303,
+                    "tag":"",
+                    "threads":[
+                        "256"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -4987,48 +5182,139 @@
                     "ticket":[
                         "PERF-723",
                         "BF-5520"
-                    ]
-                },
-                "ycsb_50read50update_single_w_majority":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_50read50update_w_majority":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_95read5update_single_w_majority":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_95read5update_w_majority":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_load":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
                     ]
                 }
             }
         },
         "industry_benchmarks_wmajority_WT":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "ycsb_50read50update_single_w_majority":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523129114.828574,
+                    "max":654.3467282663587,
+                    "name":"ycsb_50read50update_single_w_majority",
+                    "order":11670,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":654.3467282663587,
+                            "ops_per_sec_values":[
+                                654.3467282663587
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523128514.127521,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_50read50update_w_majority":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523128386.721587,
+                    "max":22182.282328318815,
+                    "name":"ycsb_50read50update_w_majority",
+                    "order":11670,
+                    "results":{
+                        "512":{
+                            "ops_per_sec":22182.282328318815,
+                            "ops_per_sec_values":[
+                                22182.282328318815
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523127785.934369,
+                    "tag":"",
+                    "threads":[
+                        "512"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_95read5update_single_w_majority":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523127677.267368,
+                    "max":2601.6136585983736,
+                    "name":"ycsb_95read5update_single_w_majority",
+                    "order":11670,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":2601.6136585983736,
+                            "ops_per_sec_values":[
+                                2601.6136585983736
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523127076.551002,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_95read5update_w_majority":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523126951.041505,
+                    "max":51926.741752735245,
+                    "name":"ycsb_95read5update_w_majority",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":51926.741752735245,
+                            "ops_per_sec_values":[
+                                51926.741752735245
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523126565.20302,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_load":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523126428.780191,
+                    "max":14857.978353511759,
+                    "name":"ycsb_load",
+                    "order":11670,
+                    "results":{
+                        "512":{
+                            "ops_per_sec":14857.978353511759,
+                            "ops_per_sec_values":[
+                                14857.978353511759
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523126091.734923,
+                    "tag":"",
+                    "threads":[
+                        "512"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -5084,41 +5370,6 @@
                     "ticket":[
                         "PERF-723",
                         "BF-5520"
-                    ]
-                },
-                "ycsb_50read50update_single_w_majority":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_50read50update_w_majority":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_95read5update_single_w_majority":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_95read5update_w_majority":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_load":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
                     ]
                 }
             }
@@ -10722,90 +10973,131 @@
             "ndays":{},
             "reference":{
                 "ycsb_100read":{
-                    "create_time":"2017-10-24T13:26:41.263Z",
-                    "end":1508872643.0,
-                    "max":128164.0499839795,
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523121129.033133,
+                    "max":59455.683220119805,
                     "name":"ycsb_100read",
-                    "order":8835,
+                    "order":11670,
                     "results":{
                         "64":{
-                            "ops_per_sec":128164.0499839795
+                            "ops_per_sec":59455.683220119805,
+                            "ops_per_sec_values":[
+                                59455.683220119805
+                            ]
                         }
                     },
-                    "revision":"2ff0f268538b713b457a16eb3e8f731bd2e63028",
-                    "start":1508872485.0,
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523120790.778889,
                     "tag":"",
                     "threads":[
                         "64"
                     ],
                     "ticket":[
-                        "BF-6981"
+                        "BF-6981",
+                        "BF-8590"
                     ],
                     "workload":"ycsb"
                 },
-                "ycsb_50read50update":{
-                    "create_time":"2017-12-14T11:18:50.769Z",
-                    "end":1513274222.0,
-                    "max":17742.450587275114,
-                    "name":"ycsb_50read50update",
-                    "order":9322,
-                    "results":{
-                        "64":{
-                            "ops_per_sec":17742.450587275114
-                        }
-                    },
-                    "revision":"9611f1368349db2fcbe7a7090d7bb7afe0f789af",
-                    "start":1513273093.0,
-                    "tag":"",
-                    "threads":[
-                        "64"
-                    ],
-                    "ticket":[
-                        "BF-6981"
-                    ],
-                    "workload":"ycsb"
-                },
-                "ycsb_95read5update":{
-                    "create_time":"2017-12-14T11:18:50.769Z",
-                    "end":1513271333.0,
-                    "max":58703.36018033672,
-                    "name":"ycsb_95read5update",
-                    "order":9322,
+                "ycsb_100update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523123505.763937,
+                    "max":11023.723604382812,
+                    "name":"ycsb_100update",
+                    "order":11670,
                     "results":{
                         "32":{
-                            "ops_per_sec":58703.36018033672
+                            "ops_per_sec":11023.723604382812,
+                            "ops_per_sec_values":[
+                                11023.723604382812
+                            ]
                         }
                     },
-                    "revision":"9611f1368349db2fcbe7a7090d7bb7afe0f789af",
-                    "start":1513270990.0,
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523121689.173951,
                     "tag":"",
                     "threads":[
                         "32"
                     ],
                     "ticket":[
-                        "BF-6981"
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_50read50update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523124862.916093,
+                    "max":15157.41735797121,
+                    "name":"ycsb_50read50update",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":15157.41735797121,
+                            "ops_per_sec_values":[
+                                15157.41735797121
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523123541.019797,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6981",
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_95read5update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523121669.078991,
+                    "max":38416.915736337025,
+                    "name":"ycsb_95read5update",
+                    "order":11670,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":38416.915736337025,
+                            "ops_per_sec_values":[
+                                38416.915736337025
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523121146.057316,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-6981",
+                        "BF-8590"
                     ],
                     "workload":"ycsb"
                 },
                 "ycsb_load":{
-                    "create_time":"2017-10-24T13:26:41.263Z",
-                    "end":1508872413.0,
-                    "max":15310.418739952538,
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523120772.952848,
+                    "max":13781.318045257849,
                     "name":"ycsb_load",
-                    "order":8835,
+                    "order":11670,
                     "results":{
                         "8":{
-                            "ops_per_sec":15310.418739952538
+                            "ops_per_sec":13781.318045257849,
+                            "ops_per_sec_values":[
+                                13781.318045257849
+                            ]
                         }
                     },
-                    "revision":"2ff0f268538b713b457a16eb3e8f731bd2e63028",
-                    "start":1508872084.0,
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523120407.696398,
                     "tag":"",
                     "threads":[
                         "8"
                     ],
                     "ticket":[
-                        "BF-6981"
+                        "BF-6981",
+                        "BF-8590"
                     ],
                     "workload":"ycsb"
                 }
@@ -10865,41 +11157,6 @@
                     "ticket":[
                         "PERF-723",
                         "BF-5520"
-                    ]
-                },
-                "ycsb_100read":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_100update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_50read50update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_95read5update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_load":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
                     ]
                 }
             }
@@ -10907,47 +11164,130 @@
         "industry_benchmarks_WT":{
             "ndays":{},
             "reference":{
-                "ycsb_50read50update":{
-                    "create_time":"2017-12-14T11:18:50.769Z",
-                    "end":1513273977.0,
-                    "max":50047.92088424667,
-                    "name":"ycsb_50read50update",
-                    "order":9322,
+                "ycsb_100read":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523125777.50411,
+                    "max":62034.73945409429,
+                    "name":"ycsb_100read",
+                    "order":11670,
                     "results":{
                         "64":{
-                            "ops_per_sec":50047.92088424667
+                            "ops_per_sec":62034.73945409429,
+                            "ops_per_sec_values":[
+                                62034.73945409429
+                            ]
                         }
                     },
-                    "revision":"9611f1368349db2fcbe7a7090d7bb7afe0f789af",
-                    "start":1513273576.0,
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523125453.290596,
                     "tag":"",
                     "threads":[
                         "64"
                     ],
                     "ticket":[
-                        "BF-6941"
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_100update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523126950.907815,
+                    "max":27045.666608067724,
+                    "name":"ycsb_100update",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":27045.666608067724,
+                            "ops_per_sec_values":[
+                                27045.666608067724
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523126209.22887,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_50read50update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523127526.023708,
+                    "max":36727.236000036726,
+                    "name":"ycsb_50read50update",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":36727.236000036726,
+                            "ops_per_sec_values":[
+                                36727.236000036726
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523126979.113495,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-6941",
+                        "BF-8590"
                     ],
                     "workload":"ycsb"
                 },
                 "ycsb_95read5update":{
-                    "create_time":"2017-12-14T11:18:50.769Z",
-                    "end":1513272792.0,
-                    "max":77025.28354932506,
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523126182.006415,
+                    "max":52024.12879093323,
                     "name":"ycsb_95read5update",
-                    "order":9322,
+                    "order":11670,
                     "results":{
                         "32":{
-                            "ops_per_sec":77025.28354932506
+                            "ops_per_sec":52024.12879093323,
+                            "ops_per_sec_values":[
+                                52024.12879093323
+                            ]
                         }
                     },
-                    "revision":"9611f1368349db2fcbe7a7090d7bb7afe0f789af",
-                    "start":1513272530.0,
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523125795.230756,
                     "tag":"",
                     "threads":[
                         "32"
                     ],
                     "ticket":[
-                        "BF-6161"
+                        "BF-6161",
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_load":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523125430.498343,
+                    "max":47889.96800950137,
+                    "name":"ycsb_load",
+                    "order":11670,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":47889.96800950137,
+                            "ops_per_sec_values":[
+                                47889.96800950137
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523125323.833378,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-8590"
                     ],
                     "workload":"ycsb"
                 }
@@ -11007,41 +11347,6 @@
                     "ticket":[
                         "PERF-723",
                         "BF-5520"
-                    ]
-                },
-                "ycsb_100read":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_100update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_50read50update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_95read5update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_load":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
                     ]
                 }
             }
@@ -11926,7 +12231,133 @@
         },
         "industry_benchmarks_WT":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "ycsb_100read":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523125446.033774,
+                    "max":63075.365600587866,
+                    "name":"ycsb_100read",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":63075.365600587866,
+                            "ops_per_sec_values":[
+                                63075.365600587866
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523125127.135523,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_100update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523126816.695737,
+                    "max":22706.656115640457,
+                    "name":"ycsb_100update",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":22706.656115640457,
+                            "ops_per_sec_values":[
+                                22706.656115640457
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523125933.793826,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_50read50update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523127486.264303,
+                    "max":32692.612613790723,
+                    "name":"ycsb_50read50update",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":32692.612613790723,
+                            "ops_per_sec_values":[
+                                32692.612613790723
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523126872.150509,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_95read5update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523125879.427399,
+                    "max":53101.527465437546,
+                    "name":"ycsb_95read5update",
+                    "order":11670,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":53101.527465437546,
+                            "ops_per_sec_values":[
+                                53101.527465437546
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523125500.584699,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_load":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523125065.981582,
+                    "max":38300.38223781473,
+                    "name":"ycsb_load",
+                    "order":11670,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":38300.38223781473,
+                            "ops_per_sec_values":[
+                                38300.38223781473
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523124933.345541,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -11975,41 +12406,6 @@
                     "threshold":1.0,
                     "ticket":[
                         "BF-7734"
-                    ]
-                },
-                "ycsb_100read":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_100update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_50read50update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_95read5update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_load":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
                     ]
                 }
             }
@@ -12813,7 +13209,133 @@
         },
         "industry_benchmarks_WT":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "ycsb_100read":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523124349.514426,
+                    "max":62135.34320456819,
+                    "name":"ycsb_100read",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":62135.34320456819,
+                            "ops_per_sec_values":[
+                                62135.34320456819
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523124027.056777,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_100update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523125871.511948,
+                    "max":22338.70616447766,
+                    "name":"ycsb_100update",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":22338.70616447766,
+                            "ops_per_sec_values":[
+                                22338.70616447766
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523124975.592996,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_50read50update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523127214.024565,
+                    "max":30913.382248608512,
+                    "name":"ycsb_50read50update",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":30913.382248608512,
+                            "ops_per_sec_values":[
+                                30913.382248608512
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523126566.434982,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_95read5update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523124864.441488,
+                    "max":50994.39061703213,
+                    "name":"ycsb_95read5update",
+                    "order":11670,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":50994.39061703213,
+                            "ops_per_sec_values":[
+                                50994.39061703213
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523124471.584139,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_load":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523123895.071105,
+                    "max":35028.23275560101,
+                    "name":"ycsb_load",
+                    "order":11670,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":35028.23275560101,
+                            "ops_per_sec_values":[
+                                35028.23275560101
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523123751.746583,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -12862,48 +13384,139 @@
                     "threshold":1.0,
                     "ticket":[
                         "BF-7734"
-                    ]
-                },
-                "ycsb_100read":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_100update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_50read50update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_95read5update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_load":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
                     ]
                 }
             }
         },
         "industry_benchmarks_wmajority_WT":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "ycsb_50read50update_single_w_majority":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523129246.158663,
+                    "max":650.4223305177966,
+                    "name":"ycsb_50read50update_single_w_majority",
+                    "order":11670,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":650.4223305177966,
+                            "ops_per_sec_values":[
+                                650.4223305177966
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523128645.458694,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_50read50update_w_majority":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523128529.202131,
+                    "max":22416.700409411977,
+                    "name":"ycsb_50read50update_w_majority",
+                    "order":11670,
+                    "results":{
+                        "512":{
+                            "ops_per_sec":22416.700409411977,
+                            "ops_per_sec_values":[
+                                22416.700409411977
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523127928.393371,
+                    "tag":"",
+                    "threads":[
+                        "512"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_95read5update_single_w_majority":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523127808.027713,
+                    "max":2530.199899333669,
+                    "name":"ycsb_95read5update_single_w_majority",
+                    "order":11670,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":2530.199899333669,
+                            "ops_per_sec_values":[
+                                2530.199899333669
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523127207.313164,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_95read5update_w_majority":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523127082.137591,
+                    "max":51657.02832613148,
+                    "name":"ycsb_95read5update_w_majority",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":51657.02832613148,
+                            "ops_per_sec_values":[
+                                51657.02832613148
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523126694.279823,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_load":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523126558.486365,
+                    "max":15041.879272167133,
+                    "name":"ycsb_load",
+                    "order":11670,
+                    "results":{
+                        "512":{
+                            "ops_per_sec":15041.879272167133,
+                            "ops_per_sec_values":[
+                                15041.879272167133
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523126225.559468,
+                    "tag":"",
+                    "threads":[
+                        "512"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -12952,41 +13565,6 @@
                     "threshold":1.0,
                     "ticket":[
                         "BF-7734"
-                    ]
-                },
-                "ycsb_50read50update_single_w_majority":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_50read50update_w_majority":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_95read5update_single_w_majority":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_95read5update_w_majority":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_load":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
                     ]
                 }
             }
@@ -13687,7 +14265,133 @@
         },
         "industry_benchmarks_WT":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "ycsb_100read":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523125822.243625,
+                    "max":62549.84440726204,
+                    "name":"ycsb_100read",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":62549.84440726204,
+                            "ops_per_sec_values":[
+                                62549.84440726204
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523125500.740117,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_100update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523126939.491502,
+                    "max":28689.50638269793,
+                    "name":"ycsb_100update",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":28689.50638269793,
+                            "ops_per_sec_values":[
+                                28689.50638269793
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523126240.232874,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_50read50update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523127476.931839,
+                    "max":39444.15299598064,
+                    "name":"ycsb_50read50update",
+                    "order":11670,
+                    "results":{
+                        "64":{
+                            "ops_per_sec":39444.15299598064,
+                            "ops_per_sec_values":[
+                                39444.15299598064
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523126967.597918,
+                    "tag":"",
+                    "threads":[
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_95read5update":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523126211.431462,
+                    "max":54231.552459536484,
+                    "name":"ycsb_95read5update",
+                    "order":11670,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":54231.552459536484,
+                            "ops_per_sec_values":[
+                                54231.552459536484
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523125840.326857,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                },
+                "ycsb_load":{
+                    "create_time":"2018-04-06T21:16:55Z",
+                    "end":1523125477.944041,
+                    "max":47049.08160192713,
+                    "name":"ycsb_load",
+                    "order":11670,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":47049.08160192713,
+                            "ops_per_sec_values":[
+                                47049.08160192713
+                            ]
+                        }
+                    },
+                    "revision":"47e4b6b791cce13a36ea499a9311d54f100412ee",
+                    "start":1523125369.458804,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-8590"
+                    ],
+                    "workload":"ycsb"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -13736,41 +14440,6 @@
                     "threshold":1.0,
                     "ticket":[
                         "BF-7734"
-                    ]
-                },
-                "ycsb_100read":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_100update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_50read50update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_95read5update":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
-                    ]
-                },
-                "ycsb_load":{
-                    "thread_threshold":0.9,
-                    "threshold":0.6,
-                    "ticket":[
-                        "BF-8590"
                     ]
                 }
             }
