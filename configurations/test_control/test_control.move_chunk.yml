@@ -17,8 +17,16 @@ run:
       ########################################################################
       tests:
         default:
-          - move_chunk_with_load
-          - move_chunk
+          - move_chunk_with_load:
+              - secondary_throttle: true
+              - secondary_throttle: false
+          - move_chunk:
+              - secondary_throttle: false
+                wait_for_delete: true
+              - secondary_throttle: true
+                wait_for_delete: false
+              - secondary_throttle: false
+                wait_for_delete: false
           - cpu_noise
 
       # These next five lines match existing
