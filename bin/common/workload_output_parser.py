@@ -343,8 +343,6 @@ class YcsbParser(ResultParser):
                 result = float(parts[2])
                 name = self.test_id
                 self.add_result(name, result, self.threads)
-                # Also, there's just one thread level (per test entry), and just this one stat
-                break
 
 
 class FioParser(ResultParser):
