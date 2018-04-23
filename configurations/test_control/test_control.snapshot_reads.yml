@@ -13,18 +13,32 @@ run:
           - snapshot_reads:
               thread_levels: [1, 32, 64]
               background_writes: false
+              background_currentOp: false
               useSnapshotReads: true
           - snapshot_reads:
               thread_levels: [1, 32, 64]
               background_writes: true
+              background_currentOp: false
               useSnapshotReads: true
           - snapshot_reads:
               thread_levels: [1, 32, 64]
               background_writes: false
+              background_currentOp: false
               useSnapshotReads: false
           - snapshot_reads:
               thread_levels: [1, 32, 64]
               background_writes: true
+              background_currentOp: false
+              useSnapshotReads: false
+          - snapshot_reads:
+              thread_levels: [1, 32, 64]
+              background_writes: false
+              background_currentOp: true
+              useSnapshotReads: true
+          - snapshot_reads:
+              thread_levels: [1, 32, 64]
+              background_writes: false
+              background_currentOp: true
               useSnapshotReads: false
 
       # These next five lines match existing workloads.yml.
