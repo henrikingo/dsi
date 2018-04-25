@@ -8449,6 +8449,41 @@
                     "ticket":[
                         "BF-5083"
                     ]
+                },
+                "Aggregation.UnwindThenSort":{
+                    "create_time":"2018-04-23T18:20:43Z",
+                    "max":245.11815907276272,
+                    "name":"Aggregation.UnwindThenSort",
+                    "order":12458,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":245.11815907276272,
+                            "ops_per_sec_values":[
+                                245.33361675892314,
+                                245.29113979216024,
+                                244.76458542174137,
+                                245.1202687493033,
+                                245.0811846416857
+                            ]
+                        },
+                        "end":"2018-04-24T11:06:12.314Z",
+                        "start":"2018-04-24T11:05:47.004Z"
+                    },
+                    "revision":"8941fac630e0ac31649a1e32b0ea54c3930bdfec",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-8917"
+                    ]
                 }
             },
             "threshold":{
@@ -26274,6 +26309,41 @@
                     ],
                     "ticket":[
                         "BF-5083"
+                    ]
+                },
+                "Aggregation.UnwindThenSort":{
+                    "create_time":"2018-04-23T18:20:43Z",
+                    "max":236.68723700479518,
+                    "name":"Aggregation.UnwindThenSort",
+                    "order":12458,
+                    "results":{
+                        "1":{
+                            "error_values":[
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "ops_per_sec":236.68723700479518,
+                            "ops_per_sec_values":[
+                                237.31100266095947,
+                                236.6483084342936,
+                                236.3515472535271,
+                                236.15916488365164,
+                                236.9661617915441
+                            ]
+                        },
+                        "end":"2018-04-24T00:57:44.913Z",
+                        "start":"2018-04-24T00:57:19.601Z"
+                    },
+                    "revision":"8941fac630e0ac31649a1e32b0ea54c3930bdfec",
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-8917"
                     ]
                 }
             },
