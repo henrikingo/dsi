@@ -160,14 +160,17 @@ mongodb_setup:
       net:
         port: 27017
         bindIp: 0.0.0.0
-        ssl:
-          mode: preferSSL
-          PEMKeyFile: ${mongodb_setup.mongo_dir}/member.pem
-          PEMKeyPassword: server-perf
-          CAFile: ${mongodb_setup.mongo_dir}/root.crt
+        # Due to the state of regressions when SSL is enabled, we are turning off SSL until after
+        # 4.0 is released.
+        # ssl:
+        #   mode: preferSSL
+        #   PEMKeyFile: ${mongodb_setup.mongo_dir}/member.pem
+        #   PEMKeyPassword: server-perf
+        #   CAFile: ${mongodb_setup.mongo_dir}/root.crt
       username: username
       password: password
-      mongodb_url: mongodb://${mongodb_setup.authentication.enabled.username}:${mongodb_setup.authentication.enabled.password}@${mongodb_setup.meta.hosts}/admin?ssl=true
+      # Temporarily disable SSL.
+      mongodb_url: mongodb://${mongodb_setup.authentication.enabled.username}:${mongodb_setup.authentication.enabled.password}@${mongodb_setup.meta.hosts}/admin?ssl=false
       # Get necessary SSL keys.
       pre_cluster_start:
         - on_all_hosts:

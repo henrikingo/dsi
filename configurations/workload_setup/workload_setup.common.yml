@@ -93,12 +93,15 @@ install_java: |
   sudo rpm -i jdk-8u162-linux-x64.rpm
   sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.8.0_162/bin/java 20000
 
-# This is temporary, until we put auth into production.
+# This is temporary, until YCSB enables SSL.
 authentication:
   enabled:
     - source: git@github.com:mongodb-labs/YCSB.git
       target: ${bootstrap.ycsb_dir}
-      branch: PERF-1293-ssl
+      # We are disabling SSL until 4.0. When we come back to enabling SSL we should also fix our
+      # YCSB to enable SSL or use master YCSB.
+      branch: 5742781
+      # branch: PERF-1293-ssl
   disabled:
     - source: git@github.com:mongodb-labs/YCSB.git
       target: ${bootstrap.ycsb_dir}

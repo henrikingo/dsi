@@ -295,7 +295,9 @@ class MongoNode(MongoCluster):
         self.host.create_file(remote_file_name, config_contents)
         self.host.run(['cat', remote_file_name])
         if auth_enabled:
-            mongodb_args = ' --clusterAuthMode x509'
+            # Temporarily disable SSL.
+            #mongodb_args = ' --clusterAuthMode x509'
+            mongodb_args = ''
         else:
             mongodb_args = ''
         cmd = '{}{} --config {}'.format(

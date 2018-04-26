@@ -375,8 +375,8 @@ class TestMongoNode(unittest.TestCase):
             expected_full_command = DEFAULT_CONFIG['infrastructure_provisioning']['numactl_prefix']
 
         expected_full_command += " /usr/bin/mongod"
-        if auth_enabled:
-            expected_full_command += " --clusterAuthMode x509"
+        #if auth_enabled:
+        #    expected_full_command += " --clusterAuthMode x509"
         expected_full_command += " --config /tmp/mongo_port_9999.conf"
 
         self.assertEqual(node.launch_cmd(auth_enabled=auth_enabled), expected_full_command)
