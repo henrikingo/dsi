@@ -394,39 +394,48 @@ class TestMongoNode(unittest.TestCase):
         self.launch_cmd_helper(True, True)
 
     def test_shutdown(self):
-        """Test shutdown."""
-
+        """
+        Test shutdown.
+        """
         mock_logger = mock.MagicMock(name='LOG')
         common.mongodb_cluster.LOG.warn = mock_logger
         self.mongo_node.shutdown_options = '{}'
         self.mongo_node.run_mongo_shell = mock.MagicMock(name='run_mongo_shell')
-        self.mongo_node.run_mongo_shell.return_value = True
+        self.mongo_node.host.run = mock.MagicMock(name='run')
+        self.mongo_node.host.run.return_value = False
         self.assertTrue(self.mongo_node.shutdown(1))
         self.mongo_node.run_mongo_shell.assert_called_once_with(
             'db.getSiblingDB("admin").shutdownServer({})', max_time_ms=1)
+        self.mongo_node.host.run.assert_called_once_with(['pgrep -l', 'mongo'])
         mock_logger.assert_not_called()
 
     def test_shutdown_options(self):
-        """Test failed shutdown with options."""
-
+        """
+        Test failed shutdown with options.
+        """
         mock_logger = mock.MagicMock(name='LOG')
         common.mongodb_cluster.LOG.warn = mock_logger
-        self.mongo_node.run_mongo_shell = mock.MagicMock(name='run_mongo_shell')
         self.mongo_node.shutdown_options = 'options'
-        self.mongo_node.run_mongo_shell.return_value = False
+        self.mongo_node.run_mongo_shell = mock.MagicMock(name='run_mongo_shell')
+        self.mongo_node.host.run = mock.MagicMock(name='run')
+        self.mongo_node.host.run.return_value = True
         self.assertFalse(self.mongo_node.shutdown(None))
-        self.mongo_node.run_mongo_shell.assert_called_once_with(
+        self.mongo_node.run_mongo_shell.assert_called_with(
             'db.getSiblingDB("admin").shutdownServer(options)', max_time_ms=None)
-        mock_logger.assert_called_once_with(ANY_IN_STRING('did not shutdown'), mock.ANY, mock.ANY)
+        self.mongo_node.host.run.assert_called_with(['pgrep -l', 'mongo'])
+        mock_logger.assert_called_with(ANY_IN_STRING('did not shutdown yet'), mock.ANY, mock.ANY)
 
-    def test_shutdown_exception(self):
-        """Test shutdown."""
-
+    def test_shutdown_mongo_shell_exception(self):
+        """
+        Test shutdown with exeception from `run_mongo_shell`.
+        """
         mock_logger = mock.MagicMock(name='LOG')
         common.mongodb_cluster.LOG.error = mock_logger
         self.mongo_node.run_mongo_shell = mock.MagicMock(name='run_mongo_shell')
+        self.mongo_node.host.run = mock.MagicMock(name='run')
         self.mongo_node.run_mongo_shell.side_effect = Exception()
         self.assertFalse(self.mongo_node.shutdown(None))
+        self.mongo_node.host.run.assert_not_called()
         mock_logger.assert_called_once_with(
             ANY_IN_STRING('Error shutting down MongoNode at'), mock.ANY, mock.ANY)
 
@@ -566,12 +575,13 @@ class TestReplSet(unittest.TestCase):
 
     def test_add_default_users(self):
         """
-        Test that add_default_users adds users on the correct clusters a replset.
+        Test that add_default_users adds users on the correct nodes in a replset.
         """
         mock_add_user = MagicMock(name='add_user')
         common.mongodb_cluster.mongodb_setup_helpers.add_user = mock_add_user
         self.replset.add_default_users()
-        mock_add_user.assert_called_once_with(self.replset, self.replset.config)
+        mock_add_user.assert_called_once_with(
+            self.replset, self.replset.config, write_concern=len(self.replset.nodes))
 
 
 class TestShardedCluster(unittest.TestCase):

@@ -43,25 +43,31 @@ def mongodb_auth_settings(config):
                                config['mongodb_setup']['authentication']['enabled']['password'])
 
 
-def add_user(cluster, config):
+def add_user(cluster, config, write_concern=1):
     """
     Database command to add a root user to the given cluster. The username and password of the user
     are found in the config file.
 
     :param MongoCluster cluster: The cluster to which the user will be added.
+    :param int write_concern: The number of nodes in the cluster that should acknowlege write
+    operations requested by the client. The default is 1.
     """
-
     script_template = jinja2.Template('''
         db.getSiblingDB("admin").createUser(
           {
             user: {{user|tojson}},
             pwd: {{password|tojson}},
             roles: [ { role: "root", db: "admin" } ]
+          },
+          {
+            w: {{wc|tojson}},
+            wtimeout: 10000
           });''')
 
     add_user_script = script_template.render(
         user=config['mongodb_setup']['authentication']['enabled']['username'],
-        password=config['mongodb_setup']['authentication']['enabled']['password'])
+        password=config['mongodb_setup']['authentication']['enabled']['password'],
+        wc=write_concern)
     cluster.run_mongo_shell(add_user_script)
 
 

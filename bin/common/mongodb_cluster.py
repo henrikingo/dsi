@@ -360,20 +360,24 @@ class MongoNode(MongoCluster):
     connection_string_public = hostport_public
 
     def shutdown(self, max_time_ms, auth_enabled=None):
-        """Shutdown the replset members gracefully
-        For the max_time_ms parameter, see
-            :method:`Host.exec_command`
+        """
+        Shutdown the node gracefully.
+
+        For the max_time_ms parameter, see :method:`Host.exec_command`
         :return: True if shutdownServer command ran successfully.
         """
         try:
             if auth_enabled is not None:
                 self.auth_enabled = auth_enabled
-            result = self.run_mongo_shell(
-                'db.getSiblingDB("admin").shutdownServer({})'.format(self.shutdown_options),
-                max_time_ms=max_time_ms)
-            if not result:
-                LOG.warn("Mongo %s:%s did not shutdown", self.public_ip, self.port)
-            return result
+            for _ in range(20):
+                self.run_mongo_shell(
+                    'db.getSiblingDB("admin").shutdownServer({})'.format(self.shutdown_options),
+                    max_time_ms=max_time_ms)
+                if self.host.run(['pgrep -l', 'mongo']):
+                    LOG.warn("Mongo %s:%s did not shutdown yet", self.public_ip, self.port)
+                else:
+                    return True
+                time.sleep(1)
         except Exception:  # pylint: disable=broad-except
             LOG.error("Error shutting down MongoNode at %s:%s", self.public_ip, self.port)
         return False
@@ -578,6 +582,14 @@ class ReplSet(MongoCluster):
         """
         primary = self.highest_priority_node()
         return primary.run_mongo_shell(js_string, max_time_ms)
+
+    def add_default_users(self):
+        """
+        See :method:`MongoCluster.add_default_user`.
+        On a replset we set the write conern to the total number of nodes in the replset to ensure
+        the user is added to all nodes during setup.
+        """
+        mongodb_setup_helpers.add_user(self, self.config, write_concern=len(self.nodes))
 
     def shutdown(self, max_time_ms, auth_enabled=None):
         """Shutdown gracefully
