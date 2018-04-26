@@ -12049,33 +12049,7 @@
             }
         },
         "core_workloads_WT":{
-            "ndays":{
-                "word_count_doc":{
-                    "create_time":"2018-01-18T02:06:16.716Z",
-                    "end":1516251800,
-                    "max":32258.39750603877,
-                    "name":"word_count_doc",
-                    "order":9572,
-                    "results":{
-                        "1":{
-                            "ops_per_sec":32258.39750603877,
-                            "ops_per_sec_values":[
-                                32258.39750603877
-                            ]
-                        }
-                    },
-                    "revision":"25b7af8b7367de11f0d4d864bd6a51983227c494",
-                    "start":1516243322,
-                    "tag":"",
-                    "threads":[
-                        "1"
-                    ],
-                    "ticket":[
-                        "BF-7705"
-                    ],
-                    "workload":"mongoshell"
-                }
-            },
+            "ndays":{},
             "reference":{
                 "contended_update":{
                     "create_time":"2017-08-20T23:49:29.996Z",
@@ -13267,7 +13241,34 @@
         },
         "map_reduce_workloads_WT":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "word_count_doc":{
+                    "create_time":"2018-01-22T15:22:23.19Z",
+                    "end":1516645514.850308,
+                    "max":32492.34480356428,
+                    "name":"word_count_doc",
+                    "order":9597,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":32492.34480356428,
+                            "ops_per_sec_values":[
+                                32492.34480356428
+                            ]
+                        }
+                    },
+                    "revision":"03a949db6656076c759a160e385efd81e066cf24",
+                    "start":1516637052.020906,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7705",
+                        "BF-7413"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
