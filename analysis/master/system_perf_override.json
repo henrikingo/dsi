@@ -2194,6 +2194,20 @@
                     "ticket":[
                         "PERF-873"
                     ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "word_count_doc":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
                 }
             }
         },
@@ -5886,6 +5900,20 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "word_count_doc":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "PERF-1157"
                     ]
                 }
             }
@@ -10201,6 +10229,20 @@
                     "ticket":[
                         "PERF-873"
                     ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "word_count_doc":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
                 }
             }
         },
@@ -13205,6 +13247,20 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "word_count_doc":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "PERF-1157"
                     ]
                 }
             }
