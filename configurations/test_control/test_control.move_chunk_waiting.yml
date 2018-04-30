@@ -1,4 +1,4 @@
-task_name: move_chunk
+task_name: move_chunk_waiting
 run:
   - id: benchRun
     type: mongoshell
@@ -17,8 +17,10 @@ run:
       ########################################################################
       tests:
         default:
-          - move_chunk_with_load
-          - move_chunk
+          - move_chunk_with_load:
+              - wait_for_delete: true
+          - move_chunk:
+              - wait_for_delete: true
           - cpu_noise
 
       # These next five lines match existing
