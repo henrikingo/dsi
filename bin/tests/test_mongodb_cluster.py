@@ -139,7 +139,7 @@ class TestMongoNode(unittest.TestCase):
         required = [['rm', '-rf', a]
                     for a in [
                         '*.log', 'core.*', 'data/dbs/diagnostic.data/*', 'diagnostic.data',
-                        'data/dbs', '/media/ephemeral1/journal'
+                        'data/dbs', '/data/journal'
                     ]]
         for req in required:
             self.assertTrue(req in commands_issued,

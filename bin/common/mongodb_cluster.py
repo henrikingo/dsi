@@ -233,7 +233,7 @@ class MongoNode(MongoCluster):
             'clean_db_dir': _clean_db_dir,
             'clean_logs': _clean_logs,
             'dbdir': self.dbdir,
-            'journal_dir': self.config.get('mongodb_setup.journal_dir', DEFAULT_JOURNAL_DIR),
+            'journal_dir': self.config['mongodb_setup'].get('journal_dir', DEFAULT_JOURNAL_DIR),
             'logdir': self.logdir,
             'is_mongos': self.mongo_program == 'mongos',
             'use_journal_mnt': self.use_journal_mnt
