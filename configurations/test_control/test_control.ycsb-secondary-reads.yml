@@ -1,0 +1,111 @@
+task_name: ycsb-secondary-reads
+run:
+  - id: ycsb_load
+    type: ycsb
+    cmd: >
+      cd YCSB/ycsb-mongodb;
+      ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb load mongodb -s
+      -P ../../workloadEvergreen
+      -threads ${test_control.thread_levels.load};
+    config_filename: workloadEvergreen
+    workload_config: |
+      mongodb.url=${mongodb_setup.meta.mongodb_url}&replicaSet=rs0&readPreference=secondary
+      // This way to set readPreference is deprecated in Java driver but in case YCSB uses an older version
+      mongodb.readPreference=secondary
+      recordcount=5000000
+      operationcount=20000000
+      workload=com.yahoo.ycsb.workloads.CoreWorkload
+      readallfields=true
+      readproportion=1.0
+      updateproportion=0.0
+      scanproportion=0
+      insertproportion=0.0
+      requestdistribution=uniform
+
+  - id: ycsb_100read_secondary_reads
+    type: ycsb
+    cmd: >
+      cd YCSB/ycsb-mongodb;
+      ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
+      -P ../../workloadEvergreen
+      -threads ${test_control.thread_levels.level100-0};
+
+  - id: ycsb_95read5update_secondary_reads
+    type: ycsb
+    cmd: >
+      cd YCSB/ycsb-mongodb;
+      ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
+      -P ../../workloadEvergreen_95read5update
+      -threads ${test_control.thread_levels.level95-5};
+    config_filename: workloadEvergreen_95read5update
+    workload_config: |
+      mongodb.url=${mongodb_setup.meta.mongodb_url}&replicaSet=rs0&readPreference=secondary
+      // This way to set readPreference is deprecated in Java driver but in case YCSB uses an older version
+      mongodb.readPreference=secondary
+      recordcount=5000000
+      operationcount=20000000
+      workload=com.yahoo.ycsb.workloads.CoreWorkload
+      readallfields=true
+      readproportion=0.95
+      updateproportion=0.05
+      scanproportion=0
+      insertproportion=0.0
+      requestdistribution=uniform
+
+  - id: ycsb_50read50update_secondary_reads
+    type: ycsb
+    cmd: >
+      cd YCSB/ycsb-mongodb;
+      ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
+      -P ../../workloadEvergreen_50read50update
+      -threads ${test_control.thread_levels.level50-50};
+    config_filename: workloadEvergreen_50read50update
+    workload_config: |
+      mongodb.url=${mongodb_setup.meta.mongodb_url}&replicaSet=rs0&readPreference=secondary
+      // This way to set readPreference is deprecated in Java driver but in case YCSB uses an older version
+      mongodb.readPreference=secondary
+      recordcount=5000000
+      operationcount=20000000
+      workload=com.yahoo.ycsb.workloads.CoreWorkload
+      readallfields=true
+      readproportion=0.5
+      updateproportion=0.5
+      scanproportion=0
+      insertproportion=0.0
+      requestdistribution=uniform
+
+  - id: fio
+    type: fio
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
+    config_filename: fio.ini
+    output_files:
+      - fio.json
+      - fio_results.tgz
+    workload_config: ${test_control.common_fio_config}
+    skip_validate: true
+
+  - id: iperf
+    type: iperf
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    output_files:
+      - iperf.json
+    skip_validate: true
+
+thread_levels:
+  load: 32
+  level100-0: 32
+  level50-50: 32
+  level95-5: 32
+
+
+between_tests:
+  - restart_mongodb:
+      clean_logs: true
+      clean_db_dir: false
+
+pre_task:
+  - on_workload_client:
+      exec_mongo_shell:
+        connection_string: "${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}"
+        # Shard the YCSB cluster if sharding is enabled
+        script: ${test_control.ycsb_sharding_script}

@@ -344,6 +344,12 @@ class YcsbParser(ResultParser):
                 name = self.test_id
                 self.add_result(name, result, self.threads)
 
+            # if line.startswith("[READ], 95thPercentileLatency(ms), "):
+            #     parts = line.rstrip().split(", ")
+            #     result = -float(parts[2])
+            #     name = self.test_id + "_95th_read_latency_ms"
+            #     self.add_result(name, result, self.threads)
+
 
 class FioParser(ResultParser):
     """A ResultParser of fio results in fio.json"""
