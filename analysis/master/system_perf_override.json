@@ -2626,24 +2626,27 @@
                     ]
                 },
                 "mixed_delete":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_findOne":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_insert":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_total":{
@@ -2654,10 +2657,11 @@
                     ]
                 },
                 "mixed_update":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 }
             }
@@ -2744,24 +2748,27 @@
                     ]
                 },
                 "mixed_delete":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_findOne":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_insert":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_total":{
@@ -2772,10 +2779,11 @@
                     ]
                 },
                 "mixed_update":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 }
             }
@@ -6417,24 +6425,27 @@
                     ]
                 },
                 "mixed_delete":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_findOne":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_insert":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_total":{
@@ -6445,10 +6456,11 @@
                     ]
                 },
                 "mixed_update":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 }
             }
@@ -6535,24 +6547,27 @@
                     ]
                 },
                 "mixed_delete":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_findOne":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_insert":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_total":{
@@ -6563,10 +6578,11 @@
                     ]
                 },
                 "mixed_update":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 }
             }
@@ -10745,24 +10761,27 @@
                     ]
                 },
                 "mixed_delete":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_findOne":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_insert":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_total":{
@@ -10773,10 +10792,11 @@
                     ]
                 },
                 "mixed_update":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 }
             }
@@ -10863,24 +10883,27 @@
                     ]
                 },
                 "mixed_delete":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_findOne":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_insert":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_total":{
@@ -10891,10 +10914,11 @@
                     ]
                 },
                 "mixed_update":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 }
             }
@@ -13862,24 +13886,27 @@
                     ]
                 },
                 "mixed_delete":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_findOne":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_insert":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_total":{
@@ -13890,10 +13917,11 @@
                     ]
                 },
                 "mixed_update":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 }
             }
@@ -13980,24 +14008,27 @@
                     ]
                 },
                 "mixed_delete":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_findOne":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_insert":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_total":{
@@ -14008,10 +14039,11 @@
                     ]
                 },
                 "mixed_update":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 }
             }
@@ -15686,24 +15718,27 @@
                     ]
                 },
                 "mixed_delete":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_findOne":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_insert":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_total":{
@@ -15714,10 +15749,11 @@
                     ]
                 },
                 "mixed_update":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 }
             }
@@ -17480,24 +17516,27 @@
                     ]
                 },
                 "mixed_delete":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_findOne":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_insert":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_total":{
@@ -17508,10 +17547,11 @@
                     ]
                 },
                 "mixed_update":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 }
             }
@@ -18914,24 +18954,27 @@
                     ]
                 },
                 "mixed_delete":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_findOne":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_insert":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 },
                 "mixed_total":{
@@ -18942,10 +18985,11 @@
                     ]
                 },
                 "mixed_update":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-5125"
                     ]
                 }
             }
