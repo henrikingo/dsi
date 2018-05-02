@@ -42,12 +42,8 @@ run:
               secondary: ${mongodb_setup.meta.secondary}
               thread_levels: ${test_control.thread_levels.${mongodb_setup.meta.storageEngine}}
           - cpu_noise
-      # These next five lines match existing
-      # workloads.yml. Workloads needs to be updated to consume from
-      # mongo entry.
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
-      # Hard coding for now. These aren't working right now
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       test_list: default
