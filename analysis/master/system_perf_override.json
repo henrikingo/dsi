@@ -12776,6 +12776,31 @@
         "crud_workloads_WT":{
             "ndays":{},
             "reference":{
+                "index_build":{
+                    "create_time":"2017-06-07T14:26:11.486Z",
+                    "end":1496857542,
+                    "max":179610.60421007255,
+                    "name":"index_build",
+                    "order":7055,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":179610.60421007255,
+                            "ops_per_sec_values":[
+                                179610.60421007255
+                            ]
+                        }
+                    },
+                    "revision":"00dd041c28f0f88cb2478b3be22c50f97515b437",
+                    "start":1496852438,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5832"
+                    ],
+                    "workload":"shell/benchrun"
+                },
                 "insert_jfalse":{
                     "create_time":"2018-04-26T00:39:55Z",
                     "end":1524732179.321327,
