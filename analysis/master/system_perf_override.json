@@ -1399,6 +1399,38 @@
         "crud_workloads_MMAPv1":{
             "ndays":{},
             "reference":{
+                "insert_jfalse":{
+                    "create_time":"2018-05-01T16:53:05Z",
+                    "end":1525222594.88392,
+                    "max":15875.300406839893,
+                    "name":"insert_jfalse",
+                    "order":12045,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":4400.967156155588,
+                            "ops_per_sec_values":[
+                                4400.967156155588
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":15875.300406839893,
+                            "ops_per_sec_values":[
+                                15875.300406839893
+                            ]
+                        }
+                    },
+                    "revision":"1c5629c05fa9b08752688c021f7a6beef3a20dca",
+                    "start":1525221527.8121,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-8299"
+                    ],
+                    "workload":"mongoshell"
+                },
                 "removemulti_jfalse":{
                     "create_time":"2018-04-26T00:39:55Z",
                     "end":1524732433.35984,
@@ -4742,6 +4774,38 @@
         "crud_workloads_MMAPv1":{
             "ndays":{},
             "reference":{
+                "insert_jfalse":{
+                    "create_time":"2018-05-01T16:53:05Z",
+                    "end":1525232046.614767,
+                    "max":16014.297387009732,
+                    "name":"insert_jfalse",
+                    "order":12045,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":4473.4158848503685,
+                            "ops_per_sec_values":[
+                                4473.4158848503685
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":16014.297387009732,
+                            "ops_per_sec_values":[
+                                16014.297387009732
+                            ]
+                        }
+                    },
+                    "revision":"1c5629c05fa9b08752688c021f7a6beef3a20dca",
+                    "start":1525230980.39548,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-8299"
+                    ],
+                    "workload":"mongoshell"
+                },
                 "removemulti_jfalse":{
                     "create_time":"2018-04-26T00:39:55Z",
                     "end":1524735364.453749,
@@ -12428,6 +12492,38 @@
         "crud_workloads_MMAPv1":{
             "ndays":{},
             "reference":{
+                "insert_jfalse":{
+                    "create_time":"2018-05-01T16:53:05Z",
+                    "end":1525223272.266306,
+                    "max":17336.014707515602,
+                    "name":"insert_jfalse",
+                    "order":12045,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":4655.479423334591,
+                            "ops_per_sec_values":[
+                                4655.479423334591
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":17336.014707515602,
+                            "ops_per_sec_values":[
+                                17336.014707515602
+                            ]
+                        }
+                    },
+                    "revision":"1c5629c05fa9b08752688c021f7a6beef3a20dca",
+                    "start":1525222205.543645,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "4"
+                    ],
+                    "ticket":[
+                        "BF-8299"
+                    ],
+                    "workload":"mongoshell"
+                },
                 "removemulti_jfalse":{
                     "create_time":"2018-04-26T00:39:55Z",
                     "end":1524732739.391839,
