@@ -2148,7 +2148,33 @@
         },
         "map_reduce_workloads_MMAPv1":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "word_count_doc":{
+                    "create_time":"2018-05-01T16:53:05Z",
+                    "end":1525219973.922383,
+                    "max":34512.66960101053,
+                    "name":"word_count_doc",
+                    "order":12045,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":34512.66960101053,
+                            "ops_per_sec_values":[
+                                34512.66960101053
+                            ]
+                        }
+                    },
+                    "revision":"1c5629c05fa9b08752688c021f7a6beef3a20dca",
+                    "start":1525218451.674519,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7413"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -2245,7 +2271,33 @@
         },
         "map_reduce_workloads_WT":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "word_count_doc":{
+                    "create_time":"2018-05-01T16:53:05Z",
+                    "end":1525219893.199866,
+                    "max":32325.914176852923,
+                    "name":"word_count_doc",
+                    "order":12045,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":32325.914176852923,
+                            "ops_per_sec_values":[
+                                32325.914176852923
+                            ]
+                        }
+                    },
+                    "revision":"1c5629c05fa9b08752688c021f7a6beef3a20dca",
+                    "start":1525218558.579466,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7413"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -5887,7 +5939,33 @@
         },
         "map_reduce_workloads_MMAPv1":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "word_count_doc":{
+                    "create_time":"2018-05-01T16:53:05Z",
+                    "end":1525229176.532983,
+                    "max":34404.37990692468,
+                    "name":"word_count_doc",
+                    "order":12045,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":34404.37990692468,
+                            "ops_per_sec_values":[
+                                34404.37990692468
+                            ]
+                        }
+                    },
+                    "revision":"1c5629c05fa9b08752688c021f7a6beef3a20dca",
+                    "start":1525227549.645189,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7413"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -5984,7 +6062,33 @@
         },
         "map_reduce_workloads_WT":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "word_count_doc":{
+                    "create_time":"2018-05-01T16:53:05Z",
+                    "end":1525229779.233301,
+                    "max":29367.25316334262,
+                    "name":"word_count_doc",
+                    "order":12045,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":29367.25316334262,
+                            "ops_per_sec_values":[
+                                29367.25316334262
+                            ]
+                        }
+                    },
+                    "revision":"1c5629c05fa9b08752688c021f7a6beef3a20dca",
+                    "start":1525228178.886204,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7413"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -13240,7 +13344,33 @@
         },
         "map_reduce_workloads_MMAPv1":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "word_count_doc":{
+                    "create_time":"2018-05-01T16:53:05Z",
+                    "end":1525220105.099401,
+                    "max":33800.15097400769,
+                    "name":"word_count_doc",
+                    "order":12045,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":33800.15097400769,
+                            "ops_per_sec_values":[
+                                33800.15097400769
+                            ]
+                        }
+                    },
+                    "revision":"1c5629c05fa9b08752688c021f7a6beef3a20dca",
+                    "start":1525218664.830632,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7413"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -13339,21 +13469,21 @@
             "ndays":{},
             "reference":{
                 "word_count_doc":{
-                    "create_time":"2018-01-22T15:22:23.19Z",
-                    "end":1516645514.850308,
-                    "max":32492.34480356428,
+                    "create_time":"2018-05-01T16:53:05Z",
+                    "end":1525221284.56326,
+                    "max":32373.1458280727,
                     "name":"word_count_doc",
-                    "order":9597,
+                    "order":12045,
                     "results":{
                         "1":{
-                            "ops_per_sec":32492.34480356428,
+                            "ops_per_sec":32373.1458280727,
                             "ops_per_sec_values":[
-                                32492.34480356428
+                                32373.1458280727
                             ]
                         }
                     },
-                    "revision":"03a949db6656076c759a160e385efd81e066cf24",
-                    "start":1516637052.020906,
+                    "revision":"1c5629c05fa9b08752688c021f7a6beef3a20dca",
+                    "start":1525219966.987756,
                     "tag":"",
                     "threads":[
                         "1"
@@ -15245,7 +15375,33 @@
         },
         "map_reduce_workloads_WT":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "word_count_doc":{
+                    "create_time":"2018-05-01T16:53:05Z",
+                    "end":1525219926.882842,
+                    "max":32365.671673995694,
+                    "name":"word_count_doc",
+                    "order":12045,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":32365.671673995694,
+                            "ops_per_sec_values":[
+                                32365.671673995694
+                            ]
+                        }
+                    },
+                    "revision":"1c5629c05fa9b08752688c021f7a6beef3a20dca",
+                    "start":1525218596.279877,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7413"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -17013,7 +17169,33 @@
         },
         "map_reduce_workloads_WT":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "word_count_doc":{
+                    "create_time":"2018-05-01T16:53:05Z",
+                    "end":1525231097.874501,
+                    "max":32997.41960178714,
+                    "name":"word_count_doc",
+                    "order":12045,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":32997.41960178714,
+                            "ops_per_sec_values":[
+                                32997.41960178714
+                            ]
+                        }
+                    },
+                    "revision":"1c5629c05fa9b08752688c021f7a6beef3a20dca",
+                    "start":1525229588.921996,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7413"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -18421,7 +18603,33 @@
         },
         "map_reduce_workloads_WT":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "word_count_doc":{
+                    "create_time":"2018-05-01T16:53:05Z",
+                    "end":1525221028.529924,
+                    "max":32300.089363580573,
+                    "name":"word_count_doc",
+                    "order":12045,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":32300.089363580573,
+                            "ops_per_sec_values":[
+                                32300.089363580573
+                            ]
+                        }
+                    },
+                    "revision":"1c5629c05fa9b08752688c021f7a6beef3a20dca",
+                    "start":1525219584.606903,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7413"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
