@@ -581,6 +581,62 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "105_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "105_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_lookup_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_lookup_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "1_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "1_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -4072,6 +4128,62 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "105_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "105_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_lookup_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_lookup_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "1_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "1_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -9242,6 +9354,62 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "105_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "105_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_lookup_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_lookup_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "1_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "1_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -14791,6 +14959,62 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "105_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "105_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_lookup_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_lookup_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "1_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "1_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -16367,6 +16591,62 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "105_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "105_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_lookup_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "15_lookup_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "1_1c_avg_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "1_1c_max_latency":{
+                    "thread_threshold":0.5,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
