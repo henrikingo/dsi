@@ -60,6 +60,13 @@
                         "BF-6769"
                     ]
                 },
+                "find_limit-useAgg":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -162,6 +169,13 @@
                     "threshold":0.3,
                     "ticket":[
                         "BF-6769"
+                    ]
+                },
+                "find_limit-useAgg":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "PERF-1157"
                     ]
                 },
                 "fio_iops_test_read_iops":{
@@ -3545,6 +3559,13 @@
                         "BF-6162"
                     ]
                 },
+                "find_limit-useAgg":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -3647,6 +3668,13 @@
                     "threshold":0.3,
                     "ticket":[
                         "BF-6769"
+                    ]
+                },
+                "find_limit-useAgg":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "PERF-1157"
                     ]
                 },
                 "fio_iops_test_read_iops":{
@@ -11632,6 +11660,13 @@
                         "BF-6769"
                     ]
                 },
+                "find_limit-useAgg":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -11734,6 +11769,13 @@
                     "threshold":0.3,
                     "ticket":[
                         "BF-6769"
+                    ]
+                },
+                "find_limit-useAgg":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "PERF-1157"
                     ]
                 },
                 "fio_iops_test_read_iops":{
@@ -14423,6 +14465,13 @@
                         "PERF-873"
                     ]
                 },
+                "find_limit-useAgg":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -16025,6 +16074,13 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                },
+                "find_limit-useAgg":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "PERF-1157"
                     ]
                 },
                 "fio_iops_test_read_iops":{
@@ -17969,6 +18025,13 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                },
+                "find_limit-useAgg":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "PERF-1157"
                     ]
                 },
                 "fio_iops_test_read_iops":{
