@@ -14,7 +14,7 @@ setup(
     version='1.0',
     description='Tools for running realistic performance tests on AWS resources',
     # Including bin.common so that we can access it from aws_tools.
-    packages=['aws_tools', 'bin', 'bin.common'],
+    packages=['aws_tools', 'bin', 'bin.common', 'signal_processing'],
     install_requires=['boto3==1.4.7', 'argparse==1.4.0'],
     use_2to3=True,
     entry_points={
