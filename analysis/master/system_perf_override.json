@@ -2487,6 +2487,13 @@
                         "PERF-873"
                     ]
                 },
+                "contended_update":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -2568,6 +2575,13 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                },
+                "contended_update":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "PERF-1157"
                     ]
                 },
                 "fio_iops_test_read_iops":{
