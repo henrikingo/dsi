@@ -275,6 +275,13 @@
                         "PERF-1157"
                     ]
                 },
+                "find_skip_limit_1-noAgg":{
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -3849,6 +3856,13 @@
                 "find_limit-noAgg":{
                     "thread_threshold":0.35,
                     "threshold":0.1,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "find_skip_limit_1-noAgg":{
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
                         "PERF-1157"
                     ]
@@ -12064,6 +12078,13 @@
                 "find_limit-noAgg":{
                     "thread_threshold":0.35,
                     "threshold":0.1,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "find_skip_limit_1-noAgg":{
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
                         "PERF-1157"
                     ]
