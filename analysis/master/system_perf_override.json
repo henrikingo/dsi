@@ -2445,6 +2445,13 @@
                     "ticket":[
                         "PERF-873"
                     ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
                 }
             }
         },
@@ -6322,6 +6329,13 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-1157"
                     ]
                 }
             }
@@ -10710,6 +10724,13 @@
                     "ticket":[
                         "PERF-873"
                     ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
                 }
             }
         },
@@ -13835,6 +13856,13 @@
                     "ticket":[
                         "PERF-873"
                     ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
                 }
             }
         },
@@ -15891,6 +15919,13 @@
                     "ticket":[
                         "PERF-873"
                     ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
                 }
             }
         },
@@ -17754,6 +17789,13 @@
                     "ticket":[
                         "PERF-873"
                     ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
                 }
             }
         },
@@ -19200,6 +19242,13 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                },
+                "map_reduce_doc":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-1157"
                     ]
                 }
             }
