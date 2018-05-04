@@ -247,7 +247,6 @@ class TestPostRunCheck(unittest.TestCase):
         threshold = None
         algo = QHat(state, pvalue, permutations, online, threshold)
         points = sorted(algo.change_points, key=lambda i: i['index'])
-        # TODO: sometimes this fails sometimes it doesn't :(
         self.assertEqual(2, len(points))
         self.assert_cp_equal({
             'algorithm': 'qhat',

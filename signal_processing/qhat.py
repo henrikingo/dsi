@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+from contextlib import contextmanager
 import copy
 import itertools
 import numpy
@@ -8,6 +9,23 @@ import random
 from matplotlib.ticker import FuncFormatter, MaxNLocator
 
 DEFAULT_FIGIZE = (18, 8)
+
+
+# QHat's definition requires it to permute change-windows
+# which leads to non-determinism: we need to always get the
+# same change-point results when running on the same input.
+@contextmanager
+def deterministic_random(seed):
+    """
+    Call random.seed(seed) during invocation and then restore state after.
+    :param seed: RNG seed
+    """
+    state = random.getstate()
+    random.seed(seed)
+    try:
+        yield
+    finally:
+        random.setstate(state)
 
 
 class QHat(object):
@@ -140,6 +158,10 @@ class QHat(object):
 
     @property
     def change_points(self):
+        with deterministic_random(1234):
+            return self._compute_change_points()
+
+    def _compute_change_points(self):
         if self._change_points is None:
             windows = []
             pts = len(self.series)
