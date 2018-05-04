@@ -157,8 +157,8 @@ class QHat(object):
         return qs
 
     @property
-    def change_points(self):
-        with deterministic_random(1234):
+    def change_points(self, seed=1234):
+        with deterministic_random(seed):
             return self._compute_change_points()
 
     def _compute_change_points(self):
