@@ -17,8 +17,6 @@ run:
       ########################################################################
       tests:
         default:
-          - move_chunk_with_load:
-              - wait_for_delete: true
           - move_chunk:
               - wait_for_delete: true
           - cpu_noise
