@@ -24,9 +24,11 @@ run:
     type: ycsb
     cmd: >
       cd YCSB/ycsb-mongodb;
-      ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
-      -P ../../workloadEvergreen_95read5update
-      -threads ${test_control.thread_levels.level95-5.${mongodb_setup.meta.mongodb_setup}};
+      for level in ${test_control.thread_levels.level95-5.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}; do
+        ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s \
+        -P ../../workloadEvergreen_95read5update \
+        -threads $level;
+      done
     config_filename: workloadEvergreen_95read5update
     workload_config: |
       mongodb.url=${mongodb_setup.meta.mongodb_url}&w=majority
@@ -40,23 +42,16 @@ run:
       insertproportion=0.0
       requestdistribution=zipfian
 
-  - id: ycsb_95read5update_single_w_majority
-    type: ycsb
-    cmd: >
-      cd YCSB/ycsb-mongodb;
-      ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
-      -P ../../workloadEvergreen_95read5update
-      -threads 1
-      -p maxexecutiontime=600;
-
   - id: ycsb_50read50update_w_majority
     type: ycsb
     cmd: >
       cd YCSB/ycsb-mongodb;
-      ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
-      -P ../../workloadEvergreen_50read50update
-      -threads ${test_control.thread_levels.level50-50.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
-      -p maxexecutiontime=600;
+      for level in ${test_control.thread_levels.level50-50.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}; do
+        ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s \
+        -P ../../workloadEvergreen_50read50update \
+        -p maxexecutiontime=600 \
+        -threads $level;
+      done
     config_filename: workloadEvergreen_50read50update
     workload_config: |
       mongodb.url=${mongodb_setup.meta.mongodb_url}&w=majority
@@ -69,15 +64,6 @@ run:
       scanproportion=0
       insertproportion=0.0
       requestdistribution=zipfian
-
-  - id: ycsb_50read50update_single_w_majority
-    type: ycsb
-    cmd: >
-      cd YCSB/ycsb-mongodb;
-      ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
-      -P ../../workloadEvergreen_50read50update
-      -threads 1
-      -p maxexecutiontime=600
 
   - id: fio
     type: fio
@@ -96,20 +82,29 @@ run:
       - iperf.json
     skip_validate: true
 
+# Note: where multiple thread levels support is provided, it is implemented as a bash loop. As a result, arrays MUST be
+# passed as strings.
+# Single values could be strings or numbers BUT in the following configurations string values are passed where ever an
+# array can be used and number literals are passed where a single value (only) can be used.
+# Note: the load test is not run in a loop and only supports a single thread level.
 thread_levels:
   load:
     mmapv1: 256
     wiredTiger: 512
-  level50-50:
-    shard:
-      mmapv1: 512
-      wiredTiger: 512
-    replica:
-      mmapv1: 128
-      wiredTiger: 512
   level95-5:
-    shard: 128
-    replica: 64
+    "True": # Sharded
+      mmapv1: "1 128"
+      wiredTiger: "64 128"
+    "False": # Not Sharded
+      mmapv1: "1 128"
+      wiredTiger: "1 64"
+  level50-50:
+    "True": # Sharded
+      mmapv1: "512"
+      wiredTiger: "1 256 512"
+    "False": # not Sharded
+      mmapv1: "128"
+      wiredTiger: "1 512"
 
 between_tests:
   - restart_mongodb:

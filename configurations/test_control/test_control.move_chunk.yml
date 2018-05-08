@@ -17,7 +17,8 @@ run:
       ########################################################################
       tests:
         default:
-          - move_chunk_with_load
+          - move_chunk_with_load:
+              - thread_levels: [0, 4, 64, 128, 256]
           - move_chunk
           - cpu_noise
 

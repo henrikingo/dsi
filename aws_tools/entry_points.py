@@ -8,7 +8,7 @@ import sys
 from bin.common import log
 import aws_cleanup
 
-REGIONS = ['us-west-2', 'us-east-1']
+REGIONS = ['us-west-2', 'us-east-1', 'eu-west-1']
 
 LOG = logging.getLogger(__name__)
 

@@ -12,7 +12,7 @@ run:
       tests:
         default:
           - change_streams_latency:
-              thread_levels: [4, 60]
+              thread_levels: [4, 32, 60]
               listener_levels: [0, 1, 15, 105]
               update_lookup: false
               selective_change: false
@@ -32,7 +32,7 @@ run:
       tests:
         default:
           - change_streams_latency:
-              thread_levels: [4, 60]
+              thread_levels: [4, 32, 60]
               listener_levels: [15]
               update_lookup: true
               selective_change: false
@@ -45,7 +45,7 @@ run:
       tests:
         default:
           - change_streams_latency:
-              thread_levels: [60]
+              thread_levels: [4, 32, 60]
               listener_levels: [15]
               update_lookup: false
               selective_change: false

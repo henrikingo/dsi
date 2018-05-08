@@ -18,10 +18,10 @@ run:
       tests:
         default:
           - insert_vector:
-              thread_levels: ${test_control.thread_levels.insert_vector.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
+              thread_levels: ${test_control.thread_levels.insert_vector.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}
               retryable_writes: true
           - mix:
-              thread_levels: [4, 64, 128, 256, 512]
+              thread_levels: ${test_control.thread_levels.mix.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}
               retryable_writes: true
         test:
           -  # Empty list. Put new workloads here for testing
@@ -57,9 +57,12 @@ run:
 # This is just a lookup table. Each test may reference some leaf node here from a test parameter.
 thread_levels:
   insert_vector:
-    single-replica:
-      wiredTiger: [1, 8, 16]
-    replica:
-      wiredTiger: [1, 8, 16]
-    shard:
+    "True":  # Sharded
       wiredTiger: [1, 32, 64]
+    "False":  # Not Sharded
+      wiredTiger: [1, 8, 16]
+  mix:
+    "True":  # Sharded
+      wiredTiger: [1, 32, 64]
+    "False":  # Not Sharded
+      wiredTiger: [4, 64, 128, 256, 512]

@@ -12,7 +12,7 @@ run:
       tests:
         default:
           - change_streams_crud_throughput:
-              thread_levels: [4, 60]
+              thread_levels: ${test_control.thread_levels.${mongodb_setup.meta.mongodb_setup}}
               listener_levels: [0, 1, 15, 105]
               update_lookup: false
               selective_change: false
@@ -32,7 +32,7 @@ run:
       tests:
         default:
           - change_streams_crud_throughput:
-              thread_levels: [4, 60]
+              thread_levels: ${test_control.thread_levels.${mongodb_setup.meta.mongodb_setup}}
               listener_levels: [15]
               update_lookup: true
               nb_collections: 1
@@ -45,7 +45,7 @@ run:
       tests:
         default:
           - change_streams_crud_throughput:
-              thread_levels: [60]
+              thread_levels: ${test_control.thread_levels.${mongodb_setup.meta.mongodb_setup}}
               listener_levels: [15]
               update_lookup: false
               nb_collections: 5
@@ -66,3 +66,7 @@ run:
     output_files:
       - iperf.json
     skip_validate: true
+
+thread_levels:
+    shard: [4, 60]
+    shard-lite: [8, 64]

@@ -7,6 +7,10 @@ variable "amis" {
         "us-west-2d" = "ami-f173cc91" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
 
         "us-east-1a" = "ami-0b33d91d" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
+
+        "eu-west-1a" = "ami-70edb016" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
+        "eu-west-1b" = "ami-70edb016" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
+        "eu-west-1c" = "ami-70edb016" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
     }
 }
 

@@ -20,6 +20,7 @@ run:
               - testDbName: bestbuy
                 testCollName: products
                 useAgg: true
+                thread_levels: ${test_control.thread_levels.${mongodb_setup.meta.mongodb_setup}}
           - cpu_noise
 
       # These next five lines match existing
@@ -204,3 +205,10 @@ post_task:
         assert.commandWorked(sh.setBalancerState(true));
         db.printShardingStatus();
       }
+
+thread_levels:
+    standalone: [1, 8]
+    single-replica: [1, 8]
+    replica: [1, 8]
+    shard: [1, 8]
+    shard-lite: [1, 8, 16]

@@ -29,10 +29,10 @@ topology:
       - id: rs1
         cluster_type: replset
         mongod:
+          - public_ip: ${infrastructure_provisioning.out.mongod.2.public_ip}
+            private_ip: ${infrastructure_provisioning.out.mongod.2.private_ip}
           - public_ip: ${infrastructure_provisioning.out.mongod.3.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.3.private_ip}
-          - public_ip: ${infrastructure_provisioning.out.mongod.4.public_ip}
-            private_ip: ${infrastructure_provisioning.out.mongod.4.private_ip}
 
 # Meta data about this mongodb setup
 meta:

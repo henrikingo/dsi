@@ -17,10 +17,14 @@ run:
       ########################################################################
       tests:
         default:
-          - mongos_read_single
-          - mongos_insert_vector
-          - mongos_insert_single
-          - mongos_50read_50write
+          - mongos_read_single:
+              thread_levels: [1, 16, 32]
+          - mongos_insert_vector:
+              thread_levels: [1, 16, 32]
+          - mongos_insert_single:
+              thread_levels: [1, 16, 32]
+          - mongos_50read_50write:
+              thread_levels: [1, 16, 32]
           - cpu_noise
         test:
           -  # Empty list. Put new workloads here for testing
