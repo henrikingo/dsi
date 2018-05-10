@@ -35002,34 +35002,5 @@
                 }
             }
         }
-    },
-    "wtdevelop-1-node-replSet":{
-        "change_streams":{
-            "ndays":{},
-            "reference":{},
-            "threshold":{
-                "15_1c_avg_latency":{
-                    "thread_threshold":0.375,
-                    "threshold":0.25,
-                    "ticket":[
-                        "BF-8477"
-                    ]
-                },
-                "15_lookup_1c_avg_latency":{
-                    "thread_threshold":0.375,
-                    "threshold":0.25,
-                    "ticket":[
-                        "BF-8477"
-                    ]
-                },
-                "1_1c_avg_latency":{
-                    "thread_threshold":0.375,
-                    "threshold":0.25,
-                    "ticket":[
-                        "BF-8477"
-                    ]
-                }
-            }
-        }
     }
 }
