@@ -57,6 +57,9 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
             {'id': 'linkbench-request-unittest',
              'type': 'linkbench',
              'output_files': ['request-phase-stats.csv']},
+            {'id': 'tpcc-unittest',
+             'type': 'tpcc',
+             'output_files': 'results.log'}
         ] # yapf: disable
         self.config = {
             'test_control': {
@@ -70,6 +73,7 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
                     'ycsb': 'test_output.log',
                     'fio': 'fio.json',
                     'iperf': 'iperf.json',
+                    'tpcc': 'results.log',
                 },
                 'run': [
                     {'id': 'mock-test-foo',
@@ -84,6 +88,8 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
                      'type': 'linkbench'},
                     {'id': 'mock-test-linkbench-request',
                      'type': 'linkbench'},
+                    {'id': 'mock-test-tpcc-request',
+                     'type': 'tpcc'}
                 ]
             },
             'mongodb_setup': {

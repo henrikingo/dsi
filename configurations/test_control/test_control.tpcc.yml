@@ -1,0 +1,13 @@
+task_name: tpcc
+run:
+
+  - id: tpcc_test
+    type: tpcc
+    cmd: |
+      cd tpcc/pytpcc
+      python ./tpcc.py --print-config mongodb > mongodb.config
+      sed -i "s/localhost/${mongodb_setup.meta.hostname}/g" mongodb.config
+      sed -i "s/27017/${mongodb_setup.meta.port}/g" mongodb.config
+      python ./tpcc.py --config=mongodb.config mongodb 2>&1
+    output_files:
+      - tpcc/pytpcc/results.log

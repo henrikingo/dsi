@@ -560,6 +560,7 @@ class TestBootstrap(unittest.TestCase):
             'workloads_dir': './workloads',
             'ycsb_dir': './YCSB',
             'linkbench_dir': './linkbench',
+            'tpcc_dir': './tpcc',
             'authentication': 'disabled',
         }
         test_config = {}

@@ -859,7 +859,21 @@
             },
             "start":1.001,
             "workload":"linkbench"
+        },
+        {
+            "end":2.002,
+            "name":"tpcc-unittest",
+            "results":{
+                "1":{
+                    "ops_per_sec":"832",
+                    "ops_per_sec_values":[
+                        "832"
+                    ]
+                }
+            },
+            "start":1.001,
+            "workload":"tpcc"
         }
     ],
-    "storageEngine": "wiredTiger"
+    "storageEngine":"wiredTiger"
 }

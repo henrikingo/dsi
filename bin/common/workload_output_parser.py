@@ -14,7 +14,7 @@ from nose.tools import nottest
 
 LOG = logging.getLogger(__name__)
 
-SUPPORTED_TYPES = {'shell', 'mongoshell', 'ycsb', 'fio', 'iperf', 'linkbench'}
+SUPPORTED_TYPES = {'shell', 'mongoshell', 'ycsb', 'fio', 'iperf', 'linkbench', 'tpcc'}
 
 
 @nottest
@@ -30,6 +30,7 @@ def parse_test_results(test, config, timer):
     # We want to catch and log all exceptions here, so that we don't raise
     # any exceptions to test_control.py
     parser = parser_factory(test, config, timer)
+
     return parser.parse_and_save()
 
 
@@ -50,11 +51,10 @@ def parser_factory(test, config, timer):
         'fio': FioParser,
         'iperf': IperfParser,
         'linkbench': LinkbenchResultParser,
+        'tpcc': TPCCResultParser
     }
-
     if test['type'] not in parsers:
         raise ValueError("parser_factory: Unsupported test type: {}".format(test['type']))
-
     ResultParserChild = parsers[test['type']]  # pylint: disable=invalid-name
     return ResultParserChild(test, config, timer)
 
@@ -239,6 +239,24 @@ class ResultParser(object):
 class InvalidConfigurationException(ValueError):
     """We have bad configuration for the parser."""
     pass
+
+
+class TPCCResultParser(ResultParser):
+    """A ResultParser of TPC-C tests"""
+
+    def __init__(self, test, config, timer):
+        """Set tpcc specific attributes"""
+        super(TPCCResultParser, self).__init__(test, config, timer)
+        input_file = config['test_control']['output_file']['tpcc']
+        self.input_log = os.path.join(self.reports_root, test['id'], input_file)
+        self.threads = None  # We postpone this to _parse()
+
+    def _parse(self):
+        threads = '1'  # TPCC doesn't have a concept of threads so we are hardcoding it to 1
+        for line in self.load_input_log():
+            if "  NEW_ORDER       " in line:
+                parts = ' '.join(line.split()).split(" ")
+                self.add_result(self.test_id, parts[1], threads)
 
 
 class LinkbenchResultParser(ResultParser):

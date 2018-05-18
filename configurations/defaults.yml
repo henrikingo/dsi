@@ -14,6 +14,7 @@ bootstrap:
   workloads_dir: ./workloads
   ycsb_dir: ./YCSB
   linkbench_dir: ./linkbench
+  tpcc_dir: ./tpcc
   authentication: disabled
 
 infrastructure_provisioning:
@@ -237,6 +238,7 @@ test_control:
     ycsb: test_output.log
     fio: fio.json
     iperf: iperf.json
+    tpcc: results.log
 
   # As I'm writing this, the basename IS the name. PERF-1096 will add a unique component.
   reports_dir_basename: reports

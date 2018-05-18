@@ -41,6 +41,26 @@ iperf:
         - source: bin/iperf-test.sh
           target: iperf-test.sh
 
+tpcc:
+  - on_localhost:
+      checkout_repos:
+        - source: git@github.com:stauffec/py-tpcc.git
+          target: ${bootstrap.tpcc_dir}
+          branch: output_file
+  - on_workload_client:
+      exec: rm -rf tpcc*
+  - on_workload_client:
+      upload_files:
+        - source: ${bootstrap.tpcc_dir}
+          target: ./tpcc
+  - on_workload_client:
+      exec: |
+        sudo yum -y install gcc python-devel
+        curl -O --retry 10 -LfsS https://github.com/mongodb/mongo-python-driver/archive/3.7.0b0.tar.gz
+        tar xvfBmp 3.7.0b0.tar.gz
+        cd mongo-python-driver-3.7.0b0
+        sudo python setup.py install
+
 linkbench:
   - on_workload_client:
       exec: |
