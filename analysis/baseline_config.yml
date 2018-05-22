@@ -66,6 +66,7 @@ sysperf_mongod_links:
   3.4.10: https://s3.amazonaws.com/mciuploads/dsi-v3.4/sys_perf_3.4_8da0afc67851b39fd6cda03f9dd225445031cb7d/8da0afc67851b39fd6cda03f9dd225445031cb7d/linux/mongod-sys_perf_3.4_8da0afc67851b39fd6cda03f9dd225445031cb7d.tar.gz
   3.6.0: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_3.6_a57d8e71e6998a2d0afde7edc11bd23e5661c915/a57d8e71e6998a2d0afde7edc11bd23e5661c915/linux/mongod-sys_perf_3.6_a57d8e71e6998a2d0afde7edc11bd23e5661c915.tar.gz
   3.6.1: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_3.6_025d4f4fe61efd1fb6f0005be20cb45a004093d1/025d4f4fe61efd1fb6f0005be20cb45a004093d1/linux/mongod-sys_perf_3.6_025d4f4fe61efd1fb6f0005be20cb45a004093d1.tar.gz
+  3.6.5: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_3.6_a20ecd3e3a174162052ff99913bc2ca9a839d618/a20ecd3e3a174162052ff99913bc2ca9a839d618/linux/mongod-sys_perf_3.6_a20ecd3e3a174162052ff99913bc2ca9a839d618.tar.gz
 
 base_projects:
   performance: performance
