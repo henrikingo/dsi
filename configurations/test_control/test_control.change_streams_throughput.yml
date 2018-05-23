@@ -68,8 +68,8 @@ run:
     skip_validate: true
 
 thread_levels:
-    standalone: [4, 60]
-    single-replica: [4, 60]
-    replica: [4, 60]
-    shard: [4, 60]
-    shard-lite: [8, 64]
+    standalone: [20, 60]
+    single-replica: [20, 60]
+    replica: [20, 60]
+    shard: [20, 60]
+    shard-lite: [20, 60]

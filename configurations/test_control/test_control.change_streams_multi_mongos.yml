@@ -52,4 +52,4 @@ run:
 
 thread_levels:
     shard: [60]
-    shard-lite: [8, 60]
+    shard-lite: [8, 64]
