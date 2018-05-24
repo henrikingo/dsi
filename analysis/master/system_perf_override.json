@@ -14064,6 +14064,13 @@
                     "ticket":[
                         "PERF-873"
                     ]
+                },
+                "index_build":{
+                    "thread_threshold":0.18,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-9290"
+                    ]
                 }
             }
         },
@@ -19353,6 +19360,13 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                },
+                "index_build":{
+                    "thread_threshold":0.37,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-9290"
                     ]
                 }
             }
