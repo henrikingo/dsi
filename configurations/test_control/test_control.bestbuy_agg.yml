@@ -207,8 +207,8 @@ post_task:
       }
 
 thread_levels:
-    standalone: [1, 8]
-    single-replica: [1, 8]
-    replica: [1, 8]
-    shard: [1, 8]
-    shard-lite: [1, 8, 16]
+  standalone: [1, 8]
+  single-replica: [1, 8]
+  replica: [1, 8]
+  shard: [1, 8]
+  shard-lite: [1, 8, 16]

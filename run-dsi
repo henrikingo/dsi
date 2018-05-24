@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -eou pipefail
+
+_pip() {
+    /usr/bin/env pip "$@" --isolated -q -q
+}
+
+if [[ $# -lt 1 ]]; then
+    echo -e "Usage: \\n\\t$0 setup\\n\\t$0 command-provided-by-setup.py" >/dev/stderr
+    exit 5
+fi
+
+new_env=0
+if [ ! -d "venv" ]; then
+    _pip install virtualenv
+    /usr/bin/env virtualenv -q venv
+    new_env=1
+fi
+
+set +u
+    source "./venv/bin/activate"
+set -u
+
+if [[ "$new_env" -eq 1 || "$1" == "setup" ]]; then
+    pushd "$(dirname "$0")" >/dev/null
+        _pip install -r requirements.txt
+        # Need to install in "develop" mode because config.py assumes its own file-location relative
+        # to the dsi/configurations.
+        /usr/bin/env python ./setup.py -q --no-user-cfg develop
+    popd >/dev/null   
+fi
+
+if [ "$1" != "setup" ]; then
+    /usr/bin/env "$@"
+fi

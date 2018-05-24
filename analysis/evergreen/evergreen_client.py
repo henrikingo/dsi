@@ -3,7 +3,8 @@
 from __future__ import print_function
 import logging
 
-from evergreen import helpers
+# TODO: `PERF-1217: Organize DSI into python packages.`
+import helpers
 
 DEFAULT_EVERGREEN_URL = 'https://evergreen.mongodb.com'
 """The default Evergreen URL."""

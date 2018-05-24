@@ -548,6 +548,7 @@ class TestBootstrap(unittest.TestCase):
         """
         mongodb_url = 'https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.6.3.tgz'
         master_config = {
+            'analysis': 'common',
             'workload_setup': 'common',
             'infrastructure_provisioning': 'single',
             'mongodb_binary_archive': mongodb_url,

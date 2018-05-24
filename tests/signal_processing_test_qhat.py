@@ -10,7 +10,7 @@ class TestPostRunCheck(unittest.TestCase):
     def assert_cp_equal(self, expect, actual):
         keys = {
             'average', 'average_diff', 'index', 'order_of_changepoint', 'probability', 'revision',
-            'value', 'value_to_avg', 'value_to_avg_diff', 'window_size'
+            'value', 'value_to_avg', 'value_to_avg_diff', 'window_size', 'order'
         }
         errors = []
         for key in keys:
@@ -119,6 +119,11 @@ class TestPostRunCheck(unittest.TestCase):
                 'bi', 'bj', 'bk', 'bl', 'bm', 'bn', 'bo', 'bp', 'bq', 'br', 'bs', 'bt', 'ca', 'cb',
                 'cc', 'cd', 'ce', 'cf', 'cg', 'ch', 'ci', 'cj', 'ck', 'cl', 'cm', 'cn', 'co', 'cp',
                 'cq', 'cr', 'cs', 'ct'
+            ],
+            'orders': [
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+                24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44,
+                45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60
             ]
         }
         pvalue = 0.01
@@ -139,7 +144,8 @@ class TestPostRunCheck(unittest.TestCase):
             'value_to_avg_diff': 27.772273021,
             'revision': 'ca',
             'order_of_changepoint': 0,
-            'probability': 0.0
+            'probability': 0.0,
+            'order': 41
         }, points[0])
         self.assert_cp_equal({
             'algorithm': 'qhat',
@@ -152,7 +158,8 @@ class TestPostRunCheck(unittest.TestCase):
             'value': 848.578947368,
             'value_to_avg_diff': 19.7654212396,
             'revision': 'ba',
-            'probability': 0.0
+            'probability': 0.0,
+            'order': 21
         }, points[1])
 
     def test_finds_simple_regression(self):
@@ -167,6 +174,10 @@ class TestPostRunCheck(unittest.TestCase):
                 'aa', 'ab', 'ac', 'ad', 'ae', 'af', 'ag', 'ah', 'ai', 'aj', 'ak', 'al', 'am', 'an',
                 'ao', 'ba', 'bb', 'bc', 'bd', 'be', 'bf', 'bg', 'bh', 'bi', 'bj', 'bk', 'bl', 'bm',
                 'bn', 'bo'
+            ],
+            'orders': [
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+                24, 25, 26, 27, 28, 29, 30
             ]
         }
         pvalue = 0.01
@@ -187,7 +198,8 @@ class TestPostRunCheck(unittest.TestCase):
             'value': 650.0,
             'value_to_avg': 8.67,
             'value_to_avg_diff': 26.0,
-            'window_size': 30
+            'window_size': 30,
+            'order': 16
         }, points[0])
 
     def test_finds_simple_regression2(self):
@@ -202,6 +214,10 @@ class TestPostRunCheck(unittest.TestCase):
                 'aa', 'ab', 'ac', 'ad', 'ae', 'af', 'ag', 'ah', 'ai', 'aj', 'ak', 'al', 'am', 'an',
                 'ao', 'ba', 'bb', 'bc', 'bd', 'be', 'bf', 'bg', 'bh', 'bi', 'bj', 'bk', 'bl', 'bm',
                 'bn', 'bo'
+            ],
+            'orders': [
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+                24, 25, 26, 27, 28, 29, 30
             ]
         }
         pvalue = 0.01
@@ -222,7 +238,8 @@ class TestPostRunCheck(unittest.TestCase):
             'value': 566.67,
             'value_to_avg': 7.39,
             'value_to_avg_diff': 22.76,
-            'window_size': 30
+            'window_size': 30,
+            'order': 16
         }, points[0])
 
     def test_regression_and_recovery(self):
@@ -239,6 +256,11 @@ class TestPostRunCheck(unittest.TestCase):
                 'ao', 'ba', 'bb', 'bc', 'bd', 'be', 'bf', 'bg', 'bh', 'bi', 'bj', 'bk', 'bl', 'bm',
                 'bn', 'bo', 'ca', 'cb', 'cc', 'cd', 'ce', 'cf', 'cg', 'ch', 'ci', 'cj', 'ck', 'cl',
                 'cm', 'cn', 'co'
+            ],
+            'orders': [
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+                24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44,
+                45
             ]
         }
         pvalue = 0.01
@@ -259,7 +281,8 @@ class TestPostRunCheck(unittest.TestCase):
             'index': 15,
             'order_of_changepoint': 0,
             'probability': 0.0,
-            'revision': 'ba'
+            'revision': 'ba',
+            'order': 16
         }, points[0])
         self.assert_cp_equal({
             'algorithm': 'qhat',
@@ -272,7 +295,8 @@ class TestPostRunCheck(unittest.TestCase):
             'window_size': 30,
             'order_of_changepoint': 1,
             'probability': 0.0,
-            'revision': 'ca'
+            'revision': 'ca',
+            'order': 31
         }, points[1])
 
     def test_two_regressions(self):
@@ -289,6 +313,11 @@ class TestPostRunCheck(unittest.TestCase):
                 'ao', 'ba', 'bb', 'bc', 'bd', 'be', 'bf', 'bg', 'bh', 'bi', 'bj', 'bk', 'bl', 'bm',
                 'bn', 'bo', 'ca', 'cb', 'cc', 'cd', 'ce', 'cf', 'cg', 'ch', 'ci', 'cj', 'ck', 'cl',
                 'cm', 'cn', 'co'
+            ],
+            'orders': [
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+                24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44,
+                45
             ]
         }
         pvalue = 0.01
@@ -309,7 +338,8 @@ class TestPostRunCheck(unittest.TestCase):
             'index': 15,
             'order_of_changepoint': 0,
             'probability': 0.0,
-            'revision': 'ba'
+            'revision': 'ba',
+            'order': 16
         }, points[0])
         self.assert_cp_equal({
             'algorithm': 'qhat',
@@ -322,7 +352,8 @@ class TestPostRunCheck(unittest.TestCase):
             'value': 650.0,
             'value_to_avg_diff': 26.0,
             'probability': 0.0,
-            'revision': 'ca'
+            'revision': 'ca',
+            'order': 31
         }, points[1])
 
     def test_no_regressions(self):
@@ -337,6 +368,11 @@ class TestPostRunCheck(unittest.TestCase):
                 'aa', 'ab', 'ac', 'ad', 'ae', 'af', 'ag', 'ah', 'ai', 'aj', 'ak', 'al', 'am', 'an',
                 'ao', 'ba', 'bb', 'bc', 'bd', 'be', 'bf', 'bg', 'bh', 'bi', 'bj', 'bk', 'bl', 'bm',
                 'bn', 'bo'
+            ],
+            'orders': [
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+                24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44,
+                45
             ]
         }
         pvalue = 0.01

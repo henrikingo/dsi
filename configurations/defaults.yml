@@ -5,6 +5,7 @@ bootstrap:
   platform: linux
   mongodb_setup: standalone
   workload_setup: common
+  analysis: common
   storageEngine: wiredTiger
   test_control: core
   production: false

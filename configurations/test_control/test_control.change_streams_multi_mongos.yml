@@ -51,5 +51,5 @@ run:
     skip_validate: true
 
 thread_levels:
-    shard: [60]
-    shard-lite: [8, 64]
+  shard: [60]
+  shard-lite: [8, 60]

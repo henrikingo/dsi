@@ -10,5 +10,5 @@ do
   COVERAGE="$COVERAGE --cover-package=$package"
 done
 
-
-PYTHONPATH=analysis:bin nosetests -v --exe $COVERAGE --logging-clear-handlers $@
+# TODO: `PERF-1505: Make imports work with matplotlib`.
+PYTHONPATH=analysis:bin nosetests -v --ignore-files multi_graphs.py --exe $COVERAGE --logging-clear-handlers $@

@@ -9,10 +9,11 @@ run:
     cmd: |
       cd linkbench
       ./bin/linkbench \
-            -c ../mongo_linkbench_config.properties \
-            -csvstats "../load-phase-stats.csv" \
-            -l \
-            2>&1
+        -c ../mongo_linkbench_config.properties \
+        -csvstats "../load-phase-stats.csv" \
+        -D host="${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}" \
+        -l \
+        2>&1
     output_files:
       - load-phase-stats.csv
     config_filename: mongo_linkbench_config.properties
@@ -110,10 +111,11 @@ run:
     cmd: |
       cd linkbench
       ./bin/linkbench \
-            -c ../mongo_linkbench_config.properties \
-            -csvstats "../request-phase-stats.csv" \
-            -r \
-            2>&1
+        -c ../mongo_linkbench_config.properties \
+        -csvstats "../request-phase-stats.csv" \
+        -D host="${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}" \
+        -r \
+        2>&1
     output_files:
       - request-phase-stats.csv
     config_filename: mongo_linkbench_config.properties

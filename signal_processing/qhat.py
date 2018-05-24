@@ -30,12 +30,13 @@ def deterministic_random(seed):
 
 class QHat(object):
     KEYS = ('index', 'value', 'value_to_avg', 'value_to_avg_diff', 'average', 'average_diff',
-            'window_size', 'probability', 'revision', 'algorithm', 'order_of_changepoint')
+            'window_size', 'probability', 'revision', 'algorithm', 'order_of_changepoint', 'order')
 
     def __init__(self, state, pvalue=0.05, permutations=100, online=20, threshold=None):
         self.state = state
         self.series = self.state.get('series', None)
         self.revisions = self.state.get('revisions', None)
+        self.orders = self.state.get('orders', None)
         self.testname = self.state.get('testname', None)
         self.threads = self.state.get('threads', None)
 
@@ -227,7 +228,8 @@ class QHat(object):
         for change_pt in change_points:
             index = change_pt[0]
             revision = self.revisions[index]
-            values = change_pt + [revision, algorithm, i]
+            order = self.orders[index]
+            values = change_pt + [revision, algorithm, i, order]
             points.append(dict(zip(keys, values)))
             i += 1
         return points

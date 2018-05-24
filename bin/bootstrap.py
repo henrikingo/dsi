@@ -76,7 +76,8 @@ def copy_config_files(dsipath, config, directory):
         "infrastructure_provisioning": config.get("infrastructure_provisioning", ""),
         "mongodb_setup": config.get("mongodb_setup", ""),
         "test_control": config.get("test_control", ""),
-        "workload_setup": config.get("workload_setup", "")
+        "workload_setup": config.get("workload_setup", ""),
+        "analysis": config.get("analysis", "")
     }
 
     for config_module, bootstrap_variable in configs_to_copy.iteritems():

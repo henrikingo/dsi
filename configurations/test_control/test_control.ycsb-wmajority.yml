@@ -82,27 +82,28 @@ run:
       - iperf.json
     skip_validate: true
 
-# Note: where multiple thread levels support is provided, it is implemented as a bash loop. As a result, arrays MUST be
-# passed as strings.
-# Single values could be strings or numbers BUT in the following configurations string values are passed where ever an
-# array can be used and number literals are passed where a single value (only) can be used.
+# Note: where multiple thread levels support is provided, it is implemented as a bash loop. As a
+# result, arrays MUST be passed as strings.
+# Single values could be strings or numbers BUT in the following configurations string values are
+# passed where ever an array can be used and number literals are passed where a single value (only)
+# can be used.
 # Note: the load test is not run in a loop and only supports a single thread level.
 thread_levels:
   load:
     mmapv1: 256
     wiredTiger: 512
   level95-5:
-    "True": # Sharded
+    "True":  # Sharded
       mmapv1: "1 128"
       wiredTiger: "64 128"
-    "False": # Not Sharded
+    "False":  # Not Sharded
       mmapv1: "1 128"
       wiredTiger: "1 64"
   level50-50:
-    "True": # Sharded
+    "True":  # Sharded
       mmapv1: "512"
       wiredTiger: "1 256 512"
-    "False": # not Sharded
+    "False":  # Not Sharded
       mmapv1: "128"
       wiredTiger: "1 512"
 

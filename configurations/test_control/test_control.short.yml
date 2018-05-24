@@ -3,8 +3,8 @@ run:
   - id: short
     type: mongoshell
     cmd: |
-        cd workloads
-        ./run_workloads.py -c ../workloads.yml
+      cd workloads
+      ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     output_files:
       - workloads/workload_timestamps.csv  # ignored but parser requires it
