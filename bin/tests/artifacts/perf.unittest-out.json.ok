@@ -864,10 +864,10 @@
             "end":2.002,
             "name":"tpcc-unittest",
             "results":{
-                "1":{
-                    "ops_per_sec":"832",
+                "50":{
+                    "ops_per_sec":50.0,
                     "ops_per_sec_values":[
-                        "832"
+                        50.0
                     ]
                 }
             },

@@ -252,11 +252,19 @@ class TPCCResultParser(ResultParser):
         self.threads = None  # We postpone this to _parse()
 
     def _parse(self):
-        threads = '1'  # TPCC doesn't have a concept of threads so we are hardcoding it to 1
+        """ This parsing logic expects to find "Final Results" line, then the "Thread" count,
+        and finally the ops/sec for new orders
+        """
+        final_results_section_found = False
         for line in self.load_input_log():
-            if "  NEW_ORDER       " in line:
+            if "Final Results" in line:
+                final_results_section_found = True
+            if final_results_section_found and "Threads:" in line:
+                threads = line.strip().split(" ")[-1]
+            if final_results_section_found and "  NEW_ORDER       " in line:
                 parts = ' '.join(line.split()).split(" ")
-                self.add_result(self.test_id, parts[1], threads)
+                throughput = float(parts[3]) * int(threads)
+                self.add_result(self.test_id, throughput, threads)
 
 
 class LinkbenchResultParser(ResultParser):
