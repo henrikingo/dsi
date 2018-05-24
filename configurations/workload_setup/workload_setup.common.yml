@@ -69,11 +69,14 @@ linkbench:
         curl --retry 10 -fsS  \
           https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash
         rm *.rpm || true
-  - on_localhost:
-      checkout_repos:
-        - source: git@github.com:10gen/linkbench.git
-          target: ${bootstrap.linkbench_dir}
-          branch: a1c7f628cb8631a0c2d1af5a26a9b13d64a50d52
+# TODO: EVG-3317  modules can only track branches at the moment
+# but master ==  f9cca9bcc2c45a409d34584dad49a095d7efccef. If we need to track
+# a specific commit then this code will need to be placed back.
+#  - on_localhost:
+#      checkout_repos:
+#        - source: git@github.com:10gen/linkbench.git
+#          target: ${bootstrap.linkbench_dir}
+#          branch: f9cca9bcc2c45a409d34584dad49a095d7efccef
   - on_workload_client:
       exec: rm -rf linkbench*
   - on_workload_client:

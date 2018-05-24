@@ -11,7 +11,6 @@ run:
       ./bin/linkbench \
             -c ../mongo_linkbench_config.properties \
             -csvstats "../load-phase-stats.csv" \
-            -D host="${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}" \
             -l \
             2>&1
     output_files:
@@ -19,11 +18,12 @@ run:
     config_filename: mongo_linkbench_config.properties
     # see PR#31 for some context on these numbers
     workload_config: &linkbench_config |
+      url=${mongodb_setup.meta.mongodb_url}&replicaSet=${mongodb_setup.topology.0.id}
       data_file = config/Distribution.dat
       startid1 = 1
       # 10e6 ids is approx 7.5gb of data
       maxid1 = 10000001
-      maxtime = 1200
+      maxtime = 600
       link_type_count = 2
       nlinks_func = real
       link_datasize = 23
@@ -112,7 +112,6 @@ run:
       ./bin/linkbench \
             -c ../mongo_linkbench_config.properties \
             -csvstats "../request-phase-stats.csv" \
-            -D host="${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}" \
             -r \
             2>&1
     output_files:
@@ -134,8 +133,13 @@ pre_task:
           db.createCollection("nodetable");
           db.createCollection("counttable");
 
+          // TODO: SERVER-32442 Change the indexes if / when this ticket is implemented.
+          db.linktable.createIndex({id1: 1, link_type: 1, id2: 1});
           db.linktable.createIndex({id1: 1, link_type: 1, time: 1, visibility: 1});
-          db.counttable.createIndex({id1: 1, link_type: 1})
+
+          db.counttable.createIndex({id: 1, link_type: 1})
+
+          db.nodetable.createIndex({id: 1})
 
   - on_workload_client:
       exec_mongo_shell:
