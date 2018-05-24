@@ -40,6 +40,7 @@ run:
               background_writes: false
               background_currentOp: true
               useSnapshotReads: false
+          - cpu_noise
 
       # These next five lines match existing workloads.yml.
       target: ${mongodb_setup.meta.hostname}

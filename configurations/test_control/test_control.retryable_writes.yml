@@ -23,6 +23,7 @@ run:
           - mix:
               thread_levels: ${test_control.thread_levels.mix.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}
               retryable_writes: true
+          - cpu_noise
         test:
           -  # Empty list. Put new workloads here for testing
         short:  # Just does Hello World

@@ -49,6 +49,7 @@ run:
               listener_levels: [15]
               update_lookup: false
               nb_collections: 5
+          - cpu_noise
 
   - id: fio
     type: fio
