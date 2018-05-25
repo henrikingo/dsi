@@ -366,10 +366,18 @@
                     ]
                 },
                 "count_with_type_predicate-noAgg":{
+                    "thread_threshold":0.375,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-6270",
+                        "BF-9309"
+                    ]
+                },
+                "find_skip_limit_1-noAgg":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
-                        "BF-6270"
+                        "BF-9309"
                     ]
                 },
                 "fio_iops_test_read_iops":{
@@ -3955,6 +3963,13 @@
                     "threshold":0.25,
                     "ticket":[
                         "BF-7407"
+                    ]
+                },
+                "find_skip_limit_1-noAgg":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-9309"
                     ]
                 },
                 "fio_iops_test_read_iops":{
@@ -12180,10 +12195,18 @@
                     ]
                 },
                 "count_with_type_predicate-noAgg":{
+                    "thread_threshold":0.375,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-6270",
+                        "BF-9309"
+                    ]
+                },
+                "find_skip_limit_1-noAgg":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
-                        "BF-6270"
+                        "BF-9309"
                     ]
                 },
                 "fio_iops_test_read_iops":{
