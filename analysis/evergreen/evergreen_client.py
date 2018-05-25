@@ -1,7 +1,9 @@
 """Module for interacting with Evergreen."""
 
 from __future__ import print_function
+
 import logging
+import requests
 
 # TODO: `PERF-1217: Organize DSI into python packages.`
 import helpers
@@ -322,3 +324,51 @@ class Client(object):
         for test, result in response['test_results'].iteritems():
             if result['status'] != 'pass':
                 yield test
+
+    def get_all_tasks(self, project):
+        """
+        Get all tasks from the most recent version in the given project.
+
+        :param str project: Evergreen project
+        :return: A list of {variant: variant_name, task: task_name} dicts
+        :rtype: list(dict)
+        """
+        history = self.query_project_history(project)
+        builds = history['versions'][0]['builds']
+
+        return [{'variant': variant_name, 'task': task_name}
+                for variant_name, variant_obj in builds.iteritems()
+                for task_name in variant_obj['tasks'].keys()]  #  yapf: disable
+
+    def find_perf_tag(self, project, tag):
+        """
+        Figure out the version_id for given tag in project.
+
+        The context for this method is that Evergreen expects you to know the variant and task that
+        has results for the given tag. We solve this by first fetching all variants by tasks and
+        then iterating over all of them. As soon as we find one task that works, we can return
+        correct version_id.
+
+        Evergreen end point: /plugin/json/tag/{project}/{tag}/{variant}/{task}/perf
+
+        :param str project: Evergreen project. Ex: sys-perf
+        :param str tag: Tag in evergreen project
+        :return: version_id
+        :rtype: str
+        """
+        variants_x_tasks = self.get_all_tasks(project)
+        for pair in variants_x_tasks:
+            try:
+                tag_result = helpers.get_as_json(
+                    '{url}/plugin/json/tag/{project}/{tag}/{variant}/{task}/perf'.format(
+                        url=self.base_url,
+                        project=project,
+                        tag=tag,
+                        variant=pair['variant'],
+                        task=pair['task']),
+                    headers=self.headers)
+            except requests.exceptions.HTTPError as http_error:
+                if http_error.response.status_code == 404:
+                    continue
+
+            return tag_result['version_id']
