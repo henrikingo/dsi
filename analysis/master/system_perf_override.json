@@ -14073,8 +14073,8 @@
                     ]
                 },
                 "index_build":{
-                    "thread_threshold":0.18,
-                    "threshold":0.15,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "BF-9290"
                     ]
