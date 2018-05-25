@@ -251,7 +251,7 @@ class DetectChangesDriver(object):
         model = PointsModel(self.perf_json, self.mongo_uri, self.database)
         for test in _extract_tests(self.perf_json):
             many_points, many_change_points, duration = model.compute_change_points(test)
-            self.print_result(many_points, many_change_points, duration, test)
+            self._print_result(many_points, many_change_points, duration, test)
 
     def _print_result(self, many_points, many_change_points, duration, test):
         """
@@ -278,7 +278,7 @@ def main():
     perf_json = evg_client.query_perf_results(config['runtime']['task_id'])
     mongo_uri = config['analysis']['mongo_uri']
     database = 'perf'
-    if config['runtime']['is_patch']:
+    if not config['runtime']['is_patch']:
         _upload_json(perf_json, mongo_uri, database)
     changes_driver = DetectChangesDriver(perf_json, mongo_uri, database)
     changes_driver.run()

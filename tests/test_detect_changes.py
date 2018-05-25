@@ -330,10 +330,10 @@ class TestDetectChangesDriver(unittest.TestCase):
     @patch('signal_processing.detect_changes.PointsModel', autospec=True)
     def test_run(self, mock_PointsModel):
         tests = set(['mixed_insert', 'mixed_findOne'])
-        mock_print_result = MagicMock(name='print_result', autospec=True)
+        mock__print_result = MagicMock(name='_print_result', autospec=True)
         mock_table = mock_PointsModel.return_value
         mock_table.compute_change_points.return_value = ('dummy1', 'dummy2', 'dummy3')
-        detect_changes.DetectChangesDriver.print_result = mock_print_result
+        detect_changes.DetectChangesDriver._print_result = mock__print_result
         test_driver = detect_changes.DetectChangesDriver(SYSPERF_PERF_JSON, MONGO_URI, DATABASE)
         test_driver.run()
         mock_PointsModel.assert_called_once_with(SYSPERF_PERF_JSON, MONGO_URI, DATABASE)
@@ -341,7 +341,7 @@ class TestDetectChangesDriver(unittest.TestCase):
         mock_table.compute_change_points.assert_has_calls(
             compute_change_points_calls, any_order=True)
         print_result_calls = [call('dummy1', 'dummy2', 'dummy3', test) for test in tests]
-        mock_print_result.has_calls(print_result_calls, any_order=True)
+        mock__print_result.assert_has_calls(print_result_calls, any_order=True)
 
     # pylint: enable=invalid-name
 
