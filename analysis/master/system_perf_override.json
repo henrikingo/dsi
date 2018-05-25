@@ -158,10 +158,11 @@
                     ]
                 },
                 "count_with_type_predicate-useAgg":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.52,
+                    "threshold":0.35,
                     "ticket":[
-                        "BF-6270"
+                        "BF-6270",
+                        "BF-9309"
                     ]
                 },
                 "distinct_types_no_predicate-useAgg":{
@@ -3744,10 +3745,11 @@
                     ]
                 },
                 "count_with_type_predicate-useAgg":{
-                    "thread_threshold":0.3,
-                    "threshold":0.2,
+                    "thread_threshold":0.52,
+                    "threshold":0.35,
                     "ticket":[
-                        "BF-6270"
+                        "BF-6270",
+                        "BF-9309"
                     ]
                 },
                 "distinct_types_no_predicate-useAgg":{
@@ -3755,6 +3757,13 @@
                     "threshold":0.3,
                     "ticket":[
                         "BF-6769"
+                    ]
+                },
+                "distinct_types_with_in_predicate-useAgg":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-9309"
                     ]
                 },
                 "find_limit-useAgg":{
