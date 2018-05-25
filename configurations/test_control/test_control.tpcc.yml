@@ -5,7 +5,7 @@ run:
     type: tpcc
     cmd: |
       cd tpcc/pytpcc
-      rm results.log
+      rm -f results.log
       python ./tpcc.py --print-config mongodb > mongodb.config
       sed -i "s/localhost/${mongodb_setup.meta.hostname}/g" mongodb.config
       sed -i "s/27017/${mongodb_setup.meta.port}/g" mongodb.config
