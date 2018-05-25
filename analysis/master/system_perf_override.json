@@ -1860,6 +1860,27 @@
                     "ticket":[
                         "PERF-873"
                     ]
+                },
+                "insert_jfalse":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "BF-9320"
+                    ]
+                },
+                "removemulti_jfalse":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "BF-9320"
+                    ]
+                },
+                "updatemulti_jfalse":{
+                    "thread_threshold":0.37,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-9320"
+                    ]
                 }
             }
         },
