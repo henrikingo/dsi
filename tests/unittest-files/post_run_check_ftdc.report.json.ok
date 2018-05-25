@@ -145,10 +145,10 @@
         },
         {
             "status": "pass",
+            "start": 0,
             "log_raw": "\nNo core files found",
             "test_file": "core.test_id.mongod.0",
-            "exit_code": 0,
-            "start": 0
+            "exit_code": 0
         },
         {
             "status": "pass",

@@ -3,10 +3,9 @@ Unit tests for `post_run_check.py`.
 """
 import os
 import unittest
-
 import shutil
 
-import sys
+from mock import patch
 
 from common.utils import mkdir_p, touch
 from nose.tools import nottest
@@ -14,9 +13,9 @@ from nose.tools import nottest
 from tests import test_utils
 from tests.any_in_string import ANY_IN_STRING
 
-sys.path.append(
-    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "analysis"))
+from evergreen.history import History
 import post_run_check
+import util
 
 
 class TestPostRunCheck(unittest.TestCase):
@@ -42,14 +41,38 @@ class TestPostRunCheck(unittest.TestCase):
         shutil.rmtree(os.path.join(test_utils.FIXTURE_DIR_PATH, 'cores'), ignore_errors=True)
         shutil.rmtree(self.reports_path, ignore_errors=True)
 
-    def test_post_run_check_ftdc(self):
+    @staticmethod
+    def _get_history():
+        """
+        #Return delayed_trigger_core_workloads_wt.history.json as a History object.
+        """
+        file_path = test_utils.fixture_file_path('delayed_trigger_core_workloads_wt.history.json')
+        history = History(util.get_json(file_path))
+        return history
+
+    @staticmethod
+    def _get_tag_history():
+        """
+        Return linux-standalone.core_workloads_WT.tags.json as a History object.
+        """
+        file_path = test_utils.fixture_file_path('linux-standalone.core_workloads_WT.tags.json')
+        tag_history = History(util.get_json(file_path))
+        return tag_history
+
+    @patch('util._get_history', autospec=True)
+    @patch('util._get_tag_history', autospec=True)
+    @patch('util.get_task_id', autospec=True)
+    def test_post_run_check_ftdc(self, mock_task_id, mock_tag, mock_history):
         """
         Runs the full post run check with FTDC resource checks.
         """
+        mock_task_id.return_value = 'sys_perf_linux_standalone_core_workloads_WT_0ff97139df609ae1847da9bfb25c35d209e0936e_16_03_17_21_32_43'  #  pylint: disable=line-too-long
+        mock_tag.return_value = self._get_tag_history()
+        mock_history.return_value = self._get_history()
+
         arg_string = \
-            "--rev 0ff97139df609ae1847da9bfb25c35d209e0936e -f " \
-            "{0}/delayed_trigger_core_workloads_wt.history.json " \
-            "-t {0}/linux-standalone.core_workloads_WT.tags.json --refTag 3.2.1-Baseline " \
+            "--rev 0ff97139df609ae1847da9bfb25c35d209e0936e " \
+            "--refTag 3.2.1-Baseline " \
             "--overrideFile {0}/system_perf_override.json " \
             "--reports-analysis {0}/core_workloads_reports " \
             "--project_id sys-perf --task_name core_workloads_WT --variant linux-standalone " \
@@ -61,37 +84,49 @@ class TestPostRunCheck(unittest.TestCase):
                                              "post_run_check_ftdc.report.json.ok"))
         os.remove(test_utils.fixture_file_path("report_ftdc.json"))
 
-    def test_post_run_check_core_fail(self):
+    @patch('util._get_history', autospec=True)
+    @patch('util._get_tag_history', autospec=True)
+    @patch('util.get_task_id', autospec=True)
+    def test_post_run_check_core_fail(self, mock_task_id, mock_tag, mock_history):
         """
         Runs the full post run check with FTDC resource and core file failure checks.
         """
+        mock_task_id.return_value = 'sys_perf_linux_standalone_core_workloads_WT_0ff97139df609ae1847da9bfb25c35d209e0936e_16_03_17_21_32_43'  #  pylint: disable=line-too-long
+        mock_tag.return_value = self._get_tag_history()
+        mock_history.return_value = self._get_history()
+
         arg_string = \
-            "--rev 0ff97139df609ae1847da9bfb25c35d209e0936e -f " \
-            "{0}/delayed_trigger_core_workloads_wt.history.json " \
-            "-t {0}/linux-standalone.core_workloads_WT.tags.json --refTag 3.2.1-Baseline " \
+            "--rev 0ff97139df609ae1847da9bfb25c35d209e0936e " \
+            "--refTag 3.2.1-Baseline " \
             "--overrideFile {0}/system_perf_override.json " \
             "--reports-analysis {0}/core_workloads_reports " \
             "--project_id sys-perf --task_name core_workloads_WT --variant linux-standalone " \
-            "--report-file {0}/report_ftdc.json --out-file /dev/null".format(
+            "--report-file {0}/report_core.json --out-file /dev/null".format(
                 test_utils.FIXTURE_DIR_PATH)
 
         mkdir_p(os.path.dirname(self.core_file))
         touch(self.core_file)
         post_run_check.main(arg_string.split(" "))
         self.assertTrue(
-            test_utils.eq_fixture_json_files("report_ftdc.json",
+            test_utils.eq_fixture_json_files("report_core.json",
                                              "post_run_check_core_fail.report.json.ok"))
-        os.remove(test_utils.fixture_file_path("report_ftdc.json"))
+        os.remove(test_utils.fixture_file_path("report_core.json"))
         os.remove(self.core_file)
 
-    def test_post_run_check(self):
+    @patch('util._get_history', autospec=True)
+    @patch('util._get_tag_history', autospec=True)
+    @patch('util.get_task_id', autospec=True)
+    def test_post_run_check(self, mock_task_id, mock_tag, mock_history):
         """
         Runs the full post run check without FTDC resource checks.
         """
+        mock_task_id.return_value = 'sys_perf_linux_standalone_core_workloads_WT_0ff97139df609ae1847da9bfb25c35d209e0936e_16_03_17_21_32_43'  #  pylint: disable=line-too-long
+        mock_tag.return_value = self._get_tag_history()
+        mock_history.return_value = self._get_history()
+
         arg_string = \
-            "--rev 0ff97139df609ae1847da9bfb25c35d209e0936e -f " \
-            "{0}/delayed_trigger_core_workloads_wt.history.json " \
-            "-t {0}/linux-standalone.core_workloads_WT.tags.json --refTag 3.2.1-Baseline " \
+            "--rev 0ff97139df609ae1847da9bfb25c35d209e0936e " \
+            "--refTag 3.2.1-Baseline " \
             "--overrideFile {0}/system_perf_override.json " \
             "--project_id sys-perf --task_name core_workloads_WT --variant linux-standalone " \
             "--report-file {0}/report.json --out-file /dev/null".format(test_utils.FIXTURE_DIR_PATH)

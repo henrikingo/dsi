@@ -539,8 +539,7 @@ def main(args):  # pylint: disable=too-many-locals,too-many-statements,too-many-
     # The result histories are stored in global variables within this module as they
     # are accessed across many rules.
     global history, tag_history, overrides, replica_lag_line  # pylint: disable=invalid-name,global-statement
-    (history, tag_history, overrides) = read_histories(args.variant, args.task_name, args.hfile,
-                                                       args.tfile, args.ofile)
+    (history, tag_history, overrides) = read_histories(args.variant, args.task, ofile=args.ofile)
     task_max_thread_level = 0
     results = []
 

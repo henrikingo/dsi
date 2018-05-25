@@ -4,14 +4,17 @@
 from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
+import datetime
 import doctest
 import json
 import os
 import sys
+import yaml
 
-import datetime
 from dateutil import tz, parser as date_parser
+from requests.exceptions import HTTPError
 
+from evergreen import evergreen_client
 from evergreen.history import History
 
 
@@ -85,24 +88,48 @@ def get_json(filename):
         return json.load(json_file)
 
 
-def read_histories(variant, task, hfile, tfile, ofile):
-    ''' Set up result histories from various files and returns the
-    tuple (history, tag_history, overrides):
-     history - this series include the run to be checked, and previous or NDays
-     tag_history - this is the series that holds the tag build as comparison target
-     overrides - this series has the override data to avoid false alarm or fatigues
-    '''
+def _get_history(task, task_id, hfile):
+    """
+    Get result history either from a local file (old way) or evergreen REST (new way).
+    """
+    if hfile is not None:
+        # As I write this, perf.yml will continue to use this old way for some time
+        return History(get_json(hfile))
+    elif task_id is not None:
+        # system_perf.yml will use this, and avoid json.get_history failures
+        # Query history json from Evergreen
+        try:
+            # Note: We don't need to authenticate for history plugin endpoints
+            evg_client = evergreen_client.Client()
+            history_json = evg_client.query_mongo_perf_task_history(task, task_id)
+            return History(history_json)
+        except HTTPError:
+            print('WARNING: Failed to get history for task_id={}'.format(task_id))
+    return None
 
-    tag_history = None
-    history = History(get_json(hfile))
 
-    # Backward compatibility: If task was not given, read it from the history file instead
-    if task is None:
-        task = history.task()
-
+def _get_tag_history(task, task_id, tfile):
+    """
+    Get result history either from a local file (old way) or evergreen REST (new way).
+    """
     if tfile:
-        tag_history = History(get_json(tfile))
-    # Default empty override structure
+        return History(get_json(tfile))
+    elif task_id is not None:
+        # Query tags json from Evergreen
+        try:
+            # Note: We don't need to authenticate for history plugin endpoints
+            evg_client = evergreen_client.Client()
+            tags_json = evg_client.query_mongo_perf_task_tags(task, task_id)
+            return History(tags_json)
+        except HTTPError:
+            print('WARNING: Failed to get tag data for task_id={}'.format(task_id))
+    return None
+
+
+def _get_overrides(variant, task, ofile):
+    """
+    Load overrides if json file exists.
+    """
     overrides = {'ndays': {}, 'reference': {}, 'threshold': {}}
     if ofile and os.path.isfile(ofile):
         # Read the overrides file
@@ -111,6 +138,48 @@ def read_histories(variant, task, hfile, tfile, ofile):
         if variant in foverrides:
             if task in foverrides[variant]:
                 overrides = foverrides[variant][task]
+    return overrides
+
+
+def read_histories(variant, task, hfile=None, tfile=None, ofile=None):
+    """
+    Set up result histories from various json files and returns the tuple
+    `(history, tag_history, overrides)`:
+
+        `history` - this series include the run to be checked, and previous or NDays
+        `tag_history` - this is the series that holds the tag build as comparison target
+        `overrides` - this series has the override data to avoid false alarm or fatigues
+
+    If the local file hfile or tfile is given, history and  tagged results will be used from those.
+    When they are not given, they will be fetched directly from Evergreen API. This requires `task`
+    to be given as an argument and `task_id` to be present in a file `runtime.yml` in the current
+    work directory. If neither a local file or Evergreen API data can be successfully returned,
+    then None is returned.
+
+    Note that if hfile & tfile are None, and task_id isn't found in runtime.yml, then history and
+    tag_history won't be found and None is returned for each.
+
+    Overrides are only provided as local files. If ofile is None or not found, an empty overrides
+    dict structure is returned.
+
+    :param str variant: variant name
+    :param str task: task name
+    :param str hfile: name of history file ('history.json')
+    :param str tfile: name of tagged results file, has same structure as history file ('tags.json')
+    :param str ofile: name of overrides file ('system_perf_override.json')
+    :return: tuple of dicts: (history, tagged, overrides)
+    :rtype: tuple(dict)
+    """
+    task_id = get_task_id()
+
+    history = _get_history(task, task_id, hfile)
+    # Backward compatibility (2016ish): If task was not given, read it from the history file instead
+    if task is None:
+        task = history.task()
+
+    tag_history = _get_tag_history(task, task_id, tfile)
+    overrides = _get_overrides(variant, task, ofile)
+
     return (history, tag_history, overrides)
 
 
@@ -361,6 +430,29 @@ def get_override(test_name, override_type, overrides):
     if test_name in overrides[override_type]:
         return overrides[override_type][test_name]
     return None
+
+
+def get_task_id():
+    """
+    Get task_id from ./runtime.yml
+
+    To use evergreen_client from python, we sometimes need task_id. This was built in when
+    using e.g. json.get_history in the evergreen agent, but now we need to tell evergreen our
+    task_id.
+
+    This helper method looks up task_id from runtime.yml. While analysis/ scripts aren't part of
+    the ConfigDict system, we do this to avoid adding a new command line option to
+    post_run_check.py. This is more backward compatible.
+
+    :return: The task_id of the evergreen task we're in
+    """
+    try:
+        with open('runtime.yml') as r_file:
+            r_dict = yaml.load(r_file)
+            return r_dict['task_id']
+    except:  # pylint: disable=bare-except
+        print("WARNING: Failed to get task_id from runtime.yml")
+        return None
 
 
 if __name__ == "__main__":
