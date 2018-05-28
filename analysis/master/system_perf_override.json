@@ -11898,6 +11898,20 @@
                         "PERF-873"
                     ]
                 },
+                "count_no_predicate-useAgg":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "distinct_types_no_predicate-useAgg":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
