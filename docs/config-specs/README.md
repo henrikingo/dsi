@@ -18,7 +18,9 @@ example, a subsection of mongodb_setup.yml is a valid mongod config file.
 The mongodb_setup module will copy that section, store it into a new file, and pass to a mongod
 process when deploying mongodb.
 
-**Conventions:**
+Conventions
+------------
+
 * Keys and values are generally the values mandated by this spec.
 * Some values are examples only. For example the prefix "my" is used for user defined values: "myrs0".
 * ${module_name.key_name} are variables that can reference the value of another key in the 
@@ -29,7 +31,8 @@ process when deploying mongodb.
 * Values associated with the key 'id' must be unique in a given file, and cannot be equivalent
   to any reserved strings (enumerated in [bin/common/config.py](../../bin/common/config.py)).
 
-**Empty values (python None)**
+Empty values (python None)
+--------------------------
 
 * Empty values are mostly not allowed.
   * For mongod options such as `fork`, you must specify `true`.
