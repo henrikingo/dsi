@@ -278,7 +278,11 @@ def main():
     perf_json = evg_client.query_perf_results(config['runtime']['task_id'])
     mongo_uri = config['analysis']['mongo_uri']
     database = 'perf'
-    if not config['runtime']['is_patch']:
+    if not config['runtime'].get('is_patch', False):
         _upload_json(perf_json, mongo_uri, database)
     changes_driver = DetectChangesDriver(perf_json, mongo_uri, database)
     changes_driver.run()
+
+
+if __name__ == '__main__':
+    main()
