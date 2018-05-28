@@ -2250,6 +2250,13 @@
                     "ticket":[
                         "PERF-873"
                     ]
+                },
+                "ycsb_load":{
+                    "thread_threshold":0.37,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-9320"
+                    ]
                 }
             }
         },
