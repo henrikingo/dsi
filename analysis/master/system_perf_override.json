@@ -111,7 +111,7 @@
                 }
             }
         },
-        "bestbuy_agg_WT":{
+        "bestbuy_agg":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -327,7 +327,7 @@
                 }
             }
         },
-        "bestbuy_query_WT":{
+        "bestbuy_query":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -1662,7 +1662,7 @@
                 }
             }
         },
-        "crud_workloads_WT":{
+        "crud_workloads":{
             "ndays":{},
             "reference":{
                 "insert_jfalse":{
@@ -2069,7 +2069,7 @@
                 }
             }
         },
-        "industry_benchmarks_WT":{
+        "industry_benchmarks":{
             "ndays":{},
             "reference":{
                 "ycsb_100read":{
@@ -2383,7 +2383,7 @@
                 }
             }
         },
-        "map_reduce_workloads_WT":{
+        "map_reduce_workloads":{
             "ndays":{},
             "reference":{
                 "word_count_doc":{
@@ -2589,7 +2589,7 @@
                 }
             }
         },
-        "misc_workloads_WT":{
+        "misc_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -2801,7 +2801,7 @@
                 }
             }
         },
-        "mixed_workloads_WT":{
+        "mixed_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -3137,7 +3137,7 @@
                 }
             }
         },
-        "non_sharded_workloads_WT":{
+        "non_sharded_workloads":{
             "ndays":{
                 "initial_load_capped":{
                     "create_time":"2018-01-18T02:06:16.716Z",
@@ -3346,7 +3346,7 @@
                 }
             }
         },
-        "retryable_writes_workloads_WT":{
+        "retryable_writes_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -3436,7 +3436,7 @@
                 }
             }
         },
-        "snapshot_reads_WT":{
+        "snapshot_reads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -3726,7 +3726,7 @@
                 }
             }
         },
-        "bestbuy_agg_WT":{
+        "bestbuy_agg":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -3956,7 +3956,7 @@
                 }
             }
         },
-        "bestbuy_query_WT":{
+        "bestbuy_query":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -5233,7 +5233,7 @@
                 }
             }
         },
-        "crud_workloads_WT":{
+        "crud_workloads":{
             "ndays":{},
             "reference":{
                 "insert_jfalse":{
@@ -5619,7 +5619,7 @@
                 }
             }
         },
-        "industry_benchmarks_WT":{
+        "industry_benchmarks":{
             "ndays":{},
             "reference":{
                 "ycsb_100read":{
@@ -5985,7 +5985,7 @@
                 }
             }
         },
-        "industry_benchmarks_wmajority_WT":{
+        "industry_benchmarks_wmajority":{
             "ndays":{},
             "reference":{
                 "ycsb_50read50update_single_w_majority":{
@@ -6290,7 +6290,7 @@
                 }
             }
         },
-        "map_reduce_workloads_WT":{
+        "map_reduce_workloads":{
             "ndays":{},
             "reference":{
                 "word_count_doc":{
@@ -6496,7 +6496,7 @@
                 }
             }
         },
-        "misc_workloads_WT":{
+        "misc_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -6701,7 +6701,7 @@
                 }
             }
         },
-        "mixed_workloads_WT":{
+        "mixed_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -7030,7 +7030,7 @@
                 }
             }
         },
-        "non_sharded_workloads_WT":{
+        "non_sharded_workloads":{
             "ndays":{
                 "initial_load_capped":{
                     "create_time":"2018-01-18T02:06:16.716Z",
@@ -7232,7 +7232,7 @@
                 }
             }
         },
-        "retryable_writes_workloads_WT":{
+        "retryable_writes_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -7487,7 +7487,7 @@
                 }
             }
         },
-        "secondary_performance_WT":{
+        "secondary_performance":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -7635,7 +7635,7 @@
                 }
             }
         },
-        "snapshot_reads_WT":{
+        "snapshot_reads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -8343,7 +8343,7 @@
                 }
             }
         },
-        "initialsync_WT":{
+        "initialsync":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -9032,7 +9032,7 @@
                 }
             }
         },
-        "bestbuy_agg_WT":{
+        "bestbuy_agg":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -9205,7 +9205,7 @@
                 }
             }
         },
-        "bestbuy_query_WT":{
+        "bestbuy_query":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -10291,7 +10291,7 @@
                 }
             }
         },
-        "crud_workloads_WT":{
+        "crud_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -10429,7 +10429,7 @@
                 }
             }
         },
-        "industry_benchmarks_WT":{
+        "industry_benchmarks":{
             "ndays":{},
             "reference":{
                 "ycsb_50read50update":{
@@ -10565,7 +10565,7 @@
                 }
             }
         },
-        "industry_benchmarks_wmajority_WT":{
+        "industry_benchmarks_wmajority":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -10717,7 +10717,7 @@
                 }
             }
         },
-        "map_reduce_workloads_WT":{
+        "map_reduce_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -10890,7 +10890,7 @@
                 }
             }
         },
-        "misc_workloads_WT":{
+        "misc_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -11095,7 +11095,7 @@
                 }
             }
         },
-        "mixed_workloads_WT":{
+        "mixed_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -11300,7 +11300,7 @@
                 }
             }
         },
-        "mongos_workloads_WT":{
+        "mongos_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -11466,7 +11466,7 @@
                 }
             }
         },
-        "move_chunk_workloads_WT":{
+        "move_chunk_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -11563,7 +11563,7 @@
                 }
             }
         },
-        "retryable_writes_workloads_WT":{
+        "retryable_writes_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -11820,7 +11820,7 @@
                 }
             }
         },
-        "industry_benchmarks_WT_oplog_comp":{
+        "industry_benchmarks_oplog_comp":{
             "ndays":{},
             "reference":{
                 "ycsb_50read50update":{
@@ -11866,7 +11866,7 @@
         }
     },
     "linux-shard-lite":{
-        "bestbuy_agg_WT":{
+        "bestbuy_agg":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -11963,7 +11963,7 @@
                 }
             }
         },
-        "bestbuy_query_WT":{
+        "bestbuy_query":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -12114,7 +12114,7 @@
                 }
             }
         },
-        "industry_benchmarks_WT":{
+        "industry_benchmarks":{
             "ndays":{},
             "reference":{
                 "ycsb_100read":{
@@ -12273,7 +12273,7 @@
             },
             "threshold":{}
         },
-        "mixed_workloads_WT":{
+        "mixed_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -12293,55 +12293,7 @@
                 }
             }
         },
-        "mongos_workloads_WT":{
-            "ndays":{},
-            "reference":{},
-            "threshold":{
-                "fio_iops_test_read_iops":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
-                    "ticket":[
-                        "PERF-873"
-                    ]
-                },
-                "fio_iops_test_write_iops":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
-                    "ticket":[
-                        "PERF-873"
-                    ]
-                },
-                "fio_latency_test_read_clat_mean":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
-                    "ticket":[
-                        "PERF-873"
-                    ]
-                },
-                "fio_latency_test_write_clat_mean":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
-                    "ticket":[
-                        "PERF-873"
-                    ]
-                },
-                "fio_streaming_bandwidth_test_read_iops":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
-                    "ticket":[
-                        "PERF-873"
-                    ]
-                },
-                "fio_streaming_bandwidth_test_write_iops":{
-                    "thread_threshold":2.0,
-                    "threshold":1.0,
-                    "ticket":[
-                        "PERF-873"
-                    ]
-                }
-            }
-        },
-        "move_chunk_waiting_workloads_WT":{
+        "mongos_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -12389,7 +12341,55 @@
                 }
             }
         },
-        "move_chunk_workloads_WT":{
+        "move_chunk_waiting_workloads":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                }
+            }
+        },
+        "move_chunk_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -12550,7 +12550,7 @@
                 }
             }
         },
-        "bestbuy_agg_WT":{
+        "bestbuy_agg":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -12765,7 +12765,7 @@
                 }
             }
         },
-        "bestbuy_query_WT":{
+        "bestbuy_query":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -13693,7 +13693,7 @@
                 }
             }
         },
-        "crud_workloads_WT":{
+        "crud_workloads":{
             "ndays":{},
             "reference":{
                 "index_build":{
@@ -14104,7 +14104,7 @@
                 }
             }
         },
-        "industry_benchmarks_WT":{
+        "industry_benchmarks":{
             "ndays":{},
             "reference":{
                 "ycsb_100read":{
@@ -14410,7 +14410,7 @@
                 }
             }
         },
-        "map_reduce_workloads_WT":{
+        "map_reduce_workloads":{
             "ndays":{},
             "reference":{
                 "word_count_doc":{
@@ -14617,7 +14617,7 @@
                 }
             }
         },
-        "misc_workloads_WT":{
+        "misc_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -14836,7 +14836,7 @@
                 }
             }
         },
-        "mixed_workloads_WT":{
+        "mixed_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -15157,7 +15157,7 @@
                 }
             }
         },
-        "non_sharded_workloads_WT":{
+        "non_sharded_workloads":{
             "ndays":{
                 "initial_load_capped":{
                     "create_time":"2018-01-18T02:06:16.716Z",
@@ -15358,7 +15358,7 @@
         }
     },
     "wtdevelop-1-node-replSet":{
-        "bestbuy_agg_WT":{
+        "bestbuy_agg":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -15448,7 +15448,7 @@
                 }
             }
         },
-        "bestbuy_query_WT":{
+        "bestbuy_query":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -16099,7 +16099,7 @@
                 }
             }
         },
-        "crud_workloads_WT":{
+        "crud_workloads":{
             "ndays":{},
             "reference":{
                 "insert_jfalse":{
@@ -16300,7 +16300,7 @@
                 }
             }
         },
-        "industry_benchmarks_WT":{
+        "industry_benchmarks":{
             "ndays":{},
             "reference":{
                 "ycsb_100read":{
@@ -16481,7 +16481,7 @@
                 }
             }
         },
-        "map_reduce_workloads_WT":{
+        "map_reduce_workloads":{
             "ndays":{},
             "reference":{
                 "word_count_doc":{
@@ -16597,7 +16597,7 @@
                 }
             }
         },
-        "misc_workloads_WT":{
+        "misc_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -16680,7 +16680,7 @@
                 }
             }
         },
-        "mixed_workloads_WT":{
+        "mixed_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -16802,7 +16802,7 @@
                 }
             }
         },
-        "non_sharded_workloads_WT":{
+        "non_sharded_workloads":{
             "ndays":{},
             "reference":{
                 "initial_load_capped":{
@@ -16977,7 +16977,7 @@
                 }
             }
         },
-        "retryable_writes_workloads_WT":{
+        "retryable_writes_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -17034,7 +17034,7 @@
         }
     },
     "wtdevelop-3-node-replSet":{
-        "bestbuy_agg_WT":{
+        "bestbuy_agg":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -17124,7 +17124,7 @@
                 }
             }
         },
-        "bestbuy_query_WT":{
+        "bestbuy_query":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -17787,7 +17787,7 @@
                 }
             }
         },
-        "crud_workloads_WT":{
+        "crud_workloads":{
             "ndays":{},
             "reference":{
                 "insert_jfalse":{
@@ -17988,7 +17988,7 @@
                 }
             }
         },
-        "industry_benchmarks_WT":{
+        "industry_benchmarks":{
             "ndays":{},
             "reference":{
                 "ycsb_100read":{
@@ -18169,7 +18169,7 @@
                 }
             }
         },
-        "industry_benchmarks_wmajority_WT":{
+        "industry_benchmarks_wmajority":{
             "ndays":{},
             "reference":{
                 "ycsb_50read50update_single_w_majority":{
@@ -18351,7 +18351,7 @@
                 }
             }
         },
-        "map_reduce_workloads_WT":{
+        "map_reduce_workloads":{
             "ndays":{},
             "reference":{
                 "word_count_doc":{
@@ -18467,7 +18467,7 @@
                 }
             }
         },
-        "misc_workloads_WT":{
+        "misc_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -18550,7 +18550,7 @@
                 }
             }
         },
-        "mixed_workloads_WT":{
+        "mixed_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -18672,7 +18672,7 @@
                 }
             }
         },
-        "non_sharded_workloads_WT":{
+        "non_sharded_workloads":{
             "ndays":{},
             "reference":{
                 "initial_load_capped":{
@@ -18847,7 +18847,7 @@
                 }
             }
         },
-        "retryable_writes_workloads_WT":{
+        "retryable_writes_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -18923,7 +18923,7 @@
                 }
             }
         },
-        "secondary_performance_WT":{
+        "secondary_performance":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -19050,7 +19050,7 @@
         }
     },
     "wtdevelop-standalone":{
-        "bestbuy_agg_WT":{
+        "bestbuy_agg":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -19140,7 +19140,7 @@
                 }
             }
         },
-        "bestbuy_query_WT":{
+        "bestbuy_query":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -19423,7 +19423,7 @@
                 }
             }
         },
-        "crud_workloads_WT":{
+        "crud_workloads":{
             "ndays":{},
             "reference":{
                 "insert_jfalse":{
@@ -19624,7 +19624,7 @@
                 }
             }
         },
-        "industry_benchmarks_WT":{
+        "industry_benchmarks":{
             "ndays":{},
             "reference":{
                 "ycsb_100read":{
@@ -19805,7 +19805,7 @@
                 }
             }
         },
-        "map_reduce_workloads_WT":{
+        "map_reduce_workloads":{
             "ndays":{},
             "reference":{
                 "word_count_doc":{
@@ -19921,7 +19921,7 @@
                 }
             }
         },
-        "misc_workloads_WT":{
+        "misc_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -20011,7 +20011,7 @@
                 }
             }
         },
-        "mixed_workloads_WT":{
+        "mixed_workloads":{
             "ndays":{},
             "reference":{},
             "threshold":{
@@ -20133,7 +20133,7 @@
                 }
             }
         },
-        "non_sharded_workloads_WT":{
+        "non_sharded_workloads":{
             "ndays":{},
             "reference":{
                 "initial_load_capped":{
