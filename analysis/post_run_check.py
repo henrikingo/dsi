@@ -19,11 +19,9 @@ import StringIO
 import sys
 import traceback
 
-from datetime import timedelta
 import re
 
 import os
-from dateutil import parser as date_parser
 
 import rules
 from exit_status import read_exit_status, EXIT_STATUS_OK
@@ -208,7 +206,7 @@ def check_core_file_exists(reports_dir_path, pattern="core.*"):
     return results
 
 
-def project_test_rules(project, variant, is_patch, test):
+def project_test_rules(project, variant, test):
     """For each test, run the specified regression rules listed in PROJECT_TEST_RULES and return
     a dictionary with rules as keys and pass/fail information as values.
 
@@ -221,9 +219,6 @@ def project_test_rules(project, variant, is_patch, test):
     regression_rules = get_project_variant_rules(project, variant, PROJECT_TEST_RULES)
 
     for regression_rule_function in regression_rules:
-        if is_patch:
-            if regression_rule_function.__name__ == "compare_n_days_delayed_trigger":
-                continue
         build_args = {'test': test}
         arguments_needed = inspect.getargspec(regression_rule_function).args
         for parameter in arguments_needed:
@@ -250,35 +245,6 @@ def compare_to_previous(test, threshold, thread_threshold):
         'PreviousCompare':
             compare_throughputs(test, previous, 'Previous', threshold, thread_threshold)
     }
-
-
-def compare_n_days_delayed_trigger(test, threshold, thread_threshold, ndays=7):
-    """NDays case with delayed trigger"""
-    test_name = test['name']
-    test_revision = test['revision']
-    previous = history.series_at_n_before(test_name, test_revision, 1)
-    target = history.series_at_n_days_before(test_name, test_revision, ndays)
-    if not target:
-        print('        no reference data for test {} with NDays'.format(test_name))
-        return {}
-    using_override = []
-    if test_name in overrides['ndays']:
-        try:
-            override_time = date_parser.parse(overrides['ndays'][test_name]['create_time'])
-            this_time = date_parser.parse(test['create_time'])
-            override_before_create_time = override_time < this_time
-            override_ndays_after_create = (override_time + timedelta(days=ndays)) >= this_time
-            if override_before_create_time and override_ndays_after_create:
-                target = overrides['ndays'][test_name]
-                using_override.append('ndays')
-            else:
-                print('Out of date override found for ndays. Not using.')
-        except KeyError as err:
-            err_msg = ('Key error accessing overrides for ndays. '
-                       'Key {0} does not exist for test {1}').format(str(err), test_name)
-            print(err_msg, file=sys.stderr)
-    return _delayed_trigger_analysis(test, target, previous, 'NDays', threshold, thread_threshold,
-                                     using_override)
 
 
 def compare_tag_delayed_trigger(test, threshold, thread_threshold):
@@ -464,7 +430,7 @@ QUARANTINED_RULES = [
 # we do during the PERF-580 perf_regression_check and post_run_check merge; right now they remain
 # in post_run_check because they currently access some number of global variables.
 
-REGRESSION_RULES = [compare_to_previous, compare_n_days_delayed_trigger, compare_to_tag]
+REGRESSION_RULES = [compare_to_previous, compare_to_tag]
 
 PROJECT_TEST_RULES = {
     'sys-perf': {
@@ -566,8 +532,7 @@ def main(args):  # pylint: disable=too-many-locals,too-many-statements,too-many-
                 real_stdout = sys.stdout
                 log_stdout = StringIO.StringIO()
                 sys.stdout = log_stdout
-                result.update(
-                    project_test_rules(args.project_id, args.variant, args.is_patch, to_test))
+                result.update(project_test_rules(args.project_id, args.variant, to_test))
                 # Store log_stdout in log_raw
                 test_log = log_stdout.getvalue()
                 result['log_raw'] += log_header(test)

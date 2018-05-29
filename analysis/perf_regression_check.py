@@ -8,12 +8,10 @@ Example usage:
 """
 
 from __future__ import print_function
-from datetime import timedelta
 import sys
 import argparse
 import json
 import logging
-from dateutil import parser
 
 from util import read_histories, compare_one_result, log_header, read_threshold_overrides
 import log_analysis
@@ -195,84 +193,6 @@ def main(args):  # pylint: disable=too-many-branches,too-many-locals,too-many-st
         result['log_raw'] += cresult[1] + '\n'
         if cresult[0]:
             test_failed = True
-
-        if args.is_patch:
-            LOGGER.info("This is a patchbuild; skipping NDays comparison.")
-        else:
-            target = history.series_at_n_days_before(test, args.rev, args.ndays)
-            if not target:
-                LOGGER.warning('        no reference data for test %s with NDays', test)
-            else:
-                using_override = []
-                if threshold_override:
-                    using_override.append('threshold')
-                if test in overrides['ndays']:
-                    try:
-                        override_time = parser.parse(overrides['ndays'][test]['create_time'])
-                        this_time = parser.parse(this_one['create_time'])
-                        if ((override_time < this_time)
-                                and ((override_time + timedelta(days=args.ndays)) >= this_time)):
-                            target = overrides['ndays'][test]
-                            using_override.append('ndays')
-                            LOGGER.info('Override in NDays for test %s', test)
-                        else:
-                            LOGGER.info('Out of date override found for ndays. Not using.')
-                    except KeyError as err:
-                        err_msg = ('Key error accessing overrides for ndays. '
-                                   'Key {0} does not exist for test {1}').format(str(err), test)
-                        LOGGER.warning(err_msg, file=sys.stderr)
-
-                prev_failed, _ = compare_results(
-                    previous,
-                    target,
-                    threshold,
-                    'silent',
-                    history.noise_levels(test),
-                    args.noise,
-                    thread_threshold,
-                    args.threadNoise,
-                    using_override=using_override)
-                check_name = 'NDaysCompare'
-                current_failed, current_log = compare_results(
-                    this_one,
-                    target,
-                    threshold,
-                    'NDays',
-                    history.noise_levels(test),
-                    args.noise,
-                    thread_threshold,
-                    args.threadNoise,
-                    using_override=using_override)
-                result['log_raw'] += current_log + '\n'
-                if prev_failed:
-                    result[check_name] = current_failed
-                else:
-                    strict_failed, _ = compare_results(
-                        this_one,
-                        target,
-                        threshold * 1.5,
-                        'silent',
-                        history.noise_levels(test),
-                        args.noise,
-                        thread_threshold * 1.5,
-                        args.threadNoise,
-                        using_override=using_override)
-                    if strict_failed:
-                        fail_info = ('  NDays check failed because of drop greater'
-                                     ' than 1.5 x threshold')
-                        result[check_name] = True
-                        result['log_raw'] += fail_info + '\n'
-                    elif current_failed:
-                        first_drop_pass_info = \
-                                        '  NDays check considered passed as this is the first drop'
-                        result['log_raw'] += first_drop_pass_info + '\n'
-                        result[check_name] = False
-                    else:
-                        result[check_name] = False
-
-                # if the check failed then the whole test failed: PERF-883
-                if result[check_name]:
-                    test_failed = True
 
         if tag_history:
             reference = tag_history.series_at_tag(test, args.reference)
