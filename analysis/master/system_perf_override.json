@@ -3381,21 +3381,6 @@
                         "PERF-873"
                     ]
                 },
-                "insert_jfalse":{
-                    "thread_threshold":1.5,
-                    "threshold":1.0,
-                    "ticket":[
-                        "BF-8587",
-                        "BF-8589"
-                    ]
-                },
-                "insert_jtrue":{
-                    "thread_threshold":1.5,
-                    "threshold":1.0,
-                    "ticket":[
-                        "BF-8587"
-                    ]
-                },
                 "insert_ttl":{
                     "thread_threshold":0.375,
                     "threshold":0.25,
@@ -3423,36 +3408,6 @@
                     "threshold":0.4,
                     "ticket":[
                         "PERF-750"
-                    ]
-                },
-                "removemulti_jfalse":{
-                    "thread_threshold":1.5,
-                    "threshold":1.0,
-                    "ticket":[
-                        "BF-8587",
-                        "BF-8589"
-                    ]
-                },
-                "removemulti_jtrue":{
-                    "thread_threshold":1.5,
-                    "threshold":1.0,
-                    "ticket":[
-                        "BF-8587"
-                    ]
-                },
-                "updatemulti_jfalse":{
-                    "thread_threshold":1.5,
-                    "threshold":1.0,
-                    "ticket":[
-                        "BF-8587",
-                        "BF-8589"
-                    ]
-                },
-                "updatemulti_jtrue":{
-                    "thread_threshold":1.5,
-                    "threshold":1.0,
-                    "ticket":[
-                        "BF-8587"
                     ]
                 }
             }
