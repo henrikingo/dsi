@@ -4039,7 +4039,15 @@
                     "workload":"mongoshell"
                 }
             },
-            "threshold":{}
+            "threshold":{
+                "16writers:secondary_lag_ms":{
+                    "thread_threshold":0.37,
+                    "threshold":0.25,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                }
+            }
         },
         "snapshot_reads":{
             "ndays":{},
