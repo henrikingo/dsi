@@ -4101,6 +4101,13 @@
                     "ticket":[
                         "PERF-873"
                     ]
+                },
+                "snapshot_reads_currentOp_throughput":{
+                    "thread_threshold":0.262,
+                    "threshold":0.175,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
                 }
             }
         }
