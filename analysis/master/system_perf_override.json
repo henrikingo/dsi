@@ -1313,6 +1313,41 @@
                     "ticket":[
                         "PERF-873"
                     ]
+                },
+                "insert_ttl":{
+                    "thread_threshold":0.3,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-738",
+                        "PERF-1157"
+                    ]
+                },
+                "insert_vector_primary":{
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
+                    "ticket":[
+                        "BF-7147",
+                        "BF-7379",
+                        "BF-8571"
+                    ]
+                },
+                "insert_vector_secondary_load_phase":{
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
+                    "ticket":[
+                        "BF-7147",
+                        "BF-6862",
+                        "BF-8571"
+                    ]
+                },
+                "insert_vector_secondary_overall":{
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
+                    "ticket":[
+                        "BF-7147",
+                        "BF-7379",
+                        "BF-8571"
+                    ]
                 }
             }
         },
