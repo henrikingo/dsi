@@ -137,7 +137,7 @@ buildvariants:
   - name: linux-runner
     display_name: Linux
     run_on:
-      - "rhel70-perf-standalone"
+      - "rhel70-small"
     tasks: &dsi_tasks
       - name: check_python_formatting
       - name: compare_coverage
