@@ -7956,6 +7956,27 @@
                         "PERF-1157"
                     ]
                 },
+                "insert_vector_primary":{
+                    "thread_threshold":0.175,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "insert_vector_secondary_load_phase":{
+                    "thread_threshold":0.175,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "insert_vector_secondary_overall":{
+                    "thread_threshold":0.175,
+                    "threshold":0.1,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
                 "removemulti_jfalse":{
                     "thread_threshold":1.5,
                     "threshold":1.0,
