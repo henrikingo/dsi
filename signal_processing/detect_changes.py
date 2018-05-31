@@ -1,14 +1,17 @@
 import copy
+import logging
 import json
 import pymongo
 import time
 from collections import OrderedDict
 from pymongo import MongoClient
 
-import bin.common.log as log
 import analysis.evergreen.evergreen_client as evergreen_client
+import bin.common.config as conf
+import bin.common.log as log
 from qhat import QHat
-from bin.common.config import ConfigDict
+
+LOG = logging.getLogger(__name__)
 
 
 def _upload_json(perf_json, mongo_uri, database):
@@ -52,6 +55,9 @@ def _translate_points(perf_json):
         # field for microbenchmark points in order to query on 'workload'.
         point['workload'] = test_result.get('workload', 'microbenchmarks')
         point['max_thread_level'], point['max_ops_per_sec'] = _get_max_ops_per_sec(test_result)
+        # Do not add a test with an invalid thread level.
+        if point['max_ops_per_sec'] is None:
+            continue
         point['results'] = _get_thread_levels(test_result)
         points.append(point)
     return points
@@ -104,7 +110,8 @@ def _get_max_ops_per_sec(test_result):
     max_ops_per_sec = None
     max_thread_level = None
     for key, thread_level in test_result['results'].iteritems():
-        if not key.isdigit():
+        if not conf.is_integer(key):
+            LOG.warn('Invalid thread level value %s found' %key)
             continue
         if max_ops_per_sec == None or max_ops_per_sec < thread_level['ops_per_sec']:
             max_ops_per_sec = thread_level['ops_per_sec']
@@ -272,7 +279,7 @@ class DetectChangesDriver(object):
 
 def main():
     log.setup_logging(True, None)
-    config = ConfigDict('analysis')
+    config = conf.ConfigDict('analysis')
     config.load()
     evg_client = evergreen_client.Client()
     perf_json = evg_client.query_perf_results(config['runtime']['task_id'])

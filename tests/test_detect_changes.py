@@ -5,6 +5,7 @@ Unit tests for signal_processing/detect_changes.py.
 import unittest
 from collections import OrderedDict
 from mock import ANY, MagicMock, call, patch
+from testfixtures import LogCapture
 
 import signal_processing.detect_changes as detect_changes
 
@@ -45,6 +46,17 @@ SYSPERF_PERF_JSON = {
                     'ops_per_sec_values': [3687.4042495626]
                 },
                 '64': {
+                    'ops_per_sec': 13876.06811527,
+                    'ops_per_sec_values': [13876.06811527]
+                }
+            },
+            'start': 1525889262.7772,
+            'workload': 'mongoshell'
+        }, {
+            'end': 1525891650.3229,
+            'name': 'mixed_insert_bad',
+            'results': {
+                '-t': {
                     'ops_per_sec': 13876.06811527,
                     'ops_per_sec_values': [13876.06811527]
                 }
@@ -296,17 +308,24 @@ class TestDetectChanges(unittest.TestCase):
 
     def test__get_thread_levels(self):
         for i, result in enumerate(SYSPERF_PERF_JSON['data']['results']):
-            actual = detect_changes._get_thread_levels(result)
-            self.assertEqual(actual, SYSPERF_POINTS[i]['results'])
+            if i < len(SYSPERF_POINTS):
+                actual = detect_changes._get_thread_levels(result)
+                self.assertEqual(actual, SYSPERF_POINTS[i]['results'])
         for i, result in enumerate(MICROBENCHMARKS_PERF_JSON['data']['results']):
             actual = detect_changes._get_thread_levels(result)
             self.assertEqual(actual, MICROBENCHMARKS_POINTS[i]['results'])
 
     def test__get_max_ops_per_sec(self):
+        bad_point = {'max_thread_level': None, 'max_ops_per_sec': None}
         for i, result in enumerate(SYSPERF_PERF_JSON['data']['results']):
-            point = SYSPERF_POINTS[i]
-            result['not_a_digit'] = 'test'
-            actual = detect_changes._get_max_ops_per_sec(result)
+            point = SYSPERF_POINTS[i] if i < len(SYSPERF_POINTS) else bad_point
+            with LogCapture() as log:
+                actual = detect_changes._get_max_ops_per_sec(result)
+                if point is bad_point:
+                    log.check(('signal_processing.detect_changes', 'WARNING',
+                               'Invalid thread level value -t found'))
+                else:
+                    log.check()
             self.assertEqual(actual, (point['max_thread_level'], point['max_ops_per_sec']))
         for i, result in enumerate(MICROBENCHMARKS_PERF_JSON['data']['results']):
             point = MICROBENCHMARKS_POINTS[i]
@@ -317,7 +336,7 @@ class TestDetectChanges(unittest.TestCase):
         """
         Test that _extract_tests works with a correctly formatted perf.json file.
         """
-        tests = set(['mixed_insert', 'mixed_findOne'])
+        tests = set(['mixed_insert', 'mixed_findOne', 'mixed_insert_bad'])
         self.assertEqual(detect_changes._extract_tests(SYSPERF_PERF_JSON), tests)
 
 
