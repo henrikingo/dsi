@@ -103,6 +103,8 @@ run:
       requestrate = 0
       warmup_time = 60
       max_failed_requests = 100
+      load_random_seed = 314159265
+      request_random_seed = 299792458
 
   - id: linkbench_request
     type: linkbench
