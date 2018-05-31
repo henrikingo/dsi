@@ -2781,6 +2781,31 @@
         "industry_benchmarks_secondary_reads":{
             "ndays":{},
             "reference":{
+                "ycsb_100read_secondary_reads":{
+                    "create_time":"2018-05-30T02:00:53Z",
+                    "end":1527679133.885169,
+                    "max":82196.6225407798,
+                    "name":"ycsb_100read_secondary_reads",
+                    "order":12428,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":82196.6225407798,
+                            "ops_per_sec_values":[
+                                82196.6225407798
+                            ]
+                        }
+                    },
+                    "revision":"39694ed5ee47848c3e51f8b739e9ccad8ca54c69",
+                    "start":1527678889.982395,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "PERF-1347"
+                    ],
+                    "workload":"ycsb"
+                },
                 "ycsb_50read50update_secondary_reads":{
                     "create_time":"2018-05-30T02:00:53Z",
                     "end":1527680184.387244,
