@@ -7590,7 +7590,34 @@
         },
         "move_chunk_waiting_workloads":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "moveChunk_secondaryThrottle_default_waitForDelete_true":{
+                    "create_time":"2018-05-30T23:12:28Z",
+                    "end":1527756704.348775,
+                    "max":3998.8203495919324,
+                    "name":"moveChunk_secondaryThrottle_default_waitForDelete_true",
+                    "order":12445,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":3998.8203495919324,
+                            "ops_per_sec_values":[
+                                3798.959085210652,
+                                4198.681613973213
+                            ]
+                        }
+                    },
+                    "revision":"a3fb68c2b88493ee41793cde037636ce3f330058",
+                    "start":1527756483.298703,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "PERF-1347"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
