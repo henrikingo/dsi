@@ -159,6 +159,13 @@
                         "BF-9309"
                     ]
                 },
+                "find_project_6_sort_indexed_skip_limit_1-noAgg":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
                 "find_skip_limit_1-noAgg":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
