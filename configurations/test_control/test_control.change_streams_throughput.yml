@@ -73,4 +73,4 @@ thread_levels:
   single-replica: [20, 60]
   replica: [20, 60]
   shard: [4, 60]
-  shard-lite: [8, 64]
+  shard-lite: [60]
