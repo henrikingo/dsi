@@ -32,7 +32,7 @@ class QHat(object):
     KEYS = ('index', 'value', 'value_to_avg', 'value_to_avg_diff', 'average', 'average_diff',
             'window_size', 'probability', 'revision', 'algorithm', 'order_of_changepoint', 'order')
 
-    def __init__(self, state, pvalue=0.05, permutations=100, online=20, threshold=None):
+    def __init__(self, state, pvalue=None, permutations=None, online=None, threshold=None):
         self.state = state
         self.series = self.state.get('series', None)
         self.revisions = self.state.get('revisions', None)
@@ -45,9 +45,9 @@ class QHat(object):
         _ = threshold
 
         self._change_points = state.get('change_points', None)
-        self.pvalue = pvalue
-        self.permutations = permutations
-        self.online = online
+        self.pvalue = 0.05 if pvalue is None else pvalue
+        self.permutations = 100 if permutations is None else permutations
+        self.online = 20 if online is None else online
         self._windows = state.get('windows', None)
         self._min_change = state.get('min_change', None)
         self._max_q = state.get('max_q', None)
