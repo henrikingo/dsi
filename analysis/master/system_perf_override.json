@@ -9013,11 +9013,26 @@
                         "BF-9309"
                     ]
                 },
-                "find_skip_limit_1-noAgg":{
+                "find_limit-noAgg":{
+                    "thread_threshold":0.22,
+                    "threshold":0.15,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
+                "find_project_6_sort_indexed_skip_limit_1-noAgg":{
                     "thread_threshold":0.3,
                     "threshold":0.2,
                     "ticket":[
-                        "BF-9309"
+                        "PERF-1157"
+                    ]
+                },
+                "find_skip_limit_1-noAgg":{
+                    "thread_threshold":0.37,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-9309",
+                        "PERF-1157"
                     ]
                 },
                 "fio_iops_test_read_iops":{
