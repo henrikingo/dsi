@@ -8908,6 +8908,13 @@
                         "BF-6769"
                     ]
                 },
+                "distinct_types_with_in_predicate-useAgg":{
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-9409"
+                    ]
+                },
                 "find_limit-useAgg":{
                     "thread_threshold":0.225,
                     "threshold":0.15,
