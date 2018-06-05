@@ -51,6 +51,7 @@ def _translate_points(perf_json):
         point['start'] = test_result['start']
         point['end'] = test_result['end']
         point['test'] = test_result['name']
+        point['create_time'] = perf_json['create_time']
         # Microbenchmarks does not produce a 'workload' field. We need to fill in the 'workload'
         # field for microbenchmark points in order to query on 'workload'.
         point['workload'] = test_result.get('workload', 'microbenchmarks')
@@ -111,7 +112,7 @@ def _get_max_ops_per_sec(test_result):
     max_thread_level = None
     for key, thread_level in test_result['results'].iteritems():
         if not conf.is_integer(key):
-            LOG.warn('Invalid thread level value %s found' %key)
+            LOG.warn('Invalid thread level value %s found' % key)
             continue
         if max_ops_per_sec == None or max_ops_per_sec < thread_level['ops_per_sec']:
             max_ops_per_sec = thread_level['ops_per_sec']
@@ -125,7 +126,7 @@ def _extract_tests(perf_json):
 
     :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
     """
-    return set([ it['name'] for it in perf_json['data']['results'] ])
+    return set([it['name'] for it in perf_json['data']['results']])
 
 
 def _create_descriptor(perf_json, test):
@@ -135,10 +136,8 @@ def _create_descriptor(perf_json, test):
     :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
     :param str test: The name of the test.
     """
-    return "{}/{}/{}/{}".format(perf_json['project_id'],
-                                perf_json['variant'],
-                                perf_json['task_name'],
-                                test)
+    return "{}/{}/{}/{}".format(perf_json['project_id'], perf_json['variant'],
+                                perf_json['task_name'], test)
 
 
 class PointsModel(object):
@@ -173,13 +172,13 @@ class PointsModel(object):
         the query.
         :rtype: tuple(list(float), list(str), OrderedDict, int).
         """
-        query = OrderedDict([
-            ('project', self.perf_json['project_id']),
-            ('variant', self.perf_json['variant']),
-            ('task', self.perf_json['task_name']),
-            ('test', test)
-        ])
-        projection = {'max_ops_per_sec': 1, 'revision': 1, 'order': 1, '_id': 0}
+
+        query = OrderedDict([('project', self.perf_json['project_id']),
+                             ('variant', self.perf_json['variant']),
+                             ('task', self.perf_json['task_name']),
+                             ('test', test)]) #yapf: disable
+
+        projection = {'max_ops_per_sec': 1, 'revision': 1, 'order': 1, 'create_time': 1, '_id': 0}
 
         cursor = self.db.points.find(query, projection).sort([('order', pymongo.ASCENDING)])
 
@@ -189,6 +188,7 @@ class PointsModel(object):
         series = []
         revisions = []
         orders = []
+        create_times = []
 
         many_points = 0
         # TODO: `PERF-1506: Create a series for each thread level when passing data into the QHat
@@ -197,9 +197,10 @@ class PointsModel(object):
             series.append(point['max_ops_per_sec'])
             revisions.append(point['revision'])
             orders.append(point['order'])
+            create_times.append(point['create_time'])
             many_points += 1
 
-        return series, revisions, orders, query, many_points
+        return series, revisions, orders, query, create_times, many_points
 
     def compute_change_points(self, test):
         """
@@ -213,14 +214,17 @@ class PointsModel(object):
         """
         started_at = int(round(time.time() * 1000))
 
-        series, revisions, orders, query, many_points = self.get_points(test)
+        series, revisions, orders, query, create_times, many_points = self.get_points(test)
 
-        change_points = QHat({
-            'series': series,
-            'revisions': revisions,
-            'orders': orders,
-            'testname': test
-        }, pvalue=self.pvalue).change_points
+        change_points = QHat(
+            {
+                'series': series,
+                'revisions': revisions,
+                'orders': orders,
+                'testname': test,
+                'create_times': create_times
+            },
+            pvalue=self.pvalue).change_points
         many_change_points = len(change_points)
 
         # TODO: Revisit implementation of insert.
@@ -271,9 +275,7 @@ class DetectChangesDriver(object):
         :param str test: The name of the test.
         """
         descriptor = _create_descriptor(self.perf_json, test).ljust(120)
-        print("{0}: {1:1} -> {2:2} {3:3,}ms".format(descriptor,
-                                                    many_points,
-                                                    many_change_points,
+        print("{0}: {1:1} -> {2:2} {3:3,}ms".format(descriptor, many_points, many_change_points,
                                                     duration))
 
 

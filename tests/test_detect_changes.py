@@ -164,6 +164,8 @@ SYSPERF_POINTS = [{
         'mongoshell',
     'max_thread_level':
         64,
+    'create_time':
+        '2018-05-09T17:37:01Z',
     'max_ops_per_sec':
         16183.772555978,
     'results': [{
@@ -200,6 +202,8 @@ SYSPERF_POINTS = [{
         'mongoshell',
     'max_thread_level':
         64,
+    'create_time':
+        '2018-05-09T17:37:01Z',
     'max_ops_per_sec':
         13876.06811527,
     'results': [{
@@ -236,6 +240,8 @@ MICROBENCHMARKS_POINTS = [{
         'Insert.SingleIndex.Contested.Rnd',
     'max_thread_level':
         4,
+    'create_time':
+        '2018-05-09T17:37:01Z',
     'max_ops_per_sec':
         34931.0038833827,
     'results': [
@@ -386,10 +392,17 @@ class TestPointsModel(unittest.TestCase):
             [('project', SYSPERF_PERF_JSON['project_id']),
              ('variant', SYSPERF_PERF_JSON['variant']), ('task', SYSPERF_PERF_JSON['task_name']),
              ('test', SYSPERF_PERF_JSON['data']['results'][0]['name'])])
-        expected_projection = {'max_ops_per_sec': 1, 'revision': 1, 'order': 1, '_id': 0}
+        expected_projection = {
+            'max_ops_per_sec': 1,
+            'revision': 1,
+            'order': 1,
+            'create_time': 1,
+            '_id': 0
+        }
         expected_series = [point['max_ops_per_sec'] for point in SYSPERF_POINTS]
         expected_revisions = [point['revision'] for point in SYSPERF_POINTS]
         expected_orders = [point['order'] for point in SYSPERF_POINTS]
+        expected_create_times = [point['create_time'] for point in SYSPERF_POINTS]
         expected_num_points = len(SYSPERF_POINTS)
         mock_db = MagicMock(name='db', autospec=True)
         mock_cursor = MagicMock(name='cursor', autospec=True)
@@ -399,7 +412,7 @@ class TestPointsModel(unittest.TestCase):
         test_table = detect_changes.PointsModel(SYSPERF_PERF_JSON, MONGO_URI, DATABASE)
         actual = test_table.get_points(SYSPERF_PERF_JSON['data']['results'][0]['name'])
         self.assertEqual(actual, (expected_series, expected_revisions, expected_orders,
-                                  expected_query, expected_num_points))
+                                  expected_query, expected_create_times, expected_num_points))
         mock_db.points.find.assert_called_once_with(expected_query, expected_projection)
         mock_db.points.find.return_value.sort.assert_called_once_with([('order', 1)])
 
@@ -439,8 +452,10 @@ class TestPointsModel(unittest.TestCase):
                 'series': [],
                 'revisions': [],
                 'orders': [],
+                'create_times': [],
                 'testname': test
-            }, pvalue=None)
+            },
+            pvalue=None)
         mock_db.change_points.initialize_ordered_bulk_op.assert_called_once()
         mock_bulk.find.assert_called_once_with(expected_query)
         mock_bulk.find.return_value.remove.assert_called_once()

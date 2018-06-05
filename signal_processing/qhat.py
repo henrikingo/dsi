@@ -30,7 +30,8 @@ def deterministic_random(seed):
 
 class QHat(object):
     KEYS = ('index', 'value', 'value_to_avg', 'value_to_avg_diff', 'average', 'average_diff',
-            'window_size', 'probability', 'revision', 'algorithm', 'order_of_changepoint', 'order')
+            'window_size', 'probability', 'revision', 'algorithm', 'order_of_changepoint', 'order',
+            'create_time')
 
     def __init__(self, state, pvalue=None, permutations=None, online=None, threshold=None):
         self.state = state
@@ -39,6 +40,7 @@ class QHat(object):
         self.orders = self.state.get('orders', None)
         self.testname = self.state.get('testname', None)
         self.threads = self.state.get('threads', None)
+        self.create_times = self.state.get('create_times', None)
 
         self._id = self.state.get('_id', None)
 
@@ -229,7 +231,8 @@ class QHat(object):
             index = change_pt[0]
             revision = self.revisions[index]
             order = self.orders[index]
-            values = change_pt + [revision, algorithm, i, order]
+            create_time = self.create_times[index]
+            values = change_pt + [revision, algorithm, i, order, create_time]
             points.append(dict(zip(keys, values)))
             i += 1
         return points
@@ -275,10 +278,11 @@ class QHat(object):
                 i = int(tick_val)
                 tick_str = self.revisions[i][0:7]
                 if self.dates and i < len(self.dates):
-                    tick_str = tick_str  + '\n' + self.dates[i].strftime("%H:%M %Y/%m/%d")
+                    tick_str = tick_str + '\n' + self.dates[i].strftime("%H:%M %Y/%m/%d")
             else:
-                tick_str =''
+                tick_str = ''
             return tick_str
+
         title = "{name} ({threads}) : {algorithm}".format(
             name=self.testname, threads=self.threads if self.threads else 'max', algorithm="qhat")
 
