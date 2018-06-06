@@ -27,9 +27,74 @@ run:
       for level in ${test_control.thread_levels.level100r.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}; do
         ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s \
         -P ../../workloadEvergreen \
-        -threads $level -target 50000;
+        -threads $level;
       done
 
+  - id: ycsb_95read5update
+    type: ycsb
+    cmd: >
+      cd YCSB/ycsb-mongodb;
+      for level in ${test_control.thread_levels.level95-5.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}; do
+        ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s \
+        -P ../../workloadEvergreen_95read5update \
+        -threads $level;
+      done
+    config_filename: workloadEvergreen_95read5update
+    workload_config: |
+      mongodb.url=${mongodb_setup.meta.mongodb_url}
+      recordcount=5000000
+      operationcount=20000000
+      workload=com.yahoo.ycsb.workloads.CoreWorkload
+      readallfields=true
+      readproportion=0.95
+      updateproportion=0.05
+      scanproportion=0
+      insertproportion=0.0
+      requestdistribution=zipfian
+
+  - id: ycsb_100update
+    type: ycsb
+    cmd: >
+      cd YCSB/ycsb-mongodb;
+      for level in ${test_control.thread_levels.level100u.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}; do
+        ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s \
+        -P ../../workloadEvergreen_100update \
+        -threads $level;
+      done
+    config_filename: workloadEvergreen_100update
+    workload_config: |
+      mongodb.url=${mongodb_setup.meta.mongodb_url}
+      recordcount=5000000
+      operationcount=20000000
+      workload=com.yahoo.ycsb.workloads.CoreWorkload
+      readallfields=true
+      readproportion=0
+      updateproportion=1.0
+      scanproportion=0
+      insertproportion=0.0
+      requestdistribution=zipfian
+
+  - id: ycsb_50read50update
+    type: ycsb
+    cmd: >
+      cd YCSB/ycsb-mongodb;
+      for level in ${test_control.thread_levels.level50-50.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}; do
+        ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s \
+        -P ../../workloadEvergreen_50read50update \
+        -threads $level;
+      done
+    config_filename: workloadEvergreen_50read50update
+    workload_config: |
+      mongodb.url=${mongodb_setup.meta.mongodb_url}
+      recordcount=5000000
+      operationcount=20000000
+      workload=com.yahoo.ycsb.workloads.CoreWorkload
+      readallfields=true
+      readproportion=0.5
+      updateproportion=0.5
+      scanproportion=0
+      insertproportion=0.0
+      requestdistribution=zipfian
 
   - id: fio
     type: fio
