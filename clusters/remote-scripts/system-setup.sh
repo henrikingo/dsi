@@ -58,6 +58,7 @@ if [ "${WITH_EBS}" == "with_ebs" ]; then
 elif [ "${WITH_EBS}" == "with_seeded_ebs" ]; then
     # Will not format disk for seeded EBS partition.
     prepare_disk "/dev/xvde" "/media/ebs" "no"
+    prepare_disk "/dev/xvdf" "/media/ebs2"
     ln -s /media/ebs data
 
     # Warm up EBS partition in order to get better read performance. This is due to this EBS

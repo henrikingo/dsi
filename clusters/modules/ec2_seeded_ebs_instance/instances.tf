@@ -21,6 +21,10 @@ variable "seeded_ebs_type"             { default = "io1" }
 variable "seeded_ebs_iops"             { default = "10000" }
 variable "seeded_ebs_snapshot_id"      {}
 
+variable "ebs_type"                    { default = "io1" }
+variable "ebs_iops"                    { default = "10000" }
+variable "ebs_size"                    { default = 100 }
+
 # AWS instance with placement group for mongod
 resource "aws_instance" "seeded_ebs_member" {
     ami                 = "${lookup(var.amis, var.availability_zone)}"
@@ -70,6 +74,14 @@ resource "aws_instance" "seeded_ebs_member" {
         volume_type             = "${var.seeded_ebs_type}"
         iops                    = "${var.seeded_ebs_iops}"
         snapshot_id             = "${var.seeded_ebs_snapshot_id}"
+        delete_on_termination   = true
+    }
+
+    ebs_block_device {
+        device_name             = "/dev/sdf"
+        volume_type             = "${var.ebs_type}"
+        iops                    = "${var.ebs_iops}"
+        volume_size             = "${var.ebs_size}"
         delete_on_termination   = true
     }
 

@@ -1,3 +1,5 @@
+journal_dir: /media/ebs2/journal
+
 # Shared by all mongods
 mongod_config_file:
   storage:
@@ -12,15 +14,14 @@ topology:
   - id: logkeeper-rs0
     cluster_type: replset
     mongod:
-      - public_ip: ${infrastructure_provisioning.out.mongod.1.public_ip}
-        private_ip: ${infrastructure_provisioning.out.mongod.1.private_ip}
+      - public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
+        private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
         clean_db_dir: false
         use_journal_mnt: false
   - cluster_type: standalone
-    # Secondary mongod instance, which is started from fresh DB files, and with proper replSetName
-    # configured file options.
-    public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
-    private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
+    # Secondary mongod instance, which is started empty dbdir, and with matching replSetName
+    public_ip: ${infrastructure_provisioning.out.mongod.1.public_ip}
+    private_ip: ${infrastructure_provisioning.out.mongod.1.private_ip}
     use_journal_mnt: false
 
 # Meta data about this mongodb setup

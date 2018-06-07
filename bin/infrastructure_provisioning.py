@@ -297,6 +297,7 @@ class Provisioner(object):
                 stderr=self.stderr)
             LOG.info('terraform: output')
             terraform_output = run_and_save_output([self.terraform, 'output'])
+            LOG.debug(terraform_output)
             tf_parser = TerraformOutputParser(terraform_output=terraform_output)
             tf_parser.write_output_files()
 

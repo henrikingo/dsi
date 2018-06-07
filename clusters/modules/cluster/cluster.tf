@@ -133,6 +133,8 @@ module "mongod_seeded_ebs_instance" {
     task_id                 = "${var.task_id}"
     seeded_ebs_snapshot_id  = "${var.mongod_seeded_ebs_snapshot_id}"
     seeded_ebs_iops         = "${var.mongod_seeded_ebs_iops}"
+    ebs_size                = "${var.mongod_ebs_size}"
+    ebs_iops                = "${var.mongod_ebs_iops}"
 }
 
 # AWS instance with placement group for mongos
