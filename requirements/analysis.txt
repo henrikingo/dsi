@@ -2,3 +2,4 @@ argparse==1.4.0
 python-dateutil==2.6.1
 pyyaml==3.12
 requests==2.18.4
+jira==1.0.15
