@@ -29,7 +29,7 @@ setup(
             'delete-cluster = aws_tools.entry_points:delete_cluster_by_tag',
             'delete-runner-cluster = aws_tools.entry_points:delete_cluster_for_runner',
             'delete-task-cluster = aws_tools.entry_points:delete_cluster_for_task',
-            'detect-changes = signal_processing.detect_changes:main'
+            'detect-changes = signal_processing.detect_changes:main',
             'etl_jira_mongo = signal_processing.etl_jira_mongo:main'
         ]
     })
