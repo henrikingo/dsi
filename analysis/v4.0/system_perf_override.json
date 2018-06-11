@@ -3755,6 +3755,13 @@
             "ndays":{},
             "reference":{},
             "threshold":{
+                "16writers:secondary_lag_ms":{
+                    "thread_threshold":0.75,
+                    "threshold":0.5,
+                    "ticket":[
+                        "PERF-1157"
+                    ]
+                },
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
