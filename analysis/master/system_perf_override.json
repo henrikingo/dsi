@@ -4436,11 +4436,20 @@
                         "PERF-873"
                     ]
                 },
-                "snapshot_reads_currentOp_throughput":{
-                    "thread_threshold":0.262,
-                    "threshold":0.175,
+                "snapshot_reads_control_currentOp_throughput":{
+                    "thread_threshold":0.375,
+                    "threshold":0.25,
                     "ticket":[
-                        "PERF-1157"
+                        "PERF-1157",
+                        "BF-9474"
+                    ]
+                },
+                "snapshot_reads_currentOp_throughput":{
+                    "thread_threshold":0.375,
+                    "threshold":0.25,
+                    "ticket":[
+                        "PERF-1157",
+                        "BF-9474"
                     ]
                 }
             }
