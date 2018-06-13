@@ -281,13 +281,13 @@ class DetectChangesDriver(object):
 
 def main():
     log.setup_logging(True, None)
-    config = config.ConfigDict('analysis')
-    config.load()
+    cfg = config.ConfigDict('analysis')
+    cfg.load()
     evg_client = evergreen_client.Client()
-    perf_json = evg_client.query_perf_results(config['runtime']['task_id'])
-    mongo_uri = config['analysis']['mongo_uri']
+    perf_json = evg_client.query_perf_results(cfg['runtime']['task_id'])
+    mongo_uri = cfg['analysis']['mongo_uri']
     database = 'perf'
-    if not config['runtime'].get('is_patch', False):
+    if not cfg['runtime'].get('is_patch', False):
         _upload_json(perf_json, mongo_uri, database)
     changes_driver = DetectChangesDriver(perf_json, mongo_uri, database)
     changes_driver.run()
