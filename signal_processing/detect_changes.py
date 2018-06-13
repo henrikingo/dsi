@@ -6,9 +6,9 @@ import time
 from collections import OrderedDict
 from pymongo import MongoClient
 
-import analysis.evergreen.evergreen_client as evergreen_client
-import bin.common.config as conf
-import bin.common.log as log
+from analysis.evergreen import evergreen_client
+from bin.common import config
+from bin.common import log
 from qhat import QHat
 
 LOG = logging.getLogger(__name__)
@@ -111,7 +111,7 @@ def _get_max_ops_per_sec(test_result):
     max_ops_per_sec = None
     max_thread_level = None
     for key, thread_level in test_result['results'].iteritems():
-        if not conf.is_integer(key):
+        if not config.is_integer(key):
             LOG.warn('Invalid thread level value %s found' % key)
             continue
         if max_ops_per_sec == None or max_ops_per_sec < thread_level['ops_per_sec']:
@@ -281,7 +281,7 @@ class DetectChangesDriver(object):
 
 def main():
     log.setup_logging(True, None)
-    config = conf.ConfigDict('analysis')
+    config = config.ConfigDict('analysis')
     config.load()
     evg_client = evergreen_client.Client()
     perf_json = evg_client.query_perf_results(config['runtime']['task_id'])

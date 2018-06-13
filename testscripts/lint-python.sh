@@ -36,7 +36,7 @@ run_pylint() {
     set -x
     # `-j N` runs N parallel pylint procs. Set N to 0 to get # of cores
     pylint -j 0 --rcfile "$rcfile" \
-        $(find "${files[@]}" -name '*.py' -maxdepth 1)
+        $(find "${files[@]}" -maxdepth 1 -name '*.py')
     set +x
 }
 

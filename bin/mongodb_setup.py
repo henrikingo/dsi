@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-""""
+"""
 MongoDB Setup
 
 This file takes as input a YAML configuration of the AWS instances and
