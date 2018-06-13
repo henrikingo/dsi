@@ -113,3 +113,24 @@ def delete_cluster_for_runner(argv=None):
         LOG.info("Checking for cluster for runner %s in region  %s", args.runner, region)
         cleanup = aws_cleanup.AwsCleanup(region_name=region)
         cleanup.delete_cluster_by_tag('runner', args.runner, args.dry_run)
+
+
+def delete_placement_groups(argv=None):
+    """
+    Entry point to delete a DSI cluster based on a task ID.
+
+    :param list argv: Input arguments. Uses sys.argv[1:] if None.
+
+    """
+    if argv is None:
+        argv = sys.argv[1:]
+
+    parser = base_arg_parsing('Delete Placement groups')
+    args = parser.parse_args(argv)
+
+    log.setup_logging(args.debug, args.log_file)
+
+    for region in REGIONS:
+        LOG.info("Deleting Placement groups in region  %s", region)
+        cleanup = aws_cleanup.AwsCleanup(region_name=region)
+        cleanup.delete_placement_groups(dry_run=args.dry_run)

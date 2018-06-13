@@ -6,6 +6,7 @@ import logging
 import time
 
 import boto3
+import botocore
 
 LOG = logging.getLogger(__name__)
 
@@ -33,7 +34,6 @@ def make_aws_filter_tags(tag_name, tag_value):
     :param str tag_value: The value to use with the tag
     :returns: The formatted Filter object
     :rtype: list
-
     """
 
     return make_aws_filter('tag:{}'.format(tag_name), tag_value)
@@ -54,7 +54,6 @@ class AwsCleanup(object):
 
         :returns: List of ec2 instances
         :rtype: list(boto3.instance)
-
         """
         return [
             instance
@@ -70,7 +69,6 @@ class AwsCleanup(object):
         :param str tag_value: The value of the tag
         :returns: List of ec2 instances
         :rtype: list(boto3.instance)
-
         """
         filters = make_aws_filter_tags(tag_key, tag_value)
         LOG.debug("Finding instances with filters %s", filters)
@@ -89,7 +87,6 @@ class AwsCleanup(object):
         :param str tag_value: The value of the tag
         :returns: List of ec2 instances ids
         :rtype: list(str)
-
         """
         return [
             instance['InstanceId'] for instance in self.find_instances_tagged(tag_key, tag_value)
@@ -102,7 +99,6 @@ class AwsCleanup(object):
 
         :returns: List of vpc ids
         :rtype: list(str)
-
         """
         return set(
             instance['VpcId'] for instance in self.get_all_instances() if 'VpcId' in instance)
@@ -114,11 +110,21 @@ class AwsCleanup(object):
         :returns: list of vpc ids for vpcs with a given tag.
 
         :rtype: list(str)
-
         """
         return set(vpc['VpcId']
                    for vpc in self.client.describe_vpcs(
                        Filters=make_aws_filter_tags(tag_key, tag_value))['Vpcs'])
+
+    def get_placement_groups(self, dry_run=False):
+        """
+        Get a list of all placement groups names.
+        :rtype: list(str)
+        """
+        groups = self.client.describe_placement_groups(DryRun=dry_run)
+        return [
+            group['GroupName']
+            for group in groups['PlacementGroups'] if groups['PlacementGroups']
+        ]
 
     def find_stranded_vpcs_tagged(self, tag_key='Owner', tag_value='serverteam-perf@10gen.com'):
         """
@@ -129,7 +135,6 @@ class AwsCleanup(object):
         :param str tag_value: The value of the tag.
         :returns: List of vpcs ids
         :rtype: list(str)
-
         """
         return self.get_vpcs_tagged(tag_key, tag_value) - self.get_active_vpcs()
 
@@ -140,7 +145,6 @@ class AwsCleanup(object):
         :param str vpcid: The VPCID to check.
         :returns: The GroupIds of the matching security groups.
         :rtype: list(str)
-
         """
         return set(sg['GroupId']
                    for sg in self.client.describe_security_groups(
@@ -154,7 +158,6 @@ class AwsCleanup(object):
         :param str vpcid: The VPCID to check.
         :returns: The SubnetIds of the matching security groups.
         :rtype: list(str)
-
         """
         return set(subnet['SubnetId']
                    for subnet in self.client.describe_subnets(
@@ -167,7 +170,6 @@ class AwsCleanup(object):
         :param str vpcid: The VPCID to check.
         :returns: The RouteTableIds of the matching security groups.
         :rtype: list(str)
-
         """
         return set(route['RouteTableId']
                    for route in self.client.describe_route_tables(
@@ -180,7 +182,6 @@ class AwsCleanup(object):
         :param str vpcid: The VPCID to check.
         :returns: The InternetGatewayIds of the matching security groups.
         :rtype: list(str)
-
         """
         return set(gateway['InternetGatewayId']
                    for gateway in self.client.describe_internet_gateways(
@@ -191,7 +192,6 @@ class AwsCleanup(object):
         Delete all the security groups associated with a given VPC.
 
         :param vpcid: The VpcId of the VPC
-
         """
         for sgid in self.find_security_groups_vpc(vpcid):
             self.client.delete_security_group(GroupId=sgid)
@@ -201,7 +201,6 @@ class AwsCleanup(object):
         Delete all the subnets associated with a given VPC.
 
         :param vpcid: The VpcId of the VPC
-
         """
         for subnetid in self.find_subnets_vpc(vpcid):
             self.client.delete_subnet(SubnetId=subnetid)
@@ -212,7 +211,6 @@ class AwsCleanup(object):
         be deleted. This function does a best effort.
 
         :param vpcid: The VpcId of the VPC
-
         """
         for routeid in self.find_route_tables_vpc(vpcid):
             try:
@@ -231,7 +229,6 @@ class AwsCleanup(object):
         This detaches the gateway, and then deletes it.
 
         :param vpcid: The VpcId of the VPC.
-
         """
         for gatewayid in self.find_internet_gateways_vpc(vpcid):
             self.client.detach_internet_gateway(InternetGatewayId=gatewayid, VpcId=vpcid)
@@ -242,7 +239,6 @@ class AwsCleanup(object):
         Delete a given vpc if it is idle.
 
         :param str vpcid: The ID of the vpc to delete.
-
         """
         # Check that not in active vpcs
         assert vpcid not in self.get_active_vpcs(), "Trying to delete non idle vpc"
@@ -261,7 +257,6 @@ class AwsCleanup(object):
         Find and delete all stranded VPCs. A VPC is stranded if it has no instances.
 
         :param bool dry_run: If true, don't actually delete the vpcs.
-
         """
         LOG.info("There are %i stranded vpcs to delete. Deleting...",
                  len(self.find_stranded_vpcs_tagged()))
@@ -278,7 +273,6 @@ class AwsCleanup(object):
         :param str tag_key: The name of the tag
         :param str tag_value: The value of the tag
         :param bool dry_run: If true, don't actually delete the vpcs.
-
         """
         vpcids = self.get_vpcs_tagged(tag_key, tag_value)
         instance_ids = self._find_instances_tagged_not_terminated(tag_key, tag_value)
@@ -301,3 +295,21 @@ class AwsCleanup(object):
             LOG.info("Deleting vpc %s", vpcid)
             if not dry_run:
                 self.delete_idle_vpc(vpcid)
+
+    def delete_placement_groups(self, dry_run=False):
+        """
+        Delete all placement groups. A failure can mean that the placement group is still in use.
+
+        :param bool dry_run: If true, don't actually delete the placement groups.
+        """
+        groups = self.get_placement_groups(dry_run=dry_run)
+        LOG.info("delete_placement_group: found %s groups", len(groups))
+        for group in groups:
+            try:
+                self.client.delete_placement_group(GroupName=group, DryRun=dry_run)
+                LOG.info("%s deleted", group)
+            except botocore.exceptions.ClientError as e:
+                if e.response['Error']['Code'] != "InvalidPlacementGroup.InUse":
+                    raise e
+                else:
+                    LOG.debug("%s skipped, in use.", group)
