@@ -6123,7 +6123,33 @@
         },
         "map_reduce_workloads":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "word_count_doc":{
+                    "create_time":"2018-06-13T18:18:15Z",
+                    "end":1528942411.354648,
+                    "max":41804.9714472045,
+                    "name":"word_count_doc",
+                    "order":12653,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":41804.9714472045,
+                            "ops_per_sec_values":[
+                                41804.9714472045
+                            ]
+                        }
+                    },
+                    "revision":"f0c7d77ffc6f91a861516df015a2de3894521419",
+                    "start":1528941300.444664,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-7413"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
