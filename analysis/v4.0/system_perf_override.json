@@ -8615,7 +8615,33 @@
         },
         "misc_workloads":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "index_build":{
+                    "create_time":"2018-06-15T19:30:40Z",
+                    "end":1529165888.088416,
+                    "max":181271.0727622086,
+                    "name":"index_build",
+                    "order":218,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":181271.0727622086,
+                            "ops_per_sec_values":[
+                                181271.0727622086
+                            ]
+                        }
+                    },
+                    "revision":"0a42e212a77bb187abc3c56795fda44abb49c3ea",
+                    "start":1529163394.553825,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5832"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -17459,7 +17485,33 @@
         },
         "misc_workloads":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "index_build":{
+                    "create_time":"2018-06-15T19:30:40Z",
+                    "end":1529165839.349315,
+                    "max":178062.67806267808,
+                    "name":"index_build",
+                    "order":218,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":178062.67806267808,
+                            "ops_per_sec_values":[
+                                178062.67806267808
+                            ]
+                        }
+                    },
+                    "revision":"0a42e212a77bb187abc3c56795fda44abb49c3ea",
+                    "start":1529163350.089573,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-5832"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
