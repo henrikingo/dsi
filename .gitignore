@@ -1,5 +1,6 @@
 # Paranoia
 *.pem
+security.tf
 
 # Python
 *.pyc
@@ -15,4 +16,5 @@ bin/tests/unittest-files/*
 # PyCharm
 .idea
 
+# Unit test config file
 /config.yml

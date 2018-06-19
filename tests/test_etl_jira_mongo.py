@@ -2,6 +2,7 @@
 Unit tests for signal_processing/etl_jira_mongo.py.
 """
 
+import copy
 from collections import OrderedDict
 import unittest
 from mock import MagicMock
@@ -39,19 +40,15 @@ class MockJiraClass(object):
         return [MockJiraIssue("MOCK-1"), MockJiraIssue("MOCK-2")]
 
 
-class MockArguments(object):
-    """
-    A class to look like that returned by argparse.
-    """
-
-    def __init__(self):
-        self.jira_user = "mock_jira_user"
-        self.jira_password = "mock_jira_password"
-        self.mongo_uri = 'mongodb+srv://user:pass@example.com/perf?retryWrites=true'
-        # Defaults:
-        self.projects = etl_jira_mongo.PROJECTS
-        self.batch = etl_jira_mongo.BATCH_SIZE
-        self.debug = False
+OPTIONS = {
+    "jira_user": "mock_jira_user",
+    "jira_password": "mock_jira_password",
+    "mongo_uri": "mongodb+srv://user:pass@example.com/perf?retryWrites=true",
+    # Defaults:
+    "projects": etl_jira_mongo.PROJECTS,
+    "batch": etl_jira_mongo.BATCH_SIZE,
+    "debug": False
+}
 
 
 class TestEtlJira(unittest.TestCase):
@@ -59,11 +56,14 @@ class TestEtlJira(unittest.TestCase):
     Test etl_jira_mongo.EtlJira class.
     """
 
+    def setUp(self):
+        self.options = copy.deepcopy(OPTIONS)
+
     def test_query(self):
         """
         Test query_bfs()
         """
-        etl = etl_jira_mongo.EtlJira(MockArguments())
+        etl = etl_jira_mongo.EtlJira(self.options)
         etl._jira = MockJiraClass()
         result = etl.query_bfs()
         self.assertEqual(result[0].key, "MOCK-1")
@@ -82,7 +82,7 @@ class TestEtlJira(unittest.TestCase):
                          ('_id', 'MOCK-2')])
         ]  #  yapf: disable
 
-        etl = etl_jira_mongo.EtlJira(MockArguments())
+        etl = etl_jira_mongo.EtlJira(self.options)
         etl._jira = MockJiraClass()
         etl._coll = MagicMock(name="MongoClient collection", autospec=True)
 
