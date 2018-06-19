@@ -31,7 +31,7 @@ def deterministic_random(seed):
 class QHat(object):
     KEYS = ('index', 'value', 'value_to_avg', 'value_to_avg_diff', 'average', 'average_diff',
             'window_size', 'probability', 'revision', 'algorithm', 'order_of_changepoint', 'order',
-            'create_time')
+            'create_time', 'thread_level')
 
     def __init__(self, state, pvalue=None, permutations=None, online=None, threshold=None):
         self.state = state
@@ -41,6 +41,7 @@ class QHat(object):
         self.testname = self.state.get('testname', None)
         self.threads = self.state.get('threads', None)
         self.create_times = self.state.get('create_times', None)
+        self.thread_level = self.state.get('thread_level', None)
 
         self._id = self.state.get('_id', None)
 
@@ -232,7 +233,7 @@ class QHat(object):
             revision = self.revisions[index]
             order = self.orders[index]
             create_time = self.create_times[index]
-            values = change_pt + [revision, algorithm, i, order, create_time]
+            values = change_pt + [revision, algorithm, i, order, create_time, self.thread_level]
             points.append(dict(zip(keys, values)))
             i += 1
         return points

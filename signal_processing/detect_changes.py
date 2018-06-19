@@ -72,14 +72,14 @@ def _get_thread_levels(test_result):
         [
             {
                 'thread_level': '1',
-                'max_ops_per_sec': 500,
+                'ops_per_sec': 500,
                 'ops_per_sec': [
                     500
                 ]
             },
             {
                 'thread_level: '2',
-                'max_ops_per_sec': 700,
+                'ops_per_sec': 700,
                 'ops_per_sec': [
                     700
                 ]
@@ -178,27 +178,32 @@ class PointsModel(object):
                              ('task', self.perf_json['task_name']),
                              ('test', test)]) #yapf: disable
 
-        projection = {'max_ops_per_sec': 1, 'revision': 1, 'order': 1, 'create_time': 1, '_id': 0}
+        projection = {'results': 1, 'revision': 1, 'order': 1, 'create_time': 1, '_id': 0}
 
         cursor = self.db.points.find(query, projection).sort([('order', pymongo.ASCENDING)])
 
         if self.limit is not None:
             cursor.limit(self.limit)
 
-        series = []
-        revisions = []
-        orders = []
-        create_times = []
-
+        series = {}
+        revisions = {}
+        orders = {}
+        create_times = {}
         many_points = 0
-        # TODO: `PERF-1506: Create a series for each thread level when passing data into the QHat
-        # algorithm`.
+
         for point in cursor:
-            series.append(point['max_ops_per_sec'])
-            revisions.append(point['revision'])
-            orders.append(point['order'])
-            create_times.append(point['create_time'])
-            many_points += 1
+            for result in point['results']:
+                if result['thread_level'] in series:
+                    series[result['thread_level']].append(result['ops_per_sec'])
+                    revisions[result['thread_level']].append(point['revision'])
+                    orders[result['thread_level']].append(point['order'])
+                    create_times[result['thread_level']].append(point['create_time'])
+                else:
+                    series[result['thread_level']] = [result['ops_per_sec']]
+                    revisions[result['thread_level']] = [point['revision']]
+                    orders[result['thread_level']] = [point['order']]
+                    create_times[result['thread_level']] = [point['create_time']]
+                many_points += 1
 
         return series, revisions, orders, query, create_times, many_points
 
@@ -210,31 +215,36 @@ class PointsModel(object):
         :param str test: The name of the test.
         :return: The number of points for the test, the number of change points found by the QHat
         algorithm, and the time taken for this method to run.
-        :rtype: tuple(int, int, float)
+        :rtype: tuple(int, int, float).
         """
         started_at = int(round(time.time() * 1000))
 
         series, revisions, orders, query, create_times, many_points = self.get_points(test)
 
-        change_points = QHat(
-            {
-                'series': series,
-                'revisions': revisions,
-                'orders': orders,
-                'testname': test,
-                'create_times': create_times
-            },
+        change_points = {}
+        many_change_points = 0
+        for thread_level in series:
+            change_points[thread_level] = QHat(
+                {
+                    'series': series[thread_level],
+                    'revisions': revisions[thread_level],
+                    'orders': orders[thread_level],
+                    'create_times': create_times[thread_level],
+                    'testname': test,
+                    'thread_level': thread_level
+                },
             pvalue=self.pvalue).change_points
-        many_change_points = len(change_points)
+            many_change_points += len(change_points[thread_level])
 
         # TODO: Revisit implementation of insert.
         bulk = self.db.change_points.initialize_ordered_bulk_op()
         bulk.find(query).remove()
 
-        for point in change_points:
-            change_point = query.copy()
-            change_point.update(point)
-            bulk.insert(change_point)
+        for thread_level in change_points:
+            for point in change_points[thread_level]:
+                change_point = query.copy()
+                change_point.update(point)
+                bulk.insert(change_point)
 
         bulk.execute()
 

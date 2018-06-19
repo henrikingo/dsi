@@ -392,18 +392,25 @@ class TestPointsModel(unittest.TestCase):
             [('project', SYSPERF_PERF_JSON['project_id']),
              ('variant', SYSPERF_PERF_JSON['variant']), ('task', SYSPERF_PERF_JSON['task_name']),
              ('test', SYSPERF_PERF_JSON['data']['results'][0]['name'])])
-        expected_projection = {
-            'max_ops_per_sec': 1,
-            'revision': 1,
-            'order': 1,
-            'create_time': 1,
-            '_id': 0
-        }
-        expected_series = [point['max_ops_per_sec'] for point in SYSPERF_POINTS]
-        expected_revisions = [point['revision'] for point in SYSPERF_POINTS]
-        expected_orders = [point['order'] for point in SYSPERF_POINTS]
-        expected_create_times = [point['create_time'] for point in SYSPERF_POINTS]
-        expected_num_points = len(SYSPERF_POINTS)
+        expected_projection = {'results': 1, 'revision': 1, 'order': 1, 'create_time': 1, '_id': 0}
+        expected_series = {}
+        expected_revisions = {}
+        expected_orders = {}
+        expected_create_times = {}
+        expected_num_points = 0
+        for point in SYSPERF_POINTS:
+            for result in point['results']:
+                if result['thread_level'] in expected_series:
+                    expected_series[result['thread_level']].append(result['ops_per_sec'])
+                    expected_revisions[result['thread_level']].append(point['revision'])
+                    expected_orders[result['thread_level']].append(point['order'])
+                    expected_create_times[result['thread_level']].append(point['create_time'])
+                else:
+                    expected_series[result['thread_level']] = [result['ops_per_sec']]
+                    expected_revisions[result['thread_level']] = [point['revision']]
+                    expected_orders[result['thread_level']] = [point['order']]
+                    expected_create_times[result['thread_level']] = [point['create_time']]
+                expected_num_points += 1
         mock_db = MagicMock(name='db', autospec=True)
         mock_cursor = MagicMock(name='cursor', autospec=True)
         mock_MongoClient.return_value.get_database.return_value = mock_db
@@ -430,19 +437,27 @@ class TestPointsModel(unittest.TestCase):
         test_table.get_points(SYSPERF_PERF_JSON['data']['results'][0]['name'])
         mock_cursor.return_value.limit.assert_called_with(limit)
 
+    @patch('signal_processing.detect_changes.PointsModel.get_points', autospec=True)
     @patch('signal_processing.detect_changes.MongoClient', autospec=True)
-    def test_compute_change_points(self, mock_MongoClient):
+    def test_compute_change_points(self, mock_MongoClient, mock_get_points):
         expected_query = OrderedDict(
             [('project', SYSPERF_PERF_JSON['project_id']),
              ('variant', SYSPERF_PERF_JSON['variant']), ('task', SYSPERF_PERF_JSON['task_name']),
              ('test', SYSPERF_PERF_JSON['data']['results'][0]['name'])])
         mock_db = MagicMock(name='db', autospec=True)
         mock_bulk = MagicMock(name='bulk', autospec=True)
-        mock_get_points = MagicMock(name='get_points', autospec=True)
         mock_QHat = MagicMock(name='QHat', autospec=True)
         mock_MongoClient.return_value.get_database.return_value = mock_db
         mock_db.change_points.initialize_ordered_bulk_op.return_value = mock_bulk
-        mock_get_points.return_value = ['series', 'revisions', 'query', 'many_points']
+        mock_get_points.return_value = [{
+            4: []
+        }, {
+            4: []
+        }, {
+            4: []
+        }, expected_query, {
+            4: []
+        }, 'many_points']
         detect_changes.QHat = mock_QHat
         test = SYSPERF_PERF_JSON['data']['results'][0]['name']
         test_table = detect_changes.PointsModel(SYSPERF_PERF_JSON, MONGO_URI, DATABASE)
@@ -453,13 +468,62 @@ class TestPointsModel(unittest.TestCase):
                 'revisions': [],
                 'orders': [],
                 'create_times': [],
-                'testname': test
+                'testname': test,
+                'thread_level': 4
             },
             pvalue=None)
         mock_db.change_points.initialize_ordered_bulk_op.assert_called_once()
         mock_bulk.find.assert_called_once_with(expected_query)
         mock_bulk.find.return_value.remove.assert_called_once()
         mock_bulk.execute.assert_called_once()
-        self.assertEqual(actual, (0, 0, ANY))
+        self.assertEqual(actual, ('many_points', 0, ANY))
+
+    @patch('signal_processing.detect_changes.PointsModel.get_points', autospec=True)
+    @patch('signal_processing.detect_changes.MongoClient', autospec=True)
+    def test_compute_change_points_thread_level(self, mock_MongoClient, mock_get_points):
+        """
+        Test compute_change_points when a point has multiple thread levels.
+        """
+        mock_QHat = MagicMock(name='QHat', autospec=True)
+        mock_get_points.return_value = [{
+            4: [1, 2, 3],
+            16: [3]
+        }, {
+            4: ['abc', 'bcd', 'cde'],
+            16: ['cde']
+        }, {
+            4: [0, 1, 2],
+            16: [2]
+        }, {'query'}, {
+            4: [1, 2, 3],
+            16: [3]
+        }, 'many_points']
+        detect_changes.QHat = mock_QHat
+        test = SYSPERF_PERF_JSON['data']['results'][0]['name']
+        qhat_calls = [
+            call(
+                {
+                    'series': [1, 2, 3],
+                    'revisions': ['abc', 'bcd', 'cde'],
+                    'orders': [0, 1, 2],
+                    'create_times': [1, 2, 3],
+                    'testname': test,
+                    'thread_level': 4
+                },
+                pvalue=None),
+            call(
+                {
+                    'series': [3],
+                    'revisions': ['cde'],
+                    'orders': [2],
+                    'create_times': [3],
+                    'testname': test,
+                    'thread_level': 16
+                },
+                pvalue=None)
+        ]
+        test_table = detect_changes.PointsModel(SYSPERF_PERF_JSON, MONGO_URI, DATABASE)
+        test_table.compute_change_points(test)
+        self.assertTrue(qhat_calls < mock_QHat.mock_calls)
 
     # pylint: enable=invalid-name
