@@ -173,6 +173,7 @@ class ResultParser(object):
         :param ConfigDict config: The entire ConfigDict
         :param dict(time) timer: A dict with the start and end times of the test being reported
         """
+        self.config = config
         self.test_id = test['id']
         self.test_type = test['type']
         self.task_name = config['test_control']['task_name']
@@ -291,6 +292,7 @@ class LinkbenchResultParser(ResultParser):
         reader = csv.DictReader(self.load_input_log())
         for row in reader:
             operation = row['op']
+            operation_type = 'load' if operation.startswith('LOAD_') else 'request'
             mean = float(row['mean'])
             if mean <= 0:
                 LOG.warn("Non-positive mean value reported for row %s", row)
@@ -299,9 +301,9 @@ class LinkbenchResultParser(ResultParser):
             inverse = float(1000) / mean
             # linkbench reports non-LOAD values as mean request time (ms/rq)
             # and we want rq/second.
-            result = mean if operation.startswith('LOAD_') else inverse
+            result = mean if operation_type == 'load' else inverse
 
-            self.add_result(row['op'], result)
+            self.add_result(row['op'], result, str(row['threads']))
 
 
 class MongoShellParser(ResultParser):

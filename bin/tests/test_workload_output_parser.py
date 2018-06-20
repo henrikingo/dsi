@@ -90,7 +90,7 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
                      'type': 'linkbench'},
                     {'id': 'mock-test-tpcc-request',
                      'type': 'tpcc'}
-                ]
+                ],
             },
             'mongodb_setup': {
                 'mongod_config_file': {
