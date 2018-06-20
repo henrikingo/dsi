@@ -1,10 +1,11 @@
-import copy
-import logging
-import json
-import pymongo
-import time
 from collections import OrderedDict
-from pymongo import MongoClient
+import copy
+import json
+import logging
+import sys
+import time
+
+import pymongo
 
 from analysis.evergreen import evergreen_client
 from bin.common import config
@@ -23,7 +24,7 @@ def _upload_json(perf_json, mongo_uri, database):
     :param str mongo_uri: The uri to connect to the cluster.
     :param str database: The name of the database in the cluster to use.
     """
-    db = MongoClient(mongo_uri).get_database(database)
+    db = pymongo.MongoClient(mongo_uri).get_database(database)
     collection = db.points
     points = _translate_points(perf_json)
     if points:
@@ -156,7 +157,7 @@ class PointsModel(object):
         :type: int, float, None.
         """
         self.perf_json = perf_json
-        self.db = MongoClient(mongo_uri).get_database(database)
+        self.db = pymongo.MongoClient(mongo_uri).get_database(database)
         self.limit = limit
         self.pvalue = pvalue
 
@@ -289,19 +290,34 @@ class DetectChangesDriver(object):
                                                     duration))
 
 
-def main():
+def detect_changes():
     log.setup_logging(True, None)
-    cfg = config.ConfigDict('analysis')
-    cfg.load()
+    conf = config.ConfigDict('analysis')
+    conf.load()
     evg_client = evergreen_client.Client()
-    perf_json = evg_client.query_perf_results(cfg['runtime']['task_id'])
-    mongo_uri = cfg['analysis']['mongo_uri']
+    perf_json = evg_client.query_perf_results(conf['runtime']['task_id'])
+    mongo_uri = conf['analysis']['mongo_uri']
     database = 'perf'
-    if not cfg['runtime'].get('is_patch', False):
+    if not conf['runtime'].get('is_patch', False):
         _upload_json(perf_json, mongo_uri, database)
     changes_driver = DetectChangesDriver(perf_json, mongo_uri, database)
     changes_driver.run()
 
+def main():
+    """
+    Main function.
+
+    PERF-1519: While signal processing based analysis is in development, and not yet the official
+    truth wrt pass/fail, we want to always exit cleanly.
+    """
+    try:
+        detect_changes()
+    except Exception as exc:  # pylint: disable=broad-except
+        # Note: If setup_logging() failed, this will just print:
+        #     No handlers could be found for logger "signal_processing.detect_changes"
+        LOG.error("detect_changes() exited with an exception. Will print it now...", exc_info=1)
+        LOG.error("Will now make a clean exit, so that we don't cause Evergreen task to abort.")
+    return 0
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

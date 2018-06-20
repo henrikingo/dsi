@@ -298,7 +298,7 @@ class TestDetectChanges(unittest.TestCase):
     """
 
     # pylint: disable=invalid-name
-    @patch('signal_processing.detect_changes.MongoClient', autospec=True)
+    @patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True)
     def test__upload_json(self, mock_MongoClient):
         """
         Test that _upload_config_json works with a standard configuration.
@@ -377,7 +377,7 @@ class TestPointsModel(unittest.TestCase):
     """
 
     # pylint: disable=invalid-name
-    @patch('signal_processing.detect_changes.MongoClient', autospec=True)
+    @patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True)
     def test_init(self, mock_MongoClient):
         """
         Test that proper database connection.
@@ -386,7 +386,7 @@ class TestPointsModel(unittest.TestCase):
         mock_MongoClient.assert_called_once_with(MONGO_URI)
         mock_MongoClient.return_value.get_database.assert_called_once_with(DATABASE)
 
-    @patch('signal_processing.detect_changes.MongoClient', autospec=True)
+    @patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True)
     def test_get_points(self, mock_MongoClient):
         expected_query = OrderedDict(
             [('project', SYSPERF_PERF_JSON['project_id']),
@@ -423,7 +423,7 @@ class TestPointsModel(unittest.TestCase):
         mock_db.points.find.assert_called_once_with(expected_query, expected_projection)
         mock_db.points.find.return_value.sort.assert_called_once_with([('order', 1)])
 
-    @patch('signal_processing.detect_changes.MongoClient', autospec=True)
+    @patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True)
     def test_get_points_custom_limit(self, mock_MongoClient):
         """
         Test that limit is called on cursor when specified.
@@ -438,7 +438,7 @@ class TestPointsModel(unittest.TestCase):
         mock_cursor.return_value.limit.assert_called_with(limit)
 
     @patch('signal_processing.detect_changes.PointsModel.get_points', autospec=True)
-    @patch('signal_processing.detect_changes.MongoClient', autospec=True)
+    @patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True)
     def test_compute_change_points(self, mock_MongoClient, mock_get_points):
         expected_query = OrderedDict(
             [('project', SYSPERF_PERF_JSON['project_id']),
@@ -479,7 +479,7 @@ class TestPointsModel(unittest.TestCase):
         self.assertEqual(actual, ('many_points', 0, ANY))
 
     @patch('signal_processing.detect_changes.PointsModel.get_points', autospec=True)
-    @patch('signal_processing.detect_changes.MongoClient', autospec=True)
+    @patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True)
     def test_compute_change_points_thread_level(self, mock_MongoClient, mock_get_points):
         """
         Test compute_change_points when a point has multiple thread levels.
@@ -525,5 +525,17 @@ class TestPointsModel(unittest.TestCase):
         test_table = detect_changes.PointsModel(SYSPERF_PERF_JSON, MONGO_URI, DATABASE)
         test_table.compute_change_points(test)
         self.assertTrue(qhat_calls < mock_QHat.mock_calls)
+
+    @patch('signal_processing.detect_changes.config.ConfigDict', autospec=True)
+    @patch('signal_processing.detect_changes.evergreen_client.Client', autospec=True)
+    @patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True)
+    def test_detect_changes(self, mock_MongoClient, mock_evg_Client, mock_ConfigDict):
+        """
+        Test the main function (second only to literal main) of detect_changes
+        """
+        detect_changes.detect_changes()
+        mock_MongoClient.assert_called_once()
+        mock_evg_Client.assert_called_once()
+        mock_ConfigDict.assert_called_once()
 
     # pylint: enable=invalid-name
