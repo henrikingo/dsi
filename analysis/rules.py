@@ -19,14 +19,10 @@ LOGGER = logging.getLogger(__name__)
 CONSTANTS = {
     'sys-perf': {
         'default': {
-            'threshold': 0.1,
-            'thread_threshold': 0.15,
+            'threshold': 0.2,
+            'thread_threshold': 0.3,
             'lag_threshold': 15.0,
             'ndays': 7.0
-        },
-        'linux-oplog-compare': {
-            'threshold': 0.25,
-            'thread_threshold': 0.38
         },
         'linux-3-node-replSet-initialsync': {
             # from Judah: initial sync uses 16 threads to put data into the database

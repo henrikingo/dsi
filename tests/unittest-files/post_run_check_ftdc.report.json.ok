@@ -1,15 +1,15 @@
 {
-    "failures": 4,
+    "failures": 1,
     "results": [
         {
-            "status": "fail",
+            "status": "pass",
             "start": 0,
             "PreviousCompare": "pass",
             "end": 1,
             "test_file": "insert_ttl-wiredTiger",
-            "log_raw": "\nTest: insert_ttl-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |  355977.56|  351025.71|     -1.39%|     10.00%|\n Previous |  Passed  |    ee5fbdd    |   1   |   60884.61|   58936.51|     -3.20%|     15.00%|\n Previous |  Passed  |    ee5fbdd    |  32   |  355977.56|  351025.71|     -1.39%|     15.00%|\n Previous |  Passed  |    ee5fbdd    |  16   |  350820.59|  339168.38|     -3.32%|     15.00%|\n Baseline |  Failed  | 3.2.1-Baseline|  max  |  391998.10|  351025.71|    -10.45%|     10.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   1   |   60201.48|   58936.51|     -2.10%|     15.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  32   |  391998.10|  351025.71|    -10.45%|     15.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  16   |  365055.35|  339168.38|     -7.09%|     15.00%|\n",
+            "log_raw": "\nTest: insert_ttl-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |  355977.56|  351025.71|     -1.39%|     20.00%|\n Previous |  Passed  |    ee5fbdd    |   1   |   60884.61|   58936.51|     -3.20%|     30.00%|\n Previous |  Passed  |    ee5fbdd    |  32   |  355977.56|  351025.71|     -1.39%|     30.00%|\n Previous |  Passed  |    ee5fbdd    |  16   |  350820.59|  339168.38|     -3.32%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  max  |  391998.10|  351025.71|    -10.45%|     20.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   1   |   60201.48|   58936.51|     -2.10%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  32   |  391998.10|  351025.71|    -10.45%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  16   |  365055.35|  339168.38|     -7.09%|     30.00%|\n",
             "exit_code": 0,
-            "BaselineCompare": "fail"
+            "BaselineCompare": "pass"
         },
         {
             "status": "pass",
@@ -37,7 +37,7 @@
             "PreviousCompare": "pass",
             "end": 1,
             "test_file": "insert_capped_indexes-wiredTiger",
-            "log_raw": "\nTest: insert_capped_indexes-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |   10091.51|    9834.08|     -2.55%|     10.00%|\n Previous |  Passed  |    ee5fbdd    |   1   |   10091.51|    9834.08|     -2.55%|     15.00%|\n Previous |  Passed  |    ee5fbdd    |   8   |    8196.26|    8112.53|     -1.02%|     15.00%|\n Previous |  Passed  |    ee5fbdd    |  64   |    7465.22|    7365.43|     -1.34%|     15.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  max  |   10128.39|    9834.08|     -2.91%|     10.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   1   |   10128.39|    9834.08|     -2.91%|     15.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   8   |    8248.31|    8112.53|     -1.65%|     15.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  64   |    7520.27|    7365.43|     -2.06%|     15.00%|\n",
+            "log_raw": "\nTest: insert_capped_indexes-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |   10091.51|    9834.08|     -2.55%|     20.00%|\n Previous |  Passed  |    ee5fbdd    |   1   |   10091.51|    9834.08|     -2.55%|     30.00%|\n Previous |  Passed  |    ee5fbdd    |   8   |    8196.26|    8112.53|     -1.02%|     30.00%|\n Previous |  Passed  |    ee5fbdd    |  64   |    7465.22|    7365.43|     -1.34%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  max  |   10128.39|    9834.08|     -2.91%|     20.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   1   |   10128.39|    9834.08|     -2.91%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   8   |    8248.31|    8112.53|     -1.65%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  64   |    7520.27|    7365.43|     -2.06%|     30.00%|\n",
             "exit_code": 0,
             "BaselineCompare": "pass"
         },
@@ -47,7 +47,7 @@
             "PreviousCompare": "pass",
             "end": 1,
             "test_file": "insert_capped-wiredTiger",
-            "log_raw": "\nTest: insert_capped-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |   33456.63|   32690.06|     -2.29%|     10.00%|\n Previous |  Passed  |    ee5fbdd    |   1   |   33456.63|   32690.06|     -2.29%|     15.00%|\n Previous |  Passed  |    ee5fbdd    |   8   |   18295.41|   18134.83|     -0.88%|     15.00%|\n Previous |  Passed  |    ee5fbdd    |  64   |   17173.00|   17009.16|     -0.95%|     15.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  max  |   33524.27|   32690.06|     -2.49%|     10.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   1   |   33524.27|   32690.06|     -2.49%|     15.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   8   |   18856.34|   18134.83|     -3.83%|     15.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  64   |   17636.93|   17009.16|     -3.56%|     15.00%|\n",
+            "log_raw": "\nTest: insert_capped-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |   33456.63|   32690.06|     -2.29%|     20.00%|\n Previous |  Passed  |    ee5fbdd    |   1   |   33456.63|   32690.06|     -2.29%|     30.00%|\n Previous |  Passed  |    ee5fbdd    |   8   |   18295.41|   18134.83|     -0.88%|     30.00%|\n Previous |  Passed  |    ee5fbdd    |  64   |   17173.00|   17009.16|     -0.95%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  max  |   33524.27|   32690.06|     -2.49%|     20.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   1   |   33524.27|   32690.06|     -2.49%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   8   |   18856.34|   18134.83|     -3.83%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  64   |   17636.93|   17009.16|     -3.56%|     30.00%|\n",
             "exit_code": 0,
             "BaselineCompare": "pass"
         },
@@ -57,7 +57,7 @@
             "PreviousCompare": "pass",
             "end": 1,
             "test_file": "initial_load_capped-wiredTiger",
-            "log_raw": "\nTest: initial_load_capped-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |   29733.84|   29442.53|     -0.98%|     10.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  max  |       0.00|   29442.53|      0.00%|      0.00%|\n",
+            "log_raw": "\nTest: initial_load_capped-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |   29733.84|   29442.53|     -0.98%|     20.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  max  |       0.00|   29442.53|      0.00%|      0.00%|\n",
             "exit_code": 0,
             "BaselineCompare": "pass"
         },
@@ -67,7 +67,7 @@
             "PreviousCompare": "fail",
             "end": 1,
             "test_file": "word_count_1M_doc-wiredTiger",
-            "log_raw": "\nTest: word_count_1M_doc-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Failed  |    ee5fbdd    |  max  |   89952.33|   66896.07|    -25.63%|     10.00%|\n Baseline |  Failed  | 3.2.1-Baseline|  max  |   94688.00|   66896.07|    -29.35%|     10.00%|\n",
+            "log_raw": "\nTest: word_count_1M_doc-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Failed  |    ee5fbdd    |  max  |   89952.33|   66896.07|    -25.63%|     20.00%|\n Baseline |  Failed  | 3.2.1-Baseline|  max  |   94688.00|   66896.07|    -29.35%|     20.00%|\n",
             "exit_code": 0,
             "BaselineCompare": "fail"
         },
@@ -77,18 +77,18 @@
             "PreviousCompare": "pass",
             "end": 1,
             "test_file": "map_reduce_1M_doc-wiredTiger",
-            "log_raw": "\nTest: map_reduce_1M_doc-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |   94580.54|   98551.30|      4.20%|     10.00%|\n        no reference data for test map_reduce_1M_doc-wiredTiger with baseline\n",
+            "log_raw": "\nTest: map_reduce_1M_doc-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |   94580.54|   98551.30|      4.20%|     20.00%|\n        no reference data for test map_reduce_1M_doc-wiredTiger with baseline\n",
             "exit_code": 0
         },
         {
-            "status": "fail",
+            "status": "pass",
             "start": 0,
             "PreviousCompare": "pass",
             "end": 1,
             "test_file": "insert_vector_secondary_overall-wiredTiger",
-            "log_raw": "\nTest: insert_vector_secondary_overall-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |  461413.47|  447932.70|     -2.92%|     10.00%|\n Previous |  Passed  |    ee5fbdd    |   1   |   81804.22|   79237.64|     -3.14%|     15.00%|\n Previous |  Passed  |    ee5fbdd    |  32   |  445555.14|  447932.70|      0.53%|     15.00%|\n Previous |  Passed  |    ee5fbdd    |  16   |  461413.47|  441562.23|     -4.30%|     15.00%|\n Baseline |  Failed  | 3.2.1-Baseline|  max  |  517010.89|  447932.70|    -13.36%|     10.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   1   |   84490.69|   79237.64|     -6.22%|     15.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  32   |  517010.89|  447932.70|    -13.36%|     15.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  16   |  483658.03|  441562.23|     -8.70%|     15.00%|\n",
+            "log_raw": "\nTest: insert_vector_secondary_overall-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |  461413.47|  447932.70|     -2.92%|     20.00%|\n Previous |  Passed  |    ee5fbdd    |   1   |   81804.22|   79237.64|     -3.14%|     30.00%|\n Previous |  Passed  |    ee5fbdd    |  32   |  445555.14|  447932.70|      0.53%|     30.00%|\n Previous |  Passed  |    ee5fbdd    |  16   |  461413.47|  441562.23|     -4.30%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  max  |  517010.89|  447932.70|    -13.36%|     20.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   1   |   84490.69|   79237.64|     -6.22%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  32   |  517010.89|  447932.70|    -13.36%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  16   |  483658.03|  441562.23|     -8.70%|     30.00%|\n",
             "exit_code": 0,
-            "BaselineCompare": "fail"
+            "BaselineCompare": "pass"
         },
         {
             "status": "pass",
@@ -101,14 +101,14 @@
             "BaselineCompare": "pass"
         },
         {
-            "status": "fail",
+            "status": "pass",
             "start": 0,
             "PreviousCompare": "pass",
             "end": 1,
             "test_file": "insert_vector_secondary_load_phase-wiredTiger",
-            "log_raw": "\nTest: insert_vector_secondary_load_phase-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |  461416.03|  447935.18|     -2.92%|     10.00%|\n Previous |  Passed  |    ee5fbdd    |   1   |   81805.13|   79238.52|     -3.14%|     15.00%|\n Previous |  Passed  |    ee5fbdd    |  32   |  445557.62|  447935.18|      0.53%|     15.00%|\n Previous |  Passed  |    ee5fbdd    |  16   |  461416.03|  441564.68|     -4.30%|     15.00%|\n Baseline |  Failed  | 3.2.1-Baseline|  max  |  517010.89|  447935.18|    -13.36%|     10.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   1   |   84491.63|   79238.52|     -6.22%|     15.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  32   |  517010.89|  447935.18|    -13.36%|     15.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  16   |  483660.72|  441564.68|     -8.70%|     15.00%|\n",
+            "log_raw": "\nTest: insert_vector_secondary_load_phase-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |  461416.03|  447935.18|     -2.92%|     20.00%|\n Previous |  Passed  |    ee5fbdd    |   1   |   81805.13|   79238.52|     -3.14%|     30.00%|\n Previous |  Passed  |    ee5fbdd    |  32   |  445557.62|  447935.18|      0.53%|     30.00%|\n Previous |  Passed  |    ee5fbdd    |  16   |  461416.03|  441564.68|     -4.30%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  max  |  517010.89|  447935.18|    -13.36%|     20.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   1   |   84491.63|   79238.52|     -6.22%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  32   |  517010.89|  447935.18|    -13.36%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  16   |  483660.72|  441564.68|     -8.70%|     30.00%|\n",
             "exit_code": 0,
-            "BaselineCompare": "fail"
+            "BaselineCompare": "pass"
         },
         {
             "status": "pass",
@@ -116,7 +116,7 @@
             "PreviousCompare": "pass",
             "end": 1,
             "test_file": "contended_update-wiredTiger",
-            "log_raw": "\nTest: contended_update-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |   24622.59|   24558.22|     -0.26%|     10.00%|\n Previous |  Passed  |    ee5fbdd    |  32   |   24622.59|   24558.22|     -0.26%|     15.00%|\n Previous |  Passed  |    ee5fbdd    |  64   |   18859.65|   16695.40|    -11.48%|     15.00%|\n Baseline |  Passed  |*   fb06c14    |  max  |   19640.93|   24558.22|     25.04%|     10.00%|\n Baseline |  Passed  |*   fb06c14    |  32   |   19640.93|   24558.22|     25.04%|     15.00%|\n Baseline |  Passed  |*   fb06c14    |  64   |   13171.79|   16695.40|     26.75%|     15.00%|\n",
+            "log_raw": "\nTest: contended_update-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |   24622.59|   24558.22|     -0.26%|     20.00%|\n Previous |  Passed  |    ee5fbdd    |  32   |   24622.59|   24558.22|     -0.26%|     30.00%|\n Previous |  Passed  |    ee5fbdd    |  64   |   18859.65|   16695.40|    -11.48%|     30.00%|\n Baseline |  Passed  |*   fb06c14    |  max  |   19640.93|   24558.22|     25.04%|     20.00%|\n Baseline |  Passed  |*   fb06c14    |  32   |   19640.93|   24558.22|     25.04%|     30.00%|\n Baseline |  Passed  |*   fb06c14    |  64   |   13171.79|   16695.40|     26.75%|     30.00%|\n",
             "exit_code": 0,
             "BaselineCompare": "pass"
         },
@@ -126,7 +126,7 @@
             "PreviousCompare": "pass",
             "end": 1,
             "test_file": "insert_vector_primary-wiredTiger",
-            "log_raw": "\nTest: insert_vector_primary-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |  461416.03|  527935.18|     14.42%|     10.00%|\n Previous |  Passed  |    ee5fbdd    |   1   |   81805.13|   79238.52|     -3.14%|     15.00%|\n Previous |  Passed  |    ee5fbdd    |  32   |  445557.62|  527935.18|     18.49%|     15.00%|\n Previous |  Passed  |    ee5fbdd    |  16   |  461416.03|  441564.68|     -4.30%|     15.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  max  |  517010.89|  527935.18|      2.11%|     10.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   1   |   84491.63|   79238.52|     -6.22%|     15.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  32   |  517010.89|  527935.18|      2.11%|     15.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  16   |  483660.72|  441564.68|     -8.70%|     15.00%|\n",
+            "log_raw": "\nTest: insert_vector_primary-wiredTiger\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    ee5fbdd    |  max  |  461416.03|  527935.18|     14.42%|     20.00%|\n Previous |  Passed  |    ee5fbdd    |   1   |   81805.13|   79238.52|     -3.14%|     30.00%|\n Previous |  Passed  |    ee5fbdd    |  32   |  445557.62|  527935.18|     18.49%|     30.00%|\n Previous |  Passed  |    ee5fbdd    |  16   |  461416.03|  441564.68|     -4.30%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  max  |  517010.89|  527935.18|      2.11%|     20.00%|\n Baseline |  Passed  | 3.2.1-Baseline|   1   |   84491.63|   79238.52|     -6.22%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  32   |  517010.89|  527935.18|      2.11%|     30.00%|\n Baseline |  Passed  | 3.2.1-Baseline|  16   |  483660.72|  441564.68|     -8.70%|     30.00%|\n",
             "exit_code": 0,
             "BaselineCompare": "pass"
         },
