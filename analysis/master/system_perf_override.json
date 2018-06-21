@@ -568,6 +568,34 @@
                         "PERF-873"
                     ]
                 },
+                "canary_client-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-1x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -1838,6 +1866,34 @@
             "reference":{},
             "threshold":{
                 "NetworkBandwidth":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-1x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -5659,6 +5715,34 @@
                         "PERF-873"
                     ]
                 },
+                "canary_client-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-1x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -5732,28 +5816,28 @@
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-7734"
+                        "PERF-873"
                     ]
                 },
                 "canary_client-cpuloop-1x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-7734"
+                        "PERF-873"
                     ]
                 },
                 "canary_server-cpuloop-10x":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-7734"
+                        "PERF-873"
                     ]
                 },
                 "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
-                        "BF-7734"
+                        "PERF-873"
                     ]
                 },
                 "fio_iops_test_read_iops":{
@@ -7892,6 +7976,34 @@
                         "PERF-873"
                     ]
                 },
+                "canary_client-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-1x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -9406,6 +9518,41 @@
                 }
             },
             "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-1x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -9482,6 +9629,41 @@
                 }
             },
             "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-1x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -9823,6 +10005,41 @@
                 }
             },
             "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-1x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -12041,6 +12258,34 @@
                         "PERF-873"
                     ]
                 },
+                "canary_client-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-1x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -13163,6 +13408,34 @@
                         "PERF-873"
                     ]
                 },
+                "canary_client-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-1x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -13794,6 +14067,34 @@
                         "PERF-873"
                     ]
                 },
+                "canary_client-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-1x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
@@ -13843,6 +14144,34 @@
             "reference":{},
             "threshold":{
                 "NetworkBandwidth":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-1x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -15472,6 +15801,89 @@
                     ]
                 }
             }
+        },
+        "snapshot_reads":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "NetworkBandwidth":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-1x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_iops_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_iops_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_read_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "fio_streaming_bandwidth_test_write_iops":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                }
+            }
         }
     },
     "wtdevelop-shard-lite":{
@@ -15784,6 +16196,34 @@
             "reference":{},
             "threshold":{
                 "NetworkBandwidth":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-1x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
@@ -17898,6 +18338,34 @@
             "reference":{},
             "threshold":{
                 "NetworkBandwidth":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_client-cpuloop-1x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-cpuloop-10x":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "PERF-873"
+                    ]
+                },
+                "canary_server-sleep-10ms":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
                     "ticket":[
