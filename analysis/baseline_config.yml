@@ -85,45 +85,43 @@ project_files:
 
 # Tasks not to run on old versions
 disabled_tasks:
+  '3.6':
+    - linkbench
+    - tpcc
   '3.4':
-    - agg_query_comparison_bestbuy_MMAPv1
-    - agg_query_comparison_bestbuy_WT
-    - bestbuy_agg_MMAPv1
-    - bestbuy_agg_WT
-    - bestbuy_query_MMAPv1
-    - bestbuy_query_WT
+    - agg_query_comparison_bestbuy
+    - bestbuy_agg
+    - bestbuy_query
     - change_streams_latency
     - change_streams_throughput
-    - initialsync-logkeeper_WT
-    - retryable_writes_workloads_WT
-    - snapshot_reads_WT
+    - initialsync-logkeeper
+    - linkbench
+    - retryable_writes_workloads
+    - snapshot_reads
+    - tpcc
   '3.2':
-    - agg_query_comparison_bestbuy_MMAPv1
-    - agg_query_comparison_bestbuy_WT
-    - bestbuy_agg_MMAPv1
-    - bestbuy_agg_WT
-    - bestbuy_query_MMAPv1
-    - bestbuy_query_WT
+    - agg_query_comparison_bestbuy
+    - bestbuy_agg
+    - bestbuy_query
     - change_streams_latency
     - change_streams_throughput
-    - initialsync_MMAPv1
-    - initialsync_WT
-    - initialsync-logkeeper_WT
-    - secondary_performance_MMAPv1
-    - secondary_performance_WT
-    - retryable_writes_workloads_WT
-    - secondary_reads_WT
-    - snapshot_reads_WT
+    - initialsync
+    - initialsync-logkeeper
+    - linkbench
+    - retryable_writes_workloads
+    - secondary_performance
+    - secondary_reads
+    - snapshot_reads
+    - tpcc
     - views-aggregation
     - views-query
   '3.0':
+    - agg_query_comparison_bestbuy
+    - initialsync
+    - initialsync-logkeeper
+    - linkbench
+    - retryable_writes_workloads
+    - secondary_performance
+    - tpcc
     - views-aggregation
     - views-query
-    - initialsync_WT
-    - initialsync_MMAPv1
-    - initialsync-logkeeper_WT
-    - secondary_performance_WT
-    - secondary_performance_MMAPv1
-    - agg_query_comparison_bestbuy_MMAPv1
-    - agg_query_comparison_bestbuy_WT
-    - retryable_writes_workloads_WT
