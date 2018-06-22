@@ -4321,11 +4321,10 @@
                     ]
                 },
                 "mixed_findOne_retry":{
-                    "thread_threshold":0.1819,
-                    "threshold":0.2729,
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
                     "ticket":[
-                        "BF-7748",
-                        "BF-7987"
+                        "BF-7748"
                     ]
                 },
                 "mixed_insert_retry":{
@@ -10164,6 +10163,41 @@
                     "ticket":[
                         "PERF-873"
                     ]
+                },
+                "mixed_delete_retry":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7748"
+                    ]
+                },
+                "mixed_findOne_retry":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7748"
+                    ]
+                },
+                "mixed_insert_retry":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7748"
+                    ]
+                },
+                "mixed_total_retry":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-7748"
+                    ]
+                },
+                "mixed_update_retry":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7748"
+                    ]
                 }
             }
         }
@@ -13477,6 +13511,41 @@
                     "ticket":[
                         "PERF-873"
                     ]
+                },
+                "mixed_delete_retry":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7748"
+                    ]
+                },
+                "mixed_findOne_retry":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7748"
+                    ]
+                },
+                "mixed_insert_retry":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7748"
+                    ]
+                },
+                "mixed_total_retry":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-7748"
+                    ]
+                },
+                "mixed_update_retry":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7748"
+                    ]
                 }
             }
         },
@@ -15590,6 +15659,41 @@
                     "threshold":0.3,
                     "ticket":[
                         "BF-8631"
+                    ]
+                },
+                "mixed_delete_retry":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7748"
+                    ]
+                },
+                "mixed_findOne_retry":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7748"
+                    ]
+                },
+                "mixed_insert_retry":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7748"
+                    ]
+                },
+                "mixed_total_retry":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-7748"
+                    ]
+                },
+                "mixed_update_retry":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7748"
                     ]
                 }
             }
@@ -18412,6 +18516,41 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                },
+                "mixed_delete_retry":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7748"
+                    ]
+                },
+                "mixed_findOne_retry":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7748"
+                    ]
+                },
+                "mixed_insert_retry":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7748"
+                    ]
+                },
+                "mixed_total_retry":{
+                    "thread_threshold":0.25,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-7748"
+                    ]
+                },
+                "mixed_update_retry":{
+                    "thread_threshold":0.36,
+                    "threshold":0.25,
+                    "ticket":[
+                        "BF-7748"
                     ]
                 }
             }
