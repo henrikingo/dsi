@@ -27412,24 +27412,38 @@
                     ]
                 },
                 "Aggregation.FindProjection":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
-                        "BF-5949"
+                        "BF-9724"
                     ]
                 },
                 "Aggregation.FindProjectionDottedField":{
-                    "thread_threshold":0.18,
-                    "threshold":0.12,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
-                        "PERF-875"
+                        "BF-9724"
+                    ]
+                },
+                "Aggregation.FindProjectionDottedField.Indexed":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-9724"
                     ]
                 },
                 "Aggregation.FindProjectionThreeFields":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
-                        "BF-5949"
+                        "BF-9724"
+                    ]
+                },
+                "Aggregation.FindProjectionThreeFieldsCovered":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-9724"
                     ]
                 },
                 "Aggregation.FindWideDocProjection":{
