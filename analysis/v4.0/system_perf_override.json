@@ -6666,6 +6666,31 @@
                         "BF-9580"
                     ],
                     "workload":"mongoshell"
+                },
+                "find_project_skip_limit-noAgg":{
+                    "create_time":"2018-06-20T22:13:39Z",
+                    "end":1529573125.470653,
+                    "max":15.440379968335971,
+                    "name":"find_project_skip_limit-noAgg",
+                    "order":227,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":15.440379968335971,
+                            "ops_per_sec_values":[
+                                15.440379968335971
+                            ]
+                        }
+                    },
+                    "revision":"7230641bb09b1ceb04c3135cf83a5044c4838906",
+                    "start":1529570016.405482,
+                    "tag":"",
+                    "threads":[
+                        "1"
+                    ],
+                    "ticket":[
+                        "BF-9580"
+                    ],
+                    "workload":"mongoshell"
                 }
             },
             "threshold":{
