@@ -44,10 +44,7 @@ class Client(object):
         self.logger.level = logging.INFO if verbose else logging.WARNING
         # Parse the config file
         try:
-            self.headers = {
-                'auth-username': configuration['user'],
-                'api-key': configuration['api_key']
-            }
+            self.headers = {'api-user': configuration['user'], 'api-key': configuration['api_key']}
             self.base_url = configuration['ui_server_host']
         except (TypeError, KeyError):
             self.logger.warning("Using default evergreen credentials.")
