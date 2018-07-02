@@ -9618,6 +9618,13 @@
                     "ticket":[
                         "PERF-873"
                     ]
+                },
+                "mongos_insert_vector_sharded_ratio":{
+                    "thread_threshold":0.4,
+                    "threshold":0.4,
+                    "ticket":[
+                        "BF-9783"
+                    ]
                 }
             }
         },
