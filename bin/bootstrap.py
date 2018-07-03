@@ -6,18 +6,18 @@ Setup an work environment. Copy over the appropriate files.
 from __future__ import print_function
 import sys
 import argparse
-import logging
 import os
 import os.path
 import shutil
 import subprocess
+import structlog
 import yaml
 
 from common.config import ConfigDict
 from common.log import setup_logging
 import common.utils
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = structlog.get_logger(__name__)
 
 
 def parse_command_line(config, args=None):
@@ -90,7 +90,8 @@ def copy_config_files(dsipath, config, directory):
         #pylint: disable=broad-except
         try:
             shutil.copyfile(source_file, target_file)
-            LOGGER.debug("Copied " + source_file + " to work directory %s.", target_file)
+            LOGGER.debug(
+                "Copied file to work directory", source_file=source_file, target_file=target_file)
         except Exception as error:
             # If a source file doesn't exist, it's probably because a wrong or no option was
             # provided in bootstrap.yml. When running manually, this is not fatal. For example,
@@ -102,7 +103,6 @@ def copy_config_files(dsipath, config, directory):
                 raise
             else:
                 LOGGER.warn(error_str)
-
     return
 
 
@@ -147,16 +147,17 @@ def find_terraform(config, directory):
 
     if 'terraform' in config:
         terraform = os.path.abspath(os.path.expanduser(config['terraform']))
-        LOGGER.debug('Using terraform binary specified by '
-                     'bootstrap.terraform %s', config['terraform'])
+        LOGGER.debug(
+            'Using terraform binary specified by bootstrap.terraform',
+            terraform=config['terraform'])
     elif system_tf is not None:
         terraform = os.path.abspath(system_tf)
-        LOGGER.debug('Using terraform binary specified by $(which terraform)')
+        LOGGER.debug('Using terraform binary specified by $(which terraform)', terraform=terraform)
     else:
         terraform = os.path.join(directory, 'terraform')
-        LOGGER.debug('Using terraform binary in default location')
+        LOGGER.debug('Using terraform binary in default location', terraform=terraform)
 
-    LOGGER.info('Path to terraform binary is %s', terraform)
+    LOGGER.info('Path to terraform binary', terraform=terraform)
     return terraform
 
 
@@ -251,7 +252,7 @@ def main():
     config = {}
     parse_command_line(config)
     directory = os.path.abspath(os.path.expanduser(config['directory']))
-    LOGGER.info('Creating work directory in: %s', directory)
+    LOGGER.info('Creating work directory', directory=directory)
 
     if os.path.exists(os.path.join(directory, 'dsienv.sh')):
         print("It looks like you have already setup "
@@ -276,7 +277,7 @@ def main():
     # bootstrap.yml.
     setup_overrides(config, directory)
 
-    LOGGER.info("Local environment setup in %s", directory)
+    LOGGER.info("Local environment setup", directory=directory)
 
 
 if __name__ == '__main__':

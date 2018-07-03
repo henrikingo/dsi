@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import unittest
 
+import structlog
 import yaml
 from mock import patch
 from testfixtures import LogCapture
@@ -30,7 +31,22 @@ class TestBootstrap(unittest.TestCase):
         """
         Running setUp to allow for tearDown
         """
-        pass
+
+        # Setup logging so that structlog uses stdlib, and LogCapture works
+        structlog.configure(
+            processors=[
+                structlog.stdlib.filter_by_level, structlog.stdlib.add_logger_name,
+                structlog.stdlib.add_log_level,
+                structlog.stdlib.PositionalArgumentsFormatter(),
+                structlog.processors.StackInfoRenderer(), structlog.processors.format_exc_info,
+                structlog.processors.UnicodeDecoder(),
+                structlog.dev.ConsoleRenderer(colors=False)
+            ],
+            context_class=dict,
+            logger_factory=structlog.stdlib.LoggerFactory(),
+            wrapper_class=structlog.stdlib.BoundLogger,
+            cache_logger_on_first_use=True,
+        )
 
     def tearDown(self):
         """
@@ -360,10 +376,12 @@ class TestBootstrap(unittest.TestCase):
         with LogCapture(level=logging.CRITICAL) as crit:
             with self.assertRaises(AssertionError):
                 bootstrap.validate_terraform(config)
-            crit.check(('bootstrap', 'CRITICAL',
-                        'You are using Terraform v0.6.16, but DSI requires Terraform v0.9.11.'),
-                       ('bootstrap', 'CRITICAL',
-                        'See documentation for installing terraform: http://bit.ly/2ufjQ0R'))
+            crit.check(
+                ('bootstrap', 'CRITICAL',
+                 u'[critical ] You are using Terraform v0.6.16, but DSI requires Terraform v0.9.11. [bootstrap] '),
+                ('bootstrap', 'CRITICAL',
+                 u'[critical ] See documentation for installing terraform: http://bit.ly/2ufjQ0R [bootstrap] '
+                )) #yapf: disable
 
     @patch('subprocess.check_output')
     def test_terraform_call_fails(self, mock_check_output):
@@ -381,10 +399,13 @@ class TestBootstrap(unittest.TestCase):
             with self.assertRaises(AssertionError):
                 bootstrap.validate_terraform(config)
             crit_logs = set(crit.actual())
-            crit_expected = set([('bootstrap', 'CRITICAL', 'Call to terraform failed.'),
-                                 ('bootstrap', 'CRITICAL',
-                                  'See documentation for installing terraform: '
-                                  'http://bit.ly/2ufjQ0R')])
+            crit_expected = set([(
+                'bootstrap', 'CRITICAL',
+                u'[critical ] See documentation for installing terraform: http://bit.ly/2ufjQ0R [bootstrap] '
+            ), ('bootstrap', 'CRITICAL',
+                u'[critical ] Call to terraform failed.      [bootstrap] ')])
+            print crit_logs
+            print crit_expected
             self.assertTrue(crit_expected.issubset(crit_logs))
 
     @patch('subprocess.check_output')
@@ -399,10 +420,13 @@ class TestBootstrap(unittest.TestCase):
             with self.assertRaises(AssertionError):
                 bootstrap.validate_terraform(config)
             crit_logs = set(crit.actual())
-            crit_expected = set([('bootstrap', 'CRITICAL', 'Cannot execute terraform binary file.'),
-                                 ('bootstrap', 'CRITICAL',
-                                  'See documentation for installing terraform: '
-                                  'http://bit.ly/2ufjQ0R')])
+            print crit_logs
+            crit_expected = set([(
+                'bootstrap', 'CRITICAL',
+                u'[critical ] See documentation for installing terraform: http://bit.ly/2ufjQ0R [bootstrap] '
+            ), ('bootstrap', 'CRITICAL',
+                u'[critical ] Cannot execute terraform binary file. [bootstrap] ')])
+            print crit_expected
             self.assertTrue(crit_expected.issubset(crit_logs))
 
     @patch('subprocess.check_output')
@@ -417,10 +441,13 @@ class TestBootstrap(unittest.TestCase):
             with self.assertRaises(AssertionError):
                 bootstrap.validate_terraform(config)
             crit_logs = set(crit.actual())
-            crit_expected = set([('bootstrap', 'CRITICAL', 'No terraform binary file found.'),
-                                 ('bootstrap', 'CRITICAL',
-                                  'See documentation for installing terraform: '
-                                  'http://bit.ly/2ufjQ0R')])
+            crit_expected = set([(
+                'bootstrap', 'CRITICAL',
+                u'[critical ] See documentation for installing terraform: http://bit.ly/2ufjQ0R [bootstrap] '
+            ), ('bootstrap', 'CRITICAL',
+                u'[critical ] No terraform binary file found. [bootstrap] ')])
+            print crit_logs
+            print crit_expected
             self.assertTrue(crit_expected.issubset(crit_logs))
 
     @patch('subprocess.check_output')
@@ -459,8 +486,9 @@ class TestBootstrap(unittest.TestCase):
         with LogCapture(level=logging.CRITICAL) as crit:
             with self.assertRaises(AssertionError):
                 bootstrap.load_bootstrap(config, directory)
-            crit.check(('bootstrap', 'CRITICAL',
-                        'Location specified for bootstrap.yml is invalid.'))
+            crit.check(
+                ('bootstrap', 'CRITICAL',
+                 u'[critical ] Location specified for bootstrap.yml is invalid. [bootstrap] '))
 
     def test_load_bootstrap_different_filename(self):
         """

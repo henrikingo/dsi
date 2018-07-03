@@ -3,6 +3,7 @@ Set up logging for DSI scripts.
 """
 import logging
 from StringIO import StringIO
+import structlog
 
 
 def setup_logging(verbose, filename=None):
@@ -10,7 +11,6 @@ def setup_logging(verbose, filename=None):
     loglevel = logging.DEBUG if verbose else logging.INFO
     handler = logging.FileHandler(filename) if filename else logging.StreamHandler()
     handler.setLevel(loglevel)
-    handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
     root_logger = logging.getLogger()
     root_logger.setLevel(loglevel)
     root_logger.addHandler(handler)
@@ -22,6 +22,22 @@ def setup_logging(verbose, filename=None):
     logging.getLogger('boto3').setLevel(logging.WARNING)
     logging.getLogger('botocore').setLevel(logging.WARNING)
     logging.getLogger('error_only').setLevel(logging.ERROR)
+
+    structlog.configure(
+        processors=[
+            structlog.stdlib.filter_by_level, structlog.stdlib.add_logger_name,
+            structlog.stdlib.add_log_level,
+            structlog.stdlib.PositionalArgumentsFormatter(),
+            structlog.processors.StackInfoRenderer(),
+            structlog.processors.TimeStamper(fmt="iso"), structlog.processors.format_exc_info,
+            structlog.processors.UnicodeDecoder(),
+            structlog.dev.ConsoleRenderer()
+        ],
+        context_class=dict,
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        wrapper_class=structlog.stdlib.BoundLogger,
+        cache_logger_on_first_use=True,
+    )
 
 
 class IOLogAdapter(StringIO):
