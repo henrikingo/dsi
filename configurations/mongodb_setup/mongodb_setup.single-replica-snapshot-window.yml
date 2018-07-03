@@ -1,0 +1,31 @@
+# Shared by all mongods
+journal_dir: /media/ebs2/journal
+mongod_config_file:
+  storage:
+    engine: ${bootstrap.storageEngine}
+  setParameter:
+    enableTestCommands: 1
+    maxTargetSnapshotHistoryWindowInSeconds: 5
+
+topology:
+  - cluster_type: replset
+    id: rs0
+    mongod:
+      - public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
+        private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
+
+# Meta data about this mongodb setup
+meta:
+  # The list of hosts that can be used in a mongodb connection string
+  hosts: ${mongodb_setup.topology.0.mongod.0.private_ip}:27017
+  hostname: ${mongodb_setup.topology.0.mongod.0.private_ip}
+  port: 27017
+  is_sharded: false
+  is_replset: true
+  mongodb_setup: single-replica-snapshot-window
+  mongodb_url: ${mongodb_setup.authentication.${bootstrap.authentication}.mongodb_url}
+
+# Hosts to run correctness tests on.
+validate:
+  primaries:
+    - ${mongodb_setup.topology.0.mongod.0.private_ip}:27017

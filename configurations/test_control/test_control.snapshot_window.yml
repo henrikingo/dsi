@@ -20,7 +20,6 @@ run:
               static_window: false
               nb_docs: 40
               server_cache_size_gb: 1
-              window_size_in_seconds: 5
               snapshot_held_open_for_seconds: 2
               test_duration_secs: 40
           - snapshot_window:
@@ -29,7 +28,6 @@ run:
               static_window: true
               nb_docs: 40
               server_cache_size_gb: 1
-              window_size_in_seconds: 5
               snapshot_held_open_for_seconds: 2
               test_duration_secs: 40
           - snapshot_window:
@@ -38,7 +36,6 @@ run:
               static_window: false
               nb_docs: 40
               server_cache_size_gb: 1
-              window_size_in_seconds: 5
               snapshot_held_open_for_seconds: 2
               test_duration_secs: 40
           - snapshot_window:
@@ -47,7 +44,6 @@ run:
               static_window: true
               nb_docs: 40
               server_cache_size_gb: 1
-              window_size_in_seconds: 5
               snapshot_held_open_for_seconds: 2
               test_duration_secs: 40
           - snapshot_window:
@@ -56,7 +52,6 @@ run:
               static_window: false
               nb_docs: 40
               server_cache_size_gb: 1
-              window_size_in_seconds: 5
               snapshot_held_open_for_seconds: 2
               test_duration_secs: 40
           - snapshot_window:
@@ -65,7 +60,6 @@ run:
               static_window: true
               nb_docs: 40
               server_cache_size_gb: 1
-              window_size_in_seconds: 5
               snapshot_held_open_for_seconds: 2
               test_duration_secs: 40
           # The following test dynamic with higher cache size.
@@ -76,7 +70,6 @@ run:
               static_window: false
               nb_docs: 40
               server_cache_size_gb: 5
-              window_size_in_seconds: 5
               snapshot_held_open_for_seconds: 2
               test_duration_secs: 40
           - snapshot_window:
@@ -85,7 +78,6 @@ run:
               static_window: false
               nb_docs: 40
               server_cache_size_gb: 5
-              window_size_in_seconds: 5
               snapshot_held_open_for_seconds: 2
               test_duration_secs: 40
           - snapshot_window:
@@ -94,7 +86,6 @@ run:
               static_window: false
               nb_docs: 40
               server_cache_size_gb: 5
-              window_size_in_seconds: 5
               snapshot_held_open_for_seconds: 2
               test_duration_secs: 40
           - cpu_noise
