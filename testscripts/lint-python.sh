@@ -2,6 +2,9 @@
 # fail early
 set -eou pipefail
 
+BUILDIR=$(dirname $0)
+source ${BUILDIR}/test-common.sh
+
 # Perform pylint with the correct pylintrc file.
 # Please convert this to python if it becomes any more complex!
 
@@ -35,10 +38,13 @@ run_pylint() {
     local files=("$@")
     set -x
     # `-j N` runs N parallel pylint procs. Set N to 0 to get # of cores
-    pylint -j 0 --rcfile "$rcfile" \
+    run_test pylint -j 0 --rcfile "$rcfile" \
         $(find "${files[@]}" -maxdepth 1 -name '*.py')
     set +x
 }
 
+failed=0
 run_pylint pylintrc         "${top_paths[@]}"
 run_pylint tests/pylintrc   "${test_paths[@]}"
+
+exit $failed

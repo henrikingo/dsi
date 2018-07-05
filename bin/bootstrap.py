@@ -21,7 +21,6 @@ LOGGER = structlog.get_logger(__name__)
 
 
 def parse_command_line(config, args=None):
-    #pylint: disable=line-too-long,too-many-branches
     """
     Parse the command line options for setting up a working directory
     """
