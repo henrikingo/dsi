@@ -9619,9 +9619,30 @@
                         "PERF-873"
                     ]
                 },
+                "mongos_insert_vector_passthrough_ratio":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "BF-9783"
+                    ]
+                },
                 "mongos_insert_vector_sharded_ratio":{
                     "thread_threshold":0.4,
                     "threshold":0.4,
+                    "ticket":[
+                        "BF-9783"
+                    ]
+                },
+                "mongos_read_single_passthrough_ratio":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
+                    "ticket":[
+                        "BF-9783"
+                    ]
+                },
+                "mongos_read_single_sharded_ratio":{
+                    "thread_threshold":0.45,
+                    "threshold":0.3,
                     "ticket":[
                         "BF-9783"
                     ]
