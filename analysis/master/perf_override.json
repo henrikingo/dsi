@@ -35135,6 +35135,13 @@
                         "PERF-444"
                     ]
                 },
+                "Queries.Text.FindPhrase":{
+                    "thread_threshold":0.17,
+                    "threshold":0.12,
+                    "ticket":[
+                        "BF-8039"
+                    ]
+                },
                 "Queries.Text.FindPhraseCaseSensitive":{
                     "thread_threshold":0.15,
                     "threshold":0.1,
