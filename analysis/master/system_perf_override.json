@@ -1256,36 +1256,44 @@
             "ndays":{},
             "reference":{
                 "contended_update":{
-                    "create_time":"2017-08-20T23:49:29.996Z",
-                    "end":1503314765.0,
-                    "max":17626.449341412706,
+                    "create_time":"2018-07-03T14:54:20Z",
+                    "end":1530814930.08404,
+                    "max":11884.73908372247,
                     "name":"contended_update",
-                    "order":8109,
+                    "order":12893,
                     "results":{
-                        "32":{
-                            "ops_per_sec":17626.449341412706,
+                        "1":{
+                            "ops_per_sec":3547.220213066944,
                             "ops_per_sec_values":[
-                                17626.449341412706
+                                3547.220213066944
+                            ]
+                        },
+                        "32":{
+                            "ops_per_sec":11884.73908372247,
+                            "ops_per_sec_values":[
+                                11884.73908372247
                             ]
                         },
                         "64":{
-                            "ops_per_sec":16989.462856045153,
+                            "ops_per_sec":11580.13333728647,
                             "ops_per_sec_values":[
-                                16989.462856045153
+                                11580.13333728647
                             ]
                         }
                     },
-                    "revision":"0cfe4dfc2cf371f9e8196cb79414c3432b95b5af",
-                    "start":1503308518.0,
+                    "revision":"bbe8e936e2d253fc777d2fe135a40e7da5b81bea",
+                    "start":1530812419.865574,
                     "tag":"",
                     "threads":[
+                        "1",
                         "32",
                         "64"
                     ],
                     "ticket":[
-                        "BF-6743"
+                        "BF-6743",
+                        "BF-9841"
                     ],
-                    "workload":"shell/benchrun"
+                    "workload":"mongoshell"
                 },
                 "insert_vector_primary":{
                     "create_time":"2017-11-08T09:01:11.011Z",
@@ -3583,36 +3591,44 @@
             "ndays":{},
             "reference":{
                 "contended_update":{
-                    "create_time":"2017-08-20T23:49:29.996Z",
-                    "end":1503317299.0,
-                    "max":18436.784910282313,
+                    "create_time":"2018-07-04T04:28:47Z",
+                    "end":1530713568.479392,
+                    "max":9914.642522837114,
                     "name":"contended_update",
-                    "order":8109,
+                    "order":12906,
                     "results":{
-                        "32":{
-                            "ops_per_sec":18436.784910282313,
+                        "1":{
+                            "ops_per_sec":3378.0883473121858,
                             "ops_per_sec_values":[
-                                18436.784910282313
+                                3378.0883473121858
+                            ]
+                        },
+                        "32":{
+                            "ops_per_sec":9914.642522837114,
+                            "ops_per_sec_values":[
+                                9914.642522837114
                             ]
                         },
                         "64":{
-                            "ops_per_sec":17615.312530542084,
+                            "ops_per_sec":9556.007813397691,
                             "ops_per_sec_values":[
-                                17615.312530542084
+                                9556.007813397691
                             ]
                         }
                     },
-                    "revision":"0cfe4dfc2cf371f9e8196cb79414c3432b95b5af",
-                    "start":1503310883.0,
+                    "revision":"c5187865db1791143063fc166b73f1ef3083c1c2",
+                    "start":1530710984.085657,
                     "tag":"",
                     "threads":[
+                        "1",
                         "32",
                         "64"
                     ],
                     "ticket":[
-                        "BF-6743"
+                        "BF-6743",
+                        "BF-9841"
                     ],
-                    "workload":"shell/benchrun"
+                    "workload":"mongoshell"
                 },
                 "insert_ttl":{
                     "create_time":"2018-03-26T19:54:16Z",
@@ -13002,33 +13018,33 @@
             "ndays":{},
             "reference":{
                 "contended_update":{
-                    "create_time":"2018-03-26T22:45:43Z",
-                    "end":1522221529.645364,
-                    "max":18207.20803478066,
+                    "create_time":"2018-07-04T04:28:47Z",
+                    "end":1530713760.974983,
+                    "max":11883.56749675251,
                     "name":"contended_update",
-                    "order":11366,
+                    "order":12906,
                     "results":{
                         "1":{
-                            "ops_per_sec":3668.490451430587,
+                            "ops_per_sec":3557.3597044262606,
                             "ops_per_sec_values":[
-                                3668.490451430587
+                                3557.3597044262606
                             ]
                         },
                         "32":{
-                            "ops_per_sec":18207.20803478066,
+                            "ops_per_sec":11883.56749675251,
                             "ops_per_sec_values":[
-                                18207.20803478066
+                                11883.56749675251
                             ]
                         },
                         "64":{
-                            "ops_per_sec":18196.80107653607,
+                            "ops_per_sec":11630.976261218531,
                             "ops_per_sec_values":[
-                                18196.80107653607
+                                11630.976261218531
                             ]
                         }
                     },
-                    "revision":"152885358a4ecab312c690b2ffee5dfb7c37311a",
-                    "start":1522212553.10387,
+                    "revision":"c5187865db1791143063fc166b73f1ef3083c1c2",
+                    "start":1530711259.216335,
                     "tag":"",
                     "threads":[
                         "1",
@@ -13036,7 +13052,8 @@
                         "64"
                     ],
                     "ticket":[
-                        "BF-6743"
+                        "BF-6743",
+                        "BF-9841"
                     ],
                     "workload":"mongoshell"
                 }
@@ -15083,33 +15100,33 @@
             "ndays":{},
             "reference":{
                 "contended_update":{
-                    "create_time":"2018-03-26T22:45:43Z",
-                    "end":1522225955.648613,
-                    "max":18168.35737966532,
+                    "create_time":"2018-07-04T04:28:47Z",
+                    "end":1530713631.152282,
+                    "max":10076.085776183509,
                     "name":"contended_update",
-                    "order":11366,
+                    "order":12906,
                     "results":{
                         "1":{
-                            "ops_per_sec":3640.4114797328853,
+                            "ops_per_sec":3428.083997026175,
                             "ops_per_sec_values":[
-                                3640.4114797328853
+                                3428.083997026175
                             ]
                         },
                         "32":{
-                            "ops_per_sec":18168.35737966532,
+                            "ops_per_sec":10076.085776183509,
                             "ops_per_sec_values":[
-                                18168.35737966532
+                                10076.085776183509
                             ]
                         },
                         "64":{
-                            "ops_per_sec":17683.144392333677,
+                            "ops_per_sec":9683.532653524462,
                             "ops_per_sec_values":[
-                                17683.144392333677
+                                9683.532653524462
                             ]
                         }
                     },
-                    "revision":"152885358a4ecab312c690b2ffee5dfb7c37311a",
-                    "start":1522215384.291907,
+                    "revision":"c5187865db1791143063fc166b73f1ef3083c1c2",
+                    "start":1530711038.989813,
                     "tag":"",
                     "threads":[
                         "1",
@@ -15117,7 +15134,8 @@
                         "64"
                     ],
                     "ticket":[
-                        "BF-6743"
+                        "BF-6743",
+                        "BF-9841"
                     ],
                     "workload":"mongoshell"
                 },
