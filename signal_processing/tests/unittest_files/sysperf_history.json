@@ -1,0 +1,61 @@
+{
+  "project": "sys-perf",
+  "versions": [
+    {
+      "version_id": "sys_perf_0fdc2e40994c930a97aa213fa990423616bc5268",
+      "author": "Jonathan Abrahams",
+      "revision": "0fdc2e40994c930a97aa213fa990423616bc5268",
+      "message": "SERVER-35588 powertest.py should call replSetReconfigure command only after successful replSetGetConfig",
+      "builds": {
+        "compile-rhel70": {
+          "build_id": "sys_perf_compile_rhel70_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33",
+          "name": "Compile on rhel70",
+          "tasks": {
+            "compile": {
+              "task_id": "sys_perf_compile_rhel70_compile_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33",
+              "status": "undispatched",
+              "time_taken": 0
+            },
+            "compile_wtdevelop": {
+              "task_id": "sys_perf_compile_rhel70_compile_wtdevelop_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33",
+              "status": "undispatched",
+              "time_taken": 0
+            }
+          }
+        },
+        "linux-1-node-replSet": {
+          "build_id": "sys_perf_linux_1_node_replSet_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33",
+          "name": "Linux 1-Node ReplSet",
+          "tasks": {
+            "bestbuy_agg": {
+              "task_id": "sys_perf_linux_1_node_replSet_bestbuy_agg_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33",
+              "status": "undispatched",
+              "time_taken": 0
+            },
+            "bestbuy_query": {
+              "task_id": "sys_perf_linux_1_node_replSet_bestbuy_query_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33",
+              "status": "undispatched",
+              "time_taken": 0
+            }
+          }
+        },
+        "linux-3-node-replSet": {
+          "build_id": "sys_perf_linux_3_node_replSet_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33",
+          "name": "Linux 3-Node ReplSet",
+          "tasks": {
+            "bestbuy_agg": {
+              "task_id": "sys_perf_linux_3_node_replSet_bestbuy_agg_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33",
+              "status": "undispatched",
+              "time_taken": 0
+            },
+            "bestbuy_query": {
+              "task_id": "sys_perf_linux_3_node_replSet_bestbuy_query_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33",
+              "status": "undispatched",
+              "time_taken": 0
+            }
+          }
+        }
+      }
+    }
+  ] 
+}

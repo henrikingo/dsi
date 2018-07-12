@@ -3,7 +3,7 @@
 BUILDIR=$(dirname $0)
 source ${BUILDIR}/test-common.sh
 
-COVER_PACKAGES="aws_tools bin"
+COVER_PACKAGES="aws_tools bin signal_processing"
 COVERAGE="--with-coverage --cover-inclusive  --cover-xml --cover-xml-file=coverage.xml"
 for package in $COVER_PACKAGES
 do

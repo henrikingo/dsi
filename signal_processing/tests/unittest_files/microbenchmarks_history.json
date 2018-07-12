@@ -1,0 +1,50 @@
+{
+  "project": "performance",
+  "versions": [
+    {
+      "version_id": "performance_0fdc2e40994c930a97aa213fa990423616bc5268",
+      "author": "Jonathan Abrahams",
+      "revision": "0fdc2e40994c930a97aa213fa990423616bc5268",
+      "message": "SERVER-35588 powertest.py should call replSetReconfigure command only after successful replSetGetConfig",
+      "builds": {
+        "linux-wt-repl": {
+          "build_id": "performance_linux_wt_repl_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33",
+          "name": "1-Node ReplSet Linux inMemory",
+          "tasks": {
+            "insert": {
+              "task_id": "performance_linux_wt_repl_insert_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33",
+              "status": "undispatched",
+              "time_taken": 0
+            },
+            "misc": {
+              "task_id": "performance_linux_wt_repl_misc_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33",
+              "status": "undispatched",
+              "time_taken": 0
+            }
+          }
+        },
+        "linux-wt-standalone": {
+          "build_id": "performance_linux_wt_standalone_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33",
+          "name": "Standalone Linux inMemory",
+          "tasks": {
+            "agg-query-comparison": {
+              "task_id": "performance_linux_wt_standalone_agg_query_comparison_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33",
+              "status": "undispatched",
+              "time_taken": 0
+            },
+            "aggregation": {
+              "task_id": "performance_linux_wt_standalone_aggregation_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33",
+              "status": "undispatched",
+              "time_taken": 0
+            },
+            "compile": {
+              "task_id": "performance_linux_wt_standalone_compile_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33",
+              "status": "started",
+              "time_taken": 0
+            }
+          }
+        }
+      }
+    }
+  ]
+}

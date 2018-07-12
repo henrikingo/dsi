@@ -1,144 +1,19 @@
-from collections import OrderedDict
-import copy
-import json
+"""
+Run the QHat algorithm and store results.
+"""
 import logging
-import sys
 import time
+from collections import OrderedDict
 
 import pymongo
 
+import etl_helpers
+from qhat import QHat
 from analysis.evergreen import evergreen_client
 from bin.common import config
 from bin.common import log
-from qhat import QHat
 
 LOG = logging.getLogger(__name__)
-
-
-def _upload_json(perf_json, mongo_uri, database):
-    """
-    Take the data from perf_json, create documents and upload them to the `points` collection in the
-    given database. Note that this always uses the collection `points` when uploading the documents.
-
-    :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
-    :param str mongo_uri: The uri to connect to the cluster.
-    :param str database: The name of the database in the cluster to use.
-    """
-    db = pymongo.MongoClient(mongo_uri).get_database(database)
-    collection = db.points
-    points = _translate_points(perf_json)
-    if points:
-        collection.insert(points)
-
-
-def _translate_points(perf_json):
-    """
-    Take the data from perf_json and extract the necessary information to create documents for the
-    `points` collection.
-
-    :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
-    :return: A list of dictionaries representing the documents for the `points` collection.
-    """
-    points = []
-    for test_result in perf_json['data']['results']:
-        point = {}
-        point['project'] = perf_json['project_id']
-        point['task'] = perf_json['task_name']
-        point['task_id'] = perf_json['task_id']
-        point['variant'] = perf_json['variant']
-        point['version_id'] = perf_json['version_id']
-        point['revision'] = perf_json.get('revision', 'patch_build')
-        point['order'] = perf_json['order']
-        point['start'] = test_result['start']
-        point['end'] = test_result['end']
-        point['test'] = test_result['name']
-        point['create_time'] = perf_json['create_time']
-        # Microbenchmarks does not produce a 'workload' field. We need to fill in the 'workload'
-        # field for microbenchmark points in order to query on 'workload'.
-        point['workload'] = test_result.get('workload', 'microbenchmarks')
-        point['max_thread_level'], point['max_ops_per_sec'] = _get_max_ops_per_sec(test_result)
-        # Do not add a test with an invalid thread level.
-        if point['max_ops_per_sec'] is None:
-            continue
-        point['results'] = _get_thread_levels(test_result)
-        points.append(point)
-    return points
-
-
-def _get_thread_levels(test_result):
-    """
-    Extract and sort the thread level and respective results from the raw data file from Evergreen.
-    See below for an example of the resulting format:
-
-        [
-            {
-                'thread_level': '1',
-                'ops_per_sec': 500,
-                'ops_per_sec': [
-                    500
-                ]
-            },
-            {
-                'thread_level: '2',
-                'ops_per_sec': 700,
-                'ops_per_sec': [
-                    700
-                ]
-            }
-        ]
-
-    :param dict test_result: All the test results from the raw data file from Evergreen.
-    :return: A list of dictionaries with test results organized by thread level.
-    """
-    thread_levels = []
-    for thread_level, result in test_result['results'].items():
-        if isinstance(result, dict):
-            this_result = copy.deepcopy(result)
-            this_result.pop('error_values', None)
-            this_result.update({'thread_level': thread_level})
-            thread_levels.append(this_result)
-    return sorted(thread_levels, key=lambda k: k['thread_level'])
-
-
-def _get_max_ops_per_sec(test_result):
-    """
-    For a given set of test results, find and return the maximum operations per second metric and
-    its respective thread level.
-
-    :param dict test_result: All the test results from the raw data file from Evergreen.
-    :return: The maximum operations per second found and its respective thread level.
-    :rtype: tuple(int, int).
-    """
-    max_ops_per_sec = None
-    max_thread_level = None
-    for key, thread_level in test_result['results'].iteritems():
-        if not config.is_integer(key):
-            LOG.warn('Invalid thread level value %s found' % key)
-            continue
-        if max_ops_per_sec == None or max_ops_per_sec < thread_level['ops_per_sec']:
-            max_ops_per_sec = thread_level['ops_per_sec']
-            max_thread_level = int(key)
-    return max_thread_level, max_ops_per_sec
-
-
-def _extract_tests(perf_json):
-    """
-    Extract the test names from the raw data file from Evergreen.
-
-    :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
-    """
-    return set([it['name'] for it in perf_json['data']['results']])
-
-
-def _create_descriptor(perf_json, test):
-    """
-    Print a description of the relevant test.
-
-    :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
-    :param str test: The name of the test.
-    """
-    return "{}/{}/{}/{}".format(perf_json['project_id'], perf_json['variant'],
-                                perf_json['task_name'], test)
 
 
 class PointsModel(object):
@@ -146,20 +21,32 @@ class PointsModel(object):
     Model that gathers the point data and runs QHat to find change points.
     """
 
-    def __init__(self, perf_json, mongo_uri, database, limit=None, pvalue=None):
+    # pylint: disable=invalid-name
+
+    def __init__(self, perf_json, mongo_uri, limit=None, pvalue=None):
         """
         :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
         :param str mongo_uri: The uri to connect to the cluster.
-        :param str database: The name of the database in the cluster to use.
         :param limit: The limit for the number of points to retrieve from the database.
-        :type: int, None.
+        :type limit: int, None.
         :param pvalue: The pvalue for the QHat algorithm.
-        :type: int, float, None.
+        :type pvalue: int, float, None.
         """
+        # pylint: disable=too-many-arguments
         self.perf_json = perf_json
-        self.db = pymongo.MongoClient(mongo_uri).get_database(database)
+        self.mongo_uri = mongo_uri
+        self._db = None
         self.limit = limit
         self.pvalue = pvalue
+
+    @property
+    def db(self):
+        """
+        Getter for self._db.
+        """
+        if self._db is None:
+            self._db = pymongo.MongoClient(self.mongo_uri).get_database()
+        return self._db
 
     def get_points(self, test):
         """
@@ -218,6 +105,7 @@ class PointsModel(object):
         algorithm, and the time taken for this method to run.
         :rtype: tuple(int, int, float).
         """
+        # pylint: disable=too-many-locals
         started_at = int(round(time.time() * 1000))
 
         series, revisions, orders, query, create_times, many_points = self.get_points(test)
@@ -234,7 +122,7 @@ class PointsModel(object):
                     'testname': test,
                     'thread_level': thread_level
                 },
-            pvalue=self.pvalue).change_points
+                pvalue=self.pvalue).change_points
             many_change_points += len(change_points[thread_level])
 
         # TODO: Revisit implementation of insert.
@@ -258,20 +146,22 @@ class DetectChangesDriver(object):
     An entrypoint for detecting change points.
     """
 
-    def __init__(self, perf_json, mongo_uri, database):
+    # pylint: disable=too-few-public-methods
+
+    def __init__(self, perf_json, mongo_uri):
         """
         :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
+        :param str mongo_uri: The uri to connect to the cluster.
         """
         self.perf_json = perf_json
         self.mongo_uri = mongo_uri
-        self.database = database
 
     def run(self):
         """
         Run the analysis to compute any change points with the new data.
         """
-        model = PointsModel(self.perf_json, self.mongo_uri, self.database)
-        for test in _extract_tests(self.perf_json):
+        model = PointsModel(self.perf_json, self.mongo_uri)
+        for test in etl_helpers.extract_tests(self.perf_json):
             many_points, many_change_points, duration = model.compute_change_points(test)
             self._print_result(many_points, many_change_points, duration, test)
 
@@ -285,23 +175,26 @@ class DetectChangesDriver(object):
         :param float duration: The time it took for PointsModel.compute_change_points to run.
         :param str test: The name of the test.
         """
-        descriptor = _create_descriptor(self.perf_json, test).ljust(120)
+        descriptor = etl_helpers.create_descriptor(self.perf_json, test).ljust(120)
         print("{0}: {1:1} -> {2:2} {3:3,}ms".format(descriptor, many_points, many_change_points,
                                                     duration))
 
 
 def detect_changes():
+    """
+    Setup and run the detect changes algorithm.
+    """
     log.setup_logging(True, None)
+    evg_client = evergreen_client.Client()
     conf = config.ConfigDict('analysis')
     conf.load()
-    evg_client = evergreen_client.Client()
     perf_json = evg_client.query_perf_results(conf['runtime']['task_id'])
     mongo_uri = conf['analysis']['mongo_uri']
-    database = 'perf'
     if not conf['runtime'].get('is_patch', False):
-        _upload_json(perf_json, mongo_uri, database)
-    changes_driver = DetectChangesDriver(perf_json, mongo_uri, database)
+        etl_helpers.load(perf_json, mongo_uri)
+    changes_driver = DetectChangesDriver(perf_json, mongo_uri)
     changes_driver.run()
+
 
 def main():
     """
@@ -310,14 +203,12 @@ def main():
     PERF-1519: While signal processing based analysis is in development, and not yet the official
     truth wrt pass/fail, we want to always exit cleanly.
     """
+    # pylint: disable=broad-except
     try:
         detect_changes()
-    except Exception as exc:  # pylint: disable=broad-except
+    except Exception:
         # Note: If setup_logging() failed, this will just print:
         #     No handlers could be found for logger "signal_processing.detect_changes"
         LOG.error("detect_changes() exited with an exception. Will print it now...", exc_info=1)
         LOG.error("Will now make a clean exit, so that we don't cause Evergreen task to abort.")
     return 0
-
-if __name__ == '__main__':
-    sys.exit(main())

@@ -29,9 +29,10 @@ from bin.common import log
 DB = 'perf'
 COLLECTION = 'build_failures'
 BATCH_SIZE = 1000
-PROJECTS = ['performance', 'performance-4.0', 'performance-3.6', 'performance-3.4',
-            'performance-3.2', 'performance-3.0', 'sys-perf', 'sys-perf-4.0', 'sys-perf-3.6',
-            'sys-perf-3.4', 'sys-perf-3.2']
+PROJECTS = [
+    'performance', 'performance-4.0', 'performance-3.6', 'performance-3.4', 'performance-3.2',
+    'performance-3.0', 'sys-perf', 'sys-perf-4.0', 'sys-perf-3.6', 'sys-perf-3.4', 'sys-perf-3.2'
+]
 JIRA_URL = 'https://jira.mongodb.org'
 
 # Provide all options here. Use None when no default exists.
@@ -171,8 +172,7 @@ class EtlJira(object):
         Return a list of BF issues.
         """
         jql = 'project = BF AND "Evergreen Project" in (' + ", ".join(
-            self.options['projects']
-        ) + ') order by KEY DESC'
+            self.options['projects']) + ') order by KEY DESC'
         # maxResults default is 50.
         # At the time of writing this, query returned 544 BF issues. (After 4 years in operation.)
         # main() would need a loop to be able to handle paginated result sets.
@@ -243,25 +243,24 @@ class EtlJira(object):
         issues = self.query_bfs()
         self.save_bf_in_mongo(issues)
 
+
 def parse_command_line():
     """
     Parse the command line options
     """
     parser = argparse.ArgumentParser(
         description='Copy perf BF tickets from Jira to MongoDB.',
-        epilog='You will be prompted for --jira-user and --jira-password if not provided.'
-    )
+        epilog='You will be prompted for --jira-user and --jira-password if not provided.')
     parser.add_argument('-u', '--jira-user', help='Your Jira username')
     parser.add_argument('-p', '--jira-password', help='Your Jira password')
-    parser.add_argument(
-        '--mongo-uri',
-        help='MongoDB connection string.')
+    parser.add_argument('--mongo-uri', help='MongoDB connection string.')
     parser.add_argument('--projects', help='the Projects', nargs='+')
     parser.add_argument('--batch', help='The insert batch size', type=int)
     parser.add_argument('-d', '--debug', action='store_true', help='Enable debug output')
     args = parser.parse_args()
 
     return args
+
 
 def parse_options():
     """
@@ -272,13 +271,14 @@ def parse_options():
     args = parse_command_line()
 
     for key in options:
-        arg = lookup(args, (key,))
+        arg = lookup(args, (key, ))
         if arg:
             options[key] = arg
         elif key.upper() in os.environ:
             options[key] = os.environ[key.upper()]
 
     return options
+
 
 def zappa_handler(event, context):
     """
@@ -290,6 +290,7 @@ def zappa_handler(event, context):
     options = parse_options()
     EtlJira(options).run()
 
+
 def main():
     """
     Main function.
@@ -297,6 +298,7 @@ def main():
     options = parse_options()
     log.setup_logging(options['debug'])
     EtlJira(options).run()
+
 
 if __name__ == '__main__':
     main()

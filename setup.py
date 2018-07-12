@@ -32,6 +32,7 @@ setup(
             'delete-placement-groups = aws_tools.entry_points:delete_placement_groups',
             'detect-changes = signal_processing.detect_changes:main',
             'etl_jira_mongo = signal_processing.etl_jira_mongo:main',
-            'change-points = signal_processing.change_points:cli'
+            'change-points = signal_processing.change_points:cli',
+            'etl-evg-mongo = signal_processing.etl_evg_mongo:etl'
         ]
     })
