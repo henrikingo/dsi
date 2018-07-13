@@ -19,7 +19,7 @@ setup(
               'signal_processing',
               'analysis',
               'analysis.evergreen'],
-    install_requires=['boto3==1.4.7', 'argparse==1.4.0'],
+    install_requires=['boto3==1.4.7'],
     # Cannot zip due to usage of __file__.
     zip_safe=False,
     use_2to3=True,

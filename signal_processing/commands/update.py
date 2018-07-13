@@ -2,7 +2,7 @@
 Functionality to mark change points.
 """
 import logging
-from signal_processing.commands import stringify_json, filter_excludes
+from signal_processing.commands.helpers import stringify_json, filter_excludes
 
 LOG = logging.getLogger(__name__)
 

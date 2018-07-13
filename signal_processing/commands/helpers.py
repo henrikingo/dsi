@@ -8,6 +8,8 @@ from collections import OrderedDict
 
 
 # pylint: disable=too-many-instance-attributes,too-many-arguments,too-few-public-methods
+from datetime import datetime, timedelta
+
 from bson.json_util import RELAXED_JSON_OPTIONS, dumps
 from pymongo import MongoClient
 from pymongo.uri_parser import parse_uri
@@ -38,7 +40,6 @@ class CommandConfiguration(object):
     """
     Common Configuration for commands.
     """
-
     def __init__(self,
                  debug,
                  out,
@@ -57,11 +58,10 @@ class CommandConfiguration(object):
         :param int debug: The debug level.
         :param str out: The output directory.
         :param str file_format: The file format.
-        :param str mongo_uri: The mongo db uri.
+        :param str mongo_uri: The mongo db uri. This also contains the database name.
         :param bool queryable: Print identifiers as cut and paste query.
         :param bool dry_run: Don't run the command, just print what would be done.
         :param bool compact: if True display json in a compact format. Otherwise expanded.
-        :param str database: The database name.
         :param str points: The points collection name.
         :param str change_points: The change points collection name.
         :param str processed_change_points: The processed change points collection name.
@@ -179,10 +179,11 @@ def extract_pattern(parameter, string_is_pattern=False):
     """
     Take a command line argument and converts it to a python re.
 
-    :param str, None parameter: The parameter value to convert. This uses
+    :param parameter: The parameter value to convert. This uses
     `re.match <https://docs.python.org/2/library/re.html#re.match>' internally. Not strictly PCRE,
     see `Regular Expression HOWTO<https://docs.python.org/2/howto/regex.html#regex-howto>' and
     try to stick to simple patterns.
+    :type parameter:  str, None.
 
     :param bool string_is_pattern: Denotes that all strings are patterns.
     :return: re or Falsey (None or '').
@@ -200,7 +201,7 @@ def extract_pattern(parameter, string_is_pattern=False):
     return parameter
 
 
-def process_params(revision, project, variant, task, test, thread_level):
+def process_params(revision, project, variant, task_name, test, thread_level):
     # pylint: disable=too-many-arguments
     """
     Convert the command line parameters to a query. Parameters are converted according to the
@@ -209,19 +210,25 @@ def process_params(revision, project, variant, task, test, thread_level):
        * strings starting with '/' are patterns and are matched as such.
        * all other strings are exact matches.
 
-    :param str, None revision: The revision to match.
-    :param str, None project: The project to match.
-    :param str, None variant: The variant to match.
-    :param str, None task: The task to match.
-    :param str, None test: The test to match.
-    :param str, None thread_level: The thread_level to match.
+    :param revision: The revision to match.
+    :type revision: str, None.
+    :param project: The project to match.
+    :type project: str, None.
+    :param variant: The variant to match.
+    :type variant: str, None.
+    :param task_name: The task to match.
+    :type task_name: str, None.
+    :param test: The test to match.
+    :type test: str, None.
+    :param thread_level: The thread_level to match.
+    :type thread_level: str, None.
     :return: dict.
 
     """
     params = {"revision": extract_pattern(revision),
               "project": extract_pattern(project),
               "variant": extract_pattern(variant),
-              "task": extract_pattern(task),
+              "task": extract_pattern(task_name),
               "test": extract_pattern(test),
               "thread_level": extract_pattern(thread_level)}
     match = {k: v for (k, v) in params.items() if v}
@@ -296,13 +303,114 @@ def filter_excludes(points, keys, exclude_patterns):
 
       points = list(filter_excludes(collection.find(query), keys, excludes))
 
-    :param iter points: an iterable of the points data.
-    :param list keys: a list of the key to check against the excludes.
-    :param list(re) exclude_patterns: Filter any points matching this list of excludes.
-    :return iter(dict).
+    :param points: The full points without data that matches any of excludes patterns.
+    :type points: iterator(dict).
+    :param list(str) keys: A list of the key to check against the excludes.
+    :param list(re) exclude_patterns: The filter patterns to exclude.
+    :return: The points without data that matches any of excludes patterns.
+    :rtype: iterator(dict).
     """
 
     for point in points:
         if not any(k for k, v in point.items() for pattern in exclude_patterns
                    if k in keys and pattern.match(v)):
             yield point
+
+
+def item_show_func(task_identifier):
+    """
+    Show task in progressbar status.
+
+    :param task_identifier: The 'project', 'variant', 'task', and 'task' values.
+    :type task_identifier: None, dict.
+    :return: The project, variant and task fields (in this order) joined by '/' .
+    :rtype: str, None.
+    """
+    if task_identifier and isinstance(task_identifier, dict):
+        return '/'.join(task_identifier[k] for k in reversed(['project', 'variant', 'task']))
+    return None
+
+
+def get_matching_tasks(points, query, no_older):
+    """
+    Get all the tasks in the point collection that match project, variant, task, test and have
+    data newer than no_older.
+
+    :param collection points: The points collection.
+    :param dict query: The query to use (generated from command line params).
+    :param int no_older: Filter tasks only with data older than this.
+    :return: Unique matching tasks.
+    :rtype: list(dict).
+    """
+    old = datetime.now() - timedelta(days=no_older)
+    query['start'] = {"$gt": int(old.strftime('%s'))}
+    pipeline = [{'$match': query},
+                {'$group': {'_id': {'project': '$project',
+                                    'variant': '$variant',
+                                    'task': '$task'},
+                            'tests': {'$addToSet': '$test'}}},
+                {'$sort': {
+                    "_id.project": 1,
+                    "_id.variant": 1,
+                    "_id.task": 1}},
+                {'$project': {
+                    "project": "$_id.project",
+                    "variant": "$_id.variant",
+                    "task": "$_id.task",
+                    "tests": 1,
+                    "_id": 0}}]
+    return points.aggregate(pipeline)
+
+
+def filter_tests(test_name, excludes):
+    """
+    Filter test based on excludes.
+
+    :param str test_name: The test name.
+    :param list(re) excludes: The list of exclude patterns to match against.
+    :return: True if any of the excludes match test_name.
+    :rtype: bool.
+    """
+    return any([pattern.match(test_name) for pattern in excludes])
+
+
+def filter_legacy_tasks(tasks):
+    """
+    Filter tasks that end with _WT or _MMAPv1. This is a generator so can be used as an iterator.
+    If the results are needed as a list then make on:
+        l = list(filter_legacy_tasks(tasks, task_identifier))
+
+    :param tasks: A list of task dict identifiers (project / variant / task / test) tuple. It must
+    contain a 'task' field.
+    :type tasks: iterator(dict)
+    :return: The non legacy tasks.
+    :rtype: iterator(dict).
+    """
+    for task in tasks:
+        name = task['task']
+        if not name.endswith('_WT') and not name.endswith('_MMAPv1'):
+            yield task
+
+
+def generate_tests(matching_tasks):
+    """
+    Unwind matching each tasks tests, sorted by task and test. This method yields the elements, so
+    it can be used as an iterator or as a list as follows:
+
+        # iterator
+        for test in generate_tests(matching_tasks):
+            pass
+        # list
+        tests = list(generate_tests(matching_tasks))
+
+    :param list(dict) matching_tasks: The task identifier and grouped tests.
+    :return: This function yields a dict for each value in the 'tests' field. Each dict is a copy
+    of the task with the 'tests' field removed and a 'test' new field (for each test name).
+    :rtype: generator(dict).
+    """
+    for task_identifier in matching_tasks:
+        for test_name in sorted(task_identifier['tests']):
+            test_identifier = task_identifier.copy()
+            test_identifier['test'] = test_name
+            del test_identifier['tests']
+            yield test_identifier

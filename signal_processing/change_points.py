@@ -6,15 +6,22 @@ To get access to the help try the following command:
 
     $> change-points help
 """
-import logging
 import os
+from StringIO import StringIO
+from collections import OrderedDict
 
 import click
+import structlog
 
 from bin.common import log
-from signal_processing.commands import CommandConfiguration, list_change_points, \
-    mark_change_points, update_change_points, process_excludes, process_params, PROCESSED_TYPES, \
-    PROCESSED_TYPE_HIDDEN, PROCESSED_TYPE_ACKNOWLEDGED
+from signal_processing.commands.compare import print_result, plot_test, \
+    compare
+from signal_processing.commands.helpers import process_params, process_excludes, \
+    PROCESSED_TYPE_ACKNOWLEDGED, PROCESSED_TYPE_HIDDEN, PROCESSED_TYPES, get_matching_tasks, \
+    filter_legacy_tasks, generate_tests, filter_tests, item_show_func, CommandConfiguration
+from signal_processing.commands.list import list_change_points
+from signal_processing.commands.mark import mark_change_points
+from signal_processing.commands.update import update_change_points
 
 DB = "perf"
 PROCESSED_CHANGE_POINTS = 'processed_change_points'
@@ -22,7 +29,7 @@ CHANGE_POINTS = 'change_points'
 POINTS = 'points'
 BUILD_FAILURES = 'build_failures'
 
-LOG = logging.getLogger(__name__)
+LOG = structlog.getLogger(__name__)
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
@@ -30,7 +37,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.group(context_settings=CONTEXT_SETTINGS, invoke_without_command=True)
 @click.option('-d', '--debug', count=True,
               help='Enable debug output, you can pass multiple -ddddd etc.')
-@click.option('-l', '--logfile', count=True,
+@click.option('-l', '--logfile', default=None,
               help='The log file to write to, defaults to None.')
 @click.option('-o', '--out', default="/tmp", help="The location to save any files in.")
 @click.option('-f', '--format', 'file_format', default="png",
@@ -55,9 +62,11 @@ def cli(context, debug, logfile, out, file_format, mongo_uri, queryable, dry_run
         points, change_points, processed_change_points, build_failures):
     # pylint: disable=missing-docstring, too-many-arguments
     log.setup_logging(debug > 0, filename=os.path.expanduser(logfile) if logfile else logfile)
-    context.obj = CommandConfiguration(debug, out, file_format, mongo_uri, queryable, dry_run,
+    context.obj = CommandConfiguration(debug, out, file_format,
+                                       mongo_uri, queryable, dry_run,
                                        compact, points, change_points,
-                                       processed_change_points, build_failures)
+                                       processed_change_points,
+                                       build_failures)
     if context.invoked_subcommand is None:
         print context.get_help()
 
@@ -100,8 +109,7 @@ TASK, the task name or a regex.
 TEST, the test name or a regex.
 THREADS, the thread level or a regex.
 \b
-You can use '' in place of VARIANT, TASK, TEST, THREADS if you want to match all. See the
-examples.
+You can use '' in place of VARIANT, TASK, TEST, THREADS if you want to match all. See the examples.
 \b
 Examples:
     $> revision=bad5afd612e8fc917fb035d8333cffd7d68a37cc
@@ -345,3 +353,158 @@ Examples:
 """
     query = process_params(revision, project, variant, task, test, thread_level)
     list_change_points(processed, query, process_excludes(exclude_patterns), command_config)
+
+
+@cli.command(name="compare")
+@click.pass_obj
+@click.option('-m', '--minsize', 'minsizes', default=[20], type=click.INT, multiple=True)
+@click.option('-s', '--sig', 'sig_lvl', default=.05)
+@click.option('-p', '--padding', default=0,
+              help='append this many repetitions of the last result.')
+@click.option('--progressbar/--no-progressbar', default=True)
+@click.option('--show/--no-show', default=False)
+@click.option('--save/--no-save', default=False)
+@click.option('--exclude', 'excludes', multiple=True)
+@click.option('--no-older', default=30,
+              help='exclude tasks that have no points newer than this number of days.')
+@click.argument('project', required=False)
+@click.argument('variant', required=False)
+@click.argument('task', required=False)
+@click.argument('test', required=False)
+def compare_command(command_config, minsizes, sig_lvl, padding, progressbar, show, save, excludes,
+                    no_older, project, variant, task, test):
+    # pylint: disable=too-many-locals, too-many-arguments, line-too-long
+    """
+Compare points generated from R and python. This requires R and the ecp library to be installed.
+
+\b
+PROJECT, the project name or a regex (like /^sys-perf-3.*/ or /^(sys-perf|performance)$/).
+VARIANT, the build variant or a regex.
+TASK, the task name or a regex.
+TEST, the test name or a regex.
+
+\b
+Examples:
+    # dry run compare all sys-perf change points
+    $> change-points -n compare sys-perf  # dry run on all sys-perf points
+    # compare all sys-perf change points (with and without a progressbar)
+    $> change-points compare sys-perf
+    $> change-points compare sys-perf --no-progressbar
+\b
+    # compare all linux-1-node-replSet sys-perf change points
+    $> change-points compare sys-perf linux-1-node-replSet
+    # compare all linux replSet sys-perf change points
+    $> change-points compare sys-perf '/linux-.-node-replSet/'
+    # compare all change_streams_latency linux 1 node replSet sys-perf change points  excluding
+    # canary type tests
+    $> change-points compare sys-perf linux-1-node-replSet change_streams_latency \
+       --exclude '/^(fio_|canary_|NetworkBandwidth)/'
+    # compare only canary change_streams_latency linux 1 node replSet sys-perf change points
+    $> change-points compare sys-perf linux-1-node-replSet change_streams_latency \
+       '/^(fio_|canary_|NetworkBandwidth)/'
+
+\b
+See also the help for the base for extra parameters.
+\b
+For Example:
+    $> change-points -n compare sys-perf
+\b
+    # save png images to ~/tmp/
+    $> change-points -o ~/tmp compare sys-perf --save
+    # save svg images to ~/tmp/
+    $> change-points -o ~/tmp -f svg compare sys-perf --save
+\b
+    # padding and minsize on r / py change points
+\b
+    # padding appends the last point, it may be useful in finding change points close to the
+    # right hand side but it can affect the average so may affect older change points
+    # padding affects both R and Py.
+    $> change-points compare sys-perf linux-1-node-replSet bestbuy_query \\
+       count_with_and_predicate-noAgg  --show
+    $> change-points compare sys-perf linux-1-node-replSet bestbuy_query\\
+       --show  --exclude '/^(?!count_with_and_predicate-noAgg)/' -p 20
+    $> change-points compare sys-perf linux-1-node-replSet bestbuy_query \\
+       count_with_and_predicate-noAgg  --show   -p 20
+\b
+    # m only affects R, it may help find more recent change points. But will probably result in
+    # more change points overall too.
+    # Lower values seem to be better at finding large changes.
+    $> change-points compare sys-perf linux-1-node-replSet bestbuy_query \\
+       count_with_and_predicate-noAgg  --show  -m5
+    $> change-points compare sys-perf linux-1-node-replSet bestbuy_query \\
+       count_with_and_predicate-noAgg  --show  -m10 -p10
+    # p should probably be no larger than m / 2
+    $> change-points compare sys-perf linux-1-node-replSet bestbuy_query \\
+       count_with_and_predicate-noAgg  --show  -m10 -p5
+    $> change-points compare sys-perf linux-1-node-replSet bestbuy_query \\
+       count_with_and_predicate-noAgg  --show  -m10
+    $> change-points compare sys-perf linux-1-node-replSet bestbuy_query \\
+       count_with_and_predicate-noAgg  --show  -p10
+    $> change-points compare sys-perf linux-1-node-replSet bestbuy_query \\
+       count_with_and_predicate-noAgg  --show  -p20
+"""
+    # pylint: enable=line-too-long
+    LOG.debug('starting')
+    points = command_config.points
+
+    query = process_params(None, project, variant, task, test, None)
+    LOG.debug('processed params', query=query)
+
+    matching_tasks = filter_legacy_tasks(get_matching_tasks(points, query, no_older))
+    LOG.debug('matched tasks', matching_tasks=matching_tasks)
+
+    exclude_patterns = process_excludes(excludes)
+    tests = [test_identifier
+             for test_identifier in generate_tests(matching_tasks)
+             if not filter_tests(test_identifier['test'], exclude_patterns)]
+    LOG.debug('matched tests', tests=tests)
+
+    all_calculations = []
+    group_by_task = OrderedDict()
+    group_by_test = OrderedDict()
+
+    label = "Starting".ljust(20)
+    len_label = len(label)
+
+    with click.progressbar(tests,
+                           label=label + " :",
+                           item_show_func=item_show_func if progressbar else None,
+                           file=None if progressbar else StringIO()) as progress:
+
+        for test_identifier in progress:
+            test_name = test_identifier['test']
+            task_name = test_identifier['task']
+            progress.label = test_name[0:len_label].ljust(len_label) + ' :'
+            progress.render_progress()
+            try:
+                LOG.debug('compare', test_identifier=test_identifier)
+                calculations = compare(test_identifier,
+                                       command_config,
+                                       sig_lvl=sig_lvl,
+                                       minsizes=minsizes,
+                                       padding=padding)
+                all_calculations.extend(calculations)
+                for calculation in calculations:
+                    identifier = (project, variant, task_name)
+                    if identifier not in group_by_task:
+                        group_by_task[identifier] = []
+                    group_by_task[identifier].append(calculation)
+
+                identifier = (project, variant, task_name, test_name)
+                if identifier not in group_by_test:
+                    group_by_test[identifier] = []
+                group_by_test[identifier].extend(calculations)
+            except KeyError:
+                LOG.error("unexpected error", exc_info=1)
+
+    for task_identifier, calculations in group_by_task.items():
+        project, variant, task_name = task_identifier
+        print "{{ project: '{}', variant: '{}', task: '{}' }}".format(project, variant, task_name)
+
+        for result in calculations:
+            print_result(result, command_config)
+
+    if not command_config.dry_run and save or show:
+        for test_identifier, results in group_by_test.items():
+            plot_test(save, show, test_identifier, results, padding,
+                      sig_lvl, minsizes, command_config.out, command_config.format)

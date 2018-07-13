@@ -5,10 +5,14 @@ import copy
 import itertools
 import numpy
 import random
+import structlog
 
 from matplotlib.ticker import FuncFormatter, MaxNLocator
 
 DEFAULT_FIGIZE = (18, 8)
+
+
+LOG = structlog.getLogger(__name__)
 
 
 # QHat's definition requires it to permute change-windows
@@ -73,8 +77,13 @@ class QHat(object):
             max_q_index = 0
 
         return [
-            max_q_index, max_q, max_q / self.average_value, max_q / self.average_diff,
-            self.average_value, self.average_diff, self.t
+            max_q_index,
+            max_q,
+            max_q / self.average_value if self.average_value != 0 else float('nan'),
+            max_q / self.average_diff if self.average_diff != 0 else float('nan'),
+            self.average_value,
+            self.average_diff,
+            self.t
         ]
 
     # Implementing change-point detection algorithm from https://arxiv.org/pdf/1306.4933.pdf
@@ -170,6 +179,8 @@ class QHat(object):
             windows = []
             pts = len(self.series)
             qs = self.qs(self.series)
+            LOG.debug("compute_change_points", qs=itertools.izip(qs, range(len(qs))))
+
             first_q = self.extract_q(qs)
             max_q_index, max_q = first_q[0], first_q[1]
             min_change = max_q
@@ -223,6 +234,8 @@ class QHat(object):
             self._windows = windows
             self._min_change = min_change
             self._max_q = max_q
+            LOG.debug("_compute_change_points", change_points=self._change_points)
+
         return self._change_points
 
     def add_to_change_points(self, change_points, algorithm, keys):
