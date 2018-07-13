@@ -11,4 +11,4 @@ do
 done
 
 # TODO: `PERF-1505: Make imports work with matplotlib`.
-PYTHONPATH=analysis:bin nosetests -v --ignore-files multi_graphs.py --exe $COVERAGE --logging-clear-handlers $@
+PYTHONPATH=analysis:bin nosetests -v --ignore-files multi_graphs.py --ignore-files compare.py --ignore-files change_points.py --exe $COVERAGE --logging-clear-handlers $@
