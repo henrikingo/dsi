@@ -485,7 +485,7 @@ def compare(test_identifier, command_config, sig_lvl=0.05, minsizes=(20,), paddi
                              ('variant', variant),
                              ('task_name', task)])
 
-    model = PointsModel(perf_json, command_config.mongo_uri, command_config.database.name)
+    model = PointsModel(perf_json, command_config.mongo_uri)
     series, revisions, orders, _, create_times, _ = model.get_points(test)
 
     thread_levels = series.keys()
