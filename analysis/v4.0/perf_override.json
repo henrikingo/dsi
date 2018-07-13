@@ -27239,10 +27239,11 @@
                     ]
                 },
                 "Aggregation.FindProjection":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
-                        "BF-5949"
+                        "BF-5949",
+                        "BF-9724"
                     ]
                 },
                 "Aggregation.FindProjectionDottedField":{
