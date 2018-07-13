@@ -10384,7 +10384,7 @@
                     },
                     "revision":"f0c7d77ffc6f91a861516df015a2de3894521419",
                     "start":1528979927.590727,
-                    "tag":"",
+                    "tag":"david1week",
                     "threads":[
                         "128",
                         "0",
@@ -10394,7 +10394,8 @@
                     ],
                     "ticket":[
                         "PERF-1347",
-                        "BF-9587"
+                        "BF-9587",
+                        "BF-9944"
                     ],
                     "workload":"mongoshell"
                 },

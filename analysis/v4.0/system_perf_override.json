@@ -7635,7 +7635,61 @@
         },
         "move_chunk_workloads":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "moveChunkWithLoad_secondaryThrottle_default":{
+                    "create_time":"2018-07-11T01:38:26Z",
+                    "end":1531428737.701868,
+                    "max":3443.6713360266617,
+                    "name":"moveChunkWithLoad_secondaryThrottle_default",
+                    "order":316,
+                    "results":{
+                        "0":{
+                            "ops_per_sec":3443.6713360266617,
+                            "ops_per_sec_values":[
+                                3443.6713360266617
+                            ]
+                        },
+                        "128":{
+                            "ops_per_sec":2776.5514641214722,
+                            "ops_per_sec_values":[
+                                2776.5514641214722
+                            ]
+                        },
+                        "256":{
+                            "ops_per_sec":2736.151724329585,
+                            "ops_per_sec_values":[
+                                2736.151724329585
+                            ]
+                        },
+                        "4":{
+                            "ops_per_sec":3290.1601051618045,
+                            "ops_per_sec_values":[
+                                3290.1601051618045
+                            ]
+                        },
+                        "64":{
+                            "ops_per_sec":2729.5650319658616,
+                            "ops_per_sec_values":[
+                                2729.5650319658616
+                            ]
+                        }
+                    },
+                    "revision":"5d6df07e2513577b5c6d55c9342d462d931662d6",
+                    "start":1531427395.501467,
+                    "tag":"",
+                    "threads":[
+                        "128",
+                        "0",
+                        "256",
+                        "4",
+                        "64"
+                    ],
+                    "ticket":[
+                        "BF-9944"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
