@@ -73,7 +73,7 @@ class OptionError(Exception):
 
 def lookup(issue, path):
     """
-    Lookup a an attribute of an object.
+    Lookup an attribute of an object.
 
     Ex: lookup(issue, (foo, bar)) returns issue.foo.bar
 
@@ -83,19 +83,23 @@ def lookup(issue, path):
     :param tuple path: Components of a path in a jira issue.
     :return: Value at path.
     """
-    o = issue
-    for p in path:
+    lookup_object = issue
+    for component in path:
         try:
-            o = getattr(o, p, None)
+            lookup_object = getattr(lookup_object, component, None)
         except TypeError:
-            if isinstance(p, int):
-                o = o[p]
-        if o is None:
+            if isinstance(component, int):
+                lookup_object = lookup_object[component]
+        if lookup_object is None:
             break
-    return o
+    return lookup_object
 
 
 class EtlJira(object):
+    """
+    Class to load BF tickets from JIRA into database.
+    """
+
     def __init__(self, options):
         """
         Constructor merely stores args, they are used from self.jira and self.mongo properties.
@@ -280,7 +284,7 @@ def parse_options():
     return options
 
 
-def zappa_handler(event, context):
+def zappa_handler(event, context):  #pylint: disable=unused-argument
     """
     When deployed with Zappa, this is the entry point.
 

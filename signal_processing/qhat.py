@@ -1,16 +1,18 @@
+"""
+Computes the qhat e.divisive means change points.
+"""
 from __future__ import print_function
 
 from contextlib import contextmanager
 import copy
 import itertools
-import numpy
 import random
 import structlog
+import numpy as np
 
 from matplotlib.ticker import FuncFormatter, MaxNLocator
 
 DEFAULT_FIGIZE = (18, 8)
-
 
 LOG = structlog.getLogger(__name__)
 
@@ -32,12 +34,18 @@ def deterministic_random(seed):
         random.setstate(state)
 
 
-class QHat(object):
+class QHat(object):  #pylint: disable=too-many-instance-attributes
+    """
+    Class to compute the qhat e.divisive means change points.
+    """
     KEYS = ('index', 'value', 'value_to_avg', 'value_to_avg_diff', 'average', 'average_diff',
             'window_size', 'probability', 'revision', 'algorithm', 'order_of_changepoint', 'order',
             'create_time', 'thread_level')
 
-    def __init__(self, state, pvalue=None, permutations=None, online=None, threshold=None):
+    def __init__(self, state, pvalue=None, permutations=None, online=None, threshold=None):  #pylint: disable=too-many-arguments
+        """
+        Constructor.
+        """
         self.state = state
         self.series = self.state.get('series', None)
         self.revisions = self.state.get('revisions', None)
@@ -60,94 +68,94 @@ class QHat(object):
         self._max_q = state.get('max_q', None)
         self._min_change = state.get('min_change', None)
         self.dates = state.get('dates', None)
+        self.length = None
+        self.average_value = None
+        self.average_diff = None
 
-    def extract_q(self, qs):
+    def extract_q(self, qhat_values):
         """
         Given an ordered sequence of Q-Hat values, output the max value and index
 
-        :param list qs: qhat values
+        :param list qhat_values: qhat values
         :return: list (max , index, etc)
         """
-        if qs:
-            max_q_index = numpy.argmax(qs)
+        if qhat_values:
+            max_q_index = np.argmax(qhat_values)
             # noinspection PyTypeChecker
-            max_q = qs[max_q_index]
+            max_q = qhat_values[max_q_index]
         else:
             max_q = 0
             max_q_index = 0
 
         return [
-            max_q_index,
-            max_q,
-            max_q / self.average_value if self.average_value != 0 else float('nan'),
-            max_q / self.average_diff if self.average_diff != 0 else float('nan'),
-            self.average_value,
-            self.average_diff,
-            self.t
+            max_q_index, max_q, max_q / self.average_value
+            if self.average_value != 0 else float('nan'), max_q / self.average_diff
+            if self.average_diff != 0 else float('nan'), self.average_value, self.average_diff,
+            self.length
         ]
 
     # Implementing change-point detection algorithm from https://arxiv.org/pdf/1306.4933.pdf
-    def qs(self, series):
+    def qhat_values(self, series):  #pylint: disable=too-many-locals,too-many-branches
         """
         Find Q-Hat values for all candidate change points
 
         :param list series: the points to process
         :return:
         """
-        t = len(series)
-        self.t = t
-        if t < 5:
-            # Average value and average diff are used even when there is no data. This avoids an error.
+        length = len(series)
+        self.length = length
+        if length < 5:
+            # Average value and average diff are used even when there is no data to avoid an error.
             self.average_value = 1
             self.average_diff = 1
-            return [0] * t
+            return [0] * length
         n = 2
-        m = t - n
-        qs = [0, 0]  # represents q when n = 0, 1
+        m = length - n
+        qhat_values = [0, 0]  # represents q when n = 0, 1
         # The following line could safely replace the next 6 lines
-        # diffs = [[abs(series[i] - series[j]) for i in range(t)] for j in range(t)]
-        diffs = [None] * t
-        for i in range(t):
-            diffs[i] = [0] * t
-        for i in range(t):
-            for j in range(t):
+        # diffs = [[abs(series[i] - series[j]) for i in range(length)] for j in range(length)]
+        diffs = [None] * length
+        for i in range(length):
+            diffs[i] = [0] * length
+        for i in range(length):
+            for j in range(length):
                 diffs[i][j] = abs(series[i] - series[j])
 
         term1 = 0.0  # sum i:0-n, j:n-t, diffs[i][j]
         term2 = 0.0  # sum i:0-n, k:(i+1)-n, diffs[i][k]
-        term3 = 0.0  # sum j:n-t, k:(j+i)-t, diffs[j][k]
+        term3 = 0.0  # sum j:n-length, k:(j+i)-length, diffs[j][k]
 
         # Normalization constants
-        self.average_value = numpy.average(series)
+        self.average_value = np.average(series)
         # I'm sure there's a better way than this next line, but it works for now
-        self.average_diff = numpy.average(list(itertools.chain(*diffs)))
-        # term1 = sum(diffs[i][j] for i in range(n) for j in range(n,t))
+        self.average_diff = np.average(list(itertools.chain(*diffs)))
+        # term1 = sum(diffs[i][j] for i in range(n) for j in range(n,length))
         for i in range(n):
-            for j in range(n, t):
+            for j in range(n, length):
                 term1 += diffs[i][j]
         # term2 = sum(diffs[i][k] for i in range(n) for k in range(i+1,n))
         for i in range(n):
             for k in range((i + 1), n):
                 term2 += diffs[i][k]
-        # term3 = sum(diffs[j][k] for j in range(n, t) for k in range(j+1,t))
-        for j in range(n, t):
-            for k in range((j + 1), t):
+        # term3 = sum(diffs[j][k] for j in range(n, length) for k in range(j+1,length))
+        for j in range(n, length):
+            for k in range((j + 1), length):
                 term3 += diffs[j][k]
 
         term1_reg = term1 * (2.0 / (m * n))
         term2_reg = term2 * (2.0 / (n * (n - 1)))
         term3_reg = term3 * (2.0 / (m * (m - 1)))
         newq = (m * n / (m + n)) * (term1_reg - term2_reg - term3_reg)
-        qs.append(newq)
+        qhat_values.append(newq)
 
-        for x in range(3, (t - 2)):
+        for _ in range(3, (length - 2)):
             n += 1
-            m = t - n
+            m = length - n
 
             # update term 1
             for y in range(n - 1):
                 term1 -= diffs[n - 1][y]
-            for y in range(n, t):
+            for y in range(n, length):
                 term1 += diffs[y][n - 1]
 
             # update term 2
@@ -155,7 +163,7 @@ class QHat(object):
                 term2 += diffs[n - 1][y]
 
             # update term 3
-            for y in range((n + 1), t):
+            for y in range((n + 1), length):
                 term3 -= diffs[y][n]
 
             term1_reg = term1 * (2.0 / (m * n))
@@ -163,26 +171,32 @@ class QHat(object):
             term3_reg = term3 * (2.0 / (m * (m - 1)))
             newq = (m * n / (m + n)) * (term1_reg - term2_reg - term3_reg)
 
-            qs.append(newq)
+            qhat_values.append(newq)
 
-        qs.append(0)
-        qs.append(0)
-        return qs
+        qhat_values.append(0)
+        qhat_values.append(0)
+        return qhat_values
 
     @property
     def change_points(self, seed=1234):
+        """
+        Property to access change points.
+        """
         with deterministic_random(seed):
             return self._compute_change_points()
 
-    def _compute_change_points(self):
+    def _compute_change_points(self):  #pylint: disable=too-many-locals
+        """
+        Compute the change points. This is lazy and only runs once.
+        """
         if self._change_points is None:
             windows = []
             pts = len(self.series)
-            qs = self.qs(self.series)
-            LOG.debug("compute_change_points", qs=itertools.izip(qs, range(len(qs))))
-
-            first_q = self.extract_q(qs)
-            max_q_index, max_q = first_q[0], first_q[1]
+            qhat_values = self.qhat_values(self.series)
+            LOG.debug(
+                "compute_change_points", qs=itertools.izip(qhat_values, range(len(qhat_values))))
+            first_q = self.extract_q(qhat_values)
+            max_q = first_q[1]
             min_change = max_q
             change_points = []
 
@@ -193,7 +207,7 @@ class QHat(object):
                 windows = [0] + sorted([c[0] for c in change_points]) + [pts]
                 for i in range(len(windows) - 1):
                     window = self.series[windows[i]:windows[i + 1]]
-                    win_qs = self.qs(window)
+                    win_qs = self.qhat_values(window)
                     win_max = self.extract_q(win_qs)
                     win_max[0] += windows[i]
 
@@ -209,7 +223,7 @@ class QHat(object):
                     for j in range(len(windows) - 1):
                         window = copy.copy(self.series[windows[j]:windows[j + 1]])
                         random.shuffle(window)
-                        win_qs = self.qs(window)
+                        win_qs = self.qhat_values(window)
                         win_max = self.extract_q(win_qs)
                         win_max = (win_max[0] + windows[j], win_max[1])
                         permute_candidates.append(win_max)
@@ -239,6 +253,9 @@ class QHat(object):
         return self._change_points
 
     def add_to_change_points(self, change_points, algorithm, keys):
+        """
+        Add to change points.
+        """
         points = []
         i = 0
         for change_pt in change_points:
@@ -253,23 +270,35 @@ class QHat(object):
 
     @property
     def windows(self):
+        """
+        Get the windows used by the algorithm.
+        """
         if self._windows is None:
             _ = self.change_points
         return self._windows
 
     @property
     def min_change(self):
+        """
+        Min Change.
+        """
         if self._min_change is None:
             _ = self.change_points
         return self._min_change
 
     @property
     def max_q(self):
+        """
+        Get the maximum q value.
+        """
         if self._max_q is None:
             _ = self.change_points
         return self._max_q
 
-    def render(self, axes=None):
+    def render(self, axes=None):  #pylint: disable=too-many-locals
+        """
+        Plot in matplotlib.
+        """
         import matplotlib.pyplot as plt
         flag_new = False
         pts = len(self.series)
@@ -287,7 +316,10 @@ class QHat(object):
             if new_pt < min_end or new_pt > max_end:
                 flag_new = True
 
-        def format_fn(tick_val, tick_pos):
+        def format_fn(tick_val, _):
+            """
+            Helper.
+            """
             if int(tick_val) < len(self.revisions):
                 i = int(tick_val)
                 tick_str = self.revisions[i][0:7]
@@ -316,17 +348,18 @@ class QHat(object):
             tick.set_visible(True)
 
         # DRAW GRAPH
-        for c in self.change_points:
+        for change_point in self.change_points:
             # fake probabilities while we investigate
-            # p = (c[1] - self.min_change) / (self.max_q - self.min_change)
+            # p = (change_point[1] - self.min_change) / (self.max_q - self.min_change)
             # print(p)
             # diff to min_value sets color
             diff = (self.max_q - self.min_change)
             if not diff:
                 diff = 1
-            cval = format(255 - min(255, int((c['value'] - self.min_change) / diff * 255)), '02x')
+            cval = format(255 - min(255, int(
+                (change_point['value'] - self.min_change) / diff * 255)), '02x')
             cstring = '#ff' + cval + cval
-            axes.axvline(x=c['index'], color=cstring, label=c['revision'])
+            axes.axvline(x=change_point['index'], color=cstring, label=change_point['revision'])
         if flag_new and self.series:
             axes.axvline(x=pts - 1, color='r', linewidth=2, label=self.revisions[pts - 1])
 
@@ -334,7 +367,10 @@ class QHat(object):
         axes.legend(loc="upper right")
         return plt
 
-    def save(self, collection):
+    def save(self, _):
+        """
+        Save.
+        """
         self.state['change_points'] = self.change_points
         self.state['windows'] = self.windows
         self.state['online'] = self.online

@@ -23,7 +23,7 @@ def list_change_points(processed, query, exclude_patterns, command_config):
     else:
         collection = command_config.change_points
 
-    for i, point in enumerate(filter_excludes(collection.find(query), query.keys(),
-                                              exclude_patterns)):
+    for i, point in enumerate(
+            filter_excludes(collection.find(query), query.keys(), exclude_patterns)):
         LOG.info("list[%d] %s %s", i, collection.name,
                  stringify_json(point, compact=command_config.compact))

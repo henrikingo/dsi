@@ -23,7 +23,6 @@ def update_change_points(processed_type, query, exclude_patterns, command_config
         LOG.info("update before: %s", stringify_json(point, compact=command_config.compact))
         point['processed_type'] = processed_type
         if not command_config.dry_run:
-            update = {'$set': {
-                'processed_type': processed_type}}
+            update = {'$set': {'processed_type': processed_type}}
             res = collection.update_one({'_id': point['_id']}, update)
             LOG.debug('update: result "%r"', res.raw_result)

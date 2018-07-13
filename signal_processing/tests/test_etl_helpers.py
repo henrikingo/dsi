@@ -8,7 +8,7 @@ from mock import MagicMock, patch
 from testfixtures import LogCapture
 
 import signal_processing.etl_helpers as etl_helpers
-from utils import load_json_file
+from sp_utils import load_json_file
 
 
 class TestloadHistory(unittest.TestCase):

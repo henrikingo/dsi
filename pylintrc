@@ -21,7 +21,9 @@ good-names=runTest,
            n,
            x,
            y,
-           z
+           z,
+           db,
+           _db
 
 [FORMAT]
 max-line-length=100

@@ -8,7 +8,7 @@ import unittest
 from mock import MagicMock, call, patch
 
 import signal_processing.etl_evg_mongo as etl_evg_mongo
-from utils import load_json_file
+from sp_utils import load_json_file
 
 
 def _get_load_results_args(histories, version_id=None, start_date=None, reverse=False):

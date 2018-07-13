@@ -28,7 +28,6 @@ LANDSCAPE_FIGSIZE = tuple(reversed(PORTRAIT_FIGSIZE))
 The dimensions required to render a landscape image.
 """
 
-
 LOG = structlog.getLogger(__name__)
 
 
@@ -98,10 +97,8 @@ def print_result(result, command_config):
     thread_level = result['thread_level']
     revisions = result['revisions']
     if command_config.dry_run:
-        print "\t{:4} {:60} {:<40} {}".format(len(result['series']),
-                                              "{} {}".format(test, thread_level),
-                                              '',
-                                              'dry run')
+        print "\t{:4} {:60} {:<40} {}".format(
+            len(result['series']), "{} {}".format(test, thread_level), '', 'dry run')
     else:
         python_points = result['python_points'].points
         python_time_taken = result['python_points'].time_taken
@@ -113,19 +110,14 @@ def print_result(result, command_config):
                  for i in set(python_points).union(*(points.points for points in all_r_points))]
             for r_points in all_r_points:
                 time_taken_ratio = python_time_taken / r_points.time_taken
-                print "\t{:4} {:60} {:<40} {}".format(len(result['series']),
-                                                      "{:40} {:>3} {:>3} {:.2f} {:>3}".format(
-                                                          test,
-                                                          thread_level,
-                                                          r_points.minsize,
-                                                          python_time_taken,
-                                                          int(time_taken_ratio)),
-                                                      "{} {}".format(python_points,
-                                                                     r_points.points),
-                                                      m)
+                print "\t{:4} {:60} {:<40} {}".format(
+                    len(result['series']), "{:40} {:>3} {:>3} {:.2f} {:>3}".format(
+                        test, thread_level, r_points.minsize, python_time_taken,
+                        int(time_taken_ratio)), "{} {}".format(python_points, r_points.points), m)
 
 
-def r_vector_to_list(key, value,
+def r_vector_to_list(key,
+                     value,
                      keys=('order_found', 'estimates', 'considered_last', 'permutations')):
     """
     Convert an r vector to list.
@@ -151,6 +143,7 @@ class ChangePointImpl(object):
     """
     Base class for Change points implementation.
     """
+
     def __init__(self, data, sig_lvl, minsize):
         """
         Create a change points generation class.
@@ -184,10 +177,11 @@ class ChangePointImpl(object):
             self._calculate()
             time_taken = datetime.now() - start
             self._time_taken = time_taken.total_seconds()
-            LOG.debug("points: calculate",
-                      took=self._time_taken,
-                      name=type(self).__name__,
-                      len=len(self.data['series']))
+            LOG.debug(
+                "points: calculate",
+                took=self._time_taken,
+                name=type(self).__name__,
+                len=len(self.data['series']))
         return self._points
 
     @property
@@ -237,12 +231,12 @@ class RChangePoint(ChangePointImpl):
         :return: list(int).
         """
         # pylint: disable=no-member
-        raw = self.ecp.e_divisive(X=robjects.r.matrix(self.data['series']),
-                                  sig_lvl=self.sig_lvl,
-                                  min_size=self.minsize,
-                                  R=100)
-        results = dict(zip([name.replace('.', '_') for name in raw.names],
-                           list(raw)))
+        raw = self.ecp.e_divisive(
+            X=robjects.r.matrix(self.data['series']),
+            sig_lvl=self.sig_lvl,
+            min_size=self.minsize,
+            R=100)
+        results = dict(zip([name.replace('.', '_') for name in raw.names], list(raw)))
 
         limits = [1, len(self.data['series']) + 1]
         # always remove first and last.
@@ -287,7 +281,14 @@ class PyChangePoint(ChangePointImpl):
         self._points = [change_point['index'] for change_point in change_points]
 
 
-def plot_test(save, show, test_identifier, results, padding, sig_lvl, minsizes, out_dir="/tmp",
+def plot_test(save,
+              show,
+              test_identifier,
+              results,
+              padding,
+              sig_lvl,
+              minsizes,
+              out_dir="/tmp",
               file_format="png"):
     # pylint: disable=too-many-arguments,too-many-locals
     """
@@ -306,11 +307,7 @@ def plot_test(save, show, test_identifier, results, padding, sig_lvl, minsizes, 
     plt.figure(figsize=PORTRAIT_FIGSIZE)  # for portrait
     project, variant, task, test = test_identifier
     title = "{project} / {variant} / {task} / {test}\n{sig_lvl}".format(
-        project=project,
-        variant=variant,
-        task=task,
-        test=test,
-        sig_lvl=sig_lvl)
+        project=project, variant=variant, task=task, test=test, sig_lvl=sig_lvl)
 
     plt.suptitle(title, fontsize=12)
     for idx, result in enumerate(results):
@@ -407,8 +404,13 @@ def plot(python_points, r_points, result, axes):
         tick.set_visible(True)
 
     if flag_new and series:
-        axes.axvline(x=pts - 1, color='r', linewidth=2, label=revisions[pts - 1], ymin=lowbound,
-                     ymax=hibound)
+        axes.axvline(
+            x=pts - 1,
+            color='r',
+            linewidth=2,
+            label=revisions[pts - 1],
+            ymin=lowbound,
+            ymax=hibound)
 
     all_py_points = set(python_points)
     all_r_points = set(r_points[0].points).union(*[points.points for points in r_points])
@@ -421,46 +423,42 @@ def plot(python_points, r_points, result, axes):
     r_only = all_r_points.difference(all_py_points)
 
     if common:
-        axes.scatter(list(common),
-                     [series[pt] for pt in common],
-                     color="r",
-                     marker="+",
-                     s=100,
-                     label="common")
+        axes.scatter(
+            list(common), [series[pt] for pt in common],
+            color="r",
+            marker="+",
+            s=100,
+            label="common")
     if common_r_points and len(r_points) > 1:
-        axes.scatter(list(common_r_points),
-                     [series[pt] for pt in common_r_points],
-                     color="g",
-                     marker="+",
-                     s=100,
-                     label="common r")
+        axes.scatter(
+            list(common_r_points), [series[pt] for pt in common_r_points],
+            color="g",
+            marker="+",
+            s=100,
+            label="common r")
 
     if py_only:
-        axes.scatter(list(py_only),
-                     [series[pt] for pt in py_only],
-                     color="r",
-                     marker=".",
-                     s=100,
-                     label="py")
+        axes.scatter(
+            list(py_only), [series[pt] for pt in py_only], color="r", marker=".", s=100, label="py")
 
     if r_only:
         colors = itertools.cycle('cmybwrgb')
         for points in r_points:
             uniq = set(points.points).intersection(r_only)
             if uniq:
-                axes.scatter(list(uniq),
-                             [series[pt] for pt in uniq],
-                             color=next(colors),
-                             marker="<",
-                             s=100,
-                             label="r{}".format(points.minsize))
+                axes.scatter(
+                    list(uniq), [series[pt] for pt in uniq],
+                    color=next(colors),
+                    marker="<",
+                    s=100,
+                    label="r{}".format(points.minsize))
 
     axes.plot(xvals, series, 'b-')
 
     axes.legend(loc="upper right")
 
 
-def compare(test_identifier, command_config, sig_lvl=0.05, minsizes=(20,), padding=0):
+def compare(test_identifier, command_config, sig_lvl=0.05, minsizes=(20, ), padding=0):
     # pylint: disable=too-many-locals
     """
     Calculate change points for comparison.
@@ -481,9 +479,7 @@ def compare(test_identifier, command_config, sig_lvl=0.05, minsizes=(20,), paddi
     qry = {'project': project, 'variant': variant, 'task': task, 'test': test}
 
     LOG.debug('db.change_points.find(%s).pretty()', json.dumps(qry))
-    perf_json = OrderedDict([('project_id', project),
-                             ('variant', variant),
-                             ('task_name', task)])
+    perf_json = OrderedDict([('project_id', project), ('variant', variant), ('task_name', task)])
 
     model = PointsModel(perf_json, command_config.mongo_uri)
     series, revisions, orders, _, create_times, _ = model.get_points(test)
@@ -497,7 +493,7 @@ def compare(test_identifier, command_config, sig_lvl=0.05, minsizes=(20,), paddi
                             ('test', test_identifier['test']),
                             ('task_name', test_identifier['task']),
                             ('testname', test_identifier['test']),
-                            ('thread_level', thread_level)])
+                            ('thread_level', thread_level)]) #yapf: disable
 
         calculations.append(data)
 

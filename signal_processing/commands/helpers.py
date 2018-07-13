@@ -6,7 +6,6 @@ import os
 import re
 from collections import OrderedDict
 
-
 # pylint: disable=too-many-instance-attributes,too-many-arguments,too-few-public-methods
 from datetime import datetime, timedelta
 
@@ -40,18 +39,9 @@ class CommandConfiguration(object):
     """
     Common Configuration for commands.
     """
-    def __init__(self,
-                 debug,
-                 out,
-                 file_format,
-                 mongo_uri,
-                 queryable,
-                 dry_run,
-                 compact,
-                 points,
-                 change_points,
-                 processed_change_points,
-                 build_failures):
+
+    def __init__(self, debug, out, file_format, mongo_uri, queryable, dry_run, compact, points,
+                 change_points, processed_change_points, build_failures):
         """
         Create the command configuration.
 
@@ -225,12 +215,14 @@ def process_params(revision, project, variant, task_name, test, thread_level):
     :return: dict.
 
     """
-    params = {"revision": extract_pattern(revision),
-              "project": extract_pattern(project),
-              "variant": extract_pattern(variant),
-              "task": extract_pattern(task_name),
-              "test": extract_pattern(test),
-              "thread_level": extract_pattern(thread_level)}
+    params = {
+        "revision": extract_pattern(revision),
+        "project": extract_pattern(project),
+        "variant": extract_pattern(variant),
+        "task": extract_pattern(task_name),
+        "test": extract_pattern(test),
+        "thread_level": extract_pattern(thread_level)
+    }
     match = {k: v for (k, v) in params.items() if v}
     return match
 
@@ -344,21 +336,34 @@ def get_matching_tasks(points, query, no_older):
     """
     old = datetime.now() - timedelta(days=no_older)
     query['start'] = {"$gt": int(old.strftime('%s'))}
-    pipeline = [{'$match': query},
-                {'$group': {'_id': {'project': '$project',
-                                    'variant': '$variant',
-                                    'task': '$task'},
-                            'tests': {'$addToSet': '$test'}}},
-                {'$sort': {
-                    "_id.project": 1,
-                    "_id.variant": 1,
-                    "_id.task": 1}},
-                {'$project': {
-                    "project": "$_id.project",
-                    "variant": "$_id.variant",
-                    "task": "$_id.task",
-                    "tests": 1,
-                    "_id": 0}}]
+    pipeline = [{
+        '$match': query
+    }, {
+        '$group': {
+            '_id': {
+                'project': '$project',
+                'variant': '$variant',
+                'task': '$task'
+            },
+            'tests': {
+                '$addToSet': '$test'
+            }
+        }
+    }, {
+        '$sort': {
+            "_id.project": 1,
+            "_id.variant": 1,
+            "_id.task": 1
+        }
+    }, {
+        '$project': {
+            "project": "$_id.project",
+            "variant": "$_id.variant",
+            "task": "$_id.task",
+            "tests": 1,
+            "_id": 0
+        }
+    }]
     return points.aggregate(pipeline)
 
 

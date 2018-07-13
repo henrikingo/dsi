@@ -20,6 +20,8 @@ top_paths=(
     aws_tools
     bin
     bin/common
+    signal_processing
+    signal_processing/commands
 )
 
 # this set of directories uses /tests/pylintrc
@@ -28,6 +30,7 @@ test_paths=(
     tests
     tests/test_evergreen
     testscripts
+    signal_processing/tests
 )
 
 run_pylint() {

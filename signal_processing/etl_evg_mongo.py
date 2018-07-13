@@ -38,8 +38,7 @@ def _get_tasks(project, variant_name, tasks, history_config):
         config_tasks = tasks
     # Add the task name to the task object.
     return [
-        dict(task_object, task=task_name)
-        for task_name, task_object in tasks.iteritems()
+        dict(task_object, task=task_name) for task_name, task_object in tasks.iteritems()
         if task_name in config_tasks
     ]
 
@@ -61,9 +60,8 @@ def _get_variant_tasks(project, history, history_config):
     return [
         dict(task_object, variant=variant_name)
         for variant_name, variant_object in variants.iteritems()
-        if variant_name in config_variants
-        for task_object in _get_tasks(project, variant_name, variant_object['tasks'],
-                                      history_config)
+        if variant_name in config_variants for task_object in _get_tasks(
+            project, variant_name, variant_object['tasks'], history_config)
     ]
 
 
@@ -90,8 +88,7 @@ def _get_project_variant_tasks(evg_client, history_config):
         for project, history in {
             project: evg_client.query_project_history(project)
             for project in DEFAULT_HISTORY_CONFIG.iterkeys() if project in history_config
-        }.iteritems()
-        for task_object in _get_variant_tasks(project, history, history_config)
+        }.iteritems() for task_object in _get_variant_tasks(project, history, history_config)
     ]
 
 

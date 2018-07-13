@@ -35,37 +35,36 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
 @click.group(context_settings=CONTEXT_SETTINGS, invoke_without_command=True)
-@click.option('-d', '--debug', count=True,
-              help='Enable debug output, you can pass multiple -ddddd etc.')
-@click.option('-l', '--logfile', default=None,
-              help='The log file to write to, defaults to None.')
+@click.option(
+    '-d', '--debug', count=True, help='Enable debug output, you can pass multiple -ddddd etc.')
+@click.option('-l', '--logfile', default=None, help='The log file to write to, defaults to None.')
 @click.option('-o', '--out', default="/tmp", help="The location to save any files in.")
-@click.option('-f', '--format', 'file_format', default="png",
-              help='The format to save any files in.')
-@click.option('-u', '--mongo-uri', default='mongodb://localhost:27017/' + DB,
-              help='MongoDB connection string. The database name comes from here too.')
+@click.option(
+    '-f', '--format', 'file_format', default="png", help='The format to save any files in.')
+@click.option(
+    '-u',
+    '--mongo-uri',
+    default='mongodb://localhost:27017/' + DB,
+    help='MongoDB connection string. The database name comes from here too.')
 @click.option('-q', '--queryable', default=False, help="Print ids as queries")
 @click.option('-n', '--dry_run', is_flag=True, default=False, help="Don't actually run anything.")
-@click.option('-c',
-              '--compact/--expanded',
-              'compact',
-              default=True,
-              help='Display objects one / line.')
+@click.option(
+    '-c', '--compact/--expanded', 'compact', default=True, help='Display objects one / line.')
 @click.option('--points', default=POINTS, help="The points collection name.")
 @click.option('--change_points', default=CHANGE_POINTS, help='The change points collection name.')
-@click.option('--processed_change_points', default=PROCESSED_CHANGE_POINTS,
-              help='The processed change points collection name.')
-@click.option('--build_failures', default=BUILD_FAILURES,
-              help='The build failures collection name.')
+@click.option(
+    '--processed_change_points',
+    default=PROCESSED_CHANGE_POINTS,
+    help='The processed change points collection name.')
+@click.option(
+    '--build_failures', default=BUILD_FAILURES, help='The build failures collection name.')
 @click.pass_context
-def cli(context, debug, logfile, out, file_format, mongo_uri, queryable, dry_run, compact,
-        points, change_points, processed_change_points, build_failures):
+def cli(context, debug, logfile, out, file_format, mongo_uri, queryable, dry_run, compact, points,
+        change_points, processed_change_points, build_failures):
     # pylint: disable=missing-docstring, too-many-arguments
     log.setup_logging(debug > 0, filename=os.path.expanduser(logfile) if logfile else logfile)
-    context.obj = CommandConfiguration(debug, out, file_format,
-                                       mongo_uri, queryable, dry_run,
-                                       compact, points, change_points,
-                                       processed_change_points,
+    context.obj = CommandConfiguration(debug, out, file_format, mongo_uri, queryable, dry_run,
+                                       compact, points, change_points, processed_change_points,
                                        build_failures)
     if context.invoked_subcommand is None:
         print context.get_help()
@@ -82,9 +81,12 @@ def help_command(context):
 
 @cli.command(name="mark")
 @click.pass_obj
-@click.option('--exclude', 'exclude_patterns', multiple=True,
-              help='Exclude all points matching this pattern. This parameter can be provided ' +
-              'multiple times.')
+@click.option(
+    '--exclude',
+    'exclude_patterns',
+    multiple=True,
+    help='Exclude all points matching this pattern. This parameter can be provided ' +
+    'multiple times.')
 @click.argument('revision', required=True)
 @click.argument('project', required=True)
 @click.argument('variant', required=False)
@@ -150,10 +152,12 @@ Examples:
 
 @cli.command(name="hide")
 @click.pass_obj
-@click.option('--exclude', 'exclude_patterns',
-              multiple=True,
-              help='tests are excluded if this matches. It can be provided multiple times. ' +
-              'A regex starts with a "/" char')
+@click.option(
+    '--exclude',
+    'exclude_patterns',
+    multiple=True,
+    help='tests are excluded if this matches. It can be provided multiple times. ' +
+    'A regex starts with a "/" char')
 @click.argument('revision', required=True)
 @click.argument('project', required=True)
 @click.argument('variant', required=False)
@@ -211,14 +215,18 @@ Examples:
 
 @cli.command(name="update")
 @click.pass_obj
-@click.option('--exclude', 'exclude_patterns', multiple=True,
-              help='Exclude all points matching this pattern. This parameter can be provided ' +
-              'multiple times.')
-@click.option('--processed_type',
-              type=click.Choice(PROCESSED_TYPES),
-              default=PROCESSED_TYPE_HIDDEN,
-              required=True,
-              help='The value to set processed_type.')
+@click.option(
+    '--exclude',
+    'exclude_patterns',
+    multiple=True,
+    help='Exclude all points matching this pattern. This parameter can be provided ' +
+    'multiple times.')
+@click.option(
+    '--processed_type',
+    type=click.Choice(PROCESSED_TYPES),
+    default=PROCESSED_TYPE_HIDDEN,
+    required=True,
+    help='The value to set processed_type.')
 @click.argument('revision', required=True)
 @click.argument('project', required=True)
 @click.argument('variant', required=False)
@@ -284,10 +292,12 @@ Examples:
 
 @cli.command(name="list")
 @click.pass_obj
-@click.option('--exclude', 'exclude_patterns',
-              multiple=True,
-              help='tests are excluded if this matches. It can be provided multiple times. ' +
-              'A regex starts with a "/" char')
+@click.option(
+    '--exclude',
+    'exclude_patterns',
+    multiple=True,
+    help='tests are excluded if this matches. It can be provided multiple times. ' +
+    'A regex starts with a "/" char')
 @click.option('--processed/--no-processed', default=False, help='The type of point to list.')
 @click.argument('revision', required=False)
 @click.argument('project', required=False)
@@ -298,7 +308,6 @@ Examples:
 def list_command(command_config, exclude_patterns, processed, revision, project, variant, task,
                  test, thread_level):
     # pylint: disable=too-many-arguments, too-many-function-args
-
     """
     List points (defaults to change points).
 
@@ -359,14 +368,15 @@ Examples:
 @click.pass_obj
 @click.option('-m', '--minsize', 'minsizes', default=[20], type=click.INT, multiple=True)
 @click.option('-s', '--sig', 'sig_lvl', default=.05)
-@click.option('-p', '--padding', default=0,
-              help='append this many repetitions of the last result.')
+@click.option('-p', '--padding', default=0, help='append this many repetitions of the last result.')
 @click.option('--progressbar/--no-progressbar', default=True)
 @click.option('--show/--no-show', default=False)
 @click.option('--save/--no-save', default=False)
 @click.option('--exclude', 'excludes', multiple=True)
-@click.option('--no-older', default=30,
-              help='exclude tasks that have no points newer than this number of days.')
+@click.option(
+    '--no-older',
+    default=30,
+    help='exclude tasks that have no points newer than this number of days.')
 @click.argument('project', required=False)
 @click.argument('variant', required=False)
 @click.argument('task', required=False)
@@ -454,9 +464,10 @@ For Example:
     LOG.debug('matched tasks', matching_tasks=matching_tasks)
 
     exclude_patterns = process_excludes(excludes)
-    tests = [test_identifier
-             for test_identifier in generate_tests(matching_tasks)
-             if not filter_tests(test_identifier['test'], exclude_patterns)]
+    tests = [
+        test_identifier for test_identifier in generate_tests(matching_tasks)
+        if not filter_tests(test_identifier['test'], exclude_patterns)
+    ]
     LOG.debug('matched tests', tests=tests)
 
     all_calculations = []
@@ -466,10 +477,13 @@ For Example:
     label = "Starting".ljust(20)
     len_label = len(label)
 
-    with click.progressbar(tests,
-                           label=label + " :",
-                           item_show_func=item_show_func if progressbar else None,
-                           file=None if progressbar else StringIO()) as progress:
+    #yapf: disable
+    with click.progressbar(
+        tests,
+        label=label + " :",
+        item_show_func=item_show_func if progressbar else None,
+        file=None if progressbar else StringIO()) as progress:
+        #yapf: enable
 
         for test_identifier in progress:
             test_name = test_identifier['test']
@@ -478,11 +492,12 @@ For Example:
             progress.render_progress()
             try:
                 LOG.debug('compare', test_identifier=test_identifier)
-                calculations = compare(test_identifier,
-                                       command_config,
-                                       sig_lvl=sig_lvl,
-                                       minsizes=minsizes,
-                                       padding=padding)
+                calculations = compare(
+                    test_identifier,
+                    command_config,
+                    sig_lvl=sig_lvl,
+                    minsizes=minsizes,
+                    padding=padding)
                 all_calculations.extend(calculations)
                 for calculation in calculations:
                     identifier = (project, variant, task_name)
@@ -506,5 +521,5 @@ For Example:
 
     if not command_config.dry_run and save or show:
         for test_identifier, results in group_by_test.items():
-            plot_test(save, show, test_identifier, results, padding,
-                      sig_lvl, minsizes, command_config.out, command_config.format)
+            plot_test(save, show, test_identifier, results, padding, sig_lvl, minsizes,
+                      command_config.out, command_config.format)

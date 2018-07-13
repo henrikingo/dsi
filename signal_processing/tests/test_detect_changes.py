@@ -8,7 +8,7 @@ from collections import OrderedDict
 from mock import ANY, MagicMock, call, patch
 
 import signal_processing.detect_changes as detect_changes
-from utils import load_json_file
+from sp_utils import load_json_file
 
 
 # pylint: disable=invalid-name
