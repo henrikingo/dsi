@@ -12,9 +12,7 @@ import structlog
 from bin.common.utils import mkdir_p
 from matplotlib.ticker import FuncFormatter, MaxNLocator
 import numpy as np
-from rpy2 import robjects
-from rpy2.robjects import Vector
-from rpy2.robjects.packages import importr
+
 from signal_processing.detect_changes import PointsModel
 from signal_processing.qhat import QHat
 
@@ -28,7 +26,86 @@ LANDSCAPE_FIGSIZE = tuple(reversed(PORTRAIT_FIGSIZE))
 The dimensions required to render a landscape image.
 """
 
+
 LOG = structlog.getLogger(__name__)
+
+
+def load_e_divisive():
+    """
+    Load rpy2, R Lnanguage and ecp.
+
+    :return: e_divisive function
+    :rtype: (function, None)
+    """
+    try:
+        from rpy2.rinterface import RRuntimeError # pylint: disable=unused-variable
+        LOG.debug("r2py installed")
+
+        from rpy2 import robjects
+        from rpy2.robjects import Vector
+        from rpy2.robjects.packages import importr
+        LOG.debug("r lang installed")
+
+        e_divisive = importr('ecp').e_divisive # pylint: disable=no-member
+
+        def r_vector_to_list(key, value,
+                             keys=('order_found', 'estimates', 'considered_last', 'permutations')):
+            """
+            Convert an r vector to list.
+
+            :param str key: The key name.
+            :param value: The value to convert. A vector is always converted to a list. The
+            list elements are converted to ints if 'key' in 'keys'.
+            :type value: obj, Vector.
+            :param list(str) keys: Convert to list it this is a vector. Convert list elements to
+            ints if key' in 'keys'.
+            :return: A list of floats or ints if value is a vector. Otherwise the passed in value.
+            :rtype: list(int), list(float) or value.
+            """
+            if isinstance(value, Vector):
+                if key in keys:
+                    value = [int(f) for f in value]
+                else:
+                    value = list(value)
+            return value
+
+        def calc_e_divisive(series, sig_lvl, minsize, max_permutations=100):
+            """
+            Calculate the change points with R ecp.
+            :param list(float) series: The performance data.
+            :param float sig_lvl: The level at which to sequentially test if a proposed change
+            point is statistically significant.
+            :param int minsize: The Minimum number of observations between change points..
+            :param int max_permutations: The maximum number of random permutations to use in each
+            iteration of the permutation test.
+
+            see `ecp<https://www.rdocumentation.org/packages/ecp/versions/3.1.0/topics/e.divisive>'
+            :return: raw output and generated point.
+            :rtype: (dict, list(int))
+            """
+            # pylint: disable=no-member
+            raw = e_divisive(X=robjects.r.matrix(series),
+                             sig_lvl=sig_lvl,
+                             min_size=minsize,
+                             R=max_permutations)
+            results = dict(zip([name.replace('.', '_') for name in raw.names],
+                               list(raw)))
+
+            limits = [1, len(series) + 1]
+            # always remove first and last.
+            # Additionally, r array index from 1 so decrement the value by 1
+            raw = {k: r_vector_to_list(k, v) for k, v in results.items()}
+            points = [int(point) - 1 for point in results['order_found'] if
+                      point not in limits]
+            return raw, points
+
+        LOG.debug("ecp installed")
+    except: # pylint: disable=bare-except
+        calc_e_divisive = None
+    return calc_e_divisive
+
+
+# E_DIVISIVE = load_e_divisive()
 
 
 def best_fit(x_values, y_values):
@@ -97,8 +174,10 @@ def print_result(result, command_config):
     thread_level = result['thread_level']
     revisions = result['revisions']
     if command_config.dry_run:
-        print "\t{:4} {:60} {:<40} {}".format(
-            len(result['series']), "{} {}".format(test, thread_level), '', 'dry run')
+        print "\t{:4} {:60} {:<40} {}".format(len(result['series']),
+                                              "{} {}".format(test, thread_level),
+                                              '',
+                                              'dry run')
     else:
         python_points = result['python_points'].points
         python_time_taken = result['python_points'].time_taken
@@ -109,34 +188,22 @@ def print_result(result, command_config):
             m = [(i, revisions[i][0:6])
                  for i in set(python_points).union(*(points.points for points in all_r_points))]
             for r_points in all_r_points:
+                if r_points.e_divisive:
+                    points = r_points.points
+                else:
+                    points = 'ecp unavailable'
+
                 time_taken_ratio = python_time_taken / r_points.time_taken
-                print "\t{:4} {:60} {:<40} {}".format(
-                    len(result['series']), "{:40} {:>3} {:>3} {:.2f} {:>3}".format(
-                        test, thread_level, r_points.minsize, python_time_taken,
-                        int(time_taken_ratio)), "{} {}".format(python_points, r_points.points), m)
-
-
-def r_vector_to_list(key,
-                     value,
-                     keys=('order_found', 'estimates', 'considered_last', 'permutations')):
-    """
-    Convert an r vector to list.
-
-    :param str key: The key name.
-    :param value: The value to convert. A vector is always converted to a list. The
-    list elements are converted to ints if 'key' in 'keys'.
-    :type value: obj, Vector.
-    :param list(str) keys: Convert to list it this is a vector. Convert list elements to ints if
-    key' in 'keys'.
-    :return: A list of floats or ints if value is a vector. Otherwise the passed in value.
-    :rtype: list(int), list(float) or value.
-    """
-    if isinstance(value, Vector):
-        if key in keys:
-            value = [int(f) for f in value]
-        else:
-            value = list(value)
-    return value
+                print "\t{:4} {:60} {:<40} {}".format(len(result['series']),
+                                                      "{:40} {:>3} {:>3} {:.2f} {:>3}".format(
+                                                          test,
+                                                          thread_level,
+                                                          r_points.minsize,
+                                                          python_time_taken,
+                                                          int(time_taken_ratio)),
+                                                      "{} {}".format(python_points,
+                                                                     points),
+                                                      m)
 
 
 class ChangePointImpl(object):
@@ -224,25 +291,22 @@ class RChangePoint(ChangePointImpl):
         ChangePointImpl.__init__(self, *args, **kwargs)
         self._raw = None
         self._ecp = None
+        self.e_divisive = load_e_divisive()
 
     def _calculate(self):
         """
         calculate the change points.
         :return: list(int).
         """
-        # pylint: disable=no-member
-        raw = self.ecp.e_divisive(
-            X=robjects.r.matrix(self.data['series']),
-            sig_lvl=self.sig_lvl,
-            min_size=self.minsize,
-            R=100)
-        results = dict(zip([name.replace('.', '_') for name in raw.names], list(raw)))
-
-        limits = [1, len(self.data['series']) + 1]
-        # always remove first and last.
-        # Additionally, r array index from 1 so decrement the value by 1
-        self._raw = {k: r_vector_to_list(k, v) for k, v in results.items()}
-        self._points = [int(point) - 1 for point in results['order_found'] if point not in limits]
+        if self.e_divisive:
+            raw, points = self.e_divisive(self.data['series'],
+                                          sig_lvl=self.sig_lvl,
+                                          minsize=self.minsize)
+            self._raw = raw
+            self._points = points
+        else:
+            self._raw = {}
+            self._points = []
 
     @property
     def raw(self):
@@ -254,17 +318,6 @@ class RChangePoint(ChangePointImpl):
         if self._points is None:
             self._calculate()
         return self._raw
-
-    @property
-    def ecp(self):
-        """
-        Get the ecp instance.
-
-        :return: PackageData.
-        """
-        if self._ecp is None:
-            self._ecp = importr('ecp')
-        return self._ecp
 
 
 class PyChangePoint(ChangePointImpl):
