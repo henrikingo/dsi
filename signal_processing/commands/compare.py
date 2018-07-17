@@ -26,7 +26,6 @@ LANDSCAPE_FIGSIZE = tuple(reversed(PORTRAIT_FIGSIZE))
 The dimensions required to render a landscape image.
 """
 
-
 LOG = structlog.getLogger(__name__)
 
 
@@ -38,7 +37,7 @@ def load_e_divisive():
     :rtype: (function, None)
     """
     try:
-        from rpy2.rinterface import RRuntimeError # pylint: disable=unused-variable
+        from rpy2.rinterface import RRuntimeError  # pylint: disable=unused-variable
         LOG.debug("r2py installed")
 
         from rpy2 import robjects
@@ -46,9 +45,10 @@ def load_e_divisive():
         from rpy2.robjects.packages import importr
         LOG.debug("r lang installed")
 
-        e_divisive = importr('ecp').e_divisive # pylint: disable=no-member
+        e_divisive = importr('ecp').e_divisive  # pylint: disable=no-member
 
-        def r_vector_to_list(key, value,
+        def r_vector_to_list(key,
+                             value,
                              keys=('order_found', 'estimates', 'considered_last', 'permutations')):
             """
             Convert an r vector to list.
@@ -84,23 +84,19 @@ def load_e_divisive():
             :rtype: (dict, list(int))
             """
             # pylint: disable=no-member
-            raw = e_divisive(X=robjects.r.matrix(series),
-                             sig_lvl=sig_lvl,
-                             min_size=minsize,
-                             R=max_permutations)
-            results = dict(zip([name.replace('.', '_') for name in raw.names],
-                               list(raw)))
+            raw = e_divisive(
+                X=robjects.r.matrix(series), sig_lvl=sig_lvl, min_size=minsize, R=max_permutations)
+            results = dict(zip([name.replace('.', '_') for name in raw.names], list(raw)))
 
             limits = [1, len(series) + 1]
             # always remove first and last.
             # Additionally, r array index from 1 so decrement the value by 1
             raw = {k: r_vector_to_list(k, v) for k, v in results.items()}
-            points = [int(point) - 1 for point in results['order_found'] if
-                      point not in limits]
+            points = [int(point) - 1 for point in results['order_found'] if point not in limits]
             return raw, points
 
         LOG.debug("ecp installed")
-    except: # pylint: disable=bare-except
+    except:  # pylint: disable=bare-except
         calc_e_divisive = None
     return calc_e_divisive
 
@@ -174,10 +170,8 @@ def print_result(result, command_config):
     thread_level = result['thread_level']
     revisions = result['revisions']
     if command_config.dry_run:
-        print "\t{:4} {:60} {:<40} {}".format(len(result['series']),
-                                              "{} {}".format(test, thread_level),
-                                              '',
-                                              'dry run')
+        print "\t{:4} {:60} {:<40} {}".format(
+            len(result['series']), "{} {}".format(test, thread_level), '', 'dry run')
     else:
         python_points = result['python_points'].points
         python_time_taken = result['python_points'].time_taken
@@ -194,16 +188,10 @@ def print_result(result, command_config):
                     points = 'ecp unavailable'
 
                 time_taken_ratio = python_time_taken / r_points.time_taken
-                print "\t{:4} {:60} {:<40} {}".format(len(result['series']),
-                                                      "{:40} {:>3} {:>3} {:.2f} {:>3}".format(
-                                                          test,
-                                                          thread_level,
-                                                          r_points.minsize,
-                                                          python_time_taken,
-                                                          int(time_taken_ratio)),
-                                                      "{} {}".format(python_points,
-                                                                     points),
-                                                      m)
+                print "\t{:4} {:60} {:<40} {}".format(
+                    len(result['series']), "{:40} {:>3} {:>3} {:.2f} {:>3}".format(
+                        test, thread_level, r_points.minsize, python_time_taken,
+                        int(time_taken_ratio)), "{} {}".format(python_points, points), m)
 
 
 class ChangePointImpl(object):
@@ -299,9 +287,8 @@ class RChangePoint(ChangePointImpl):
         :return: list(int).
         """
         if self.e_divisive:
-            raw, points = self.e_divisive(self.data['series'],
-                                          sig_lvl=self.sig_lvl,
-                                          minsize=self.minsize)
+            raw, points = self.e_divisive(
+                self.data['series'], sig_lvl=self.sig_lvl, minsize=self.minsize)
             self._raw = raw
             self._points = points
         else:
