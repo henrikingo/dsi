@@ -1,5 +1,5 @@
 jinja2==2.10
-paramiko==2.4.0
+paramiko==2.4.1
 pycparser==2.18
 pyyaml==3.12
 -r analysis.txt
