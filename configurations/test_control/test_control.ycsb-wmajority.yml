@@ -27,6 +27,7 @@ run:
       for level in ${test_control.thread_levels.level95-5.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}; do
         ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s \
         -P ../../workloadEvergreen_95read5update \
+        -p maxexecutiontime=600 \
         -threads $level;
       done
     config_filename: workloadEvergreen_95read5update
