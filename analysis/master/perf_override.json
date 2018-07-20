@@ -35318,8 +35318,8 @@
                     ]
                 },
                 "Queries.Text.FindPhrase":{
-                    "thread_threshold":0.17,
-                    "threshold":0.12,
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
                     "ticket":[
                         "BF-8039"
                     ]
