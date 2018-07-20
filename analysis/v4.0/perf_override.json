@@ -39068,8 +39068,8 @@
                     ]
                 },
                 "Aggregation.IdentityView.Lookup.UncorrelatedJoin.NoCache":{
-                    "thread_threshold":0.15,
-                    "threshold":0.1,
+                    "thread_threshold":0.3,
+                    "threshold":0.2,
                     "ticket":[
                         "BF-6884",
                         "BF-6938"
