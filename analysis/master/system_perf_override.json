@@ -4721,7 +4721,33 @@
         },
         "secondary_performance":{
             "ndays":{},
-            "reference":{},
+            "reference":{
+                "Primary_size_1K_count_10M":{
+                    "create_time":"2018-07-12T21:54:34Z",
+                    "end":1531457344.128574,
+                    "max":311575.01168406295,
+                    "name":"Primary_size_1K_count_10M",
+                    "order":13006,
+                    "results":{
+                        "32":{
+                            "ops_per_sec":311575.01168406295,
+                            "ops_per_sec_values":[
+                                311575.01168406295
+                            ]
+                        }
+                    },
+                    "revision":"acdbc57731fa3176b0467425ece92e76a8d82958",
+                    "start":1531456926.117155,
+                    "tag":"",
+                    "threads":[
+                        "32"
+                    ],
+                    "ticket":[
+                        "BF-10003"
+                    ],
+                    "workload":"mongoshell"
+                }
+            },
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
