@@ -347,7 +347,7 @@ class MongoNode(MongoCluster):
     def dump_mongo_log(self):
         """Dump the mongo[ds] log file to the process log"""
         LOG.info('Dumping log for node %s', self.hostport_public())
-        self.host.run(['cat', self.mongo_config_file['systemLog']['path']])
+        self.host.run(['tail -n 100', self.mongo_config_file['systemLog']['path']])
 
     def hostport_private(self):
         """Returns the string representation this host/port."""
