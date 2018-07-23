@@ -13137,7 +13137,15 @@
                     ]
                 }
             },
-            "threshold":{}
+            "threshold":{
+                "Update.MmsIncShallow1":{
+                    "thread_threshold":0.12,
+                    "threshold":0.08,
+                    "ticket":[
+                        "BF-6746"
+                    ]
+                }
+            }
         },
         "update":{
             "ndays":{},
