@@ -9,7 +9,7 @@
 #
 WITH_EBS="${1:-false}"
 
-sudo yum -y -q install tmux git wget sysstat dstat perf fio xfsprogs
+sudo yum -y -q install tmux git wget sysstat dstat perf fio xfsprogs krb5-libs openldap-devel cyrus-sasl cyrus-sasl-devel cyrus-sasl-gssapi cyrus-sasl-lib cyrus-sasl-md5 net-snmp net-snmp-devel net-snmp-libs net-snmp-utils
 
 # Disable hyperthreading.
 #

@@ -29,7 +29,7 @@ PROVISON_LOG_PATH = './provision.log'
 CLUSTER_JSON = "cluster.json"
 
 # Increase this to force a teardown of clusters whose evg_data_dir is from a previous version.
-VERSION = "3"
+VERSION = "4"
 
 
 def check_version(file_path):
