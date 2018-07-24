@@ -1283,8 +1283,8 @@
                     ]
                 },
                 "removemulti_jfalse":{
-                    "thread_threshold":0.45,
-                    "threshold":0.3,
+                    "thread_threshold":0.52,
+                    "threshold":0.35,
                     "ticket":[
                         "BF-9320"
                     ]
