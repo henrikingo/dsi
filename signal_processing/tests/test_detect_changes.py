@@ -31,10 +31,11 @@ class TestDetectChangesDriver(unittest.TestCase):
         tests = set(['mixed_insert', 'mixed_findOne'])
         mock_model = mock_PointsModel.return_value
         mock_model.compute_change_points.return_value = (1, 2, 3)
-        test_driver = detect_changes.DetectChangesDriver(self.sysperf_perf_json, self.mongo_uri)
+        test_driver = detect_changes.DetectChangesDriver(
+            self.sysperf_perf_json, self.mongo_uri, weighting=0.001)
         test_driver.run()
         mock_PointsModel.assert_called_once_with(self.sysperf_perf_json, self.mongo_uri)
-        compute_change_points_calls = [call(test) for test in tests]
+        compute_change_points_calls = [call(test, weighting=0.001) for test in tests]
         mock_model.compute_change_points.assert_has_calls(
             compute_change_points_calls, any_order=True)
         print_result_calls = [call(test_driver, 1, 2, 3, test) for test in tests]
@@ -132,7 +133,7 @@ class TestPointsModel(unittest.TestCase):
         }, 'many_points']
         test = self.sysperf_perf_json['data']['results'][0]['name']
         test_model = detect_changes.PointsModel(self.sysperf_perf_json, self.mongo_uri)
-        actual = test_model.compute_change_points(test)
+        actual = test_model.compute_change_points(test, weighting=0.001)
         mock_QHat.assert_called_once_with(
             {
                 'series': [],
@@ -142,7 +143,8 @@ class TestPointsModel(unittest.TestCase):
                 'testname': test,
                 'thread_level': 4
             },
-            pvalue=None)
+            pvalue=None,
+            weighting=0.001)
         mock_db.change_points.initialize_ordered_bulk_op.assert_called_once()
         mock_bulk.find.assert_called_once_with(expected_query)
         mock_bulk.find.return_value.remove.assert_called_once()
@@ -195,7 +197,7 @@ class TestPointsModel(unittest.TestCase):
                 pvalue=None)
         ]
         test_model = detect_changes.PointsModel(self.sysperf_perf_json, self.mongo_uri)
-        test_model.compute_change_points(test)
+        test_model.compute_change_points(test, weighting=0.001)
         self.assertTrue(qhat_calls < mock_QHat.mock_calls)
 
     @patch('signal_processing.detect_changes.config.ConfigDict', autospec=True)

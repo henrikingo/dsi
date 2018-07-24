@@ -258,6 +258,7 @@ def stringify_json(point, compact=False, keys=None):
     Stringify point.
 
     :param dict point: The point  to order.
+    :param list keys: The key order.
     :param bool compact: Convert to a single line string if compact is True otherwise a multi-line
     4 space indented
     `extended json<https://docs.mongodb.com/manual/reference/mongodb-extended-json/index.html>'

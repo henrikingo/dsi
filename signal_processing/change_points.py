@@ -22,6 +22,7 @@ from signal_processing.commands.helpers import process_params, process_excludes,
 from signal_processing.commands.list import list_change_points
 from signal_processing.commands.mark import mark_change_points
 from signal_processing.commands.update import update_change_points
+from signal_processing.qhat import DEFAULT_WEIGHTING
 
 DB = "perf"
 PROCESSED_CHANGE_POINTS = 'processed_change_points'
@@ -377,12 +378,13 @@ Examples:
     '--no-older',
     default=30,
     help='exclude tasks that have no points newer than this number of days.')
+@click.option('--weighting', 'weighting', default=DEFAULT_WEIGHTING)
 @click.argument('project', required=False)
 @click.argument('variant', required=False)
 @click.argument('task', required=False)
 @click.argument('test', required=False)
 def compare_command(command_config, minsizes, sig_lvl, padding, progressbar, show, save, excludes,
-                    no_older, project, variant, task, test):
+                    no_older, weighting, project, variant, task, test):
     # pylint: disable=too-many-locals, too-many-arguments, line-too-long
     """
 Compare points generated from R and python. This requires R and the ecp library to be installed.
@@ -477,13 +479,10 @@ For Example:
     label = "Starting".ljust(20)
     len_label = len(label)
 
-    #yapf: disable
-    with click.progressbar(
-        tests,
-        label=label + " :",
-        item_show_func=item_show_func if progressbar else None,
-        file=None if progressbar else StringIO()) as progress:
-        #yapf: enable
+    with click.progressbar(tests,
+                           label=label + " :",
+                           item_show_func=item_show_func if progressbar else None,
+                           file=None if progressbar else StringIO()) as progress:# yapf: disable
 
         for test_identifier in progress:
             test_name = test_identifier['test']
@@ -497,7 +496,8 @@ For Example:
                     command_config,
                     sig_lvl=sig_lvl,
                     minsizes=minsizes,
-                    padding=padding)
+                    padding=padding,
+                    weighting=weighting)
                 all_calculations.extend(calculations)
                 for calculation in calculations:
                     identifier = (project, variant, task_name)

@@ -6,7 +6,6 @@ import json
 import os
 from collections import OrderedDict
 from datetime import datetime
-from statistics import mean
 
 import structlog
 from bin.common.utils import mkdir_p
@@ -133,9 +132,9 @@ def best_fit(x_values, y_values):
     """
     x_values = np.array(x_values, dtype=np.float64)
     y_values = np.array(y_values, dtype=np.float64)
-    slope = (((mean(x_values) * mean(y_values)) - mean(x_values * y_values)) /
-             ((mean(x_values) * mean(x_values)) - mean(x_values * x_values)))
-    intercept = mean(y_values) - slope * mean(x_values)
+    slope = (((np.mean(x_values) * np.mean(y_values)) - np.mean(x_values * y_values)) /
+             ((np.mean(x_values) * np.mean(x_values)) - np.mean(x_values * x_values)))
+    intercept = np.mean(y_values) - slope * np.mean(x_values)
     return slope, intercept
 
 
@@ -199,16 +198,20 @@ class ChangePointImpl(object):
     Base class for Change points implementation.
     """
 
-    def __init__(self, data, sig_lvl, minsize):
+    def __init__(self, data, sig_lvl, minsize, weighting):
         """
         Create a change points generation class.
 
         :param dict data: The raw data.
         :param float sig_lvl: The significance level test.
         :param int minsize: The minimum distance between change points.
+        :param float weighting: The value to use to generate the weightings.
+
+        See 'QHat.DEFAULT_WEIGHTING' for the recommended default value.
         """
         self.data = data
         self.sig_lvl = sig_lvl
+        self.weighting = weighting
         self.minsize = minsize
         self._points = None
         self._time_taken = None
@@ -317,7 +320,9 @@ class PyChangePoint(ChangePointImpl):
         calculate the change points.
         :return: list(int).
         """
-        change_points = QHat(self.data, pvalue=self.sig_lvl, online=self.minsize).change_points
+        change_points = QHat(
+            self.data, pvalue=self.sig_lvl, online=self.minsize,
+            weighting=self.weighting).change_points
         self._points = [change_point['index'] for change_point in change_points]
 
 
@@ -392,25 +397,7 @@ def plot(python_points, r_points, result, axes):
     revisions = result['revisions']
     create_times = result['create_times']
 
-    flag_new = False
     pts = len(series)
-    sort_pts = sorted(series)
-
-    lowbound = sort_pts[0]
-    # adjust the low bound to fit
-    lowbound = lowbound * 1.1 if lowbound < 0 else lowbound * 0.9
-
-    hibound = sort_pts[len(sort_pts) - 1]
-    # adjust the hibound to fit
-    hibound = hibound * 0.9 if lowbound < 0 else hibound * 1.1
-
-    if abs(hibound) < 1 and lowbound < 0:
-        hibound = abs(lowbound * .1)
-
-    if hibound == lowbound:
-        hibound = hibound + .1
-        lowbound = lowbound - .1
-
     xvals = [i for i in range(pts)]
 
     def format_fn(tick_val, tick_pos):
@@ -435,22 +422,12 @@ def plot(python_points, r_points, result, axes):
 
     axes.set_title(title, size=16)
     axes.set_ylabel('ops per sec')
-    axes.axis([0, pts, lowbound, hibound])
 
     axes.xaxis.set_major_formatter(FuncFormatter(format_fn))
     axes.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     for tick in axes.get_xticklabels():
         tick.set_visible(True)
-
-    if flag_new and series:
-        axes.axvline(
-            x=pts - 1,
-            color='r',
-            linewidth=2,
-            label=revisions[pts - 1],
-            ymin=lowbound,
-            ymax=hibound)
 
     all_py_points = set(python_points)
     all_r_points = set(r_points[0].points).union(*[points.points for points in r_points])
@@ -495,11 +472,11 @@ def plot(python_points, r_points, result, axes):
 
     axes.plot(xvals, series, 'b-')
 
-    axes.legend(loc="upper right")
+    axes.legend(loc="upper left")
 
 
-def compare(test_identifier, command_config, sig_lvl=0.05, minsizes=(20, ), padding=0):
-    # pylint: disable=too-many-locals
+def compare(test_identifier, command_config, weighting, sig_lvl=0.05, minsizes=(20, ), padding=0):
+    # pylint: disable=too-many-locals, too-many-arguments
     """
     Calculate change points for comparison.
 
@@ -508,7 +485,9 @@ def compare(test_identifier, command_config, sig_lvl=0.05, minsizes=(20, ), padd
     :param float sig_lvl: The significance level test.
     :param list(int) minsizes: The minimum distance between change points.
     :param int padding: Pad out the series with an extra padding amount of the last result.
+    :param float weighting: The value to use to generate the weightings.
     :return: list(calculations).
+    See 'QHat.DEFAULT_WEIGHTING' for the recommended default value.
     """
     project = test_identifier['project']
     variant = test_identifier['variant']
@@ -557,8 +536,10 @@ def compare(test_identifier, command_config, sig_lvl=0.05, minsizes=(20, ), padd
             values = [data['create_times'][-1]] * padding
             data['create_times'].extend(values)
 
-        data['python_points'] = PyChangePoint(data, sig_lvl, minsizes[0])
-        data['r_points'] = [RChangePoint(data, sig_lvl, minsize) for minsize in minsizes]
+        data['python_points'] = PyChangePoint(data, sig_lvl, minsizes[0], weighting=weighting)
+        data['r_points'] = [
+            RChangePoint(data, sig_lvl, minsize, weighting=weighting) for minsize in minsizes
+        ]
 
         del data['task_name']
         del data['testname']

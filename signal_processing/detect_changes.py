@@ -8,7 +8,7 @@ from collections import OrderedDict
 import pymongo
 
 import etl_helpers
-from qhat import QHat
+from qhat import QHat, DEFAULT_WEIGHTING
 from analysis.evergreen import evergreen_client
 from bin.common import config
 from bin.common import log
@@ -95,15 +95,17 @@ class PointsModel(object):
 
         return series, revisions, orders, query, create_times, many_points
 
-    def compute_change_points(self, test):
+    def compute_change_points(self, test, weighting):
         """
         Compute the change points for the given test using the QHat algorithm and insert them into
         the `change_points` collection of the database.
 
         :param str test: The name of the test.
+        :param float weighting: The weighting for the decay on compute.
         :return: The number of points for the test, the number of change points found by the QHat
         algorithm, and the time taken for this method to run.
         :rtype: tuple(int, int, float).
+        See 'QHat.DEFAULT_WEIGHTING' for the recommended default value.
         """
         # pylint: disable=too-many-locals
         started_at = int(round(time.time() * 1000))
@@ -122,7 +124,8 @@ class PointsModel(object):
                     'testname': test,
                     'thread_level': thread_level
                 },
-                pvalue=self.pvalue).change_points
+                pvalue=self.pvalue,
+                weighting=weighting).change_points
             many_change_points += len(change_points[thread_level])
 
         # TODO: Revisit implementation of insert.
@@ -148,13 +151,16 @@ class DetectChangesDriver(object):
 
     # pylint: disable=too-few-public-methods
 
-    def __init__(self, perf_json, mongo_uri):
+    def __init__(self, perf_json, mongo_uri, weighting):
         """
         :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
         :param str mongo_uri: The uri to connect to the cluster.
+        :param float weighting: The weighting value.
+        See 'QHat.DEFAULT_WEIGHTING' for the recommended default value.
         """
         self.perf_json = perf_json
         self.mongo_uri = mongo_uri
+        self.weighting = weighting
 
     def run(self):
         """
@@ -162,7 +168,8 @@ class DetectChangesDriver(object):
         """
         model = PointsModel(self.perf_json, self.mongo_uri)
         for test in etl_helpers.extract_tests(self.perf_json):
-            many_points, many_change_points, duration = model.compute_change_points(test)
+            many_points, many_change_points, duration = model.compute_change_points(
+                test, weighting=self.weighting)
             self._print_result(many_points, many_change_points, duration, test)
 
     def _print_result(self, many_points, many_change_points, duration, test):
@@ -192,7 +199,8 @@ def detect_changes():
     mongo_uri = conf['analysis']['mongo_uri']
     if not conf['runtime'].get('is_patch', False):
         etl_helpers.load(perf_json, mongo_uri)
-    changes_driver = DetectChangesDriver(perf_json, mongo_uri)
+    # TODO : we probably want some way of passing a weighting in going forward. PERF-1588.
+    changes_driver = DetectChangesDriver(perf_json, mongo_uri, weighting=DEFAULT_WEIGHTING)
     changes_driver.run()
 
 
