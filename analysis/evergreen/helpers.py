@@ -106,6 +106,58 @@ def get_full_git_commit_hash(prefix, token=None):
         response.raise_for_status()
 
 
+def get_git_commits(newest, token=None, per_page=None):
+    """
+    Use the Github API to list commits older than newest (in descending order).
+
+    :param str newest: The newest commit hash in the range we want to get.
+    :param str token: Github user authentication token.
+    :param int per_page: The max size of the page. None (the default) implies
+    we use whatever github uses.
+    :rtype: list(dict())
+    :raises: HTTPError if retrieval of full commit hash has failed.
+    """
+    request = '{url}/repos/{user}/{repo}/commits?sha={sha}{per_page}'.format(
+        url=GITHUB_API,
+        user=GH_USER,
+        repo=GH_REPO,
+        sha=newest,
+        per_page='' if per_page is None else '&per_page=' + str(per_page))
+    if token is not None:
+        if 'token' in token:  # sent as a header 'token: OAUTH_TOKEN'
+            response = requests.get(request, headers={'Authorization': token})
+        else:
+            response = requests.get(request, auth=(token, GH_BASIC_AUTH))
+    else:  # no authentication token
+        response = requests.get(request)
+
+    if response.ok:
+        return response.json()
+    else:
+        response.raise_for_status()
+
+
+def get_githashes_in_range(newest, oldest):
+    """
+    Get git hashes of commits from git hub in descending order from newest to oldest.
+
+    :param str newest: The git hash of the newest commit.
+    :param str oldest: The git hash of the old commit.
+    :return: The git hashes between newest and oldest(from newest to oldest / descending order)
+    and including oldest and newest
+    :rtype: list(str).
+    """
+    commits = get_git_commits(newest)
+    if newest != commits[0]['sha']:
+        raise ValueError('newest {} is not in list.'.format(newest))
+
+    index = next((i for i, item in enumerate(commits) if item['sha'] == oldest), -1)
+
+    if index == -1:
+        raise ValueError('oldest {} is not in list.'.format(oldest))
+    return commits[0:index + 1]
+
+
 def get_as_json(url, **kwargs):
     """Issue a GET request and return the response as JSON.
 

@@ -5,6 +5,9 @@ import unittest
 import requests
 
 from evergreen import helpers
+from mock import patch, MagicMock
+
+from analysis.evergreen.helpers import GITHUB_API
 from tests import test_utils
 
 
@@ -70,3 +73,93 @@ class TestEvergreenHelpers(unittest.TestCase):
         """Test for an input that is an invalid hash"""
         with self.assertRaises(requests.exceptions.HTTPError):
             helpers.get_full_git_commit_hash('invalid_hash', self.creds['github']['token'])
+
+
+class TestGitCommit(unittest.TestCase):
+    """
+    Test get_git_commits.
+    """
+
+    def setUp(self):
+        self.url = '{}/repos/mongodb/mongo/commits'.format(GITHUB_API)
+
+    @patch('evergreen.helpers.requests')
+    def test_get_git_commits(self, mock_requests):
+        """
+        Test getting 3 git commits.
+        """
+        mock_response = MagicMock(name='response', ok=True)
+        mock_requests.get.return_value = mock_response
+        helpers.get_git_commits('sha')
+        mock_requests.get.assert_called_with(self.url + '?sha=sha')
+        mock_response.json.assert_called_once()
+
+    @patch('evergreen.helpers.requests')
+    def test_get_git_commits_per_page(self, mock_requests):
+        """
+        Test getting 3 git commits.
+        """
+        mock_response = MagicMock(name='response', ok=True)
+        mock_requests.get.return_value = mock_response
+        helpers.get_git_commits('sha', per_page=1)
+        mock_requests.get.assert_called_with(self.url + '?sha=sha&per_page=1')
+        mock_response.json.assert_called_once()
+
+    @patch('evergreen.helpers.requests')
+    def test_get_git_commits_not_ok(self, mock_requests):
+        """
+        Test getting 3 git commits.
+        """
+        mock_response = MagicMock(name='response', ok=False)
+        mock_requests.get.return_value = mock_response
+        helpers.get_git_commits('sha')
+        mock_requests.get.assert_called_with(self.url + '?sha=sha')
+        mock_response.raise_for_status.assert_called_once()
+
+
+# pylint: disable=invalid-name
+class TestGetGithashes(unittest.TestCase):
+    """
+    Test get_githashes.
+    """
+
+    def setUp(self):
+        self.expected = [
+            '4cdaee88d7122f3ccba152ae37d3b5b69b3b398f', '472d4ecaf989b239e324ef12b39357802d96f607',
+            '461184c1467fb6c130638b27bf1d71962c7e830b'
+        ]
+        self.return_value = [{'sha': sha} for sha in self.expected]
+
+    @patch('evergreen.helpers.get_git_commits')
+    def test_get_githashes_in_range(self, mock_get):
+        """
+        Test getting 3 git commits in range.
+        """
+        mock_get.return_value = self.return_value
+        actual = helpers.get_githashes_in_range(self.expected[0], self.expected[-1])
+        self.assertEqual([commit['sha'] for commit in actual], self.expected)
+        mock_get.assert_called_once_with(self.expected[0])
+
+    @patch('evergreen.helpers.get_git_commits')
+    def test_get_githashes_in_range_lower_bounds_error(self, mock_get):
+        """
+        Test getting commit with error in lower bound.
+        """
+        mock_get.return_value = self.return_value
+
+        with self.assertRaises(ValueError) as exception:
+            helpers.get_githashes_in_range('new', 'old')
+
+        self.assertEqual(str(exception.exception), 'newest new is not in list.')
+
+    @patch('evergreen.helpers.get_git_commits')
+    def test_get_githashes_in_range_upper_bounds_error(self, mock_get):
+        """
+        Test getting commit with error in upper.
+        """
+        mock_get.return_value = self.return_value
+
+        with self.assertRaises(ValueError) as exception:
+            helpers.get_githashes_in_range(self.expected[0], 'old')
+
+        self.assertEqual(str(exception.exception), 'oldest old is not in list.')
