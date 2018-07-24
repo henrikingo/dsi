@@ -1276,8 +1276,8 @@
                     ]
                 },
                 "insert_jfalse":{
-                    "thread_threshold":0.52,
-                    "threshold":0.35,
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
                     "ticket":[
                         "BF-9320"
                     ]
