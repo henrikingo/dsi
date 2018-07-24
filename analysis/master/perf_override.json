@@ -39126,10 +39126,11 @@
                     ]
                 },
                 "Aggregation.IdentityView.CountsIntIDRange":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
+                    "thread_threshold":0.25,
+                    "threshold":0.17,
                     "ticket":[
-                        "BF-6227"
+                        "BF-6227",
+                        "BF-5126"
                     ]
                 },
                 "Aggregation.IdentityView.DistinctWithIndex":{
