@@ -28254,8 +28254,8 @@
                     ]
                 },
                 "Aggregation.Lookup.LocalArrayOfObject.Pipeline":{
-                    "thread_threshold":0.165,
-                    "threshold":0.11,
+                    "thread_threshold":0.18,
+                    "threshold":0.12,
                     "ticket":[
                         "BF-6906"
                     ]
