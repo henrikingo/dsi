@@ -10,8 +10,11 @@ from collections import OrderedDict
 from datetime import datetime, timedelta
 
 from bson.json_util import RELAXED_JSON_OPTIONS, dumps
+from click import get_terminal_size
 from pymongo import MongoClient
 from pymongo.uri_parser import parse_uri
+
+from bin.common.utils import mkdir_p
 
 DEFAULT_KEY_ORDER = ('_id', 'revision', 'project', 'variant', 'task', 'test', 'thread_level',
                      'processed_type')
@@ -40,8 +43,10 @@ class CommandConfiguration(object):
     Common Configuration for commands.
     """
 
+    # pylint: disable=too-many-locals
     def __init__(self, debug, out, file_format, mongo_uri, queryable, dry_run, compact, points,
-                 change_points, processed_change_points, build_failures):
+                 change_points, processed_change_points, build_failures, style, credentials,
+                 mongo_repo):
         """
         Create the command configuration.
 
@@ -56,6 +61,9 @@ class CommandConfiguration(object):
         :param str change_points: The change points collection name.
         :param str processed_change_points: The processed change points collection name.
         :param str build_failures: The build failures collection name.
+        :param list(str) style: The matplotlib style(s) to use.
+        :param str mongo_repo: The mongo db repo directory.
+        :param dict credentials: The github credentials.
         """
         self.debug = debug
         self.out = os.path.expandvars(os.path.expanduser(out))
@@ -82,6 +90,9 @@ class CommandConfiguration(object):
 
         self._build_failures = None
         self.build_failures_name = build_failures
+        self.style = style
+        self.mongo_repo = mongo_repo
+        self.credentials = credentials
 
     @property
     def mongo_client(self):
@@ -310,33 +321,86 @@ def filter_excludes(points, keys, exclude_patterns):
             yield point
 
 
-def item_show_func(task_identifier):
+def show_label_function(task_identifier, label_width=22, bar_width=34, info_width=70, padding=10):
     """
     Show task in progressbar status.
 
     :param task_identifier: The 'project', 'variant', 'task', and 'task' values.
     :type task_identifier: None, dict.
+    :param int label_width: The label width.
+    :param int bar_width: The bar width.
+    :param int info_width: The info width.
+    :param int padding: The padding.
     :return: The project, variant and task fields (in this order) joined by '/' .
     :rtype: str, None.
+
+    Note: label_width and bar_width are not used in this implementation, but would probably be
+    required for other more rigorous implementations.
     """
+    _ = label_width
+    _ = bar_width
     if task_identifier and isinstance(task_identifier, dict):
-        return '/'.join(task_identifier[k] for k in reversed(['project', 'variant', 'task']))
+        available = info_width - padding
+        info = '/'.join(task_identifier[k] for k in ['project', 'variant', 'task'])
+        if len(info) > available:
+            info = '/'.join(task_identifier[k] for k in ['variant', 'task'])
+        if len(info) > available:
+            info = '/'.join(task_identifier[k] for k in ['task'])
+        return info
     return None
 
 
-def get_matching_tasks(points, query, no_older):
+def get_bar_template(label_width, bar_width, info_width):
+    """
+    Get a format for the progress bar.
+
+    :param int label_width: The width of the label (LHS) portion of the progress bar.
+    :param int bar_width: The width of the progress (center) portion of the bar.
+    :param int info_width: The width of the info (RHS) portion of the bar.
+    :return: A format string, like '%(label)-10.10s [%(bar)20.20s] %(info)-10.10s'.
+    """
+    bar_template = '%(label)-{0}.{0}s [%(bar){1}.{1}s] %(info)-{2}.{2}s'.format(
+        label_width, bar_width, info_width)
+    return bar_template
+
+
+def get_bar_widths(label_width=22, max_bar_width=34, max_info_width=75, padding=10, width=None):
+    """
+    Get progress bar widths so as to fit on a terminal line (with a little padding).
+
+    :param int label_width: The max width of the label (LHS) portion of the progress bar.
+    :param int max_bar_width: The max width of the progress (center) portion of the bar.
+    :param int max_info_width: The max width of the info (RHS) portion of the bar.
+    :param width: The actual terminal width or None (None => get the width).
+    :type width: int, None.
+    :param int padding: The padding for the bar.
+    :return: Updated label_width, bar_width, info_width, padding to fit the line.
+    :rtype: (int,int,int,int).
+    """
+    if width is None:
+        width, _ = get_terminal_size()
+    width = width - 4 - label_width - padding
+    bar_width = min(width / 2, max_bar_width)
+    info_width = min(width - bar_width, max_info_width)
+    return label_width, bar_width, info_width, padding
+
+
+def get_matching_tasks(points, query, no_older=None):
     """
     Get all the tasks in the point collection that match project, variant, task, test and have
     data newer than no_older.
 
     :param collection points: The points collection.
     :param dict query: The query to use (generated from command line params).
-    :param int no_older: Filter tasks only with data older than this.
+    :param no_older: Filter tasks only with data older than this. If no value is supplied then
+    don't filter on start time.
+    :type no_older: int, None.
     :return: Unique matching tasks.
     :rtype: list(dict).
     """
-    old = datetime.now() - timedelta(days=no_older)
-    query['start'] = {"$gt": int(old.strftime('%s'))}
+    if no_older is not None:
+        old = datetime.now() - timedelta(days=no_older)
+        query['start'] = {"$gt": int(old.strftime('%s'))}
     pipeline = [{
         '$match': query
     }, {
@@ -420,3 +484,16 @@ def generate_tests(matching_tasks):
             test_identifier['test'] = test_name
             del test_identifier['tests']
             yield test_identifier
+
+
+def save_plot(figure, pathname, filename):
+    """
+    Save the figure in filename in pathname. Pathname is created if it does not exist.
+
+    :param object figure: The figure to save.
+    :param str pathname: The pathname to save in it.
+    :param str filename: The filename to save it in.
+    """
+    mkdir_p(pathname)
+    full_filename = os.path.join(pathname, filename)
+    figure.savefig(full_filename)

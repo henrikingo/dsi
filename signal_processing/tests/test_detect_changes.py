@@ -31,10 +31,11 @@ class TestDetectChangesDriver(unittest.TestCase):
         tests = set(['mixed_insert', 'mixed_findOne'])
         mock_model = mock_PointsModel.return_value
         mock_model.compute_change_points.return_value = (1, 2, 3)
-        test_driver = detect_changes.DetectChangesDriver(
-            self.sysperf_perf_json, self.mongo_uri, weighting=0.001)
+        test_driver = detect_changes.DetectChangesDriver(self.sysperf_perf_json, self.mongo_uri,
+                                                         0.001, 'mongo_repo')
         test_driver.run()
-        mock_PointsModel.assert_called_once_with(self.sysperf_perf_json, self.mongo_uri)
+        mock_PointsModel.assert_called_once_with(
+            self.sysperf_perf_json, self.mongo_uri, mongo_repo='mongo_repo', credentials=None)
         compute_change_points_calls = [call(test, weighting=0.001) for test in tests]
         mock_model.compute_change_points.assert_has_calls(
             compute_change_points_calls, any_order=True)
@@ -109,10 +110,11 @@ class TestPointsModel(unittest.TestCase):
         test_model.get_points(self.sysperf_perf_json['data']['results'][0]['name'])
         mock_cursor.return_value.limit.assert_called_with(limit)
 
+    @patch('signal_processing.qhat.get_githashes_in_range_repo')
     @patch('signal_processing.detect_changes.QHat', autospec=True)
     @patch('signal_processing.detect_changes.PointsModel.get_points', autospec=True)
     @patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True)
-    def test_compute_change_points(self, mock_MongoClient, mock_get_points, mock_QHat):
+    def test_compute_change_points(self, mock_MongoClient, mock_get_points, mock_QHat, mock_git):
         expected_query = OrderedDict(
             [('project', self.sysperf_perf_json['project_id']),
              ('variant', self.sysperf_perf_json['variant']), ('task',
@@ -144,6 +146,8 @@ class TestPointsModel(unittest.TestCase):
                 'thread_level': 4
             },
             pvalue=None,
+            credentials=None,
+            mongo_repo=None,
             weighting=0.001)
         mock_db.change_points.initialize_ordered_bulk_op.assert_called_once()
         mock_bulk.find.assert_called_once_with(expected_query)

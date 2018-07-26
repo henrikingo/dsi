@@ -11,9 +11,10 @@ import random
 import structlog
 import numpy as np
 
-from matplotlib.ticker import FuncFormatter, MaxNLocator
 from scipy import stats
 from scipy.stats import expon
+
+from analysis.evergreen.helpers import get_githashes_in_range_github, get_githashes_in_range_repo
 
 DEFAULT_FIGIZE = (18, 8)
 
@@ -67,6 +68,7 @@ def linear_weights(size, weighting):
     :param weighting: The percentage difference between points.
     :return: An array of weights to multiply against the values to grow or decay them.
     :rtype: list(float).
+    TODO: Move as part of PERF-1608.
     """
     weights = np.array([1 - weighting * i for i in range(size - 1, -1, -1)], dtype=np.float64)
     return weights
@@ -113,6 +115,7 @@ def exponential_weights(size, weighting):
 
     See `expon<https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.expon.html>`
     See `ppf<https://en.wikipedia.org/wiki/Quantile_function>`.
+    TODO: Move as part of PERF-1608.
     """
     # create at least 100 or size evenly spaced numbers from 1 to ppf(1 - weighting).
     # ppf is probability of the variable being less than or equal to that value.
@@ -144,6 +147,7 @@ def get_location(behind_average, value, ahead_average):
     :param float ahead_average: The mean value of the series ahead of value.
     :return: The location.
     :rtype: tuple(str, str).
+    TODO: Move as part of PERF-1608.
     """
     diff_to_behind_mean = behind_average - value
     diff_to_ahead = ahead_average - value
@@ -208,6 +212,7 @@ def select_start_end(input_series, prev_index, index, next_index, weighting, bou
     :param weighting: The weighting to apply to each value (exponential).
     :return: A tuple of (start, end, location).
     :rtype: tuple(int, int, str).
+    TODO: Move as part of PERF-1608.
     """
     LOG.debug(
         "determine start end",
@@ -289,12 +294,44 @@ def select_start_end(input_series, prev_index, index, next_index, weighting, bou
     return start, start + 1, location
 
 
+def generate_start_and_end(sorted_change_points, series, weighting=.001):
+    """
+    Given an ordered list of change points, calculate the start and end and update each in place.
+
+    It is assumed that the change_points sorted.
+
+    :param list(dict) sorted_change_points: The list of sorted change points.
+    :param list(float) series: The series.
+    :param float weighting: The weighting for the decay.
+    :return: The updated list of change points.
+    :rtype: list(dict).
+    TODO: Move as part of PERF-1608.
+    """
+    start_ends = []
+    if sorted_change_points:
+        prev_index = 0
+        for position, point in enumerate(sorted_change_points):
+            if position + 1 < len(sorted_change_points):
+                next_index = sorted_change_points[position + 1]
+            else:
+                next_index = len(series)
+
+            start, end, location = select_start_end(
+                series, prev_index, point, next_index, weighting=weighting)
+
+            start_ends.append({'index': point, 'start': start, 'end': end, 'location': location})
+            prev_index = end
+
+    return start_ends
+
+
 def generate_pairs(values):
     """
     Given a list of values, generate pairs.
 
     :param list values: The list of values.
     :return: The list as pairs of values.
+    TODO: Move as part of PERF-1608.
     """
 
     if values:
@@ -312,6 +349,7 @@ def describe_range(series, start, end, lookup):
     :param int start: The start index.
     :param int end: The end index.
     :param dict((int, int), stats) lookup: Lookup table for data.
+    TODO: Consider Moving as part of PERF-1608.
     """
     if end != start:
         behind_range = (start, end)
@@ -341,6 +379,7 @@ def describe_change_point(change_point, series, lookup):
     next set.
     :param list(float) series: The performance data.
     :param dict((int, int), stats) lookup: Lookup table for data.
+    TODO: Consider Moving as part of PERF-1608.
     """
     description = {}
     previous = describe_range(series, change_point['previous'], change_point['start'], lookup)
@@ -365,6 +404,7 @@ def link_ordered_change_points(sorted_change_points, series):
     :param list(float) series: The series.
     :return: The updated list of change points.
     :rtype: list(dict).
+    TODO: Consider Moving as part of PERF-1608.
     """
     if sorted_change_points:
         size = len(series)
@@ -392,36 +432,6 @@ def link_ordered_change_points(sorted_change_points, series):
     return sorted_change_points
 
 
-def generate_start_and_end(sorted_change_points, series, weighting=.001):
-    """
-    Given an ordered list of change points, calculate the start and end and update each in place.
-
-    It is assumed that the change_points sorted.
-
-    :param list(dict) sorted_change_points: The list of sorted change points.
-    :param list(float) series: The series.
-    :param float weighting: The weighting for the decay.
-    :return: The updated list of change points.
-    :rtype: list(dict).
-    """
-    start_ends = []
-    if sorted_change_points:
-        prev_index = 0
-        for position, point in enumerate(sorted_change_points):
-            if position + 1 < len(sorted_change_points):
-                next_index = sorted_change_points[position + 1]
-            else:
-                next_index = len(series)
-
-            start, end, location = select_start_end(
-                series, prev_index, point, next_index, weighting=weighting)
-
-            start_ends.append({'index': point, 'start': start, 'end': end, 'location': location})
-            prev_index = end
-
-    return start_ends
-
-
 class QHat(object):  #pylint: disable=too-many-instance-attributes
     """
     Class to compute the qhat e.divisive means change points.
@@ -429,16 +439,29 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
     KEYS = ('index', 'value', 'value_to_avg', 'value_to_avg_diff', 'average', 'average_diff',
             'window_size', 'probability')
 
+    # pylint: disable=too-many-arguments
     def __init__(self,
                  state,
                  pvalue=None,
                  permutations=None,
-                 online=None,
-                 threshold=None,
-                 weighting=None):
-        #pylint: disable=too-many-arguments
+                 weighting=None,
+                 mongo_repo=None,
+                 credentials=None):
         """
-        Constructor.
+        This class implements the QHat e.divisive algorithm in python.
+
+        :param dict state: The input data for the calculations. This contains the time series
+        performance data ('series') and the meta data (like 'revisions', 'orders', 'create_times',
+        'threads' and 'testname') to help identify the location of any calculated change points.
+        :param float pvalue: This the significance level for our testing.
+        See 'P-value<https://en.wikipedia.org/wiki/P-value>'.
+        :param int permutations: The max number of permutations to perform when evaluating the
+        pvalue significance testing.
+        :param float weighting: A value used to seed the decay weights array when finding the start
+        / end positions of the actual change point.
+        :param str mongo_repo: The mongo git repo location.
+        :param dict credentials: The github token.
+        TODO: Remove weighting, repo and credentials when fixing PERF-1608.
         """
         self.state = state
         self.series = self.state.get('series', None)
@@ -451,13 +474,10 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
 
         self._id = self.state.get('_id', None)
 
-        _ = threshold
-
         self._change_points = state.get('change_points', None)
         self.pvalue = 0.05 if pvalue is None else pvalue
         self.weighting = 0.001 if weighting is None else weighting
         self.permutations = 100 if permutations is None else permutations
-        self.online = 20 if online is None else online
         self._windows = state.get('windows', None)
         self._min_change = state.get('min_change', None)
         self._max_q = state.get('max_q', None)
@@ -466,6 +486,9 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
         self.length = None
         self.average_value = None
         self.average_diff = None
+
+        self.mongo_repo = mongo_repo
+        self.credentials = credentials
 
     def extract_q(self, qhat_values):
         """
@@ -588,7 +611,7 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
             windows = []
             pts = len(self.series)
             qhat_values = self.qhat_values(self.series)
-            LOG.debug("compute_change_points", qs=enumerate(qhat_values))
+            LOG.debug("compute_change_points", qs=list(enumerate(qhat_values)))
             first_q = self.extract_q(qhat_values)
             max_q = first_q[1]
             min_change = max_q
@@ -645,6 +668,51 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
 
         return self._change_points
 
+    def get_git_hashes(self, newer_revision, older_revision):
+        """
+        Get git hashes from local git repo or github.
+
+        :param str newer_revision: The newest git hash.
+        :param str older_revision: The oldest git hash.
+        :return: All the git hashes between oldest and newest (inclusive).
+        TODO: Move out as part PERF-1608.
+        """
+        LOG.debug(
+            "getting githashes from repo",
+            mongo_repo=self.mongo_repo,
+            newer_revision=newer_revision,
+            older_revision=older_revision)
+
+        git_hashes = None
+        # pylint: disable=bare-except
+        try:
+            git_hashes = get_githashes_in_range_repo(newer_revision, older_revision,
+                                                     self.mongo_repo)
+        except:
+            LOG.error("unexpected error on rev-list", exc_info=1)
+
+        if git_hashes is None:
+            github_token = None
+            if self.credentials and 'token' in self.credentials:
+                github_token = self.credentials['token']
+            LOG.debug(
+                "getting githashes from github",
+                mongo_repo=self.mongo_repo,
+                token=True if github_token else False,
+                newer_revision=newer_revision,
+                older_revision=older_revision)
+            try:
+                git_hashes = [
+                    commit['sha']
+                    for commit in get_githashes_in_range_github(
+                        newer_revision, older_revision, token=github_token, per_page=100)
+                ]
+            except:
+                LOG.error("unexpected error in get git hashes", exc_info=1)
+                git_hashes = []
+        LOG.debug("loaded git hashes", git_hashes=git_hashes)
+        return git_hashes
+
     def add_to_change_points(self, change_points, algorithm, keys):
         # pylint: disable=too-many-locals
         """
@@ -661,6 +729,7 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
 
         :return: The change points in order of probability.
         :rtype: list(dict).
+        TODO: Consider moving out as part PERF-1608.
         """
         points = []
         sorted_indexes = sorted([point[0] for point in change_points])
@@ -672,6 +741,9 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
             raw = dict(zip(keys, point))
             index = raw['index']
 
+            older_revision = self.revisions[start_ends[i]['start']]
+            newer_revision = self.revisions[start_ends[i]['end']]
+            all_revisions = self.get_git_hashes(newer_revision, older_revision)
             point = OrderedDict([('previous', start_ends[i]['previous']),
                                  ('start', start_ends[i]['start']),
                                  ('index', raw['index']),
@@ -681,6 +753,7 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
                                  ('weighting', self.weighting),
                                  ('probability', 1.0 - raw['probability']),
                                  ('revision', self.revisions[index]),
+                                 ('all_revisions', all_revisions),
                                  ('create_time', self.orders[index]),
                                  ('thread_level', self.thread_level),
                                  ('order', self.orders[index]),
@@ -720,87 +793,3 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
         if self._max_q is None:
             _ = self.change_points
         return self._max_q
-
-    def render(self, axes=None):  #pylint: disable=too-many-locals
-        """
-        Plot in matplotlib.
-        """
-        import matplotlib.pyplot as plt
-        flag_new = False
-        pts = len(self.series)
-        sort_pts = sorted(self.series)
-        lowbound = sort_pts[0] * 0.9
-        hibound = sort_pts[len(sort_pts) - 1] * 1.1
-        xvals = [i for i in range(pts)]
-
-        windows = self.windows
-        if windows[len(windows) - 1] - windows[len(windows) - 2] > self.online + 1:
-            current_dist = sorted(windows[len(windows) - (self.online + 1):len(windows) - 1])
-            new_pt = windows[len(windows) - 1]
-            min_end = current_dist[0]
-            max_end = current_dist[len(current_dist) - 1]
-            if new_pt < min_end or new_pt > max_end:
-                flag_new = True
-
-        def format_fn(tick_val, _):
-            """
-            Helper.
-            """
-            if int(tick_val) < len(self.revisions):
-                i = int(tick_val)
-                tick_str = self.revisions[i][0:7]
-                if self.dates and i < len(self.dates):
-                    tick_str = tick_str + '\n' + self.dates[i].strftime("%H:%M %Y/%m/%d")
-            else:
-                tick_str = ''
-            return tick_str
-
-        title = "{name} ({threads}) : {algorithm}".format(
-            name=self.testname, threads=self.threads if self.threads else 'max', algorithm="qhat")
-
-        # always create 1 subplot so that the rest of the code is shared
-        if not axes:
-            plt.figure(figsize=(DEFAULT_FIGIZE[0], DEFAULT_FIGIZE[1] / 2))
-            axes = plt.subplot(1, 1, 1)
-
-        axes.set_title(title, size=16)
-        axes.set_ylabel('ops per sec')
-        axes.axis([0, pts, lowbound, hibound])
-
-        axes.xaxis.set_major_formatter(FuncFormatter(format_fn))
-        axes.xaxis.set_major_locator(MaxNLocator(integer=True))
-
-        for tick in axes.get_xticklabels():
-            tick.set_visible(True)
-
-        # DRAW GRAPH
-        for change_point in self.change_points:
-            # fake probabilities while we investigate
-            # p = (change_point[1] - self.min_change) / (self.max_q - self.min_change)
-            # print(p)
-            # diff to min_value sets color
-            diff = (self.max_q - self.min_change)
-            if not diff:
-                diff = 1
-            cval = format(255 - min(255, int(
-                (change_point['value'] - self.min_change) / diff * 255)), '02x')
-            cstring = '#ff' + cval + cval
-            axes.axvline(x=change_point['index'], color=cstring, label=change_point['revision'])
-        if flag_new and self.series:
-            axes.axvline(x=pts - 1, color='r', linewidth=2, label=self.revisions[pts - 1])
-
-        axes.plot(xvals, self.series, 'b-')
-        axes.legend(loc="upper right")
-        return plt
-
-    def save(self, _):
-        """
-        Save.
-        """
-        self.state['change_points'] = self.change_points
-        self.state['windows'] = self.windows
-        self.state['online'] = self.online
-        self.state['min_change'] = self.min_change
-        self.state['max_q'] = self.max_q
-        self.state['min_change'] = self.min_change
-        # TODO: encapsulate

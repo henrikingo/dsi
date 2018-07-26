@@ -6,19 +6,24 @@ To get access to the help try the following command:
 
     $> change-points help
 """
+import functools
 import os
+from os.path import expanduser, exists, isdir
 from StringIO import StringIO
 from collections import OrderedDict
 
 import click
 import structlog
 
+from analysis.evergreen.helpers import get_git_credentials
 from bin.common import log
 from signal_processing.commands.compare import print_result, plot_test, \
     compare
+from signal_processing.commands.compute import compute_change_points
 from signal_processing.commands.helpers import process_params, process_excludes, \
     PROCESSED_TYPE_ACKNOWLEDGED, PROCESSED_TYPE_HIDDEN, PROCESSED_TYPES, get_matching_tasks, \
-    filter_legacy_tasks, generate_tests, filter_tests, item_show_func, CommandConfiguration
+    filter_legacy_tasks, generate_tests, filter_tests, show_label_function, CommandConfiguration, \
+    get_bar_template, get_bar_widths
 from signal_processing.commands.list import list_change_points
 from signal_processing.commands.mark import mark_change_points
 from signal_processing.commands.update import update_change_points
@@ -32,7 +37,7 @@ BUILD_FAILURES = 'build_failures'
 
 LOG = structlog.getLogger(__name__)
 
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'], max_content_width=120)
 
 
 @click.group(context_settings=CONTEXT_SETTINGS, invoke_without_command=True)
@@ -59,14 +64,24 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
     help='The processed change points collection name.')
 @click.option(
     '--build_failures', default=BUILD_FAILURES, help='The build failures collection name.')
+@click.option(
+    '--style', default=['bmh'], multiple=True, help="""The default matplot lib style to use.""")
+@click.option('--token-file', default=None, envvar='DSI_TOKEN_FILE')
+@click.option('--mongo-repo', 'mongo_repo', default='~/src', envvar='DSI_MONGO_REPO')
 @click.pass_context
 def cli(context, debug, logfile, out, file_format, mongo_uri, queryable, dry_run, compact, points,
-        change_points, processed_change_points, build_failures):
-    # pylint: disable=missing-docstring, too-many-arguments
+        change_points, processed_change_points, build_failures, style, token_file, mongo_repo):
+    """
+For a list of styles see 'style sheets<https://matplotlib.org/users/style_sheets.html>'.
+"""
+    # pylint: disable=missing-docstring, too-many-arguments, too-many-locals
     log.setup_logging(debug > 0, filename=os.path.expanduser(logfile) if logfile else logfile)
+    credentials = get_git_credentials(token_file) if token_file else None
+    mongo_repo = expanduser(mongo_repo) if mongo_repo else mongo_repo
+    mongo_repo = mongo_repo if exists(mongo_repo) and isdir(mongo_repo) else None
     context.obj = CommandConfiguration(debug, out, file_format, mongo_uri, queryable, dry_run,
                                        compact, points, change_points, processed_change_points,
-                                       build_failures)
+                                       build_failures, style, credentials, mongo_repo)
     if context.invoked_subcommand is None:
         print context.get_help()
 
@@ -101,7 +116,7 @@ def mark_command(command_config, exclude_patterns, revision, project, variant, t
     Mark change point(s) as acknowledged.This process creates a copy of a change_points (ephemeral
 output of the signal processing algorithm) in the (persistent) processed_change_point collection.
 
-Arguments can be string or patterns, A pattern starts with /.
+Arguments can be strings or patterns, A pattern starts with /.
 
 \b
 REVISION, the revision of the change point. This parameter is mandatory.
@@ -476,18 +491,29 @@ For Example:
     group_by_task = OrderedDict()
     group_by_test = OrderedDict()
 
-    label = "Starting".ljust(20)
-    len_label = len(label)
+    label = "Compare"
+
+    label_width, bar_width, info_width, bar_padding = get_bar_widths()
+    bar_template = get_bar_template(label_width, bar_width, info_width)
+    show_label = functools.partial(
+        show_label_function,
+        label_width=label_width,
+        bar_width=bar_width,
+        info_width=info_width,
+        padding=bar_padding)
 
     with click.progressbar(tests,
-                           label=label + " :",
-                           item_show_func=item_show_func if progressbar else None,
-                           file=None if progressbar else StringIO()) as progress:# yapf: disable
+                           label=label,
+                           item_show_func=show_label,
+                           file=None if progressbar else StringIO(),
+                           bar_template=bar_template) as progress: # yapf: disable
 
         for test_identifier in progress:
-            test_name = test_identifier['test']
+            project = test_identifier['project']
+            variant = test_identifier['variant']
             task_name = test_identifier['task']
-            progress.label = test_name[0:len_label].ljust(len_label) + ' :'
+            test_name = test_identifier['test']
+            progress.label = test_name
             progress.render_progress()
             try:
                 LOG.debug('compare', test_identifier=test_identifier)
@@ -519,7 +545,111 @@ For Example:
         for result in calculations:
             print_result(result, command_config)
 
-    if not command_config.dry_run and save or show:
-        for test_identifier, results in group_by_test.items():
-            plot_test(save, show, test_identifier, results, padding, sig_lvl, minsizes,
-                      command_config.out, command_config.format)
+    import matplotlib.pyplot as plt
+    with plt.style.context(command_config.style):
+        if not command_config.dry_run and save or show:
+            for test_identifier, results in group_by_test.items():
+                plot_test(save, show, test_identifier, results, padding, sig_lvl, minsizes,
+                          command_config.out, command_config.format)
+
+
+@cli.command(name="compute")
+@click.pass_obj
+@click.option(
+    '--exclude',
+    'excludes',
+    multiple=True,
+    help="Exclude all points matching this pattern. This parameter can be provided "
+    "multiple times.")
+@click.option('--progressbar/--no-progressbar', default=True)
+@click.option('--weighting', default=.001)
+@click.option('--legacy/--no-legacy', default=False)
+@click.argument('project', required=True)
+@click.argument('variant', required=False)
+@click.argument('task', required=False)
+@click.argument('test', required=False)
+def compute_command(command_config, excludes, progressbar, weighting, legacy, project, variant,
+                    task, test):
+    # pylint: disable=too-many-locals, too-many-arguments, line-too-long
+    """
+Compute / recompute change point(s). This deletes and then replaces the current change points
+for the matching tasks.
+
+Arguments can be strings or patterns, A pattern starts with /.
+
+\b
+PROJECT, the project name or a regex (like /^sys-perf-3.*/ or /^(sys-perf|performance)$/). This
+parameter is mandatory.
+VARIANT, the build variant or a regex.
+TASK, the task name or a regex.
+TEST, the test name or a regex.
+THREADS, the thread level or a regex.
+\b
+You can use '' in place of VARIANT, TASK, TEST, THREADS if you want to match all. See the
+examples.
+\b
+Examples:
+    # dry run compute all sys-perf change points
+    $> change-points compute sys-perf -n
+\b
+    # compute all sys-perf change points
+    $> change-points compute sys-perf
+\b
+    # compute linux-1-node-replSet sys-perf change points
+    $> change-points compute sys-perf linux-1-node-replSet
+\b
+    # compute replSet sys-perf change points
+    $> change-points compute sys-perf '/linux-.-node-replSet/'
+\b
+    # compute non canary change_streams_latency linux-1-node-replSet sys-perf change points
+    $> change-points compute sys-perf revision linux-1-node-replSet change_streams_latency
+    --exclude '/^(fio_|canary_)/'
+\b
+    # compute canary change_streams_latency linux-1-node-replSet sys-perf change points
+    $> change-points compute sys-perf linux-1-node-replSet change_streams_latency \
+       '/^(fio_|canary_)/'
+\b
+    #  compute the revision sys-perf find_limit-useAgg
+    $> change-points compute sys-perf '' '' find_limit-useAgg
+"""
+    LOG.debug('starting')
+    points = command_config.points
+    query = process_params(None, project, variant, task, test, None)
+
+    LOG.debug('finding matching tasks', query=query)
+    matching_tasks = get_matching_tasks(points, query)
+    if not legacy:
+        matching_tasks = filter_legacy_tasks(matching_tasks)
+    else:
+        matching_tasks = list(matching_tasks)
+
+    LOG.debug('finding matching tests in tasks', matching_tasks=matching_tasks)
+    exclude_patterns = process_excludes(excludes)
+    tests = list(
+        test_identifier for test_identifier in generate_tests(matching_tasks)
+        if not filter_tests(test_identifier['test'], exclude_patterns))
+
+    label = "compute"
+    label_width, bar_width, info_width, padding = get_bar_widths()
+    bar_template = get_bar_template(label_width, bar_width, info_width)
+    show_label = functools.partial(
+        show_label_function,
+        label_width=label_width,
+        bar_width=bar_width,
+        info_width=info_width,
+        padding=padding)
+
+    LOG.debug('finding matching tests in tasks', tests=tests)
+    with click.progressbar(tests,
+                           label=label,
+                           item_show_func=show_label,
+                           file=None if progressbar else StringIO(),
+                           bar_template=bar_template) as progress: # yapf: disable
+        for test_identifier in progress:
+            test_name = test_identifier['test']
+            progress.label = test_name
+            progress.render_progress()
+            try:
+                compute_change_points(test_identifier, weighting, command_config)
+            except (KeyError, ValueError):
+                LOG.error("unexpected error", exc_info=1)

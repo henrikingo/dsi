@@ -2,6 +2,7 @@
 Run the QHat algorithm and store results.
 """
 import logging
+from os.path import expanduser
 import time
 from collections import OrderedDict
 
@@ -23,14 +24,22 @@ class PointsModel(object):
 
     # pylint: disable=invalid-name
 
-    def __init__(self, perf_json, mongo_uri, limit=None, pvalue=None):
+    def __init__(self,
+                 perf_json,
+                 mongo_uri,
+                 limit=None,
+                 pvalue=None,
+                 mongo_repo=None,
+                 credentials=None):
         """
         :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
         :param str mongo_uri: The uri to connect to the cluster.
         :param limit: The limit for the number of points to retrieve from the database.
         :type limit: int, None.
         :param pvalue: The pvalue for the QHat algorithm.
-        :type pvalue: int, float, None.
+        :type pvalue: float, None.
+        :param str mongo_repo: The mongo git location.
+        :param dict credentials: The git credentials.
         """
         # pylint: disable=too-many-arguments
         self.perf_json = perf_json
@@ -38,6 +47,8 @@ class PointsModel(object):
         self._db = None
         self.limit = limit
         self.pvalue = pvalue
+        self.mongo_repo = mongo_repo
+        self.credentials = credentials
 
     @property
     def db(self):
@@ -125,7 +136,9 @@ class PointsModel(object):
                     'thread_level': thread_level
                 },
                 pvalue=self.pvalue,
-                weighting=weighting).change_points
+                weighting=weighting,
+                mongo_repo=self.mongo_repo,
+                credentials=self.credentials).change_points
             many_change_points += len(change_points[thread_level])
 
         # TODO: Revisit implementation of insert.
@@ -149,24 +162,31 @@ class DetectChangesDriver(object):
     An entrypoint for detecting change points.
     """
 
-    # pylint: disable=too-few-public-methods
-
-    def __init__(self, perf_json, mongo_uri, weighting):
+    # pylint: disable=too-few-public-methods,too-many-arguments
+    def __init__(self, perf_json, mongo_uri, weighting, mongo_repo, credentials=None):
         """
         :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
         :param str mongo_uri: The uri to connect to the cluster.
         :param float weighting: The weighting value.
         See 'QHat.DEFAULT_WEIGHTING' for the recommended default value.
+        :param str mongo_repo: The mongo repo directory.
+        :param dict credentials: The github credentials.
         """
         self.perf_json = perf_json
         self.mongo_uri = mongo_uri
         self.weighting = weighting
+        self.mongo_repo = mongo_repo
+        self.credentials = credentials
 
     def run(self):
         """
         Run the analysis to compute any change points with the new data.
         """
-        model = PointsModel(self.perf_json, self.mongo_uri)
+        model = PointsModel(
+            self.perf_json,
+            self.mongo_uri,
+            mongo_repo=self.mongo_repo,
+            credentials=self.credentials)
         for test in etl_helpers.extract_tests(self.perf_json):
             many_points, many_change_points, duration = model.compute_change_points(
                 test, weighting=self.weighting)
@@ -200,7 +220,8 @@ def detect_changes():
     if not conf['runtime'].get('is_patch', False):
         etl_helpers.load(perf_json, mongo_uri)
     # TODO : we probably want some way of passing a weighting in going forward. PERF-1588.
-    changes_driver = DetectChangesDriver(perf_json, mongo_uri, weighting=DEFAULT_WEIGHTING)
+    changes_driver = DetectChangesDriver(
+        perf_json, mongo_uri, weighting=DEFAULT_WEIGHTING, mongo_repo=expanduser('~/src'))
     changes_driver.run()
 
 

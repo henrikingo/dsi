@@ -9,7 +9,6 @@ from datetime import datetime
 
 import structlog
 from bin.common.utils import mkdir_p
-from matplotlib.ticker import FuncFormatter, MaxNLocator
 import numpy as np
 
 from signal_processing.detect_changes import PointsModel
@@ -193,12 +192,14 @@ def print_result(result, command_config):
                         int(time_taken_ratio)), "{} {}".format(python_points, points), m)
 
 
+# pylint: disable=too-many-instance-attributes
 class ChangePointImpl(object):
     """
     Base class for Change points implementation.
     """
 
-    def __init__(self, data, sig_lvl, minsize, weighting):
+    # pylint: disable=too-many-arguments
+    def __init__(self, data, sig_lvl, minsize, weighting, mongo_repo, credentials=None):
         """
         Create a change points generation class.
 
@@ -206,6 +207,8 @@ class ChangePointImpl(object):
         :param float sig_lvl: The significance level test.
         :param int minsize: The minimum distance between change points.
         :param float weighting: The value to use to generate the weightings.
+        :param str mongo_repo: The github repo.
+        :param dict credentials: The github credentials.
 
         See 'QHat.DEFAULT_WEIGHTING' for the recommended default value.
         """
@@ -215,6 +218,8 @@ class ChangePointImpl(object):
         self.minsize = minsize
         self._points = None
         self._time_taken = None
+        self.mongo_repo = mongo_repo
+        self.credentials = credentials
 
     def _calculate(self):
         """
@@ -286,7 +291,8 @@ class RChangePoint(ChangePointImpl):
 
     def _calculate(self):
         """
-        calculate the change points.
+        Calculate the change points.
+
         :return: list(int).
         """
         if self.e_divisive:
@@ -317,12 +323,16 @@ class PyChangePoint(ChangePointImpl):
 
     def _calculate(self):
         """
-        calculate the change points.
+        Calculate the change points.
+
         :return: list(int).
         """
         change_points = QHat(
-            self.data, pvalue=self.sig_lvl, online=self.minsize,
-            weighting=self.weighting).change_points
+            self.data,
+            pvalue=self.sig_lvl,
+            weighting=self.weighting,
+            mongo_repo=self.mongo_repo,
+            credentials=self.credentials).change_points
         self._points = [change_point['index'] for change_point in change_points]
 
 
@@ -391,6 +401,7 @@ def plot(python_points, r_points, result, axes):
     :param dict result: The task result.
     :param obj axes: The axes to draw on.
     """
+    from matplotlib.ticker import FuncFormatter, MaxNLocator
 
     thread_level = result['thread_level']
     series = result['series']
@@ -495,12 +506,15 @@ def compare(test_identifier, command_config, weighting, sig_lvl=0.05, minsizes=(
     test = test_identifier['test']
     calculations = []
 
+    credentials = command_config.credentials
+    mongo_repo = command_config.mongo_repo
+
     qry = {'project': project, 'variant': variant, 'task': task, 'test': test}
 
     LOG.debug('db.change_points.find(%s).pretty()', json.dumps(qry))
     perf_json = OrderedDict([('project_id', project), ('variant', variant), ('task_name', task)])
 
-    model = PointsModel(perf_json, command_config.mongo_uri)
+    model = PointsModel(perf_json, command_config.mongo_uri, mongo_repo, credentials=credentials)
     series, revisions, orders, _, create_times, _ = model.get_points(test)
 
     thread_levels = series.keys()
@@ -536,9 +550,21 @@ def compare(test_identifier, command_config, weighting, sig_lvl=0.05, minsizes=(
             values = [data['create_times'][-1]] * padding
             data['create_times'].extend(values)
 
-        data['python_points'] = PyChangePoint(data, sig_lvl, minsizes[0], weighting=weighting)
+        data['python_points'] = PyChangePoint(
+            data,
+            sig_lvl,
+            minsizes[0],
+            weighting=weighting,
+            mongo_repo=mongo_repo,
+            credentials=credentials)
         data['r_points'] = [
-            RChangePoint(data, sig_lvl, minsize, weighting=weighting) for minsize in minsizes
+            RChangePoint(
+                data,
+                sig_lvl,
+                minsize,
+                weighting=weighting,
+                mongo_repo=mongo_repo,
+                credentials=credentials) for minsize in minsizes
         ]
 
         del data['task_name']

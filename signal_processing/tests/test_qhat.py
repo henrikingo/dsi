@@ -6,6 +6,7 @@ import types
 import unittest
 
 import numpy as np
+from mock import patch
 
 from bin.common.log import setup_logging
 from sp_utils import load_json_file, approx_dict
@@ -58,7 +59,8 @@ class TestPostRunCheck(unittest.TestCase):
         self.assertEqual(len(expect), len(actual))
         self.assertEqual([], errors, "\n".join(errors) + "\n\n")
 
-    def test_random_ish_data(self):
+    @patch('signal_processing.qhat.get_githashes_in_range_repo')
+    def test_random_ish_data(self, mock_git):
         """
         A cheeky test that noisy-looking data (random numbers generated from disjoint
         intervals) finds regressions. More of a regression-check than anything.
@@ -158,9 +160,8 @@ class TestPostRunCheck(unittest.TestCase):
         }
         pvalue = 0.01
         permutations = 100
-        online = 20
-        threshold = None
-        algo = QHat(state, pvalue, permutations, online, threshold)
+        mock_git.return_value = ['1', '2']
+        algo = QHat(state, pvalue, permutations)
         points = algo.change_points
         self.assertEqual(2, len(points))
 
@@ -174,6 +175,7 @@ class TestPostRunCheck(unittest.TestCase):
                 'location': 'behind',
                 'probability': 1.0,
                 'revision': 'ca',
+                'all_revisions': ['1', '2'],
                 'create_time': 41,
                 'thread_level': 4,
                 'order': 41,
@@ -219,7 +221,8 @@ class TestPostRunCheck(unittest.TestCase):
                 'probability': 0.0,
             }), approx_dict(points[1]['raw']))
 
-    def test_finds_simple_regression(self):
+    @patch('signal_processing.qhat.get_githashes_in_range_repo')
+    def test_finds_simple_regression(self, mock_git):
         """
         Test finding a simple regression.
         """
@@ -248,9 +251,7 @@ class TestPostRunCheck(unittest.TestCase):
         }
         pvalue = 0.01
         permutations = 100
-        online = 20
-        threshold = None
-        algo = QHat(state, pvalue, permutations, online, threshold)
+        algo = QHat(state, pvalue, permutations)
         points = algo.change_points
         self.assertEqual(1, len(points))
         self.assertDictContainsSubset({
@@ -267,7 +268,8 @@ class TestPostRunCheck(unittest.TestCase):
             'order': 16,
         }, approx_dict(points[0]))
 
-    def test_finds_ahead(self):
+    @patch('signal_processing.qhat.get_githashes_in_range_repo')
+    def test_finds_ahead(self, mock_git):
         """
         Test ahead.
         """
@@ -282,9 +284,7 @@ class TestPostRunCheck(unittest.TestCase):
         }
         pvalue = 0.01
         permutations = 100
-        online = 20
-        threshold = None
-        algo = QHat(state, pvalue, permutations, online, threshold)
+        algo = QHat(state, pvalue, permutations)
         points = algo.change_points
         self.assertEqual(1, len(points))
         self.assertDictContainsSubset({
@@ -301,7 +301,8 @@ class TestPostRunCheck(unittest.TestCase):
             'order': 14,
         }, approx_dict(points[0]))
 
-    def test_finds_behind(self):
+    @patch('signal_processing.qhat.get_githashes_in_range_repo')
+    def test_finds_behind(self, mock_git):
         """
         Test finding behind.
         """
@@ -316,9 +317,7 @@ class TestPostRunCheck(unittest.TestCase):
         }
         pvalue = 0.01
         permutations = 100
-        online = 20
-        threshold = None
-        algo = QHat(state, pvalue, permutations, online, threshold)
+        algo = QHat(state, pvalue, permutations)
         points = algo.change_points
         self.assertEqual(1, len(points))
         self.assertDictContainsSubset({
@@ -335,7 +334,8 @@ class TestPostRunCheck(unittest.TestCase):
             'order': 14,
         }, approx_dict(points[0]))
 
-    def test_finds_simple_regression2(self):
+    @patch('signal_processing.qhat.get_githashes_in_range_repo')
+    def test_finds_simple_regression2(self, mock_git):
         """
         Test another simple regression.
         """
@@ -364,9 +364,7 @@ class TestPostRunCheck(unittest.TestCase):
         }
         pvalue = 0.01
         permutations = 100
-        online = 20
-        threshold = None
-        algo = QHat(state, pvalue, permutations, online, threshold)
+        algo = QHat(state, pvalue, permutations)
         points = algo.change_points
         self.assertEqual(1, len(points))
 
@@ -398,7 +396,8 @@ class TestPostRunCheck(unittest.TestCase):
                 'probability': 0.0,
             }), approx_dict(points[0]['raw']))
 
-    def test_regression_and_recovery(self):
+    @patch('signal_processing.qhat.get_githashes_in_range_repo')
+    def test_regression_and_recovery(self, mock_git):
         """
         Test regression and recovery.
         """
@@ -431,9 +430,7 @@ class TestPostRunCheck(unittest.TestCase):
         }
         pvalue = 0.01
         permutations = 100
-        online = 20
-        threshold = None
-        algo = QHat(state, pvalue, permutations, online, threshold)
+        algo = QHat(state, pvalue, permutations)
         points = sorted(algo.change_points, key=lambda i: i['index'])
         self.assertEqual(2, len(points))
         self.assertDictContainsSubset(
@@ -491,7 +488,8 @@ class TestPostRunCheck(unittest.TestCase):
                 'probability': 0.0,
             }), approx_dict(points[1]['raw']))
 
-    def test_two_regressions(self):
+    @patch('signal_processing.qhat.get_githashes_in_range_repo')
+    def test_two_regressions(self, mock_git):
         """
         Test 2 regressions.
         """
@@ -524,9 +522,7 @@ class TestPostRunCheck(unittest.TestCase):
         }
         pvalue = 0.01
         permutations = 100
-        online = 20
-        threshold = None
-        algo = QHat(state, pvalue, permutations, online, threshold)
+        algo = QHat(state, pvalue, permutations)
         points = sorted(algo.change_points, key=lambda i: i['index'])
         self.assertEqual(2, len(points))
         self.assertDictContainsSubset(
@@ -633,9 +629,7 @@ class TestPostRunCheck(unittest.TestCase):
         }
         pvalue = 0.01
         permutations = 100
-        online = 20
-        threshold = None
-        algo = QHat(state, pvalue, permutations, online, threshold)
+        algo = QHat(state, pvalue, permutations)
         points = algo.change_points
         self.assertEqual(0, len(points))
 

@@ -5,8 +5,22 @@ Setup DSI
 This is a DSI wide setup file, however it currently only installs aws_tools to cleanup. This may get
 extended to install all of DSI as part of https://jira.mongodb.org/browse/PERF-1217.
 """
-
 from setuptools import setup
+
+# pylint: disable=line-too-long
+# The minimum set required to run.
+# Different from requirements.txt, this is the complete python environment for the project
+# including tests etc.
+# See 'requires v requirements<https://packaging.python.org/discussions/install-requires-vs-requirements/>'.
+# pylint: disable=invalid-name
+install_requirements = ['boto3==1.4.7',
+                        'click==6.7',
+                        'colorama===0.3.9',
+                        'pymongo==3.6.1',
+                        'PyYAML===3.12',
+                        'requests===2.18.4',
+                        'scipy==1.1.0',
+                        'structlog===18.1.0']
 
 setup(
     name='DSI',
@@ -19,7 +33,7 @@ setup(
               'signal_processing',
               'analysis',
               'analysis.evergreen'],
-    install_requires=['boto3==1.4.7'],
+    install_requires=install_requirements,
     # Cannot zip due to usage of __file__.
     zip_safe=False,
     use_2to3=True,

@@ -1,6 +1,7 @@
 """Unit tests for evergreen.helper functions. Using nosetest, run from dsi directory."""
 import platform
 import unittest
+from subprocess import PIPE
 
 import requests
 
@@ -120,7 +121,7 @@ class TestGitCommit(unittest.TestCase):
 # pylint: disable=invalid-name
 class TestGetGithashes(unittest.TestCase):
     """
-    Test get_githashes.
+    Test get_githashes_in_range_github.
     """
 
     def setUp(self):
@@ -131,35 +132,82 @@ class TestGetGithashes(unittest.TestCase):
         self.return_value = [{'sha': sha} for sha in self.expected]
 
     @patch('evergreen.helpers.get_git_commits')
-    def test_get_githashes_in_range(self, mock_get):
+    def test_get_githashes_in_range_github(self, mock_get):
         """
         Test getting 3 git commits in range.
         """
         mock_get.return_value = self.return_value
-        actual = helpers.get_githashes_in_range(self.expected[0], self.expected[-1])
+        actual = helpers.get_githashes_in_range_github(self.expected[0], self.expected[-1])
         self.assertEqual([commit['sha'] for commit in actual], self.expected)
-        mock_get.assert_called_once_with(self.expected[0])
+        mock_get.assert_called_once_with(self.expected[0], token=None, per_page=None)
 
     @patch('evergreen.helpers.get_git_commits')
-    def test_get_githashes_in_range_lower_bounds_error(self, mock_get):
+    def test_get_githashes_in_range_github_lower_bounds_error(self, mock_get):
         """
         Test getting commit with error in lower bound.
         """
         mock_get.return_value = self.return_value
 
         with self.assertRaises(ValueError) as exception:
-            helpers.get_githashes_in_range('new', 'old')
+            helpers.get_githashes_in_range_github('new', 'old')
 
         self.assertEqual(str(exception.exception), 'newest new is not in list.')
 
     @patch('evergreen.helpers.get_git_commits')
-    def test_get_githashes_in_range_upper_bounds_error(self, mock_get):
+    def test_get_githashes_in_range_github_upper_bounds_error(self, mock_get):
         """
         Test getting commit with error in upper.
         """
         mock_get.return_value = self.return_value
 
         with self.assertRaises(ValueError) as exception:
-            helpers.get_githashes_in_range(self.expected[0], 'old')
+            helpers.get_githashes_in_range_github(self.expected[0], 'old')
 
         self.assertEqual(str(exception.exception), 'oldest old is not in list.')
+
+
+# pylint: disable=invalid-name
+class TestGetRevList(unittest.TestCase):
+    """
+    Test get_githashes_in_range_repo.
+    """
+
+    @patch('evergreen.helpers.Popen')
+    def test_get_githashes_in_range_repo_error(self, mock_popen):
+        """
+        Test process error.
+        """
+        mock_process = MagicMock(name='process', returncode=1)
+        mock_process.communicate.return_value = ("newest\nolder\n", 'error')
+        mock_popen.return_value = mock_process
+        with self.assertRaises(ValueError) as exception:
+            helpers.get_githashes_in_range_repo('newest', 'oldest', 'repo')
+        expected = """'git rev-list oldest..newest' returned an error 1\nerror."""
+        self.assertEqual(str(exception.exception), expected)
+
+    @patch('evergreen.helpers.Popen')
+    def test_get_githashes_in_range_repo(self, mock_popen):
+        """
+        Test no error.
+        """
+        mock_process = MagicMock(name='process', returncode=0)
+        mock_process.communicate.return_value = ("newest\nolder\n", 'error')
+        mock_popen.return_value = mock_process
+        actual = helpers.get_githashes_in_range_repo('newest', 'oldest', 'repo')
+        expected = ['newest', 'older', 'oldest']
+        self.assertEqual(actual, expected)
+        mock_popen.assert_called_once_with(
+            ['git', 'rev-list', 'oldest..newest'], stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd='repo')
+
+    @patch('evergreen.helpers.Popen')
+    def test_get_githashes_in_range_repo_newest_error(self, mock_popen):
+        """
+        Test no error.
+        """
+        mock_process = MagicMock(name='process', returncode=0)
+        mock_process.communicate.return_value = ("sha\nolder\n", 'error')
+        mock_popen.return_value = mock_process
+        with self.assertRaises(ValueError) as exception:
+            helpers.get_githashes_in_range_repo('newest', 'oldest', 'repo')
+        expected = "newest 'newest' is not in list."
+        self.assertEqual(str(exception.exception), expected)
