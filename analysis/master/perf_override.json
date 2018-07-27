@@ -35297,8 +35297,8 @@
                     ]
                 },
                 "Queries.IntIDRange":{
-                    "thread_threshold":0.24,
-                    "threshold":0.16,
+                    "thread_threshold":0.25,
+                    "threshold":0.17,
                     "ticket":[
                         "BF-3257"
                     ]
