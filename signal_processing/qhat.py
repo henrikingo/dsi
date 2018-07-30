@@ -754,7 +754,7 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
                                  ('probability', 1.0 - raw['probability']),
                                  ('revision', self.revisions[index]),
                                  ('all_revisions', all_revisions),
-                                 ('create_time', self.orders[index]),
+                                 ('create_time', self.create_times[index]),
                                  ('thread_level', self.thread_level),
                                  ('order', self.orders[index]),
                                  ('order_of_change_point', order_of_change_point),
