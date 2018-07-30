@@ -309,7 +309,7 @@ def detect_changes():
     """
     Setup and run the detect changes algorithm.
     """
-    # send the logging output into detect_changes.log, this needs to be copied into the
+    # Send the logging output into detect_changes.log, this needs to be copied into the
     # reports directory later.
     log.setup_logging(True, 'detect_changes.log')
     evg_client = evergreen_client.Client()

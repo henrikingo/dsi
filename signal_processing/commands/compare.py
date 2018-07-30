@@ -404,7 +404,7 @@ def plot(python_points, r_points, result, axes):
     from matplotlib.ticker import FuncFormatter, MaxNLocator
 
     thread_level = result['thread_level']
-    series = result['series']
+    series = np.array(result['series'], dtype=np.float64)
     revisions = result['revisions']
     create_times = result['create_times']
 

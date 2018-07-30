@@ -1,0 +1,5 @@
+[run]
+omit=signal_processing/commands/visualize.py
+
+[report]
+omit=signal_processing/commands/visualize.py

@@ -8,6 +8,7 @@ To get access to the help try the following command:
 """
 import functools
 from multiprocessing import Pool, cpu_count
+import os
 from os.path import expanduser, exists, isdir
 from StringIO import StringIO
 from collections import OrderedDict
@@ -23,10 +24,12 @@ from signal_processing.commands.compute import compute_change_points
 from signal_processing.commands.helpers import process_params, process_excludes, \
     PROCESSED_TYPE_ACKNOWLEDGED, PROCESSED_TYPE_HIDDEN, PROCESSED_TYPES, get_matching_tasks, \
     filter_legacy_tasks, generate_tests, filter_tests, show_label_function, CommandConfiguration, \
-    get_bar_template, get_bar_widths, function_adapter
+    get_bar_template, get_bar_widths, function_adapter, save_plot
 from signal_processing.commands.list import list_change_points
 from signal_processing.commands.mark import mark_change_points
 from signal_processing.commands.update import update_change_points
+from signal_processing.commands.visualize import visualize
+
 from signal_processing.qhat import DEFAULT_WEIGHTING
 
 DB = "perf"
@@ -75,7 +78,7 @@ def cli(context, debug, logfile, out, file_format, mongo_uri, queryable, dry_run
 For a list of styles see 'style sheets<https://matplotlib.org/users/style_sheets.html>'.
 """
     # pylint: disable=missing-docstring, too-many-arguments, too-many-locals
-    log.setup_logging(debug > 0, filename=expanduser(logfile) if logfile else logfile)
+    log.setup_logging(debug > 0, filename=expanduser(logfile) if logfile else None)
     credentials = get_git_credentials(token_file) if token_file else None
     mongo_repo = expanduser(mongo_repo) if mongo_repo else mongo_repo
     mongo_repo = mongo_repo if exists(mongo_repo) and isdir(mongo_repo) else None
@@ -550,7 +553,7 @@ For Example:
         if not command_config.dry_run and save or show:
             for test_identifier, results in group_by_test.items():
                 plot_test(save, show, test_identifier, results, padding, sig_lvl, minsizes,
-                          command_config.out, command_config.format)
+                          command_config.out, command_config.file_format)
 
 
 @cli.command(name="compute")
@@ -667,3 +670,128 @@ Examples:
 
     pool.close()
     pool.join()
+
+
+@cli.command(name="visualize")
+@click.pass_obj
+@click.option('--progressbar/--no-progressbar', default=True)
+@click.option('--show/--no-show', default=True)
+@click.option('--save/--no-save', default=False)
+@click.option('--exclude', 'excludes', multiple=True)
+@click.option('--sigma', 'sigma', default=1.0)
+@click.option('--filter', 'filter_type', default="butter")
+@click.option('--only-change-points/--no-only-change-points', 'only_change_points', default=True)
+@click.argument('project', required=False)
+@click.argument('variant', required=False)
+@click.argument('task', required=False)
+@click.argument('test', required=False)
+def visualize_command(command_config, progressbar, show, save, excludes, sigma, filter_type,
+                      only_change_points, project, variant, task, test):
+    # pylint: disable=too-many-locals, too-many-arguments, line-too-long
+    """
+*Note : this command is provided as is and is liable to change or break.*
+\b
+Visualize performance data and change points.
+
+Arguments can be strings or patterns, A pattern starts with /.
+\b
+PROJECT, the project name or a regex (like /^sys-perf-3.*/ or /^(sys-perf|performance)$/).
+VARIANT, the build variant or a regex.
+TASK, the task name or a regex.
+TEST, the test name or a regex.
+
+\b
+Examples:
+    # visualize all sys-perf change points (with and without a progressbar)
+    $> change-points visualize sys-perf
+    $> change-points visualize sys-perf --no-progressbar
+\b
+    # visualize all linux-1-node-replSet sys-perf change points
+    $> change-points visualize sys-perf linux-1-node-replSet
+    # visualize all linux replSet sys-perf change points
+    $> change-points visualize sys-perf '/linux-.-node-replSet/'
+    # visualize all change_streams_latency linux 1 node replSet sys-perf change points  excluding
+    # canary type tests
+    $> change-points visualize sys-perf linux-1-node-replSet change_streams_latency \
+       --exclude '/^(fio_|canary_|NetworkBandwidth)/'
+    # visualize only canary change_streams_latency linux 1 node replSet sys-perf change points
+    $> change-points visualize sys-perf linux-1-node-replSet change_streams_latency \
+       '/^(fio_|canary_|NetworkBandwidth)/'
+
+\b
+See also the help for the base for extra parameters.
+\b
+For Example:
+    $> change-points -n visualize sys-perf
+\b
+    # save png images to ~/tmp/
+    $> change-points -o ~/tmp visualize sys-perf --save
+    # save svg images to ~/tmp/
+    $> change-points -o ~/tmp -f svg visualize sys-perf --save
+"""
+    # pylint: enable=line-too-long
+    LOG.debug('starting')
+    points = command_config.points
+
+    query = process_params(None, project, variant, task, test, None)
+    LOG.debug('processed params', query=query)
+
+    matching_tasks = filter_legacy_tasks(get_matching_tasks(points, query))
+    LOG.debug('matched tasks', matching_tasks=matching_tasks)
+
+    exclude_patterns = process_excludes(excludes)
+    tests = [
+        test_identifier for test_identifier in generate_tests(matching_tasks)
+        if not filter_tests(test_identifier['test'], exclude_patterns)
+    ]
+    LOG.debug('matched tests', tests=tests)
+
+    label = "visualize"
+
+    label_width, bar_width, info_width, padding = get_bar_widths()
+    bar_template = get_bar_template(label_width, bar_width, info_width)
+    show_label = functools.partial(
+        show_label_function,
+        label_width=label_width,
+        bar_width=bar_width,
+        info_width=info_width,
+        padding=padding)
+
+    import matplotlib.pyplot as plt
+    with plt.style.context(command_config.style):
+        with click.progressbar(tests,
+                               label=label,
+                               item_show_func=show_label,
+                               file=None if progressbar else StringIO(),
+                               bar_template=bar_template) as progress:# yapf: disable
+            figure = None
+            for test_identifier in progress:
+                test_name = test_identifier['test']
+                progress.label = test_name
+                progress.render_progress()
+                try:
+                    LOG.debug('visualize', test_identifier=test_identifier)
+                    for figure, thread_level in visualize(
+                            test_identifier,
+                            filter_type,
+                            command_config,
+                            sigma=sigma,
+                            only_change_points=only_change_points): # yapf: disable
+                        if save:
+                            pathname = os.path.join(command_config.out, test_identifier['project'],
+                                                    test_identifier['variant'],
+                                                    test_identifier['task'])
+
+                            filename = "{test}-{thread_level}.{file_format}".format(
+                                test=test_identifier['test'],
+                                thread_level=thread_level,
+                                file_format=command_config.file_format)
+                            save_plot(figure, pathname, filename)
+                        if show:
+                            figure.show()
+                        figure.close()
+
+                except KeyError:
+                    LOG.error("unexpected error", exc_info=1)
+                    if figure is not None:
+                        figure.close()
