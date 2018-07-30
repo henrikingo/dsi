@@ -64,6 +64,9 @@ thread_levels:
     shard:
       mmapv1: [1, 32]
       wiredTiger: [1, 32, 64]
+    standalone-audit:
+      mmapv1: [1, 16, 32]
+      wiredTiger: [1, 16, 32]
   crud-jfalse:
     mmapv1: [1, 4]
     wiredTiger: [1, 16, 32]
