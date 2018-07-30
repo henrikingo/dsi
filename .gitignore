@@ -18,3 +18,5 @@ bin/tests/unittest-files/*
 
 # Unit test config file
 /config.yml
+
+detect_changes.log

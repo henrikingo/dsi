@@ -18,6 +18,9 @@ def compute_change_points(test_identifier, weighting, command_config):
     :param dict test_identifier: The project, variant, task, test identifier.
     :param float weighting: The weighting on the decay.
     :param CommandConfig command_config: Common configuration.
+    :return: The test_identifier passed in. This is useful for updating the status when
+    running in a multiprocess environment.
+    :rtype: dict.
     """
     LOG.debug(
         'computing change points', test_identifier=test_identifier, dry_run=command_config.dry_run)
@@ -34,7 +37,9 @@ def compute_change_points(test_identifier, weighting, command_config):
         points_count, change_points, duration = model.compute_change_points(
             test_name, weighting=weighting)
         LOG.debug(
-            "change points",
+            "compute",
+            test_identifier=test_identifier,
             points_count=points_count,
             change_points=change_points,
             duration=str(timedelta(milliseconds=duration)))
+    return test_identifier

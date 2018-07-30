@@ -9,6 +9,7 @@ from collections import OrderedDict
 # pylint: disable=too-many-instance-attributes,too-many-arguments,too-few-public-methods
 from datetime import datetime, timedelta
 
+import structlog
 from bson.json_util import RELAXED_JSON_OPTIONS, dumps
 from click import get_terminal_size
 from pymongo import MongoClient
@@ -36,6 +37,8 @@ PROCESSED_TYPES = [PROCESSED_TYPE_HIDDEN, PROCESSED_TYPE_ACKNOWLEDGED]
 """
 The list of recommended procssed_types for a processed change point.
 """
+
+LOG = structlog.getLogger(__name__)
 
 
 class CommandConfiguration(object):
@@ -65,35 +68,24 @@ class CommandConfiguration(object):
         :param str mongo_repo: The mongo db repo directory.
         :param dict credentials: The github credentials.
         """
-        self.debug = debug
-        self.out = os.path.expandvars(os.path.expanduser(out))
-        self.format = file_format
-        self.mongo_uri = mongo_uri
-        self.queryable = queryable
-        self.dry_run = dry_run
-        self.compact = compact
+        self.__setstate__({
+            'debug': debug,
+            'out': out,
+            'file_format': file_format,
+            'mongo_uri': mongo_uri,
+            'queryable': queryable,
+            'dry_run': dry_run,
+            'compact': compact,
+            'points': points,
+            'change_points': change_points,
+            'processed_change_points': processed_change_points,
+            'build_failures': build_failures,
+            'style': style,
+            'mongo_repo': mongo_repo,
+            'credentials': credentials
+        })
 
-        self._mongo_client = None
-
-        self._database = None
-        uri = parse_uri(mongo_uri)
-        self.database_name = uri['database']
-
-        self._points = None
-        self.points_name = points
-
-        self._change_points = None
-        self.change_points_name = change_points
-
-        self._processed_change_points = None
-        self.processed_change_points_name = processed_change_points
-
-        self._build_failures = None
-        self.build_failures_name = build_failures
-        self.style = style
-        self.mongo_repo = mongo_repo
-        self.credentials = credentials
-
+    # pylint: disable=attribute-defined-outside-init
     @property
     def mongo_client(self):
         """
@@ -105,6 +97,7 @@ class CommandConfiguration(object):
             self._mongo_client = MongoClient(self.mongo_uri)
         return self._mongo_client
 
+    # pylint: disable=attribute-defined-outside-init
     @property
     def database(self):
         """
@@ -116,6 +109,7 @@ class CommandConfiguration(object):
             self._database = self.mongo_client.get_database(self.database_name)
         return self._database
 
+    # pylint: disable=attribute-defined-outside-init
     @property
     def points(self):
         """
@@ -127,6 +121,7 @@ class CommandConfiguration(object):
             self._points = self.database.get_collection(self.points_name)
         return self._points
 
+    # pylint: disable=attribute-defined-outside-init
     @property
     def change_points(self):
         """
@@ -138,6 +133,7 @@ class CommandConfiguration(object):
             self._change_points = self.database.get_collection(self.change_points_name)
         return self._change_points
 
+    # pylint disable=attribute-defined-outside-init
     @property
     def processed_change_points(self):
         """
@@ -150,6 +146,7 @@ class CommandConfiguration(object):
                 self.database.get_collection(self.processed_change_points_name)
         return self._processed_change_points
 
+    # pylint disable=attribute-defined-outside-init
     @property
     def build_failures(self):
         """
@@ -161,6 +158,72 @@ class CommandConfiguration(object):
             self._build_failures = \
                 self.database.get_collection(self.build_failures_name)
         return self._build_failures
+
+    def __getstate__(self):
+        """
+        Get state for pickle support.
+
+        Multiprocessor uses pickle to serialize and deserialize data to the sub processes. However,
+        complex types like database and collection references cannot be pickled. They can be
+        recreated with the core state (and this is what this calls does).
+
+        :return: The state to pickle.
+        """
+        return {
+            'debug': self.debug,
+            'out': self.out,
+            'file_format': self.file_format,
+            'mongo_uri': self.mongo_uri,
+            'queryable': self.queryable,
+            'dry_run': self.dry_run,
+            'compact': self.compact,
+            'points': self.points_name,
+            'change_points': self.change_points_name,
+            'processed_change_points': self.processed_change_points_name,
+            'build_failures': self.build_failures_name,
+            'style': self.style,
+            'mongo_repo': self.mongo_repo,
+            'credentials': self.credentials
+        }
+
+    def __setstate__(self, state):
+        """
+        Set state for pickle support.
+
+        Clear the lazy params like mongo client so that the are recreated on demand.
+
+        :param dict state: The pickled state.
+        """
+        self.debug = state['debug']
+        self.out = os.path.expandvars(os.path.expanduser(state['out']))
+        self.file_format = state['file_format']
+        self.mongo_uri = state['mongo_uri']
+        self.queryable = state['queryable']
+        self.dry_run = state['dry_run']
+        self.compact = state['compact']
+
+        self._mongo_client = None
+
+        self._database = None
+        uri = parse_uri(state['mongo_uri'])
+
+        # TODO: argue the name in PERF-1590
+        self.database_name = uri['database']
+
+        self._points = None
+        self.points_name = state['points']
+
+        self._change_points = None
+        self.change_points_name = state['change_points']
+
+        self._processed_change_points = None
+        self.processed_change_points_name = state['processed_change_points']
+
+        self._build_failures = None
+        self.build_failures_name = state['build_failures']
+        self.style = state['style']
+        self.mongo_repo = state['mongo_repo']
+        self.credentials = state['credentials']
 
 
 def flags_to_value(flags):
@@ -497,3 +560,29 @@ def save_plot(figure, pathname, filename):
     mkdir_p(pathname)
     full_filename = os.path.join(pathname, filename)
     figure.savefig(full_filename)
+
+
+def function_adapter(arguments, **kwargs):
+    """
+    Worker function to adapt calls in imap_unordered. This function unwraps the incoming arguments
+    to extract the function and actual function arguments. It also adapts the returned values to
+    include a status bool. Status indicates that the function ran (not that it worked), simply
+    that it did not raise an exception.
+
+    :param list args: The function (arguments[0]) and the parameters (arguments[1:]).
+    :param dict kwargs: The key word args.
+    :return: A bool status followed by the return value of function or the exception thrown.
+    :rtype: bool, object.
+    See method `Pool.imap_unordered`.
+    """
+    function_reference = arguments[0]
+    function_arguments = arguments[1:]
+    try:
+        return True, function_reference(*function_arguments, **kwargs)
+    except Exception as e:  # pylint: disable=broad-except
+        LOG.warn(
+            "error in function call",
+            function=function_reference,
+            arguments=function_arguments,
+            exc_info=1)
+        return False, e

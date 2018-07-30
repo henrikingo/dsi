@@ -8,6 +8,7 @@ from collections import OrderedDict
 from mock import ANY, MagicMock, call, patch
 
 import signal_processing.detect_changes as detect_changes
+from signal_processing.detect_changes import method_adapter, print_result
 from sp_utils import load_json_file
 
 
@@ -25,10 +26,12 @@ class TestDetectChangesDriver(unittest.TestCase):
         self.sysperf_perf_json = load_json_file(sysperf_perf_file)
         self.sysperf_points = load_json_file(sysperf_points_file)
 
-    @patch('signal_processing.detect_changes.DetectChangesDriver._print_result', autospec=True)
+    @patch('signal_processing.detect_changes.Pool', autospec=True)
     @patch('signal_processing.detect_changes.PointsModel', autospec=True)
-    def test_run(self, mock_PointsModel, mock__print_result):
-        tests = set(['mixed_insert', 'mixed_findOne'])
+    def test_run(self, mock_PointsModel, mock__pool_class):
+        mock_pool_instance = MagicMock(name='mock_pool')
+        mock__pool_class.return_value = mock_pool_instance
+
         mock_model = mock_PointsModel.return_value
         mock_model.compute_change_points.return_value = (1, 2, 3)
         test_driver = detect_changes.DetectChangesDriver(self.sysperf_perf_json, self.mongo_uri,
@@ -36,11 +39,17 @@ class TestDetectChangesDriver(unittest.TestCase):
         test_driver.run()
         mock_PointsModel.assert_called_once_with(
             self.sysperf_perf_json, self.mongo_uri, mongo_repo='mongo_repo', credentials=None)
-        compute_change_points_calls = [call(test, weighting=0.001) for test in tests]
-        mock_model.compute_change_points.assert_has_calls(
-            compute_change_points_calls, any_order=True)
-        print_result_calls = [call(test_driver, 1, 2, 3, test) for test in tests]
-        mock__print_result.assert_has_calls(print_result_calls, any_order=True)
+
+        mock_pool_instance.apply_async.assert_has_calls([
+            call(method_adapter, args=(mock_model, u'mixed_insert', 0.001), callback=print_result),
+            call(
+                method_adapter,
+                args=(mock_model, u'mixed_insert_bad', 0.001),
+                callback=print_result),
+            call(method_adapter, args=(mock_model, u'mixed_findOne', 0.001), callback=print_result)
+        ])
+        mock_pool_instance.close.assert_called_once()
+        mock_pool_instance.join.assert_called_once()
 
 
 class TestPointsModel(unittest.TestCase):

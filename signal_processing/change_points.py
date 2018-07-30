@@ -7,7 +7,7 @@ To get access to the help try the following command:
     $> change-points help
 """
 import functools
-import os
+from multiprocessing import Pool, cpu_count
 from os.path import expanduser, exists, isdir
 from StringIO import StringIO
 from collections import OrderedDict
@@ -23,7 +23,7 @@ from signal_processing.commands.compute import compute_change_points
 from signal_processing.commands.helpers import process_params, process_excludes, \
     PROCESSED_TYPE_ACKNOWLEDGED, PROCESSED_TYPE_HIDDEN, PROCESSED_TYPES, get_matching_tasks, \
     filter_legacy_tasks, generate_tests, filter_tests, show_label_function, CommandConfiguration, \
-    get_bar_template, get_bar_widths
+    get_bar_template, get_bar_widths, function_adapter
 from signal_processing.commands.list import list_change_points
 from signal_processing.commands.mark import mark_change_points
 from signal_processing.commands.update import update_change_points
@@ -75,7 +75,7 @@ def cli(context, debug, logfile, out, file_format, mongo_uri, queryable, dry_run
 For a list of styles see 'style sheets<https://matplotlib.org/users/style_sheets.html>'.
 """
     # pylint: disable=missing-docstring, too-many-arguments, too-many-locals
-    log.setup_logging(debug > 0, filename=os.path.expanduser(logfile) if logfile else logfile)
+    log.setup_logging(debug > 0, filename=expanduser(logfile) if logfile else logfile)
     credentials = get_git_credentials(token_file) if token_file else None
     mongo_repo = expanduser(mongo_repo) if mongo_repo else mongo_repo
     mongo_repo = mongo_repo if exists(mongo_repo) and isdir(mongo_repo) else None
@@ -563,13 +563,18 @@ For Example:
     "multiple times.")
 @click.option('--progressbar/--no-progressbar', default=True)
 @click.option('--weighting', default=.001)
-@click.option('--legacy/--no-legacy', default=False)
+@click.option(
+    '--pool-size',
+    default=max(cpu_count() - 1, 1),
+    help="Set the process pool size. The default is the number of cores -1.")
+@click.option(
+    '--legacy/--no-legacy', default=False, help="Enable creation of legacy change points.")
 @click.argument('project', required=True)
 @click.argument('variant', required=False)
 @click.argument('task', required=False)
 @click.argument('test', required=False)
-def compute_command(command_config, excludes, progressbar, weighting, legacy, project, variant,
-                    task, test):
+def compute_command(command_config, excludes, progressbar, weighting, pool_size, legacy, project,
+                    variant, task, test):
     # pylint: disable=too-many-locals, too-many-arguments, line-too-long
     """
 Compute / recompute change point(s). This deletes and then replaces the current change points
@@ -639,17 +644,26 @@ Examples:
         info_width=info_width,
         padding=padding)
 
+    pool = Pool(processes=pool_size)
+    tasks = ((compute_change_points, test_identifier, weighting, command_config)
+             for test_identifier in tests)
+    task_iterator = pool.imap_unordered(function_adapter, tasks)
     LOG.debug('finding matching tests in tasks', tests=tests)
-    with click.progressbar(tests,
+    with click.progressbar(task_iterator,
+                           length=len(tests),
                            label=label,
                            item_show_func=show_label,
                            file=None if progressbar else StringIO(),
                            bar_template=bar_template) as progress: # yapf: disable
-        for test_identifier in progress:
-            test_name = test_identifier['test']
-            progress.label = test_name
+        for success, return_value in progress:
+            if success:
+                test_identifier = return_value
+                status = test_identifier['test']
+            else:
+                exception = return_value
+                status = 'Exception: ' + str(exception)
+            progress.label = status
             progress.render_progress()
-            try:
-                compute_change_points(test_identifier, weighting, command_config)
-            except (KeyError, ValueError):
-                LOG.error("unexpected error", exc_info=1)
+
+    pool.close()
+    pool.join()

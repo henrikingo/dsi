@@ -37,7 +37,7 @@ class TestCommandConfiguration(unittest.TestCase):
 
         self.assertEqual('debug', subject.debug)
         self.assertEqual('out', subject.out)
-        self.assertEqual('file_format', subject.format)
+        self.assertEqual('file_format', subject.file_format)
         self.assertEqual('queryable', subject.queryable)
         self.assertEqual('dry_run', subject.dry_run)
         self.assertEqual('compact', subject.compact)

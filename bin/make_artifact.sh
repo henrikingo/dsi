@@ -30,6 +30,7 @@ else
     cp bootstrap.yml                       ./reports || true
     cp runtime.yml                         ./reports || true
     cp perf.json                           ./reports || true
+    cp detect_changes.log                  ./reports || true
 
     if [ -f "terraform.log" ]; then
         cp terraform.log ./reports
