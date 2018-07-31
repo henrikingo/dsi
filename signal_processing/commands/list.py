@@ -27,3 +27,5 @@ def list_change_points(processed, query, exclude_patterns, command_config):
             filter_excludes(collection.find(query), query.keys(), exclude_patterns)):
         LOG.info("list[%d] %s %s", i, collection.name,
                  stringify_json(point, compact=command_config.compact))
+        print("//list[{}] {}\n{}".format(i, collection.name,
+                                         stringify_json(point, compact=command_config.compact)))

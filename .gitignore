@@ -20,3 +20,5 @@ bin/tests/unittest-files/*
 /config.yml
 
 detect_changes.log
+
+*.egg-info/
