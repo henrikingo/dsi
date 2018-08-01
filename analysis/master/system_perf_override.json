@@ -534,8 +534,8 @@
                     ]
                 },
                 "15_lookup_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-1157"
                     ]
@@ -548,8 +548,8 @@
                     ]
                 },
                 "1_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-1157"
                     ]
@@ -2936,8 +2936,8 @@
                     ]
                 },
                 "15_lookup_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-1157"
                     ]
@@ -2950,8 +2950,8 @@
                     ]
                 },
                 "1_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-1157"
                     ]
@@ -6068,8 +6068,8 @@
                     ]
                 },
                 "15_lookup_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-1157"
                     ]
@@ -6082,8 +6082,8 @@
                     ]
                 },
                 "1_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-1157"
                     ]
@@ -12698,8 +12698,8 @@
                     ]
                 },
                 "15_lookup_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-1157"
                     ]
@@ -12712,8 +12712,8 @@
                     ]
                 },
                 "1_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-1157"
                     ]
@@ -14640,8 +14640,8 @@
                     ]
                 },
                 "15_lookup_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-1157"
                     ]
@@ -14654,8 +14654,8 @@
                     ]
                 },
                 "1_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":10.0,
                     "ticket":[
                         "PERF-1157"
                     ]
