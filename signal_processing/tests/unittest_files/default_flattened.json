@@ -18,15 +18,6 @@
     "version_id": "performance_0fdc2e40994c930a97aa213fa990423616bc5268"
   }, 
   {
-    "status": "started", 
-    "project": "performance", 
-    "task": "compile", 
-    "task_id": "performance_linux_wt_standalone_compile_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33", 
-    "variant": "linux-wt-standalone", 
-    "time_taken": 0, 
-    "version_id": "performance_0fdc2e40994c930a97aa213fa990423616bc5268"
-  }, 
-  {
     "status": "undispatched", 
     "project": "performance", 
     "task": "aggregation", 
@@ -59,24 +50,6 @@
     "task": "bestbuy_agg", 
     "task_id": "sys_perf_linux_3_node_replSet_bestbuy_agg_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33", 
     "variant": "linux-3-node-replSet", 
-    "time_taken": 0, 
-    "version_id": "sys_perf_0fdc2e40994c930a97aa213fa990423616bc5268"
-  }, 
-  {
-    "status": "undispatched", 
-    "project": "sys-perf", 
-    "task": "compile", 
-    "task_id": "sys_perf_compile_rhel70_compile_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33", 
-    "variant": "compile-rhel70", 
-    "time_taken": 0, 
-    "version_id": "sys_perf_0fdc2e40994c930a97aa213fa990423616bc5268"
-  }, 
-  {
-    "status": "undispatched", 
-    "project": "sys-perf", 
-    "task": "compile_wtdevelop", 
-    "task_id": "sys_perf_compile_rhel70_compile_wtdevelop_0fdc2e40994c930a97aa213fa990423616bc5268_18_06_27_17_14_33", 
-    "variant": "compile-rhel70", 
     "time_taken": 0, 
     "version_id": "sys_perf_0fdc2e40994c930a97aa213fa990423616bc5268"
   }, 

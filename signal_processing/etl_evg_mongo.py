@@ -3,8 +3,9 @@ ETL history at project level into the `points` collection of the Mongo cluster.
 """
 import argparse
 import datetime
-import logging
 import os
+import re
+import structlog
 import yaml
 
 import pymongo
@@ -14,8 +15,9 @@ from analysis.evergreen import evergreen_client
 from bin.common import log
 
 DB = 'perf'
-LOG = logging.getLogger(__name__)
+LOG = structlog.get_logger(__name__)
 DEFAULT_HISTORY_CONFIG = {'sys-perf': None, 'performance': None}
+IGNORE_TASKS_REGEX = re.compile('compile')
 # This is an arbitrary date and subject to change.
 START_DATE = datetime.datetime(2017, 5, 15)
 
@@ -36,10 +38,11 @@ def _get_tasks(project, variant_name, tasks, history_config):
         config_tasks = history_config[project][variant_name]
     else:
         config_tasks = tasks
+
     # Add the task name to the task object.
     return [
         dict(task_object, task=task_name) for task_name, task_object in tasks.iteritems()
-        if task_name in config_tasks
+        if task_name in config_tasks and not IGNORE_TASKS_REGEX.match(task_name)
     ]
 
 
@@ -155,13 +158,20 @@ def _etl_evg_mongo(evg_client, mongo_uri, history_config=None):
             tests = None
         last_version_id = _get_last_version_id(mongo_uri, variant, task_name)
 
-        LOG.info('Start copying data for %s/%s, starting from %s / %s', variant, task_name,
-                 last_version_id, START_DATE)
+        LOG.info(
+            'Start copying data for task.',
+            variant=variant,
+            task_name=task_name,
+            last_version_id=last_version_id,
+            start_date=START_DATE)
         # Continue fetching history from Evergreen until either there is no more history or we reach
         # a set stopping point.
         while fetch_more:
-            LOG.info('Fetch next batch of history for %s/%s, starting with %s', variant, task_name,
-                     task_id)
+            LOG.info(
+                'Fetch next batch of history for task',
+                variant=variant,
+                task_name=task_name,
+                start_task_id=task_id)
             result_history = evg_client.query_mongo_perf_task_history(task_name, task_id)
             if not isinstance(result_history, list):
                 continue
@@ -184,7 +194,10 @@ def _etl_evg_mongo(evg_client, mongo_uri, history_config=None):
                 task_id = result['task_id']
                 results.append(result)
 
-        LOG.info('Done extracting %s/%s, now inserting into mongodb.', variant, task_name)
+        LOG.info(
+            'Done extracting task, now inserting into mongodb.',
+            variant=variant,
+            task_name=task_name)
         # Add the results to the mongodb from oldest to newest. This way if the process is
         # interrupted, the next run will pick up from where it left off without leaving a gap of
         # information.
