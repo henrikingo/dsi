@@ -10041,29 +10041,28 @@
             "ndays":{},
             "reference":{
                 "moveChunk_secondaryThrottle_default_waitForDelete_true":{
-                    "create_time":"2018-06-13T18:18:15Z",
-                    "end":1528983003.032837,
-                    "max":3498.048023738628,
+                    "create_time":"2018-07-21T00:27:07Z",
+                    "end":1532182500.44908,
+                    "max":4410.629671004669,
                     "name":"moveChunk_secondaryThrottle_default_waitForDelete_true",
-                    "order":12653,
+                    "order":13060,
                     "results":{
                         "1":{
-                            "ops_per_sec":3498.048023738628,
+                            "ops_per_sec":4410.629671004669,
                             "ops_per_sec_values":[
-                                3505.450976268097,
-                                3490.6450712091596
+                                4411.1160123511245,
+                                4410.143329658214
                             ]
                         }
                     },
-                    "revision":"f0c7d77ffc6f91a861516df015a2de3894521419",
-                    "start":1528982775.042567,
+                    "revision":"69f3e89f6921fc4ff2b5413952eeb517af69bb83",
+                    "start":1532182284.390223,
                     "tag":"",
                     "threads":[
                         "1"
                     ],
                     "ticket":[
-                        "PERF-1347",
-                        "BF-9587"
+                        "PERF-1347"
                     ],
                     "workload":"mongoshell"
                 }
@@ -10364,46 +10363,46 @@
                     "workload":"mongoshell"
                 },
                 "moveChunkWithLoad_secondaryThrottle_default":{
-                    "create_time":"2018-06-13T18:18:15Z",
-                    "end":1528981268.846977,
-                    "max":3409.4791266317325,
+                    "create_time":"2018-07-21T00:27:07Z",
+                    "end":1532183738.699282,
+                    "max":4173.62316979308,
                     "name":"moveChunkWithLoad_secondaryThrottle_default",
-                    "order":12653,
+                    "order":13060,
                     "results":{
                         "0":{
-                            "ops_per_sec":3409.4791266317325,
+                            "ops_per_sec":4173.62316979308,
                             "ops_per_sec_values":[
-                                3409.4791266317325
+                                4173.62316979308
                             ]
                         },
                         "128":{
-                            "ops_per_sec":2830.179092220793,
+                            "ops_per_sec":3192.702135878033,
                             "ops_per_sec_values":[
-                                2830.179092220793
+                                3192.702135878033
                             ]
                         },
                         "256":{
-                            "ops_per_sec":2783.7636263548065,
+                            "ops_per_sec":3240.163958114804,
                             "ops_per_sec_values":[
-                                2783.7636263548065
+                                3240.163958114804
                             ]
                         },
                         "4":{
-                            "ops_per_sec":3297.724922152638,
+                            "ops_per_sec":4107.813320119934,
                             "ops_per_sec_values":[
-                                3297.724922152638
+                                4107.813320119934
                             ]
                         },
                         "64":{
-                            "ops_per_sec":2810.999197762194,
+                            "ops_per_sec":3392.210788380521,
                             "ops_per_sec_values":[
-                                2810.999197762194
+                                3392.210788380521
                             ]
                         }
                     },
-                    "revision":"f0c7d77ffc6f91a861516df015a2de3894521419",
-                    "start":1528979927.590727,
-                    "tag":"david1week",
+                    "revision":"69f3e89f6921fc4ff2b5413952eeb517af69bb83",
+                    "start":1532182418.860427,
+                    "tag":"",
                     "threads":[
                         "128",
                         "0",
@@ -10413,7 +10412,6 @@
                     ],
                     "ticket":[
                         "PERF-1347",
-                        "BF-9587",
                         "BF-9944"
                     ],
                     "workload":"mongoshell"
