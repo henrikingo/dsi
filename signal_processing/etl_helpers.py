@@ -2,13 +2,25 @@
 Task etl helper methods. This loads the translated task to a mongodb.
 """
 import copy
-import logging
 
 import pymongo
+import structlog
 
 from bin.common import config
 
-LOG = logging.getLogger(__name__)
+LOG = structlog.get_logger(__name__)
+
+
+def make_filter(point):
+    """
+    Given a datapoint make a document that just has fields that uniquely identify this point,
+    removing extra information. Used for filter in upsert.
+
+    """
+    filter_keys = ['project', 'task', 'variant', 'test', 'version_id', 'revision']
+    mongo_filter = {key: point[key] for key in filter_keys}
+    LOG.debug("Made filter", filter=mongo_filter)
+    return mongo_filter
 
 
 def load(perf_json, mongo_uri, tests=None):
@@ -27,7 +39,12 @@ def load(perf_json, mongo_uri, tests=None):
     collection = db.points
     points = translate_points(perf_json, tests)
     if points:
-        collection.insert(points)
+        collection.bulk_write(
+            [
+                pymongo.UpdateOne(make_filter(point), {"$set": point}, upsert=True)
+                for point in points
+            ],
+            ordered=False)
 
 
 def translate_points(perf_json, tests):
@@ -120,7 +137,8 @@ def _get_max_ops_per_sec(test_result):
     max_thread_level = None
     for key, thread_level in test_result['results'].iteritems():
         if not config.is_integer(key) and key != 'start' and key != 'end':
-            LOG.warn('Invalid thread level value %s found', key)
+            LOG.warn(
+                'Invalid thread level value found', results_item_key=key, thread_level=thread_level)
             continue
         elif key == 'start' or key == 'end':
             continue

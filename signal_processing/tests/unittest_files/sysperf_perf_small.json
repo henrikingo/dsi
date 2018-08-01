@@ -1,0 +1,30 @@
+{
+    "name": "perf",
+    "task_name": "mixed_workloads_WT",
+    "project_id": "sys-perf",
+    "task_id": "sys_perf_wtdevelop_1_node_replSet_mixed_workloads_WT_e",
+    "build_id": "sys_perf_wtdevelop_1_node_replSet_e",
+    "variant": "wtdevelop-1-node-replSet",
+    "version_id": "sys_perf_e31a40ab59fb5c784ff8d15f07c0b811bd54a516",
+    "create_time": "2018-05-09T17:37:01Z",
+    "is_patch": "false",
+    "order": 12196,
+    "revision": "e31a40ab59fb5c784ff8d15f07c0b811bd54a516",
+    "data": {
+        "results": [{
+            "end": 1525891650.3229,
+            "name": "mixed_findOne",
+            "results": {
+                "64": {
+                    "ops_per_sec": 16183.772555978,
+                    "ops_per_sec_values": [16183.772555978]
+                }
+            },
+            "start": 1525889262.7772,
+            "workload": "mongoshell"
+        }],
+        "storageEngine":
+            "wiredTiger"
+    },
+    "tag": ""
+}
