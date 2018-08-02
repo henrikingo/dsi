@@ -3,7 +3,6 @@ Run the QHat algorithm and store results.
 """
 from datetime import datetime
 from multiprocessing import Pool, cpu_count
-from os.path import expanduser
 import time
 from collections import OrderedDict
 
@@ -321,7 +320,7 @@ def detect_changes():
         etl_helpers.load(perf_json, mongo_uri)
     # TODO : we probably want some way of passing a weighting in going forward. PERF-1588.
     changes_driver = DetectChangesDriver(
-        perf_json, mongo_uri, weighting=DEFAULT_WEIGHTING, mongo_repo=expanduser('~/src'))
+        perf_json, mongo_uri, weighting=DEFAULT_WEIGHTING, mongo_repo='./src')
     changes_driver.run()
 
 
