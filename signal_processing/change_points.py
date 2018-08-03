@@ -7,30 +7,26 @@ To get access to the help try the following command:
     $> change-points help
 """
 import functools
-from multiprocessing import Pool, cpu_count
 import os
-from os.path import expanduser, exists, isdir
+from os.path import exists, expanduser, isdir
+
 from StringIO import StringIO
 from collections import OrderedDict
-
+import multiprocessing
 import click
 import structlog
 
 from analysis.evergreen.helpers import get_git_credentials
 from bin.common import log
-from signal_processing.commands.compare import print_result, plot_test, \
-    compare
-from signal_processing.commands.compute import compute_change_points
-from signal_processing.commands.helpers import process_params, process_excludes, \
-    PROCESSED_TYPE_ACKNOWLEDGED, PROCESSED_TYPE_HIDDEN, PROCESSED_TYPES, get_matching_tasks, \
-    filter_legacy_tasks, generate_tests, filter_tests, show_label_function, CommandConfiguration, \
-    get_bar_template, get_bar_widths, function_adapter, save_plot
-from signal_processing.commands.list import list_change_points
-from signal_processing.commands.mark import mark_change_points
-from signal_processing.commands.update import update_change_points
-from signal_processing.commands.visualize import visualize
-
-from signal_processing.qhat import DEFAULT_WEIGHTING
+import signal_processing.commands.compare as compare
+import signal_processing.commands.compute as compute
+import signal_processing.commands.helpers as helpers
+import signal_processing.commands.list_change_points as list_change_points
+import signal_processing.commands.manage as manage
+import signal_processing.commands.mark as mark
+import signal_processing.commands.update as update
+import signal_processing.commands.visualize as visualize
+import signal_processing.qhat as qhat
 
 DB = "perf"
 PROCESSED_CHANGE_POINTS = 'processed_change_points'
@@ -82,9 +78,9 @@ For a list of styles see 'style sheets<https://matplotlib.org/users/style_sheets
     credentials = get_git_credentials(token_file) if token_file else None
     mongo_repo = expanduser(mongo_repo) if mongo_repo else mongo_repo
     mongo_repo = mongo_repo if exists(mongo_repo) and isdir(mongo_repo) else None
-    context.obj = CommandConfiguration(debug, out, file_format, mongo_uri, queryable, dry_run,
-                                       compact, points, change_points, processed_change_points,
-                                       build_failures, style, credentials, mongo_repo)
+    context.obj = helpers.CommandConfiguration(
+        debug, out, file_format, mongo_uri, queryable, dry_run, compact, points, change_points,
+        processed_change_points, build_failures, style, credentials, mongo_repo)
     if context.invoked_subcommand is None:
         print context.get_help()
 
@@ -164,9 +160,9 @@ Examples:
     $> change-points mark $revision sys-perf '' '' find_limit-useAgg
     $> change-points mark $revision sys-perf '' '' find_limit-useAgg ''
 """
-    query = process_params(revision, project, variant, task, test, thread_level)
-    mark_change_points(PROCESSED_TYPE_ACKNOWLEDGED, query, process_excludes(exclude_patterns),
-                       command_config)
+    query = helpers.process_params(revision, project, variant, task, test, thread_level)
+    mark.mark_change_points(helpers.PROCESSED_TYPE_ACKNOWLEDGED, query,
+                            helpers.process_excludes(exclude_patterns), command_config)
 
 
 @cli.command(name="hide")
@@ -227,9 +223,9 @@ Examples:
     $> change-points hide $revision sys-perf '' '' find_limit-useAgg ''
 """
 
-    query = process_params(revision, project, variant, task, test, thread_level)
-    mark_change_points(PROCESSED_TYPE_HIDDEN, query, process_excludes(exclude_patterns),
-                       command_config)
+    query = helpers.process_params(revision, project, variant, task, test, thread_level)
+    mark.mark_change_points(helpers.PROCESSED_TYPE_HIDDEN, query,
+                            helpers.process_excludes(exclude_patterns), command_config)
 
 
 @cli.command(name="update")
@@ -242,8 +238,8 @@ Examples:
     'multiple times.')
 @click.option(
     '--processed_type',
-    type=click.Choice(PROCESSED_TYPES),
-    default=PROCESSED_TYPE_HIDDEN,
+    type=click.Choice(helpers.PROCESSED_TYPES),
+    default=helpers.PROCESSED_TYPE_HIDDEN,
     required=True,
     help='The value to set processed_type.')
 @click.argument('revision', required=True)
@@ -305,8 +301,9 @@ Examples:
     $> change-points update $revision sys-perf '' '' find_limit-useAgg '' \\
     --processed_type acknowledged
 """
-    query = process_params(revision, project, variant, task, test, thread_level)
-    update_change_points(processed_type, query, process_excludes(exclude_patterns), command_config)
+    query = helpers.process_params(revision, project, variant, task, test, thread_level)
+    update.update_change_points(processed_type, query, helpers.process_excludes(exclude_patterns),
+                                command_config)
 
 
 @cli.command(name="list")
@@ -379,8 +376,10 @@ Examples:
     # list all the sys-perf find_limit-useAgg (any revision)
     $> change-points list '' sys-perf '' '' find_limit-useAgg
 """
-    query = process_params(revision, project, variant, task, test, thread_level)
-    list_change_points(processed, query, process_excludes(exclude_patterns), command_config)
+    query = helpers.process_params(revision, project, variant, task, test, thread_level)
+    list_change_points.list_change_points(processed, query,
+                                          helpers.process_excludes(exclude_patterns),
+                                          command_config)
 
 
 @cli.command(name="compare")
@@ -396,7 +395,7 @@ Examples:
     '--no-older',
     default=30,
     help='exclude tasks that have no points newer than this number of days.')
-@click.option('--weighting', 'weighting', default=DEFAULT_WEIGHTING)
+@click.option('--weighting', 'weighting', default=qhat.DEFAULT_WEIGHTING)
 @click.argument('project', required=False)
 @click.argument('variant', required=False)
 @click.argument('task', required=False)
@@ -477,16 +476,17 @@ For Example:
     LOG.debug('starting')
     points = command_config.points
 
-    query = process_params(None, project, variant, task, test, None)
+    query = helpers.process_params(None, project, variant, task, test, None)
     LOG.debug('processed params', query=query)
 
-    matching_tasks = filter_legacy_tasks(get_matching_tasks(points, query, no_older))
+    matching_tasks = helpers.filter_legacy_tasks(
+        helpers.get_matching_tasks(points, query, no_older))
     LOG.debug('matched tasks', matching_tasks=matching_tasks)
 
-    exclude_patterns = process_excludes(excludes)
+    exclude_patterns = helpers.process_excludes(excludes)
     tests = [
-        test_identifier for test_identifier in generate_tests(matching_tasks)
-        if not filter_tests(test_identifier['test'], exclude_patterns)
+        test_identifier for test_identifier in helpers.generate_tests(matching_tasks)
+        if not helpers.filter_tests(test_identifier['test'], exclude_patterns)
     ]
     LOG.debug('matched tests', tests=tests)
 
@@ -496,10 +496,10 @@ For Example:
 
     label = "Compare"
 
-    label_width, bar_width, info_width, bar_padding = get_bar_widths()
-    bar_template = get_bar_template(label_width, bar_width, info_width)
+    label_width, bar_width, info_width, bar_padding = helpers.get_bar_widths()
+    bar_template = helpers.get_bar_template(label_width, bar_width, info_width)
     show_label = functools.partial(
-        show_label_function,
+        helpers.show_label_function,
         label_width=label_width,
         bar_width=bar_width,
         info_width=info_width,
@@ -520,7 +520,7 @@ For Example:
             progress.render_progress()
             try:
                 LOG.debug('compare', test_identifier=test_identifier)
-                calculations = compare(
+                calculations = compare.compare(
                     test_identifier,
                     command_config,
                     sig_lvl=sig_lvl,
@@ -546,14 +546,14 @@ For Example:
         print "{{ project: '{}', variant: '{}', task: '{}' }}".format(project, variant, task_name)
 
         for result in calculations:
-            print_result(result, command_config)
+            compare.print_result(result, command_config)
 
     import matplotlib.pyplot as plt
     with plt.style.context(command_config.style):
         if not command_config.dry_run and save or show:
             for test_identifier, results in group_by_test.items():
-                plot_test(save, show, test_identifier, results, padding, sig_lvl, minsizes,
-                          command_config.out, command_config.file_format)
+                compare.plot_test(save, show, test_identifier, results, padding, sig_lvl, minsizes,
+                                  command_config.out, command_config.file_format)
 
 
 @cli.command(name="compute")
@@ -568,7 +568,7 @@ For Example:
 @click.option('--weighting', default=.001)
 @click.option(
     '--pool-size',
-    default=max(cpu_count() - 1, 1),
+    default=max(multiprocessing.cpu_count() - 1, 1),
     help="Set the process pool size. The default is the number of cores -1.")
 @click.option(
     '--legacy/--no-legacy', default=False, help="Enable creation of legacy change points.")
@@ -622,35 +622,35 @@ Examples:
 """
     LOG.debug('starting')
     points = command_config.points
-    query = process_params(None, project, variant, task, test, None)
+    query = helpers.process_params(None, project, variant, task, test, None)
 
     LOG.debug('finding matching tasks', query=query)
-    matching_tasks = get_matching_tasks(points, query)
+    matching_tasks = helpers.get_matching_tasks(points, query)
     if not legacy:
-        matching_tasks = filter_legacy_tasks(matching_tasks)
+        matching_tasks = helpers.filter_legacy_tasks(matching_tasks)
     else:
         matching_tasks = list(matching_tasks)
 
     LOG.debug('finding matching tests in tasks', matching_tasks=matching_tasks)
-    exclude_patterns = process_excludes(excludes)
+    exclude_patterns = helpers.process_excludes(excludes)
     tests = list(
-        test_identifier for test_identifier in generate_tests(matching_tasks)
-        if not filter_tests(test_identifier['test'], exclude_patterns))
+        test_identifier for test_identifier in helpers.generate_tests(matching_tasks)
+        if not helpers.filter_tests(test_identifier['test'], exclude_patterns))
 
     label = "compute"
-    label_width, bar_width, info_width, padding = get_bar_widths()
-    bar_template = get_bar_template(label_width, bar_width, info_width)
+    label_width, bar_width, info_width, padding = helpers.get_bar_widths()
+    bar_template = helpers.get_bar_template(label_width, bar_width, info_width)
     show_label = functools.partial(
-        show_label_function,
+        helpers.show_label_function,
         label_width=label_width,
         bar_width=bar_width,
         info_width=info_width,
         padding=padding)
 
-    pool = Pool(processes=pool_size)
-    tasks = ((compute_change_points, test_identifier, weighting, command_config)
+    pool = multiprocessing.Pool(processes=pool_size)
+    tasks = ((compute.compute_change_points, test_identifier, weighting, command_config)
              for test_identifier in tests)
-    task_iterator = pool.imap_unordered(function_adapter, tasks)
+    task_iterator = pool.imap_unordered(helpers.function_adapter, tasks)
     LOG.debug('finding matching tests in tasks', tests=tests)
     with click.progressbar(task_iterator,
                            length=len(tests),
@@ -670,6 +670,22 @@ Examples:
 
     pool.close()
     pool.join()
+
+
+@cli.command(name="manage")
+@click.pass_obj
+def manage_command(command_config):
+    # pylint: disable=too-many-locals, too-many-arguments, line-too-long
+    """
+Manage the infrastructural elements of the performance database. That is, indexes,
+views etc.
+
+\b
+At the moment, it only supports a single item:
+        1. the unprocessed change points view.
+"""
+    LOG.debug('starting')
+    manage.manage(command_config)
 
 
 @cli.command(name="visualize")
@@ -733,25 +749,25 @@ For Example:
     LOG.debug('starting')
     points = command_config.points
 
-    query = process_params(None, project, variant, task, test, None)
+    query = helpers.process_params(None, project, variant, task, test, None)
     LOG.debug('processed params', query=query)
 
-    matching_tasks = filter_legacy_tasks(get_matching_tasks(points, query))
+    matching_tasks = helpers.filter_legacy_tasks(helpers.get_matching_tasks(points, query))
     LOG.debug('matched tasks', matching_tasks=matching_tasks)
 
-    exclude_patterns = process_excludes(excludes)
+    exclude_patterns = helpers.process_excludes(excludes)
     tests = [
-        test_identifier for test_identifier in generate_tests(matching_tasks)
-        if not filter_tests(test_identifier['test'], exclude_patterns)
+        test_identifier for test_identifier in helpers.generate_tests(matching_tasks)
+        if not helpers.filter_tests(test_identifier['test'], exclude_patterns)
     ]
     LOG.debug('matched tests', tests=tests)
 
     label = "visualize"
 
-    label_width, bar_width, info_width, padding = get_bar_widths()
-    bar_template = get_bar_template(label_width, bar_width, info_width)
+    label_width, bar_width, info_width, padding = helpers.get_bar_widths()
+    bar_template = helpers.get_bar_template(label_width, bar_width, info_width)
     show_label = functools.partial(
-        show_label_function,
+        helpers.show_label_function,
         label_width=label_width,
         bar_width=bar_width,
         info_width=info_width,
@@ -771,7 +787,7 @@ For Example:
                 progress.render_progress()
                 try:
                     LOG.debug('visualize', test_identifier=test_identifier)
-                    for figure, thread_level in visualize(
+                    for figure, thread_level in visualize.visualize(
                             test_identifier,
                             filter_type,
                             command_config,
@@ -786,7 +802,7 @@ For Example:
                                 test=test_identifier['test'],
                                 thread_level=thread_level,
                                 file_format=command_config.file_format)
-                            save_plot(figure, pathname, filename)
+                            helpers.save_plot(figure, pathname, filename)
                         if show:
                             figure.show()
                         figure.close()

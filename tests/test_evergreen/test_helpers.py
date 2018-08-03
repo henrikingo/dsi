@@ -125,20 +125,29 @@ class TestGetGithashes(unittest.TestCase):
     """
 
     def setUp(self):
+        # Real commit data from master.
+        self.newest = 'af600c3876a26f62d8dde93bf769fc4ca3054072'
+        self.oldest = '59a4bf14617facbb49520e00c91a55ac8e9a316c'
         self.expected = [
-            '4cdaee88d7122f3ccba152ae37d3b5b69b3b398f', '472d4ecaf989b239e324ef12b39357802d96f607',
-            '461184c1467fb6c130638b27bf1d71962c7e830b'
+            'af600c3876a26f62d8dde93bf769fc4ca3054072', '2676a176759359c8614c0e37b267198259b6789f',
+            'b3c9e24d7434c929c097d85f65a3586687031116', 'cee356dbc43d4836594fa517a383fa6ac66f735a',
+            '33f5cf3c7eb4e260b8cafa218bc99cf736dcbc63', '985506c410db79d3a576e5c6b088a8f43ed15da7',
+            '607f306f614ad7ecaba3c72bd99bb661242187ef', '9b6bcfd63f9413caaa2fdd12e9dedb712ca66913',
+            '36148ad8bbdb94162b2926f4700d935ee4dc5994', 'd62d631f0ca40c5199fdfae2980080ca0cc982b5'
         ]
-        self.return_value = [{'sha': sha} for sha in self.expected]
+        self.return_value = [{
+            'sha': sha
+        } for sha in self.expected + ['59a4bf14617facbb49520e00c91a55ac8e9a316c']]
 
     @patch('evergreen.helpers.get_git_commits')
     def test_get_githashes_in_range_github(self, mock_get):
         """
-        Test getting 3 git commits in range.
+        Test getting 10 git commits in range.
         """
         mock_get.return_value = self.return_value
-        actual = helpers.get_githashes_in_range_github(self.expected[0], self.expected[-1])
-        self.assertEqual([commit['sha'] for commit in actual], self.expected)
+        actual = helpers.get_githashes_in_range_github(self.oldest, self.newest)
+        shas = [commit['sha'] for commit in actual]
+        self.assertEqual(shas, self.expected)
         mock_get.assert_called_once_with(self.expected[0], token=None, per_page=None)
 
     @patch('evergreen.helpers.get_git_commits')
@@ -149,7 +158,7 @@ class TestGetGithashes(unittest.TestCase):
         mock_get.return_value = self.return_value
 
         with self.assertRaises(ValueError) as exception:
-            helpers.get_githashes_in_range_github('new', 'old')
+            helpers.get_githashes_in_range_github('old', 'new')
 
         self.assertEqual(str(exception.exception), 'newest new is not in list.')
 
@@ -161,7 +170,7 @@ class TestGetGithashes(unittest.TestCase):
         mock_get.return_value = self.return_value
 
         with self.assertRaises(ValueError) as exception:
-            helpers.get_githashes_in_range_github(self.expected[0], 'old')
+            helpers.get_githashes_in_range_github('old', self.expected[0])
 
         self.assertEqual(str(exception.exception), 'oldest old is not in list.')
 
@@ -172,18 +181,20 @@ class TestGetRevList(unittest.TestCase):
     Test get_githashes_in_range_repo.
     """
 
-    @patch('evergreen.helpers.Popen')
-    def test_get_githashes_in_range_repo_error(self, mock_popen):
-        """
-        Test process error.
-        """
-        mock_process = MagicMock(name='process', returncode=1)
-        mock_process.communicate.return_value = ("newest\nolder\n", 'error')
-        mock_popen.return_value = mock_process
-        with self.assertRaises(ValueError) as exception:
-            helpers.get_githashes_in_range_repo('newest', 'oldest', 'repo')
-        expected = """'git rev-list oldest..newest' returned an error 1\nerror."""
-        self.assertEqual(str(exception.exception), expected)
+    def setUp(self):
+        # Real commit data from master.
+        self.newest = 'af600c3876a26f62d8dde93bf769fc4ca3054072'
+        self.oldest = '59a4bf14617facbb49520e00c91a55ac8e9a316c'
+        self.expected = [
+            'af600c3876a26f62d8dde93bf769fc4ca3054072', '2676a176759359c8614c0e37b267198259b6789f',
+            'b3c9e24d7434c929c097d85f65a3586687031116', 'cee356dbc43d4836594fa517a383fa6ac66f735a',
+            '33f5cf3c7eb4e260b8cafa218bc99cf736dcbc63', '985506c410db79d3a576e5c6b088a8f43ed15da7',
+            '607f306f614ad7ecaba3c72bd99bb661242187ef', '9b6bcfd63f9413caaa2fdd12e9dedb712ca66913',
+            '36148ad8bbdb94162b2926f4700d935ee4dc5994', 'd62d631f0ca40c5199fdfae2980080ca0cc982b5'
+        ]
+        self.return_value = [{
+            'sha': sha
+        } for sha in self.expected + ['59a4bf14617facbb49520e00c91a55ac8e9a316c']]
 
     @patch('evergreen.helpers.Popen')
     def test_get_githashes_in_range_repo(self, mock_popen):
@@ -191,23 +202,45 @@ class TestGetRevList(unittest.TestCase):
         Test no error.
         """
         mock_process = MagicMock(name='process', returncode=0)
-        mock_process.communicate.return_value = ("newest\nolder\n", 'error')
+        mock_process.communicate.return_value = ("\n".join(self.expected) + "\n", 'error')
         mock_popen.return_value = mock_process
-        actual = helpers.get_githashes_in_range_repo('newest', 'oldest', 'repo')
-        expected = ['newest', 'older', 'oldest']
-        self.assertEqual(actual, expected)
+        actual = helpers.get_githashes_in_range_repo(self.oldest, self.newest, 'repo')
+        self.assertEqual(actual, self.expected)
         mock_popen.assert_called_once_with(
-            ['git', 'rev-list', 'oldest..newest'], stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd='repo')
+            ['git', 'rev-list', self.oldest + '..' + self.newest],
+            stdin=PIPE,
+            stdout=PIPE,
+            stderr=PIPE,
+            cwd='repo')
+
+    @patch('evergreen.helpers.Popen')
+    def test_get_githashes_in_range_repo_error(self, mock_popen):
+        """
+        Test process error.
+        """
+        mock_process = MagicMock(name='process', returncode=1)
+        mock_process.communicate.return_value = ("\n".join(self.expected) + "\n", 'error')
+        mock_popen.return_value = mock_process
+        with self.assertRaises(ValueError) as exception:
+            helpers.get_githashes_in_range_repo(self.oldest, self.newest, 'repo')
+        expected = """'git rev-list {}..{}' returned an error 1\nerror.""".format(
+            self.oldest, self.newest)
+        self.assertEqual(str(exception.exception), expected)
 
     @patch('evergreen.helpers.Popen')
     def test_get_githashes_in_range_repo_newest_error(self, mock_popen):
         """
-        Test no error.
+        Test newest error.
         """
         mock_process = MagicMock(name='process', returncode=0)
         mock_process.communicate.return_value = ("sha\nolder\n", 'error')
         mock_popen.return_value = mock_process
         with self.assertRaises(ValueError) as exception:
-            helpers.get_githashes_in_range_repo('newest', 'oldest', 'repo')
-        expected = "newest 'newest' is not in list."
+            helpers.get_githashes_in_range_repo(self.oldest, self.newest, 'repo')
+        expected = "newest '{}' is not in list.".format(self.newest)
         self.assertEqual(str(exception.exception), expected)
+
+    # def test_get_githashes_in_range_repo_newest_real(self):
+    #     """ Test on real repo. Assuming it is in ~/src """
+    #     actual = helpers.get_githashes_in_range_repo(self.oldest, self.newest, '/home/jim/src')
+    #     self.assertEqual(actual, self.expected)

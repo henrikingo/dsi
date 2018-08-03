@@ -668,13 +668,14 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
 
         return self._change_points
 
-    def get_git_hashes(self, newer_revision, older_revision):
+    def get_git_hashes(self, older_revision, newer_revision):
         """
         Get git hashes from local git repo or github.
 
         :param str newer_revision: The newest git hash.
         :param str older_revision: The oldest git hash.
-        :return: All the git hashes between oldest and newest (inclusive).
+        :return: All the git hashes between older and newer (excluding older). The
+        order is from newer to older.
         TODO: Move out as part PERF-1608.
         """
         LOG.debug(
@@ -686,7 +687,7 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
         git_hashes = None
         # pylint: disable=bare-except
         try:
-            git_hashes = get_githashes_in_range_repo(newer_revision, older_revision,
+            git_hashes = get_githashes_in_range_repo(older_revision, newer_revision,
                                                      self.mongo_repo)
         except:
             LOG.error("unexpected error on rev-list", exc_info=1)
@@ -705,7 +706,7 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
                 git_hashes = [
                     commit['sha']
                     for commit in get_githashes_in_range_github(
-                        newer_revision, older_revision, token=github_token, per_page=100)
+                        older_revision, newer_revision, token=github_token, per_page=100)
                 ]
             except:
                 LOG.error("unexpected error in get git hashes", exc_info=1)
@@ -713,7 +714,7 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
         LOG.debug("loaded git hashes", git_hashes=git_hashes)
         return git_hashes
 
-    def add_to_change_points(self, change_points, algorithm, keys):
+    def add_to_change_points(self, change_points, algorithm_name, keys):
         # pylint: disable=too-many-locals
         """
         Update raw change points to:
@@ -724,7 +725,7 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
             5) Create change point dicts from this data.
 
         :param list(list) change_points: The raw change points data.
-        :param str algorithm: The algorithm name.
+        :param str algorithm_name: The algorithm name.
         :param list(str) keys: The  names for the values in change_points.
 
         :return: The change points in order of probability.
@@ -737,30 +738,62 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
         link_ordered_change_points(start_ends, self.series)
 
         for order_of_change_point, point in enumerate(change_points):
-            i = next(i for i, start_end in enumerate(start_ends) if point[0] == start_end['index'])
-            raw = dict(zip(keys, point))
-            index = raw['index']
+            # Find the index of the change point in the range finder output.
+            range_index = next(
+                i for i, start_end in enumerate(start_ends) if point[0] == start_end['index'])
+            current_range = start_ends[range_index]
 
-            older_revision = self.revisions[start_ends[i]['start']]
-            newer_revision = self.revisions[start_ends[i]['end']]
-            all_revisions = self.get_git_hashes(newer_revision, older_revision)
-            point = OrderedDict([('previous', start_ends[i]['previous']),
-                                 ('start', start_ends[i]['start']),
-                                 ('index', raw['index']),
-                                 ('end', start_ends[i]['end']),
-                                 ('next', start_ends[i]['next']),
-                                 ('location', start_ends[i]['location']),
-                                 ('weighting', self.weighting),
-                                 ('probability', 1.0 - raw['probability']),
-                                 ('revision', self.revisions[index]),
-                                 ('all_revisions', all_revisions),
-                                 ('create_time', self.create_times[index]),
-                                 ('thread_level', self.thread_level),
-                                 ('order', self.orders[index]),
+            # Create a dict for the algorithm output. This is saved as a sub-document
+            # in the change point.
+            algorithm = OrderedDict([('name', algorithm_name)])
+            algorithm.update((key, point[i]) for i, key in enumerate(keys))
+
+            # Get the revision flagged by qhat and add it to the
+            # calculations to track.
+            algorithm['revision'] = self.revisions[algorithm['index']]
+
+            # Create a dict fort the range finder state. This is saved as
+            # a sub-document in the change point.
+            range_finder = OrderedDict([('weighting', self.weighting)]) # yapf: disable
+
+            # Start to colate the information we want to put at the top-level
+            # of the change point
+
+            # This represents the last stable revision before the change in
+            # performance.
+            stable_revision_index = current_range['start']  # oldest
+            stable_revision = self.revisions[stable_revision_index]  # oldest
+
+            # This represents the first githash that displays the change
+            # in performance. It may not be the root cause. There may
+            # be older unrun revisions (between this and the stable
+            # revision).
+            # Put this value in the BF first fail or fix revision
+            suspect_revision_index = current_range['end']
+            suspect_revision = self.revisions[suspect_revision_index]  # newest
+
+            # The complete set of git hashes between the suspect / newer revision
+            # (included in the list) to the stable / older revision (excluded from
+            # the list) to the . The order is from newest to oldest
+            # so supsect revision is the first element in the list.
+            # Any change in performance must be as a result of one of the
+            # revisions in this list (assuming the change point is real and
+            # as a result of some code change).
+            all_suspect_revisions = self.get_git_hashes(stable_revision, suspect_revision)
+
+            probability = 1.0 - algorithm['probability']
+
+            point = OrderedDict([('thread_level', self.thread_level),
+                                 ('suspect_revision', suspect_revision),
+                                 ('all_suspect_revisions', all_suspect_revisions),
+                                 ('probability', probability),
+                                 ('create_time', self.create_times[suspect_revision_index]),
+                                 ('value', self.series[suspect_revision_index]),
+                                 ('order', self.orders[suspect_revision_index]),
                                  ('order_of_change_point', order_of_change_point),
-                                 ('algorithm_name', algorithm),
-                                 ('statistics', start_ends[i].get('statistics', {})),
-                                 ('raw', raw)]) # yapf: disable
+                                 ('statistics', current_range.get('statistics', {})),
+                                 ('range_finder', range_finder),
+                                 ('algorithm', algorithm)]) # yapf: disable
             points.append(point)
 
             LOG.debug("algorithm output", points=points)

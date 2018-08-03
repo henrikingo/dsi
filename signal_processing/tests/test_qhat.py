@@ -167,23 +167,17 @@ class TestPostRunCheck(unittest.TestCase):
 
         self.assertDictContainsSubset(
             approx_dict({
-                'previous': 20,
-                'start': 39,
-                'index': 40,
-                'end': 40,
-                'next': 60,
-                'location': 'behind',
                 'probability': 1.0,
-                'revision': 'ca',
-                'all_revisions': ['1', '2'],
+                'suspect_revision': 'ca',
+                'all_suspect_revisions': ['1', '2'],
                 'create_time': 41,
                 'thread_level': 4,
                 'order': 41,
-                'algorithm_name': 'qhat',
                 'order_of_change_point': 0
             }), approx_dict(points[0]))
         self.assertDictContainsSubset(
             approx_dict({
+                'name': 'qhat',
                 'index': 40,
                 'window_size': 60,
                 'value_to_avg': 23.8522717629,
@@ -192,25 +186,19 @@ class TestPostRunCheck(unittest.TestCase):
                 'value': 2465.52982456,
                 'value_to_avg_diff': 27.772273021,
                 'probability': 0.0,
-            }), approx_dict(points[0]['raw']))
+            }), approx_dict(points[0]['algorithm']))
         self.assertDictContainsSubset(
             approx_dict({
-                'previous': 0,
-                'start': 19,
-                'index': 20,
-                'end': 20,
-                'next': 39,
-                'location': 'behind',
                 'probability': 1.0,
-                'revision': 'ba',
+                'suspect_revision': 'ba',
                 'create_time': 21,
                 'thread_level': 4,
                 'order': 21,
-                'algorithm_name': 'qhat',
                 'order_of_change_point': 1
             }), approx_dict(points[1]))
         self.assertDictContainsSubset(
             approx_dict({
+                'name': 'qhat',
                 'index': 20,
                 'window_size': 40,
                 'value_to_avg': 15.6853779551,
@@ -219,7 +207,7 @@ class TestPostRunCheck(unittest.TestCase):
                 'value': 848.578947368,
                 'value_to_avg_diff': 19.7654212396,
                 'probability': 0.0,
-            }), approx_dict(points[1]['raw']))
+            }), approx_dict(points[1]['algorithm']))
 
     @patch('signal_processing.qhat.get_githashes_in_range_repo')
     def test_finds_simple_regression(self, mock_git):
@@ -255,14 +243,8 @@ class TestPostRunCheck(unittest.TestCase):
         points = algo.change_points
         self.assertEqual(1, len(points))
         self.assertDictContainsSubset({
-            'previous': 0,
-            'start': 14,
-            'index': 15,
-            'end': 15,
-            'next': 30,
-            'location': 'behind',
             'probability': 1.0,
-            'revision': 'ba',
+            'suspect_revision': 'ba',
             'create_time': 16,
             'thread_level': 4,
             'order': 16,
@@ -288,17 +270,12 @@ class TestPostRunCheck(unittest.TestCase):
         points = algo.change_points
         self.assertEqual(1, len(points))
         self.assertDictContainsSubset({
-            'previous': 0,
-            'start': 14,
-            'index': 14,
-            'end': 15,
-            'next': 30,
-            'location': 'ahead',
             'probability': 1.0,
-            'revision': 14,
-            'create_time': 14,
+            'suspect_revision': 15,
+            'create_time': 15,
             'thread_level': 4,
-            'order': 14,
+            'order': 15,
+            'value': 100
         }, approx_dict(points[0]))
 
     @patch('signal_processing.qhat.get_githashes_in_range_repo')
@@ -321,17 +298,12 @@ class TestPostRunCheck(unittest.TestCase):
         points = algo.change_points
         self.assertEqual(1, len(points))
         self.assertDictContainsSubset({
-            'previous': 0,
-            'start': 13,
-            'index': 14,
-            'end': 14,
-            'next': 30,
-            'location': 'behind',
             'probability': 1.0,
-            'revision': 14,
+            'suspect_revision': 14,
             'create_time': 14,
             'thread_level': 4,
             'order': 14,
+            'value': 76
         }, approx_dict(points[0]))
 
     @patch('signal_processing.qhat.get_githashes_in_range_repo')
@@ -370,22 +342,16 @@ class TestPostRunCheck(unittest.TestCase):
 
         self.assertDictContainsSubset(
             approx_dict({
-                'previous': 0,
-                'start': 14,
-                'index': 15,
-                'end': 15,
-                'next': 30,
-                'location': 'behind',
                 'probability': 1.0,
-                'revision': 'ba',
+                'suspect_revision': 'ba',
                 'create_time': 16,
                 'thread_level': 4,
                 'order': 16,
-                'algorithm_name': 'qhat',
                 'order_of_change_point': 0
             }), approx_dict(points[0]))
         self.assertDictContainsSubset(
             approx_dict({
+                'name': 'qhat',
                 'index': 15,
                 'window_size': 30,
                 'value_to_avg': 7.4,
@@ -394,7 +360,7 @@ class TestPostRunCheck(unittest.TestCase):
                 'value': 566.7,
                 'value_to_avg_diff': 22.8,
                 'probability': 0.0,
-            }), approx_dict(points[0]['raw']))
+            }), approx_dict(points[0]['algorithm']))
 
     @patch('signal_processing.qhat.get_githashes_in_range_repo')
     def test_regression_and_recovery(self, mock_git):
@@ -431,26 +397,21 @@ class TestPostRunCheck(unittest.TestCase):
         pvalue = 0.01
         permutations = 100
         algo = QHat(state, pvalue, permutations)
-        points = sorted(algo.change_points, key=lambda i: i['index'])
+        points = sorted(algo.change_points, key=lambda i: i['order'])
         self.assertEqual(2, len(points))
         self.assertDictContainsSubset(
             approx_dict({
-                'previous': 0,
-                'start': 14,
-                'index': 15,
-                'end': 15,
-                'next': 29,
-                'location': 'behind',
                 'probability': 1.0,
-                'revision': 'ba',
+                'suspect_revision': 'ba',
                 'create_time': 16,
                 'thread_level': 4,
                 'order': 16,
-                'algorithm_name': 'qhat',
+                'value': 100,
                 'order_of_change_point': 0
             }), approx_dict(points[0]))
         self.assertDictContainsSubset(
             approx_dict({
+                'name': 'qhat',
                 'index': 15,
                 'window_size': 45,
                 'value_to_avg': 2.8,
@@ -459,25 +420,19 @@ class TestPostRunCheck(unittest.TestCase):
                 'value': 191.0,
                 'value_to_avg_diff': 8.1,
                 'probability': 0.0,
-            }), approx_dict(points[0]['raw']))
+            }), approx_dict(points[0]['algorithm']))
         self.assertDictContainsSubset(
             approx_dict({
-                'previous': 15,
-                'start': 29,
-                'index': 30,
-                'end': 30,
-                'next': 45,
-                'location': 'behind',
                 'probability': 1.0,
-                'revision': 'ca',
+                'suspect_revision': 'ca',
                 'create_time': 31,
                 'thread_level': 4,
                 'order': 31,
-                'algorithm_name': 'qhat',
                 'order_of_change_point': 1
             }), approx_dict(points[1]))
         self.assertDictContainsSubset(
             approx_dict({
+                'name': 'qhat',
                 'index': 30,
                 'window_size': 30,
                 'value_to_avg': 7.3,
@@ -486,7 +441,7 @@ class TestPostRunCheck(unittest.TestCase):
                 'value': 563.3,
                 'value_to_avg_diff': 22.6,
                 'probability': 0.0,
-            }), approx_dict(points[1]['raw']))
+            }), approx_dict(points[1]['algorithm']))
 
     @patch('signal_processing.qhat.get_githashes_in_range_repo')
     def test_two_regressions(self, mock_git):
@@ -523,26 +478,20 @@ class TestPostRunCheck(unittest.TestCase):
         pvalue = 0.01
         permutations = 100
         algo = QHat(state, pvalue, permutations)
-        points = sorted(algo.change_points, key=lambda i: i['index'])
+        points = sorted(algo.change_points, key=lambda i: i['order'])
         self.assertEqual(2, len(points))
         self.assertDictContainsSubset(
             approx_dict({
-                'previous': 0,
-                'start': 14,
-                'index': 15,
-                'end': 15,
-                'next': 29,
-                'location': 'behind',
                 'probability': 1.0,
-                'revision': 'ba',
+                'suspect_revision': 'ba',
                 'create_time': 16,
                 'thread_level': 4,
                 'order': 16,
-                'algorithm_name': 'qhat',
                 'order_of_change_point': 0
             }), approx_dict(points[0]))
         self.assertDictContainsSubset(
             approx_dict({
+                'name': 'qhat',
                 'index': 15,
                 'window_size': 45,
                 'value_to_avg': 10.8,
@@ -551,7 +500,7 @@ class TestPostRunCheck(unittest.TestCase):
                 'value': 1094.3,
                 'value_to_avg_diff': 25.1,
                 'probability': 0.0,
-            }), approx_dict(points[0]['raw']))
+            }), approx_dict(points[0]['algorithm']))
         self.assertDictContainsSubset(
             approx_dict({
                 'nobs': 14,
@@ -572,22 +521,16 @@ class TestPostRunCheck(unittest.TestCase):
             }), approx_dict(points[0]['statistics']['previous']))
         self.assertDictContainsSubset(
             approx_dict({
-                'previous': 15,
-                'start': 29,
-                'index': 30,
-                'end': 30,
-                'next': 45,
-                'location': 'behind',
                 'probability': 1.0,
-                'revision': 'ca',
+                'suspect_revision': 'ca',
                 'create_time': 31,
                 'thread_level': 4,
                 'order': 31,
-                'algorithm_name': 'qhat',
                 'order_of_change_point': 1
             }), approx_dict(points[1]))
         self.assertDictContainsSubset(
             approx_dict({
+                'name': 'qhat',
                 'index': 30,
                 'window_size': 30,
                 'value_to_avg': 5.2,
@@ -596,7 +539,7 @@ class TestPostRunCheck(unittest.TestCase):
                 'value': 650.0,
                 'value_to_avg_diff': 26.0,
                 'probability': 0.0,
-            }), approx_dict(points[1]['raw']))
+            }), approx_dict(points[1]['algorithm']))
 
     def test_no_regressions(self):
         """

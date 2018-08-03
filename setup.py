@@ -31,6 +31,7 @@ setup(
               'bin',
               'bin.common',
               'signal_processing',
+              'signal_processing.commands',
               'analysis',
               'analysis.evergreen'],
     install_requires=install_requirements,

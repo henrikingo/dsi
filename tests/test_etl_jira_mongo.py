@@ -76,10 +76,16 @@ class TestEtlJira(unittest.TestCase):
         expected = [
             OrderedDict([('key', 'MOCK-1'),
                          ('summary', 'This is a fake Jira issue.'),
-                         ('_id', 'MOCK-1')]),
+                         ('_id', 'MOCK-1'),
+                         ('project', []),
+                         ('first_failing_revision', []),
+                         ('fix_revision', [])]),
             OrderedDict([('key', 'MOCK-2'),
                          ('summary', 'This is a fake Jira issue.'),
-                         ('_id', 'MOCK-2')])
+                         ('_id', 'MOCK-2'),
+                         ('project', []),
+                         ('first_failing_revision', []),
+                         ('fix_revision', [])])
         ]  #  yapf: disable
 
         etl = etl_jira_mongo.EtlJira(self.options)

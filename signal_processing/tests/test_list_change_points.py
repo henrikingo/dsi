@@ -6,7 +6,7 @@ import unittest
 from bin.common.log import setup_logging
 from mock import MagicMock
 
-from signal_processing.commands.list import list_change_points
+from signal_processing.commands.list_change_points import list_change_points
 
 setup_logging(False)
 

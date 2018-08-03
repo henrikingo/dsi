@@ -51,8 +51,8 @@ class TestMark(ClickTest):
         result = self.runner.invoke(cli, ['mark'])
         self.assertEqual(result.exit_code, 2)
 
-    @patch('signal_processing.change_points.mark_change_points', autospec=True)
-    @patch('signal_processing.change_points.CommandConfiguration', autospec=True)
+    @patch('signal_processing.change_points.mark.mark_change_points', autospec=True)
+    @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
     def test_mark(self, mock_config, mock_mark):  # pylint: disable=unused-argument
         """ Test mark. """
         result = self.runner.invoke(cli, ['-n', 'mark', 'badf', 'sys-perf'], obj=mock_config)
@@ -69,8 +69,8 @@ class TestHide(ClickTest):
         result = self.runner.invoke(cli, ['hide'])
         self.assertEqual(result.exit_code, 2)
 
-    @patch('signal_processing.change_points.mark_change_points', autospec=True)
-    @patch('signal_processing.change_points.CommandConfiguration', autospec=True)
+    @patch('signal_processing.change_points.mark.mark_change_points', autospec=True)
+    @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
     def test_hide(self, mock_config, mock_mark):  # pylint: disable=unused-argument
         """ Test hide."""
         result = self.runner.invoke(cli, ['-n', 'hide', 'badf', 'sys-perf'], obj=mock_config)
@@ -87,8 +87,8 @@ class TestUpdate(ClickTest):
         result = self.runner.invoke(cli, ['update'])
         self.assertEqual(result.exit_code, 2)
 
-    @patch('signal_processing.change_points.update_change_points', autospec=True)
-    @patch('signal_processing.change_points.CommandConfiguration', autospec=True)
+    @patch('signal_processing.change_points.update.update_change_points', autospec=True)
+    @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
     def test_update(self, mock_config, mock_update):  # pylint: disable=unused-argument
         """ Test update. """
         result = self.runner.invoke(cli, ['-n', 'update', 'badf', 'sys-perf'], obj=mock_config)
@@ -101,7 +101,7 @@ class TestList(ClickTest):
     """
 
     @patch('signal_processing.change_points.list_change_points', autospec=True)
-    @patch('signal_processing.change_points.CommandConfiguration', autospec=True)
+    @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
     def test_list_no_params(self, mock_config, mock_list):  # pylint: disable=unused-argument
         """ Test list with no params. """
         result = self.runner.invoke(cli, ['list'])
@@ -114,9 +114,9 @@ class TestCompare(ClickTest):
     """
 
     @patch('signal_processing.change_points.compare', autospec=True)
-    @patch('signal_processing.change_points.CommandConfiguration', style=['bmh'])
+    @patch('signal_processing.change_points.helpers.CommandConfiguration', style=['bmh'])
     def test_list_no_params(self, mock_config, mock_compare):  # pylint: disable=unused-argument
-        """ Test compare. """
+        """ Test list no params. """
 
         self.runner.invoke(cli, ['compare'])
 
@@ -126,19 +126,19 @@ class TestCompute(ClickTest):
     Test compute command.
     """
 
-    @patch('signal_processing.change_points.compute_change_points', autospec=True)
-    @patch('signal_processing.change_points.CommandConfiguration', style=['bmh'])
+    @patch('signal_processing.change_points.compute.compute_change_points', autospec=True)
+    @patch('signal_processing.change_points.helpers.CommandConfiguration', style=['bmh'])
     def test_compute_requires_params(self, mock_config, mock_compare):
         # pylint: disable=unused-argument
-        """ Test compare, """
+        """ Test compute with no params. """
 
         result = self.runner.invoke(cli, ['compute'])
         self.assertEqual(result.exit_code, 2)
 
-    @patch('signal_processing.change_points.compute_change_points', autospec=True)
-    @patch('signal_processing.change_points.CommandConfiguration', style=['bmh'])
+    @patch('signal_processing.change_points.compute.compute_change_points', autospec=True)
+    @patch('signal_processing.change_points.helpers.CommandConfiguration', style=['bmh'])
     def test_compute(self, mock_config, mock_compare):  # pylint: disable=unused-argument
-        """ Test compare. """
+        """ Test compute. """
 
         result = self.runner.invoke(cli, ['compute', 'sys-perf'])
         self.assertEqual(result.exit_code, 0)
@@ -151,10 +151,10 @@ class TestVisualize(ClickTest):
 
     @unittest.skip("test_visualize_no_params fails in evergreen")
     @patch('signal_processing.change_points.visualize', autospec=True)
-    @patch('signal_processing.change_points.CommandConfiguration', style=['bmh'])
+    @patch('signal_processing.change_points.helpers.CommandConfiguration', style=['bmh'])
     def test_visualize_no_params(self, mock_config, mock_visualize):
         # pylint: disable=unused-argument
-        """ Test visualize. """
+        """ Test visualize with no params. """
 
         result = self.runner.invoke(cli, ['visualize'])
         self.assertEqual(result.exit_code, 0)

@@ -138,7 +138,7 @@ def get_git_commits(newest, token=None, per_page=None):
         response.raise_for_status()
 
 
-def get_githashes_in_range_github(newest, oldest, token=None, per_page=None):
+def get_githashes_in_range_github(oldest, newest, token=None, per_page=None):
     """
     Get git hashes of commits from github in descending order from newest to oldest.
 
@@ -149,7 +149,7 @@ def get_githashes_in_range_github(newest, oldest, token=None, per_page=None):
     :param per_page: The number of hashes to get per page. None => use github default.
     :type per_page: int, None.
     :return: The git hashes between newest and oldest (from newest to oldest / descending order)
-    and including oldest and newest.
+    and including newest but not oldest.
     :rtype: list(str).
     """
     commits = get_git_commits(newest, token=token, per_page=per_page)
@@ -160,10 +160,10 @@ def get_githashes_in_range_github(newest, oldest, token=None, per_page=None):
 
     if index == -1:
         raise ValueError('oldest {} is not in list.'.format(oldest))
-    return commits[0:index + 1]
+    return commits[0:index]
 
 
-def get_githashes_in_range_repo(newest, oldest, mongo_repo):
+def get_githashes_in_range_repo(oldest, newest, mongo_repo):
     """
     Get git hashes of commits from local git repo in descending order from newest to oldest.
 
@@ -175,17 +175,17 @@ def get_githashes_in_range_repo(newest, oldest, mongo_repo):
     :param str oldest: The git hash of the old commit.
     :param str mongo_repo: The mongo repo directory location.
     :return: The git hashes between newest and oldest (from newest to oldest / descending order)
-    and including oldest and newest.
+    and including newest but not oldest.
     :rtype: list(str).
     """
     command = ['git', 'rev-list', '{}..{}'.format(oldest, newest)]
     process = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd=mongo_repo)
     output, error = process.communicate()
-    return_code = process.returncode
-    if return_code != 0:
-        raise ValueError('\'{}\' returned an error {}\n{}.'.format(' '.join(command), return_code,
-                                                                   str(error)))
-    commits = output.rstrip().split('\n') + [oldest]
+
+    if process.returncode != 0:
+        raise ValueError('\'{}\' returned an error {}\n{}.'.format(' '.join(command),
+                                                                   process.returncode, str(error)))
+    commits = output.rstrip().split('\n')
 
     if newest != commits[0]:
         raise ValueError("newest '{}' is not in list.".format(newest))

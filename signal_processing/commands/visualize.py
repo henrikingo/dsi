@@ -11,6 +11,7 @@ from matplotlib.lines import Line2D
 from scipy import stats, signal
 from scipy.signal import savgol_filter
 import numpy as np
+import pymongo
 from signal_processing.commands.compare import LANDSCAPE_FIGSIZE
 
 from signal_processing.detect_changes import PointsModel
@@ -255,7 +256,6 @@ def plot(result, sigma, filter_name="butter"):
     :param str filter_name: The filter to apply.
     """
 
-    # python_indexes = [point['index'] for point in python_points.points]
     import matplotlib.pyplot as plt
     from matplotlib.ticker import FuncFormatter, MaxNLocator
     thread_level = result['thread_level']
@@ -312,25 +312,36 @@ def plot(result, sigma, filter_name="butter"):
         lower_bound = np.zeros(len(series))
         upper_bound = np.zeros(len(series))
 
-        for change_point_index, change_point in enumerate(
-                sorted(change_points, key=lambda x: x['index'])):
-            previous = change_point['previous']
-            start = change_point['start']
-            end = change_point['end']
-            next_index = change_point['next']
+        for change_point_index, change_point in enumerate(change_points):
+            # sorted(change_points, key=lambda x: x['order'])):
+            suspect_revision_index = revisions.index(change_point['suspect_revision'])
+            stable_revision_index = suspect_revision_index - 1
+            if 'next' in change_point['statistics']:
+                next_index = suspect_revision_index + change_point['statistics']['next']['nobs']
+            else:
+                next_index = len(series)
 
             if change_point_index == 0:
-                lower, values, upper = create_lower_upper_bounds(series, previous, start, sigma)
-                data[previous:previous + len(values)] = values
-                lower_bound[previous:previous + len(values)] = lower
-                upper_bound[previous:previous + len(values)] = upper
+                if 'previous' in change_point['statistics']:
+                    previous_index = stable_revision_index - \
+                                    change_point['statistics']['previous']['nobs']
+                else:
+                    previous_index = 0
+                lower, values, upper = create_lower_upper_bounds(series, previous_index,
+                                                                 stable_revision_index, sigma)
+                data[previous_index:previous_index + len(values)] = values
+                lower_bound[previous_index:previous_index + len(values)] = lower
+                upper_bound[previous_index:previous_index + len(values)] = upper
 
-            lower, values, upper = create_lower_upper_bounds(series, end - 1, next_index, sigma)
-            data[end - 1:end - 1 + len(values)] = values
-            lower_bound[end - 1:end - 1 + len(values)] = lower
-            upper_bound[end - 1:end - 1 + len(values)] = upper
+            lower, values, upper = create_lower_upper_bounds(series, suspect_revision_index - 1,
+                                                             next_index, sigma)
+            data[suspect_revision_index - 1:suspect_revision_index - 1 + len(values)] = values
+            lower_bound[suspect_revision_index - 1:suspect_revision_index - 1 + len(values)] = lower
+            upper_bound[suspect_revision_index - 1:suspect_revision_index - 1 + len(values)] = upper
         label = "discrete"
         discrete_lines, = axis.plot(xvals, data, '--', label=label)
+        # discrete_lines.set_visible(False)
+
         line_labeled_items.append(discrete_lines)
         labeled_items[label] = discrete_lines
 
@@ -354,12 +365,12 @@ def plot(result, sigma, filter_name="butter"):
     if change_points:
         change_point_lines = []
         label = "change"
-        for change_point_index, change_point in enumerate(
-                sorted(change_points, key=lambda x: x['index'])):
-            start = change_point['start']
-            end = change_point['end']
+        for change_point_index, change_point in enumerate(change_points):
+            # sorted(change_points, key=lambda x: x['order'])):
+            suspect_revision_index = revisions.index(change_point['suspect_revision'])
+            stable_revision_index = suspect_revision_index - 1
 
-            coordinates = (start, end)
+            coordinates = (stable_revision_index, suspect_revision_index)
             if not change_point_index:
                 line, = axis.plot(
                     coordinates, [series[pos] for pos in coordinates], 'ro-', label=label)
@@ -373,7 +384,10 @@ def plot(result, sigma, filter_name="butter"):
         add_arrow(line, size=20)
     if change_points:
         label = "change points"
-        change_points_indexes = [change_point['index'] for change_point in result['change_points']]
+        change_points_indexes = [
+            revisions.index(change_point['suspect_revision'])
+            for change_point in result['change_points']
+        ]
         change_points_scatter = axis.scatter(
             change_points_indexes, [series[index] for index in change_points_indexes],
             marker="o",
@@ -461,7 +475,8 @@ def visualize(test_identifier, filter_name, command_config, sigma=1, only_change
                              ('test', test_identifier['test']),
                              ('thread_level', thread_level)]) #yapf: disable
 
-        change_points = list(command_config.change_points.find(query))
+        change_points = list(
+            command_config.change_points.find(query).sort([('order', pymongo.ASCENDING)]))
         if not only_change_points or change_points:
             LOG.debug("found change points", change_points=change_points)
             result = OrderedDict([('project', test_identifier['project']),

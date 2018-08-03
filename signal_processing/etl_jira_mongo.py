@@ -17,8 +17,8 @@ import argparse
 from collections import OrderedDict
 import copy
 from getpass import getpass
-import logging
 import os
+import structlog
 
 import dateutil.parser
 import jira
@@ -63,7 +63,9 @@ FIELDS = OrderedDict([
     ('fix_revision', ('fields', 'customfield_14852')),
 ])
 
-LOG = logging.getLogger(__name__)
+MANDATORY_ARRAY_FIELDS = ('project', 'first_failing_revision', 'fix_revision')
+
+LOG = structlog.getLogger(__name__)
 
 
 class OptionError(Exception):
@@ -106,7 +108,7 @@ class EtlJira(object):
 
         :param dict options: Options dictionary. See :const:`OPTIONS` above.
         """
-        LOG.debug(options)
+        LOG.debug("Create EtlJira", options=options)
         self.options = options
 
         self._jira = None
@@ -139,6 +141,7 @@ class EtlJira(object):
             # on authentication error. Still leaving this here in case behavior changes again in the
             # future.
             self._jira.issue("PERF-1234")
+        LOG.debug("About to connect to jira.")
         return self._jira
 
     @property
@@ -181,7 +184,7 @@ class EtlJira(object):
         # At the time of writing this, query returned 544 BF issues. (After 4 years in operation.)
         # main() would need a loop to be able to handle paginated result sets.
         issues = self.jira.search_issues(jql, maxResults=-1)
-        LOG.debug("Jira found %d issues.", len(issues))
+        LOG.debug("Jira found issues.", issues=issues)
         return issues
 
     def drop_collection(self):
@@ -223,10 +226,13 @@ class EtlJira(object):
             if 'created' in doc:
                 doc['created'] = dateutil.parser.parse(doc['created'])
             doc['_id'] = doc['key']
+            for field in MANDATORY_ARRAY_FIELDS:
+                if field not in doc:
+                    doc[field] = []
             if len(docs) > self.options['batch']:
                 self.coll.insert(docs)
                 docs = []
-        LOG.info("Inserting %d issues.", len(docs))
+        LOG.info("Inserting issues.", count=len(docs))
         if docs:
             self.coll.insert(docs)
 

@@ -333,7 +333,7 @@ class PyChangePoint(ChangePointImpl):
             weighting=self.weighting,
             mongo_repo=self.mongo_repo,
             credentials=self.credentials).change_points
-        self._points = [change_point['index'] for change_point in change_points]
+        self._points = [change_point['suspect_revision_index'] for change_point in change_points]
 
 
 def plot_test(save,
@@ -514,7 +514,8 @@ def compare(test_identifier, command_config, weighting, sig_lvl=0.05, minsizes=(
     LOG.debug('db.change_points.find(%s).pretty()', json.dumps(qry))
     perf_json = OrderedDict([('project_id', project), ('variant', variant), ('task_name', task)])
 
-    model = PointsModel(perf_json, command_config.mongo_uri, mongo_repo, credentials=credentials)
+    model = PointsModel(
+        perf_json, command_config.mongo_uri, mongo_repo=mongo_repo, credentials=credentials)
     series, revisions, orders, _, create_times, _ = model.get_points(test)
 
     thread_levels = series.keys()

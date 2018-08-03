@@ -1,5 +1,5 @@
 """
-Functionality to mark change points.
+Functionality to list change points.
 """
 import logging
 
