@@ -64,6 +64,6 @@ thread_levels:
       wiredTiger: [1, 8, 16]
   mix:
     "True":  # Sharded
-      wiredTiger: [4, 64, 128]
+      wiredTiger: [1, 32, 64]
     "False":  # Not Sharded
-      wiredTiger: [4, 64, 128]
+      wiredTiger: [4, 64, 128, 256, 512]
