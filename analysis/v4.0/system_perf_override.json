@@ -6645,33 +6645,33 @@
                     "workload":"mongoshell"
                 },
                 "find_project_6_sort_indexed_skip_limit_1-noAgg":{
-                    "create_time":"2018-06-15T19:30:40Z",
-                    "end":1529167059.591427,
-                    "max":48.208389954470206,
+                    "create_time":"2018-08-06T17:43:51Z",
+                    "end":1533587715.608138,
+                    "max":45.940789213821766,
                     "name":"find_project_6_sort_indexed_skip_limit_1-noAgg",
-                    "order":218,
+                    "order":384,
                     "results":{
                         "1":{
-                            "ops_per_sec":7.1768704418859075,
+                            "ops_per_sec":7.247524970222669,
                             "ops_per_sec_values":[
-                                7.1768704418859075
+                                7.247524970222669
                             ]
                         },
                         "16":{
-                            "ops_per_sec":47.0085245647964,
+                            "ops_per_sec":45.940789213821766,
                             "ops_per_sec_values":[
-                                47.0085245647964
+                                45.940789213821766
                             ]
                         },
                         "32":{
-                            "ops_per_sec":48.208389954470206,
+                            "ops_per_sec":39.99967894121713,
                             "ops_per_sec_values":[
-                                48.208389954470206
+                                39.99967894121713
                             ]
                         }
                     },
-                    "revision":"0a42e212a77bb187abc3c56795fda44abb49c3ea",
-                    "start":1529163946.619475,
+                    "revision":"d49eb6c0435898a2b813d3202d417423f91d0434",
+                    "start":1533584598.049803,
                     "tag":"",
                     "threads":[
                         "1",
@@ -6679,57 +6679,99 @@
                         "16"
                     ],
                     "ticket":[
-                        "BF-9580"
+                        "BF-9580",
+                        "PERF-9580"
                     ],
                     "workload":"mongoshell"
                 },
                 "find_project_6_sort_unindexed_skip_limit_1-noAgg":{
-                    "create_time":"2018-06-15T19:30:40Z",
-                    "end":1529167059.591427,
-                    "max":0.23908455348898563,
+                    "create_time":"2018-08-06T17:43:51Z",
+                    "end":1533587715.608138,
+                    "max":0.22932398565087062,
                     "name":"find_project_6_sort_unindexed_skip_limit_1-noAgg",
-                    "order":218,
+                    "order":384,
                     "results":{
                         "1":{
-                            "ops_per_sec":0.23908455348898563,
+                            "ops_per_sec":0.22932398565087062,
                             "ops_per_sec_values":[
-                                0.23908455348898563
+                                0.22932398565087062
                             ]
                         }
                     },
-                    "revision":"0a42e212a77bb187abc3c56795fda44abb49c3ea",
-                    "start":1529163946.619475,
+                    "revision":"d49eb6c0435898a2b813d3202d417423f91d0434",
+                    "start":1533584598.049803,
                     "tag":"",
                     "threads":[
                         "1"
                     ],
                     "ticket":[
-                        "BF-9580"
+                        "BF-9580",
+                        "PERF-9580"
                     ],
                     "workload":"mongoshell"
                 },
                 "find_project_skip_limit-noAgg":{
-                    "create_time":"2018-06-20T22:13:39Z",
-                    "end":1529573125.470653,
-                    "max":15.440379968335971,
+                    "create_time":"2018-08-06T17:43:51Z",
+                    "end":1533587715.608138,
+                    "max":15.053566370649294,
                     "name":"find_project_skip_limit-noAgg",
-                    "order":227,
+                    "order":384,
                     "results":{
                         "1":{
-                            "ops_per_sec":15.440379968335971,
+                            "ops_per_sec":15.053566370649294,
                             "ops_per_sec_values":[
-                                15.440379968335971
+                                15.053566370649294
                             ]
                         }
                     },
-                    "revision":"7230641bb09b1ceb04c3135cf83a5044c4838906",
-                    "start":1529570016.405482,
+                    "revision":"d49eb6c0435898a2b813d3202d417423f91d0434",
+                    "start":1533584598.049803,
                     "tag":"",
                     "threads":[
                         "1"
                     ],
                     "ticket":[
-                        "BF-9580"
+                        "BF-9580",
+                        "PERF-9580"
+                    ],
+                    "workload":"mongoshell"
+                },
+                "find_skip_limit_1-noAgg":{
+                    "create_time":"2018-08-06T17:43:51Z",
+                    "end":1533587715.608138,
+                    "max":21.01316871510566,
+                    "name":"find_skip_limit_1-noAgg",
+                    "order":384,
+                    "results":{
+                        "1":{
+                            "ops_per_sec":6.812630807404437,
+                            "ops_per_sec_values":[
+                                6.812630807404437
+                            ]
+                        },
+                        "16":{
+                            "ops_per_sec":21.01316871510566,
+                            "ops_per_sec_values":[
+                                21.01316871510566
+                            ]
+                        },
+                        "32":{
+                            "ops_per_sec":20.544751155611387,
+                            "ops_per_sec_values":[
+                                20.544751155611387
+                            ]
+                        }
+                    },
+                    "revision":"d49eb6c0435898a2b813d3202d417423f91d0434",
+                    "start":1533584598.049803,
+                    "tag":"",
+                    "threads":[
+                        "1",
+                        "32",
+                        "16"
+                    ],
+                    "ticket":[
+                        "PERF-9580"
                     ],
                     "workload":"mongoshell"
                 }
