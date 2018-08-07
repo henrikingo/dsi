@@ -482,59 +482,83 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "105_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                "0_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
+                        "BF-8621",
+                        "PERF-1157"
+                    ]
+                },
+                "0_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
+                    "ticket":[
+                        "BF-8621",
+                        "PERF-1157"
+                    ]
+                },
+                "105_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
+                    "ticket":[
+                        "BF-8621",
                         "PERF-1157"
                     ]
                 },
                 "105_1c_max_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
+                        "BF-8621",
                         "PERF-1157"
                     ]
                 },
                 "15_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
+                        "BF-8621",
                         "PERF-1157"
                     ]
                 },
                 "15_1c_max_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
+                        "BF-8621",
                         "PERF-1157"
                     ]
                 },
                 "15_lookup_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
+                        "BF-8621",
                         "PERF-1157"
                     ]
                 },
                 "15_lookup_1c_max_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
+                        "BF-8621",
                         "PERF-1157"
                     ]
                 },
                 "1_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
+                        "BF-8621",
                         "PERF-1157"
                     ]
                 },
                 "1_1c_max_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
+                        "BF-8621",
                         "PERF-1157"
                     ]
                 },
@@ -2317,59 +2341,83 @@
             "ndays":{},
             "reference":{},
             "threshold":{
-                "105_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                "0_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
+                        "BF-8621",
+                        "PERF-1157"
+                    ]
+                },
+                "0_1c_max_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
+                    "ticket":[
+                        "BF-8621",
+                        "PERF-1157"
+                    ]
+                },
+                "105_1c_avg_latency":{
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
+                    "ticket":[
+                        "BF-8621",
                         "PERF-1157"
                     ]
                 },
                 "105_1c_max_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
+                        "BF-8621",
                         "PERF-1157"
                     ]
                 },
                 "15_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
+                        "BF-8621",
                         "PERF-1157"
                     ]
                 },
                 "15_1c_max_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
+                        "BF-8621",
                         "PERF-1157"
                     ]
                 },
                 "15_lookup_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
+                        "BF-8621",
                         "PERF-1157"
                     ]
                 },
                 "15_lookup_1c_max_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
+                        "BF-8621",
                         "PERF-1157"
                     ]
                 },
                 "1_1c_avg_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
+                        "BF-8621",
                         "PERF-1157"
                     ]
                 },
                 "1_1c_max_latency":{
-                    "thread_threshold":0.5,
-                    "threshold":0.5,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
+                        "BF-8621",
                         "PERF-1157"
                     ]
                 },
@@ -6771,73 +6819,83 @@
             "reference":{},
             "threshold":{
                 "0_1c_avg_latency":{
-                    "thread_threshold":100.0,
-                    "threshold":150.0,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
-                        "BF-8621"
+                        "BF-8621",
+                        "PERF-1157"
                     ]
                 },
                 "0_1c_max_latency":{
-                    "thread_threshold":100.0,
-                    "threshold":150.0,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
-                        "BF-8621"
+                        "BF-8621",
+                        "PERF-1157"
                     ]
                 },
                 "105_1c_avg_latency":{
-                    "thread_threshold":100.0,
-                    "threshold":150.0,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
-                        "BF-8621"
+                        "BF-8621",
+                        "PERF-1157"
                     ]
                 },
                 "105_1c_max_latency":{
-                    "thread_threshold":100.0,
-                    "threshold":150.0,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
-                        "BF-8621"
+                        "BF-8621",
+                        "PERF-1157"
                     ]
                 },
                 "15_1c_avg_latency":{
-                    "thread_threshold":100.0,
-                    "threshold":150.0,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
-                        "BF-8621"
+                        "BF-8621",
+                        "PERF-1157"
                     ]
                 },
                 "15_1c_max_latency":{
-                    "thread_threshold":100.0,
-                    "threshold":150.0,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
-                        "BF-8621"
+                        "BF-8621",
+                        "PERF-1157"
                     ]
                 },
                 "15_lookup_1c_avg_latency":{
-                    "thread_threshold":100.0,
-                    "threshold":150.0,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
-                        "BF-8621"
+                        "BF-8621",
+                        "PERF-1157"
                     ]
                 },
                 "15_lookup_1c_max_latency":{
-                    "thread_threshold":100.0,
-                    "threshold":150.0,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
-                        "BF-8621"
+                        "BF-8621",
+                        "PERF-1157"
                     ]
                 },
                 "1_1c_avg_latency":{
-                    "thread_threshold":100.0,
-                    "threshold":150.0,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
-                        "BF-8621"
+                        "BF-8621",
+                        "PERF-1157"
                     ]
                 },
                 "1_1c_max_latency":{
-                    "thread_threshold":100.0,
-                    "threshold":150.0,
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
                     "ticket":[
-                        "BF-8621"
+                        "BF-8621",
+                        "PERF-1157"
                     ]
                 },
                 "NetworkBandwidth":{
