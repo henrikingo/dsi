@@ -1,1 +1,1 @@
-mongo_uri: 'mongodb+srv://dsi_analysis:${runtime_secret.dsi_analysis_atlas_pw}@performancedata-g6tsc.mongodb.net/perf'
+mongo_uri: 'mongodb+srv://${runtime_secret.dsi_analysis_atlas_user}:${runtime_secret.dsi_analysis_atlas_pw}@performancedata-g6tsc.mongodb.net/perf'

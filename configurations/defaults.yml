@@ -224,6 +224,11 @@ mongodb_setup:
           - source: data/dbs/diagnostic.data
             target: ./diagnostic.data
 
+# While the user is now available as an Evergreen expansion, older builds will fail when it is
+# missing from system_perf.yml. Thus, we must store it here as a default value.
+runtime_secret:
+  dsi_analysis_atlas_user: dsi_analysis
+
 test_control:
   task_name: default_task_name
   timeouts:
