@@ -25,7 +25,7 @@ LOG = logging.getLogger(__name__)
 # The number determines the number it can create at a time together
 TERRAFORM_PARALLELISM = 20
 TF_LOG_PATH = "terraform.log"
-PROVISON_LOG_PATH = './provision.log'
+PROVISION_LOG_PATH = './provision.log'
 CLUSTER_JSON = "cluster.json"
 
 # Increase this to force a teardown of clusters whose evg_data_dir is from a previous version.
@@ -63,7 +63,7 @@ class Provisioner(object):
     def __init__(self,
                  config,
                  log_file=TF_LOG_PATH,
-                 provisioning_file=PROVISON_LOG_PATH,
+                 provisioning_file=PROVISION_LOG_PATH,
                  verbose=False):
         self.config = config
         ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
@@ -351,7 +351,7 @@ class Provisioner(object):
 
     def print_terraform_errors(self):
         """
-        Grep and print errors from terraform.log
+        Grep and print errors from terraform.log and provisioning.log.
 
         Since Summer 2017, Terraform usually fails to print the actual EC2 error that caused a
         deployment to fail, and instead just keeps spinning until you get a timeout error instead.
@@ -364,6 +364,7 @@ class Provisioner(object):
         strings_to_ignore = set(["The specified rule does not exist in this security group."])
         seen_errors = set()
 
+        # Print errors from terraform.log.
         for line in open(self.tf_log_path):
             for to_grep in strings_to_grep:
                 if to_grep in line:
@@ -389,6 +390,10 @@ class Provisioner(object):
 
         if seen_errors:
             LOG.error("See %s for more info.", self.tf_log_path)
+
+        # Print tail of provisioning.log.
+        LOG.error(subprocess.check_output(["tail", "-n 100", self.provisioning_file]))
+        LOG.error("See %s for more info.", self.provisioning_file)
 
 
 # pylint: enable=too-many-instance-attributes

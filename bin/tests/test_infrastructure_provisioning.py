@@ -631,7 +631,9 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             ("infrastructure_provisioning", "ERROR", "2018-03-05T15:48:36.336+0200 [DEBUG] plugin.terraform-provider-aws_v1.6.0_x4: <Response><Errors><Error><Code>InvalidRouteTableID.NotFound</Code><Message>The routeTable ID 'rtb-509f1528' does not exist</Message></Error></Errors><RequestID>54256eb4-d706-4084-86dc-b7f581006f9f</RequestID></Response>"),
             ("infrastructure_provisioning", "ERROR", "2018-03-05T15:48:47.258+0200 [DEBUG] plugin.terraform-provider-aws_v1.6.0_x4: <Response><Errors><Error><Code>DependencyViolation</Code><Message>Network vpc-a9ed8bd0 has some mapped public address(es). Please unmap those public address(es) before detaching the gateway.</Message></Error></Errors><RequestID>cd102bc6-d598-4bae-80f5-25e62103f9a4</RequestID></Response>"),
             ("infrastructure_provisioning", "ERROR", "2018-03-05T15:49:29.084+0200 [DEBUG] plugin.terraform-provider-aws_v1.6.0_x4: <Response><Errors><Error><Code>InvalidPlacementGroup.Unknown</Code><Message>The Placement Group 'shard-8665ea69-9e76-483a-937b-af68d41d54dd' is unknown.</Message></Error></Errors><RequestID>4264aef8-ae91-40f0-bc16-d914a8dc2cf8</RequestID></Response>"),
-            ("infrastructure_provisioning", "ERROR", "See {} for more info.".format(provisioner.tf_log_path))
+            ("infrastructure_provisioning", "ERROR", "See {} for more info.".format(provisioner.tf_log_path)),
+            ("infrastructure_provisioning", "ERROR", ''),
+            ("infrastructure_provisioning", "ERROR", "See {} for more info.".format(self.provision_log_path)),
         ) # yapf: disable
 
 
