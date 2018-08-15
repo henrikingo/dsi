@@ -118,21 +118,21 @@ class TestProcessParams(unittest.TestCase):
         """ Test strings."""
         expected = {
             k: k
-            for k in ('revision', 'project', 'variant', 'task', 'test', 'thread_level')
+            for k in ('suspect_revision', 'project', 'variant', 'task', 'test', 'thread_level')
         }
         self.assertEqual(
-            helpers.process_params('revision', 'project', 'variant', 'task', 'test',
+            helpers.process_params('suspect_revision', 'project', 'variant', 'task', 'test',
                                    'thread_level'), expected)
 
     def test_process_params_re_strings(self):
         """ Test re strings."""
         expected = {
             k: re.compile(k)
-            for k in ('revision', 'project', 'variant', 'task', 'test', 'thread_level')
+            for k in ('suspect_revision', 'project', 'variant', 'task', 'test', 'thread_level')
         }
         self.assertEqual(
-            helpers.process_params('/revision/', '/project/', '/variant/', '/task/', '/test/',
-                                   '/thread_level/'), expected)
+            helpers.process_params('/suspect_revision/', '/project/', '/variant/', '/task/',
+                                   '/test/', '/thread_level/'), expected)
 
 
 class TestProcessExcludes(unittest.TestCase):

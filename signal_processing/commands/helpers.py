@@ -17,8 +17,8 @@ from pymongo.uri_parser import parse_uri
 
 from bin.common.utils import mkdir_p
 
-DEFAULT_KEY_ORDER = ('_id', 'revision', 'project', 'variant', 'task', 'test', 'thread_level',
-                     'processed_type')
+DEFAULT_KEY_ORDER = ('_id', 'suspect_revision', 'project', 'variant', 'task', 'test',
+                     'thread_level', 'processed_type')
 """
 The default keys used by :method: 'order'.
 """
@@ -35,7 +35,7 @@ The processed_type value for an acknowledged processed change point.
 
 PROCESSED_TYPES = [PROCESSED_TYPE_HIDDEN, PROCESSED_TYPE_ACKNOWLEDGED]
 """
-The list of recommended procssed_types for a processed change point.
+The list of recommended processed_types for a processed change point.
 """
 
 LOG = structlog.getLogger(__name__)
@@ -290,7 +290,7 @@ def process_params(revision, project, variant, task_name, test, thread_level):
 
     """
     params = {
-        "revision": extract_pattern(revision),
+        "suspect_revision": extract_pattern(revision),
         "project": extract_pattern(project),
         "variant": extract_pattern(variant),
         "task": extract_pattern(task_name),
