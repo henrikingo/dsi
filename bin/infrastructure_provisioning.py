@@ -132,8 +132,8 @@ class Provisioner(object):
         """
         # Copy terraform files and remote-scripts to work directory
         directory = os.getcwd()
-        cluster_path = os.path.join(self.dsi_dir, 'clusters', 'default')
-        remote_scripts_path = os.path.join(self.dsi_dir, 'clusters', 'remote-scripts')
+        cluster_path = os.path.join(self.dsi_dir, 'terraform', 'default')
+        remote_scripts_path = os.path.join(self.dsi_dir, 'terraform', 'remote-scripts')
         LOG.debug('Cluster path is %s', cluster_path)
         for filename in glob.glob(os.path.join(cluster_path, '*')):
             shutil.copy(filename, directory)
@@ -148,7 +148,7 @@ class Provisioner(object):
             LOG.debug("Copied %s to work directory %s.", filename, remote_scripts_target)
 
         # Copy modules
-        modules_path = os.path.join(self.dsi_dir, 'clusters', 'modules')
+        modules_path = os.path.join(self.dsi_dir, 'terraform', 'modules')
         modules_target = os.path.join(directory, 'modules')
         rmtree_when_present(modules_target)
         shutil.copytree(modules_path, modules_target)
