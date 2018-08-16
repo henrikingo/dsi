@@ -1,11 +1,11 @@
 # DSI: Signal Processing
-This sub-directory concerns itself with the signal processing functionality. At present it is a suite of software based upon a python version of [e.divisive](https://www.rdocumentation.org/packages/ecp/versions/3.1.0/topics/e.divisive) which in itself based on [this document](https://arxiv.org/pdf/1306.4933.pdf).
+This sub-directory concerns itself with the signal processing functionality. At present it is a suite of software based upon a python version of [e.divisive](https://www.rdocumentation.org/packages/ecp/versions/3.1.0/topics/e.divisive) which is itself based on [this document](https://arxiv.org/pdf/1306.4933.pdf).
 
 ## Command Line tools
 
-The signal processing module provides a command line interface through the 'change-points' executable. This executable in turn provides a number of sub-commands (list, mark, hide ..) for processing change points.
+The signal processing module provides a command line interface through the 'change-points' executable. This executable in turn provides a number of sub-commands (list, mark, hide, etc.) for processing change points.
 
-Think of the 'change-points' exe as equivalent to the 'git' command line executable and 'change-points mark', 'change-points hide' as the git commands (pull/ push / checkout).
+Think of the 'change-points' exe as equivalent to the 'git' command line executable and 'change-points mark', 'change-points hide' as the git commands (pull / push / checkout).
 
 ### Installation
 
@@ -13,7 +13,7 @@ Install the change points command from the DSI repo. For pip, use the following:
 
     $> pip install -e .
 
-__Note: ./signal_processing/change-points,py cannot be invoked directly as it does not have a '\_\_main\_\_' block.__
+__Note: ./signal\_processing/change-points.py cannot be invoked directly as it does not have a '\_\_main\_\_' block.__
 
 ### Invocation
 
@@ -21,9 +21,9 @@ Next verify the *change-points* command works. Run the following command, you sh
 
     $> change-points
     Usage: change-points [OPTIONS] COMMAND [ARGS]...
-    
+
       For a list of styles see 'style sheets<https://matplotlib.org/users/style_sheets.html>'.
-    
+
     Options:
       -d, --debug                     Enable debug output, you can pass multiple -ddddd etc.
       -l, --logfile TEXT              The log file to write to, defaults to None.
@@ -41,23 +41,24 @@ Next verify the *change-points* command works. Run the following command, you sh
       --token-file TEXT
       --mongo-repo TEXT
       -h, --help                      Show this message and exit.
-    
+
     Commands:
-      compare    Compare points generated from R and python.
-      compute    Compute / recompute change point(s).
-      help       Show the help message and exit.
-      hide       Hide a change point(s).
-      list       List points (defaults to change points).
-      manage     Manage the infrastructural elements of the...
-      mark       Mark change point(s) as acknowledged.This...
-      update     Update an existing processed change point(s).
-      visualize  *Note : this command is provided as is and is...
+      compare              Compare points generated from R and python.
+      compute              Compute / recompute change point(s).
+      help                 Show the help message and exit.
+      hide                 Hide a change point(s).
+      list                 List points (defaults to change points).
+      list-build-failures  Print list of build failures and their linked...
+      manage               Manage the infrastructural elements of the...
+      mark                 Mark change point(s) as acknowledged.This...
+      update               Update an existing processed change point(s).
+      visualize            *Note : this command is provided as is and is...
 
 __Note: this lists the options common to all sub-commands.__
 
-*change-points hide* command is used to mark change points as hidden. Internally it created a copy of matching  documents from *perf.change_points* collection in the *perf.processed_change_points* collection with the processed_type field set to hidden.
+The *change-points hide* command is used to mark change points as hidden. Internally it creates a copy of matching documents from the *perf.change_points* collection in the *perf.processed_change_points* collection with the __processed\_type__ field set to hidden.
 
-To see the help invoke the following command:
+To see the help documentation invoke the following command:
 
     $> change-points hide --help 
     Usage: change-points hide [OPTIONS] REVISION PROJECT [VARIANT] [TASK] [TEST] [THREAD_LEVEL]
@@ -105,42 +106,59 @@ To see the help invoke the following command:
 
 ### Source Code Layout
 
-The code for the command line tool is in '__signal_processing/change_points.py__'. Withing this file each sub-command is implemented in a function called '<subcommand>_command'. For example 'change-points mark' is implemented by the *mark_command* function. The command functions are concerned with processing the command line arguments from click and invoking the implementation in signal_processing/commands directory. In most cases there is a one to one relationship betweent the 'change-points <command name>' and the python file that implemented it. So the *mark_command* function delegates to '__signal_processing/commands/mark.py__'. Some notable exceptions are the *hide_command* which is essentially a synonym of mark with the processed_type parameter set to hidden. The other case being the *list_command* function which is implmented in '__signal_processing/commands/list_change_points.py__' as list is a builtin in python and it is a bad idea to reuse a buyiltin name. 
+The code for the command line tool is in __signal\_processing/change\_points.py__. Within this file each sub-command is implemented in a function called '\<subcommand\>\_command'. For example 'change-points mark' is implemented by the *mark_command* function. The command functions are concerned with processing the command line arguments from click and invoking the implementation in the __signal\_processing/commands__ directory. In most cases there is a one to one relationship between the 'change-points \<command name\>' and the python file that implemented it. So the *mark_command* function delegates to __signal\_processing/commands/mark.py__. Some notable exceptions are the *hide_command* which is essentially a synonym of mark with the processed\_type parameter set to hidden. The other case being the *list_command* function which is implmented in __signal\_processing/commands/list\_change\_points.py__ as `list` is a builtin in python and it is a bad idea to reuse a builtin name.
 
-In addition, there is a click group implemented in a function  called 'cli'. This group processes common command line argurments for all the other comamnds (e.g. -u / --mongo-uri, -d / --debug , -l / --log-file etc) and creates a CommandConfiguration instance which is passed to each command.
+In addition, there is a click group implemented in a function  called 'cli'. This group processes common command line argurments for all the other comamnds (e.g. -u / --mongo-uri, -d / --debug , -l / --log-file, etc.) and creates a `CommandConfiguration` instance which is passed to each command.
 
 
 ## Database Infrastructure
-The state is stored in an Atlas database (called perf). A number of indexes and a view are required. These database objects are described here.
+The state is stored in an Atlas database (called *perf*). A number of indexes and views are required. These database objects are described here.
 
-### Unprocessed Change Points Collection
+### Linked Build Failures View
 
-The *perf.unprocessed_change_points* collection is implented as a view on the *perf.change_points* collection. The view lists all change points that have not been hidden and are not already covered by a build failure.
+The *perf.linked_build_failures* collection is implemented as a view on the *perf.build_failures* collection. The view lists build failures and their linked change points, build failures that do not link to any change point will not appear in this view.
 
-#### Unprocessed Change Points Description
+#### Linked Build Failures Description
 
-The *perf.unprocessed_change_points* collection is implented as a view on the *perf.change_points* collection. 
+A change point gets linked to a build failure if any of the revisions in its __suspect\_revisions__ field match either the __first\_failing\_revision__ or __fix\_revisions__ fields of a build failure.
 
 See [Field Descriptions](#field-descriptions) for an explanation of the documents.
 
 The view pipeline has a number of stages:
 
-   1. Lookup (as the __hidden_processed_change_points__ field) all documents in the *perf.processed_change_points* that match *perf.change_points* documents:
+   1. Add field named __revision__ that is the __first\_failing\_revision__ and __fix\_revision__ fields concatenated.
+   1. Unwind on the new __revision__ field.
+   1. Lookup (as __linked\_change\_points__ field) all documents in the *perf.change_points* collection that match *perf.build_failure* documents:
+        1. __revision__ *perf.build_failures* field in __all_suspect\_revisions__ *perf.change_points* field.
         1. __project__ field.
-        1.  __variant__ field.
+   1. Filter documents with empty __linked\_change\_points__ field from the view.
+
+### Unprocessed Change Points Collection
+
+The *perf.unprocessed_change_points* collection is implemented as a view on the *perf.change_points* collection. The view lists all change points that have not been hidden and are not already covered by a build failure.
+
+#### Unprocessed Change Points Description
+
+The *perf.unprocessed_change_points* collection is implemented as a view on the *perf.change_points* collection. 
+
+See [Field Descriptions](#field-descriptions) for an explanation of the documents.
+
+The view pipeline has a number of stages:
+
+   1. Lookup (as the __hidden\_processed\_change\_points__ field) all documents in the *perf.processed_change_points* that match *perf.change_points* documents:
+        1. __project__ field.
+        1. __variant__ field.
         1. __task__ field.
         1. __test__ field.
         1. __thread_level__ field.
-        1. __suspect_revision__ field.
-        1. __processed_type__ field set to '*hidden*'
-
-    1. Filter documents with a non-empty __hidden_processed_change_points__ field from the view.
-
-    1. Lookup (as __build_failures__ field) all docuemnts in *perf.build_failures* that match *perf.build_failures* doucments:
+        1. __suspect\_revision__ field.
+        1. __processed\_type__ field set to *hidden*.
+   1. Filter documents with a non-empty __hidden\_processed\_change\_points__ field from the view.
+   1. Lookup (as __build\_failures__ field) all docuemnts in *perf.build_failures* that match *perf.build_failures* documents:
         1. __project__ field.
-        1. any *perf.change_points* '__all_suspect_revisions__' value in __first_failing_revision__' or '__fix_revision__' *perf.build_failures* fields
-    1. Filter documents with a non-empty '__build_failures__' field from the view.
-    1. Remove the '__hidden_processed_change_points__' and '__build_failures__' fields with a projection.
+        1. Any *perf.change_points* __all\_suspect\_revisions__ value in __first\_failing\_revision__ or __fix\_revision__ *perf.build_failures* fields
+   1. Filter documents with a non-empty __build\_failures__ field from the view.
+   1. Remove the __hidden\_processed\_change\_points__ and __build_failures__ fields with a projection.
 
 The remaining documents need to be processed to hide them or to create a Build Failure to track the issue. 
 
@@ -149,17 +167,17 @@ The remaining documents need to be processed to hide them or to create a Build F
 Common document fields:
    1. The __project__ field contains the performance project identifier. For example, 'sys-perf', 'sys-perf-4.0', 'performance'. This field is a scalar value in all cases except *perf.build_failures* where it is an array field. A change point is generated for a single project, variant, task, test and thread_level but build failures can cover many projects (the same logical commit in different project branches).
    1. The __variant__ field contains the performance variant identifier. For example, 'linux-standalone', 'linux-1-node-replSet'.
-   1. The __task__ field contains the performance task identifier. For example, 'bestbuy_agg', 'industry_benchmarks'.
-   1. The __test__ field contains the performance variant identifier. For example, 'find-noAgg', 'ycsb_100read'.
-   1. The __thread_level__ field contains the number of threads for a given performance result.
+   1. The __task__ field contains the performance task identifier. For example, 'bestbuy\_agg', 'industry\_benchmarks'.
+   1. The __test__ field contains the performance variant identifier. For example, 'find-noAgg', 'ycsb\_100read'.
+   1. The __thread\_level__ field contains the number of threads for a given performance result.
 
 A change point document has the following additional relevant fields:
-   1. The __suspect_revision__ field contains the githash revision of the first build that displays the change in performance. This does not mean that it is sure to be the root cause, there could be older revisions which were not yet run.
-   1. The __all_suspect_revisions__ array field contains the list of revisions which could contain the commit that caused the performance change. __suspect_revision__ is included in this list.
+   1. The __suspect\_revision__ field contains the githash revision of the first build that displays the change in performance. This does not mean that it is sure to be the root cause, there could be older revisions which were not yet run.
+   1. The __all\_suspect\_revisions__ array field contains the list of revisions which could contain the commit that caused the performance change. __suspect\_revision__ is included in this list.
 
 A build failure (BF) document has the following additional relevant fields:
-   1. The __first_failing_revision__ array field contains a list of revisions which are currently associated with the root cause of this BF. There can be more than one revision but each revision should be for a single unique project.
-   1. The __fix_revision__ array field contains a list of revisions which are associated with the fix for this BF. There can be more than one revision per project (to cover the case where an issue is fixed in stages or incompletely).  
+   1. The __first\_failing\_revision__ array field contains a list of revisions which are currently associated with the root cause of this BF. There can be more than one revision but each revision should be for a single unique project.
+   1. The __fix\_revision__ array field contains a list of revisions which are associated with the fix for this BF. There can be more than one revision per project (to cover the case where an issue is fixed in stages or incompletely).  
 
 #### View Creation / Change
 

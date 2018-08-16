@@ -7,12 +7,72 @@ import structlog
 LOG = structlog.getLogger(__name__)
 
 
-def create_view(command_config):
+def create_linked_build_failures_view(command_config):
+    """
+    Create the linked build failures view.
+
+    :param CommandConfig command_config: Common configuration.
+    """
+    # pylint: disable=invalid-name
+    LOG.debug('starting')
+    database = command_config.database
+
+    pipeline = [{
+        '$addFields': {
+            'revision': {
+                '$concatArrays': ['$first_failing_revision', '$fix_revision']
+            }
+        }
+    }, {
+        '$unwind': {
+            'path': '$revision'
+        }
+    }, {
+        '$lookup': {
+            'from':
+                'change_points',
+            'let': {
+                'revision': '$revision',
+                'project': '$project'
+            },
+            'pipeline': [{
+                '$match': {
+                    '$expr': {
+                        '$and': [{
+                            '$in': ['$$revision', '$all_suspect_revisions'],
+                        }, {
+                            '$in': ['$project', '$$project']
+                        }]
+                    }
+                }
+            }],
+            'as':
+                'linked_change_points'
+        }
+    }, {
+        '$match': {
+            'linked_change_points': {
+                '$not': {
+                    '$size': 0
+                }
+            }
+        }
+    }]
+    view_name = 'linked_build_failures'
+    source_collection_name = 'build_failures'
+    database.drop_collection(view_name)
+    database.command(OrderedDict([('create', view_name),
+                                  ('pipeline', pipeline),
+                                  ('viewOn', source_collection_name)])) # yapf: disable
+
+
+def create_unprocessed_change_points_view(command_config):
     """
     Create the unprocessed change points view.
 
     :param CommandConfig command_config: Common configuration.
     """
+    # pylint: disable=invalid-name
     LOG.debug('starting')
     database = command_config.database
 
@@ -131,4 +191,5 @@ def manage(command_config):
     :param CommandConfig command_config: Common configuration.
     """
 
-    create_view(command_config)
+    create_unprocessed_change_points_view(command_config)
+    create_linked_build_failures_view(command_config)

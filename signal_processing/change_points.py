@@ -18,6 +18,7 @@ import structlog
 
 from analysis.evergreen.helpers import get_git_credentials
 from bin.common import log
+import signal_processing.commands.list_build_failures as list_build_failures
 import signal_processing.commands.compare as compare
 import signal_processing.commands.compute as compute
 import signal_processing.commands.helpers as helpers
@@ -681,8 +682,9 @@ Manage the infrastructural elements of the performance database. That is, indexe
 views etc.
 
 \b
-At the moment, it only supports a single item:
-        1. the unprocessed change points view.
+At the moment, it supports:
+        1. The unprocessed change points view.
+        2. The linked build failures view.
 """
     LOG.debug('starting')
     manage.manage(command_config)
@@ -811,3 +813,62 @@ For Example:
                     LOG.error("unexpected error", exc_info=1)
                     if figure is not None:
                         figure.close()
+
+
+@cli.command(name="list-build-failures")
+@click.pass_obj
+@click.option(
+    '--human-readable',
+    'human_readable',
+    is_flag=True,
+    help='Print output in a more human-friendly output.')
+@click.argument('revision', required=False)
+@click.argument('project', required=False)
+@click.argument('variant', required=False)
+@click.argument('task', required=False)
+@click.argument('test', required=False)
+def list_build_failures_command(command_config, human_readable, revision, project, variant, task,
+                                test):
+    # pylint: disable=too-many-arguments, too-many-function-args
+    """
+    Print list of build failures and their linked change points.
+
+Arguments can be string or patterns, A pattern starts with /.
+
+\b
+REVISION, the revision of the change point.
+PROJECT, the project name or a regex (like /^sys-perf-3.*/ or /^(sys-perf|performance)$/).
+VARIANT, the build variant or a regex.
+TASK, the task name or a regex.
+TEST, the test name or a regex.
+\b
+You can use '' in place of VARIANT, TASK, TEST, if you want to match all. See the examples.
+\b
+Examples:
+    $> revision=a1b225bcf0e9791b14649df385b3f3f9710a98ab
+\b
+    # List all build failures
+    $> change-points list-build-failures
+\b
+    # List all build failures for a revision
+    $> change-points list-build-failures $revision
+\b
+    # List sys-perf build failures for a revision
+    $> change-points list-build-failures $revision sys-perf
+\b
+    # List sys-perf build failures (any revision)
+    $> change-points list-build-failures '' sys-perf
+\b
+    # List build failures matching criteria
+    $> change-points list-build-failures $revision sys-perf linux-1-node-replSet
+    $> change-points list-build-failures $revision sys-perf '/linux-.-node-replSet/'
+\b
+    # List all build failures with sys-perf find_limit-useAgg (any revision)
+    $> change-points list-build-failures '' sys-perf '' '' find_limit-useAgg
+\b
+    # List build failures in a more human-friendly format
+    $> change-points list-build-failures --human-readable
+    $> change-points list-build-failures $revision sys-perf linux-1-node-replSet --human-readable
+"""
+    query = helpers.process_params(revision, project, variant, task, test, '')
+    list_build_failures.list_build_failures(query, human_readable, command_config)

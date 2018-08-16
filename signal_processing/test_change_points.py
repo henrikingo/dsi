@@ -158,3 +158,18 @@ class TestVisualize(ClickTest):
 
         result = self.runner.invoke(cli, ['visualize'])
         self.assertEqual(result.exit_code, 0)
+
+
+class TestListBuildFailures(ClickTest):
+    """
+    Test list-build-failures command.
+    """
+
+    @patch('signal_processing.change_points.list_build_failures', autospec=True)
+    @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
+    def test_list_build_failures_no_params(self, mock_config, mock_visualize):
+        # pylint: disable=unused-argument
+        """ Test list-build-failures with no params. """
+
+        result = self.runner.invoke(cli, ['list-build-failures'])
+        self.assertEqual(result.exit_code, 0)
