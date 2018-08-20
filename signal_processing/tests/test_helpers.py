@@ -5,6 +5,7 @@ import re
 import unittest
 from collections import OrderedDict
 
+import click
 import mock
 from mock import patch
 
@@ -31,9 +32,16 @@ class TestCommandConfiguration(unittest.TestCase):
         mock_parse_uri.return_value = {'database': 'database name'}
 
         subject = helpers.CommandConfiguration(
-            'debug', 'out', 'file_format', self.mongo_uri, 'queryable', 'dry_run', 'compact',
-            'points', 'change_points', 'processed_change_points', 'build_failures', ('style', ),
-            'credentials', 'mongo_repo')
+            debug='debug',
+            out='out',
+            file_format='file_format',
+            mongo_uri='mongo_uri',
+            queryable='queryable',
+            dry_run='dry_run',
+            compact='compact',
+            style=('style', ),
+            credentials='credentials',
+            mongo_repo='mongo_repo')
 
         self.assertEqual('debug', subject.debug)
         self.assertEqual('out', subject.out)
@@ -47,6 +55,7 @@ class TestCommandConfiguration(unittest.TestCase):
         self.assertEqual('points', subject.points_name)
         self.assertEqual('change_points', subject.change_points_name)
         self.assertEqual('processed_change_points', subject.processed_change_points_name)
+        self.assertEqual('unprocessed_change_points', subject.unprocessed_change_points_name)
         self.assertEqual('build_failures', subject.build_failures_name)
         self.assertEqual(('style', ), subject.style)
         self.assertEqual('credentials', subject.credentials)
@@ -56,6 +65,7 @@ class TestCommandConfiguration(unittest.TestCase):
         self.assertEqual(mock_collection, subject.points)
         self.assertEqual(mock_collection, subject.change_points)
         self.assertEqual(mock_collection, subject.processed_change_points)
+        self.assertEqual(mock_collection, subject.unprocessed_change_points)
         self.assertEqual(mock_collection, subject.build_failures)
 
 
@@ -395,3 +405,30 @@ class TestGenerateTests(unittest.TestCase):
                 'second': 'task'
             }]))
         self.assertEqual(expected, actual)
+
+
+class TestValidateLimitOption(unittest.TestCase):
+    """
+    Test validate_limit_option.
+    """
+
+    def test_invalid_string(self):
+        """ Test not int."""
+        self.assertRaisesRegexp(click.BadParameter, 'twelve is not a valid integer or None.',
+                                helpers.validate_limit_option, None, None, 'twelve')
+
+    def test_invalid_number(self):
+        """ Test invalid number."""
+        self.assertRaisesRegexp(click.BadParameter, '1.2 is not a valid integer or None.',
+                                helpers.validate_limit_option, None, None, '1.2')
+
+    def test_valid_numbers(self):
+        """ Test valid numbers."""
+        self.assertEquals(-1, helpers.validate_limit_option(None, None, '-1'))
+        self.assertEquals(0, helpers.validate_limit_option(None, None, '0'))
+        self.assertEquals(1, helpers.validate_limit_option(None, None, '1'))
+
+    def test_valid_value(self):
+        """ Test None."""
+        self.assertIsNone(helpers.validate_limit_option(None, None, 'None'))
+        self.assertIsNone(helpers.validate_limit_option(None, None, 'none'))

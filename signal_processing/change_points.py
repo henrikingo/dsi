@@ -30,10 +30,6 @@ import signal_processing.commands.visualize as visualize
 import signal_processing.qhat as qhat
 
 DB = "perf"
-PROCESSED_CHANGE_POINTS = 'processed_change_points'
-CHANGE_POINTS = 'change_points'
-POINTS = 'points'
-BUILD_FAILURES = 'build_failures'
 
 LOG = structlog.getLogger(__name__)
 
@@ -56,21 +52,14 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'], max_content_width=12
 @click.option('-n', '--dry_run', is_flag=True, default=False, help="Don't actually run anything.")
 @click.option(
     '-c', '--compact/--expanded', 'compact', default=True, help='Display objects one / line.')
-@click.option('--points', default=POINTS, help="The points collection name.")
-@click.option('--change_points', default=CHANGE_POINTS, help='The change points collection name.')
-@click.option(
-    '--processed_change_points',
-    default=PROCESSED_CHANGE_POINTS,
-    help='The processed change points collection name.')
-@click.option(
-    '--build_failures', default=BUILD_FAILURES, help='The build failures collection name.')
+#     '--build_failures', default=BUILD_FAILURES, help='The build failures collection name.')
 @click.option(
     '--style', default=['bmh'], multiple=True, help="""The default matplot lib style to use.""")
 @click.option('--token-file', default=None, envvar='DSI_TOKEN_FILE')
 @click.option('--mongo-repo', 'mongo_repo', default='~/src', envvar='DSI_MONGO_REPO')
 @click.pass_context
-def cli(context, debug, logfile, out, file_format, mongo_uri, queryable, dry_run, compact, points,
-        change_points, processed_change_points, build_failures, style, token_file, mongo_repo):
+def cli(context, debug, logfile, out, file_format, mongo_uri, queryable, dry_run, compact, style,
+        token_file, mongo_repo):
     """
 For a list of styles see 'style sheets<https://matplotlib.org/users/style_sheets.html>'.
 """
@@ -80,8 +69,16 @@ For a list of styles see 'style sheets<https://matplotlib.org/users/style_sheets
     mongo_repo = expanduser(mongo_repo) if mongo_repo else mongo_repo
     mongo_repo = mongo_repo if exists(mongo_repo) and isdir(mongo_repo) else None
     context.obj = helpers.CommandConfiguration(
-        debug, out, file_format, mongo_uri, queryable, dry_run, compact, points, change_points,
-        processed_change_points, build_failures, style, credentials, mongo_repo)
+        debug=debug,
+        out=out,
+        file_format=file_format,
+        mongo_uri=mongo_uri,
+        queryable=queryable,
+        dry_run=dry_run,
+        compact=compact,
+        style=style,
+        credentials=credentials,
+        mongo_repo=mongo_repo)
     if context.invoked_subcommand is None:
         print context.get_help()
 
@@ -315,18 +312,45 @@ Examples:
     multiple=True,
     help='tests are excluded if this matches. It can be provided multiple times. ' +
     'A regex starts with a "/" char')
-@click.option('--processed/--no-processed', default=False, help='The type of point to list.')
+@click.option(
+    '--point-type',
+    type=click.Choice(list_change_points.VALID_CHANGE_POINT_TYPES),
+    default=list_change_points.CHANGE_POINT_TYPE_UNPROCESSED,
+    help='The type of point to list.')
+@click.option(
+    '--limit',
+    callback=helpers.validate_limit_option,
+    default="10",
+    help='The maximum number of change points to display.')
+@click.option(
+    '--human-readable/--no-human-readable',
+    'human_readable',
+    is_flag=True,
+    default=True,
+    help='Print output in a more human-friendly output.')
+@click.option(
+    '--show-canaries/--hide-canaries',
+    'show_canaries',
+    is_flag=True,
+    default=False,
+    help='Should canaries be shown (defaults to hidden). The filtering happens in the database.')
+@click.option(
+    '--show-wtdevelop/--hide-wtdevelop',
+    'show_wtdevelop',
+    is_flag=True,
+    default=False,
+    help='Should wtdevelop be shown (defaults to hidden). The filtering happens in the database.')
 @click.argument('revision', required=False)
 @click.argument('project', required=False)
 @click.argument('variant', required=False)
 @click.argument('task', required=False)
 @click.argument('test', required=False)
 @click.argument('thread_level', required=False)
-def list_command(command_config, exclude_patterns, processed, revision, project, variant, task,
-                 test, thread_level):
+def list_command(command_config, exclude_patterns, point_type, limit, human_readable, show_canaries,
+                 show_wtdevelop, revision, project, variant, task, test, thread_level):
     # pylint: disable=too-many-arguments, too-many-function-args
     """
-    List points (defaults to change points).
+    List processed change points or change points (defaults to change points).
 
 Arguments can be string or patterns, A pattern starts with /.
 
@@ -344,43 +368,47 @@ examples.
 Examples:
     $> revision=bad5afd612e8fc917fb035d8333cffd7d68a37cc
 \b
-    # list all change points
-    $> change-points list
-    $> change-points list --no-processed
+    # list unprocessed change points
+    $> change-points list                           # list 10
+    $> change-points list --point-type unprocessed  # list 10
+    $> change-points list --limit None              # list all
 \b
-    # list all processed change points
-    $> change-points list --processed
+    # list processed change points
+    $> change-points list --point-type processed
 \b
-    # list change points for a revision
+    # list change points
+    $> change-points list --point-type raw
+\b
+    # list unprocessed change points for a revision
     $> change-points list $revision
 \b
-    # list sys perf change points for a revision
+    # list sys perf unprocessed change points for a revision
     $> change-points list $revision sys-perf # list all sys-perf points for revision
 \b
-    # list sys perf change points (any revision)
+    # list sys perf unprocessed change points (any revision)
     $> change-points list '' sys-perf
 \b
-    # list change points matching criteria
+    # list unprocessed change points matching criteria
     $> change-points list $revision sys-perf linux-1-node-replSet
     $> change-points list $revision sys-perf '/linux-.-node-replSet/'
 \b
-    # list non canary change points for sys-perf linux-1-node-replSet change_streams_latency
-    # and revision
+    # list non canary unprocessed change points for sys-perf linux-1-node-replSet
+    # change_streams_latency and revision
     $> change-points list $revision sys-perf linux-1-node-replSet change_streams_latency \\
     '/^(fio_|canary_|Network)/'
 \b
-    # list all non canary change points for sys-perf linux-1-node-replSet change_streams_latency
-    # and revision
+    # list all non canary unprocessed change points for sys-perf linux-1-node-replSet
+    # change_streams_latency and revision
     $> change-points list $revision sys-perf linux-1-node-replSet change_streams_latency \\
     --exclude '/^(fio_|canary_|Network)/'
 \b
-    # list all the sys-perf find_limit-useAgg (any revision)
+    # list all the unprocessed sys-perf find_limit-useAgg (any revision)
     $> change-points list '' sys-perf '' '' find_limit-useAgg
 """
     query = helpers.process_params(revision, project, variant, task, test, thread_level)
-    list_change_points.list_change_points(processed, query,
-                                          helpers.process_excludes(exclude_patterns),
-                                          command_config)
+    list_change_points.list_change_points(
+        point_type, query, limit, human_readable, show_canaries, show_wtdevelop,
+        helpers.process_excludes(exclude_patterns), command_config)
 
 
 @cli.command(name="compare")

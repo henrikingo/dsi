@@ -136,7 +136,7 @@ def create_unprocessed_change_points_view(command_config):
 
         # Build Failures contains 2 array fields which can have 0 or more elements:
         #  1. first_failing_revision: A list of githashes representing the first failures.
-        #  2. fix_revision: A list of githashes representing the fixs.
+        #  2. fix_revision: A list of githashes representing the fixes.
         # For any given project there should only be a single githash for first_failing_revision.
         # For fix_revision, it is possible to have multiple revisions / project. For example,
         # an issue is fixed in stages. It is also possible that the field can be empty or missing.

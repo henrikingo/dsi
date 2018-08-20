@@ -10,11 +10,13 @@ from collections import OrderedDict
 from datetime import datetime, timedelta
 
 import structlog
+import click
+
 from bson.json_util import RELAXED_JSON_OPTIONS, dumps
-from click import get_terminal_size
 from pymongo import MongoClient
 from pymongo.uri_parser import parse_uri
 
+from bin.common.config import is_integer
 from bin.common.utils import mkdir_p
 
 DEFAULT_KEY_ORDER = ('_id', 'suspect_revision', 'project', 'variant', 'task', 'test',
@@ -40,6 +42,12 @@ The list of recommended processed_types for a processed change point.
 
 LOG = structlog.getLogger(__name__)
 
+PROCESSED_CHANGE_POINTS = 'processed_change_points'
+UNPROCESSED_CHANGE_POINTS = 'unprocessed_change_points'
+CHANGE_POINTS = 'change_points'
+POINTS = 'points'
+BUILD_FAILURES = 'build_failures'
+
 
 class CommandConfiguration(object):
     """
@@ -47,9 +55,22 @@ class CommandConfiguration(object):
     """
 
     # pylint: disable=too-many-locals
-    def __init__(self, debug, out, file_format, mongo_uri, queryable, dry_run, compact, points,
-                 change_points, processed_change_points, build_failures, style, credentials,
-                 mongo_repo):
+    def __init__(self,
+                 debug,
+                 out,
+                 file_format,
+                 mongo_uri,
+                 queryable,
+                 dry_run,
+                 compact,
+                 style,
+                 credentials,
+                 mongo_repo,
+                 points=POINTS,
+                 change_points=CHANGE_POINTS,
+                 processed_change_points=PROCESSED_CHANGE_POINTS,
+                 unprocessed_change_points=UNPROCESSED_CHANGE_POINTS,
+                 build_failures=BUILD_FAILURES):
         """
         Create the command configuration.
 
@@ -63,6 +84,7 @@ class CommandConfiguration(object):
         :param str points: The points collection name.
         :param str change_points: The change points collection name.
         :param str processed_change_points: The processed change points collection name.
+        :param str unprocessed_change_points: The unprocessed change points collection name.
         :param str build_failures: The build failures collection name.
         :param list(str) style: The matplotlib style(s) to use.
         :param str mongo_repo: The mongo db repo directory.
@@ -79,6 +101,7 @@ class CommandConfiguration(object):
             'points': points,
             'change_points': change_points,
             'processed_change_points': processed_change_points,
+            'unprocessed_change_points': unprocessed_change_points,
             'build_failures': build_failures,
             'style': style,
             'mongo_repo': mongo_repo,
@@ -148,6 +171,19 @@ class CommandConfiguration(object):
 
     # pylint disable=attribute-defined-outside-init
     @property
+    def unprocessed_change_points(self):
+        """
+        Get the collection instance for self.database_name / self.unprocessed_change_points_name.
+
+        :return: collection.
+        """
+        if self._unprocessed_change_points is None:
+            self._unprocessed_change_points = \
+                self.database.get_collection(self.unprocessed_change_points_name)
+        return self._unprocessed_change_points
+
+    # pylint disable=attribute-defined-outside-init
+    @property
     def build_failures(self):
         """
         Get the collection instance for self.database_name / self.build_failures_name.
@@ -180,6 +216,7 @@ class CommandConfiguration(object):
             'points': self.points_name,
             'change_points': self.change_points_name,
             'processed_change_points': self.processed_change_points_name,
+            'unprocessed_change_points': self.unprocessed_change_points_name,
             'build_failures': self.build_failures_name,
             'style': self.style,
             'mongo_repo': self.mongo_repo,
@@ -218,6 +255,9 @@ class CommandConfiguration(object):
 
         self._processed_change_points = None
         self.processed_change_points_name = state['processed_change_points']
+
+        self._unprocessed_change_points = None
+        self.unprocessed_change_points_name = state['unprocessed_change_points']
 
         self._build_failures = None
         self.build_failures_name = state['build_failures']
@@ -441,7 +481,7 @@ def get_bar_widths(label_width=22, max_bar_width=34, max_info_width=75, padding=
     :rtype: (int,int,int,int).
     """
     if width is None:
-        width, _ = get_terminal_size()
+        width, _ = click.get_terminal_size()
     width = width - 4 - label_width - padding
     bar_width = min(width / 2, max_bar_width)
     info_width = min(width - bar_width, max_info_width)
@@ -586,3 +626,25 @@ def function_adapter(arguments, **kwargs):
             arguments=function_arguments,
             exc_info=1)
         return False, e
+
+
+def validate_limit_option(context, param, value):
+    """
+    Validate that the limit value is either an integer or 'None'.
+
+    :param object context: The click context object.
+    :param object param: The click parmater deinition.
+    :param str value: The value for the --limit option.
+    :return: The validated limit value. Either an integer or None for no limit.
+    :rtype: int or None.
+    :raises: click.BadParameter if the parameter is not valid.
+    """
+    #pylint: disable=unused-argument
+    try:
+        if is_integer(value):
+            return int(value)
+        if value.lower() == "none":
+            return None
+    except ValueError:
+        pass
+    raise click.BadParameter('{} is not a valid integer or None.'.format(value))
