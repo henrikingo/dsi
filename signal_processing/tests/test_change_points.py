@@ -5,6 +5,7 @@ import multiprocessing
 import unittest
 
 from StringIO import StringIO
+import mock
 from mock import MagicMock, call, patch
 
 # pylint: disable=invalid-name
@@ -12,7 +13,6 @@ from click.testing import CliRunner
 
 from signal_processing.change_points import cli
 import signal_processing.commands.helpers as helpers
-import signal_processing.commands.list_change_points as list_change_points
 
 
 class ClickTest(unittest.TestCase):
@@ -250,67 +250,168 @@ class TestList(ClickTest):
     Test list command.
     """
 
-    @patch('signal_processing.change_points.helpers.process_excludes', autospec=True)
-    @patch('signal_processing.change_points.list_change_points.list_change_points', autospec=True)
-    @patch('signal_processing.change_points.helpers.process_params', autospec=True)
-    @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
-    def test_list(self, mock_config, mock_process_params, mock_list, mock_process_excludes):
-        """ Test list. """
-        expected_query = {'find': 'me'}
-        mock_process_params.return_value = expected_query
-        expected_excludes = 'exclude me'
-        mock_process_excludes.return_value = expected_excludes
-        expected_config = 'dummy config'
-        mock_config.return_value = expected_config
-
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_check_return(self, mock_list):
+        """ Test list with no params. """
         result = self.runner.invoke(cli, ['list'])
         self.assertEqual(result.exit_code, 0)
-        mock_process_params.assert_called_once_with(None, None, None, None, None, None)
-        mock_process_excludes.assert_called_once_with(())
-        # Defaults `point-type` to list.change_points.CHANGE_POINT_TYPE_UNPROCESSED, `limit` to 10,
-        # `human-readable` to True, `show-canaries` to False, and `show-wtdevelop` to False.
-        mock_list.assert_called_once_with(list_change_points.CHANGE_POINT_TYPE_UNPROCESSED,
-                                          expected_query, 10, True, False, False, expected_excludes,
-                                          expected_config)
+
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_check_defaults(self, mock_list):
+        """ Test list check default params. """
+        self.runner.invoke(cli, ['list'])
+        mock_list.list_change_points.assert_called_once()
+        _, kwargs = mock_list.list_change_points.call_args
+        self.assertEquals(
+            kwargs, {
+                'change_point_type': 'unprocessed',
+                'query': {},
+                'limit': 10,
+                'no_older_than': 14,
+                'human_readable': True,
+                'hide_canaries': True,
+                'hide_wtdevelop': True,
+                'exclude_patterns': [],
+                'command_config': mock.ANY
+            })
 
     @patch('signal_processing.change_points.helpers.process_excludes', autospec=True)
-    @patch('signal_processing.change_points.list_change_points.list_change_points', autospec=True)
-    @patch('signal_processing.change_points.helpers.process_params', autospec=True)
-    @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
-    def test_list_params(self, mock_config, mock_process_params, mock_list, mock_process_excludes):
-        """ Test list correctly uses parameters. """
-        expected_query = {'find': 'me'}
-        mock_process_params.return_value = expected_query
-        expected_excludes = 'exclude me'
-        mock_process_excludes.return_value = expected_excludes
-        expected_config = 'dummy config'
-        mock_config.return_value = expected_config
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_excludes(self, mock_list, mock_process_excludes):
+        """ Test list --exclude. """
+        mock_process_excludes.return_value = 'excludes'
+        self.runner.invoke(cli, ['list', '--exclude', 'pattern'])
+        mock_process_excludes.assert_called_once_with(('pattern', ))
+        mock_list.list_change_points.assert_called_once()
+        _, kwargs = mock_list.list_change_points.call_args
+        self.assertEquals(kwargs['exclude_patterns'], 'excludes')
 
-        # Call with all options (positive flags).
-        result = self.runner.invoke(cli, [
-            'list', 'badf', 'sys-perf', 'linux-standalone', 'industry_benchmarks', 'ycsb_load', '1',
-            '--exclude', 'fio', '--limit', 20, '--human-readable', '--show-canaries',
-            '--show-wtdevelop', '--point-type', list_change_points.CHANGE_POINT_TYPE_UNPROCESSED
-        ])
-        self.assertEqual(result.exit_code, 0)
-        mock_process_params.assert_called_once_with('badf', 'sys-perf', 'linux-standalone',
-                                                    'industry_benchmarks', 'ycsb_load', '1')
-        mock_process_excludes.assert_called_once_with(('fio', ))
-        mock_list.assert_called_once_with(list_change_points.CHANGE_POINT_TYPE_UNPROCESSED,
-                                          expected_query, 20, True, True, True, expected_excludes,
-                                          expected_config)
+    @patch('signal_processing.change_points.helpers.process_excludes', autospec=True)
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_multiple_excludes(self, mock_list, mock_process_excludes):
+        """ Test list --exclude. """
+        mock_process_excludes.return_value = 'excludes'
+        self.runner.invoke(cli, ['list', '--exclude', 'pattern1', '--exclude', 'pattern2'])
+        mock_process_excludes.assert_called_once_with((
+            'pattern1',
+            'pattern2',
+        ))
+        mock_list.list_change_points.assert_called_once()
+        _, kwargs = mock_list.list_change_points.call_args
+        self.assertEquals(kwargs['exclude_patterns'], 'excludes')
 
-        # Call with negative flags.
-        mock_list.reset_mock()
-        result = self.runner.invoke(cli, [
-            'list', 'badf', 'sys-perf', 'linux-standalone', 'industry_benchmarks', 'ycsb_load', '1',
-            '--no-human-readable', '--hide-canaries', '--hide-wtdevelop', '--point-type',
-            list_change_points.CHANGE_POINT_TYPE_PROCESSED
-        ])
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_unprocessed(self, mock_list):
+        """ Test list unprocessed. """
+        result = self.runner.invoke(cli, ['list', '--point-type', 'unprocessed'])
+        mock_list.list_change_points.assert_called_once()
+        _, kwargs = mock_list.list_change_points.call_args
+        self.assertEquals(kwargs['change_point_type'], 'unprocessed')
         self.assertEqual(result.exit_code, 0)
-        mock_list.assert_called_once_with(list_change_points.CHANGE_POINT_TYPE_PROCESSED,
-                                          expected_query, 10, False, False, False,
-                                          expected_excludes, expected_config)
+
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_processed(self, mock_list):
+        """ Test list processed. """
+        result = self.runner.invoke(cli, ['list', '--point-type', 'processed'])
+        mock_list.list_change_points.assert_called_once()
+        _, kwargs = mock_list.list_change_points.call_args
+        self.assertEquals(kwargs['change_point_type'], 'processed')
+        self.assertEqual(result.exit_code, 0)
+
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_raw(self, mock_list):
+        """ Test list raw. """
+        result = self.runner.invoke(cli, ['list', '--point-type', 'raw'])
+        mock_list.list_change_points.assert_called_once()
+        _, kwargs = mock_list.list_change_points.call_args
+        self.assertEquals(kwargs['change_point_type'], 'raw')
+        self.assertEqual(result.exit_code, 0)
+
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_invalid(self, mock_list):
+        """ Test list invalid. """
+        result = self.runner.invoke(cli, ['list', '--point-type', 'war'])
+        self.assertEqual(result.exit_code, 2)
+
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_limit(self, mock_list):
+        """ Test list check --limit 10. """
+        self.runner.invoke(cli, ['list', '--limit', '10'])
+        mock_list.list_change_points.assert_called_once()
+        _, kwargs = mock_list.list_change_points.call_args
+        self.assertEquals(kwargs['limit'], 10)
+
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_limit_none(self, mock_list):
+        """ Test list check --limit None. """
+        self.runner.invoke(cli, ['list', '--limit', 'None'])
+        mock_list.list_change_points.assert_called_once()
+        _, kwargs = mock_list.list_change_points.call_args
+        self.assertIsNone(kwargs['limit'])
+
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_no_older(self, mock_list):
+        """ Test list check --non-older-than 1. """
+        self.runner.invoke(cli, ['list', '--no-older-than', '1'])
+        mock_list.list_change_points.assert_called_once()
+        _, kwargs = mock_list.list_change_points.call_args
+        self.assertEquals(kwargs['no_older_than'], 1)
+
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_no_older_none(self, mock_list):
+        """ Test list check --non-older-than None. """
+        self.runner.invoke(cli, ['list', '--no-older-than', 'None'])
+        mock_list.list_change_points.assert_called_once()
+        _, kwargs = mock_list.list_change_points.call_args
+        self.assertEquals(kwargs['no_older_than'], None)
+
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_human_readable(self, mock_list):
+        """ Test list check --no-human-readable. """
+        self.runner.invoke(cli, ['list', '--human-readable'])
+        mock_list.list_change_points.assert_called_once()
+        _, kwargs = mock_list.list_change_points.call_args
+        self.assertEquals(kwargs['human_readable'], True)
+
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_no_human_readable(self, mock_list):
+        """ Test list check --no-human-readable. """
+        self.runner.invoke(cli, ['list', '--no-human-readable'])
+        mock_list.list_change_points.assert_called_once()
+        _, kwargs = mock_list.list_change_points.call_args
+        self.assertEquals(kwargs['human_readable'], False)
+
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_show_canaries(self, mock_list):
+        """ Test list check --show-canaries. """
+        self.runner.invoke(cli, ['list', '--show-canaries'])
+        mock_list.list_change_points.assert_called_once()
+        _, kwargs = mock_list.list_change_points.call_args
+        self.assertEquals(kwargs['hide_canaries'], False)
+
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_hide_canaries(self, mock_list):
+        """ Test list check --hide-canaries. """
+        self.runner.invoke(cli, ['list', '--hide-canaries'])
+        mock_list.list_change_points.assert_called_once()
+        _, kwargs = mock_list.list_change_points.call_args
+        self.assertEquals(kwargs['hide_canaries'], True)
+
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_show_wtdevelop(self, mock_list):
+        """ Test list check --show-wtdevelop. """
+        self.runner.invoke(cli, ['list', '--show-wtdevelop'])
+        mock_list.list_change_points.assert_called_once()
+        _, kwargs = mock_list.list_change_points.call_args
+        self.assertEquals(kwargs['hide_wtdevelop'], False)
+
+    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    def test_list_hide_wtdevelop(self, mock_list):
+        """ Test list check --hide-wtdevelop. """
+        self.runner.invoke(cli, ['list', '--hide-wtdevelop'])
+        mock_list.list_change_points.assert_called_once()
+        _, kwargs = mock_list.list_change_points.call_args
+        self.assertEquals(kwargs['hide_wtdevelop'], True)
 
 
 class TestCompute(ClickTest):

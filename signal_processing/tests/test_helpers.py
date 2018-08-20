@@ -88,9 +88,9 @@ class TestExtractPattern(unittest.TestCase):
     Test extract_to_pattern.
     """
 
-    def setUp(self):
-        self.pattern = re.compile('string', re.M | re.I)
-
+    # comparing compiled re's seem to be randomly broken
+    # on linux falling back to asserting that the compile is
+    # called.
     def test_extract_pattern_empty(self):
         """ Test empty."""
         self.assertEqual(helpers.extract_pattern(''), '')
@@ -104,14 +104,17 @@ class TestExtractPattern(unittest.TestCase):
         """ Test string but not pattern."""
         self.assertEqual(helpers.extract_pattern('string', string_is_pattern=False), 'string')
 
-    def test_extract_pattern_string_is_pattern(self):
+    @patch('signal_processing.commands.helpers.re.compile', autospec=True, return_value='pattern')
+    def test_extract_pattern_string_is_pattern(self, mock_compile):
         """ Test string pattern."""
-        self.assertEqual(
-            helpers.extract_pattern('string', string_is_pattern=True), re.compile('string'))
+        self.assertEqual(helpers.extract_pattern('string', string_is_pattern=True), 'pattern')
+        mock_compile.assert_called_once_with('string', 0)
 
-    def test_extract_pattern_string_pattern(self):
+    @patch('signal_processing.commands.helpers.re.compile', autospec=True, return_value='pattern')
+    def test_extract_pattern_string_pattern(self, mock_compile):
         """ Test string pattern."""
-        self.assertEqual(helpers.extract_pattern('/string/mi'), self.pattern)
+        self.assertEqual(helpers.extract_pattern('/string/mi'), 'pattern')
+        mock_compile.assert_called_once_with('string', re.M + re.I)
 
 
 class TestProcessParams(unittest.TestCase):
@@ -119,6 +122,9 @@ class TestProcessParams(unittest.TestCase):
     Test process_params.
     """
 
+    # comparing compiled re's seem to be randomly broken
+    # on linux falling back to asserting that the compile is
+    # called.
     def test_process_params_empty(self):
         """ Test empty."""
         self.assertEqual(helpers.process_params('', '', '', '', '', ''), {})
@@ -130,19 +136,36 @@ class TestProcessParams(unittest.TestCase):
             k: k
             for k in ('suspect_revision', 'project', 'variant', 'task', 'test', 'thread_level')
         }
-        self.assertEqual(
-            helpers.process_params('suspect_revision', 'project', 'variant', 'task', 'test',
-                                   'thread_level'), expected)
+        actual = helpers.process_params('suspect_revision', 'project', 'variant', 'task', 'test',
+                                        'thread_level')
+        self.assertDictEqual(expected, actual)
 
-    def test_process_params_re_strings(self):
+    @patch(
+        'signal_processing.commands.helpers.re.compile',
+        autospec=True,
+        side_effect=[1, 2, 3, 4, 5, 6])
+    def test_process_params_re_strings(self, mock_compile):
         """ Test re strings."""
         expected = {
-            k: re.compile(k)
-            for k in ('suspect_revision', 'project', 'variant', 'task', 'test', 'thread_level')
+            'suspect_revision': 1,
+            'project': 2,
+            'variant': 3,
+            'task': 4,
+            'test': 5,
+            'thread_level': 6
         }
-        self.assertEqual(
-            helpers.process_params('/suspect_revision/', '/project/', '/variant/', '/task/',
-                                   '/test/', '/thread_level/'), expected)
+        actual = helpers.process_params('/suspect_revision/', '/project/', '/variant/', '/task/',
+                                        '/test/', '/thread_level/')
+        self.assertDictEqual(expected, actual)
+        calls = [
+            mock.call('suspect_revision', 0),
+            mock.call('project', 0),
+            mock.call('variant', 0),
+            mock.call('task', 0),
+            mock.call('test', 0),
+            mock.call('thread_level', 0),
+        ]
+        mock_compile.assert_has_calls(calls=calls)
 
 
 class TestProcessExcludes(unittest.TestCase):
@@ -150,22 +173,26 @@ class TestProcessExcludes(unittest.TestCase):
     Test process_excludes.
     """
 
-    def setUp(self):
-        self.pattern = re.compile('string')
-
+    # comparing compiled re's seem to be randomly broken
+    # on linux falling back to asserting that the compile is
+    # called.
     def test_process_excludes_empty(self):
         """ Test empty."""
         self.assertEqual(helpers.process_excludes([]), [])
 
-    def test_process_excludes_string(self):
+    @patch('signal_processing.commands.helpers.re.compile', autospec=True, side_effect=[1])
+    def test_process_excludes_string(self, mock_compile):
         """ Test string."""
-        self.assertEqual(helpers.process_excludes(['string']), [self.pattern])
+        self.assertEqual(helpers.process_excludes(['string']), [1])
+        mock_compile.assert_called_once_with('string', 0)
 
-    def test_process_excludes_pattern(self):
+    @patch('signal_processing.commands.helpers.re.compile', autospec=True, side_effect=[1, 2])
+    def test_process_excludes_pattern(self, mock_compile):
         """ Test pattern."""
-        self.assertEqual(
-            helpers.process_excludes(['string1', 'string2']),
-            [re.compile('string1'), re.compile('string2')])
+        self.assertEquals([1, 2], helpers.process_excludes(['string1', 'string2']))
+
+        calls = [mock.call('string1', 0), mock.call('string2', 0)]
+        mock_compile.assert_has_calls(calls=calls)
 
 
 class TestOrder(unittest.TestCase):
@@ -407,28 +434,28 @@ class TestGenerateTests(unittest.TestCase):
         self.assertEqual(expected, actual)
 
 
-class TestValidateLimitOption(unittest.TestCase):
+class TestValidate(unittest.TestCase):
     """
-    Test validate_limit_option.
+    Test validate_int_none_options.
     """
 
     def test_invalid_string(self):
         """ Test not int."""
         self.assertRaisesRegexp(click.BadParameter, 'twelve is not a valid integer or None.',
-                                helpers.validate_limit_option, None, None, 'twelve')
+                                helpers.validate_int_none_options, None, None, 'twelve')
 
     def test_invalid_number(self):
         """ Test invalid number."""
         self.assertRaisesRegexp(click.BadParameter, '1.2 is not a valid integer or None.',
-                                helpers.validate_limit_option, None, None, '1.2')
+                                helpers.validate_int_none_options, None, None, '1.2')
 
     def test_valid_numbers(self):
         """ Test valid numbers."""
-        self.assertEquals(-1, helpers.validate_limit_option(None, None, '-1'))
-        self.assertEquals(0, helpers.validate_limit_option(None, None, '0'))
-        self.assertEquals(1, helpers.validate_limit_option(None, None, '1'))
+        self.assertEquals(-1, helpers.validate_int_none_options(None, None, '-1'))
+        self.assertEquals(0, helpers.validate_int_none_options(None, None, '0'))
+        self.assertEquals(1, helpers.validate_int_none_options(None, None, '1'))
 
     def test_valid_value(self):
         """ Test None."""
-        self.assertIsNone(helpers.validate_limit_option(None, None, 'None'))
-        self.assertIsNone(helpers.validate_limit_option(None, None, 'none'))
+        self.assertIsNone(helpers.validate_int_none_options(None, None, 'None'))
+        self.assertIsNone(helpers.validate_int_none_options(None, None, 'none'))

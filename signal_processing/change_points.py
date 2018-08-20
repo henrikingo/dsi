@@ -324,9 +324,15 @@ Examples:
     help='The type of point to list.')
 @click.option(
     '--limit',
-    callback=helpers.validate_limit_option,
+    callback=helpers.validate_int_none_options,
     default="10",
     help='The maximum number of change points to display.')
+@click.option(
+    '--no-older-than',
+    callback=helpers.validate_int_none_options,
+    default="14",
+    help="""Don't consider points older than this number of days.
+A perf BB rotation is 2 weeks, so 14 days seems appropriate""")
 @click.option(
     '--human-readable/--no-human-readable',
     'human_readable',
@@ -351,11 +357,18 @@ Examples:
 @click.argument('task', required=False)
 @click.argument('test', required=False)
 @click.argument('thread_level', required=False)
-def list_command(command_config, exclude_patterns, point_type, limit, human_readable, show_canaries,
-                 show_wtdevelop, revision, project, variant, task, test, thread_level):
+def list_command(command_config, exclude_patterns, point_type, limit, no_older_than, human_readable,
+                 show_canaries, show_wtdevelop, revision, project, variant, task, test,
+                 thread_level):
     # pylint: disable=too-many-arguments, too-many-function-args
     """
-    List processed change points or change points (defaults to change points).
+    List unprocessed / processed or raw change points (defaults to unprocessed).
+The points are grouped by revision and project to reduce clutter. The default is to only show groups
+with a change point in the last 14 days. (use --no-older-than=None for all or --no-older-than=30 to
+view older change points). The points are sorted by fortnight (descending) and
+max magnitude (ascending) of change. By default, the backing aggregation removes canary
+test or wtdevelop tasks. These can be viewed with the --show-canaries or --show-wtdevelop
+options. The output defaults to human readable format (which is also valid markdown).
 
 Arguments can be string or patterns, A pattern starts with /.
 
@@ -412,8 +425,15 @@ Examples:
 """
     query = helpers.process_params(revision, project, variant, task, test, thread_level)
     list_change_points.list_change_points(
-        point_type, query, limit, human_readable, show_canaries, show_wtdevelop,
-        helpers.process_excludes(exclude_patterns), command_config)
+        change_point_type=point_type,
+        query=query,
+        limit=limit,
+        no_older_than=no_older_than,
+        human_readable=human_readable,
+        hide_canaries=not show_canaries,
+        hide_wtdevelop=not show_wtdevelop,
+        exclude_patterns=helpers.process_excludes(exclude_patterns),
+        command_config=command_config)
 
 
 @cli.command(name='compare')

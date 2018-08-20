@@ -467,6 +467,9 @@ def get_bar_template(label_width, bar_width, info_width):
     return bar_template
 
 
+# TODO: As part of PERF-1638 this function needs to be put in a file where it is
+# appropriate to know about click. It is possible but not worth the effort to write
+# click.get_terminal_size ourselves.
 def get_bar_widths(label_width=22, max_bar_width=34, max_info_width=75, padding=10, width=None):
     """
     Get progress bar widths so as to fit on a terminal line (with a little padding).
@@ -628,7 +631,10 @@ def function_adapter(arguments, **kwargs):
         return False, e
 
 
-def validate_limit_option(context, param, value):
+# TODO: As part of PERF-1638 this function needs to be put in a file where it is
+# appropriate to know about click. This is called by click so
+# click.BadParameter is the correct exception.
+def validate_int_none_options(context, param, value):
     """
     Validate that the limit value is either an integer or 'None'.
 

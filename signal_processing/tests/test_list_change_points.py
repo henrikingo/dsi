@@ -1,108 +1,257 @@
 """
 Unit tests for signal_processing/list.py.
 """
+import re
 import unittest
+from collections import OrderedDict
 
-from bin.common.log import setup_logging
-from mock import MagicMock
+from mock import ANY, MagicMock, patch
 
 import signal_processing.commands.list_change_points as list_change_points
+from bin.common.log import setup_logging
 
 setup_logging(False)
 
 
+class TestMapCollection(unittest.TestCase):
+    """
+    Test suite for map_collection validation.
+    """
+
+    def setUp(self):
+        self.mock_processed_change_points = MagicMock(name='processed_change_points')
+        self.mock_unprocessed_change_points = MagicMock(name='unprocessed_change_points')
+        self.mock_change_points = MagicMock(name='change_points')
+        self.mock_config = MagicMock(
+            name='config',
+            processed_change_points=self.mock_processed_change_points,
+            unprocessed_change_points=self.mock_unprocessed_change_points,
+            change_points=self.mock_change_points)
+
+    def test_map_invalid(self):
+        """ Test list unprocessed."""
+        self.assertRaisesRegexp(
+            ValueError,
+            'war is not a valid change point type.',
+            list_change_points.map_collection,
+            'war',
+            command_config=None)
+
+    def test_map_unprocessed(self):
+        """ Test list unprocessed."""
+        self.assertEquals(self.mock_unprocessed_change_points,
+                          list_change_points.map_collection(
+                              list_change_points.CHANGE_POINT_TYPE_UNPROCESSED, self.mock_config))
+
+    def test_map_processed(self):
+        """ Test list processed."""
+        self.assertEquals(self.mock_processed_change_points,
+                          list_change_points.map_collection(
+                              list_change_points.CHANGE_POINT_TYPE_PROCESSED, self.mock_config))
+
+    def test_map_raw(self):
+        """ Test list raw."""
+        self.assertEquals(self.mock_change_points,
+                          list_change_points.map_collection(
+                              list_change_points.CHANGE_POINT_TYPE_RAW, self.mock_config))
+
+
 class TestListChangePoints(unittest.TestCase):
     """
-    Test suite for list_change_points method.
+    Test suite to check the correct collection is selected for list_change_points.
     """
 
-    def _assert_query(self, change_point_type, query, mock_unprocessed_change_points,
-                      mock_processed_change_points, mock_change_points):
-        """ Helper for query assertions. """
-        if change_point_type == list_change_points.CHANGE_POINT_TYPE_UNPROCESSED:
-            mock_unprocessed_change_points.aggregate.assert_called_with()
+    def setUp(self):
+        self.mock_aggregate = MagicMock(name='unprocessed aggregate')
+        self.mock_unprocessed_change_points = MagicMock(name='unprocessed_change_points')
+        self.mock_unprocessed_change_points.aggregate = self.mock_aggregate
+        self.mock_config = MagicMock(
+            name='config', unprocessed_change_points=self.mock_unprocessed_change_points)
+
+    def _test_helper(self, human_readable, mock_create_pipeline, mock_filter,
+                     mock_stream_human_readable):
+        """ test list_change_points helper."""
+
+        list_change_points.list_change_points(
+            list_change_points.CHANGE_POINT_TYPE_UNPROCESSED,
+            query={'find': 'me'},
+            limit='limit',
+            no_older_than='no_older_than',
+            human_readable=human_readable,
+            hide_canaries='canaries',
+            hide_wtdevelop='wtdevelop',
+            exclude_patterns='excludes',
+            command_config=self.mock_config)
+
+        mock_collection = self.mock_unprocessed_change_points
+
+        mock_create_pipeline.assert_called_once_with({
+            'find': 'me'
+        }, 'limit', 'canaries', 'wtdevelop', 'no_older_than')
+        mock_collection.aggregate.assert_called_once_with('pipeline')
+        mock_filter.assert_called_once_with(ANY, ['find'], 'excludes')
+        if human_readable:
+            mock_stream_human_readable.assert_called_once_with('filtered_cursor', mock_collection,
+                                                               'limit', 'no_older_than')
         else:
-            mock_unprocessed_change_points.aggregate.assert_not_called()
+            mock_stream_human_readable.assert_not_called()
 
-        if change_point_type == list_change_points.CHANGE_POINT_TYPE_PROCESSED:
-            mock_processed_change_points.aggregate.assert_called_with()
+    @patch('signal_processing.commands.list_change_points.stream_human_readable')
+    @patch(
+        'signal_processing.commands.list_change_points.filter_excludes',
+        return_value='filtered_cursor')
+    @patch('signal_processing.commands.list_change_points.create_pipeline', return_value='pipeline')
+    def test_list_change_points(self, mock_create_pipeline, mock_filter,
+                                mock_stream_human_readable):
+        """ test list_change_points human readable."""
+        self._test_helper(True, mock_create_pipeline, mock_filter, mock_stream_human_readable)
+
+    @patch('signal_processing.commands.list_change_points.stream_human_readable')
+    @patch('signal_processing.commands.list_change_points.filter_excludes', return_value=[])
+    @patch('signal_processing.commands.list_change_points.create_pipeline', return_value='pipeline')
+    def test_list_change_points_not(self, mock_create_pipeline, mock_filter,
+                                    mock_stream_human_readable):
+        """ test list_change_points not human readable."""
+        self._test_helper(False, mock_create_pipeline, mock_filter, mock_stream_human_readable)
+
+
+class TestRender(unittest.TestCase):
+    """
+    Test suite for stream_human_readable.
+    """
+
+    def _test_render_date(self, mock_template, no_older):
+        """ test helper."""
+        mock_collection = MagicMock(name="collection")
+        if no_older:
+            no_older_than = MagicMock(name="datetime")
+            no_older_than.date.return_value = 'date'
         else:
-            mock_processed_change_points.aggregate.assert_not_called()
+            no_older_than = None
+        list_change_points.stream_human_readable('points', mock_collection, 'limit', no_older_than)
+        mock_template.stream.assert_called_once_with(
+            points='points', collection=mock_collection, limit='limit', no_older_than=no_older_than)
 
-        if change_point_type == list_change_points.CHANGE_POINT_TYPE_RAW:
-            mock_change_points.aggregate.assert_called_with()
-        else:
-            mock_change_points.aggregate.assert_not_called()
+    @patch('signal_processing.commands.list_change_points.HUMAN_READABLE_TEMPLATE')
+    def test_render_no_date(self, mock_template):
+        """ test list_change_points helper."""
+        self._test_render_date(mock_template, True)
 
-    def _test_limit(self, change_point_type):
-        """ test limit helper."""
-        mock_cursor = MagicMock(name='cursor', return_value=[{}])
-        query = {'find': 'me'}
-        mock_processed_change_points = MagicMock(
-            name='processed_change_points',
-            find=MagicMock(name='processed find', return_value=mock_cursor))
-        mock_unprocessed_change_points = MagicMock(
-            name='unprocessed_change_points',
-            find=MagicMock(name='unprocessed find', return_value=mock_cursor))
-        mock_change_points = MagicMock(
-            name='change_points', find=MagicMock(name='find', return_value=mock_cursor))
+    @patch('signal_processing.commands.list_change_points.HUMAN_READABLE_TEMPLATE')
+    def test_render_date(self, mock_template):
+        """ test list_change_points helper."""
+        self._test_render_date(mock_template, False)
 
-        mock_config = MagicMock(
-            name='config',
-            processed_change_points=mock_processed_change_points,
-            unprocessed_change_points=mock_unprocessed_change_points,
-            change_points=mock_change_points)
-        human_readable = True
-        show_canaries = False
-        show_wtdevelop = False
-        list_change_points.list_change_points(change_point_type, query, 100, human_readable,
-                                              show_canaries, show_wtdevelop, [], mock_config)
 
-    def _test_list_all(self, change_point_type):
-        """ Test list all helper."""
+class TestPipeline(unittest.TestCase):
+    """
+    Test suite for create_pipeline.
+    """
 
-        query = {'find': 'me'}
-        mock_processed_change_points = MagicMock(
-            name='processed_change_points',
-            find=MagicMock(name='processed find', return_value=[{}]))
-        mock_unprocessed_change_points = MagicMock(
-            name='unprocessed_change_points',
-            find=MagicMock(name='unprocessed find', return_value=[{}]))
-        mock_change_points = MagicMock(
-            name='change_points', find=MagicMock(name='find', return_value=[{}]))
+    def setUp(self):
+        pass
 
-        mock_config = MagicMock(
-            name='config',
-            processed_change_points=mock_processed_change_points,
-            unprocessed_change_points=mock_unprocessed_change_points,
-            change_points=mock_change_points)
+    def _pipeline(self,
+                  query=None,
+                  limit=10,
+                  hide_canaries=True,
+                  hide_wtdevelop=True,
+                  no_older_than=None,
+                  sort_by_fortnight=True):
+        """ Helper function for pipeline testing.
 
-        human_readable = True
-        show_canaries = False
-        show_wtdevelop = False
-        list_change_points.list_change_points(change_point_type, query, None, human_readable,
-                                              show_canaries, show_wtdevelop, [], mock_config)
+        :param dict query: The query, defaults to {'find': 'me'} when None.
+        :param int limit: The limit value.
+        :param bool hide_canaries: The hide canaries value.
+        :param bool hide_wtdevelop: The hide wtdevelop value.
+        :param int not_older_than: The no older than value.
+        :param bool sort_by_fortnight: The sort by fortnight value.
 
-    def test_list_all_unprocessed_change_points(self):
-        """ Test list unprocessed."""
-        self._test_list_all(list_change_points.CHANGE_POINT_TYPE_UNPROCESSED)
+        :return: The pipeline.
+        :rtype: list(dict).
+        """
+        if query is None:
+            query = {'find': 'me'}
+        return list_change_points.create_pipeline(
+            query,
+            limit,
+            hide_canaries,
+            hide_wtdevelop,
+            no_older_than,
+            sort_by_fortnight=sort_by_fortnight)
 
-    def test_list_100_unprocessed_change_points(self):
-        """ Test list unprocessed."""
-        self._test_limit(list_change_points.CHANGE_POINT_TYPE_UNPROCESSED)
+    def test_pipeline(self):
+        """ test create_pipeline."""
+        limit = 10
+        pipeline = self._pipeline(limit=limit)
+        self.assertTrue({
+            '$addFields': {
+                'start': {
+                    '$ifNull': ["$start", {
+                        '$dateFromString': {
+                            'dateString': '$create_time'
+                        }
+                    }]
+                }
+            }
+        } in pipeline)
 
-    def test_list_all_processed_change_points(self):
-        """ Test list processed."""
-        self._test_list_all(list_change_points.CHANGE_POINT_TYPE_PROCESSED)
+        self.assertTrue({'$match': {'find': 'me'}} in pipeline)
 
-    def test_list_100_processed_change_points(self):
-        """ Test list processed."""
-        self._test_limit(list_change_points.CHANGE_POINT_TYPE_PROCESSED)
+        self.assertTrue({
+            '$addFields': {
+                'previous_mean': {
+                    '$ifNull': ["$statistics.previous.mean", 1]
+                },
+                'next_mean': "$statistics.next.mean"
+            }
+        } in pipeline)
 
-    def test_list_all_change_points(self):
-        """ Test list unprocessed."""
-        self._test_list_all(list_change_points.CHANGE_POINT_TYPE_RAW)
+        self.assertTrue({
+            '$match': {
+                'test': {
+                    '$not': re.compile('^(canary_|fio_|NetworkBandwidth)')
+                }
+            }
+        } in pipeline)
 
-    def test_list_100_change_points(self):
-        """ Test list unprocessed."""
-        self._test_limit(list_change_points.CHANGE_POINT_TYPE_RAW)
+        self.assertTrue({'$match': {'variant': {'$not': re.compile('^wtdevelop')}}} in pipeline)
+        self.assertTrue({'$limit': limit} in pipeline)
+        self.assertTrue({
+            '$sort': OrderedDict([('fortnight', -1), ('min_magnitude', 1)])
+        } in pipeline)
+
+    def test_sort_by_date(self):
+        """ test create_pipeline sort by fortnight."""
+        pipeline = self._pipeline(sort_by_fortnight=True)
+        self.assertTrue({
+            '$sort': OrderedDict([('fortnight', -1), ('min_magnitude', 1)])
+        } in pipeline)
+
+    def test_sort_by_fortnight(self):
+        """ test create_pipeline sort by fortnight."""
+        pipeline = self._pipeline(sort_by_fortnight=True)
+        self.assertTrue({
+            '$sort': OrderedDict([('fortnight', -1), ('min_magnitude', 1)])
+        } in pipeline)
+
+    def test_show_canaries(self):
+        """ test create_pipeline show canaries."""
+        pipeline = self._pipeline(hide_canaries=False)
+        self.assertTrue({
+            '$match': {
+                'test': {
+                    '$not': re.compile('^(canary_|fio_|NetworkBandwidth)')
+                }
+            }
+        } not in pipeline)
+
+    def test_show_wtdevelop(self):
+        """ test create_pipeline show wtdevelop."""
+        pipeline = self._pipeline(hide_wtdevelop=False)
+        self.assertTrue({'$match': {'variant': {'$not': re.compile('^wtdevelop')}}} not in pipeline)
+
+    def test_no_limit(self):
+        """ test no no, no no, no no, theres no limits!."""
+        pipeline = self._pipeline(limit=None)
+        self.assertTrue('$limit' not in pipeline[-1].keys())
