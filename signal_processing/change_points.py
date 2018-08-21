@@ -52,7 +52,8 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'], max_content_width=12
     '-u',
     '--mongo-uri',
     default='mongodb://localhost:27017/' + DB,
-    help='MongoDB connection string. The database name comes from here too.')
+    help='MongoDB connection string. The database name comes from here too.',
+    envvar="DSI_MONGO_URI")
 @click.option('-q', '--queryable', default=False, help='Print ids as queries')
 @click.option('-n', '--dry-run', is_flag=True, default=False, help='Do not actually run anything.')
 @click.option(
