@@ -6,6 +6,7 @@ To get access to the help try the following command:
 
     $> change-points help
 """
+from __future__ import print_function
 import functools
 import os
 from os.path import exists, expanduser, isdir
@@ -29,7 +30,11 @@ import signal_processing.commands.update as update
 import signal_processing.commands.visualize as visualize
 import signal_processing.qhat as qhat
 
-DB = "perf"
+DB = 'perf'
+PROCESSED_CHANGE_POINTS = 'processed_change_points'
+CHANGE_POINTS = 'change_points'
+POINTS = 'points'
+BUILD_FAILURES = 'build_failures'
 
 LOG = structlog.getLogger(__name__)
 
@@ -40,21 +45,20 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'], max_content_width=12
 @click.option(
     '-d', '--debug', count=True, help='Enable debug output, you can pass multiple -ddddd etc.')
 @click.option('-l', '--logfile', default=None, help='The log file to write to, defaults to None.')
-@click.option('-o', '--out', default="/tmp", help="The location to save any files in.")
+@click.option('-o', '--out', default='/tmp', help='The location to save any files in.')
 @click.option(
-    '-f', '--format', 'file_format', default="png", help='The format to save any files in.')
+    '-f', '--format', 'file_format', default='png', help='The format to save any files in.')
 @click.option(
     '-u',
     '--mongo-uri',
     default='mongodb://localhost:27017/' + DB,
     help='MongoDB connection string. The database name comes from here too.')
-@click.option('-q', '--queryable', default=False, help="Print ids as queries")
-@click.option('-n', '--dry_run', is_flag=True, default=False, help="Don't actually run anything.")
+@click.option('-q', '--queryable', default=False, help='Print ids as queries')
+@click.option('-n', '--dry-run', is_flag=True, default=False, help='Do not actually run anything.')
 @click.option(
     '-c', '--compact/--expanded', 'compact', default=True, help='Display objects one / line.')
-#     '--build_failures', default=BUILD_FAILURES, help='The build failures collection name.')
 @click.option(
-    '--style', default=['bmh'], multiple=True, help="""The default matplot lib style to use.""")
+    '--style', default=['bmh'], multiple=True, help='The default matplot lib style to use.')
 @click.option('--token-file', default=None, envvar='DSI_TOKEN_FILE')
 @click.option('--mongo-repo', 'mongo_repo', default='~/src', envvar='DSI_MONGO_REPO')
 @click.pass_context
@@ -80,7 +84,7 @@ For a list of styles see 'style sheets<https://matplotlib.org/users/style_sheets
         credentials=credentials,
         mongo_repo=mongo_repo)
     if context.invoked_subcommand is None:
-        print context.get_help()
+        print(context.get_help())
 
 
 @cli.command(name='help')
@@ -89,10 +93,10 @@ def help_command(context):
     """
     Show the help message and exit.
     """
-    print context.parent.get_help()
+    print(context.parent.get_help())
 
 
-@cli.command(name="mark")
+@cli.command(name='mark')
 @click.pass_obj
 @click.option(
     '--exclude',
@@ -163,7 +167,7 @@ Examples:
                             helpers.process_excludes(exclude_patterns), command_config)
 
 
-@cli.command(name="hide")
+@cli.command(name='hide')
 @click.pass_obj
 @click.option(
     '--exclude',
@@ -226,7 +230,7 @@ Examples:
                             helpers.process_excludes(exclude_patterns), command_config)
 
 
-@cli.command(name="update")
+@cli.command(name='update')
 @click.pass_obj
 @click.option(
     '--exclude',
@@ -235,7 +239,8 @@ Examples:
     help='Exclude all points matching this pattern. This parameter can be provided ' +
     'multiple times.')
 @click.option(
-    '--processed_type',
+    '--processed-type',
+    'processed_type',
     type=click.Choice(helpers.PROCESSED_TYPES),
     default=helpers.PROCESSED_TYPE_HIDDEN,
     required=True,
@@ -275,36 +280,36 @@ Examples:
     $> change-points update $revision sys-perf
 \b
     # update some existing processed change point as acknowledged
-    $> change-points update $revision sys-perf linux-1-node-replSet --processed_type acknowledged
+    $> change-points update $revision sys-perf linux-1-node-replSet --processed-type acknowledged
     $> change-points update $revision sys-perf '/linux-.-node-replSet/' \\
-    --processed_type acknowledged
+    --processed-type acknowledged
     $> change-points update $revision sys-perf revision linux-1-node-replSet \\
-    change_streams_latency --exclude '/^(fio_|canary_)/' --processed_type acknowledged
+    change_streams_latency --exclude '/^(fio_|canary_)/' --processed-type acknowledged
     $> change-points update $revision sys-perf linux-1-node-replSet change_streams_latency \\
-       '/^(fio_|canary_)/' --processed_type acknowledged
+       '/^(fio_|canary_)/' --processed-type acknowledged
 \b
     #  hide all the revision sys-perf find_limit-useAgg 8 thread level
-    $> change-points update  $revision sys-perf '' '' find_limit-useAgg 8 --processed_type hidden
+    $> change-points update  $revision sys-perf '' '' find_limit-useAgg 8 --processed-type hidden
     $> change-points update  $revision sys-perf '' '' find_limit-useAgg 8
 \b
     #  update all the revision sys-perf find_limit-useAgg 8 thread level as acknowledged
     $> change-points update  $revision sys-perf '' '' find_limit-useAgg 8 \\
-    --processed_type acknowledged
+    --processed-type acknowledged
 \b
     #  hide all the revision sys-perf find_limit-useAgg all thread level
-    $> change-points update $revision sys-perf '' '' find_limit-useAgg --processed_type hidden
+    $> change-points update $revision sys-perf '' '' find_limit-useAgg --processed-type hidden
     $> change-points update $revision sys-perf '' '' find_limit-useAgg
 \b
     #  update all the revision sys-perf find_limit-useAgg all thread level as acknowledgedreal
     $> change-points update $revision sys-perf '' '' find_limit-useAgg '' \\
-    --processed_type acknowledged
+    --processed-type acknowledged
 """
     query = helpers.process_params(revision, project, variant, task, test, thread_level)
     update.update_change_points(processed_type, query, helpers.process_excludes(exclude_patterns),
                                 command_config)
 
 
-@cli.command(name="list")
+@cli.command(name='list')
 @click.pass_obj
 @click.option(
     '--exclude',
@@ -411,7 +416,7 @@ Examples:
         helpers.process_excludes(exclude_patterns), command_config)
 
 
-@cli.command(name="compare")
+@cli.command(name='compare')
 @click.pass_obj
 @click.option('-m', '--minsize', 'minsizes', default=[20], type=click.INT, multiple=True)
 @click.option('-s', '--sig', 'sig_lvl', default=.05)
@@ -523,7 +528,7 @@ For Example:
     group_by_task = OrderedDict()
     group_by_test = OrderedDict()
 
-    label = "Compare"
+    label = 'Compare'
 
     label_width, bar_width, info_width, bar_padding = helpers.get_bar_widths()
     bar_template = helpers.get_bar_template(label_width, bar_width, info_width)
@@ -568,11 +573,11 @@ For Example:
                     group_by_test[identifier] = []
                 group_by_test[identifier].extend(calculations)
             except KeyError:
-                LOG.error("unexpected error", exc_info=1)
+                LOG.error('unexpected error', exc_info=1)
 
     for task_identifier, calculations in group_by_task.items():
         project, variant, task_name = task_identifier
-        print "{{ project: '{}', variant: '{}', task: '{}' }}".format(project, variant, task_name)
+        print('{{ project: {}, variant: {}, task: {} }}'.format(project, variant, task_name))
 
         for result in calculations:
             compare.print_result(result, command_config)
@@ -585,22 +590,21 @@ For Example:
                                   command_config.out, command_config.file_format)
 
 
-@cli.command(name="compute")
+@cli.command(name='compute')
 @click.pass_obj
 @click.option(
     '--exclude',
     'excludes',
     multiple=True,
-    help="Exclude all points matching this pattern. This parameter can be provided "
-    "multiple times.")
+    help='Exclude all points matching this pattern. This parameter can be provided multiple times.')
 @click.option('--progressbar/--no-progressbar', default=True)
 @click.option('--weighting', default=.001)
 @click.option(
     '--pool-size',
     default=max(multiprocessing.cpu_count() - 1, 1),
-    help="Set the process pool size. The default is the number of cores -1.")
+    help='Set the process pool size. The default is the number of cores -1.')
 @click.option(
-    '--legacy/--no-legacy', default=False, help="Enable creation of legacy change points.")
+    '--legacy/--no-legacy', default=False, help='Enable creation of legacy change points.')
 @click.argument('project', required=True)
 @click.argument('variant', required=False)
 @click.argument('task', required=False)
@@ -666,7 +670,7 @@ Examples:
         test_identifier for test_identifier in helpers.generate_tests(matching_tasks)
         if not helpers.filter_tests(test_identifier['test'], exclude_patterns))
 
-    label = "compute"
+    label = 'compute'
     label_width, bar_width, info_width, padding = helpers.get_bar_widths()
     bar_template = helpers.get_bar_template(label_width, bar_width, info_width)
     show_label = functools.partial(
@@ -701,7 +705,7 @@ Examples:
     pool.join()
 
 
-@cli.command(name="manage")
+@cli.command(name='manage')
 @click.pass_obj
 def manage_command(command_config):
     # pylint: disable=too-many-locals, too-many-arguments, line-too-long
@@ -718,14 +722,14 @@ At the moment, it supports:
     manage.manage(command_config)
 
 
-@cli.command(name="visualize")
+@cli.command(name='visualize')
 @click.pass_obj
 @click.option('--progressbar/--no-progressbar', default=True)
 @click.option('--show/--no-show', default=True)
 @click.option('--save/--no-save', default=False)
 @click.option('--exclude', 'excludes', multiple=True)
 @click.option('--sigma', 'sigma', default=1.0)
-@click.option('--filter', 'filter_type', default="butter")
+@click.option('--filter', 'filter_type', default='butter')
 @click.option('--only-change-points/--no-only-change-points', 'only_change_points', default=True)
 @click.argument('project', required=False)
 @click.argument('variant', required=False)
@@ -792,7 +796,7 @@ For Example:
     ]
     LOG.debug('matched tests', tests=tests)
 
-    label = "visualize"
+    label = 'visualize'
 
     label_width, bar_width, info_width, padding = helpers.get_bar_widths()
     bar_template = helpers.get_bar_template(label_width, bar_width, info_width)
@@ -828,7 +832,7 @@ For Example:
                                                     test_identifier['variant'],
                                                     test_identifier['task'])
 
-                            filename = "{test}-{thread_level}.{file_format}".format(
+                            filename = '{test}-{thread_level}.{file_format}'.format(
                                 test=test_identifier['test'],
                                 thread_level=thread_level,
                                 file_format=command_config.file_format)
@@ -838,12 +842,12 @@ For Example:
                         figure.close()
 
                 except KeyError:
-                    LOG.error("unexpected error", exc_info=1)
+                    LOG.error('unexpected error', exc_info=1)
                     if figure is not None:
                         figure.close()
 
 
-@cli.command(name="list-build-failures")
+@cli.command(name='list-build-failures')
 @click.pass_obj
 @click.option(
     '--human-readable',
@@ -898,5 +902,5 @@ Examples:
     $> change-points list-build-failures --human-readable
     $> change-points list-build-failures $revision sys-perf linux-1-node-replSet --human-readable
 """
-    query = helpers.process_params(revision, project, variant, task, test, '')
+    query = helpers.process_params(revision, project, variant, task, test, None)
     list_build_failures.list_build_failures(query, human_readable, command_config)
