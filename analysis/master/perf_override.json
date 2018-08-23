@@ -21939,8 +21939,8 @@
                     ]
                 },
                 "Mixed.FindThenUpdate-50-50":{
-                    "thread_threshold":15.0,
-                    "threshold":15.0,
+                    "thread_threshold":0.15,
+                    "threshold":0.15,
                     "ticket":[
                         "BF-10366"
                     ]
@@ -32725,8 +32725,8 @@
                     ]
                 },
                 "Mixed.FindThenUpdate-50-50":{
-                    "thread_threshold":15.0,
-                    "threshold":15.0,
+                    "thread_threshold":0.15,
+                    "threshold":0.15,
                     "ticket":[
                         "BF-10366"
                     ]
