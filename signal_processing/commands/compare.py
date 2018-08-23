@@ -96,6 +96,7 @@ def load_e_divisive():
         LOG.debug("ecp installed")
     except:  # pylint: disable=bare-except
         calc_e_divisive = None
+        LOG.warn("no e devisive", exc_info=1)
     return calc_e_divisive
 
 
@@ -333,7 +334,11 @@ class PyChangePoint(ChangePointImpl):
             weighting=self.weighting,
             mongo_repo=self.mongo_repo,
             credentials=self.credentials).change_points
-        self._points = [change_point['suspect_revision_index'] for change_point in change_points]
+
+        self._points = [
+            self.data['revisions'].index(change_point['suspect_revision'])
+            for change_point in change_points
+        ]
 
 
 def plot_test(save,

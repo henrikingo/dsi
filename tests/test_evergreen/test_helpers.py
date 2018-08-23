@@ -1,13 +1,15 @@
 """Unit tests for evergreen.helper functions. Using nosetest, run from dsi directory."""
-
-from subprocess import PIPE
 import os
 import platform
 import unittest
+import shutil
+from subprocess import PIPE
+import tempfile
+
+import requests
 
 from evergreen import helpers
 from mock import patch, MagicMock
-import requests
 
 from analysis.evergreen.helpers import GITHUB_API
 from test_lib.fixture_files import FixtureFiles
@@ -244,7 +246,37 @@ class TestGetRevList(unittest.TestCase):
         expected = "newest '{}' is not in list.".format(self.newest)
         self.assertEqual(str(exception.exception), expected)
 
-    # def test_get_githashes_in_range_repo_newest_real(self):
-    #     """ Test on real repo. Assuming it is in ~/src """
-    #     actual = helpers.get_githashes_in_range_repo(self.oldest, self.newest, '/home/jim/src')
-    #     self.assertEqual(actual, self.expected)
+    def test_not_git_repo(self):
+        """
+        Test directory exists but it is not a git repo.
+        """
+        # python3 is simpler / safer / better
+        # with tempfile.TemporaryDirectory() as tmpdirname, self.assertRaises(OSError):
+        #     helpers.get_githashes_in_range_repo(self.oldest, self.newest, tmpdirname)
+
+        tmpdirname = tempfile.mkdtemp()
+        with self.assertRaises(ValueError):
+            helpers.get_githashes_in_range_repo(self.oldest, self.newest, tmpdirname)
+        shutil.rmtree(tmpdirname)
+
+
+class TestNoGit(unittest.TestCase):
+    """
+    Test git OS Failure case.
+    """
+
+    def setUp(self):
+        self.newest = 'af600c3876a26f62d8dde93bf769fc4ca3054072'
+        self.oldest = '59a4bf14617facbb49520e00c91a55ac8e9a316c'
+        self.path = os.environ["PATH"]
+        os.environ["PATH"] = '/tmp'
+
+    def tearDown(self):
+        os.environ["PATH"] = self.path
+
+    def test_os_error(self):
+        """
+        Test no git executable.
+        """
+        with self.assertRaises(OSError):
+            helpers.get_githashes_in_range_repo(self.oldest, self.newest, '/tmp')

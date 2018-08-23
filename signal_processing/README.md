@@ -200,3 +200,67 @@ To view the help run:
 
     $> change-points --help        # view the group help which contains common parameters
     $> change-points manage --help # view the command help
+
+#### Configuration Files
+
+You can create a config file to hold commonly used config parameters.
+
+The CLI looks for configuration files in the following locations (in this order):
+
+1. ./.change-points
+1. ${DSI_APP_CONF_LOCATION}/.change-points if DSI_APP_CONF_LOCATION is set and the directory exists.
+1. ~/.change-points or whatever is returned by [click_get_app_dir](http://click.pocoo.org/5/api/#click.get_app_dir) for your OS.
+
+The file is assumed to be yaml. A sample config file looks like:
+
+```yaml
+# -*-yaml-*-
+# Enable debug if debug > 0, you can set higher levels.
+debug: 0
+# The log file to write to, defaults to None.
+logfile: /tmp/change-points.log
+# MongoDB connection string. The database name comes from here too.
+mongo_uri: mongodb://localhost/perf
+# Possible styles are listed at https://matplotlib.org/users/style_sheets.html
+# 'style' is an array and you can provide multiple values.
+style:
+  - bmh
+token_file: ./config.yml
+mongo_repo: ~/git/mongo-for-hashes
+# The following sections are for the sub commands.
+# These are over laid on the cli params (above).
+compare:
+  progressbar: false
+  no_older_than: 14
+  show: true
+compute:
+  # Note: Don't add help to a command as it would be confusing. It will
+  # always just print help and exit.
+  # help: true
+  progressbar: true
+list:
+  limit: 20
+  no_older_than: 20
+list-build-failures:
+  human_readable: true
+mark:
+  exclude_patterns:
+    - this
+    - that
+update:
+  exclude:
+    - this
+    - that
+visualize:
+  sigma: 2.0
+```
+
+__Note:__ dashes on the command names (e.g. 'list-build-failures') and underscores on the
+field names ('human_readable').
+
+The configuration values are applied in the following order:
+
+1. Defined in the CLI code.
+1. Defined in the .change-points file (where this is available).
+1. Specified in an env var (where this is available).
+1. Provided on the command line.

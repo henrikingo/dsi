@@ -6,11 +6,13 @@ To get access to the help try the following command:
 
     $> change-points help
 """
+# TODO: remove the following line on completion of PERF-1608.
+# pylint: disable=too-many-lines
+
 from __future__ import print_function
 import functools
 from datetime import datetime
 import os
-from os.path import exists, expanduser, isdir
 
 from StringIO import StringIO
 from collections import OrderedDict
@@ -18,7 +20,6 @@ import multiprocessing
 import click
 import structlog
 
-from analysis.evergreen.helpers import get_git_credentials
 from bin.common import log
 import signal_processing.commands.list_build_failures as list_build_failures
 import signal_processing.commands.compare as compare
@@ -39,7 +40,26 @@ BUILD_FAILURES = 'build_failures'
 
 LOG = structlog.getLogger(__name__)
 
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'], max_content_width=120)
+APP_NAME = os.environ.get('DSI_APP_NAME', 'change-points')
+"""
+The name to use to look for the application configuration. Don't change
+from the default 'change-points' unless you have a compelling reason or
+you want to test.
+"""
+
+APP_CONF_LOCATION = os.environ.get('DSI_APP_CONF_LOCATION', None)
+"""
+The config files are looked up in the following locations (in the following order):
+  1. The current directory.
+  1. The DSI_APP_CONF_LOCATION env var.
+  1. The direcory returned from click.get_app_dir with force_posix set to True.
+See `click.get_app_dir<http://click.pocoo.org/5/api/#click.get_app_dir>'.
+"""
+
+CONTEXT_SETTINGS = dict(
+    default_map=helpers.read_default_config(APP_NAME, APP_CONF_LOCATION),
+    help_option_names=['-h', '--help'],
+    max_content_width=120)
 
 
 @click.group(context_settings=CONTEXT_SETTINGS, invoke_without_command=True)
@@ -68,25 +88,89 @@ def cli(context, debug, logfile, out, file_format, mongo_uri, queryable, dry_run
         token_file, mongo_repo):
     """
 For a list of styles see 'style sheets<https://matplotlib.org/users/style_sheets.html>'.
+
+You can create a config file to hold commonly used config parameters.
+
+The CLI looks for configuration files in the following locations (int his order):
+
+\b
+1. ./.change-points
+2. ${DSI_APP_CONF_LOCATION}/.change-points.
+3. ~/.change-points or whatever is returned by
+[click_get_app_dir](http://click.pocoo.org/5/api/#click.get_app_dir) for your OS.
+
+The file is assumed to be yaml. A sample config file looks like:
+
+\b
+# -*-yaml-*-
+# Enable debug if debug > 0, you can set higher levels.
+debug: 0
+# The log file to write to, defaults to None.
+logfile: /tmp/change-points.log
+# MongoDB connection string. The database name comes from here too.
+mongo_uri: mongodb://localhost/perf
+# Possible styles are list at https://matplotlib.org/users/style_sheets.html
+# 'style' is an array and you can provide multiple values.
+style:
+  - bmh
+token_file: ./config.yml
+mongo_repo: ~/git/mongo-for-hashes
+# The following sections are for the sub commands.
+# These are over laid on the cli params (above).
+compare:
+  progressbar: false
+  no_older_than: 14
+  show: true
+compute:
+  # Note: Don't add help to a command as it would be confusing. It will
+  # always just print help and exit.
+  progressbar: true
+list:
+  limit: 20
+  no_older_than: 20
+list-build-failures:
+  human_readable: true
+mark:
+  exclude_patterns:
+    - this
+    - that
+update:
+  exclude:
+    - this
+    - that
+visualize:
+  sigma: 2.0
+
+__Note:__ dashes on the command names (e.g. 'list-build-failures') and underscores on the
+field names ('human_readable').
+
+The configuration values are applied in the following order:
+
+\b
+   1. Defaults as defined in the help.
+   2. Values specified in the configuration file.
+   3. Values in an env var (if applicable).
+   4. Command line parameter values.
+
+
 """
     # pylint: disable=missing-docstring, too-many-arguments, too-many-locals
-    log.setup_logging(debug > 0, filename=expanduser(logfile) if logfile else None)
-    credentials = get_git_credentials(token_file) if token_file else None
-    mongo_repo = expanduser(mongo_repo) if mongo_repo else mongo_repo
-    mongo_repo = mongo_repo if exists(mongo_repo) and isdir(mongo_repo) else None
-    context.obj = helpers.CommandConfiguration(
+    config = helpers.CommandConfiguration(
         debug=debug,
         out=out,
+        log_file=logfile,
         file_format=file_format,
         mongo_uri=mongo_uri,
         queryable=queryable,
         dry_run=dry_run,
         compact=compact,
         style=style,
-        credentials=credentials,
+        token_file=token_file,
         mongo_repo=mongo_repo)
+    context.obj = config
     if context.invoked_subcommand is None:
         print(context.get_help())
+    log.setup_logging(config.debug > 0, filename=config.log_file)
 
 
 @cli.command(name='help')
@@ -448,7 +532,7 @@ Examples:
 @click.option('--save/--no-save', default=False)
 @click.option('--exclude', 'excludes', multiple=True)
 @click.option(
-    '--no-older',
+    '--no-older-than',
     default=30,
     help='exclude tasks that have no points newer than this number of days.')
 @click.option('--weighting', 'weighting', default=qhat.DEFAULT_WEIGHTING)
@@ -457,7 +541,7 @@ Examples:
 @click.argument('task', required=False)
 @click.argument('test', required=False)
 def compare_command(command_config, minsizes, sig_lvl, padding, progressbar, show, save, excludes,
-                    no_older, weighting, project, variant, task, test):
+                    no_older_than, weighting, project, variant, task, test):
     # pylint: disable=too-many-locals, too-many-arguments, line-too-long
     """
 Compare points generated from R and python. This requires R and the ecp library to be installed.
@@ -536,7 +620,7 @@ For Example:
     LOG.debug('processed params', query=query)
 
     matching_tasks = helpers.filter_legacy_tasks(
-        helpers.get_matching_tasks(points, query, no_older))
+        helpers.get_matching_tasks(points, query, no_older_than))
     LOG.debug('matched tasks', matching_tasks=matching_tasks)
 
     exclude_patterns = helpers.process_excludes(excludes)

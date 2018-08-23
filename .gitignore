@@ -20,6 +20,9 @@ bin/tests/unittest-files/override_responses.gz
 # Unit test config file
 /config.yml
 
+# Change points CLI defaults
+/.change-points
+
 detect_changes.log
 
 *.egg-info/

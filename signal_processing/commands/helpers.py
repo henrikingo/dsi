@@ -11,7 +11,9 @@ from datetime import datetime, timedelta
 
 import structlog
 import click
+import yaml
 
+from analysis.evergreen.helpers import get_git_credentials
 from bson.json_util import RELAXED_JSON_OPTIONS, dumps
 from pymongo import MongoClient
 from pymongo.uri_parser import parse_uri
@@ -49,14 +51,60 @@ POINTS = 'points'
 BUILD_FAILURES = 'build_failures'
 
 
+def read_default_config(app_name, app_conf_location):
+    """
+    Attempt to find and load a config file. The order is:
+      1. './.{app_name}'
+      2. '{app_conf_location}/.{app_name}'
+      3. '{click.get_app_dir}/.{app_name}'
+
+    :param str app_name: The application name. It is likely to be 'change-points'
+    but it could be any string which generates a valid file name.
+    :param str app_conf_location: A user provided directory. If will be filtered
+    if None or it does not exist.
+    :return: The dict from the file or {}.
+    See `click.get_app_dir<http://click.pocoo.org/5/api/#click.get_app_dir>'.
+    """
+    application_path = click.get_app_dir(app_name, roaming=True, force_posix=True)
+    if not os.path.exists(application_path) or not os.path.isfile(application_path):
+        application_path = None
+
+    app_paths = ['.', app_conf_location]
+    app_paths = [
+        current_path for current_path in app_paths
+        if current_path is not None and os.path.exists(current_path) and os.path.isdir(current_path)
+    ]
+
+    config_file_name = ".{}".format(app_name)
+    file_names = [
+        file_name
+        for file_name in [os.path.join(app_path, config_file_name) for app_path in app_paths]
+    ]
+    if application_path is not None:
+        file_names += [application_path]
+    file_names = [file_name for file_name in file_names if os.path.isfile(file_name)]
+
+    config = {}
+    for config_file in file_names:
+        try:
+            with open(config_file) as file_handle:
+                config = yaml.load(file_handle)
+                return config
+        except:  # pylint: disable=bare-except
+            LOG.warn('error loading as yml', exc_info=1)
+
+    return config
+
+
 class CommandConfiguration(object):
+    # pylint: disable=too-many-instance-attributes, too-many-locals
     """
     Common Configuration for commands.
     """
 
-    # pylint: disable=too-many-locals
     def __init__(self,
                  debug,
+                 log_file,
                  out,
                  file_format,
                  mongo_uri,
@@ -64,49 +112,81 @@ class CommandConfiguration(object):
                  dry_run,
                  compact,
                  style,
-                 credentials,
                  mongo_repo,
+                 token_file,
                  points=POINTS,
                  change_points=CHANGE_POINTS,
                  processed_change_points=PROCESSED_CHANGE_POINTS,
                  unprocessed_change_points=UNPROCESSED_CHANGE_POINTS,
                  build_failures=BUILD_FAILURES):
+        # pylint: disable=too-many-arguments
         """
         Create the command configuration.
 
         :param int debug: The debug level.
+        :param str log_file: The log file.
         :param str out: The output directory.
         :param str file_format: The file format.
         :param str mongo_uri: The mongo db uri. This also contains the database name.
         :param bool queryable: Print identifiers as cut and paste query.
         :param bool dry_run: Don't run the command, just print what would be done.
         :param bool compact: if True display json in a compact format. Otherwise expanded.
+        :param list(str) style: The matplotlib style(s) to use.
+        :param str mongo_repo: The mongo db repo directory.
+        :param str token_file: The name of the file containing the service credentials (like
+        github and evergreen).
         :param str points: The points collection name.
         :param str change_points: The change points collection name.
         :param str processed_change_points: The processed change points collection name.
         :param str unprocessed_change_points: The unprocessed change points collection name.
         :param str build_failures: The build failures collection name.
-        :param list(str) style: The matplotlib style(s) to use.
-        :param str mongo_repo: The mongo db repo directory.
-        :param dict credentials: The github credentials.
         """
+        if log_file is not None:
+            log_file = os.path.expanduser(log_file)
         self.__setstate__({
             'debug': debug,
+            'log_file': log_file,
             'out': out,
             'file_format': file_format,
             'mongo_uri': mongo_uri,
             'queryable': queryable,
             'dry_run': dry_run,
             'compact': compact,
+            'style': style,
+            'mongo_repo': mongo_repo,
+            'token_file': token_file,
             'points': points,
             'change_points': change_points,
             'processed_change_points': processed_change_points,
             'unprocessed_change_points': unprocessed_change_points,
             'build_failures': build_failures,
-            'style': style,
-            'mongo_repo': mongo_repo,
-            'credentials': credentials
         })
+
+    # pylint: disable=attribute-defined-outside-init
+    @property
+    def mongo_repo(self):
+        """
+        Get the mongo repo location if it exists.
+
+        :return: The mongo repo directory or None.
+        """
+        if self._mongo_repo:
+            mongo_repo = os.path.abspath(os.path.expanduser(self._mongo_repo))
+            if os.path.exists(mongo_repo) and os.path.isdir(mongo_repo):
+                self._mongo_repo = mongo_repo
+        return self._mongo_repo
+
+    # pylint: disable=attribute-defined-outside-init
+    @property
+    def credentials(self):
+        """
+        Get the service credentials from the token_file.
+
+        :return: dict of credentials.
+        """
+        if self.token_file and self._credentials is None:
+            self._credentials = get_git_credentials(self.token_file)
+        return self._credentials
 
     # pylint: disable=attribute-defined-outside-init
     @property
@@ -117,6 +197,10 @@ class CommandConfiguration(object):
         :return: MongoClient.
         """
         if self._mongo_client is None:
+            uri = parse_uri(self.mongo_uri)
+            if 'password' in uri and uri['password'] is not None:
+                uri['password'] = '*********'
+            LOG.info('Create Mongo Client', uri=uri)
             self._mongo_client = MongoClient(self.mongo_uri)
         return self._mongo_client
 
@@ -207,6 +291,8 @@ class CommandConfiguration(object):
         """
         return {
             'debug': self.debug,
+            'log_file': self.log_file,
+            'token_file': self.token_file,
             'out': self.out,
             'file_format': self.file_format,
             'mongo_uri': self.mongo_uri,
@@ -219,8 +305,7 @@ class CommandConfiguration(object):
             'unprocessed_change_points': self.unprocessed_change_points_name,
             'build_failures': self.build_failures_name,
             'style': self.style,
-            'mongo_repo': self.mongo_repo,
-            'credentials': self.credentials
+            'mongo_repo': self._mongo_repo
         }
 
     def __setstate__(self, state):
@@ -232,6 +317,8 @@ class CommandConfiguration(object):
         :param dict state: The pickled state.
         """
         self.debug = state['debug']
+        self.log_file = state['log_file']
+        self.token_file = state['token_file']
         self.out = os.path.expandvars(os.path.expanduser(state['out']))
         self.file_format = state['file_format']
         self.mongo_uri = state['mongo_uri']
@@ -262,8 +349,8 @@ class CommandConfiguration(object):
         self._build_failures = None
         self.build_failures_name = state['build_failures']
         self.style = state['style']
-        self.mongo_repo = state['mongo_repo']
-        self.credentials = state['credentials']
+        self._mongo_repo = state['mongo_repo']
+        self._credentials = None
 
 
 def flags_to_value(flags):

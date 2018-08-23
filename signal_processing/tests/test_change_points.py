@@ -85,7 +85,8 @@ class TestMark(ClickTest):
         mock_process_params.return_value = expected_query
         expected_excludes = 'exclude me'
         mock_process_excludes.return_value = expected_excludes
-        expected_config = 'dummy config'
+
+        expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
         mock_config.return_value = expected_config
 
         result = self.runner.invoke(cli, ['mark', 'badf', 'sys-perf'])
@@ -105,7 +106,7 @@ class TestMark(ClickTest):
         mock_process_params.return_value = expected_query
         expected_excludes = 'exclude me'
         mock_process_excludes.return_value = expected_excludes
-        expected_config = 'dummy config'
+        expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
         mock_config.return_value = expected_config
 
         result = self.runner.invoke(cli, [
@@ -140,7 +141,7 @@ class TestHide(ClickTest):
         mock_process_params.return_value = expected_query
         expected_excludes = 'exclude me'
         mock_process_excludes.return_value = expected_excludes
-        expected_config = 'dummy config'
+        expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
         mock_config.return_value = expected_config
 
         result = self.runner.invoke(cli, ['hide', 'badf', 'sys-perf'])
@@ -160,7 +161,7 @@ class TestHide(ClickTest):
         mock_process_params.return_value = expected_query
         expected_excludes = 'exclude me'
         mock_process_excludes.return_value = expected_excludes
-        expected_config = 'dummy config'
+        expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
         mock_config.return_value = expected_config
 
         result = self.runner.invoke(cli, [
@@ -195,7 +196,7 @@ class TestUpdate(ClickTest):
         mock_process_params.return_value = expected_query
         expected_excludes = 'exclude me'
         mock_process_excludes.return_value = expected_excludes
-        expected_config = 'dummy config'
+        expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
         mock_config.return_value = expected_config
 
         result = self.runner.invoke(cli, ['update', 'badf', 'sys-perf'])
@@ -217,7 +218,7 @@ class TestUpdate(ClickTest):
         mock_process_params.return_value = expected_query
         expected_excludes = 'exclude me'
         mock_process_excludes.return_value = expected_excludes
-        expected_config = 'dummy config'
+        expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
         mock_config.return_value = expected_config
 
         result = self.runner.invoke(cli, [
@@ -231,13 +232,12 @@ class TestUpdate(ClickTest):
         mock_update.assert_called_once_with(helpers.PROCESSED_TYPE_ACKNOWLEDGED, expected_query,
                                             expected_excludes, expected_config)
 
-    @patch('signal_processing.change_points.helpers.process_excludes', autospec=True)
     @patch('signal_processing.change_points.update.update_change_points', autospec=True)
-    @patch('signal_processing.change_points.helpers.process_params', autospec=True)
-    @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
-    def test_update_type(self, mock_config, mock_process_params, mock_update,
-                         mock_process_excludes):
+    @patch('signal_processing.change_points.helpers', autospec=True)
+    def test_update_type(self, mock_helpers, mock_update_change_points):
         """ Test update correctly checks `processed-type` type. """
+        expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
+        mock_helpers.CommandConfiguration.return_value = expected_config
         result = self.runner.invoke(cli, [
             'update', 'badf', 'sys-perf', 'linux-standalone', 'industry_benchmarks', 'ycsb_load',
             '1', '--exclude', 'fio', '--processed-type', 'incorrect type'
@@ -420,10 +420,14 @@ class TestCompute(ClickTest):
     """
 
     @patch('signal_processing.change_points.compute.compute_change_points', autospec=True)
-    @patch('signal_processing.change_points.helpers.CommandConfiguration', style=['bmh'])
-    def test_compute_requires_params(self, mock_config, mock_compare):
+    @patch('signal_processing.change_points.helpers', autospec=True)
+    def test_compute_requires_params(self, mock_helpers, mock_compare):
         """ Test compute with no parameters. """
 
+        mock_points = MagicMock(name='config')
+        expected_config = MagicMock(
+            name='config', style=['bmh'], points=mock_points, debug=0, log_file='/tmp/log_file')
+        mock_helpers.CommandConfiguration.return_value = expected_config
         result = self.runner.invoke(cli, ['compute'])
         self.assertEqual(result.exit_code, 2)
 
@@ -439,7 +443,8 @@ class TestCompute(ClickTest):
         expected_excludes = 'exclude me'
         mock_helpers.process_excludes.return_value = expected_excludes
         mock_points = MagicMock(name='config')
-        expected_config = MagicMock(name='config', points=mock_points)
+        expected_config = MagicMock(
+            name='config', points=mock_points, debug=0, log_file='/tmp/log_file')
         mock_helpers.CommandConfiguration.return_value = expected_config
         expected_tasks = ['task1', 'task2']
         mock_helpers.get_matching_tasks.return_value = expected_tasks
@@ -493,7 +498,8 @@ class TestCompute(ClickTest):
         expected_excludes = 'exclude me'
         mock_helpers.process_excludes.return_value = expected_excludes
         mock_points = MagicMock(name='config')
-        expected_config = MagicMock(name='config', points=mock_points)
+        expected_config = MagicMock(
+            name='config', points=mock_points, debug=0, log_file='/tmp/log_file')
         mock_helpers.CommandConfiguration.return_value = expected_config
         expected_tasks = ['task1', 'task2']
         mock_helpers.get_matching_tasks.return_value = expected_tasks
@@ -543,11 +549,16 @@ class TestCompute(ClickTest):
         mock_helpers.filter_legacy_tasks.assert_called_once()
 
     @patch('signal_processing.change_points.compute.compute_change_points', autospec=True)
-    @patch('signal_processing.change_points.helpers.CommandConfiguration', style=['bmh'])
-    def test_compute_progress_bar(self, mock_config, mock_compare):
+    @patch('signal_processing.change_points.helpers')
+    def test_compute_progress_bar(self, mock_helpers, mock_compare):
         """ Test compute uses the `--progressbar` flag correctly. """
 
         progressbar = 'signal_processing.change_points.click.progressbar'
+        mock_helpers.CommandConfiguration.return_value = MagicMock(
+            name='config', debug=0, log_file='/tmp/log_file')
+        mock_helpers.get_bar_widths.return_value = [
+            'label_width', 'bar_width', 'info_width', 'padding'
+        ]
 
         # Defaults to `--progressbar`.
         with patch(progressbar, autospec=True) as mock_progressbar:
@@ -578,7 +589,7 @@ class TestManage(ClickTest):
     @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
     def test_manage(self, mock_config, mock_manage):
         """ Test manage. """
-        expected_config = 'dummy config'
+        expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
         mock_config.return_value = expected_config
 
         result = self.runner.invoke(cli, ['manage'])
@@ -617,7 +628,7 @@ class TestListBuildFailures(ClickTest):
         mock_process_params.return_value = expected_query
         expected_excludes = 'exclude me'
         mock_process_excludes.return_value = expected_excludes
-        expected_config = 'dummy config'
+        expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
         mock_config.return_value = expected_config
 
         result = self.runner.invoke(cli, ['list-build-failures'])
@@ -637,7 +648,7 @@ class TestListBuildFailures(ClickTest):
         mock_process_params.return_value = expected_query
         expected_excludes = 'exclude me'
         mock_process_excludes.return_value = expected_excludes
-        expected_config = 'dummy config'
+        expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
         mock_config.return_value = expected_config
 
         result = self.runner.invoke(cli, [

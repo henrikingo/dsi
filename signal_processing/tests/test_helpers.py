@@ -12,6 +12,99 @@ from mock import patch
 import signal_processing.commands.helpers as helpers
 
 
+class TestReadConfig(unittest.TestCase):
+    """
+    Test suite for the read_default_config.
+    """
+
+    def _test_app_conf_location(self, app_conf_location=None, count=2):
+        """
+        Test helper for env var support.
+
+        :parameter app_conf_location: The additional application directory.
+        :type app_conf_location: str or None.
+        :parameter int count: The expected count.
+        """
+        with patch('signal_processing.commands.helpers.click') as mock_click, \
+             patch('signal_processing.commands.helpers.os.path') as mock_path, \
+             patch('signal_processing.commands.helpers.open') as mock_open:
+
+            mock_path.exists.return_value = False
+            mock_path.isfile.return_value = False
+            mock_path.isdir.return_value = False
+            mock_click.get_app_dir.return_value = '/tmp/app_name'
+            self.assertEquals({}, helpers.read_default_config('app_name', app_conf_location))
+            mock_click.get_app_dir.assert_called_once_with(
+                'app_name', roaming=True, force_posix=True)
+            mock_open.assert_not_called()
+            self.assertEqual(mock_path.exists.call_count, count)
+
+    def test_no_env(self):
+        """ Test no env var passed in."""
+        self._test_app_conf_location()
+
+    def test_env(self):
+        """ Test env var passed in."""
+        self._test_app_conf_location('app_dir', 3)
+
+    @patch('signal_processing.commands.helpers.click', autospec=True)
+    @patch('signal_processing.commands.helpers.os.path', autospec=True)
+    @patch('signal_processing.commands.helpers.open')
+    @patch('signal_processing.commands.helpers.yaml.load')
+    def test_first_file(self, mock_yaml, mock_open, mock_path, mock_click):
+        """ Test first file is loaded."""
+
+        expected = {'config': 'contents'}
+        mock_yaml.return_value = expected
+        mock_path.exists.return_value = True
+        mock_path.isfile.return_value = True
+        mock_path.isdir.return_value = True
+        mock_path.join.return_value = 'joined name'
+
+        mock_click.get_app_dir.return_value = '/tmp/app_name'
+        self.assertEquals(expected, helpers.read_default_config('app_name', 'app_dir'))
+        mock_click.get_app_dir.assert_called_once_with('app_name', roaming=True, force_posix=True)
+        mock_open.assert_called_once_with('joined name')
+
+    @patch('signal_processing.commands.helpers.click', autospec=True)
+    @patch('signal_processing.commands.helpers.os.path', autospec=True)
+    @patch('signal_processing.commands.helpers.open')
+    @patch('signal_processing.commands.helpers.yaml.load')
+    def test_second_file(self, mock_yaml, mock_open, mock_path, mock_click):
+        """ Test instance attributes."""
+
+        expected = {'config': 'contents'}
+        mock_yaml.return_value = expected
+        mock_path.exists.return_value = True
+        mock_path.isfile.side_effect = [False, True, True]
+        mock_path.join.side_effect = ['second', 'third']
+        mock_path.isdir.return_value = True
+
+        mock_click.get_app_dir.return_value = '/tmp/app_name'
+        self.assertEquals(expected, helpers.read_default_config('app_name', 'app_dir'))
+        mock_click.get_app_dir.assert_called_once_with('app_name', roaming=True, force_posix=True)
+        mock_open.assert_called_once_with('second')
+
+    @patch('signal_processing.commands.helpers.click', autospec=True)
+    @patch('signal_processing.commands.helpers.os.path', autospec=True)
+    @patch('signal_processing.commands.helpers.open')
+    @patch('signal_processing.commands.helpers.yaml.load')
+    def test_third_file(self, mock_yaml, mock_open, mock_path, mock_click):
+        """ Test third file."""
+
+        expected = {'config': 'contents'}
+        mock_yaml.return_value = expected
+        mock_path.exists.return_value = True
+        mock_path.isfile.side_effect = [False, False, True]
+        mock_path.join.side_effect = ['second', 'third']
+        mock_path.isdir.return_value = True
+
+        mock_click.get_app_dir.return_value = '/tmp/app_name'
+        self.assertEquals(expected, helpers.read_default_config('app_name', 'app_dir'))
+        mock_click.get_app_dir.assert_called_once_with('app_name', roaming=True, force_posix=True)
+        mock_open.assert_called_once_with('third')
+
+
 # pylint: disable=invalid-name
 class TestCommandConfiguration(unittest.TestCase):
     """
@@ -23,16 +116,18 @@ class TestCommandConfiguration(unittest.TestCase):
 
     @patch('signal_processing.commands.helpers.MongoClient', autospec=True)
     @patch('signal_processing.commands.helpers.parse_uri', autospec=True)
-    def test_attributes(self, mock_parse_uri, mock_mongo_client):
+    @patch('signal_processing.commands.helpers.get_git_credentials', autospec=True)
+    def test_attributes(self, mock_get_git_credentials, mock_parse_uri, mock_mongo_client):
         """ Test instance attributes."""
         mongo_client_instance = mock_mongo_client.return_value
         mock_database = mongo_client_instance.get_database.return_value
         mock_collection = mock_database.get_collection.return_value
 
         mock_parse_uri.return_value = {'database': 'database name'}
-
+        mock_get_git_credentials.return_value = 'credentials'
         subject = helpers.CommandConfiguration(
             debug='debug',
+            log_file='/tmp/log_file',
             out='out',
             file_format='file_format',
             mongo_uri='mongo_uri',
@@ -40,7 +135,7 @@ class TestCommandConfiguration(unittest.TestCase):
             dry_run='dry_run',
             compact='compact',
             style=('style', ),
-            credentials='credentials',
+            token_file='token_file',
             mongo_repo='mongo_repo')
 
         self.assertEqual('debug', subject.debug)
@@ -58,6 +153,7 @@ class TestCommandConfiguration(unittest.TestCase):
         self.assertEqual('unprocessed_change_points', subject.unprocessed_change_points_name)
         self.assertEqual('build_failures', subject.build_failures_name)
         self.assertEqual(('style', ), subject.style)
+        self.assertEqual('token_file', subject.token_file)
         self.assertEqual('credentials', subject.credentials)
         self.assertEqual('mongo_repo', subject.mongo_repo)
 
