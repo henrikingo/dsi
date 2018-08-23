@@ -20298,10 +20298,11 @@
                     ]
                 },
                 "Insert.IntVector":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
+                    "thread_threshold":0.25,
+                    "threshold":0.2,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-10366"
                     ]
                 },
                 "Insert.JustNumIndexed":{
@@ -31445,10 +31446,11 @@
                     ]
                 },
                 "Insert.IntVector":{
-                    "thread_threshold":0.2,
-                    "threshold":0.15,
+                    "thread_threshold":0.25,
+                    "threshold":0.2,
                     "ticket":[
-                        "PERF-444"
+                        "PERF-444",
+                        "BF-10366"
                     ]
                 },
                 "Insert.JustID":{
