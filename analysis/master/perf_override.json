@@ -25130,6 +25130,13 @@
                 }
             },
             "threshold":{
+                "Update.FieldAtOffset":{
+                    "thread_threshold":0.25,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-10366"
+                    ]
+                },
                 "Update.SetWithMultiIndex.String":{
                     "thread_threshold":0.25,
                     "threshold":0.2,
@@ -38584,6 +38591,13 @@
                 }
             },
             "threshold":{
+                "Update.FieldAtOffset":{
+                    "thread_threshold":0.25,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-10366"
+                    ]
+                },
                 "Update.SetWithMultiIndex.String":{
                     "thread_threshold":0.25,
                     "threshold":0.2,
