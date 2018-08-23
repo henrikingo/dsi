@@ -21938,6 +21938,13 @@
                         "PERF-444"
                     ]
                 },
+                "Mixed.FindThenUpdate-50-50":{
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
+                    "ticket":[
+                        "BF-10366"
+                    ]
+                },
                 "Remove.IntId":{
                     "thread_threshold":0.18,
                     "threshold":0.12,
@@ -32715,6 +32722,13 @@
                     "threshold":0.2,
                     "ticket":[
                         "PERF-444"
+                    ]
+                },
+                "Mixed.FindThenUpdate-50-50":{
+                    "thread_threshold":15.0,
+                    "threshold":15.0,
+                    "ticket":[
+                        "BF-10366"
                     ]
                 },
                 "Remove.IntNonIdIndex":{
