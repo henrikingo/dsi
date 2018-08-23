@@ -44,7 +44,7 @@ iperf:
 tpcc:
   - on_localhost:
       checkout_repos:
-        - source: git@github.com:stauffec/py-tpcc.git
+        - source: git@github.com:10gen/py-tpcc.git
           target: ${bootstrap.tpcc_dir}
           branch: output_file
   - on_workload_client:

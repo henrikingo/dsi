@@ -9,6 +9,7 @@ run:
       python ./tpcc.py --print-config mongodb > mongodb.config
       sed -i "s/localhost/${mongodb_setup.meta.hostname}/g" mongodb.config
       sed -i "s/27017/${mongodb_setup.meta.port}/g" mongodb.config
+      sed -i "s/replset/rs0/g" mongodb.config
       python ./tpcc.py --reset --clients=10 --warehouses=4 --duration=360 --config=mongodb.config mongodb
     output_files:
       - tpcc/pytpcc/results.log
