@@ -25129,7 +25129,15 @@
                     ]
                 }
             },
-            "threshold":{}
+            "threshold":{
+                "Update.SetWithMultiIndex.String":{
+                    "thread_threshold":0.25,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-10366"
+                    ]
+                }
+            }
         }
     },
     "linux-wt-repl-compare":{
@@ -38575,7 +38583,15 @@
                     ]
                 }
             },
-            "threshold":{}
+            "threshold":{
+                "Update.SetWithMultiIndex.String":{
+                    "thread_threshold":0.25,
+                    "threshold":0.2,
+                    "ticket":[
+                        "BF-10366"
+                    ]
+                }
+            }
         },
         "views-aggregation":{
             "ndays":{},
