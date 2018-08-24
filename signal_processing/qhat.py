@@ -581,8 +581,8 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
                 term2 += diffs[n - 1][y]
 
             # update term 3
-            for y in range((n + 1), length):
-                term3 -= diffs[y][n]
+            for y in range(n, length):
+                term3 -= diffs[y][n - 1]
 
             term1_reg = term1 * (2.0 / (m * n))
             term2_reg = term2 * (2.0 / (n * (n - 1)))

@@ -163,7 +163,7 @@ class TestPostRunCheck(unittest.TestCase):
         mock_git.return_value = ['1', '2']
         algo = QHat(state, pvalue, permutations)
         points = algo.change_points
-        self.assertEqual(2, len(points))
+        self.assertEqual(3, len(points))
 
         self.assertDictContainsSubset(
             approx_dict({
@@ -180,11 +180,11 @@ class TestPostRunCheck(unittest.TestCase):
                 'name': 'qhat',
                 'index': 40,
                 'window_size': 60,
-                'value_to_avg': 23.8522717629,
+                'value_to_avg': 26.9,
                 'average_diff': 88.7766666667,
                 'average': 103.366666667,
-                'value': 2465.52982456,
-                'value_to_avg_diff': 27.772273021,
+                'value': 2776.9,
+                'value_to_avg_diff': 31.3,
                 'probability': 0.0,
             }), approx_dict(points[0]['algorithm']))
         self.assertDictContainsSubset(
@@ -201,11 +201,11 @@ class TestPostRunCheck(unittest.TestCase):
                 'name': 'qhat',
                 'index': 20,
                 'window_size': 40,
-                'value_to_avg': 15.6853779551,
+                'value_to_avg': 16.5,
                 'average_diff': 42.9325,
                 'average': 54.1,
-                'value': 848.578947368,
-                'value_to_avg_diff': 19.7654212396,
+                'value': 893.6,
+                'value_to_avg_diff': 20.8,
                 'probability': 0.0,
             }), approx_dict(points[1]['algorithm']))
 
@@ -354,11 +354,11 @@ class TestPostRunCheck(unittest.TestCase):
                 'name': 'qhat',
                 'index': 15,
                 'window_size': 30,
-                'value_to_avg': 7.4,
+                'value_to_avg': 7.9,
                 'average_diff': 24.9,
                 'average': 76.7,
-                'value': 566.7,
-                'value_to_avg_diff': 22.8,
+                'value': 606.7,
+                'value_to_avg_diff': 24.4,
                 'probability': 0.0,
             }), approx_dict(points[0]['algorithm']))
 
@@ -407,39 +407,39 @@ class TestPostRunCheck(unittest.TestCase):
                 'thread_level': 4,
                 'order': 16,
                 'value': 100,
-                'order_of_change_point': 0
+                'order_of_change_point': 1
             }), approx_dict(points[0]))
         self.assertDictContainsSubset(
             approx_dict({
                 'name': 'qhat',
                 'index': 15,
-                'window_size': 45,
-                'value_to_avg': 2.8,
-                'average_diff': 23.5,
-                'average': 68.9,
-                'value': 191.0,
-                'value_to_avg_diff': 8.1,
+                'window_size': 33,
+                'value_to_avg': 7.0,
+                'average_diff': 25.0,
+                'average': 75.8,
+                'value': 532.6,
+                'value_to_avg_diff': 21.3,
                 'probability': 0.0,
             }), approx_dict(points[0]['algorithm']))
         self.assertDictContainsSubset(
             approx_dict({
                 'probability': 1.0,
-                'suspect_revision': 'ca',
-                'create_time': 31,
+                'suspect_revision': 'cb',
+                'create_time': 32,
                 'thread_level': 4,
-                'order': 31,
-                'order_of_change_point': 1
+                'order': 32,
+                'order_of_change_point': 0
             }), approx_dict(points[1]))
         self.assertDictContainsSubset(
             approx_dict({
                 'name': 'qhat',
-                'index': 30,
-                'window_size': 30,
-                'value_to_avg': 7.3,
-                'average_diff': 24.9,
-                'average': 76.7,
-                'value': 563.3,
-                'value_to_avg_diff': 22.6,
+                'index': 33,
+                'window_size': 45,
+                'value_to_avg': 3.0,
+                'average_diff': 23.5,
+                'average': 68.9,
+                'value': 206.1,
+                'value_to_avg_diff': 8.8,
                 'probability': 0.0,
             }), approx_dict(points[1]['algorithm']))
 
@@ -487,18 +487,18 @@ class TestPostRunCheck(unittest.TestCase):
                 'create_time': 16,
                 'thread_level': 4,
                 'order': 16,
-                'order_of_change_point': 0
+                'order_of_change_point': 1
             }), approx_dict(points[0]))
         self.assertDictContainsSubset(
             approx_dict({
                 'name': 'qhat',
                 'index': 15,
-                'window_size': 45,
-                'value_to_avg': 10.8,
-                'average_diff': 43.7,
-                'average': 101.1,
-                'value': 1094.3,
-                'value_to_avg_diff': 25.1,
+                'window_size': 30,
+                'value_to_avg': 7.9,
+                'average_diff': 24.9,
+                'average': 76.7,
+                'value': 606.7,
+                'value_to_avg_diff': 24.4,
                 'probability': 0.0,
             }), approx_dict(points[0]['algorithm']))
         self.assertDictContainsSubset(
@@ -526,18 +526,18 @@ class TestPostRunCheck(unittest.TestCase):
                 'create_time': 31,
                 'thread_level': 4,
                 'order': 31,
-                'order_of_change_point': 1
+                'order_of_change_point': 0
             }), approx_dict(points[1]))
         self.assertDictContainsSubset(
             approx_dict({
                 'name': 'qhat',
                 'index': 30,
-                'window_size': 30,
-                'value_to_avg': 5.2,
-                'average_diff': 25.0,
-                'average': 125.0,
-                'value': 650.0,
-                'value_to_avg_diff': 26.0,
+                'window_size': 45,
+                'value_to_avg': 12.0,
+                'average_diff': 43.7,
+                'average': 101.1,
+                'value': 1209.2,
+                'value_to_avg_diff': 27.7,
                 'probability': 0.0,
             }), approx_dict(points[1]['algorithm']))
 
