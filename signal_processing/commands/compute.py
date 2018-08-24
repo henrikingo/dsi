@@ -36,7 +36,7 @@ def compute_change_points(test_identifier, weighting, command_config):
         test_name = test_identifier['test']
         points_count, change_points, duration = model.compute_change_points(
             test_name, weighting=weighting)
-        LOG.debug(
+        LOG.info(
             "compute",
             test_identifier=test_identifier,
             points_count=points_count,

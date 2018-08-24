@@ -32,6 +32,7 @@ setup(
               'bin.common',
               'signal_processing',
               'signal_processing.commands',
+              'signal_processing.profiling',
               'analysis',
               'analysis.evergreen'],
     install_requires=install_requirements,
@@ -48,6 +49,8 @@ setup(
             'detect-changes = signal_processing.detect_changes:main',
             'etl_jira_mongo = signal_processing.etl_jira_mongo:main',
             'change-points = signal_processing.change_points:cli',
-            'etl-evg-mongo = signal_processing.etl_evg_mongo:etl'
+            'etl-evg-mongo = signal_processing.etl_evg_mongo:etl',
+            'compare-algorithms = signal_processing.profiling.cli:cli',
         ]
-    })
+    },
+)

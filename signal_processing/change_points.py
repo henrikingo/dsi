@@ -8,6 +8,7 @@ To get access to the help try the following command:
 """
 from __future__ import print_function
 import functools
+from datetime import datetime
 import os
 from os.path import exists, expanduser, isdir
 
@@ -701,29 +702,41 @@ Examples:
         info_width=info_width,
         padding=padding)
 
-    pool = multiprocessing.Pool(processes=pool_size)
-    tasks = ((compute.compute_change_points, test_identifier, weighting, command_config)
-             for test_identifier in tests)
-    task_iterator = pool.imap_unordered(helpers.function_adapter, tasks)
+    start_time = datetime.utcnow()
     LOG.debug('finding matching tests in tasks', tests=tests)
+    # It is useful for profiling (and testing) to be able to run in a single process
+    if pool_size != 1:
+        pool = multiprocessing.Pool(processes=pool_size)
+        tasks = ((compute.compute_change_points, test_identifier, weighting, command_config)
+                 for test_identifier in tests)
+        task_iterator = pool.imap_unordered(helpers.function_adapter, tasks)
+    else:
+        task_iterator = tests
+
     with click.progressbar(task_iterator,
                            length=len(tests),
                            label=label,
                            item_show_func=show_label,
                            file=None if progressbar else StringIO(),
                            bar_template=bar_template) as progress: # yapf: disable
-        for success, return_value in progress:
-            if success:
-                test_identifier = return_value
-                status = test_identifier['test']
-            else:
-                exception = return_value
-                status = 'Exception: ' + str(exception)
-            progress.label = status
-            progress.render_progress()
+        if pool_size != 1:
+            for success, return_value in progress:
+                if success:
+                    test_identifier = return_value
+                    status = test_identifier['test']
+                else:
+                    exception = return_value
+                    status = 'Exception: ' + str(exception)
+                progress.label = status
+                progress.render_progress()
+        else:
+            for test_identifier in progress:
+                compute.compute_change_points(test_identifier, weighting, command_config)
 
-    pool.close()
-    pool.join()
+        if pool_size != 1:
+            pool.close()
+            pool.join()
+    LOG.info("computed change points", duration=str(datetime.utcnow() - start_time))
 
 
 @cli.command(name='manage')

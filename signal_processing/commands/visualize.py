@@ -54,7 +54,7 @@ def add_arrow(line, position=None, direction='right', size=15, color=None):
     Add an arrow to a line.
 
     :param Line2D line: The line object.
-    :param float position: The x-position of the arrow. If None, mean of xdata is taken
+    :param float position: The x-position of the arrow. If None, mean of x data is taken.
     :param str direction: 'left' or 'right'.
     :param float size: The size of the arrow in fontsize points.
     :param str color: if None, line color is taken.

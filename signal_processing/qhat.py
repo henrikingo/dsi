@@ -490,6 +490,11 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
         self.mongo_repo = mongo_repo
         self.credentials = credentials
 
+        if self.series is None:
+            self.series = []
+        if not isinstance(self.series, np.ndarray):
+            self.series = np.array(self.series, np.float)
+
     def extract_q(self, qhat_values):
         """
         Given an ordered sequence of Q-Hat values, output the max value and index
@@ -497,7 +502,7 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
         :param list qhat_values: qhat values
         :return: list (max , index, etc)
         """
-        if qhat_values:
+        if qhat_values.size:
             max_q_index = np.argmax(qhat_values)
             # noinspection PyTypeChecker
             max_q = qhat_values[max_q_index]
@@ -512,6 +517,46 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
             self.length
         ]
 
+    @staticmethod
+    def calculate_q(term1, term2, term3, m, n):
+        """
+        Calculate the q value from the terms and coefficients.
+
+        :param float term1: The current cumulative value for the first
+        term in the QHat algorithm. This is the sum of the differences to
+        the right of the current location.
+        :param float term2: The current cumulative value for the second
+        term in the QHat algorithm. This is the sum of the differences to
+        the at the current location.
+        :param float term3: The current cumulative value for the third
+        term in the QHat algorithm. This is the sum of the differences to
+        the left of the current location.
+        :param int m: The current row location.
+        :param int n: The current column location.
+
+        :return: The q value generated from the terms.
+        :rtype: float.
+        """
+        term1_reg = term1 * (2.0 / (m * n))
+        term2_reg = term2 * (2.0 / (n * (n - 1)))
+        term3_reg = term3 * (2.0 / (m * (m - 1)))
+        newq = (m * n / (m + n)) * (term1_reg - term2_reg - term3_reg)
+        return newq
+
+    @staticmethod
+    def calculate_diffs(series):
+        """
+        Given an array N calculate an NxN difference matrix.
+
+        :param list(float) series: The array to calculate the matrix for.
+
+        :return: The difference matrix.
+        :rtype: list(list(float)).
+        """
+        row, col = np.meshgrid(series, series)
+        diffs = abs(row - col)
+        return diffs
+
     # Implementing change-point detection algorithm from https://arxiv.org/pdf/1306.4933.pdf
     def qhat_values(self, series):  #pylint: disable=too-many-locals,too-many-branches
         """
@@ -520,79 +565,51 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
         :param list series: the points to process
         :return:
         """
-        length = len(series)
-        self.length = length
-        if length < 5:
-            # Average value and average diff are used even when there is no data to avoid an error.
+
+        # used as the window size in extract_q
+        self.length = len(series)
+        qhat_values = np.zeros(self.length, dtype=np.float)
+        if self.length < 5:
+            # Average value and average diff are used even when there is no data.
+            # This avoids an error.
             self.average_value = 1
             self.average_diff = 1
-            return [0] * length
-        n = 2
-        m = length - n
-        qhat_values = [0, 0]  # represents q when n = 0, 1
-        # The following line could safely replace the next 6 lines
-        # diffs = [[abs(series[i] - series[j]) for i in range(length)] for j in range(length)]
-        diffs = [None] * length
-        for i in range(length):
-            diffs[i] = [0] * length
-        for i in range(length):
-            for j in range(length):
-                diffs[i][j] = abs(series[i] - series[j])
+            return qhat_values
 
-        term1 = 0.0  # sum i:0-n, j:n-t, diffs[i][j]
-        term2 = 0.0  # sum i:0-n, k:(i+1)-n, diffs[i][k]
-        term3 = 0.0  # sum j:n-length, k:(j+i)-length, diffs[j][k]
+        # Generate a difference matrix from the data.
+        diffs = self.calculate_diffs(series)
 
-        # Normalization constants
         self.average_value = np.average(series)
-        # I'm sure there's a better way than this next line, but it works for now
-        self.average_diff = np.average(list(itertools.chain(*diffs)))
-        # term1 = sum(diffs[i][j] for i in range(n) for j in range(n,length))
-        for i in range(n):
-            for j in range(n, length):
-                term1 += diffs[i][j]
-        # term2 = sum(diffs[i][k] for i in range(n) for k in range(i+1,n))
-        for i in range(n):
-            for k in range((i + 1), n):
-                term2 += diffs[i][k]
-        # term3 = sum(diffs[j][k] for j in range(n, length) for k in range(j+1,length))
-        for j in range(n, length):
-            for k in range((j + 1), length):
-                term3 += diffs[j][k]
+        self.average_diff = np.average(diffs)
 
-        term1_reg = term1 * (2.0 / (m * n))
-        term2_reg = term2 * (2.0 / (n * (n - 1)))
-        term3_reg = term3 * (2.0 / (m * (m - 1)))
-        newq = (m * n / (m + n)) * (term1_reg - term2_reg - term3_reg)
-        qhat_values.append(newq)
+        n = 2
+        m = self.length - n
 
-        for _ in range(3, (length - 2)):
-            n += 1
-            m = length - n
+        # Each line is preceded by the equivalent list comprehension.
 
-            # update term 1
-            for y in range(n - 1):
-                term1 -= diffs[n - 1][y]
-            for y in range(n, length):
-                term1 += diffs[y][n - 1]
+        # term1 = sum(diffs[i][j] for i in range(n) for j in range(n, self.window)) # See qhat.md
+        term1 = np.sum(diffs[:n, n:])
 
-            # update term 2
-            for y in range(n - 1):
-                term2 += diffs[n - 1][y]
+        # term2 = sum(diffs[i][k] for i in range(n) for k in range(i + 1, n)) # See qhat.md
+        term2 = np.sum(np.triu(diffs[:n, :n], 0))
 
-            # update term 3
-            for y in range(n, length):
-                term3 -= diffs[y][n - 1]
+        # term3 = sum(diffs[j][k] for j in range(n, self.window)
+        #                         for k in range(j + 1, self.window)) # See qhat.md
+        term3 = np.sum(np.triu(diffs[n:, n + 1:], 0))
 
-            term1_reg = term1 * (2.0 / (m * n))
-            term2_reg = term2 * (2.0 / (n * (n - 1)))
-            term3_reg = term3 * (2.0 / (m * (m - 1)))
-            newq = (m * n / (m + n)) * (term1_reg - term2_reg - term3_reg)
+        qhat_values[n] = self.calculate_q(term1, term2, term3, m, n)
 
-            qhat_values.append(newq)
+        for n in range(3, (self.length - 2)):
+            m = self.length - n
+            column_delta = np.sum(diffs[n - 1, :n - 1])
+            row_delta = np.sum(diffs[n:, n - 1])
 
-        qhat_values.append(0)
-        qhat_values.append(0)
+            term1 = term1 - column_delta + row_delta
+            term2 = term2 + column_delta
+            term3 = term3 - row_delta
+
+            qhat_values[n] = self.calculate_q(term1, term2, term3, m, n)
+
         return qhat_values
 
     @property
@@ -608,10 +625,11 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
         Compute the change points. This is lazy and only runs once.
         """
         if self._change_points is None:
+            LOG.info("compute_change_points")
             windows = []
             pts = len(self.series)
             qhat_values = self.qhat_values(self.series)
-            LOG.debug("compute_change_points", qs=list(enumerate(qhat_values)))
+            LOG.debug("compute_change_points", qs=qhat_values, series=self.series)
             first_q = self.extract_q(qhat_values)
             max_q = first_q[1]
             min_change = max_q
@@ -622,15 +640,21 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
             while not terminated:
                 candidates = []
                 windows = [0] + sorted([c[0] for c in change_points]) + [pts]
+                LOG.debug("compute_change_points", windows=windows)
                 for i in range(len(windows) - 1):
                     window = self.series[windows[i]:windows[i + 1]]
                     win_qs = self.qhat_values(window)
                     win_max = self.extract_q(win_qs)
                     win_max[0] += windows[i]
-
                     candidates.append(win_max)
+                    LOG.debug(
+                        "compute_change_points candidate",
+                        win_qs=win_qs,
+                        series=window,
+                        win_max=win_max)
                 candidates.sort(key=lambda tup: tup[1])
                 candidate_q = candidates[len(candidates) - 1][1]
+                LOG.debug("compute_change_points", candidate_q=candidate_q)
 
                 # RANDOMLY PERMUTE CLUSTERS FOR SIGNIFICANCE TEST
 
@@ -644,8 +668,11 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
                         win_max = self.extract_q(win_qs)
                         win_max = (win_max[0] + windows[j], win_max[1])
                         permute_candidates.append(win_max)
+                        LOG.debug(
+                            "compute_change_points", candidate_q=candidate_q, candidates=candidates)
                     permute_candidates.sort(key=lambda tup: tup[1])
                     permute_q = permute_candidates[len(permute_candidates) - 1][1]
+                    LOG.debug("compute_change_points", permute_q=permute_q)
                     if permute_q >= candidate_q:
                         above += 1
 

@@ -20,6 +20,37 @@ setup_logging(False)
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
+class TestQHat(unittest.TestCase):
+    """
+    Test for QHat class methods.
+    """
+
+    def test_series_none(self):
+        """
+        Test that constructor parameters are validated.
+        """
+        self.assertEqual(QHat({'series': None}).series.size, 0)
+
+    def test_series_string(self):
+        """
+        Test that constructor parameters are validated.
+        """
+        with self.assertRaises(ValueError):
+            QHat({'series': "string"})
+
+    def test_series_empty(self):
+        """
+        Test that constructor parameters are validated.
+        """
+        QHat({'series': []})
+
+    def test_empty_qhat(self):
+        """
+        Test that constructor parameters are validated.
+        """
+        self.assertEqual(QHat({}).qhat_values(np.array([], dtype=np.float)).size, 0)
+
+
 class TestPostRunCheck(unittest.TestCase):
     """
     Test post run check.
@@ -175,6 +206,27 @@ class TestPostRunCheck(unittest.TestCase):
                 'value_to_avg_diff': 20.8,
                 'probability': 0.0,
             }), math_utils.approx_dict(points[1]['algorithm']))
+        self.assertDictContainsSubset(
+            math_utils.approx_dict({
+                'probability': 1.0,
+                'suspect_revision': 'ck',
+                'create_time': 51,
+                'thread_level': 4,
+                'order': 51,
+                'order_of_change_point': 2
+            }), math_utils.approx_dict(points[2]))
+        self.assertDictContainsSubset(
+            math_utils.approx_dict({
+                'name': 'qhat',
+                'index': 50,
+                'window_size': 20,
+                'value_to_avg': 0.8,
+                'average_diff': 36.1,
+                'average': 201.9,
+                'value': 167.7,
+                'value_to_avg_diff': 4.6,
+                'probability': 0.0,
+            }), math_utils.approx_dict(points[2]['algorithm']))
 
     @patch('signal_processing.qhat.get_githashes_in_range_repo')
     def test_finds_simple_regression(self, mock_git):
