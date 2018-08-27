@@ -1,34 +1,28 @@
 """Tests for bin/common/host_utils.py"""
 
-import unittest
-from datetime import datetime
 import os
-import time
 import shutil
 import socket
+import time
+import unittest
+from datetime import datetime
 from StringIO import StringIO
 
 from mock import patch, MagicMock, call
 
 import common.host_utils
 from common.config import ConfigDict
+from test_lib.fixture_files import FixtureFiles
 
-# Useful absolute directory paths.
-FIXTURE_DIR_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "unittest-files")
-
-
-def fixture_file_path(file_path):
-    """Return the absolute path of a file at `file_path` inside the fixture files directory."""
-
-    return os.path.join(FIXTURE_DIR_PATH, file_path)
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 class HostUtilsTestCase(unittest.TestCase):
     """ Unit Tests for Host Utils library """
 
     def _delete_fixtures(self):
-        """ delete fixture path and set filename attribute """
-        local_host_path = fixture_file_path('fixtures')
+        """ delete FIXTURE_FILES path and set filename attribute """
+        local_host_path = FIXTURE_FILES.fixture_file_path('fixtures')
         self.filename = os.path.join(local_host_path, 'file')
         shutil.rmtree(os.path.dirname(self.filename), ignore_errors=True)
 

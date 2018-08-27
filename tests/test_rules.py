@@ -9,8 +9,10 @@ import readers
 import rules
 from nose.tools import nottest
 
-from tests import test_utils
+from test_lib.fixture_files import FixtureFiles
 import util
+
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 class TestResourceRules(unittest.TestCase):
@@ -22,7 +24,7 @@ class TestResourceRules(unittest.TestCase):
         sets up the common parameters for each operation being tested.
         """
         # parameters used in test cases
-        self.path_ftdc_3node_repl = test_utils.fixture_file_path(
+        self.path_ftdc_3node_repl = FIXTURE_FILES.fixture_file_path(
             'linux_3node_replSet_p1.ftdc.metrics')
         self.single_chunk_3node = self._first_chunk(self.path_ftdc_3node_repl)
         self.times_3node = self.single_chunk_3node[rules.FTDC_KEYS['time']]
@@ -37,12 +39,12 @@ class TestResourceRules(unittest.TestCase):
         }
         self.members_1node = ['0']
 
-        path_ftdc_standalone = test_utils.fixture_file_path('core_workloads_wt.ftdc.metrics')
+        path_ftdc_standalone = FIXTURE_FILES.fixture_file_path('core_workloads_wt.ftdc.metrics')
         self.single_chunk_standalone = self._first_chunk(path_ftdc_standalone)
         self.times_standalone = self.single_chunk_standalone[rules.FTDC_KEYS['time']]
 
-        self.path_3shard_directory = test_utils.fixture_file_path('test_replset_resource_rules')
-        self.path_ftdc_repllag = test_utils.fixture_file_path('test_repllag')
+        self.path_3shard_directory = FIXTURE_FILES.fixture_file_path('test_replset_resource_rules')
+        self.path_ftdc_repllag = FIXTURE_FILES.fixture_file_path('test_repllag')
 
     @staticmethod
     def _first_chunk(ftdc_filepath):
@@ -565,7 +567,7 @@ class TestDBCorrectnessRules(unittest.TestCase):
     def test_dbcorrect_success(self):
         """Test expected success in db correctness test log file parsing
         """
-        log_dir = test_utils.fixture_file_path('core_workloads_reports')
+        log_dir = FIXTURE_FILES.fixture_file_path('core_workloads_reports')
         expected_results = [{
             'status': 'pass',
             'start': 0,
@@ -589,7 +591,7 @@ class TestDBCorrectnessRules(unittest.TestCase):
     def test_dbcorrect_fail(self):
         """Test expected failure in db correctness test log file parsing
         """
-        log_dir = test_utils.fixture_file_path('test_db_correctness')
+        log_dir = FIXTURE_FILES.fixture_file_path('test_db_correctness')
         raw_failure = ('\nFAILURE: (logfile `localhost--localhost`)\n'
                        '2016-08-03T15:04:55.395-0400 E QUERY    [thread1] '
                        'Error: Collection validation failed :\n@(shell eval):1:20\n'
@@ -608,7 +610,7 @@ class TestDBCorrectnessRules(unittest.TestCase):
     def test_dbcorrect_no_exit_code(self):
         """Test expected failure in db correctness test log file missing integer exit status
         """
-        log_dir = test_utils.fixture_file_path('test_db_correctness_exit_fail')
+        log_dir = FIXTURE_FILES.fixture_file_path('test_db_correctness_exit_fail')
         raw_failure = ('\nFAILURE: logfile `localhost--localhost` did not record a valid exit '
                        'code. Output:\n 2016-08-03T15:04:55.395-0400 E QUERY    [thread1] '
                        'Error: Collection validation failed :\n@(shell eval):1:20\n'
@@ -628,7 +630,7 @@ class TestDBCorrectnessRules(unittest.TestCase):
     def test_no_jstests_run(self):
         """Test expected empty result when no db correctness checks are made
         """
-        log_dir = test_utils.fixture_file_path('test_log_analysis')
+        log_dir = FIXTURE_FILES.fixture_file_path('test_log_analysis')
         expected_results = []
         observed_results = rules.db_correctness_analysis(log_dir)
         self.assertEqual(expected_results, observed_results)

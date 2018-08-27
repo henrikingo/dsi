@@ -1,35 +1,18 @@
 ''' Test config_test_control.py '''
 
-import glob
-import json
 import logging
 import os
 import unittest
-import shutil
 
 from mock import Mock, patch
 from testfixtures import LogCapture
-import yaml
 
+import test_control
 from common.config import ConfigDict
 from common.remote_host import RemoteHost
-import test_control
+from test_lib.fixture_files import FixtureFiles
 
-
-def load_json(filename, directory=None):
-    ''' Convenience method to read in a json file '''
-    if not directory:
-        directory = '.'
-    with open(os.path.join(directory, filename)) as json_file:
-        return json.load(json_file)
-
-
-def load_yaml(filename, directory=None):
-    ''' Convenience method to read in a yaml file '''
-    if not directory:
-        directory = '.'
-    with open(os.path.join(directory, filename)) as yaml_file:
-        return yaml.load(yaml_file)
+FIXTURE_FILES = FixtureFiles(dir_name=os.path.dirname(__file__), subdir_name='config_test_control')
 
 
 class TestConfigTestControl(unittest.TestCase):
@@ -39,31 +22,15 @@ class TestConfigTestControl(unittest.TestCase):
         """
         Setup basic environment
         """
-        self.test_dir = os.path.dirname(os.path.abspath(__file__))
-        self.artifact_dir = os.path.join(self.test_dir, 'config_test_control')
-        self.repo_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        self.copied_files = []  # List of files copied
-        for filename in glob.glob(os.path.join(self.artifact_dir, '*.yml')):
-            shutil.copy(filename, '.')
-            self.copied_files.append(os.path.basename(filename))
-
         # Mocking `ConfigDict.assert_valid_ids` because it enforces structural constraints on yaml
         # files that aren't necessary here.
         with patch('common.config.ConfigDict.assert_valid_ids') as mock_assert_valid_ids:
+            prev_dir = os.getcwd()
+            os.chdir(FIXTURE_FILES.fixture_dir_path)
             self.config = ConfigDict('test_control')
             self.config.load()
             mock_assert_valid_ids.assert_called_once()
-
-    def tearDown(self):
-        """
-        Delete temporary files from run
-        """
-        for filename in self.copied_files:
-            os.remove(filename)
-        if os.path.isfile('workloads.yml'):
-            os.remove('workloads.yml')
-        if os.path.isfile('workloadEvergreen'):
-            os.remove('workloadEvergreen')
+            os.chdir(prev_dir)
 
     def test_benchrun_workload_config(self):
         """
@@ -71,12 +38,13 @@ class TestConfigTestControl(unittest.TestCase):
         """
         test = self.config['test_control']['run'][0]
         mock_host = Mock(spec=RemoteHost)
-        test_control.generate_config_file(test, '.', mock_host)
+        test_control.generate_config_file(test, FIXTURE_FILES.fixture_dir_path, mock_host)
         self.assertEqual(
-            load_yaml('workloads.yml'), load_yaml('workloads.benchrun.yml.ok', self.artifact_dir),
+            FIXTURE_FILES.load_yaml_file('workloads.yml'),
+            FIXTURE_FILES.load_yaml_file('workloads.benchrun.yml.ok'),
             'workloads.yml doesn\'t match expected for test_control.yml')
         mock_host.upload_file.assert_called_once_with(
-            os.path.join('.', test['config_filename']), test['config_filename'])
+            FIXTURE_FILES.fixture_file_path(test['config_filename']), test['config_filename'])
 
     def test_ycsb_workload_config(self):
         """
@@ -84,12 +52,13 @@ class TestConfigTestControl(unittest.TestCase):
         """
         test = self.config['test_control']['run'][1]
         mock_host = Mock(spec=RemoteHost)
-        test_control.generate_config_file(test, '.', mock_host)
+        test_control.generate_config_file(test, FIXTURE_FILES.fixture_dir_path, mock_host)
         self.assertEqual(
-            load_yaml('workloadEvergreen'), load_yaml('workloadEvergreen.ok', self.artifact_dir),
+            FIXTURE_FILES.load_yaml_file('workloadEvergreen'),
+            FIXTURE_FILES.load_yaml_file('workloadEvergreen.ok'),
             'workloadEvergreen doesn\'t match expected for test_control.yml')
         mock_host.upload_file.assert_called_once_with(
-            os.path.join('.', test['config_filename']), test['config_filename'])
+            FIXTURE_FILES.fixture_file_path(test['config_filename']), test['config_filename'])
 
     @patch('test_control.open')
     def test_generate_config_no_config(self, mock_open):
@@ -100,7 +69,7 @@ class TestConfigTestControl(unittest.TestCase):
         test = self.config['test_control']['run'][2]
         mock_host = Mock(spec=RemoteHost)
         with LogCapture(level=logging.WARNING) as warning:
-            test_control.generate_config_file(test, '.', mock_host)
+            test_control.generate_config_file(test, FIXTURE_FILES.fixture_dir_path, mock_host)
         warning.check(('test_control', 'WARNING', 'No workload config in test control'))
         mock_open.assert_not_called()
         mock_host.upload_file.assert_not_called()

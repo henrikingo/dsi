@@ -1,23 +1,25 @@
 """
 Unit test for infrastructure_provisioning.py
 """
-import copy
+
 from functools import partial
+from subprocess import CalledProcessError
+import copy
 import glob
 import logging
 import os
 import shutil
 import unittest
-from subprocess import CalledProcessError
+
 from mock import patch, call, mock_open, MagicMock, ANY
 from testfixtures import LogCapture, log_capture
 
 from infrastructure_provisioning import Provisioner, check_version, rmtree_when_present
+from test_lib.fixture_files import FixtureFiles
 
 #pylint: disable=too-many-locals
-from tests import test_utils
 
-ARTIFACTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "artifacts")
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 class TestInfrastructureProvisioning(unittest.TestCase):
@@ -45,7 +47,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                     'ssh_key_name': 'serverteam-perf-ssh-key'
                 },
                 'evergreen': {
-                    'data_dir': 'bin/tests/artifacts'
+                    'data_dir': FIXTURE_FILES.fixture_dir_path
                 }
             },
             'runtime_secret': {
@@ -54,7 +56,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             }
         }
         # create a provision log path that can be safely deleted post test
-        self.provision_log_path = os.path.join(test_utils.FIXTURE_DIR_PATH, 'provision.log')
+        self.provision_log_path = os.path.join(FIXTURE_FILES.fixture_dir_path, 'provision.log')
 
     def tearDown(self):
         self.os_environ_patcher.stop()
@@ -202,13 +204,15 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             self.assertEqual(provisioner.evg_data_dir, evg_data_dir)
             provisioner.check_existing_state()
             isfile_calls = [
-                call(evg_data_dir + '/terraform/terraform.tfstate'),
-                call(evg_data_dir + '/terraform/provisioned.replica')
+                call(evg_data_dir + 'terraform/terraform.tfstate'),
+                call(evg_data_dir + 'terraform/provisioned.replica')
             ]
             mock_isfile.assert_has_calls(isfile_calls)
             copyfile_calls = [
-                call('bin/tests/artifacts/terraform/terraform.tfstate', './terraform.tfstate'),
-                call('bin/tests/artifacts/terraform/cluster.json', 'cluster.json')
+                call(
+                    FIXTURE_FILES.fixture_file_path('terraform/terraform.tfstate'),
+                    './terraform.tfstate'),
+                call(FIXTURE_FILES.fixture_file_path('terraform/cluster.json'), 'cluster.json')
             ]
             mock_copyfile.assert_has_calls(copyfile_calls)
             mock_check_call.assert_not_called()
@@ -228,14 +232,14 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 mock_teardown_old_cluster.assert_called_once()
                 self.assertFalse(provisioner.existing)
                 mock_check_version.assert_called_once_with(
-                    'bin/tests/artifacts/terraform/provisioned.replica')
+                    FIXTURE_FILES.fixture_file_path('terraform/provisioned.replica'))
 
         # Run check_existing_state when no existing state exists
         with patch('infrastructure_provisioning.os.path.isfile') as mock_isfile:
             mock_isfile.return_value = False
             provisioner = Provisioner(config, provisioning_file=self.provision_log_path)
             provisioner.check_existing_state()
-            isfile_calls = [call(evg_data_dir + '/terraform/terraform.tfstate')]
+            isfile_calls = [call(evg_data_dir + 'terraform/terraform.tfstate')]
             mock_isfile.assert_has_calls(isfile_calls)
             mock_check_call.assert_not_called()
             mock_rmtree.assert_not_called()
@@ -258,7 +262,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         mock_isdir.side_effect = lambda evg_dir: evg_dir == evg_data_dir
         # Run check_existing_state when existing state exists
         with patch('infrastructure_provisioning.os.path.isfile') as mock_isfile:
-            expected_command = ['python', evg_data_dir + '/terraform/infrastructure_teardown.py']
+            expected_command = ['python', evg_data_dir + 'terraform/infrastructure_teardown.py']
             # mock_check_call.side_effect = partial(self.check_subprocess_call, expected_command)
             mock_isfile.return_value = True
             provisioner = Provisioner(config, provisioning_file=self.provision_log_path)
@@ -267,11 +271,12 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             mock_check_call.assert_called_with(expected_command, env=ANY, stdout=ANY, stderr=ANY)
             mock_shutil.rmtree.assert_called_with(evg_data_dir)
             isfile_calls = [
-                call('bin/tests/artifacts/terraform/infrastructure_teardown.py'),
+                call(FIXTURE_FILES.fixture_file_path('terraform/infrastructure_teardown.py')),
                 call('cluster.json'),
                 call('terraform.tfstate'),
-                call('bin/tests/artifacts/terraform/terraform.tfstate'),
-                call('bin/tests/artifacts/terraform/provisioned.initialsync-logkeeper')
+                call(FIXTURE_FILES.fixture_file_path('terraform/terraform.tfstate')),
+                call(
+                    FIXTURE_FILES.fixture_file_path('terraform/provisioned.initialsync-logkeeper'))
             ]
             mock_isfile.assert_has_calls(isfile_calls)
             remove_calls = [call('cluster.json'), call('terraform.tfstate')]
@@ -280,13 +285,15 @@ class TestInfrastructureProvisioning(unittest.TestCase):
 
         # Run check_existing_state when no existing state exists
         with patch('infrastructure_provisioning.os.path.isfile') as mock_isfile:
-            expected_command = ['bin/tests/artifacts/terraform/infrastructure_teardown.sh']
+            expected_command = [
+                FIXTURE_FILES.fixture_file_path('terraform/infrastructure_teardown.sh')
+            ]
             mock_check_call.side_effect = partial(self.check_subprocess_call, expected_command)
             mock_isfile.return_value = False
             provisioner = Provisioner(config, provisioning_file=self.provision_log_path)
             provisioner.check_existing_state()
             mock_shutil.rmtree.assert_called_with(evg_data_dir)
-            isfile_calls = [call(evg_data_dir + '/terraform/terraform.tfstate')]
+            isfile_calls = [call(evg_data_dir + 'terraform/terraform.tfstate')]
             mock_isfile.assert_has_calls(isfile_calls)
             remove_calls = [call('cluster.json'), call('terraform.tfstate')]
             mock_remove.assert_has_calls(remove_calls)
@@ -321,9 +328,9 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                     ('infrastructure_provisioning', 'ERROR', str(CalledProcessError(1, ['cmd']))))
             mock_shutil.rmtree.assert_called_with(evg_data_dir)
             isfile_calls = [
-                call('bin/tests/artifacts/terraform/terraform.tfstate'),
-                call('bin/tests/artifacts/terraform/provisioned.single'),
-                call('bin/tests/artifacts/terraform/infrastructure_teardown.py'),
+                call(FIXTURE_FILES.fixture_file_path('terraform/terraform.tfstate')),
+                call(FIXTURE_FILES.fixture_file_path('terraform/provisioned.single')),
+                call(FIXTURE_FILES.fixture_file_path('terraform/infrastructure_teardown.py')),
                 call('cluster.json'),
                 call('terraform.tfstate')
             ]
@@ -354,13 +361,13 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             provisioner.setup_evg_dir()
             mock_makedirs.assert_called_with(evg_data_dir)
             copytree_calls = [
-                call('../terraform', evg_data_dir + '/terraform'),
-                call('./modules', evg_data_dir + '/terraform/modules')
+                call('../terraform', evg_data_dir + 'terraform'),
+                call('./modules', evg_data_dir + 'terraform/modules')
             ]
             mock_shutil.copytree.assert_has_calls(copytree_calls)
             copyfile_calls = [
                 call(provisioner.bin_dir + '/infrastructure_teardown.py',
-                     evg_data_dir + '/terraform/infrastructure_teardown.py')
+                     evg_data_dir + 'terraform/infrastructure_teardown.py')
             ]
             mock_shutil.copyfile.assert_has_calls(copyfile_calls)
             listdir_calls = [call(evg_data_dir), call(os.path.join(evg_data_dir, 'terraform'))]
@@ -555,20 +562,19 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         evg_data_dir = self.config['infrastructure_provisioning']['evergreen']['data_dir']
 
         # provisioned.single should always have an empty version number.
-        self.assertFalse(check_version(evg_data_dir + '/terraform/provisioned.single'))
+        self.assertFalse(check_version(evg_data_dir + 'terraform/provisioned.single'))
 
         # provisioned.replica should have a version number equal to the current version in
         # infrastructure_provisioning.py.
-        self.assertTrue(check_version(evg_data_dir + '/terraform/provisioned.replica'))
+        self.assertTrue(check_version(evg_data_dir + 'terraform/provisioned.replica'))
 
         # provisioned.shard should have a version number one greater than the current version in
         # infrastructure_provisioning.py.
-        self.assertFalse(check_version(evg_data_dir + '/terraform/provisioned.shard'))
+        self.assertFalse(check_version(evg_data_dir + 'terraform/provisioned.shard'))
 
         # provisioned.initialsync-logkeeper should have a version number equal to the current
         # version in infrastructure_provisioning.py.
-        self.assertTrue(
-            check_version(evg_data_dir + '/terraform/provisioned.initialsync-logkeeper'))
+        self.assertTrue(check_version(evg_data_dir + 'terraform/provisioned.initialsync-logkeeper'))
 
     @patch('infrastructure_provisioning.shutil.rmtree')
     @patch('infrastructure_provisioning.os.path.exists', return_value=False)
@@ -622,7 +628,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         """
         # pylint: disable=line-too-long
         provisioner = Provisioner(self.config, provisioning_file=self.provision_log_path)
-        provisioner.tf_log_path = os.path.join(ARTIFACTS, 'terraform.log.short')
+        provisioner.tf_log_path = FIXTURE_FILES.fixture_file_path('terraform.log.short')
         provisioner.print_terraform_errors()
 
         log_output.check(

@@ -6,16 +6,15 @@ import unittest
 import shutil
 
 from mock import patch
-
-from common.utils import mkdir_p, touch
 from nose.tools import nottest
 
-from tests import test_utils
-from tests.any_in_string import ANY_IN_STRING
-
+from common.utils import mkdir_p, touch
 from evergreen.history import History
+from test_lib.comparator_utils import ANY_IN_STRING
+from test_lib.fixture_files import FixtureFiles
 import post_run_check
-import util
+
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 class TestPostRunCheck(unittest.TestCase):
@@ -24,12 +23,12 @@ class TestPostRunCheck(unittest.TestCase):
     def cleanup(self):
         """ common clean up code. It is called from both setup and teardown to be sure to be sure.
         """
-        self.core_file = os.path.join(test_utils.FIXTURE_DIR_PATH, 'core_workloads_reports',
+        self.core_file = os.path.join(FIXTURE_FILES.fixture_dir_path, 'core_workloads_reports',
                                       'test_id', 'mongod.0', 'core.file')
         if os.path.exists(self.core_file):
             os.remove(self.core_file)
 
-        self.reports_path = test_utils.fixture_file_path('reports')
+        self.reports_path = FIXTURE_FILES.fixture_file_path('reports')
         self.fixtures_path = os.path.dirname(self.reports_path)
         shutil.rmtree(self.reports_path, ignore_errors=True)
         mkdir_p(self.reports_path)
@@ -38,7 +37,7 @@ class TestPostRunCheck(unittest.TestCase):
         self.cleanup()
 
     def tearDown(self):
-        shutil.rmtree(os.path.join(test_utils.FIXTURE_DIR_PATH, 'cores'), ignore_errors=True)
+        shutil.rmtree(os.path.join(FIXTURE_FILES.fixture_dir_path, 'cores'), ignore_errors=True)
         shutil.rmtree(self.reports_path, ignore_errors=True)
 
     @staticmethod
@@ -46,8 +45,8 @@ class TestPostRunCheck(unittest.TestCase):
         """
         #Return delayed_trigger_core_workloads_wt.history.json as a History object.
         """
-        file_path = test_utils.fixture_file_path('delayed_trigger_core_workloads_wt.history.json')
-        history = History(util.get_json(file_path))
+        history = History(
+            FIXTURE_FILES.load_json_file('delayed_trigger_core_workloads_wt.history.json'))
         return history
 
     @staticmethod
@@ -55,8 +54,8 @@ class TestPostRunCheck(unittest.TestCase):
         """
         Return linux-standalone.core_workloads_WT.tags.json as a History object.
         """
-        file_path = test_utils.fixture_file_path('linux-standalone.core_workloads_WT.tags.json')
-        tag_history = History(util.get_json(file_path))
+        tag_history = History(
+            FIXTURE_FILES.load_json_file('linux-standalone.core_workloads_WT.tags.json'))
         return tag_history
 
     @patch('util._get_history', autospec=True)
@@ -77,12 +76,12 @@ class TestPostRunCheck(unittest.TestCase):
             "--reports-analysis {0}/core_workloads_reports " \
             "--project_id sys-perf --task_name core_workloads_WT --variant linux-standalone " \
             "--report-file {0}/report_ftdc.json --out-file /dev/null".format(
-                test_utils.FIXTURE_DIR_PATH)
+                FIXTURE_FILES.fixture_dir_path)
         post_run_check.main(arg_string.split(" "))
         self.assertTrue(
-            test_utils.eq_fixture_json_files("report_ftdc.json",
-                                             "post_run_check_ftdc.report.json.ok"))
-        os.remove(test_utils.fixture_file_path("report_ftdc.json"))
+            FIXTURE_FILES.json_files_equal("report_ftdc.json",
+                                           "post_run_check_ftdc.report.json.ok"))
+        os.remove(FIXTURE_FILES.fixture_file_path("report_ftdc.json"))
 
     @patch('util._get_history', autospec=True)
     @patch('util._get_tag_history', autospec=True)
@@ -102,15 +101,15 @@ class TestPostRunCheck(unittest.TestCase):
             "--reports-analysis {0}/core_workloads_reports " \
             "--project_id sys-perf --task_name core_workloads_WT --variant linux-standalone " \
             "--report-file {0}/report_core.json --out-file /dev/null".format(
-                test_utils.FIXTURE_DIR_PATH)
+                FIXTURE_FILES.fixture_dir_path)
 
         mkdir_p(os.path.dirname(self.core_file))
         touch(self.core_file)
         post_run_check.main(arg_string.split(" "))
         self.assertTrue(
-            test_utils.eq_fixture_json_files("report_core.json",
-                                             "post_run_check_core_fail.report.json.ok"))
-        os.remove(test_utils.fixture_file_path("report_core.json"))
+            FIXTURE_FILES.json_files_equal("report_core.json",
+                                           "post_run_check_core_fail.report.json.ok"))
+        os.remove(FIXTURE_FILES.fixture_file_path("report_core.json"))
         os.remove(self.core_file)
 
     @patch('util._get_history', autospec=True)
@@ -129,18 +128,18 @@ class TestPostRunCheck(unittest.TestCase):
             "--refTag 3.2.1-Baseline " \
             "--overrideFile {0}/system_perf_override.json " \
             "--project_id sys-perf --task_name core_workloads_WT --variant linux-standalone " \
-            "--report-file {0}/report.json --out-file /dev/null".format(test_utils.FIXTURE_DIR_PATH)
+            "--report-file {0}/report.json --out-file /dev/null".format(FIXTURE_FILES.fixture_dir_path)
         post_run_check.main(arg_string.split(" "))
         self.assertTrue(
-            test_utils.eq_fixture_json_files("report.json", "post_run_check.report.json.ok"))
-        os.remove(test_utils.fixture_file_path("report.json"))
+            FIXTURE_FILES.json_files_equal("report.json", "post_run_check.report.json.ok"))
+        os.remove(FIXTURE_FILES.fixture_file_path("report.json"))
 
     def test_skip_files(self):
         """
         test check_core_file_exists skips listdir on files (and avoids an exception).
         """
 
-        core_path = test_utils.fixture_file_path('cores')
+        core_path = FIXTURE_FILES.fixture_file_path('cores')
         shutil.rmtree(core_path, ignore_errors=True)
         mkdir_p(core_path)
 
@@ -178,7 +177,7 @@ class TestPostRunCheck(unittest.TestCase):
                 for filename in expected[i][1:]:
                     self.assertIn(os.path.basename(filename), result['log_raw'])
 
-        core_path = test_utils.fixture_file_path('cores')
+        core_path = FIXTURE_FILES.fixture_file_path('cores')
         shutil.rmtree(core_path, ignore_errors=True)
         mkdir_p(core_path)
 
@@ -200,7 +199,7 @@ class TestPostRunCheck(unittest.TestCase):
             }])
 
         # mongod
-        core_path = test_utils.fixture_file_path('cores')
+        core_path = FIXTURE_FILES.fixture_file_path('cores')
         shutil.rmtree(core_path, ignore_errors=True)
         mkdir_p(core_path)
 
@@ -219,7 +218,7 @@ class TestPostRunCheck(unittest.TestCase):
         check_failures(post_run_check.check_core_file_exists(core_path, pattern="core.*"), expected)
 
         # single mongos match
-        core_path = test_utils.fixture_file_path('cores')
+        core_path = FIXTURE_FILES.fixture_file_path('cores')
         shutil.rmtree(core_path, ignore_errors=True)
         mkdir_p(core_path)
 
@@ -236,7 +235,7 @@ class TestPostRunCheck(unittest.TestCase):
         check_failures(post_run_check.check_core_file_exists(core_path), expected)
 
         # single matching configsvr
-        core_path = test_utils.fixture_file_path('cores')
+        core_path = FIXTURE_FILES.fixture_file_path('cores')
         shutil.rmtree(core_path, ignore_errors=True)
         mkdir_p(core_path)
 
@@ -254,7 +253,7 @@ class TestPostRunCheck(unittest.TestCase):
         check_failures(post_run_check.check_core_file_exists(core_path), expected)
 
         # multiple mongod
-        core_path = test_utils.fixture_file_path('cores')
+        core_path = FIXTURE_FILES.fixture_file_path('cores')
         shutil.rmtree(core_path, ignore_errors=True)
         mkdir_p(core_path)
 
@@ -275,7 +274,7 @@ class TestPostRunCheck(unittest.TestCase):
         check_failures(post_run_check.check_core_file_exists(core_path), expected)
 
         # combinations
-        core_path = test_utils.fixture_file_path('cores')
+        core_path = FIXTURE_FILES.fixture_file_path('cores')
         shutil.rmtree(core_path, ignore_errors=True)
         mkdir_p(core_path)
 

@@ -1,18 +1,20 @@
-"""Unit tests for util/run_patch_builds.py
+"""
+Unit tests for util/run_patch_builds.py.
 
 Most of the functionality of multi_patch_builds.py would require an evergreen client in PATH,
 and also a checked out mongo git repo, and we don't want to create such complex infrastructure.
 But some superficial unit testing is still possible and meaningful to execute.
-
-
 """
+
 import os
 import unittest
 import yaml
 
-from tests import test_utils
-from tests.test_requests_parent import TestRequestsParent
+from test_lib.fixture_files import FixtureFiles
+from test_lib.test_requests_parent import TestRequestsParent
 from multi_patch_builds import MultiEvergreen
+
+FIXTURE = FixtureFiles(os.path.dirname(__file__))
 
 
 class TestMultiEvergreen(TestRequestsParent):
@@ -36,7 +38,7 @@ class TestMultiEvergreen(TestRequestsParent):
             'finalize': False,
             'variants': ['linux-standalone', 'linux-1-node-replSet'],
             'mongo_repo': '.',
-            'evergreen_config': test_utils.repo_root_file_path('config.yml'),
+            'evergreen_config': FIXTURE.repo_root_file_path('config.yml'),
             'n': 2,
             'result_urls': False
         }
@@ -46,7 +48,7 @@ class TestMultiEvergreen(TestRequestsParent):
             'core_workloads_WT', '--tasks', 'core_workloads_MMAPv1'
         ]
         client = MultiEvergreen(args)
-        client.config['evergreen_config'] = test_utils.repo_root_file_path('config.yml')
+        client.config['evergreen_config'] = FIXTURE.repo_root_file_path('config.yml')
         client.parse_options()
         self.assertEqual(client.config, expected)
 
@@ -74,7 +76,7 @@ class TestMultiEvergreen(TestRequestsParent):
             'finalize': False,
             'variants': ['linux-standalone', 'linux-1-node-replSet'],
             'mongo_repo': '.',
-            'evergreen_config': test_utils.repo_root_file_path('config.yml'),
+            'evergreen_config': FIXTURE.repo_root_file_path('config.yml'),
             'n': 2
         }
         cmd1 = client._evergreen_patch_compile_cmd(1)
@@ -128,7 +130,7 @@ class TestMultiEvergreen(TestRequestsParent):
         args = ['--description', 'PERF-814 Unit test, please ignore', '-n', '2']
         client = MultiEvergreen(args)
         # Needed to initialize evergreen REST client
-        client.config['evergreen_config'] = test_utils.repo_root_file_path('config.yml')
+        client.config['evergreen_config'] = FIXTURE.repo_root_file_path('config.yml')
         client.parse_options()
         client.builds = [{'ID': '586582573ff1224524001e99'}, {'ID': '586582553ff1224524001e96'}]
         client.config['result_urls'] = True
@@ -137,11 +139,11 @@ class TestMultiEvergreen(TestRequestsParent):
 
     def test_deserialize_serialize(self):
         """MultiEvergreen: Do a no-op deserialize & serialize of the yaml file."""
-        expected_file = test_utils.fixture_file_path('multi_patch_builds.yml.noop.ok')
-        input_file = test_utils.fixture_file_path('multi_patch_builds.yml')
+        expected_file = FIXTURE.fixture_file_path('multi_patch_builds.yml.noop.ok')
+        input_file = FIXTURE.fixture_file_path('multi_patch_builds.yml')
         args = ['--continue', input_file]
         client = MultiEvergreen(args)
-        client.config['evergreen_config'] = test_utils.repo_root_file_path('config.yml')
+        client.config['evergreen_config'] = FIXTURE.repo_root_file_path('config.yml')
         client.parse_options()
         # Note that here serialize() overwrites input_file with the identical contents
         client.execute()

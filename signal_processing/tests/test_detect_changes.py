@@ -9,7 +9,9 @@ from mock import ANY, MagicMock, call, patch
 
 import signal_processing.detect_changes as detect_changes
 from signal_processing.detect_changes import method_adapter, print_result
-from sp_utils import load_json_file
+from test_lib.fixture_files import FixtureFiles
+
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 # pylint: disable=invalid-name
@@ -20,11 +22,8 @@ class TestDetectChangesDriver(unittest.TestCase):
 
     def setUp(self):
         self.mongo_uri = 'mongodb+srv://fake@dummy-server.mongodb.net/perf'
-        dirname = os.path.dirname(__file__)
-        sysperf_perf_file = os.path.join(dirname, 'unittest_files/sysperf_perf.json')
-        sysperf_points_file = os.path.join(dirname, 'unittest_files/sysperf_points.json')
-        self.sysperf_perf_json = load_json_file(sysperf_perf_file)
-        self.sysperf_points = load_json_file(sysperf_points_file)
+        self.sysperf_perf_json = FIXTURE_FILES.load_json_file('sysperf_perf.json')
+        self.sysperf_points = FIXTURE_FILES.load_json_file('sysperf_points.json')
 
     @patch('signal_processing.detect_changes.Pool', autospec=True)
     @patch('signal_processing.detect_changes.PointsModel', autospec=True)
@@ -59,11 +58,8 @@ class TestPointsModel(unittest.TestCase):
 
     def setUp(self):
         self.mongo_uri = 'mongodb+srv://fake@dummy-server.mongodb.net/perf'
-        dirname = os.path.dirname(__file__)
-        sysperf_perf_file = os.path.join(dirname, 'unittest_files/sysperf_perf.json')
-        sysperf_points_file = os.path.join(dirname, 'unittest_files/sysperf_points.json')
-        self.sysperf_perf_json = load_json_file(sysperf_perf_file)
-        self.sysperf_points = load_json_file(sysperf_points_file)
+        self.sysperf_perf_json = FIXTURE_FILES.load_json_file('sysperf_perf.json')
+        self.sysperf_points = FIXTURE_FILES.load_json_file('sysperf_points.json')
 
     @patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True)
     def test_get_points(self, mock_MongoClient):

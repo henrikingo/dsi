@@ -3,11 +3,14 @@ Unit tests for `setup_baselines.py`.
 """
 
 from __future__ import print_function
-import unittest
+import os
 import textwrap
+import unittest
 
+from test_lib.fixture_files import FixtureFiles
 import setup_baselines
-from tests import test_utils
+
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 class BaselineUpdaterTest(setup_baselines.BaselineUpdater):
@@ -17,7 +20,7 @@ class BaselineUpdaterTest(setup_baselines.BaselineUpdater):
 
     def __init__(self):
         ''' init. Load different file than parent '''
-        self.config = test_utils.read_fixture_yaml_file('baseline_config.yml')
+        self.config = FIXTURE_FILES.load_yaml_file('baseline_config.yml')
 
 
 class TestSetupBaselines(unittest.TestCase):
@@ -27,8 +30,8 @@ class TestSetupBaselines(unittest.TestCase):
         '''
         Setup perfyaml for each test, and patch the file open of baseline_config.yml
         '''
-        self.perfyaml = test_utils.read_fixture_yaml_file('perf.yml')
-        self.sysperfyaml = test_utils.read_fixture_yaml_file('system_perf.yml')
+        self.perfyaml = FIXTURE_FILES.load_yaml_file('perf.yml')
+        self.sysperfyaml = FIXTURE_FILES.load_yaml_file('system_perf.yml')
 
     def test_remove_depenencies(self):
         ''' Test remove_dependencies with simple input '''
@@ -193,8 +196,8 @@ class TestSetupBaselines(unittest.TestCase):
         # update version_link and shell_link
         output_object = setup_baselines.patch_perf_yaml_strings(self.perfyaml, 'new_mongod',
                                                                 'new_mongo')
-        reference_out = test_utils.read_fixture_yaml_file('perf.yml.simple.patch.ok')
-        reference_in = test_utils.read_fixture_yaml_file('perf.yml')
+        reference_out = FIXTURE_FILES.load_yaml_file('perf.yml.simple.patch.ok')
+        reference_in = FIXTURE_FILES.load_yaml_file('perf.yml')
 
         # Check that input is unchanged
         self.assertEqual(reference_in, self.perfyaml)
@@ -211,7 +214,7 @@ class TestSetupBaselines(unittest.TestCase):
         unchanged = updater.patch_perf_yaml_mongod_flags(self.perfyaml, '3.4.0')
         self.assertEqual(self.perfyaml, unchanged, 'No changes to mongod flags for 3.4.0')
         modified = updater.patch_perf_yaml_mongod_flags(self.perfyaml, '3.0.12')
-        reference = test_utils.read_fixture_yaml_file('perf.yml.modified.mongodflags.ok')
+        reference = FIXTURE_FILES.load_yaml_file('perf.yml.modified.mongodflags.ok')
         self.assertEqual(modified, reference, 'Remove inMemory and diagnostic parameters for 3.0')
 
     def test_patch_raise(self):
@@ -229,15 +232,15 @@ class TestSetupBaselines(unittest.TestCase):
         updater = BaselineUpdaterTest()
 
         modified = updater.patch_perf_yaml(self.perfyaml, '3.2.10', 'performance')
-        reference = test_utils.read_fixture_yaml_file('perf.yml.master.3.2.10.ok')
+        reference = FIXTURE_FILES.load_yaml_file('perf.yml.master.3.2.10.ok')
         self.assertEqual(modified, reference, 'Patch for 3.2.10 on master')
         modified = updater.patch_perf_yaml(self.perfyaml, '3.0.14', 'performance')
-        reference = test_utils.read_fixture_yaml_file('perf.yml.master.3.0.14.ok')
+        reference = FIXTURE_FILES.load_yaml_file('perf.yml.master.3.0.14.ok')
         modified = updater.patch_perf_yaml(self.perfyaml, '3.2.10', 'performance-3.2')
-        reference = test_utils.read_fixture_yaml_file('perf.yml.perf-3.2.3.2.10.ok')
+        reference = FIXTURE_FILES.load_yaml_file('perf.yml.perf-3.2.3.2.10.ok')
         self.assertEqual(modified, reference, 'Patch for 3.2.10 on perf-3.2')
         modified = updater.patch_perf_yaml(self.perfyaml, '3.0.14', 'performance-3.2')
-        reference = test_utils.read_fixture_yaml_file('perf.yml.perf-3.2.3.0.14.ok')
+        reference = FIXTURE_FILES.load_yaml_file('perf.yml.perf-3.2.3.0.14.ok')
         self.assertEqual(modified, reference, 'Patch for 3.0.14 on perf-3.2')
 
     def test_patch_sysperf_yaml(self):
@@ -247,10 +250,10 @@ class TestSetupBaselines(unittest.TestCase):
         updater = BaselineUpdaterTest()
 
         modified = updater.patch_sysperf_yaml(self.sysperfyaml, '3.2.12')
-        reference = test_utils.read_fixture_yaml_file('system_perf.yml.master.3.2.12.ok')
+        reference = FIXTURE_FILES.load_yaml_file('system_perf.yml.master.3.2.12.ok')
         self.assertEqual(modified, reference, 'Patch for 3.2.12 on master')
         modified = updater.patch_sysperf_yaml(self.sysperfyaml, '3.4.2')
-        reference = test_utils.read_fixture_yaml_file('system_perf.yml.master.3.4.2.ok')
+        reference = FIXTURE_FILES.load_yaml_file('system_perf.yml.master.3.4.2.ok')
         self.assertEqual(modified, reference, 'Patch for 3.4.2 on master')
 
     def test_repeated_args(self):

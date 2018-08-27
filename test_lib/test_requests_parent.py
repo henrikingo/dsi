@@ -1,19 +1,20 @@
 """
-
 This class provides a base test class for other tests which use
-evergreen.helpers.get_full_git_commit_hash and evergreen.helpers.get_as_json
+evergreen.helpers.get_full_git_commit_hash and evergreen.helpers.get_as_json.
 It mocks the two functions in every test.
 
 For reference on mocking functions in all tests:
 http://www.voidspace.org.uk/python/mock/examples.html#applying-the-same-patch-to-every-test-method
-
 """
 
 import unittest
+
 from mock import patch
 
-from tests import test_utils
-from test_utils import ContextShelve
+from context_shelve import ContextShelve
+from fixture_files import FixtureFiles
+
+FIXTURE = FixtureFiles()
 
 
 class TestRequestsParent(unittest.TestCase):
@@ -23,10 +24,10 @@ class TestRequestsParent(unittest.TestCase):
 
     def setUp(self):
         """
-        Mocks the connection functions and also opens up the ContextShelve object
+        Mocks the connection functions and also opens up the ContextShelve object.
         """
         #pylint: disable=invalid-name
-        persistent_dict_path = test_utils.fixture_file_path('override_responses')
+        persistent_dict_path = FIXTURE.fixture_file_path('override_responses')
         self.override_responses = ContextShelve(persistent_dict_path)
         self.override_responses.open()
         # Instead of using patch in decorators or as a context manager, the start() and stop()
@@ -44,7 +45,9 @@ class TestRequestsParent(unittest.TestCase):
         #pylint: enable=invalid-name
 
     def tearDown(self):
-        """ Unpatches the connection functions and closes the ContextShelve"""
+        """
+        Unpatches the connection functions and closes the ContextShelve.
+        """
         self.get_full_git_commit_hash_patcher.stop()
         self.get_as_json_patcher.stop()
         self.override_responses.close()

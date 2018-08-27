@@ -1,23 +1,21 @@
 """Tests for bin/common/remote_host.py"""
 
 import collections
-import unittest
 import os
-import stat
 import socket
+import stat
 import time
+import unittest
 from StringIO import StringIO
 
 import paramiko
-
 from mock import patch, call, mock, ANY, MagicMock, Mock
 
-from common.mongodb_setup_helpers import MongoDBAuthSettings
 import common.host_utils
 import common.command_runner
 import common.remote_host
-
-from tests.any_in_string import ANY_IN_STRING
+from common.mongodb_setup_helpers import MongoDBAuthSettings
+from test_lib.comparator_utils import ANY_IN_STRING
 
 FakeStat = collections.namedtuple('FakeStat', 'st_mode')
 

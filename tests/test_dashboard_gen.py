@@ -5,18 +5,22 @@ Unit tests for `dashboard_gen.py`.
 import os
 import unittest
 
+from test_lib.fixture_files import FixtureFiles
 import dashboard_gen
-from tests import test_utils
+
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 class TestDashboardGen(unittest.TestCase):
-    """Test suite."""
+    """
+    Test suite.
+    """
 
     def tearDown(self):
         """
         Remove the temperary test files
         """
-        os.remove(test_utils.fixture_file_path("dashboard.json"))
+        os.remove(FIXTURE_FILES.fixture_file_path("dashboard.json"))
 
     def test_sysperf(self):
         """
@@ -29,11 +33,11 @@ class TestDashboardGen(unittest.TestCase):
             "--overrideFile {0}/system_perf_override.json --project_id sys-perf " \
             "--task_name core_workloads_WT --variant linux-standalone --jira-user fake-user " \
             "--jira-password fake-passwd --dashboard-file {0}/dashboard.json".format(
-                test_utils.FIXTURE_DIR_PATH)
+                FIXTURE_FILES.fixture_dir_path)
 
         dashboard_gen.main(arg_string.split(" "))
         self.assertTrue(
-            test_utils.eq_fixture_json_files("dashboard.json", "dashboard_gen.dashboard.json.ok"))
+            FIXTURE_FILES.json_files_equal("dashboard.json", "dashboard_gen.dashboard.json.ok"))
 
     def test_mongo_perf(self):
         """
@@ -45,12 +49,12 @@ class TestDashboardGen(unittest.TestCase):
             "--overrideFile {0}/system_perf_override.json --project_id performance " \
             "--task_name core_workloads_WT --variant linux-standalone --jira-user fake-user " \
             "--jira-password fake-passwd --dashboard-file {0}/dashboard.json".format(
-                test_utils.FIXTURE_DIR_PATH)
+                FIXTURE_FILES.fixture_dir_path)
 
         dashboard_gen.main(arg_string.split(" "))
         self.assertTrue(
-            test_utils.eq_fixture_json_files("dashboard.json",
-                                             "dashboard_gen_perf.dashboard.json.ok"))
+            FIXTURE_FILES.json_files_equal("dashboard.json",
+                                           "dashboard_gen_perf.dashboard.json.ok"))
 
 
 if __name__ == "__main__":

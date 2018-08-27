@@ -8,7 +8,7 @@ import numpy as np
 from bin.common.log import setup_logging
 
 from signal_processing.qhat import describe_change_point
-from sp_utils import approx_dict
+from test_lib import math_utils
 
 setup_logging(False)
 
@@ -89,7 +89,9 @@ class TestDescribeChangePoints(unittest.TestCase):
         description = describe_change_point(change_point, range(15), {})
         self.assertEqual(len(expected), len(description))
         from_previous = description['previous']
-        self.assertDictContainsSubset(approx_dict(expected['previous']), approx_dict(from_previous))
+        self.assertDictContainsSubset(
+            math_utils.approx_dict(expected['previous']), math_utils.approx_dict(from_previous))
 
         to_next = description['next']
-        self.assertDictContainsSubset(approx_dict(expected['next']), approx_dict(to_next))
+        self.assertDictContainsSubset(
+            math_utils.approx_dict(expected['next']), math_utils.approx_dict(to_next))

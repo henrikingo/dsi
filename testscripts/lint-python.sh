@@ -31,6 +31,7 @@ test_paths=(
     tests/test_evergreen
     testscripts
     signal_processing/tests
+    test_lib
 )
 
 run_pylint() {

@@ -1,15 +1,18 @@
 """Unit tests for evergreen.helper functions. Using nosetest, run from dsi directory."""
+
+from subprocess import PIPE
+import os
 import platform
 import unittest
-from subprocess import PIPE
-
-import requests
 
 from evergreen import helpers
 from mock import patch, MagicMock
+import requests
 
 from analysis.evergreen.helpers import GITHUB_API
-from tests import test_utils
+from test_lib.fixture_files import FixtureFiles
+
+FIXTURE_FILES = FixtureFiles(os.path.dirname(os.path.dirname(__file__)))
 
 
 class TestEvergreenHelpers(unittest.TestCase):
@@ -17,7 +20,7 @@ class TestEvergreenHelpers(unittest.TestCase):
 
     def setUp(self):
         """Specify the expected result variables used in more than 1 test"""
-        config_file = test_utils.repo_root_file_path('config.yml')
+        config_file = FIXTURE_FILES.repo_root_file_path('config.yml')
 
         self.expected_evergreen = {
             'user': 'username',
@@ -31,7 +34,7 @@ class TestEvergreenHelpers(unittest.TestCase):
 
     def test_evg_creds_success(self):
         """Test a valid Evergreen config file"""
-        config_file = test_utils.fixture_file_path('evergreen/test_helpers/valid_evergreen.yml')
+        config_file = FIXTURE_FILES.fixture_file_path('evergreen/test_helpers/valid_evergreen.yml')
         evg_creds = helpers.get_evergreen_credentials(config_file=config_file)
         self.assertEqual(evg_creds, self.expected_evergreen)
 
@@ -42,7 +45,7 @@ class TestEvergreenHelpers(unittest.TestCase):
 
     def test_git_creds_success(self):
         """Test a valid .gitconfig file (containing a user authentication token)"""
-        config_file = test_utils.fixture_file_path('evergreen/test_helpers/valid_gitconfig')
+        config_file = FIXTURE_FILES.fixture_file_path('evergreen/test_helpers/valid_gitconfig')
         gh_creds = helpers.get_git_credentials(config_file=config_file)
         self.assertEqual(gh_creds, self.expected_git)
 
@@ -53,7 +56,8 @@ class TestEvergreenHelpers(unittest.TestCase):
 
     def test_git_creds_token_not_found(self):
         """Test a valid .gitconfig file that does not contain an authentication token"""
-        config_file = test_utils.fixture_file_path('evergreen/test_helpers/valid_gitconfig_notoken')
+        config_file = FIXTURE_FILES.fixture_file_path(
+            'evergreen/test_helpers/valid_gitconfig_notoken')
         with self.assertRaises(KeyError):
             helpers.get_git_credentials(config_file)
 

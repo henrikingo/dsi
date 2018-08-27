@@ -8,7 +8,9 @@ import unittest
 from mock import MagicMock, call, patch
 
 import signal_processing.etl_evg_mongo as etl_evg_mongo
-from sp_utils import load_json_file
+from test_lib.fixture_files import FixtureFiles
+
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 def _get_load_results_args(histories, version_id=None, start_date=None, reverse=False):
@@ -45,11 +47,8 @@ class TestEtlEvgMongo(unittest.TestCase):
     """
 
     def setUp(self):
-        self.dirname = os.path.dirname(__file__)
-        sysperf_file = os.path.join(self.dirname, 'unittest_files/sysperf_history.json')
-        micro_file = os.path.join(self.dirname, 'unittest_files/microbenchmarks_history.json')
-        self.sysperf_history = load_json_file(sysperf_file)
-        self.micro_history = load_json_file(micro_file)
+        self.sysperf_history = FIXTURE_FILES.load_json_file('sysperf_history.json')
+        self.micro_history = FIXTURE_FILES.load_json_file('microbenchmarks_history.json')
         self.default_history_config = {'sys-perf': None, 'performance': None}
         self.mongo_uri = 'mongo_uri'
 
@@ -57,8 +56,7 @@ class TestEtlEvgMongo(unittest.TestCase):
         """
         Test that `_get_project_variant_tasks` works with default history configuration.
         """
-        expected_file = os.path.join(self.dirname, 'unittest_files/default_flattened.json')
-        expected = load_json_file(expected_file)
+        expected = FIXTURE_FILES.load_json_file('default_flattened.json')
         mock_evg_client = MagicMock(name='evg_client', autospec=True)
         mock_evg_client.query_project_history.side_effect = [
             self.micro_history, self.sysperf_history
@@ -81,8 +79,7 @@ class TestEtlEvgMongo(unittest.TestCase):
                 }
             }
         }
-        expected_file = os.path.join(self.dirname, 'unittest_files/configured_flattened.json')
-        expected = load_json_file(expected_file)
+        expected = FIXTURE_FILES.load_json_file('configured_flattened.json')
         mock_evg_client = MagicMock(name='evg_client', autospec=True)
         mock_evg_client.query_project_history.side_effect = [self.sysperf_history]
         actual = etl_evg_mongo._get_project_variant_tasks(mock_evg_client, history_config)
@@ -156,10 +153,8 @@ class TestEtlEvgMongo(unittest.TestCase):
             'variant': variant,
             'project': project
         }]
-        h_file = os.path.join(self.dirname, 'unittest_files/industry_benchmarks_history.json')
-        h_file2 = os.path.join(self.dirname, 'unittest_files/industry_benchmarks_history_2.json')
-        history = load_json_file(h_file)
-        history2 = load_json_file(h_file2)
+        history = FIXTURE_FILES.load_json_file('industry_benchmarks_history.json')
+        history2 = FIXTURE_FILES.load_json_file('industry_benchmarks_history_2.json')
         mock_evg_client = MagicMock(name='evg_client', autospec=True)
         mock_evg_client.query_mongo_perf_task_history.side_effect = [history, history2]
         mock__get_last_version_id.return_value = version_id
@@ -199,8 +194,7 @@ class TestEtlEvgMongo(unittest.TestCase):
             'variant': variant,
             'project': project
         }]
-        h_file = os.path.join(self.dirname, 'unittest_files/industry_benchmarks_history.json')
-        history = load_json_file(h_file)
+        history = FIXTURE_FILES.load_json_file('industry_benchmarks_history.json')
         mock_evg_client = MagicMock(name='evg_client', autospec=True)
         mock_evg_client.query_mongo_perf_task_history.return_value = history
         mock__get_last_version_id.return_value = None
@@ -236,10 +230,8 @@ class TestEtlEvgMongo(unittest.TestCase):
             'variant': variant,
             'project': project
         }]
-        h_file = os.path.join(self.dirname, 'unittest_files/industry_benchmarks_history.json')
-        h_file2 = os.path.join(self.dirname, 'unittest_files/industry_benchmarks_history_2.json')
-        history = load_json_file(h_file)
-        history2 = load_json_file(h_file2)
+        history = FIXTURE_FILES.load_json_file('industry_benchmarks_history.json')
+        history2 = FIXTURE_FILES.load_json_file('industry_benchmarks_history_2.json')
         mock_evg_client = MagicMock(name='evg_client', autospec=True)
         mock_evg_client.query_mongo_perf_task_history.side_effect = [history, history2]
         mock__get_last_version_id.return_value = None

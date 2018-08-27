@@ -5,11 +5,12 @@ import os
 import unittest
 
 from bin.common.log import setup_logging
-from sp_utils import load_json_file
-
 from signal_processing.qhat import select_start_end, generate_start_and_end, DEFAULT_WEIGHTING
+from test_lib.fixture_files import FixtureFiles
 
 setup_logging(False)
+
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 class TestStartEnd(unittest.TestCase):
@@ -17,15 +18,11 @@ class TestStartEnd(unittest.TestCase):
     Test getting the start / end for a change point.
     """
 
-    def setUp(self):
-        self.unittest_files_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'unittest_files', 'qhat')
-
     def _test_start_end(self, filename):
         """
         Util for start end.
         """
-        fixture = load_json_file(os.path.join(self.unittest_files_path, filename))
+        fixture = FIXTURE_FILES.load_json_file(os.path.join('qhat', filename))
         series = fixture['series']
         tests = fixture['test_data']
 

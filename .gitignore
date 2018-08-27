@@ -11,7 +11,8 @@ coverage.xml
 # Python Shelve
 tests/unittest-files/override_responses
 tests/unittest-files/override_responses.gz
-bin/tests/unittest-files/*
+bin/tests/unittest-files/override_responses
+bin/tests/unittest-files/override_responses.gz
 
 # PyCharm
 .idea

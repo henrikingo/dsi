@@ -10,6 +10,9 @@ import shutil
 import subprocess
 import unittest
 
+from mock import patch, mock_open, Mock, call
+from testfixtures import LogCapture
+
 import common.host_utils
 from common.command_runner import EXCEPTION_BEHAVIOR
 from common.command_runner import print_trace
@@ -21,11 +24,9 @@ from test_control import copy_timeseries
 from test_control import get_error_from_exception, ExitStatus
 from test_control import run_test
 from test_control import run_tests
+from test_lib.fixture_files import FixtureFiles
 
-from tests import test_utils
-
-from mock import patch, mock_open, Mock, call
-from testfixtures import LogCapture
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 class RunTestsTestCase(unittest.TestCase):
@@ -133,7 +134,7 @@ class RunTestsTestCase(unittest.TestCase):
                 ]
             }
         } # yapf: disable
-        self.reports_container = test_utils.fixture_file_path('container')
+        self.reports_container = FIXTURE_FILES.fixture_file_path('container')
         self.reports_path = os.path.join(self.reports_container, 'reports_tests')
 
         mkdir_p(self.reports_path)

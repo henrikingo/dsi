@@ -1,44 +1,20 @@
 """Tests for bin/common/workload_output_parser.py"""
-import json
+
 import logging
 import os
 import sys
 import unittest
-import json_diff
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 from workload_output_parser import parse_test_results, validate_config
+from test_lib.fixture_files import FixtureFiles
 
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 LOG = logging.getLogger(__name__)
 
 
 class WorkloadOutputParserTestCase(unittest.TestCase):
     """Unit tests for workload_output_parser.py."""
-
-    def assert_json_files_equal(self, expect, actual):
-        """
-        Pretty-print a json diff report if contents if
-        expect != actual
-
-        :param IO expect: expected json file IO
-        :param IO actual: acttual json file IO
-        """
-        # While not strictly necessary, giving a nice diff view
-        # of the json differences helps immensely in debugging these tests
-        # versus just being able to see
-        #     {...some-huge-string...} != {...some-other-huge-string....}
-        diff = json_diff.Comparator(open(expect), open(actual))
-        diff_res = diff.compare_dicts()
-        outs = unicode(json_diff.HTMLFormatter(diff_res))
-
-        with open(actual) as file_handle:
-            result_perf_json = json.load(file_handle)
-        with open(expect) as file_handle:
-            expected_perf_json = json.load(file_handle)
-
-        # pylint: disable=invalid-name
-        self.maxDiff = None
-        self.assertEqual(result_perf_json, expected_perf_json, outs)
 
     def setUp(self):
         """Set some common input data"""
@@ -66,7 +42,7 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
                 'task_name': 'parser_unittest',
                 'reports_dir_basename': 'bin/tests/artifacts',
                 'perf_json': {
-                    'path': 'bin/tests/artifacts/perf.unittest-out.json'
+                    'path': 'perf.unittest-out.json'
                 },
                 'output_file': {
                     'mongoshell': 'test_output.log',
@@ -119,8 +95,8 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
             parse_test_results(test, self.config, self.timer)
 
         # Verify output file
-        self.assert_json_files_equal(
-            expect="{}.ok".format(self.perf_json_path), actual=self.perf_json_path)
+        FIXTURE_FILES.assert_json_files_equal(
+            self, expect="{}.ok".format(self.perf_json_path), actual=self.perf_json_path)
 
     def test_validate_config(self):
         """Test workload_output_parser.validate_config()"""

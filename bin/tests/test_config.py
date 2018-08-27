@@ -9,6 +9,9 @@ from mock import patch
 
 import common.config as config
 from common.config import ConfigDict
+from test_lib.fixture_files import FixtureFiles
+
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 def dirmarker(into):
@@ -54,13 +57,13 @@ class InvalidConfigDictTestCase(unittest.TestCase):
 
     def test_load_yaml_invalid_keys(self):
         """can't even get bad keys from yaml"""
-        with in_dir('./invalid-config'):
+        with in_dir(FIXTURE_FILES.fixture_file_path('invalid-config')):
             with self.assertRaises(config.InvalidConfigurationException):
                 ConfigDict('mongodb_setup').load()
 
     def test_set_invalid_key(self):
         """can't use conf[key] = X with key invalid"""
-        with in_dir('./nested-config'):
+        with in_dir(FIXTURE_FILES.fixture_file_path('nested-config')):
             conf = load_config_dict('mongodb_setup')
             self.assertEquals(conf['mongodb_setup']['this']['is']['quite']['deeply']['nested'],
                               'okay')
@@ -72,7 +75,7 @@ class InvalidConfigDictTestCase(unittest.TestCase):
         """
         Helper method - assert we get an exception when `subdict` is inserted into an out config
         """
-        with in_dir('./nested-config'):
+        with in_dir(FIXTURE_FILES.fixture_file_path('nested-config')):
             conf = load_config_dict('mongodb_setup')
             with self.assertRaises(config.InvalidConfigurationException):
                 conf['mongodb_setup']['out'] = {
@@ -104,7 +107,7 @@ class InvalidConfigDictTestCase(unittest.TestCase):
 
     def test_assigns_invalid_nested_dict_multiple_errors(self):
         """assign invalid key from a nested dict with multiple errors"""
-        with in_dir('./nested-config'):
+        with in_dir(FIXTURE_FILES.fixture_file_path('nested-config')):
             conf = load_config_dict('mongodb_setup')
             with self.assertRaises(config.InvalidConfigurationException) as context:
                 conf['mongodb_setup']['out'] = {
@@ -125,7 +128,7 @@ class InvalidConfigDictTestCase(unittest.TestCase):
         Note: These tests explicitly test `validate_id` when called from `_yaml_load` (as opposed to
         when it's called from `assert_valid_ids`).
         """
-        with in_dir('./invalid-ids'):
+        with in_dir(FIXTURE_FILES.fixture_file_path('invalid-ids')):
             conf = load_config_dict('mongodb_setup')
             with self.assertRaises(config.InvalidConfigurationException):
                 conf['mongodb_setup']['test'] = {
@@ -174,7 +177,7 @@ class InvalidConfigDictTestCase(unittest.TestCase):
         """
         Variable references cannot evaluate to duplicate ids.
         """
-        with in_dir('./invalid-ids'):
+        with in_dir(FIXTURE_FILES.fixture_file_path('invalid-ids')):
             with self.assertRaises(config.InvalidConfigurationException):
                 conf = ConfigDict('mongodb_setup')
                 conf.load()
@@ -183,7 +186,7 @@ class InvalidConfigDictTestCase(unittest.TestCase):
         """
         Variable references cannot evaluate to blocks containing duplicate ids.
         """
-        with in_dir('./nested-invalid-ids'):
+        with in_dir(FIXTURE_FILES.fixture_file_path('nested-invalid-ids')):
             with self.assertRaises(config.InvalidConfigurationException):
                 conf = ConfigDict('mongodb_setup')
                 conf.load()
@@ -192,7 +195,7 @@ class InvalidConfigDictTestCase(unittest.TestCase):
         """
         We check for duplicate ids in lists of lists correctly.
         """
-        with in_dir('./invalid-ids-in-lists'):
+        with in_dir(FIXTURE_FILES.fixture_file_path('invalid-ids-in-lists')):
             with self.assertRaises(config.InvalidConfigurationException):
                 conf = ConfigDict('mongodb_setup')
                 conf.load()

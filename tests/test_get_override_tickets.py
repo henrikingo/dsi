@@ -2,11 +2,16 @@
 Unit tests for `get_override_tickets.py`.
 """
 
+import os
+
 import unittest
 import StringIO
 
+from test_lib import io_utils
+from test_lib.fixture_files import FixtureFiles
 import get_override_tickets
-from tests import test_utils
+
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 class TestPerfRegressionCheck(unittest.TestCase):
@@ -20,12 +25,12 @@ class TestPerfRegressionCheck(unittest.TestCase):
         for rule in ["all", "threshold", "reference"]:
             for override_type in ["perf", "system_perf"]:
                 override_filename = override_type + "_override.json"
-                args = ["-r", rule, "-f", test_utils.fixture_file_path(override_filename)]
+                args = ["-r", rule, "-f", FIXTURE_FILES.fixture_file_path(override_filename)]
                 script_output_str = StringIO.StringIO()
-                with test_utils.redirect_stdout(script_output_str):
+                with io_utils.redirect_stdout(script_output_str):
                     get_override_tickets.main(args)
 
-                reference_file_path = test_utils.fixture_file_path("tickets.{}.{}.out.ok".format(
+                reference_file_path = FIXTURE_FILES.fixture_file_path("tickets.{}.{}.out.ok".format(
                     override_type, rule))
 
                 with open(reference_file_path) as reference_file:

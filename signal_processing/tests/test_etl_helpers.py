@@ -10,7 +10,9 @@ from testfixtures import LogCapture
 import pymongo
 import structlog
 import signal_processing.etl_helpers as etl_helpers
-from sp_utils import load_json_file
+from test_lib.fixture_files import FixtureFiles
+
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 class TestloadHistory(unittest.TestCase):
@@ -20,15 +22,10 @@ class TestloadHistory(unittest.TestCase):
 
     def setUp(self):
         self.mongo_uri = 'mongodb+srv://fake@dummy-server.mongodb.net/perf'
-        dirname = os.path.dirname(__file__)
-        sysperf_perf_file = os.path.join(dirname, 'unittest_files/sysperf_perf.json')
-        micro_perf_file = os.path.join(dirname, 'unittest_files/microbenchmarks_perf.json')
-        sysperf_points_file = os.path.join(dirname, 'unittest_files/sysperf_points.json')
-        micro_points_file = os.path.join(dirname, 'unittest_files/microbenchmarks_points.json')
-        self.sysperf_perf_json = load_json_file(sysperf_perf_file)
-        self.microbenchmarks_perf_json = load_json_file(micro_perf_file)
-        self.sysperf_points = load_json_file(sysperf_points_file)
-        self.microbenchmarks_points = load_json_file(micro_points_file)
+        self.sysperf_perf_json = FIXTURE_FILES.load_json_file('sysperf_perf.json')
+        self.microbenchmarks_perf_json = FIXTURE_FILES.load_json_file('microbenchmarks_perf.json')
+        self.sysperf_points = FIXTURE_FILES.load_json_file('sysperf_points.json')
+        self.microbenchmarks_points = FIXTURE_FILES.load_json_file('microbenchmarks_points.json')
         # Setup logging so that structlog uses stdlib, and LogCapture works
         structlog.configure(
             processors=[
@@ -51,11 +48,8 @@ class TestloadHistory(unittest.TestCase):
         """
         Test that load works with a standard configuration.
         """
-        dirname = os.path.dirname(__file__)
-        sysperf_perf_file = os.path.join(dirname, 'unittest_files/sysperf_perf_small.json')
-        sysperf_points_file = os.path.join(dirname, 'unittest_files/sysperf_points_small.json')
-        self.sysperf_perf_json = load_json_file(sysperf_perf_file)
-        self.sysperf_points = load_json_file(sysperf_points_file)
+        self.sysperf_perf_json = FIXTURE_FILES.load_json_file('sysperf_perf_small.json')
+        self.sysperf_points = FIXTURE_FILES.load_json_file('sysperf_points_small.json')
         mock_db = MagicMock(name='db', autospec=True)
         mock_MongoClient.return_value.get_database.return_value = mock_db
         etl_helpers.load(self.sysperf_perf_json, self.mongo_uri)

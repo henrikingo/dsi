@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 """Tests for the mongodb_setup module"""
+
 import os
 import os.path
 import unittest
@@ -9,8 +10,7 @@ from mock import MagicMock, mock
 import common.mongodb_cluster
 import common.mongodb_setup_helpers
 import common.host
-
-from tests.any_in_string import ANY_IN_STRING
+from test_lib.comparator_utils import ANY_IN_STRING
 
 # Mock the remote host module.
 common.mongodb_cluster.RemoteHost = mock.MagicMock()

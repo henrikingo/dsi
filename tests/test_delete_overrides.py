@@ -6,9 +6,11 @@ import shutil
 import unittest
 from testfixtures import LogCapture
 
+from test_lib.fixture_files import FixtureFiles
+from test_lib.test_requests_parent import TestRequestsParent
 import delete_overrides
-from tests import test_utils
-from tests.test_requests_parent import TestRequestsParent
+
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 class TestDeleteOverrides(TestRequestsParent):
@@ -19,8 +21,8 @@ class TestDeleteOverrides(TestRequestsParent):
         """Specifies the paths to output the JSON files. Additionally,
         sets up the common parameters for each operation being tested.
         """
-        self.output_file = test_utils.fixture_file_path('delete_override_test.json')
-        self.config_file = test_utils.repo_root_file_path('config.yml')
+        self.output_file = FIXTURE_FILES.fixture_file_path('delete_override_test.json')
+        self.config_file = FIXTURE_FILES.repo_root_file_path('config.yml')
         self.regenerate_output_files = False  #Note: causes all tests that compare a file to pass
         TestRequestsParent.setUp(self)
 
@@ -28,7 +30,7 @@ class TestDeleteOverrides(TestRequestsParent):
     def _path_to_reference(prefix, rule, ticket):
         # reference file naming convention
         name = '.'.join([prefix, rule, ticket, 'json.ok'])
-        return test_utils.fixture_file_path(name)
+        return FIXTURE_FILES.fixture_file_path(name)
 
     def _delete_overrides_compare(self, override_file, ticket, rule, expected_json):
         """General comparison function used for all the test cases"""
@@ -48,7 +50,7 @@ class TestDeleteOverrides(TestRequestsParent):
     def test_perf_none_deleted(self):
         """Test deletion where ticket 'PERF-443' does not appear under rule reference.
         """
-        override_file = test_utils.fixture_file_path('perf_override.json')
+        override_file = FIXTURE_FILES.fixture_file_path('perf_override.json')
         ticket = 'PERF-443'
         rule = 'reference'
         compare_against = self._path_to_reference('delete.perf', rule, ticket)
@@ -62,7 +64,7 @@ class TestDeleteOverrides(TestRequestsParent):
     def test_perf_threshold_deleted(self):
         """Test deletion where ticket 'PERF-443' appears under rule threshold.
         """
-        override_file = test_utils.fixture_file_path('perf_override.json')
+        override_file = FIXTURE_FILES.fixture_file_path('perf_override.json')
         ticket = 'PERF-443'
         rule = 'threshold'
         compare_against = self._path_to_reference('delete.perf', rule, ticket)
@@ -87,7 +89,7 @@ class TestDeleteOverrides(TestRequestsParent):
         ticket associated with each test override, so a clean deletion without
         updates can be made.
         """
-        override_file = test_utils.fixture_file_path('perf_override.json')
+        override_file = FIXTURE_FILES.fixture_file_path('perf_override.json')
         ticket = 'PERF-755'
         rule = 'all'
         compare_against = self._path_to_reference('delete.perf', rule, ticket)
@@ -124,7 +126,7 @@ class TestDeleteOverrides(TestRequestsParent):
     def test_sysperf_none_deleted(self):
         """Test deletion where ticket 'PERF-335' does not appear under rule reference.
         """
-        override_file = test_utils.fixture_file_path('system_perf_override.json')
+        override_file = FIXTURE_FILES.fixture_file_path('system_perf_override.json')
         ticket = 'PERF-335'
         rule = 'reference'
         compare_against = self._path_to_reference('delete.system_perf', rule, ticket)
@@ -138,7 +140,7 @@ class TestDeleteOverrides(TestRequestsParent):
     def test_sysperf_threshold_deleted(self):
         """Test deletion where ticket 'PERF-335' appears under rule threshold.
         """
-        override_file = test_utils.fixture_file_path('system_perf_override.json')
+        override_file = FIXTURE_FILES.fixture_file_path('system_perf_override.json')
         ticket = 'PERF-335'
         rule = 'threshold'
         compare_against = self._path_to_reference('delete.system_perf', rule, ticket)
@@ -172,7 +174,7 @@ class TestDeleteOverrides(TestRequestsParent):
         ticket associated with each test override, so a clean deletion without
         updates can be made.
         """
-        override_file = test_utils.fixture_file_path('system_perf_override.json')
+        override_file = FIXTURE_FILES.fixture_file_path('system_perf_override.json')
         ticket = 'BF-1418'
         rule = 'all'
         compare_against = self._path_to_reference('delete.system_perf', rule, ticket)
@@ -202,10 +204,10 @@ class TestDeleteOverrides(TestRequestsParent):
         overrides cannot be deleted (other tickets associated with them)--update
         based on the given reference commit.
         """
-        override_file = test_utils.fixture_file_path('perf_delete.json')
+        override_file = FIXTURE_FILES.fixture_file_path('perf_delete.json')
         ticket = 'PERF-002'
         rule = 'all'
-        compare_against = test_utils.fixture_file_path('delete_update_override.json.ok')
+        compare_against = FIXTURE_FILES.fixture_file_path('delete_update_override.json.ok')
         with LogCapture(level=logging.CRITICAL) as crit:
             self._delete_overrides_compare(override_file, ticket, rule, compare_against)
             crit_logs = set(crit.actual())

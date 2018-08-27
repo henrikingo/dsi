@@ -5,8 +5,10 @@ Unit tests for `perf_regression_check.py`.
 import os
 import unittest
 
+from test_lib.fixture_files import FixtureFiles
 import perf_regression_check
-from tests import test_utils
+
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 class TestPerfRegressionCheck(unittest.TestCase):
@@ -28,12 +30,12 @@ class TestPerfRegressionCheck(unittest.TestCase):
             "--threshold 0.10 --threadThreshold 0.15 --out-file /dev/null " \
             "--report-file {0}/{1}"
 
-        args = arg_string.format(test_utils.FIXTURE_DIR_PATH, report_file).split(" ")
+        args = arg_string.format(FIXTURE_FILES.fixture_dir_path, report_file).split(" ")
         perf_regression_check.main(args)
 
         if regenerate_output_files:
-            args = arg_string.format(test_utils.FIXTURE_DIR_PATH, ok_file).split(" ")
+            args = arg_string.format(FIXTURE_FILES.fixture_dir_path, ok_file).split(" ")
             perf_regression_check.main(args)
 
-        self.assertTrue(test_utils.eq_fixture_json_files(report_file, ok_file))
-        os.remove(test_utils.fixture_file_path(report_file))
+        self.assertTrue(FIXTURE_FILES.json_files_equal(report_file, ok_file))
+        os.remove(FIXTURE_FILES.fixture_file_path(report_file))

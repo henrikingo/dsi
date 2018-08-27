@@ -3,8 +3,10 @@
 from os import path
 import unittest
 
+from test_lib.fixture_files import FixtureFiles
 import log_analysis
-from tests import test_utils
+
+FIXTURE_FILES = FixtureFiles(path.dirname(__file__))
 
 
 class TestLogAnalysis(unittest.TestCase):
@@ -13,7 +15,7 @@ class TestLogAnalysis(unittest.TestCase):
     def test_get_log_file_paths(self):
         """Test `_get_bad_log_lines()`."""
 
-        log_dir = test_utils.fixture_file_path("test_log_analysis")
+        log_dir = FIXTURE_FILES.fixture_file_path("test_log_analysis")
         expected_paths = set([
             path.join(log_dir, "log_subdir1/mongod.log"),
             path.join(log_dir, "log_subdir2/log_subsubdir/mongod.log")

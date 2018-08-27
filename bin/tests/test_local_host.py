@@ -1,7 +1,8 @@
 """Tests for bin/common/local_host.py"""
-import unittest
+
 import os
 import shutil
+import unittest
 from StringIO import StringIO
 
 from mock import MagicMock, ANY
@@ -9,17 +10,10 @@ from mock import MagicMock, ANY
 import common.local_host
 from common.log import TeeStream
 from common.config import ConfigDict
+from test_lib.fixture_files import FixtureFiles
+from test_lib.comparator_utils import ANY_IN_STRING
 
-from tests.any_in_string import ANY_IN_STRING
-
-# Useful absolute directory paths.
-FIXTURE_DIR_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "unittest-files")
-
-
-def fixture_file_path(file_path):
-    """Return the absolute path of a file at `file_path` inside the fixture files directory."""
-
-    return os.path.join(FIXTURE_DIR_PATH, file_path)
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 class LocalHostTestCase(unittest.TestCase):
@@ -27,7 +21,7 @@ class LocalHostTestCase(unittest.TestCase):
 
     def _delete_fixtures(self):
         """ delete fixture path and set filename attribute """
-        local_host_path = fixture_file_path('fixtures')
+        local_host_path = FIXTURE_FILES.fixture_file_path('fixtures')
         self.filename = os.path.join(local_host_path, 'file')
         shutil.rmtree(os.path.dirname(self.filename), ignore_errors=True)
 

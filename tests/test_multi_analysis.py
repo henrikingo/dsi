@@ -4,9 +4,11 @@ from __future__ import print_function
 import os
 import unittest
 
-from tests import test_utils
-from tests.test_requests_parent import TestRequestsParent
+from test_lib.fixture_files import FixtureFiles
+from test_lib.test_requests_parent import TestRequestsParent
 from multi_analysis import MultiEvergreenAnalysis, main
+
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 class TestMultiEvergreenAnalysis(TestRequestsParent):
@@ -17,7 +19,7 @@ class TestMultiEvergreenAnalysis(TestRequestsParent):
     def test_parse_options(self):
         """MultiEvergreenAnalysis: parse options."""
         expected = {
-            'evergreen_config': test_utils.repo_root_file_path('config.yml'),
+            'evergreen_config': FIXTURE_FILES.repo_root_file_path('config.yml'),
             'csv': True,
             'json': False,
             'json_array': False,
@@ -27,7 +29,7 @@ class TestMultiEvergreenAnalysis(TestRequestsParent):
         }
         args = [
             '587773af3ff120ab9000946', '587773b03ff1220ab900094a', '--evergreen-config',
-            test_utils.repo_root_file_path('config.yml')
+            FIXTURE_FILES.repo_root_file_path('config.yml')
         ]
         client = MultiEvergreenAnalysis(args)
         client.parse_options()
@@ -35,9 +37,9 @@ class TestMultiEvergreenAnalysis(TestRequestsParent):
 
     def test_parse_options2(self):
         """MultiEvergreenAnalysis: parse more advanced options."""
-        input_file = test_utils.fixture_file_path('multi_patch_builds.yml')
+        input_file = FIXTURE_FILES.fixture_file_path('multi_patch_builds.yml')
         expected_config = {
-            'evergreen_config': test_utils.repo_root_file_path('config.yml'),
+            'evergreen_config': FIXTURE_FILES.repo_root_file_path('config.yml'),
             'csv': False,
             'json': True,
             'json_array': False,
@@ -49,7 +51,7 @@ class TestMultiEvergreenAnalysis(TestRequestsParent):
         }
         args = [
             '--json', '--out', 'outfile.json', '--continue', input_file, '--evergreen-config',
-            test_utils.repo_root_file_path('config.yml')
+            FIXTURE_FILES.repo_root_file_path('config.yml')
         ]
         client = MultiEvergreenAnalysis(args)
         client.parse_options()
@@ -466,7 +468,7 @@ class TestMultiEvergreenAnalysis(TestRequestsParent):
 
     def test_main(self):
         """MultiEvergreenAnalysis: Fetch real Evergreen results and write output files."""
-        evergreen_config = test_utils.repo_root_file_path('config.yml')
+        evergreen_config = FIXTURE_FILES.repo_root_file_path('config.yml')
         args = [
             '--evergreen-config', evergreen_config, '--json', '--out', 'test_outfile.json',
             '587773af3ff1220ab9000946', '587773b03ff1220ab900094a'

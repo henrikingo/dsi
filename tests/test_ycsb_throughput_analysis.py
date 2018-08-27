@@ -1,9 +1,13 @@
 """Unit tests for `ycsb_throughput_analysis.py`."""
 
 from os import path
+
 import unittest
+
+from test_lib.fixture_files import FixtureFiles
 import ycsb_throughput_analysis as ycsb_throughput
-from tests import test_utils
+
+FIXTURE_FILES = FixtureFiles(path.dirname(__file__))
 
 
 def tuples_to_throughputs(time_ops_tuples):
@@ -18,7 +22,7 @@ class TestYCSBThroughputAnalysis(unittest.TestCase):
     def test_get_ycsb_file_paths(self):
         """Test `_get_ycsb_file_paths()`."""
 
-        reports_dir = test_utils.fixture_file_path("test_ycsb_throughput_analysis")
+        reports_dir = FIXTURE_FILES.fixture_file_path("test_ycsb_throughput_analysis")
         actual_paths = ycsb_throughput._get_ycsb_file_paths(reports_dir)
         expected_files = [
             "dir2/test_screen_capture.log--ec2-userdir2",
