@@ -108,7 +108,7 @@ ycsb:
   - on_workload_client:
       exec: |
         export JAVA_HOME="/usr/java/jdk1.8.0_162/jre"
-        source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && mvn --quiet clean package
+        source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && mvn -Dmongo.version=3.8.1 --quiet clean package
 
 install_java: |
   curl -O --retry 10 -fsS \
@@ -123,9 +123,11 @@ authentication:
       target: ${bootstrap.ycsb_dir}
       # We are disabling SSL until 4.0. When we come back to enabling SSL we should also fix our
       # YCSB to enable SSL or use master YCSB.
-      branch: 5742781
+      branch: 93d059c0e55d553f3f4bb7cc94eaeabf6314eba1
+      # This branch includes javax.net.ssl.keyStore configuration and is necessary for SSL.
+      # But it's now behind master ycsb, don't use without rebasing!
       # branch: PERF-1293-ssl
   disabled:
     - source: git@github.com:mongodb-labs/YCSB.git
       target: ${bootstrap.ycsb_dir}
-      branch: 5742781
+      branch: 93d059c0e55d553f3f4bb7cc94eaeabf6314eba1

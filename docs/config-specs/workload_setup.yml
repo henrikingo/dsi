@@ -23,3 +23,12 @@ ycsb:  # So these steps would be called if there are any workload runs with type
 
 # The full range of on_* commands is supported, but notably *only* the on_* commands, so no
 # restart_mongodb or others.
+#
+# Note on MongoDB Java Driver versions:
+#
+# For ycsb, the pom.xml file declares `mongo.version` as a property. This can be passed to maven:
+#
+#     mvn -Dmongo.version=3.8.1 clean package
+#
+# Linkbench does not currently provide this, rather java driver version is hard coded in the pom.xml
+# here: https://github.com/10gen/linkbench/blob/74169f615e7c3a7b7e5a43471f59f4e426240ba7/pom.xml#L86
