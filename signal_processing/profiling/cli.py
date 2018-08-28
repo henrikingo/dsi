@@ -206,7 +206,7 @@ def cli(qhat, optimized_qhat, numpy_qhat, numpy_optimized_qhat, windowed_qhat, w
             dtype=np.float)
     else:
         fixture_file_name = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), '..', 'tests', 'unittest_files', 'qhat',
+            os.path.dirname(os.path.abspath(__file__)), '..', 'tests', 'unittest-files', 'qhat',
             'perf-1635.json')
         fixture = load_json_file(fixture_file_name)
         series = np.array(fixture['series'], dtype=np.float)

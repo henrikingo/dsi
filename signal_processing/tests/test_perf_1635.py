@@ -6,12 +6,14 @@ import unittest
 
 import os
 import numpy as np
-from sp_utils import load_json_file
 from signal_processing.qhat import QHat
 
 from bin.common.log import setup_logging
+from test_lib.fixture_files import FixtureFiles
 
 setup_logging(False)
+
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 class CanonicalQHat(object):
@@ -113,9 +115,7 @@ class TestPerf1635(unittest.TestCase):
         """
         Common test setup.
         """
-        fixture_file_name = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'unittest_files', 'qhat', 'perf-1635.json')
-        fixture = load_json_file(fixture_file_name)
+        fixture = FIXTURE_FILES.load_json_file(os.path.join('qhat', 'perf-1635.json'))
 
         self.series = np.array(fixture['series'], dtype=np.float)
         self.expected = np.array(fixture['expected'], dtype=np.float)
