@@ -45,10 +45,10 @@ resource "aws_instance" "ebs_member" {
     key_name = "${var.key_name}"
     tags = {
         Name               = "dsi-${var.topology}-${var.type}-${count.index}"
-        TestSetup          = "dsi"
-        TestTopology       = "${var.topology}"
         owner              = "${var.owner}"
         expire-on          = "${var.expire_on}"
+        test_setup         = "dsi"
+        test_topology      = "${var.topology}"
         runner             = "${var.runner}"
         runner_instance_id = "${var.runner_instance_id}"
         status             = "${var.status}"

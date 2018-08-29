@@ -53,6 +53,7 @@ module "VPC" {
     topology            = "${var.topology}"
     availability_zone   = "${var.availability_zone}"
     owner               = "${var.owner}"
+    expire_on           = "${var.expire_on}"
     runner              = "${var.runner}"
     runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"

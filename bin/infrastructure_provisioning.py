@@ -24,8 +24,8 @@ LOG = logging.getLogger(__name__)
 # Set terraform parallelism so it can create multiple resources
 # The number determines the number it can create at a time together
 TERRAFORM_PARALLELISM = 20
-TF_LOG_PATH = "terraform.log"
-PROVISION_LOG_PATH = './provision.log'
+TF_LOG_PATH = "terraform.debug.log"
+PROVISION_LOG_PATH = 'terraform.stdout.log'
 CLUSTER_JSON = "cluster.json"
 
 # Increase this to force a teardown of clusters whose evg_data_dir is from a previous version.
@@ -104,6 +104,7 @@ class Provisioner(object):
         if self.verbose:
             self.stdout = self.stderr = None
         else:
+            LOG.info("Redirecting terraform output to %s", self.provisioning_file)
             self.stdout = self.stderr = open(self.provisioning_file, 'w')
 
     def setup_security_tf(self):

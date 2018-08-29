@@ -2,6 +2,7 @@
 variable topology           {}
 variable availability_zone  {}
 variable owner              {}
+variable expire_on          {}
 variable runner             {} # Hostname of the machine using it
 variable runner_instance_id {}
 variable status             {} # Idle, Running
@@ -14,9 +15,10 @@ resource "aws_vpc" "main" {
 
     tags {
         Name               = "dsi-${var.topology}-vpc"
-        TestSetup          = "dsi"
-        TestTopology       = "${var.topology}"
-        Owner              = "${var.owner}"
+        owner              = "${var.owner}"
+        expire-on          = "${var.expire_on}"
+        test_setup         = "dsi"
+        test_topology      = "${var.topology}"
         runner             = "${var.runner}"
         runner_instance_id = "${var.runner_instance_id}"
         status             = "${var.status}"
@@ -35,9 +37,10 @@ resource "aws_subnet" "main" {
 
     tags {
         Name               = "dsi-${var.topology}-subnet"
-        TestSetup          = "dsi"
-        TestTopology       = "${var.topology}"
-        Owner              = "${var.owner}"
+        owner              = "${var.owner}"
+        expire-on          = "${var.expire_on}"
+        test_setup         = "dsi"
+        test_topology      = "${var.topology}"
         runner             = "${var.runner}"
         runner_instance_id = "${var.runner_instance_id}"
         status             = "${var.status}"
@@ -54,9 +57,10 @@ resource "aws_route_table" "r" {
 
     tags {
         Name               = "dsi-dsi-routing"
-        TestSetup          = "dsi"
-        TestTopology       = "${var.topology}"
-        Owner              = "${var.owner}"
+        owner              = "${var.owner}"
+        expire-on          = "${var.expire_on}"
+        test_setup         = "dsi"
+        test_topology      = "${var.topology}"
         runner             = "${var.runner}"
         runner_instance_id = "${var.runner_instance_id}"
         status             = "${var.status}"
