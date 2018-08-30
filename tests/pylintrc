@@ -55,3 +55,7 @@ max-args=10
 max-public-methods=100
 min-public-methods=0 # for super-classes of tests
 
+[TYPECHECK]
+ignored-modules = numpy
+ignored-classes = numpy
+

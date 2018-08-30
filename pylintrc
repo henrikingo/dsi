@@ -28,3 +28,7 @@ good-names=runTest,
 [FORMAT]
 max-line-length=100
 msg-template={abspath}:{line}:{column}: [{msg_id}({symbol}), {obj}] {msg}
+
+[TYPECHECK]
+ignored-modules = numpy
+ignored-classes = numpy
