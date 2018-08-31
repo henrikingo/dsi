@@ -972,8 +972,8 @@ For Example:
     'human_readable',
     is_flag=True,
     help='Print output in a more human-friendly output.')
-@click.argument('revision', required=False)
-@click.argument('project', required=False)
+@click.argument('revision', required=True)
+@click.argument('project', required=True)
 @click.argument('variant', required=False)
 @click.argument('task', required=False)
 @click.argument('test', required=False)

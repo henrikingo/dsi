@@ -71,7 +71,7 @@ class TestMark(ClickTest):
     """
 
     def test_mark_requires_some_params(self):
-        """ Test mark requires params. """
+        """ Test mark requires parameters. """
         result = self.runner.invoke(cli, ['mark'])
         self.assertEqual(result.exit_code, 2)
 
@@ -127,7 +127,7 @@ class TestHide(ClickTest):
     """
 
     def test_hide_requires_some_params(self):
-        """ Test hide requires params. """
+        """ Test hide requires parameters. """
         result = self.runner.invoke(cli, ['hide'])
         self.assertEqual(result.exit_code, 2)
 
@@ -182,7 +182,7 @@ class TestUpdate(ClickTest):
     """
 
     def test_update_requires_some_params(self):
-        """ Test update requires some params. """
+        """ Test update requires parameters. """
         result = self.runner.invoke(cli, ['update'])
         self.assertEqual(result.exit_code, 2)
 
@@ -252,13 +252,13 @@ class TestList(ClickTest):
 
     @patch('signal_processing.change_points.list_change_points', autospec=True)
     def test_list_check_return(self, mock_list):
-        """ Test list with no params. """
+        """ Test list with no parameters. """
         result = self.runner.invoke(cli, ['list'])
         self.assertEqual(result.exit_code, 0)
 
     @patch('signal_processing.change_points.list_change_points', autospec=True)
     def test_list_check_defaults(self, mock_list):
-        """ Test list check default params. """
+        """ Test list check default parameters. """
         self.runner.invoke(cli, ['list'])
         mock_list.list_change_points.assert_called_once()
         _, kwargs = mock_list.list_change_points.call_args
@@ -606,7 +606,7 @@ class TestVisualize(ClickTest):
     @patch('signal_processing.change_points.visualize', autospec=True)
     @patch('signal_processing.change_points.helpers.CommandConfiguration', style=['bmh'])
     def test_visualize_no_params(self, mock_config, mock_visualize):
-        """ Test visualize with no params. """
+        """ Test visualize with no parameters. """
 
         result = self.runner.invoke(cli, ['visualize'])
         self.assertEqual(result.exit_code, 0)
@@ -616,6 +616,15 @@ class TestListBuildFailures(ClickTest):
     """
     Test list-build-failures command.
     """
+
+    @patch('signal_processing.change_points.list_build_failures.list_build_failures', autospec=True)
+    @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
+    def test_list_build_failures_no_params(self, mock_config, mock_list_build_failures):
+        """ Test list-build-failures requires parameters. """
+        expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
+        mock_config.return_value = expected_config
+        result = self.runner.invoke(cli, ['list-build-failures'])
+        self.assertEqual(result.exit_code, 2)
 
     @patch('signal_processing.change_points.helpers.process_excludes', autospec=True)
     @patch('signal_processing.change_points.list_build_failures.list_build_failures', autospec=True)
@@ -631,9 +640,9 @@ class TestListBuildFailures(ClickTest):
         expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
         mock_config.return_value = expected_config
 
-        result = self.runner.invoke(cli, ['list-build-failures'])
+        result = self.runner.invoke(cli, ['list-build-failures', 'badf', 'sys-perf'])
         self.assertEqual(result.exit_code, 0)
-        mock_process_params.assert_called_once_with(None, None, None, None, None, None)
+        mock_process_params.assert_called_once_with('badf', 'sys-perf', None, None, None, None)
         # Defaults `human_readable` to False.
         mock_list_build_failures.assert_called_once_with(expected_query, False, expected_config)
 
