@@ -28,7 +28,7 @@ if [[ "$new_env" -eq 1 || "$1" == "setup" ]]; then
         # Need to install in "develop" mode because config.py assumes its own file-location relative
         # to the dsi/configurations.
         /usr/bin/env python ./setup.py -q --no-user-cfg develop
-    popd >/dev/null   
+    popd >/dev/null
 fi
 
 if [ "$1" != "setup" ]; then

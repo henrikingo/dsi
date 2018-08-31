@@ -47,7 +47,7 @@ setup(
             'delete-task-cluster = aws_tools.entry_points:delete_cluster_for_task',
             'delete-placement-groups = aws_tools.entry_points:delete_placement_groups',
             'detect-changes = signal_processing.detect_changes:main',
-            'etl_jira_mongo = signal_processing.etl_jira_mongo:main',
+            'etl-jira-mongo = signal_processing.etl_jira_mongo:main',
             'change-points = signal_processing.change_points:cli',
             'etl-evg-mongo = signal_processing.etl_evg_mongo:etl',
             'compare-algorithms = signal_processing.profiling.cli:cli',
