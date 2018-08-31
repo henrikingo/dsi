@@ -25,4 +25,7 @@ bin/tests/unittest-files/override_responses.gz
 
 detect_changes.log
 
+# Created by setup.py
 *.egg-info/
+/build
+/dist
