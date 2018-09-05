@@ -16,9 +16,6 @@ cronJobs:
   - name: etl-evg-mongo
     schedule: "20 * * * *"
     command: ["/bin/sh", "cronjobs/cron_etl_evg_mongo.sh"]
-  - name: compute
-    schedule: "* 0 * * *"
-    command: ["change-points", "-l", "changepoints.log", "-d", "-u", "$(MONGO_URI)", "compute", "performance"]
   - name: delete-stranded-vpcs
     schedule: "30 * * * *"
     command: ["delete-stranded-vpcs"]
