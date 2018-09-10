@@ -63,6 +63,7 @@ sysperf_mongod_links:
   3.2.15: https://s3.amazonaws.com/mciuploads/dsi-v3.2/sys_perf_3.2_e11e3c1b9c9ce3f7b4a79493e16f5e4504e01140/e11e3c1b9c9ce3f7b4a79493e16f5e4504e01140/linux/mongod-sys_perf_3.2_e11e3c1b9c9ce3f7b4a79493e16f5e4504e01140.tar.gz
   3.2.17: https://s3.amazonaws.com/mciuploads/dsi-v3.2/sys_perf_3.2_32c4fbbb2241c421f7cec16c8bd84ace21c6e99f/32c4fbbb2241c421f7cec16c8bd84ace21c6e99f/linux/mongod-sys_perf_3.2_32c4fbbb2241c421f7cec16c8bd84ace21c6e99f.tar.gz
   3.2.20: https://s3.amazonaws.com/mciuploads/dsi-v3.2/sys_perf_3.2_a7a144f40b70bfe290906eb33ff2714933544af8/a7a144f40b70bfe290906eb33ff2714933544af8/linux/mongod-sys_perf_3.2_a7a144f40b70bfe290906eb33ff2714933544af8.tar.gz
+  3.2.21: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_3.2_1ab1010737145ba3761318508ff65ba74dfe8155/1ab1010737145ba3761318508ff65ba74dfe8155/linux/mongodb-sys_perf_3.2_1ab1010737145ba3761318508ff65ba74dfe8155.tar.gz
   3.4.2: https://s3.amazonaws.com/mciuploads/dsi-v3.4/sys_perf_3.4_3f76e40c105fc223b3e5aac3e20dcd026b83b38b/3f76e40c105fc223b3e5aac3e20dcd026b83b38b/linux/mongod-sys_perf_3.4_3f76e40c105fc223b3e5aac3e20dcd026b83b38b.tar.gz
   3.4.4: https://s3.amazonaws.com/mciuploads/dsi-v3.4/sys_perf_3.4_888390515874a9debd1b6c5d36559ca86b44babd/888390515874a9debd1b6c5d36559ca86b44babd/linux/mongod-sys_perf_3.4_888390515874a9debd1b6c5d36559ca86b44babd.tar.gz
   3.4.5: https://s3.amazonaws.com/mciuploads/dsi-v3.4/sys_perf_3.4_520b8f3092c48d934f0cd78ab5f40fe594f96863/520b8f3092c48d934f0cd78ab5f40fe594f96863/linux/mongod-sys_perf_3.4_520b8f3092c48d934f0cd78ab5f40fe594f96863.tar.gz
@@ -70,10 +71,13 @@ sysperf_mongod_links:
   3.4.9: https://s3.amazonaws.com/mciuploads/dsi-v3.4/sys_perf_3.4_876ebee8c7dd0e2d992f36a848ff4dc50ee6603e/876ebee8c7dd0e2d992f36a848ff4dc50ee6603e/linux/mongod-sys_perf_3.4_876ebee8c7dd0e2d992f36a848ff4dc50ee6603e.tar.gz
   3.4.10: https://s3.amazonaws.com/mciuploads/dsi-v3.4/sys_perf_3.4_8da0afc67851b39fd6cda03f9dd225445031cb7d/8da0afc67851b39fd6cda03f9dd225445031cb7d/linux/mongod-sys_perf_3.4_8da0afc67851b39fd6cda03f9dd225445031cb7d.tar.gz
   3.4.15: https://s3.amazonaws.com/mciuploads/dsi-v3.4/sys_perf_3.4_52e5b5fbaa3a2a5b1a217f5e647b5061817475f9/52e5b5fbaa3a2a5b1a217f5e647b5061817475f9/linux/mongod-sys_perf_3.4_52e5b5fbaa3a2a5b1a217f5e647b5061817475f9.tar.gz
+  3.4.17: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_3.4_7c14a47868643bb691a507a92fe25541f998eca4/7c14a47868643bb691a507a92fe25541f998eca4/linux/mongodb-sys_perf_3.4_7c14a47868643bb691a507a92fe25541f998eca4.tar.gz
   3.6.0: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_3.6_a57d8e71e6998a2d0afde7edc11bd23e5661c915/a57d8e71e6998a2d0afde7edc11bd23e5661c915/linux/mongod-sys_perf_3.6_a57d8e71e6998a2d0afde7edc11bd23e5661c915.tar.gz
   3.6.1: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_3.6_025d4f4fe61efd1fb6f0005be20cb45a004093d1/025d4f4fe61efd1fb6f0005be20cb45a004093d1/linux/mongod-sys_perf_3.6_025d4f4fe61efd1fb6f0005be20cb45a004093d1.tar.gz
   3.6.5: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_3.6_a20ecd3e3a174162052ff99913bc2ca9a839d618/a20ecd3e3a174162052ff99913bc2ca9a839d618/linux/mongod-sys_perf_3.6_a20ecd3e3a174162052ff99913bc2ca9a839d618.tar.gz
+  3.6.7: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_3.6_2628472127e9f1826e02c665c1d93880a204075e/2628472127e9f1826e02c665c1d93880a204075e/linux/mongodb-sys_perf_3.6_2628472127e9f1826e02c665c1d93880a204075e.tar.gz
   4.0.0: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_4.0_3b07af3d4f471ae89e8186d33bbb1d5259597d51/3b07af3d4f471ae89e8186d33bbb1d5259597d51/linux/mongodb-sys_perf_4.0_3b07af3d4f471ae89e8186d33bbb1d5259597d51.tar.gz
+  4.0.2: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_4.0_fc1573ba18aee42f97a3bb13b67af7d837826b47/fc1573ba18aee42f97a3bb13b67af7d837826b47/linux/mongodb-sys_perf_4.0_fc1573ba18aee42f97a3bb13b67af7d837826b47.tar.gz
 
 base_projects:
   performance: performance
