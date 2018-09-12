@@ -9,7 +9,7 @@ tfvars:
 
   mongod_seeded_ebs_instance_count: 1
   mongod_seeded_ebs_instance_type: c3.8xlarge
-  mongod_seeded_ebs_snapshot_id: snap-044cc4cf3f616ef5d
+  mongod_seeded_ebs_snapshot_id: snap-041c3c57a1a4f5bba
   mongod_seeded_ebs_iops: 5500
 
   mongod_ebs_instance_count: 1
