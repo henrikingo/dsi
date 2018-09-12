@@ -199,15 +199,6 @@ class TestPipeline(unittest.TestCase):
         self.assertTrue({'$match': {'find': 'me'}} in pipeline)
 
         self.assertTrue({
-            '$addFields': {
-                'previous_mean': {
-                    '$ifNull': ["$statistics.previous.mean", 1]
-                },
-                'next_mean': "$statistics.next.mean"
-            }
-        } in pipeline)
-
-        self.assertTrue({
             '$match': {
                 'test': {
                     '$not': re.compile('^(canary_|fio_|NetworkBandwidth)')

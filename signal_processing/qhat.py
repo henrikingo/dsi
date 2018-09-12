@@ -58,6 +58,36 @@ The default value to use to generate the weightings.
 See :method:`linear_weights` and `exponential_weights` for more details.
 """
 
+MAJOR_REGRESSION_MAGNITUDE = np.log(1 / np.e**.5)
+"""
+The magnitude threshold for categorizing a change point as a major regression.
+See :method:`calculate_magnitude` for more details.
+"""
+
+MODERATE_REGRESSION_MAGNITUDE = np.log(1 / np.e**.2)
+"""
+The magnitude threshold for categorizing a change point as a moderate regression.
+See :method:`calculate_magnitude` for more details.
+"""
+
+MINOR_REGRESSION_MAGNITUDE = 0
+"""
+The magnitude threshold for categorizing a change point as a minor regression.
+See :method:`calculate_magnitude` for more details.
+"""
+
+MAJOR_IMPROVEMENT_MAGNITUDE = np.log(np.e**.5)
+"""
+The magnitude threshold for categorizing a change point as a major improvement.
+See :method:`calculate_magnitude` for more details.
+"""
+
+MODERATE_IMPROVEMENT_MAGNITUDE = np.log(np.e**.2)
+"""
+The magnitude threshold for categorizing a change point as a moderate improvement.
+See :method:`calculate_magnitude` for more details.
+"""
+
 
 def linear_weights(size, weighting):
     """
@@ -430,6 +460,56 @@ def link_ordered_change_points(sorted_change_points, series):
         if descriptive:
             current_change_point['statistics'] = descriptive
     return sorted_change_points
+
+
+def calculate_magnitude(statistics):
+    """
+    Given a change point, calculate the magnitude. The magnitude is:
+
+        1. log(next_mean / previous_mean) for throughput values
+        2. log(previous_mean / next_mean) for latency values.
+
+    :param dict statistics: The statistics to use to calculate the magnitude.
+    :return: The magnitude along with a corresponding category.
+    :rtype: tuple(float, str).
+    """
+    if not statistics or not statistics.get('previous', None) or not statistics.get('next', None):
+        return None, 'Uncategorized'
+
+    previous_mean = statistics['previous']['mean']
+    next_mean = statistics['next']['mean']
+    if previous_mean == 0 and next_mean == 0:
+        magnitude = 0
+    elif previous_mean == 0:
+        magnitude = float('inf')
+    elif next_mean == 0:
+        magnitude = float('-inf')
+    elif next_mean >= 0 and previous_mean >= 0:
+        magnitude = np.log(float(next_mean) / float(previous_mean))
+    else:
+        # Currently, the collection and storage of metrics is primitive in that a higher number
+        # always means better and lower always means worse. Thus for latencies, we negate the
+        # results. This will change with the Expanded Metrics project and so will the means for
+        # determining the type of result we are dealing with. In other words, once the project is
+        # complete, we should not distinguish a latency metric by its sign; there will be more
+        # sophisticated ways of doing so.
+        # TODO: PM-965: `Expanded Metrics Collection (Latency, Distribution, Percentiles)`.
+        magnitude = np.log(float(previous_mean) / float(next_mean))
+
+    if magnitude < MAJOR_REGRESSION_MAGNITUDE:
+        category = 'Major Regression'
+    elif magnitude < MODERATE_REGRESSION_MAGNITUDE:
+        category = 'Moderate Regression'
+    elif magnitude < MINOR_REGRESSION_MAGNITUDE:
+        category = 'Minor Regression'
+    elif magnitude > MAJOR_IMPROVEMENT_MAGNITUDE:
+        category = 'Major Improvement'
+    elif magnitude > MODERATE_IMPROVEMENT_MAGNITUDE:
+        category = 'Moderate Improvement'
+    else:
+        category = 'Minor Improvement'
+
+    return magnitude, category
 
 
 class QHat(object):  #pylint: disable=too-many-instance-attributes
@@ -808,6 +888,8 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
             # as a result of some code change).
             all_suspect_revisions = self.get_git_hashes(stable_revision, suspect_revision)
 
+            magnitude, category = calculate_magnitude(current_range.get('statistics', {}))
+
             probability = 1.0 - algorithm['probability']
 
             point = OrderedDict([('thread_level', self.thread_level),
@@ -820,7 +902,9 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
                                  ('order_of_change_point', order_of_change_point),
                                  ('statistics', current_range.get('statistics', {})),
                                  ('range_finder', range_finder),
-                                 ('algorithm', algorithm)]) # yapf: disable
+                                 ('algorithm', algorithm),
+                                 ('magnitude', magnitude),
+                                 ('category', category)]) # yapf: disable
             points.append(point)
 
             LOG.debug("algorithm output", points=points)

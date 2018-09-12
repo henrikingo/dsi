@@ -166,13 +166,6 @@ def create_pipeline(query,
         1. Add new fields.
             1. Add a fortnight field calculated from:
                  trunc( (start year * 100 + start week of year) / 2)
-            1. Add a magnitude field which is the *log(mean ratios)*. The Log function ensures
-            that drops are negative and improvements are positive. **This is important as the
-            magnitude is sorted in ascending order.**
-                * If next_mean is greater than 0 then the ratio is next / previous.
-                * If next_mean is less than 0 then the ratio is previous / next as this
-                is a latency. This ensures the sign is correct and that the sorting is
-                sensible.
         1. Group the change points by project and revision.
             * Get newest create time.
             * Get newest start.
@@ -245,14 +238,6 @@ def create_pipeline(query,
     pipeline.extend([
         {
             '$addFields': {
-                'previous_mean': {
-                    '$ifNull': ["$statistics.previous.mean", 1]
-                },
-                'next_mean': "$statistics.next.mean"
-            }
-        },
-        {
-            '$addFields': {
                 'fortnight': {
                     '$trunc': {
                         '$divide': [{
@@ -268,17 +253,6 @@ def create_pipeline(query,
                                 }
                             }]
                         }, 2]
-                    }
-                },
-                'magnitude': {
-                    '$ln': {
-                        '$cond': [{
-                            '$gt': ["$next_mean", 0]
-                        }, {
-                            '$divide': ['$next_mean', '$previous_mean']
-                        }, {
-                            '$divide': ['$previous_mean', '$next_mean']
-                        }]
                     }
                 }
             }

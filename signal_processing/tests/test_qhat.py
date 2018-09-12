@@ -13,7 +13,8 @@ from test_lib import math_utils
 from test_lib.fixture_files import FixtureFiles
 from signal_processing.qhat import QHat, link_ordered_change_points, \
     get_location, generate_pairs, describe_change_point, \
-    LOCATION_AHEAD, LOCATION_BEHIND, exponential_weights, DEFAULT_WEIGHTING
+    LOCATION_AHEAD, LOCATION_BEHIND, exponential_weights, DEFAULT_WEIGHTING, \
+    calculate_magnitude
 
 setup_logging(False)
 
@@ -1003,3 +1004,78 @@ class TestExponentialWeights(unittest.TestCase):
         np.set_printoptions(precision=5, suppress=True)
         print weights
         self.assertTrue(np.allclose(expected, weights, rtol=1e-02))
+
+
+class TestCalculateMagnitude(unittest.TestCase):
+    """
+    Test calculate_magnitude.
+    """
+
+    def test_calculate_magnitude(self):
+        """ Test calculate_magnitude with a standard input. """
+        statistics = {'previous': {'mean': 1}, 'next': {'mean': 2}}
+        self.assertEqual(calculate_magnitude(statistics), (np.log(2), 'Major Improvement'))
+
+    def test_calculate_magnitude_none(self):
+        """ Test calculate_mean handles `None` values appropriately. """
+        self.assertEqual(calculate_magnitude(None), (None, 'Uncategorized'))
+
+        statistics = {'next': {'mean': 2}}
+        self.assertEqual(calculate_magnitude(statistics), (None, 'Uncategorized'))
+
+        statistics = {'previous': {'mean': 1}}
+        self.assertEqual(calculate_magnitude(statistics), (None, 'Uncategorized'))
+
+    def test_calculate_magnitude_latency(self):
+        """ Test calculate_magnitude distinguishes latency values. """
+        statistics = {'previous': {'mean': -1}, 'next': {'mean': -2}}
+        self.assertEqual(
+            calculate_magnitude(statistics), (np.log(float(1) / float(2)), 'Major Regression'))
+
+    def test_calculate_magnitude_previous_zero(self):
+        """ Test calculate_magnitude with a zero value for previous mean. """
+        statistics = {'previous': {'mean': 0}, 'next': {'mean': 2}}
+        self.assertEqual(calculate_magnitude(statistics), (float('inf'), 'Major Improvement'))
+
+        statistics = {'previous': {'mean': 0}, 'next': {'mean': -2}}
+        self.assertEqual(calculate_magnitude(statistics), (float('inf'), 'Major Improvement'))
+
+    def test_calculuate_magnitude_next_zero(self):
+        """ Test calculate_magnitude with a zero value for next mean. """
+        statistics = {'previous': {'mean': 2}, 'next': {'mean': 0}}
+        self.assertEqual(calculate_magnitude(statistics), (float('-inf'), 'Major Regression'))
+
+        statistics = {'previous': {'mean': -2}, 'next': {'mean': 0}}
+        self.assertEqual(calculate_magnitude(statistics), (float('-inf'), 'Major Regression'))
+
+    def test_calculate_magnitude_categories_thresholds(self):
+        """ Test that calculate magnitude returns the correct categories around the thresholds. """
+        statistics = {'previous': {'mean': np.e**.5 + 0.0000001}, 'next': {'mean': 1}}
+        self.assertEqual(calculate_magnitude(statistics)[1], 'Major Regression')
+
+        statistics = {'previous': {'mean': np.e**.5}, 'next': {'mean': 1}}
+        self.assertEqual(calculate_magnitude(statistics)[1], 'Moderate Regression')
+
+        statistics = {'previous': {'mean': np.e**.2 + 0.0000001}, 'next': {'mean': 1}}
+        self.assertEqual(calculate_magnitude(statistics)[1], 'Moderate Regression')
+
+        statistics = {'previous': {'mean': np.e**.2}, 'next': {'mean': 1}}
+        self.assertEqual(calculate_magnitude(statistics)[1], 'Minor Regression')
+
+        statistics = {'previous': {'mean': 1}, 'next': {'mean': 0.9999999}}
+        self.assertEqual(calculate_magnitude(statistics)[1], 'Minor Regression')
+
+        statistics = {'previous': {'mean': 1}, 'next': {'mean': np.e**.5 + 0.0000001}}
+        self.assertEqual(calculate_magnitude(statistics)[1], 'Major Improvement')
+
+        statistics = {'previous': {'mean': 1}, 'next': {'mean': np.e**.5}}
+        self.assertEqual(calculate_magnitude(statistics)[1], 'Moderate Improvement')
+
+        statistics = {'previous': {'mean': 1}, 'next': {'mean': np.e**.2 + 0.0000001}}
+        self.assertEqual(calculate_magnitude(statistics)[1], 'Moderate Improvement')
+
+        statistics = {'previous': {'mean': 1}, 'next': {'mean': np.e**.2}}
+        self.assertEqual(calculate_magnitude(statistics)[1], 'Minor Improvement')
+
+        statistics = {'previous': {'mean': 1}, 'next': {'mean': 1}}
+        self.assertEqual(calculate_magnitude(statistics)[1], 'Minor Improvement')
