@@ -411,14 +411,14 @@ Examples:
 @click.option(
     '--limit',
     callback=helpers.validate_int_none_options,
-    default="10",
+    default='10',
     help='The maximum number of change points to display.')
 @click.option(
     '--no-older-than',
     callback=helpers.validate_int_none_options,
-    default="14",
-    help="""Don't consider points older than this number of days.
-A perf BB rotation is 2 weeks, so 14 days seems appropriate""")
+    default='14',
+    help='''Don't consider points older than this number of days.
+A perf BB rotation is 2 weeks, so 14 days seems appropriate''')
 @click.option(
     '--human-readable/--no-human-readable',
     'human_readable',
@@ -437,7 +437,7 @@ A perf BB rotation is 2 weeks, so 14 days seems appropriate""")
     is_flag=True,
     default=False,
     help='Should wtdevelop be shown (defaults to hidden). The filtering happens in the database.')
-@click.argument('revision', required=False)
+@click.option('--revision', 'revision', default=None, help='Specify a revision, defaults to None.')
 @click.argument('project', required=False)
 @click.argument('variant', required=False)
 @click.argument('task', required=False)
@@ -459,7 +459,6 @@ options. The output defaults to human readable format (which is also valid markd
 Arguments can be string or patterns, A pattern starts with /.
 
 \b
-REVISION, the revision of the change point.
 PROJECT, the project name or a regex (like /^sys-perf-3.*/ or /^(sys-perf|performance)$/).
 VARIANT, the build variant or a regex.
 TASK, the task name or a regex.
@@ -484,30 +483,30 @@ Examples:
     $> change-points list --point-type raw
 \b
     # list unprocessed change points for a revision
-    $> change-points list $revision
+    $> change-points list --revision $revision
 \b
     # list sys perf unprocessed change points for a revision
-    $> change-points list $revision sys-perf # list all sys-perf points for revision
+    $> change-points list sys-perf --revision $revision # list all sys-perf points for revision
 \b
     # list sys perf unprocessed change points (any revision)
-    $> change-points list '' sys-perf
+    $> change-points list sys-perf
 \b
     # list unprocessed change points matching criteria
-    $> change-points list $revision sys-perf linux-1-node-replSet
-    $> change-points list $revision sys-perf '/linux-.-node-replSet/'
+    $> change-points list revision sys-perf linux-1-node-replSet --revision $revision
+    $> change-points list sys-perf '/linux-.-node-replSet/' --revision $revision
 \b
     # list non canary unprocessed change points for sys-perf linux-1-node-replSet
     # change_streams_latency and revision
-    $> change-points list $revision sys-perf linux-1-node-replSet change_streams_latency \\
-    '/^(fio_|canary_|Network)/'
+    $> change-points list sys-perf linux-1-node-replSet change_streams_latency \\
+    '/^(fio_|canary_|Network)/' --revision $revision
 \b
     # list all non canary unprocessed change points for sys-perf linux-1-node-replSet
     # change_streams_latency and revision
-    $> change-points list $revision sys-perf linux-1-node-replSet change_streams_latency \\
-    --exclude '/^(fio_|canary_|Network)/'
+    $> change-points list sys-perf linux-1-node-replSet change_streams_latency \\
+    --exclude '/^(fio_|canary_|Network)/' --revision $revision
 \b
     # list all the unprocessed sys-perf find_limit-useAgg (any revision)
-    $> change-points list '' sys-perf '' '' find_limit-useAgg
+    $> change-points list sys-perf '' '' find_limit-useAgg
 """
     query = helpers.process_params(revision, project, variant, task, test, thread_level)
     list_change_points.list_change_points(
