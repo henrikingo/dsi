@@ -170,7 +170,17 @@ class ConfigDict(dict):
         if errs is None:
             errs = []
 
-        for key, value in self.iteritems():
+        for key in self.keys():
+            # ConfigDict is late binding. It's ok if some variable references throw ValueError
+            # at load time. Only if user tries to access them specifically, will the user then
+            # get the ValueError.
+            try:
+                value = self[key]
+            except ValueError:
+                # Note that not asserting anything is ok. If user tried to do something with this
+                # key, they will likewise get a ValueError.
+                continue
+
             if key == 'id':
                 validate_id(value, path, seen_ids, errs, self.module)
             else:

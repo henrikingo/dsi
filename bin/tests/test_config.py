@@ -182,7 +182,7 @@ class InvalidConfigDictTestCase(unittest.TestCase):
                 conf = ConfigDict('mongodb_setup')
                 conf.load()
 
-    def test_variable_reference_comtains_invalid_id(self):
+    def test_variable_reference_contains_invalid_id(self):
         """
         Variable references cannot evaluate to blocks containing duplicate ids.
         """
@@ -387,6 +387,26 @@ class ConfigDictTestCase(unittest.TestCase):
     def test_variable_reference_in_list(self):
         """Test ${variable.references} in a list"""
         self.assertEqual(self.conf['mongodb_setup']['validate']['primaries'][0], "10.2.1.1:27017")
+
+    def test_variable_reference_value_error(self):
+        """Test ${variable.references} that point to nonexisting value PERF-1705"""
+        # PERF-1705 happened when infrastructure_provisioning.out doesn't exist and variable
+        # references point to it.
+        del self.conf.raw['infrastructure_provisioning']['out']
+
+        # ConfigDict is late binding
+        # assert_valid_ids() (used in load()) should not raise for such variable references.
+        self.conf.assert_valid_ids()
+
+        # Otoh actively accessing a field with such a variable reference must raise
+        with self.assertRaises(ValueError):
+            _ = self.conf['mongodb_setup']['meta']['mongodb_url']
+
+        # As must other methods where user causes entire ConfigDict to be traversed
+        with self.assertRaises(ValueError):
+            _ = self.conf.as_dict()
+        with self.assertRaises(ValueError):
+            _ = str(self.conf)
 
     def test_per_node_mongod_config(self):
         """Test magic per_node_mongod_config() (merging the common mongod_config_file with per node config_file)"""
