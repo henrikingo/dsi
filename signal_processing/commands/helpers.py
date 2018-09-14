@@ -18,7 +18,6 @@ from bson.json_util import RELAXED_JSON_OPTIONS, dumps
 from pymongo import MongoClient
 from pymongo.uri_parser import parse_uri
 
-from bin.common.config import is_integer
 from bin.common.utils import mkdir_p
 
 DEFAULT_KEY_ORDER = ('_id', 'suspect_revision', 'project', 'variant', 'task', 'test',
@@ -734,10 +733,9 @@ def validate_int_none_options(context, param, value):
     """
     #pylint: disable=unused-argument
     try:
-        if is_integer(value):
-            return int(value)
         if value.lower() == "none":
             return None
+        return int(value)
     except ValueError:
         pass
     raise click.BadParameter('{} is not a valid integer or None.'.format(value))

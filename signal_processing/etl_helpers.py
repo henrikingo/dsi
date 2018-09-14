@@ -6,8 +6,6 @@ import copy
 import pymongo
 import structlog
 
-from bin.common import config
-
 LOG = structlog.get_logger(__name__)
 
 
@@ -136,7 +134,7 @@ def _get_max_ops_per_sec(test_result):
     max_ops_per_sec = None
     max_thread_level = None
     for key, thread_level in test_result['results'].iteritems():
-        if not config.is_integer(key) and key != 'start' and key != 'end':
+        if not key.isdigit() and key != 'start' and key != 'end':
             LOG.warn(
                 'Invalid thread level value found', results_item_key=key, thread_level=thread_level)
             continue
