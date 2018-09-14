@@ -3,8 +3,29 @@ Functionality to create or recreate the unprocessed change points view.
 """
 from collections import OrderedDict
 import structlog
+import pymongo
 
 LOG = structlog.getLogger(__name__)
+
+
+def create_points_indexes(command_config):
+    """
+    Create indexes for the points collections.
+
+    :param CommandConfig command_config: Common configuration.
+    """
+    # pylint: disable=invalid-name
+    LOG.debug('create points indexes')
+    indexes = [{
+        'keys': [("project", pymongo.ASCENDING), ("variant", pymongo.ASCENDING),
+                 ("task", pymongo.ASCENDING), ("test", pymongo.ASCENDING), ("order",
+                                                                            pymongo.ASCENDING)]
+    }, {
+        'keys': [("project", pymongo.ASCENDING), ("variant", pymongo.ASCENDING),
+                 ("task", pymongo.ASCENDING), ("order", pymongo.ASCENDING)]
+    }]
+    for index in indexes:
+        command_config.points.create_index(index['keys'])
 
 
 def create_linked_build_failures_view(command_config):
@@ -185,11 +206,12 @@ def create_unprocessed_change_points_view(command_config):
 
 def manage(command_config):
     """
-    Manage the database. At the moment, this comand only contains code to
-    recreate the unprocessed change points view.
+    Manage the database. At the moment, this comand contains code to
+    recreate the indexes, unprocessed change points view and linked build failures view.
 
     :param CommandConfig command_config: Common configuration.
     """
 
+    create_points_indexes(command_config)
     create_unprocessed_change_points_view(command_config)
     create_linked_build_failures_view(command_config)

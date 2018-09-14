@@ -834,6 +834,7 @@ views etc.
 At the moment, it supports:
         1. The unprocessed change points view.
         2. The linked build failures view.
+        3. The indexes for the point collection.
 """
     LOG.debug('starting')
     manage.manage(command_config)
