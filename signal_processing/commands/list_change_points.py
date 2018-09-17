@@ -4,14 +4,17 @@ Functionality to list change points.
 """
 from __future__ import print_function
 
-from datetime import datetime, timedelta
 import logging
 import math
 import operator
 import re
 import sys
 from collections import OrderedDict
+from datetime import datetime, timedelta
+
 import jinja2
+import pymongo
+
 from signal_processing.commands.helpers import filter_excludes, \
     stringify_json
 
@@ -26,26 +29,6 @@ VALID_CHANGE_POINT_TYPES = [
 
 DEFAULT_EVERGREEN_URL = 'https://evergreen.mongodb.com'
 """The default Evergreen URL."""
-
-
-def calculate_ratio(statistics):
-    """
-    A helper to calculate next and previous mean ratio.
-
-    :param dict test: The test data.
-    :return: The mean ratios as a float. Nan is returned if either
-    previous or next statistics are missing
-    """
-    if 'next' in statistics and 'previous' in statistics:
-        before = statistics['previous']['mean']
-        after = statistics['next']['mean']
-        # latency, so reverse / abs.
-        if after < 0 and before < 0:
-            after = abs(statistics['previous']['mean'])
-            before = abs(statistics['next']['mean'])
-        delta = (after - before) / before
-        return delta
-    return float("nan")
 
 
 def format_no_older_than(no_older_than):
@@ -126,15 +109,12 @@ HUMAN_READABLE_TEMPLATE_STR = '''
   Start:     `{{ point.start }}`
   Tests: {{ point.change_points|length }}({{ point.min_magnitude }})
 {% for test in point.change_points|group_sort %}
-{%- set ratio = calculate_ratio(test.statistics) %}
-  - {{ "%+3.0f%%"|format(ratio * 100) if not isnan(ratio) else ' Nan' }} `{{ point.suspect_revision }} {{ point.project }} {{ test.variant }} {{ test.task }} {{ test.test }} {{ test.thread_level }}`
 {%- endfor %}
 {% endfor %}
 '''
 
 ENVIRONMENT = jinja2.Environment()
 ENVIRONMENT.globals.update({
-    'calculate_ratio': calculate_ratio,
     'evergreen': DEFAULT_EVERGREEN_URL,
     'command_line': " ".join([value if value else "''" for value in sys.argv]),
     'now': datetime.utcnow,
@@ -146,13 +126,7 @@ ENVIRONMENT.filters.update({'link': to_link, 'query': to_query, 'group_sort': gr
 HUMAN_READABLE_TEMPLATE = ENVIRONMENT.from_string(HUMAN_READABLE_TEMPLATE_STR)
 
 
-def create_pipeline(query,
-                    limit,
-                    hide_canaries,
-                    hide_wtdevelop,
-                    no_older_than,
-                    sort_by_fortnight=True):
-    # pylint: disable=too-many-arguments
+def create_pipeline(query, limit, hide_canaries, hide_wtdevelop, no_older_than):
     """
     Create an aggregation pipeline for matching, grouping and sorting change points. The pipeline
     consists of the following stages:
@@ -163,22 +137,15 @@ def create_pipeline(query,
         1. Filter on date if *no_older_than* was supplied.
         1. Add new previous and next mean fields and ensure sensible defaults if next
         or previous statistics are missing. This is unlikely but possible.
-        1. Add new fields.
-            1. Add a fortnight field calculated from:
-                 trunc( (start year * 100 + start week of year) / 2)
         1. Group the change points by project and revision.
             * Get newest create time.
             * Get newest start.
             * Get max magnitude.
             * Get min magnitude.
-            * Get newest fortnight.
             * All change points.
         1. Project the fields listed above.
         1. Sort.
-            * Sort by fortnight (descending) and min_magnitude (ascending). This is
-            the default sort.
-            OR
-            * Sort by min_magnitude (ascending) and create time (descending).
+            * Sort by min_magnitude (ascending).
         1. Limit the results if limit param is not None.
 
     :param dict query: The query to match against.
@@ -187,9 +154,6 @@ def create_pipeline(query,
     :param bool show_canaries: Should canaries tests be excluded from the output.
     :param bool hide_wtdevelop: Should wtdevelop variants be excluded from the output.
     :param bool hide_wtdevelop: Should wtdevelop variants be excluded from the output.
-    :param bool sort_by_fortnight: Sort the change points are sorted
-    by the newest fortnight in the grouped change points and min_magnitude (descending).
-    When set to False, the data is sorted by  min_magnitude and create time (descending).
     :param no_older_than: Exclude points with start fields older that this datetime.
                           None mean include all points.
     :type no_older_than: datetime or None
@@ -237,27 +201,6 @@ def create_pipeline(query,
 
     pipeline.extend([
         {
-            '$addFields': {
-                'fortnight': {
-                    '$trunc': {
-                        '$divide': [{
-                            '$sum': [{
-                                '$multiply': [{
-                                    '$year': {
-                                        'date': "$start"
-                                    }
-                                }, 100]
-                            }, {
-                                '$week': {
-                                    'date': "$start"
-                                }
-                            }]
-                        }, 2]
-                    }
-                }
-            }
-        },
-        {
             '$group': {
                 '_id': {
                     'project': '$project',
@@ -275,9 +218,6 @@ def create_pipeline(query,
                 'min_magnitude': {
                     '$min': '$magnitude'
                 },
-                'fortnight': {
-                    '$max': '$fortnight'
-                },
                 'change_points': {
                     '$push': '$$ROOT'
                 }
@@ -289,18 +229,13 @@ def create_pipeline(query,
                 'suspect_revision': '$_id.suspect_revision',
                 'change_points': 1,
                 'start': 1,
-                'fortnight': 1,
                 'create_time': 1,
                 'magnitude': 1,
                 'min_magnitude': 1,
-                'magnitudes': 1
             }
         },
     ])
-    if sort_by_fortnight:
-        sort_order = {'$sort': OrderedDict([('fortnight', -1), ('min_magnitude', 1)])}
-    else:
-        sort_order = {'$sort': OrderedDict([('min_magnitude', 1), ('create_time', -1)])}
+    sort_order = {'$sort': OrderedDict([('min_magnitude', pymongo.ASCENDING)])}
 
     pipeline.append(sort_order)
 

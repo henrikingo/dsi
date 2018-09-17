@@ -5,6 +5,7 @@ import re
 import unittest
 from collections import OrderedDict
 
+import pymongo
 from mock import ANY, MagicMock, patch
 
 import signal_processing.commands.list_change_points as list_change_points
@@ -156,29 +157,22 @@ class TestPipeline(unittest.TestCase):
                   limit=10,
                   hide_canaries=True,
                   hide_wtdevelop=True,
-                  no_older_than=None,
-                  sort_by_fortnight=True):
-        """ Helper function for pipeline testing.
+                  no_older_than=None):
+        """
+        Helper function for pipeline testing.
 
         :param dict query: The query, defaults to {'find': 'me'} when None.
         :param int limit: The limit value.
         :param bool hide_canaries: The hide canaries value.
         :param bool hide_wtdevelop: The hide wtdevelop value.
         :param int not_older_than: The no older than value.
-        :param bool sort_by_fortnight: The sort by fortnight value.
-
         :return: The pipeline.
         :rtype: list(dict).
         """
         if query is None:
             query = {'find': 'me'}
-        return list_change_points.create_pipeline(
-            query,
-            limit,
-            hide_canaries,
-            hide_wtdevelop,
-            no_older_than,
-            sort_by_fortnight=sort_by_fortnight)
+        return list_change_points.create_pipeline(query, limit, hide_canaries, hide_wtdevelop,
+                                                  no_older_than)
 
     def test_pipeline(self):
         """ test create_pipeline."""
@@ -208,23 +202,7 @@ class TestPipeline(unittest.TestCase):
 
         self.assertTrue({'$match': {'variant': {'$not': re.compile('^wtdevelop')}}} in pipeline)
         self.assertTrue({'$limit': limit} in pipeline)
-        self.assertTrue({
-            '$sort': OrderedDict([('fortnight', -1), ('min_magnitude', 1)])
-        } in pipeline)
-
-    def test_sort_by_date(self):
-        """ test create_pipeline sort by fortnight."""
-        pipeline = self._pipeline(sort_by_fortnight=True)
-        self.assertTrue({
-            '$sort': OrderedDict([('fortnight', -1), ('min_magnitude', 1)])
-        } in pipeline)
-
-    def test_sort_by_fortnight(self):
-        """ test create_pipeline sort by fortnight."""
-        pipeline = self._pipeline(sort_by_fortnight=True)
-        self.assertTrue({
-            '$sort': OrderedDict([('fortnight', -1), ('min_magnitude', 1)])
-        } in pipeline)
+        self.assertTrue({'$sort': OrderedDict([('min_magnitude', pymongo.ASCENDING)])} in pipeline)
 
     def test_show_canaries(self):
         """ test create_pipeline show canaries."""

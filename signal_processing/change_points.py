@@ -451,10 +451,10 @@ def list_command(command_config, exclude_patterns, point_type, limit, no_older_t
     List unprocessed / processed or raw change points (defaults to unprocessed).
 The points are grouped by revision and project to reduce clutter. The default is to only show groups
 with a change point in the last 14 days. (use --no-older-than=None for all or --no-older-than=30 to
-view older change points). The points are sorted by fortnight (descending) and
-max magnitude (ascending) of change. By default, the backing aggregation removes canary
-test or wtdevelop tasks. These can be viewed with the --show-canaries or --show-wtdevelop
-options. The output defaults to human readable format (which is also valid markdown).
+view older change points). The points are sorted by the min magnitude (ascending) of change. By
+default, the backing aggregation removes canary test or wtdevelop tasks. These can be viewed with
+the --show-canaries or --show-wtdevelop options. The output defaults to human readable format (which
+is also valid markdown).
 
 Arguments can be string or patterns, A pattern starts with /.
 
