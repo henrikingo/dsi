@@ -1314,33 +1314,7 @@
         },
         "industry_benchmarks":{
             "ndays":{},
-            "reference":{
-                "ycsb_95read5update":{
-                    "create_time":"2018-08-21T14:32:03Z",
-                    "end":1534865889.005652,
-                    "max":71503.13898780156,
-                    "name":"ycsb_95read5update",
-                    "order":13427,
-                    "results":{
-                        "32":{
-                            "ops_per_sec":71503.13898780156,
-                            "ops_per_sec_values":[
-                                71503.13898780156
-                            ]
-                        }
-                    },
-                    "revision":"14c53602360e9c223e70f97c2b08760df194f996",
-                    "start":1534865606.795567,
-                    "tag":"",
-                    "threads":[
-                        "32"
-                    ],
-                    "ticket":[
-                        "BF-6161"
-                    ],
-                    "workload":"ycsb"
-                }
-            },
+            "reference":{},
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -3371,33 +3345,7 @@
         },
         "industry_benchmarks":{
             "ndays":{},
-            "reference":{
-                "ycsb_95read5update":{
-                    "create_time":"2018-08-21T14:32:03Z",
-                    "end":1534865924.525664,
-                    "max":68483.06584989197,
-                    "name":"ycsb_95read5update",
-                    "order":13427,
-                    "results":{
-                        "32":{
-                            "ops_per_sec":68483.06584989197,
-                            "ops_per_sec_values":[
-                                68483.06584989197
-                            ]
-                        }
-                    },
-                    "revision":"14c53602360e9c223e70f97c2b08760df194f996",
-                    "start":1534865631.81237,
-                    "tag":"",
-                    "threads":[
-                        "32"
-                    ],
-                    "ticket":[
-                        "BF-6161"
-                    ],
-                    "workload":"ycsb"
-                }
-            },
+            "reference":{},
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -11579,33 +11527,7 @@
         },
         "industry_benchmarks":{
             "ndays":{},
-            "reference":{
-                "ycsb_95read5update":{
-                    "create_time":"2018-08-21T14:32:03Z",
-                    "end":1534865795.378367,
-                    "max":72208.94379977904,
-                    "name":"ycsb_95read5update",
-                    "order":13427,
-                    "results":{
-                        "32":{
-                            "ops_per_sec":72208.94379977904,
-                            "ops_per_sec_values":[
-                                72208.94379977904
-                            ]
-                        }
-                    },
-                    "revision":"14c53602360e9c223e70f97c2b08760df194f996",
-                    "start":1534865516.05252,
-                    "tag":"",
-                    "threads":[
-                        "32"
-                    ],
-                    "ticket":[
-                        "BF-6161"
-                    ],
-                    "workload":"ycsb"
-                }
-            },
+            "reference":{},
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
