@@ -7919,6 +7919,27 @@
                         "PERF-1157"
                     ]
                 },
+                "find_limit-useAgg":{
+                    "thread_threshold":0.6,
+                    "threshold":0.4,
+                    "ticket":[
+                        "BF-9580"
+                    ]
+                },
+                "find_project_skip_limit-useAgg":{
+                    "thread_threshold":1.05,
+                    "threshold":0.7,
+                    "ticket":[
+                        "BF-9580"
+                    ]
+                },
+                "find_skip_limit_1-useAgg":{
+                    "thread_threshold":1.35,
+                    "threshold":0.9,
+                    "ticket":[
+                        "BF-9580"
+                    ]
+                },
                 "fio_iops_test_read_iops":{
                     "thread_threshold":2.0,
                     "threshold":1.0,
