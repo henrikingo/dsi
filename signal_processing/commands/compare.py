@@ -29,7 +29,7 @@ LOG = structlog.getLogger(__name__)
 
 def load_e_divisive():
     """
-    Load rpy2, R Lnanguage and ecp.
+    Load rpy2, R Language and ecp.
 
     :return: e_divisive function
     :rtype: (function, None)
@@ -53,11 +53,11 @@ def load_e_divisive():
 
             :param str key: The key name.
             :param value: The value to convert. A vector is always converted to a list. The
-            list elements are converted to ints if 'key' in 'keys'.
+            list elements are converted to int if 'key' in 'keys'.
             :type value: obj, Vector.
             :param list(str) keys: Convert to list it this is a vector. Convert list elements to
-            ints if key' in 'keys'.
-            :return: A list of floats or ints if value is a vector. Otherwise the passed in value.
+            int if key' in 'keys'.
+            :return: A list of float or int if value is a vector. Otherwise the passed in value.
             :rtype: list(int), list(float) or value.
             """
             if isinstance(value, Vector):
@@ -162,7 +162,7 @@ def print_result(result, command_config):
     Column 9: map of indexes to revisions.
 
     :param dict result: The QHat and R change point results.
-    :param CommandConfig command_config: The common command configuraion.
+    :param CommandConfig command_config: The common command configuration.
     """
     # pylint:enable=line-too-long
     test = result['test']
@@ -401,7 +401,7 @@ def plot(python_points, r_points, result, axes):
     Plot a result.
 
     :param list(int) python_points: The py change points.
-    :param list(int) r_points: The R cahnge points.
+    :param list(int) r_points: The R change points.
     :param dict result: The task result.
     :param dict result: The task result.
     :param obj axes: The axes to draw on.
@@ -521,7 +521,11 @@ def compare(test_identifier, command_config, weighting, sig_lvl=0.05, minsizes=(
 
     model = PointsModel(
         perf_json, command_config.mongo_uri, mongo_repo=mongo_repo, credentials=credentials)
-    series, revisions, orders, _, create_times, _ = model.get_points(test)
+    _, _, points = model.get_points(test)
+    series = points['series']
+    revisions = points['revisions']
+    orders = points['orders']
+    create_times = points['create_times']
 
     thread_levels = series.keys()
     thread_levels.sort(key=int)

@@ -4,7 +4,7 @@ Unit tests for signal_processing/detect_changes.py.
 
 import os
 import unittest
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from mock import ANY, MagicMock, call, patch
 
 import signal_processing.detect_changes as detect_changes
@@ -61,6 +61,32 @@ class TestPointsModel(unittest.TestCase):
         self.sysperf_perf_json = FIXTURE_FILES.load_json_file('sysperf_perf.json')
         self.sysperf_points = FIXTURE_FILES.load_json_file('sysperf_points.json')
 
+    def load_expected_points(self):
+        expected_series = defaultdict(list)
+        expected_revisions = defaultdict(list)
+        expected_orders = defaultdict(list)
+        expected_create_times = defaultdict(list)
+        expected_task_ids = defaultdict(list)
+
+        expected_points = {
+            'series': expected_series,
+            'revisions': expected_revisions,
+            'orders': expected_orders,
+            'create_times': expected_create_times,
+            'task_ids': expected_task_ids
+        }
+
+        expected_num_points = 0
+        for point in self.sysperf_points:
+            for result in point['results']:
+                expected_series[result['thread_level']].append(result['ops_per_sec'])
+                expected_revisions[result['thread_level']].append(point['revision'])
+                expected_orders[result['thread_level']].append(point['order'])
+                expected_create_times[result['thread_level']].append(point['create_time'])
+                expected_task_ids[result['thread_level']].append(point['task_id'])
+                expected_num_points += 1
+        return expected_num_points, expected_points
+
     @patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True)
     def test_get_points(self, mock_MongoClient):
         expected_query = OrderedDict(
@@ -68,34 +94,30 @@ class TestPointsModel(unittest.TestCase):
              ('variant', self.sysperf_perf_json['variant']), ('task',
                                                               self.sysperf_perf_json['task_name']),
              ('test', self.sysperf_perf_json['data']['results'][0]['name'])])
-        expected_projection = {'results': 1, 'revision': 1, 'order': 1, 'create_time': 1, '_id': 0}
-        expected_series = {}
-        expected_revisions = {}
-        expected_orders = {}
-        expected_create_times = {}
-        expected_num_points = 0
-        for point in self.sysperf_points:
-            for result in point['results']:
-                if result['thread_level'] in expected_series:
-                    expected_series[result['thread_level']].append(result['ops_per_sec'])
-                    expected_revisions[result['thread_level']].append(point['revision'])
-                    expected_orders[result['thread_level']].append(point['order'])
-                    expected_create_times[result['thread_level']].append(point['create_time'])
-                else:
-                    expected_series[result['thread_level']] = [result['ops_per_sec']]
-                    expected_revisions[result['thread_level']] = [point['revision']]
-                    expected_orders[result['thread_level']] = [point['order']]
-                    expected_create_times[result['thread_level']] = [point['create_time']]
-                expected_num_points += 1
+        expected_projection = {
+            'results': 1,
+            'revision': 1,
+            'order': 1,
+            'create_time': 1,
+            'task_id': 1,
+            '_id': 0
+        }
+        expected_num_points, expected_points = self.load_expected_points()
+
         mock_db = MagicMock(name='db', autospec=True)
         mock_cursor = MagicMock(name='cursor', autospec=True)
         mock_MongoClient.return_value.get_database.return_value = mock_db
         mock_db.points.find.return_value.sort = mock_cursor
         mock_cursor.return_value = self.sysperf_points
         test_model = detect_changes.PointsModel(self.sysperf_perf_json, self.mongo_uri)
-        actual = test_model.get_points(self.sysperf_perf_json['data']['results'][0]['name'])
-        self.assertEqual(actual, (expected_series, expected_revisions, expected_orders,
-                                  expected_query, expected_create_times, expected_num_points))
+
+        actual_num_points, actual_query, actual_points = test_model.get_points(
+            self.sysperf_perf_json['data']['results'][0]['name'])
+
+        self.assertEqual(actual_num_points, expected_num_points)
+        self.assertEqual(actual_query, expected_query)
+        self.assertEqual(actual_points, expected_points)
+
         mock_MongoClient.assert_called_once_with(self.mongo_uri)
         mock_MongoClient.return_value.get_database.assert_called_once_with()
         mock_db.points.find.assert_called_once_with(expected_query, expected_projection)
@@ -129,15 +151,26 @@ class TestPointsModel(unittest.TestCase):
         mock_bulk = MagicMock(name='bulk', autospec=True)
         mock_MongoClient.return_value.get_database.return_value = mock_db
         mock_db.change_points.initialize_ordered_bulk_op.return_value = mock_bulk
-        mock_get_points.return_value = [{
-            4: []
-        }, {
-            4: []
-        }, {
-            4: []
-        }, expected_query, {
-            4: []
-        }, 'many_points']
+
+        mock_get_points.return_value = [
+            'many_points', expected_query, {
+                'series': {
+                    4: []
+                },
+                'revisions': {
+                    4: []
+                },
+                'orders': {
+                    4: []
+                },
+                'create_times': {
+                    4: []
+                },
+                'task_ids': {
+                    4: []
+                }
+            }
+        ]
         test = self.sysperf_perf_json['data']['results'][0]['name']
         test_model = detect_changes.PointsModel(self.sysperf_perf_json, self.mongo_uri)
         actual = test_model.compute_change_points(test, weighting=0.001)
@@ -169,19 +202,31 @@ class TestPointsModel(unittest.TestCase):
         """
         Test compute_change_points when a point has multiple thread levels.
         """
-        mock_get_points.return_value = [{
-            4: [1, 2, 3],
-            16: [3]
-        }, {
-            4: ['abc', 'bcd', 'cde'],
-            16: ['cde']
-        }, {
-            4: [0, 1, 2],
-            16: [2]
-        }, {'query'}, {
-            4: [1, 2, 3],
-            16: [3]
-        }, 'many_points']
+        expected_query = {'query'}
+        mock_get_points.return_value = [
+            'many_points', expected_query, {
+                'series': {
+                    4: [1, 2, 3],
+                    16: [3]
+                },
+                'revisions': {
+                    4: ['abc', 'bcd', 'cde'],
+                    16: ['cde']
+                },
+                'orders': {
+                    4: [0, 1, 2],
+                    16: [2]
+                },
+                'create_times': {
+                    4: [1, 2, 3],
+                    16: [3]
+                },
+                'task_ids': {
+                    4: ['task 1', 'task 2', 'task 3'],
+                    16: ['task 3']
+                }
+            }
+        ]
         test = self.sysperf_perf_json['data']['results'][0]['name']
         qhat_calls = [
             call(

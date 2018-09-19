@@ -5,6 +5,7 @@ import re
 import unittest
 from collections import OrderedDict
 
+import jinja2
 import pymongo
 from mock import ANY, MagicMock, patch
 
@@ -149,9 +150,6 @@ class TestPipeline(unittest.TestCase):
     Test suite for create_pipeline.
     """
 
-    def setUp(self):
-        pass
-
     def _pipeline(self,
                   query=None,
                   limit=10,
@@ -224,3 +222,56 @@ class TestPipeline(unittest.TestCase):
         """ test no no, no no, no no, theres no limits!."""
         pipeline = self._pipeline(limit=None)
         self.assertTrue('$limit' not in pipeline[-1].keys())
+
+
+class TestMagnitudeToPercent(unittest.TestCase):
+    """
+    Test suite for magnitude_to_percent.
+    """
+
+    def test_not_float(self):
+        """ test some unexpected types."""
+        self.assertEquals('Nan', list_change_points.magnitude_to_percent(
+            jinja2.runtime.Undefined()))
+        self.assertEquals('Nan', list_change_points.magnitude_to_percent(None))
+
+    def test_float(self):
+        """ test some float values."""
+        self.assertEquals('+11%', list_change_points.magnitude_to_percent(0.1))
+        self.assertEquals('-10%', list_change_points.magnitude_to_percent(-0.1))
+        self.assertEquals('+172%', list_change_points.magnitude_to_percent(1.0))
+        self.assertEquals('-63%', list_change_points.magnitude_to_percent(-1.0))
+
+    def test_float_format(self):
+        """ test some float values with non default format."""
+        self.assertEquals('+10.52%', list_change_points.magnitude_to_percent(0.1, '%+5.2f%%'))
+        self.assertEquals('-9.52%', list_change_points.magnitude_to_percent(-0.1, '%+5.2f%%'))
+        self.assertEquals('+171.83%', list_change_points.magnitude_to_percent(1.0, '%+5.2f%%'))
+        self.assertEquals('-63.21%', list_change_points.magnitude_to_percent(-1.0, '%+5.2f%%'))
+
+
+class TestToLink(unittest.TestCase):
+    """
+    Test suite for to_link.
+    """
+
+    def test_to_link(self):
+        """ test basic operation."""
+        self.assertEquals('EVG/version/PROJECT_REVISION',
+                          list_change_points.to_link({
+                              'project': 'PROJECT',
+                              'suspect_revision': 'REVISION'
+                          }, 'EVG'))
+
+
+class TestToTaskLink(unittest.TestCase):
+    """
+    Test suite for to_task_link.
+    """
+
+    def test_to_task_link(self):
+        """ test basic operation."""
+        self.assertEquals('EVG/task/TASK_ID',
+                          list_change_points.to_task_link({
+                              'task_id': 'TASK_ID'
+                          }, 'EVG'))

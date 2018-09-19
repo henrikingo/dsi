@@ -4,7 +4,7 @@ Run the QHat algorithm and store results.
 from datetime import datetime
 from multiprocessing import Pool, cpu_count
 import time
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 import pymongo
 import structlog
@@ -77,10 +77,10 @@ class PointsModel(object):
         :param str test: The name of the test.
         :return: The results from the query to the database as well as some additional information
         extracted from those results.
-        :return: A list of the maximum operations per second of each point, a list of the revision
-        of each point, the query used to retrieve the points, and the number of points returned by
-        the query.
-        :rtype: tuple(list(float), list(str), OrderedDict, int).
+        :return: The number of points (and thus the length of the lists), the query used to retrieve
+        the points and a dict of lists for the metrics for each point (ops/s, revisions, orders,
+        create_times, task_ids).
+        :rtype: tuple(int, OrderedDict, dict).
         """
 
         query = OrderedDict([('project', self.perf_json['project_id']),
@@ -88,18 +88,35 @@ class PointsModel(object):
                              ('task', self.perf_json['task_name']),
                              ('test', test)]) #yapf: disable
 
-        projection = {'results': 1, 'revision': 1, 'order': 1, 'create_time': 1, '_id': 0}
+        projection = {
+            'results': 1,
+            'revision': 1,
+            'order': 1,
+            'create_time': 1,
+            'task_id': 1,
+            '_id': 0
+        }
 
         cursor = self.db.points.find(query, projection).sort([('order', pymongo.ASCENDING)])
 
         if self.limit is not None:
             cursor.limit(self.limit)
 
-        series = {}
-        revisions = {}
-        orders = {}
-        create_times = {}
-        many_points = 0
+        # The following defaultdicts return new lists for missing keys.
+        series = defaultdict(list)
+        revisions = defaultdict(list)
+        orders = defaultdict(list)
+        create_times = defaultdict(list)
+        task_ids = defaultdict(list)
+        size = 0
+
+        points = {
+            'series': series,
+            'revisions': revisions,
+            'orders': orders,
+            'create_times': create_times,
+            'task_ids': task_ids
+        }
 
         for point in cursor:
             missing = REQUIRED_KEYS - REQUIRED_KEYS.intersection(point.keys())
@@ -114,19 +131,13 @@ class PointsModel(object):
                         result=result,
                         missing=['ops_per_sec'])
                     continue
-                if result['thread_level'] in series:
-                    series[result['thread_level']].append(result['ops_per_sec'])
-                    revisions[result['thread_level']].append(point['revision'])
-                    orders[result['thread_level']].append(point['order'])
-                    create_times[result['thread_level']].append(point['create_time'])
-                else:
-                    series[result['thread_level']] = [result['ops_per_sec']]
-                    revisions[result['thread_level']] = [point['revision']]
-                    orders[result['thread_level']] = [point['order']]
-                    create_times[result['thread_level']] = [point['create_time']]
-                many_points += 1
-
-        return series, revisions, orders, query, create_times, many_points
+                series[result['thread_level']].append(result['ops_per_sec'])
+                revisions[result['thread_level']].append(point['revision'])
+                orders[result['thread_level']].append(point['order'])
+                create_times[result['thread_level']].append(point['create_time'])
+                task_ids[result['thread_level']].append(point['task_id'])
+                size += 1
+        return size, query, points
 
     def compute_change_points(self, test, weighting):
         """
@@ -143,17 +154,17 @@ class PointsModel(object):
         # pylint: disable=too-many-locals
         started_at = int(round(time.time() * 1000))
 
-        series, revisions, orders, query, create_times, many_points = self.get_points(test)
+        size_points, query, points = self.get_points(test)
 
         change_points = {}
-        many_change_points = 0
-        for thread_level in series:
+        size_change_points = 0
+        for thread_level in points['series']:
             change_points[thread_level] = QHat(
                 {
-                    'series': series[thread_level],
-                    'revisions': revisions[thread_level],
-                    'orders': orders[thread_level],
-                    'create_times': create_times[thread_level],
+                    'series': points['series'][thread_level],
+                    'revisions': points['revisions'][thread_level],
+                    'orders': points['orders'][thread_level],
+                    'create_times': points['create_times'][thread_level],
                     'testname': test,
                     'thread_level': thread_level
                 },
@@ -161,7 +172,7 @@ class PointsModel(object):
                 weighting=weighting,
                 mongo_repo=self.mongo_repo,
                 credentials=self.credentials).change_points
-            many_change_points += len(change_points[thread_level])
+            size_change_points += len(change_points[thread_level])
 
         # TODO: Revisit implementation of insert.
         bulk = self.db.change_points.initialize_ordered_bulk_op()
@@ -171,12 +182,14 @@ class PointsModel(object):
             for point in change_points[thread_level]:
                 change_point = query.copy()
                 change_point.update(point)
+                index = points['orders'][thread_level].index(point['order'])
+                change_point['task_id'] = points['task_ids'][thread_level][index]
                 bulk.insert(change_point)
 
         bulk.execute()
 
         ended_at = int(round(time.time() * 1000))
-        return many_points, many_change_points, (ended_at - started_at)
+        return size_points, size_change_points, (ended_at - started_at)
 
     def __getstate__(self):
         """

@@ -44,6 +44,19 @@ def format_no_older_than(no_older_than):
     return "Last {} days".format(no_older_than)
 
 
+def magnitude_to_percent(magnitude, format_string='%+3.0f%%'):
+    """
+    Jinja2 helper to convert magnitude to percentage change.
+
+    :param magnitude: The magnitude value is only valid as a float.
+    :type magnitude: float or jinja2.runtime.Undefined or None.
+    :return: A string representing the percentage change.
+    """
+    if magnitude is None or isinstance(magnitude, jinja2.runtime.Undefined):
+        return 'Nan'
+    return format_string % (math.exp(magnitude) * 100.0 - 100.0)
+
+
 def format_limit(limit):
     """
     Jinja2 helper to format limit.
@@ -68,6 +81,16 @@ def to_link(test, evergreen):
         suspect_revision=test['suspect_revision'],
         project=test['project'].replace("-", "_"),
         evergreen=evergreen)
+
+
+def to_task_link(test, evergreen):
+    """
+    Jinja2 helper to get an evergreen link for a task.
+
+    :param dict test: The test data.
+    :return: A string url.
+    """
+    return "{evergreen}/task/{task_id}".format(task_id=test['task_id'], evergreen=evergreen)
 
 
 def to_query(test, collection):
@@ -107,8 +130,12 @@ HUMAN_READABLE_TEMPLATE_STR = '''
   Suspect Revision: `{{ point.suspect_revision }}`
   Query:    `{{ point|query(collection) }}`
   Start:     `{{ point.start }}`
-  Tests: {{ point.change_points|length }}({{ point.min_magnitude }})
+  Tests: {{ point.change_points|length }}({{ magnitude_to_percent(point.min_magnitude, '%+5.2f%%') }})
 {% for test in point.change_points|group_sort %}
+  - {{ magnitude_to_percent(test.magnitude) }} `{{ point.suspect_revision }} {{ point.project }} {{ test.variant }} {{ test.task }} {{ test.test }} {{ test.thread_level }}`
+    {%- if test.task_id %}
+    {{'<%s>'|format(task_link(test, evergreen)) }}
+    {%- endif %}
 {%- endfor %}
 {% endfor %}
 '''
@@ -120,9 +147,17 @@ ENVIRONMENT.globals.update({
     'now': datetime.utcnow,
     'format_no_older_than': format_no_older_than,
     'format_limit': format_limit,
-    'isnan': math.isnan
+    'isnan': math.isnan,
+    'magnitude_to_percent': magnitude_to_percent,
+    'task_link': to_task_link,
+    'link': to_link,
 })
-ENVIRONMENT.filters.update({'link': to_link, 'query': to_query, 'group_sort': group_sort})
+ENVIRONMENT.filters.update({
+    'link': to_link,
+    'task_link': to_task_link,
+    'query': to_query,
+    'group_sort': group_sort
+})
 HUMAN_READABLE_TEMPLATE = ENVIRONMENT.from_string(HUMAN_READABLE_TEMPLATE_STR)
 
 
@@ -160,6 +195,9 @@ def create_pipeline(query, limit, hide_canaries, hide_wtdevelop, no_older_than):
     :return: A list containing the aggregation pipeline.
     """
     pipeline = []
+    if no_older_than is not None:
+        date = datetime.utcnow() - timedelta(days=no_older_than)
+        pipeline.append({'$match': {'create_time': {"$gt": date.isoformat()}}})
     if hide_canaries:
         pipeline.append({
             '$match': {
@@ -189,15 +227,6 @@ def create_pipeline(query, limit, hide_canaries, hide_wtdevelop, no_older_than):
             '$match': query
         }
     ])
-
-    if no_older_than is not None:
-        pipeline.append({
-            '$match': {
-                'start': {
-                    "$gt": datetime.utcnow() - timedelta(days=no_older_than)
-                }
-            }
-        })
 
     pipeline.extend([
         {

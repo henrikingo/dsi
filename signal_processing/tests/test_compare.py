@@ -32,10 +32,18 @@ class TestCompare(unittest.TestCase):
         revisions = {'1': [0, 1]}
         orders = {'1': [0, 1]}
         create_times = {'1': [0, 1]}
+        task_ids = {'1': [0, 1]}
 
         mock_model_instance = mock_model.return_value
-        mock_model_instance.get_points.return_value = (series, revisions, orders, {}, create_times,
-                                                       2)
+        mock_model_instance.get_points.return_value = (2, {
+            'query': 1
+        }, {
+            'series': series,
+            'revisions': revisions,
+            'orders': orders,
+            'create_times': create_times,
+            'task_ids': task_ids,
+        })
         compare(test_identifier, mock_config, weighting=DEFAULT_WEIGHTING)
 
 

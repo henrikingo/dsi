@@ -464,7 +464,11 @@ def visualize(test_identifier, filter_name, command_config, sigma=1, only_change
     perf_json = OrderedDict([('project_id', project), ('variant', variant), ('task_name', task)])
 
     model = PointsModel(perf_json, command_config.mongo_uri)
-    series, revisions, orders, _, create_times, _ = model.get_points(test)
+    _, query, points = model.get_points(test)
+    series = points['series']
+    revisions = points['revisions']
+    orders = points['orders']
+    create_times = points['create_times']
 
     thread_levels = series.keys()
     thread_levels.sort(key=int)

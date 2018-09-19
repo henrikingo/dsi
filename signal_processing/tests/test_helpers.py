@@ -555,3 +555,7 @@ class TestValidate(unittest.TestCase):
         """ Test None."""
         self.assertIsNone(helpers.validate_int_none_options(None, None, 'None'))
         self.assertIsNone(helpers.validate_int_none_options(None, None, 'none'))
+
+    def test_int_value(self):
+        """ Test int value."""
+        self.assertEquals(1, helpers.validate_int_none_options(None, None, 1))

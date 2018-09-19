@@ -733,7 +733,7 @@ def validate_int_none_options(context, param, value):
     """
     #pylint: disable=unused-argument
     try:
-        if value.lower() == "none":
+        if isinstance(value, basestring) and value.lower() == "none":
             return None
         return int(value)
     except ValueError:
