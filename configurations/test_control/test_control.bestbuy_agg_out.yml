@@ -1,4 +1,4 @@
-task_name: bestbuy_agg
+task_name: bestbuy_agg_out
 run:
   - id: benchRun
     type: mongoshell
@@ -16,11 +16,32 @@ run:
       ########################################################################
       tests:
         default:
-          - bestbuy_agg_query_comparison:
+          # First just 'replaceCollection' which has to be unsharded - these tests are all in the
+          # same database.
+          - agg_out:
               - testDbName: bestbuy
                 testCollName: products
-                useAgg: true
-                thread_levels: ${test_control.thread_levels.${mongodb_setup.meta.mongodb_setup}}
+                nDocsPerOut: [1, 1000, 100000]
+                modes: ["replaceCollection"]
+                targets: ["temp_testing"]
+                targetDB: bestbuy
+          # Now the new modes in the same database.
+          - agg_out:
+              - testDbName: bestbuy
+                testCollName: products
+                nDocsPerOut: [1, 1000, 100000]
+                modes: ["replaceDocuments", "insertDocuments"]
+                targets: ["target_identical_distribution"]
+                targetDB: bestbuy
+          # Now the new modes in a different database, and again with a different database and a
+          # different shard distribution
+          - agg_out:
+              - testDbName: bestbuy
+                testCollName: products
+                nDocsPerOut: [1, 1000, 100000]
+                modes: ["replaceDocuments", "insertDocuments"]
+                targets: ["identical_distribution", "hashed_id"]
+                targetDB: target
           - cpu_noise
 
       # These next five lines match existing
@@ -76,10 +97,3 @@ post_task:
         assert.commandWorked(sh.setBalancerState(true));
         db.printShardingStatus();
       }
-
-thread_levels:
-  standalone: [1, 8]
-  single-replica: [1, 8]
-  replica: [1, 8]
-  shard: [1, 8]
-  shard-lite: [1, 8, 16]
