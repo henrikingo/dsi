@@ -1045,7 +1045,6 @@
                         "32"
                     ],
                     "ticket":[
-                        "BF-6161",
                         "PERF-1347"
                     ],
                     "workload":"ycsb"
@@ -2755,33 +2754,7 @@
         },
         "industry_benchmarks":{
             "ndays":{},
-            "reference":{
-                "ycsb_95read5update":{
-                    "create_time":"2018-08-20T19:02:32Z",
-                    "end":1534862982.025753,
-                    "max":71476.05194879456,
-                    "name":"ycsb_95read5update",
-                    "order":483,
-                    "results":{
-                        "32":{
-                            "ops_per_sec":71476.05194879456,
-                            "ops_per_sec_values":[
-                                71476.05194879456
-                            ]
-                        }
-                    },
-                    "revision":"77ab53420058f9fb58e9bba113f6d7e617068c8b",
-                    "start":1534862701.250873,
-                    "tag":"",
-                    "threads":[
-                        "32"
-                    ],
-                    "ticket":[
-                        "BF-6161"
-                    ],
-                    "workload":"ycsb"
-                }
-            },
+            "reference":{},
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
@@ -8399,33 +8372,7 @@
         },
         "industry_benchmarks":{
             "ndays":{},
-            "reference":{
-                "ycsb_95read5update":{
-                    "create_time":"2018-08-20T19:02:32Z",
-                    "end":1534862786.429717,
-                    "max":72898.51797312961,
-                    "name":"ycsb_95read5update",
-                    "order":483,
-                    "results":{
-                        "32":{
-                            "ops_per_sec":72898.51797312961,
-                            "ops_per_sec_values":[
-                                72898.51797312961
-                            ]
-                        }
-                    },
-                    "revision":"77ab53420058f9fb58e9bba113f6d7e617068c8b",
-                    "start":1534862509.55361,
-                    "tag":"",
-                    "threads":[
-                        "32"
-                    ],
-                    "ticket":[
-                        "BF-6161"
-                    ],
-                    "workload":"ycsb"
-                }
-            },
+            "reference":{},
             "threshold":{
                 "NetworkBandwidth":{
                     "thread_threshold":2.0,
