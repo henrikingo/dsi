@@ -10,7 +10,7 @@ import operator
 import re
 import sys
 from collections import OrderedDict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 import jinja2
 import pymongo
@@ -196,8 +196,8 @@ def create_pipeline(query, limit, hide_canaries, hide_wtdevelop, no_older_than):
     """
     pipeline = []
     if no_older_than is not None:
-        date = datetime.utcnow() - timedelta(days=no_older_than)
-        pipeline.append({'$match': {'create_time': {"$gt": date.isoformat()}}})
+        start_date = (date.today() - timedelta(days=no_older_than)).isoformat()
+        pipeline.append({'$match': {'create_time': {"$gt": start_date}}})
     if hide_canaries:
         pipeline.append({
             '$match': {
