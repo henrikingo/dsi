@@ -8,6 +8,18 @@ import pymongo
 LOG = structlog.getLogger(__name__)
 
 
+def _create_indexes(collection, indexes):
+    """
+    Create indexes for a given collections.
+
+    :param pymongo.collection collection: The target collection.
+    :param list(dict) indexes: The indexes to create.
+    """
+    LOG.debug('create indexes', collection=collection, indexes=indexes)
+    for index in indexes:
+        collection.create_index(index['keys'])
+
+
 def create_points_indexes(command_config):
     """
     Create indexes for the points collections.
@@ -16,16 +28,30 @@ def create_points_indexes(command_config):
     """
     # pylint: disable=invalid-name
     LOG.debug('create points indexes')
-    indexes = [{
+    _create_indexes(command_config.points, [{
         'keys': [("project", pymongo.ASCENDING), ("variant", pymongo.ASCENDING),
-                 ("task", pymongo.ASCENDING), ("test", pymongo.ASCENDING), ("order",
-                                                                            pymongo.ASCENDING)]
+                 ("task", pymongo.ASCENDING), ("test", pymongo.ASCENDING),
+                 ("order", pymongo.ASCENDING)]
     }, {
         'keys': [("project", pymongo.ASCENDING), ("variant", pymongo.ASCENDING),
                  ("task", pymongo.ASCENDING), ("order", pymongo.ASCENDING)]
-    }]
-    for index in indexes:
-        command_config.points.create_index(index['keys'])
+    }])
+
+
+def create_change_points_indexes(command_config):
+    """
+    Create indexes for the change_points collections.
+
+    :param CommandConfig command_config: Common configuration.
+    """
+    # pylint: disable=invalid-name
+    LOG.debug('create change points indexes')
+    _create_indexes(command_config.change_points, [{
+        'keys': [("project", pymongo.ASCENDING), ("variant", pymongo.ASCENDING),
+                 ("task", pymongo.ASCENDING), ("test", pymongo.ASCENDING)]
+    }, {
+        'keys': [("create_time", pymongo.ASCENDING)]
+    }])
 
 
 def create_linked_build_failures_view(command_config):
@@ -213,5 +239,6 @@ def manage(command_config):
     """
 
     create_points_indexes(command_config)
+    create_change_points_indexes(command_config)
     create_unprocessed_change_points_view(command_config)
     create_linked_build_failures_view(command_config)
