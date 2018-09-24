@@ -133,7 +133,8 @@ class ConfigDict(dict):
         file_name = self.module + '.out.yml'
         file_handle = open(file_name, 'w')
         out = {'out': self.raw[self.module]['out']}
-        file_handle.write(yaml.dump(out, default_flow_style=False))
+        # yaml.safe_dump() handles unicode strings as if they were normal text. As they are!
+        file_handle.write(yaml.safe_dump(out, default_flow_style=False))
         file_handle.close()
         LOG.info('ConfigDict: Wrote file: %s', file_name)
 

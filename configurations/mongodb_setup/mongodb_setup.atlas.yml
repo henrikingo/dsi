@@ -1,0 +1,32 @@
+atlas:
+  api:
+    root: https://cloud-dev.mongodb.com/api/atlas/v1.0/
+    group_id: 5b991a4880eef5262645e0c7
+  clusters:
+    - autoScaling:
+        diskGBEnabled: false
+      clusterType: REPLICASET
+      mongoDBMajorVersion: 3.6
+      numShards: 1
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_2
+        instanceSizeName: M60  # M60 roughly corresponds to c3.8xlarge
+        diskIOPS: 5280  # sys-perf uses 5500
+      diskSizeGB: 320  # sys-perf uses 320
+
+# Meta data about this mongodb setup
+# meta:
+#   # The list of hosts that can be used in a mongodb connection string
+#   hosts: ${mongodb_setup.topology.0.private_ip}:27017
+#   hostname: ${mongodb_setup.topology.0.private_ip}
+#   port: 27017
+#   is_sharded: false
+#   is_replset: false
+#   mongodb_setup: standalone
+#   mongodb_url: ${mongodb_setup.authentication.${bootstrap.authentication}.mongodb_url}
+
+## Hosts to run correctness checks on.
+# validate:
+#   standalone:
+#     - ${mongodb_setup.topology.0.private_ip}:27017
