@@ -29,3 +29,4 @@ detect_changes.log
 *.egg-info/
 /build
 /dist
+_qhat.so

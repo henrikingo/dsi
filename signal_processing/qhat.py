@@ -3,6 +3,7 @@ Computes the qhat e.divisive means change points.
 """
 from __future__ import print_function
 
+import os
 from collections import OrderedDict
 from contextlib import contextmanager
 import copy
@@ -15,6 +16,7 @@ from scipy import stats
 from scipy.stats import expon
 
 from analysis.evergreen.helpers import get_githashes_in_range_github, get_githashes_in_range_repo
+import signal_processing.native.qhat
 
 DEFAULT_FIGIZE = (18, 8)
 
@@ -512,7 +514,7 @@ def calculate_magnitude(statistics):
     return magnitude, category
 
 
-class QHat(object):  #pylint: disable=too-many-instance-attributes
+class QHatNumpyImp(object):  #pylint: disable=too-many-instance-attributes
     """
     Class to compute the qhat e.divisive means change points.
     """
@@ -640,10 +642,11 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
     # Implementing change-point detection algorithm from https://arxiv.org/pdf/1306.4933.pdf
     def qhat_values(self, series):  #pylint: disable=too-many-locals,too-many-branches
         """
-        Find Q-Hat values for all candidate change points
+        Check the input values, calculate the diffs matrix and delegate to calculate_qhat_values.
 
         :param list series: the points to process
-        :return:
+        :return: The qhat values.
+        :rtype: np.array(float).
         """
 
         # used as the window size in extract_q
@@ -656,7 +659,21 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
             self.average_diff = 1
             return qhat_values
 
-        # Generate a difference matrix from the data.
+        return self.calculate_qhat_values(series, None, qhat_values)
+
+    def calculate_qhat_values(self, series, diffs, qhat_values):
+        #pylint: disable=too-many-locals,too-many-branches,unused-argument
+        """
+        Find Q-Hat values for all candidate change points. This provides the current
+        'best' python implementation. The intention is to override this for other
+        implementations, say a native implementation.
+
+        :param numpy.array(float) series: The points to process.
+        :param numpy.array(float) qhat_values: The array to store the qhat values.
+        :param numpy.2darray(float) diffs: The matrix of diffs.
+        :return: The qhat values.
+        :rtype: numpy.array(float).
+        """
         diffs = self.calculate_diffs(series)
 
         self.average_value = np.average(series)
@@ -937,3 +954,36 @@ class QHat(object):  #pylint: disable=too-many-instance-attributes
         if self._max_q is None:
             _ = self.change_points
         return self._max_q
+
+
+DSI_DISABLE_NATIVE_QHAT = os.environ.get('DSI_DISABLE_NATIVE_QHAT',
+                                         'false').lower() in ['true', 't']
+if not DSI_DISABLE_NATIVE_QHAT and signal_processing.native.qhat.LOADED:
+
+    class QHatNativeImp(QHatNumpyImp):  #pylint: disable=too-many-instance-attributes
+        """
+        Derive a new class and use the native qhat implementation.
+        """
+
+        def calculate_qhat_values(self, series, diffs, qhat_values):  #pylint: disable=too-many-locals,too-many-branches
+            # used as the window size in extract_q
+            diffs = signal_processing.native.qhat.qhat_diffs_wrapper(series)
+
+            self.average_value = np.average(series)
+            self.average_diff = np.average(diffs)
+            signal_processing.native.qhat.qhat_values_wrapper(series, diffs, qhat_values)
+            return qhat_values
+
+    QHat = QHatNativeImp
+else:
+    if not signal_processing.native.qhat.LOADED:
+        LOG.warn(
+            'falling back to numpy optimized QHat',
+            loaded=signal_processing.native.qhat.LOADED,
+            DSI_DISABLE_NATIVE_QHAT=DSI_DISABLE_NATIVE_QHAT)
+    else:
+        LOG.info(
+            'falling back to numpy optimized QHat',
+            loaded=signal_processing.native.qhat.LOADED,
+            DSI_DISABLE_NATIVE_QHAT=DSI_DISABLE_NATIVE_QHAT)
+    QHat = QHatNumpyImp

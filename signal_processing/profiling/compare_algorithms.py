@@ -16,6 +16,7 @@ import numpy as np
 import structlog
 
 import signal_processing.qhat
+import signal_processing.native.qhat
 
 LOG = structlog.getLogger(__name__)
 
@@ -312,4 +313,28 @@ class NumpyWindowedQHat(object):
             term3 = np.sum(np.triu(diffs[n:window + n + 1, n:window + n + 1], 1))
 
             qhat_values[n] = signal_processing.qhat.QHat.calculate_q(term1, term2, term3, m, n)
+        return qhat_values
+
+
+class NativeQHat(object):
+    """
+    QHat native optimized implementation.
+    """
+
+    def __init__(self):
+        self.average_value = 0
+        self.average_diff = 0
+        self.window = 0
+
+    def qhat_values(self, series):
+        """
+        Find Q-Hat values for all candidate change points
+
+        :param list series: the points to process
+        :return:
+        """
+
+        diffs = signal_processing.native.qhat.qhat_diffs_wrapper(series)
+        qhat_values = np.zeros(len(series), dtype=np.float)
+        signal_processing.native.qhat.qhat_values_wrapper(series, diffs, qhat_values)
         return qhat_values
