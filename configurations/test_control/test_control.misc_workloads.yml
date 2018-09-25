@@ -24,12 +24,12 @@ run:
           - insert_vector:
               thread_levels: ${test_control.thread_levels.insert_vector.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
           - index_build
-          - cpu_noise
           - update_large_documents:
               doc_counts: [2]
               doc_sizes_mb: [10]
               thread_levels: [1]
               runtime_secs: [180]
+          - cpu_noise
 
       # These next five lines match existing workloads.yml.
       target: ${mongodb_setup.meta.hostname}
