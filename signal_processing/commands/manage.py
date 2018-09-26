@@ -17,7 +17,8 @@ def _create_indexes(collection, indexes):
     """
     LOG.debug('create indexes', collection=collection, indexes=indexes)
     for index in indexes:
-        collection.create_index(index['keys'])
+        options = index['options'] if 'options' in index else {}
+        collection.create_index(index['keys'], **options)
 
 
 def create_points_indexes(command_config):
@@ -51,6 +52,24 @@ def create_change_points_indexes(command_config):
                  ("task", pymongo.ASCENDING), ("test", pymongo.ASCENDING)]
     }, {
         'keys': [("create_time", pymongo.ASCENDING)]
+    }])
+
+
+def create_processed_change_points_indexes(command_config):
+    """
+    Create indexes for the processed change_points collections.
+
+    :param CommandConfig command_config: Common configuration.
+    """
+    # pylint: disable=invalid-name
+    LOG.debug('create processed change points indexes')
+    _create_indexes(command_config.processed_change_points, [{
+        'keys': [("suspect_revision", pymongo.ASCENDING), ("project", pymongo.ASCENDING),
+                 ("variant", pymongo.ASCENDING), ("task", pymongo.ASCENDING),
+                 ("test", pymongo.ASCENDING), ("thread_level", pymongo.ASCENDING)],
+        'options': {
+            'unique': True
+        }
     }])
 
 
@@ -238,7 +257,9 @@ def manage(command_config):
     :param CommandConfig command_config: Common configuration.
     """
 
+    create_processed_change_points_indexes(command_config)
     create_points_indexes(command_config)
     create_change_points_indexes(command_config)
+
     create_unprocessed_change_points_view(command_config)
     create_linked_build_failures_view(command_config)

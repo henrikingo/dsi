@@ -1,11 +1,27 @@
 """
 Functionality to mark change points.
 """
-import logging
+import structlog
 
 from signal_processing.commands.helpers import stringify_json, filter_excludes
 
-LOG = logging.getLogger(__name__)
+LOG = structlog.getLogger(__name__)
+
+KEYS = ('suspect_revision', 'project', 'variant', 'task', 'test', 'thread_level')
+"""
+A tuple containing the keys for a unique identifier for a point.
+"""
+
+
+def get_identifier(point):
+    """
+    Get the identifer for a point.
+
+    :param dict point: The full data for the point.
+    :return: TYhe unique identifier for a point.
+    :rtype: dict.
+    """
+    return {key: point[key] for key in KEYS}
 
 
 def mark_change_points(processed_type, query, exclude_patterns, command_config):
@@ -17,7 +33,7 @@ def mark_change_points(processed_type, query, exclude_patterns, command_config):
     :param list(re) exclude_patterns: Filter any points matching this list of excludes.
     :param CommandConfig command_config: Common configuration.
     """
-    LOG.debug('mark points "%s"', processed_type)
+    LOG.debug('mark points', processed_type=processed_type)
     collection = command_config.change_points
 
     for point in filter_excludes(collection.find(query), query.keys(), exclude_patterns):
@@ -25,4 +41,6 @@ def mark_change_points(processed_type, query, exclude_patterns, command_config):
         del point['_id']
         LOG.info("matched %s\n", stringify_json(point, compact=command_config.compact))
         if not command_config.dry_run:
-            command_config.processed_change_points.insert(point)
+            result = command_config.processed_change_points.update(
+                get_identifier(point), {"$set": point}, upsert=True)
+            LOG.debug('mark points', result=result)

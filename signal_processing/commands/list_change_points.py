@@ -4,21 +4,20 @@ Functionality to list change points.
 """
 from __future__ import print_function
 
-import logging
 import math
 import operator
 import re
 import sys
 from collections import OrderedDict
-from datetime import datetime, timedelta, date
+from datetime import date, datetime, timedelta
 
 import jinja2
 import pymongo
+import structlog
 
-from signal_processing.commands.helpers import filter_excludes, \
-    stringify_json
+from signal_processing.commands.helpers import filter_excludes, stringify_json
 
-LOG = logging.getLogger(__name__)
+LOG = structlog.getLogger(__name__)
 
 CHANGE_POINT_TYPE_PROCESSED = 'processed'
 CHANGE_POINT_TYPE_UNPROCESSED = 'unprocessed'
@@ -132,7 +131,7 @@ HUMAN_READABLE_TEMPLATE_STR = '''
   Start:     `{{ point.start }}`
   Tests: {{ point.change_points|length }}({{ magnitude_to_percent(point.min_magnitude, '%+5.2f%%') }})
 {% for test in point.change_points|group_sort %}
-  - {{ magnitude_to_percent(test.magnitude) }} `{{ point.suspect_revision }} {{ point.project }} {{ test.variant }} {{ test.task }} {{ test.test }} {{ test.thread_level }}`
+  - {{ magnitude_to_percent(test.magnitude) }} `{{ point.suspect_revision }} {{ point.project }} {{ test.variant }} {{ test.task }} {{ test.test }} {{ test.thread_level }}` {{ test.processed_type }} 
     {%- if test.task_id %}
     {{'<%s>'|format(task_link(test, evergreen)) }}
     {%- endif %}
@@ -307,7 +306,8 @@ def map_collection(change_point_type, command_config):
 
 
 def list_change_points(change_point_type, query, limit, no_older_than, human_readable,
-                       hide_canaries, hide_wtdevelop, exclude_patterns, command_config):
+                       hide_canaries, hide_wtdevelop, exclude_patterns, processed_types,
+                       command_config):
     # pylint: disable=too-many-arguments, too-many-locals
     """
     List all points matching query and not excluded.
@@ -327,10 +327,14 @@ def list_change_points(change_point_type, query, limit, no_older_than, human_rea
     mean don't filter.
     :type  no_older_than: int or None.
     :param CommandConfig command_config: Common configuration.
+    :param list(str) processed_types: Match processed_type when listing the processed
+    change points.
     """
     LOG.debug('list %s', change_point_type)
     collection = map_collection(change_point_type, command_config)
 
+    if change_point_type == CHANGE_POINT_TYPE_PROCESSED and processed_types:
+        query['processed_type'] = {'$in': processed_types}
     pipeline = create_pipeline(query, limit, hide_canaries, hide_wtdevelop, no_older_than)
     cursor = collection.aggregate(pipeline)
     filtered_cursor = filter_excludes(cursor, query.keys(), exclude_patterns)

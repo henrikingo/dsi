@@ -10,6 +10,7 @@ import pymongo
 from mock import ANY, MagicMock, patch
 
 import signal_processing.commands.list_change_points as list_change_points
+import signal_processing.commands.helpers as helpers
 from bin.common.log import setup_logging
 
 setup_logging(False)
@@ -83,6 +84,7 @@ class TestListChangePoints(unittest.TestCase):
             hide_canaries='canaries',
             hide_wtdevelop='wtdevelop',
             exclude_patterns='excludes',
+            processed_types=[helpers.PROCESSED_TYPE_ACKNOWLEDGED],
             command_config=self.mock_config)
 
         mock_collection = self.mock_unprocessed_change_points

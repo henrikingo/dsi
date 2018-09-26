@@ -28,6 +28,7 @@ import signal_processing.commands.helpers as helpers
 import signal_processing.commands.list_change_points as list_change_points
 import signal_processing.commands.manage as manage
 import signal_processing.commands.mark as mark
+import signal_processing.commands.unmark as unmark
 import signal_processing.commands.update as update
 import signal_processing.commands.visualize as visualize
 import signal_processing.qhat as qhat
@@ -395,6 +396,88 @@ Examples:
                                 command_config)
 
 
+@cli.command(name='unmark')
+@click.pass_obj
+@click.option(
+    '--exclude',
+    'exclude_patterns',
+    multiple=True,
+    help='Exclude all points matching this pattern. This parameter can be provided ' +
+    'multiple times.')
+@click.option(
+    '--processed-type',
+    'processed_type',
+    type=click.Choice(['any'] + helpers.PROCESSED_TYPES),
+    default='any',
+    required=True,
+    help='The value to set processed_type.')
+@click.argument('revision', required=True)
+@click.argument('project', required=True)
+@click.argument('variant', required=False)
+@click.argument('task', required=False)
+@click.argument('test', required=False)
+@click.argument('thread_level', required=False)
+def unmark_command(command_config, exclude_patterns, processed_type, revision, project, variant,
+                   task, test, thread_level):
+    # pylint: disable=too-many-arguments, too-many-function-args
+    """
+    Unmark (Delete) an existing processed change point(s).
+Arguments can be string or patterns, A pattern starts with /.
+
+\b
+REVISION, the revision of the change point. This parameter is mandatory.
+PROJECT, the project name or a regex (like /^sys-perf-3.*/ or /^(sys-perf|performance)$/). This
+parameter is mandatory.
+VARIANT, the build variant or a regex.
+TASK, the task name or a regex.
+TEST, the test name or a regex.
+THREADS, the thread level or a regex.
+\b
+You can use '' in place of VARIANT, TASK, TEST, THREADS if you want to match all. See the
+examples.
+\b
+Examples:
+    $> revision=bad5afd612e8fc917fb035d8333cffd7d68a37cc
+\b
+    # dry run on all sys-perf points
+    $> change-points unmark $revision sys-perf -n
+\b
+    # unmark all *existing* sys-perf change points for a specific sys perf revision
+    $> change-points unmark $revision sys-perf
+\b
+    # unmark some existing acknowledged processed change points
+    $> change-points unmark $revision sys-perf linux-1-node-replSet --processed-type acknowledged
+    $> change-points unmark $revision sys-perf '/linux-.-node-replSet/' \\
+    --processed-type acknowledged
+    $> change-points unmark $revision sys-perf revision linux-1-node-replSet \\
+    change_streams_latency --exclude '/^(fio_|canary_)/' --processed-type acknowledged
+    $> change-points unmark $revision sys-perf linux-1-node-replSet change_streams_latency \\
+       '/^(fio_|canary_)/' --processed-type acknowledged
+\b
+    # unmark all hidden points matching revision sys-perf find_limit-useAgg 8 thread level
+    $> change-points unmark  $revision sys-perf '' '' find_limit-useAgg 8 --processed-type hidden
+    #  unmark all points matching revision sys-perf find_limit-useAgg 8 thread level
+    $> change-points unmark  $revision sys-perf '' '' find_limit-useAgg 8
+\b
+    # unmark all acknowledged points matching revision sys-perf find_limit-useAgg 8 thread level as
+    # acknowledged
+    $> change-points update  $revision sys-perf '' '' find_limit-useAgg 8 \\
+    --processed-type acknowledged
+\b
+    # unmark all hidden points matching revision sys-perf find_limit-useAgg all thread level
+    $> change-points update $revision sys-perf '' '' find_limit-useAgg --processed-type hidden
+    #  unmark all points matching revision sys-perf find_limit-useAgg all thread level
+    $> change-points update $revision sys-perf '' '' find_limit-useAgg
+\b
+    # unmark all acknowledged revision sys-perf find_limit-useAgg all thread level as acknowledged
+    $> change-points update $revision sys-perf '' '' find_limit-useAgg '' \\
+    --processed-type acknowledged
+"""
+    query = helpers.process_params(revision, project, variant, task, test, thread_level)
+    unmark.unmark_change_points(None if processed_type == 'any' else processed_type, query,
+                                helpers.process_excludes(exclude_patterns), command_config)
+
+
 @cli.command(name='list')
 @click.pass_obj
 @click.option(
@@ -432,6 +515,15 @@ A perf BB rotation is 2 weeks, so 14 days seems appropriate''')
     default=False,
     help='Should canaries be shown (defaults to hidden). The filtering happens in the database.')
 @click.option(
+    '--processed-type',
+    'processed_types',
+    type=click.Choice(helpers.PROCESSED_TYPES),
+    default=[helpers.PROCESSED_TYPE_ACKNOWLEDGED],
+    required=False,
+    multiple=True,
+    help='When displaying the processed list, the processed_type must be one of the supplied types.'
+)
+@click.option(
     '--show-wtdevelop/--hide-wtdevelop',
     'show_wtdevelop',
     is_flag=True,
@@ -444,9 +536,9 @@ A perf BB rotation is 2 weeks, so 14 days seems appropriate''')
 @click.argument('test', required=False)
 @click.argument('thread_level', required=False)
 def list_command(command_config, exclude_patterns, point_type, limit, no_older_than, human_readable,
-                 show_canaries, show_wtdevelop, revision, project, variant, task, test,
-                 thread_level):
-    # pylint: disable=too-many-arguments, too-many-function-args
+                 show_canaries, show_wtdevelop, processed_types, revision, project, variant, task,
+                 test, thread_level):
+    # pylint: disable=too-many-arguments, too-many-locals, too-many-function-args
     """
     List unprocessed / processed or raw change points (defaults to unprocessed).
 The points are grouped by revision and project to reduce clutter. The default is to only show groups
@@ -507,6 +599,17 @@ Examples:
 \b
     # list all the unprocessed sys-perf find_limit-useAgg (any revision)
     $> change-points list sys-perf '' '' find_limit-useAgg
+\b
+    # list all the acknowledged processed sys-perf change points
+    $> change-points list sys-perf  --point-type processed --processed-type acknowledged
+    $> change-points list sys-perf  --point-type processed
+\b
+    # list all the hidden processed sys-perf change points
+    $> change-points list sys-perf  --point-type processed --processed-type hidden
+\b
+    # list all the processed sys-perf change points
+    $> change-points list sys-perf  --point-type processed --processed-type acknowledged\
+    --processed-type hidden
 """
     query = helpers.process_params(revision, project, variant, task, test, thread_level)
     list_change_points.list_change_points(
@@ -518,6 +621,7 @@ Examples:
         hide_canaries=not show_canaries,
         hide_wtdevelop=not show_wtdevelop,
         exclude_patterns=helpers.process_excludes(exclude_patterns),
+        processed_types=processed_types,
         command_config=command_config)
 
 
