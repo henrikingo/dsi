@@ -149,8 +149,8 @@ def main(args):  # pylint: disable=too-many-branches,too-many-locals,too-many-st
     arg_parsing.add_args(arg_parser, "reports analysis")
 
     args = arg_parser.parse_args(args)
-    (history, tag_history, overrides) = read_histories(args.variant, args.task, args.file,
-                                                       args.tfile, args.overrideFile)
+    (history, _, overrides) = read_histories(args.variant, args.task, args.file, args.tfile,
+                                             args.overrideFile)
     testnames = history.testnames()
     failed = 0
 
@@ -193,35 +193,6 @@ def main(args):  # pylint: disable=too-many-branches,too-many-locals,too-many-st
         result['log_raw'] += cresult[1] + '\n'
         if cresult[0]:
             test_failed = True
-
-        if tag_history:
-            reference = tag_history.series_at_tag(test, args.reference)
-            using_override = []
-            if threshold_override:
-                using_override.append("threshold")
-            if not reference:
-                LOGGER.info("Didn't get any data for test %s with baseline %s", test,
-                            args.reference)
-            if test in overrides['reference']:
-                LOGGER.info("Override in references for test %s", test)
-                using_override.append("reference")
-                reference = overrides['reference'][test]
-            cresult = compare_results(
-                this_one,
-                reference,
-                threshold,
-                "Baseline",
-                history.noise_levels(test),
-                args.noise,
-                thread_threshold,
-                args.threadNoise,
-                using_override=using_override)
-            result['BaselineCompare'] = cresult[0]
-            result['log_raw'] += cresult[1] + '\n'
-            if cresult[0]:
-                test_failed = True
-        else:
-            LOGGER.warning("\tNo reference data, skipping")
 
         if args.out_file is None:
             print(result['log_raw'])

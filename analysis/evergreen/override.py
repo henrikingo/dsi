@@ -697,7 +697,7 @@ def validate(overrides_dict, jira_api_auth=None):
     for variant_name, variant_override in overrides_dict.items():
         assert variant_override, "No tasks specified in variant {}.".format(variant_name)
         for task_name, task_override in variant_override.items():
-            for override_type in ["reference", "ndays", "threshold"]:
+            for override_type in ["threshold"]:
                 assert override_type in task_override, \
                     'Required override type "{}" missing from override["{}"]["{}"]'.format(
                         override_type, variant_name, task_name)

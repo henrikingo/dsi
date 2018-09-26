@@ -247,77 +247,6 @@ def compare_to_previous(test, threshold, thread_threshold):
     }
 
 
-def compare_tag_delayed_trigger(test, threshold, thread_threshold):
-    """Baseline case with delayed trigger"""
-    if tag_history:
-        test_name = test['name']
-        previous = history.series_at_n_before(test_name, test['revision'], 1)
-        target = tag_history.series_at_tag(test_name, test['ref_tag'])
-        if not target:
-            print('        no reference data for test {0} with baseline'.format(test_name))
-            return {}
-        using_override = []
-        if test_name in overrides['reference']:
-            using_override.append('reference')
-            target = overrides['reference'][test_name]
-        return _delayed_trigger_analysis(test, target, previous, 'Baseline', threshold,
-                                         thread_threshold, using_override)
-    else:
-        return {}
-
-
-def _delayed_trigger_analysis(  # pylint: disable=too-many-arguments
-        test, target, previous, label, threshold, thread_threshold, using_override):
-    """Implement a delayed trigger based on the previous commit to reduce false alarms"""
-    previous_status = 'fail'
-    if previous is not None:
-        previous_status = compare_throughputs(previous, target, 'silent', threshold,
-                                              thread_threshold, using_override)
-
-    check_name = label + 'Compare'
-    if previous_status == 'fail':
-        return {
-            check_name:
-                compare_throughputs(test, target, label, threshold, thread_threshold,
-                                    using_override)
-        }
-    else:
-        # because of the 'silent' label, the log raw output isn't updated by this
-        must_fail = compare_throughputs(test, target, 'silent', threshold * 1.5,
-                                        thread_threshold * 1.5, using_override)
-        # only log the results for comparison to the standard threshold and thread_threshold.
-        this_status = compare_throughputs(test, target, label, threshold, thread_threshold,
-                                          using_override)
-        if must_fail == 'fail':
-            print('  {} check failed because of drop greater than 1.5 x threshold'.format(label))
-            return {check_name: 'fail'}
-        if this_status == 'fail':
-            print('  {} check considered passed as this is the first drop'.format(label))
-        return {check_name: 'pass'}
-
-
-def compare_to_tag(test, threshold, thread_threshold):
-    """Compare against the tagged performance data in `tag_history`."""
-
-    # if tag_history is undefined, skip this check completely
-    if tag_history:
-        reference = tag_history.series_at_tag(test['name'], test['ref_tag'])
-        if not reference:
-            print('        no reference data for test {} with baseline'.format(test['name']))
-            return {}
-        using_override = []
-        if test['name'] in overrides['reference']:
-            using_override.append('reference')
-            reference = overrides['reference'][test['name']]
-        return {
-            'BaselineCompare':
-                compare_throughputs(test, reference, 'Baseline', threshold, thread_threshold,
-                                    using_override)
-        }
-    else:
-        return {}
-
-
 # Utility functions and classes - these are functions and classes that load and manipulate
 # test results for various checks
 
@@ -430,7 +359,7 @@ QUARANTINED_RULES = [
 # we do during the PERF-580 perf_regression_check and post_run_check merge; right now they remain
 # in post_run_check because they currently access some number of global variables.
 
-REGRESSION_RULES = [compare_to_previous, compare_to_tag]
+REGRESSION_RULES = [compare_to_previous]
 
 PROJECT_TEST_RULES = {
     'sys-perf': {
@@ -440,7 +369,7 @@ PROJECT_TEST_RULES = {
         'linux-3-node-replSet-initialsync': REGRESSION_RULES
     },
     'mongo-longevity': {
-        'default': [compare_to_previous, compare_to_tag]
+        'default': [compare_to_previous]
     }
 }
 
