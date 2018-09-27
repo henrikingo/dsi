@@ -141,8 +141,8 @@
                 "next_index": 85
             },
             "expected": {
-                "start":29,
-                "end":30,
+                "start":28,
+                "end":29,
                 "location": "ahead"
             }
         },

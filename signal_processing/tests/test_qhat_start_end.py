@@ -125,7 +125,7 @@ class TestGenerateStartEnd(unittest.TestCase):
         Test single at start of array.
         """
         array = [5 if a else 10 for a in range(10)]
-        expected = [{'index': 0, 'start': 0, 'end': 1, 'location': 'ahead'}]
+        expected = [{'index': 0, 'start': 1, 'end': 2, 'location': 'ahead'}]
         self.assertEqual(list(generate_start_and_end([0], array)), expected)
 
     def test_single_at_end(self):
@@ -205,7 +205,7 @@ class TestGenerateStartEnd(unittest.TestCase):
         Test outlier up?
         """
         array = [5 for _ in range(5)] + [4, 10, 4] + [5 for _ in range(5)]
-        expected = [{'index': 7, 'start': 7, 'end': 8, 'location': 'ahead'}]
+        expected = [{'index': 7, 'start': 6, 'end': 7, 'location': 'ahead'}]
         actual = list(generate_start_and_end([7], array))
         self.assertEqual(actual, expected)
 
@@ -214,7 +214,7 @@ class TestGenerateStartEnd(unittest.TestCase):
         Test outlier down?
         """
         array = [15 for _ in range(5)] + [14, 10, 14] + [15 for _ in range(5)]
-        expected = [{'index': 7, 'start': 7, 'end': 8, 'location': 'ahead'}]
+        expected = [{'index': 7, 'start': 6, 'end': 7, 'location': 'ahead'}]
         actual = list(generate_start_and_end([7], array))
         self.assertEqual(actual, expected)
 
@@ -230,9 +230,9 @@ class TestGenerateStartEnd(unittest.TestCase):
             'start': 5
         }, {
             'location': 'ahead',
-            'end': 8,
+            'end': 7,
             'index': 7,
-            'start': 7
+            'start': 6
         }]
         actual = list(generate_start_and_end([6, 7], array))
         self.assertEqual(actual, expected)
@@ -249,9 +249,9 @@ class TestGenerateStartEnd(unittest.TestCase):
             'start': 5
         }, {
             'location': 'ahead',
-            'end': 8,
+            'end': 7,
             'index': 7,
-            'start': 7
+            'start': 6
         }]
         actual = list(generate_start_and_end([6, 7], array))
         self.assertEqual(actual, expected)

@@ -444,10 +444,10 @@ class TestPostRunCheck(unittest.TestCase):
         self.assertDictContainsSubset(
             math_utils.approx_dict({
                 'probability': 1.0,
-                'suspect_revision': 'cb',
-                'create_time': 32,
+                'suspect_revision': 'cd',
+                'create_time': 34,
                 'thread_level': 4,
-                'order': 32,
+                'order': 34,
                 'order_of_change_point': 0
             }), math_utils.approx_dict(points[1]))
         self.assertDictContainsSubset(

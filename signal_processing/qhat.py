@@ -193,7 +193,7 @@ def get_location(behind_average, value, ahead_average):
     return location
 
 
-def select_start_end(input_series, prev_index, index, next_index, weighting, bounds=5):
+def select_start_end(input_series, prev_index, index, next_index, weighting, bounds=1):
     # pylint: disable=too-many-arguments, too-many-locals, too-many-branches
     """
     To state it simply, we want to find the index that is furthest away from the desired mean line

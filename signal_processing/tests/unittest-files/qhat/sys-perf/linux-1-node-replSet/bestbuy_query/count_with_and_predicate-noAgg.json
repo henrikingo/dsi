@@ -133,8 +133,8 @@
                 "next_index": 123
             },
             "expected": {
-                "start":111,
-                "end":112,
+                "start":110,
+                "end":111,
                 "location": "ahead"
             }
         }
