@@ -14,6 +14,8 @@ import numpy as np
 import pymongo
 from signal_processing.commands.compare import LANDSCAPE_FIGSIZE
 
+from signal_processing.qhat import QHat, DEFAULT_WEIGHTING
+
 from signal_processing.detect_changes import PointsModel
 
 LOG = structlog.getLogger(__name__)
@@ -246,7 +248,70 @@ def on_pick_legend(figure, event, sigma_label=None, artists=None):
     figure.canvas.draw()
 
 
-def plot(result, sigma, filter_name="butter"):
+def plot_qhat_values(qhat,
+                     axis,
+                     series,
+                     xvals,
+                     revisions,
+                     change_points,
+                     label,
+                     start=None,
+                     end=None):
+    # pylint: disable=too-many-locals
+    """
+    Given a set of precalculated change points, calculate the qhat values for
+    each change point range.
+
+    :param QHat qhat: The instance to generate the qhat values.
+    :param matplotlib.axes.Axes axis: Where to draw the lines.
+    :param list series: The performance data.
+    :param list xvals: The x axis data.
+    :param list revisions: The revisions data.
+    :param list change_points: The change points (sorted by order_of_change_point).
+    :param str label: The label to use when plotting the qhat values.
+    :param start: The starting index for the range.  None implies the full range (0).
+    :type start: int or None.
+    :param end: The ending index for the range. None implies the full range (len(series)).
+    :type end: int or None.
+    :return: A list of the lines.
+    :rtype: list(matplotlib.artist.Artist)
+    """
+
+    qhat_lines = []
+    if change_points:
+        current = change_points[0]
+        if end is None:
+            end = len(series)
+        if start is None:
+            start = 0
+
+        values = qhat.qhat_values(series[start:end])
+        line, = axis.plot(xvals[start:end], values, '1-', label=label)
+        qhat_lines = [line]
+
+        revision = current['algorithm']['revision']
+        position = revisions.index(revision)
+
+        before = [
+            change_point for change_point in change_points
+            if change_point['order'] < current['order']
+        ]
+        before_qhat_lines = plot_qhat_values(
+            qhat, axis, series, xvals, revisions, before, label=label, start=start, end=position)
+        qhat_lines += before_qhat_lines
+
+        after = [
+            change_point for change_point in change_points
+            if change_point['order'] > current['order']
+        ]
+        after_qhat_lines = plot_qhat_values(
+            qhat, axis, series, xvals, revisions, after, label=label, start=position, end=end)
+        qhat_lines += after_qhat_lines
+
+    return qhat_lines
+
+
+def plot(result, sigma, filter_name="butter", show_qhat=True):
     # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     """
     Plot performance and change point data.
@@ -340,7 +405,6 @@ def plot(result, sigma, filter_name="butter"):
             upper_bound[suspect_revision_index - 1:suspect_revision_index - 1 + len(values)] = upper
         label = "discrete"
         discrete_lines, = axis.plot(xvals, data, '--', label=label)
-        # discrete_lines.set_visible(False)
 
         line_labeled_items.append(discrete_lines)
         labeled_items[label] = discrete_lines
@@ -351,6 +415,33 @@ def plot(result, sigma, filter_name="butter"):
 
         data = yhat
         lower_bound, upper_bound = generate_upper_lower_bounds(data, description, sigma)
+
+    if change_points and show_qhat:
+        qhat = QHat(
+            {
+                'series': series,
+                'revisions': revisions,
+                'orders': range(len(series)),
+                'create_times': create_times,
+                'testname': result['test'],
+                'thread_level': thread_level
+            },
+            pvalue=.05,
+            weighting=DEFAULT_WEIGHTING)
+
+        label = "qhat values"
+        twinx = axis.twinx()
+        qhat_lines = plot_qhat_values(
+            qhat,
+            twinx,
+            series,
+            xvals,
+            revisions,
+            sorted(change_points, key=lambda x: x['order_of_change_point']),
+            label=label)
+
+        line_labeled_items.extend(qhat_lines)
+        labeled_items[label] = qhat_lines
 
     label = 'series'
     line, = axis.plot(xvals, series, '-', label=label)
@@ -397,7 +488,12 @@ def plot(result, sigma, filter_name="butter"):
         other_labeled_items.append(change_points_scatter)
         labeled_items[label] = change_points_scatter
 
-    leg = axis.legend(loc='best', fancybox=True, shadow=True)
+    leg = axis.legend(
+        [value if not isinstance(value, list) else value[0] for value in labeled_items.values()],
+        labeled_items.keys(),
+        loc='best',
+        fancybox=True,
+        shadow=True)
     leg.get_frame().set_alpha(0.4)
 
     color = line.get_color()
@@ -427,7 +523,8 @@ def plot(result, sigma, filter_name="butter"):
                                   series=result))
 
     for legline in leg.legendHandles:
-        legline.set_picker(5)  # 5 pts tolerance
+        if legline:
+            legline.set_picker(5)  # 5 pts tolerance
 
     figure.canvas.mpl_connect('pick_event',
                               functools.partial(
@@ -440,7 +537,12 @@ def plot(result, sigma, filter_name="butter"):
     return plt
 
 
-def visualize(test_identifier, filter_name, command_config, sigma=1, only_change_points=True):
+def visualize(test_identifier,
+              filter_name,
+              command_config,
+              sigma=1,
+              only_change_points=True,
+              show_qhat=False):
     # pylint: disable=too-many-locals
     """
     Visualize the series including change points, yield the plot and thread level to the caller
@@ -495,4 +597,4 @@ def visualize(test_identifier, filter_name, command_config, sigma=1, only_change
                                   ('change_points', change_points)
                                  ]) #yapf: disable
 
-            yield plot(result, sigma, filter_name=filter_name), thread_level
+            yield plot(result, sigma, filter_name=filter_name, show_qhat=show_qhat), thread_level

@@ -949,6 +949,11 @@ At the moment, it supports:
 @click.option('--progressbar/--no-progressbar', default=True)
 @click.option('--show/--no-show', default=True)
 @click.option('--save/--no-save', default=False)
+@click.option(
+    '--qhat/--no-qhat',
+    'show_qhat',
+    default=False,
+    help="If set to true then display the qhat values for the change points.")
 @click.option('--exclude', 'excludes', multiple=True)
 @click.option('--sigma', 'sigma', default=1.0)
 @click.option('--filter', 'filter_type', default='butter')
@@ -957,8 +962,8 @@ At the moment, it supports:
 @click.argument('variant', required=False)
 @click.argument('task', required=False)
 @click.argument('test', required=False)
-def visualize_command(command_config, progressbar, show, save, excludes, sigma, filter_type,
-                      only_change_points, project, variant, task, test):
+def visualize_command(command_config, progressbar, show, save, show_qhat, excludes, sigma,
+                      filter_type, only_change_points, project, variant, task, test):
     # pylint: disable=too-many-locals, too-many-arguments, line-too-long
     """
 *Note : this command is provided as is and is liable to change or break.*
@@ -1048,7 +1053,8 @@ For Example:
                             filter_type,
                             command_config,
                             sigma=sigma,
-                            only_change_points=only_change_points): # yapf: disable
+                            only_change_points=only_change_points,
+                            show_qhat=show_qhat): # yapf: disable
                         if save:
                             pathname = os.path.join(command_config.out, test_identifier['project'],
                                                     test_identifier['variant'],
