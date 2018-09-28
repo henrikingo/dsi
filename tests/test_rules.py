@@ -141,30 +141,6 @@ class TestResourceRules(unittest.TestCase):
         expected = {}
         self.assertEqual(observed, expected)
 
-    def test_heap_cache_success(self):
-        """Test expected success for cache vs. heap size evaluation
-        """
-        rules.CACHE_ALLOCATOR_OVERHEAD = 0.08
-        observed = rules.compare_heap_cache_sizes(self.single_chunk_standalone,
-                                                  self.times_standalone)
-        expected = {}
-        self.assertEqual(observed, expected)
-
-    def test_heap_cache_fail(self):
-        """Test expected failure for cache vs. heap size evaluation
-        """
-        rules.CACHE_ALLOCATOR_OVERHEAD = -1.0
-        observed = rules.compare_heap_cache_sizes(self.single_chunk_3node, self.times_3node)
-        expected = {
-            'times': self.times_3node,
-            'compared_values': [(32554, 61972480), (32554, 64008192)],
-            'labels': ('current cache size (bytes)', 'tcmalloc generic heap size (bytes)')
-        }
-        self.assertEqual(observed, expected)
-
-        # Reset to configured. Would rather this be in a config, iffy on testing this way.
-        rules.CACHE_ALLOCATOR_OVERHEAD = 0.08
-
     def test_max_connections_success(self):
         """Test expected success for current # connections below our specified upper bound
         """

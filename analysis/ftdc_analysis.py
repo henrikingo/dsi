@@ -24,10 +24,7 @@ RESOURCE_RULES_FTDC_FILE = {
 }
 
 # rules run for every variant
-COMMON_RULES = [
-    rules.below_configured_cache_size, rules.compare_heap_cache_sizes,
-    rules.below_configured_oplog_size
-]
+COMMON_RULES = [rules.below_configured_cache_size, rules.below_configured_oplog_size]
 
 RESOURCE_RULES_FTDC_CHUNK = {
     'sys-perf': {

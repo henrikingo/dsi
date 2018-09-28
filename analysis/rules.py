@@ -246,31 +246,6 @@ def below_configured_cache_size(chunk, times, configured_cache_size):
     return failure_collection(failure_times, compared_values, labels, additional)
 
 
-def compare_heap_cache_sizes(chunk, times):
-    """Is the current cache size within (1+CACHE_ALLOCATOR_OVERHEAD) * tcmalloc generic heap size?
-
-    :param collection.OrderedDict chunk: FTDC JSON chunk
-    :param list[int] times: the time at which each metric value was collected
-    :rtype: dict
-    """
-    if FTDC_KEYS['cache_size'] not in chunk or FTDC_KEYS['heap_size'] not in chunk:
-        return {}
-
-    cache_size_values = chunk[FTDC_KEYS['cache_size']]
-    heap_size_values = chunk[FTDC_KEYS['heap_size']]
-
-    failure_times = []
-    labels = ('current cache size (bytes)', 'tcmalloc generic heap size (bytes)')
-    compared_values = []
-
-    for index, cache_size in enumerate(cache_size_values):
-        heap_size = heap_size_values[index]
-        if cache_size >= (1 + CACHE_ALLOCATOR_OVERHEAD) * heap_size:
-            failure_times.append(times[index])
-            compared_values.append((cache_size, heap_size))
-    return failure_collection(failure_times, compared_values, labels)
-
-
 def max_connections(chunk, times, max_thread_level, repl_member_list):
     """Does the total number of connections remain below some expected limit?
     NOTES:

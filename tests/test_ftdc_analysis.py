@@ -17,47 +17,6 @@ class TestFtdcAnalysis(unittest.TestCase):
     Test suite
     """
 
-    def test_resource_rules_fail(self):
-        """
-        Specifically test that we get the expected report info for resource sanity checks upon
-        failure
-        """
-        dir_path = FIXTURE_FILES.fixture_file_path('core_workloads_reports_memusagefail')
-        project = 'sys-perf'
-        variant = 'linux-standalone'
-        constant_values = {'max_thread_level': 64}
-
-        actual = ftdc_analysis.resource_rules(dir_path, project, variant, constant_values)
-
-        message = "\n".join([
-            "Failed resource sanity check initialsync_c_32_d_32_w_t for host mongod.0",
-            "RULE compare_heap_cache_sizes",
-            "  First failure occurred at time 2017-12-14 15:47:25Z",
-            "\tcurrent cache size (bytes): 16817574890",
-            "\ttcmalloc generic heap size (bytes): 15538823168",
-            "\tFailures seen at times: ['2017-12-14 15:47:25Z', '2017-12-14 15:47:26Z', "
-            "'2017-12-14 15:47:27Z', '2017-12-14 15:47:28Z', '2017-12-14 15:47:29Z', "
-            "'2017-12-14 15:47:30Z', '2017-12-14 15:47:31Z', '2017-12-14 15:47:32Z', "
-            "'2017-12-14 15:47:33Z', '2017-12-14 15:47:34Z', '2017-12-14 15:47:35Z', "
-            "'2017-12-14 15:47:36Z', '2017-12-14 15:47:37Z', '2017-12-14 15:47:38Z', "
-            "'2017-12-14 15:47:39Z', '2017-12-14 15:47:40Z', '2017-12-14 15:47:41Z', "
-            "'2017-12-14 15:47:42Z', '2017-12-14 15:47:43Z', '2017-12-14 15:47:44Z', "
-            "'2017-12-14 15:47:45Z', '2017-12-14 15:47:46Z', '2017-12-14 15:47:47Z', "
-            "'2017-12-14 15:47:48Z', '2017-12-14 15:47:49Z', '2017-12-14 15:47:50Z', "
-            "'2017-12-14 15:47:51Z', '2017-12-14 15:47:52Z', '2017-12-14 15:47:53Z', "
-            "'2017-12-14 15:47:54Z', '2017-12-14 15:47:55Z', '2017-12-14 15:47:56Z', "
-            "'2017-12-14 15:47:57Z', '2017-12-14 15:47:58Z', '2017-12-14 15:47:59Z']", ""
-        ])
-        expected_result = {
-            'status': 'fail',
-            'end': 1,
-            'log_raw': message,
-            'exit_code': 1,
-            'start': 0,
-            'test_file': 'resource_sanity_checks'
-        }
-        self.assertEqual(actual, expected_result)
-
     def test_resource_rules_pass(self):
         """
         Specifically test that we get the expected report info for resource sanity checks upon
