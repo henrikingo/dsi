@@ -199,7 +199,8 @@ def run_test(test, config, reports_dir='reports'):
     generate_config_file(test, directory, client_host)
 
     with open(filename, 'wb+', 0) as out:
-        tee_out = common.log.TeeStream(INFO_ADAPTER, out)
+        safe_out = common.log.UTF8WrapperStream(out)
+        tee_out = common.log.TeeStream(INFO_ADAPTER, safe_out)
         try:
             exit_status = client_host.exec_command(
                 test['cmd'],

@@ -1,6 +1,9 @@
 """
 Set up logging for DSI scripts.
 """
+from __future__ import print_function
+import sys
+
 import logging
 from StringIO import StringIO
 import structlog
@@ -76,6 +79,48 @@ class IOLogAdapter(StringIO):
         for line in iterable:
             self._barf_if_closed()
             self.write(line)
+
+
+class UTF8WrapperStream(object):
+    """
+    Get around Python 2's terrible utf-8 handling.
+    Wraps a delegate stream and any write* calls
+    will first encode the value in utf-8 and ignore
+    any conversion errors.
+
+    This hopefully goes away when DSI moves to Python 3.
+    """
+
+    def __init__(self, child):
+        """
+        :param child: child io-stream or file-like object.
+        """
+        self._child = child
+        if sys.version_info[0] > 2:
+            # can't rely on logging yet!
+            print(
+                "UTF8WrapperStream is only necessary in Python versions prior to 3.0",
+                file=sys.stderr)
+
+    def write(self, line):
+        """Write to the underlying stream first converting to utf-8."""
+        self._child.write(line.encode('utf-8', 'ignore'))
+        # ignore means ignore any characters can't couldn't be converted to
+        # utf-8 and continue on with the rest
+        # https://docs.python.org/2/library/codecs.html#codec-base-classes
+
+    def writelines(self, lines):
+        """Write lines. See write()."""
+        for line in lines:
+            self.write(line)
+
+    def flush(self):
+        """Pass-through to child.flush()"""
+        self._child.flush()
+
+    def close(self):
+        """Pass-through to child.close()"""
+        self._child.close()
 
 
 class TeeStream(object):
