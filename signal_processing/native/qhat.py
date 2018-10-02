@@ -49,7 +49,7 @@ try:
     MATRIX_DOUBLE = npct.ndpointer(dtype=np.double, ndim=2, flags='CONTIGUOUS')
 
     # load the library, using numpy mechanisms
-    so_path = os.path.abspath(__file__)
+    so_path = os.path.dirname(os.path.abspath(__file__))
     LOG.info("loading qhat native", so_path=so_path)
     LIB_QHAT = npct.load_library("_qhat", so_path)
 

@@ -27,7 +27,7 @@ class CustomBuildExt(build_ext):
     warning_message = '''
 ********************************************************************
 WARNING: %s could not
-be compiled. No C extensions are essential for PyMongo to run,
+be compiled. No C extensions are essential for signal processing to run,
 although they do result in significant speed improvements.
 %s
 '''
@@ -58,10 +58,7 @@ although they do result in significant speed improvements.
                 sys.stdout.write('%s\n' % str(e))
                 warnings.warn(self.warning_message % ("The %s extension "
                                                       "module" % (name,),
-                                                      "The output above "
-                                                      "this warning shows how "
-                                                      "the compilation "
-                                                      "failed."))
+                                                      "failed to compile."))
         else:
             warnings.warn(self.warning_message % ("The %s extension "
                                                   "module" % (name,),
@@ -80,7 +77,8 @@ ext_modules = [
     distutils.core.Extension(
         'signal_processing.native._qhat',
         sources=['./signal_processing/native/qhat.c'],
-        extra_compile_args=["-O3"])
+        extra_compile_args=["-O3"],
+        extra_link_args=["-shared"])
 ]
 extra_opts = {}
 
@@ -106,13 +104,19 @@ else:
 # pylint: disable=invalid-name
 install_requirements = ['boto3==1.4.7',
                         'click==6.7',
-                        'colorama===0.3.9',
+                        'colorama==0.3.9',
+                        "dnspython==1.15.0",
+                        "jira==1.0.15",
+                        "numpy==1.13.3",
                         'pymongo==3.6.1',
-                        'PyYAML===3.12',
-                        'requests===2.18.4',
+                        "python-dateutil==2.6.1",
+                        'PyYAML==3.12',
+                        'requests==2.18.4',
                         'scipy==1.1.0',
-                        'structlog===18.1.0']
-
+                        'structlog==18.1.0']
+extras_require = {
+    'Plotting':  ["matplotlib==2.1.0"]
+}
 setup(
     name='DSI',
     version='1.0',
@@ -128,6 +132,7 @@ setup(
               'analysis',
               'analysis.evergreen'],
     install_requires=install_requirements,
+    extras_require=extras_require,
     # Cannot zip due to usage of __file__.
     zip_safe=False,
     use_2to3=True,

@@ -13,8 +13,14 @@ fi
 
 new_env=0
 if [ ! -d "venv" ]; then
+    python_path=/opt/mongodbtoolchain/v2/bin/python2.7
+    if [ ! -e "$python_path" ]; then
+        echo "${python_path} does not exists"
+        python_path="$(which python)"
+    fi
+    echo "creating new env with python: ${python_path}"
     _pip install virtualenv
-    /usr/bin/env virtualenv -q venv
+    /usr/bin/env virtualenv -q venv --python="${python_path}"
     new_env=1
 fi
 

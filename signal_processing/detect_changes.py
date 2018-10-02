@@ -6,6 +6,7 @@ from multiprocessing import Pool, cpu_count
 import time
 from collections import OrderedDict, defaultdict
 
+import click
 import pymongo
 import structlog
 
@@ -16,6 +17,11 @@ from bin.common import config
 from bin.common import log
 
 LOG = structlog.getLogger(__name__)
+
+DEFAULT_MONGO_REPO = './src/mongo'
+"""
+The expected mongo repo location.
+"""
 
 REQUIRED_KEYS = set(['revision', 'order', 'create_time'])
 """
@@ -279,7 +285,13 @@ class DetectChangesDriver(object):
     """
 
     # pylint: disable=too-few-public-methods,too-many-arguments
-    def __init__(self, perf_json, mongo_uri, weighting, mongo_repo, credentials=None):
+    def __init__(self,
+                 perf_json,
+                 mongo_uri,
+                 weighting,
+                 mongo_repo,
+                 credentials=None,
+                 pool_size=None):
         """
         :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
         :param str mongo_uri: The uri to connect to the cluster.
@@ -293,6 +305,9 @@ class DetectChangesDriver(object):
         self.weighting = weighting
         self.mongo_repo = mongo_repo
         self.credentials = credentials
+        if pool_size is None:
+            pool_size = max(1, cpu_count() - 1)
+        self.pool_size = pool_size
 
     def run(self):
         """
@@ -305,48 +320,69 @@ class DetectChangesDriver(object):
             credentials=self.credentials)
 
         start = datetime.now()
-        pool_size = max(1, cpu_count() - 1)
-        pool = Pool(pool_size)
+        pool = Pool(self.pool_size)
         for test in etl_helpers.extract_tests(self.perf_json):
             pool.apply_async(
                 method_adapter, args=(model, test, self.weighting), callback=print_result)
         pool.close()
         pool.join()
         duration = (datetime.now() - start).total_seconds()
-        LOG.debug("Detect changes complete", duration=duration, pool_size=pool_size)
-        print "Detect changes complete duration={} over {} processes.".format(duration, pool_size)
+        LOG.debug("Detect changes complete", duration=duration, pool_size=self.pool_size)
+        print "Detect changes complete duration={} over {} processes.".format(
+            duration, self.pool_size)
 
 
-def detect_changes():
+def detect_changes(task_id, patch, mongo_uri, pool_size, mongo_repo=DEFAULT_MONGO_REPO):
     """
     Setup and run the detect changes algorithm.
     """
     # Send the logging output into detect_changes.log, this needs to be copied into the
     # reports directory later.
-    log.setup_logging(True, 'detect_changes.log')
     evg_client = evergreen_client.Client()
-    conf = config.ConfigDict('analysis')
-    conf.load()
-    perf_json = evg_client.query_perf_results(conf['runtime']['task_id'])
-    mongo_uri = conf['analysis']['mongo_uri']
-    if not conf['runtime'].get('is_patch', False):
+    perf_json = evg_client.query_perf_results(task_id)
+    if not patch:
         etl_helpers.load(perf_json, mongo_uri)
     # TODO : we probably want some way of passing a weighting in going forward. PERF-1588.
     changes_driver = DetectChangesDriver(
-        perf_json, mongo_uri, weighting=DEFAULT_WEIGHTING, mongo_repo='./src')
+        perf_json,
+        mongo_uri,
+        weighting=DEFAULT_WEIGHTING,
+        mongo_repo=mongo_repo,
+        pool_size=pool_size)
     changes_driver.run()
 
 
-def main():
+@click.command()
+@click.option('-l', '--logfile', default='detect_changes.log', help='The log file location.')
+@click.option(
+    '--pool-size', default=None, help='The multiprocessor pool size. None => num(cpus) -1.')
+@click.option('-v', 'verbose', count=True, help='Control the verbosity.')
+@click.option(
+    '--mongo-repo',
+    default=DEFAULT_MONGO_REPO,
+    help='The location of the mongo repo. This location is used to get the git revisions.')
+def main(logfile, pool_size, verbose, mongo_repo):
     """
     Main function.
 
     PERF-1519: While signal processing based analysis is in development, and not yet the official
     truth wrt pass/fail, we want to always exit cleanly.
+    TIG-1065: Capture numpy errors and warnings to logs.
     """
     # pylint: disable=broad-except
     try:
-        detect_changes()
+        log.setup_logging(True if verbose > 0 else False, filename=logfile)
+        conf = config.ConfigDict('analysis')
+        conf.load()
+
+        task_id = conf['runtime']['task_id']
+        patch = conf['runtime'].get('is_patch', False)
+        mongo_uri = conf['analysis']['mongo_uri']
+
+        if pool_size is not None:
+            pool_size = int(pool_size)
+
+        detect_changes(task_id, patch, mongo_uri, pool_size, mongo_repo=mongo_repo)
     except Exception:
         # Note: If setup_logging() failed, this will just print:
         #     No handlers could be found for logger "signal_processing.detect_changes"
