@@ -133,6 +133,8 @@ class Host(object):
                 '-u', self.mongodb_auth_settings.mongo_user, '-p',
                 self.mongodb_auth_settings.mongo_password, '--authenticationDatabase', 'admin'
             ])
+        # connection_string can contain ampersands. Quote it as a point fix.
+        connection_string = '"' + connection_string + '"'
         argv.extend([connection_string, remote_file_name])
         status_code = self.exec_command(
             argv, stdout=stdout, stderr=stderr, max_time_ms=max_time_ms, quiet=quiet)

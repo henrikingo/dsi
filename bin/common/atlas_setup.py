@@ -4,15 +4,11 @@ MongoDB Setup but for Atlas clusters
 
 Instead of creating our own MongoDB clusters, we make REST calls to Atlas instead.
 """
-import argparse
 import copy
 import logging
 import random
-import sys
 
-import common.atlas_client as atlas_client
-import common.config
-import common.log as log
+import atlas_client
 
 LOG = logging.getLogger(__name__)
 
@@ -32,6 +28,24 @@ class AtlasSetup(object):
         """
         self.config = config
         self.mongodb_setup = self.config['mongodb_setup']
+        # Note that both for api and api_credentials, they will only exist
+        self.api = {}
+        if "atlas" in self.mongodb_setup and "api" in self.mongodb_setup["atlas"]:
+            self.api = self.mongodb_setup["atlas"]["api"].as_dict()
+        LOG.debug("Atlas api config = %s", self.api)
+
+        self.api_credentials = {}
+        if ("atlas_api_user" in self.config["runtime_secret"]
+                and "atlas_api_key" in self.config["runtime_secret"]):
+
+            self.api_credentials["user"] = self.config["runtime_secret"].get("atlas_api_user", "")
+            self.api_credentials["key"] = self.config["runtime_secret"].get("atlas_api_key", "")
+            LOG.debug("Atlas credentials = %s:%s***", self.api_credentials["user"],
+                      self.api_credentials["key"][0:5] if self.api_credentials["key"] else "")
+
+        if "root" in self.api and "group_id" in self.api and self.api_credentials:
+            self.atlas_client = atlas_client.AtlasClient(self.api, self.api_credentials)
+
         # Initialize empty objects here to simplify all later code
         if not "out" in self.mongodb_setup:
             self.mongodb_setup["out"] = {}
@@ -39,15 +53,6 @@ class AtlasSetup(object):
             self.mongodb_setup["out"]["atlas"] = {}
         if not "clusters" in self.mongodb_setup["out"]["atlas"]:
             self.mongodb_setup["out"]["atlas"]["clusters"] = []
-
-        self.api = self.mongodb_setup["atlas"]["api"].as_dict()
-        LOG.debug("Atlas api config = %s", self.api)
-        self.api_credentials = {}
-        self.api_credentials["user"] = self.config["runtime_secret"]["atlas_api_user"]
-        self.api_credentials["key"] = self.config["runtime_secret"]["atlas_api_key"]
-        LOG.debug("Atlas credentials = %s:%s***", self.api_credentials["user"],
-                  self.api_credentials["key"][0:5])
-        self.atlas_client = atlas_client.AtlasClient(self.api, self.api_credentials)
 
     def start(self):
         """
@@ -60,15 +65,21 @@ class AtlasSetup(object):
         # Repeated calls to start() would generate new cluster(s) with new unique name(s).
         # I decided that would probably be a bad thing, so not supporting repeated start() without
         # calling destroy() in between.
+        LOG.info("AtlasSetup.start")
         if self.mongodb_setup["out"]["atlas"]["clusters"]:
             LOG.error("Clusters already exist in mongodb_setup.out.atlas.clusters.")
             LOG.error("Please shutdown existing clusters first with atlas_teardown.py.")
             LOG.debug(self.mongodb_setup["out"])
             return False
 
-        return all(
-            self.create_cluster(atlas_cluster)
-            for atlas_cluster in self.mongodb_setup["atlas"]["clusters"])
+        if "atlas" in self.mongodb_setup and "clusters" in self.mongodb_setup["atlas"]:
+            return all(
+                self.create_cluster(atlas_cluster)
+                for atlas_cluster in self.mongodb_setup["atlas"]["clusters"])
+
+        # else
+        LOG.debug("AtlasSetup.start: Nothing to do.")
+        return True
 
     def destroy(self):
         """
@@ -119,9 +130,16 @@ class AtlasSetup(object):
     def _save_create_response(self, response):
         new_object = {}
         save_fields = ("name", "stateName", "mongoURI", "mongoURIWithOptions", "mongoURIUpdated")
+        prefix = len("mongodb://")
         for key in save_fields:
             if key in response:
                 new_object[key] = response[key]
+                # Store a couple things without mongodb:// prefix. These are useful as building
+                # blocks in the config file.
+                if key == "mongoURIWithOptions":
+                    new_object["mongodb_url"] = response[key][prefix:]
+                if key == "mongoURI":
+                    new_object["hosts"] = response[key][prefix:]
 
         LOG.debug(new_object)
         # While this is a list, we actually lookup by cluster name.
@@ -187,36 +205,3 @@ class AtlasSetup(object):
             if cluster["name"] == name:
                 return index
         return None
-
-
-def parse_command_line():
-    """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description='Start a MongoDB cluster in Atlas')
-    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
-    parser.add_argument('--log-file', help='path to log file')
-
-    return parser.parse_args()
-
-
-def main():
-    """ Handle the main functionality (parse args /setup logging ) and then start the mongodb
-    cluster."""
-    args = parse_command_line()
-    log.setup_logging(args.debug, args.log_file)
-    LOG.info("atlas_setup.py start")
-
-    config = common.config.ConfigDict('mongodb_setup')
-    config.load()
-
-    # start a mongodb configuration using config
-    atlas = AtlasSetup(config)
-    if atlas.start():
-        LOG.info("atlas_setup.py end -- AtlasSetup.start() success")
-        return 0
-
-    LOG.info("atlas_setup.py end -- AtlasSetup.start() failed")
-    return 1
-
-
-if __name__ == '__main__':
-    sys.exit(main())

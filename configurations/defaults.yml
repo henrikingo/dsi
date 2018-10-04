@@ -11,7 +11,8 @@ bootstrap:
   production: false
   # Note: It's also allowed to upload your own binary. You can unset this by setting to the empty
   # string "" in bootstrap.yml
-  mongodb_binary_archive: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.6.3.tgz
+  # This URL is r4.0.2. We use the sys-perf build instead of official release to include the jstests/ directory that we copy in our compile task.
+  mongodb_binary_archive: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_4.0_fc1573ba18aee42f97a3bb13b67af7d837826b47/fc1573ba18aee42f97a3bb13b67af7d837826b47/linux/mongodb-sys_perf_4.0_fc1573ba18aee42f97a3bb13b67af7d837826b47.tar.gz
   workloads_dir: ./workloads
   ycsb_dir: ./YCSB
   linkbench_dir: ./linkbench
@@ -92,11 +93,6 @@ mongodb_setup:
     systemLog:
       destination: file
       path: data/logs/mongod.log
-
-  topology:
-    - cluster_type: standalone
-      public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
-      private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
 
   # these options are passed to the mongo shutdownServer command
   shutdown_options:

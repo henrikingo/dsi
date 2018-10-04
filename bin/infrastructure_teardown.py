@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""""
+"""
 Teardown AWS resources using terraform.
 It is important this python file can be used without any dependencies on our own other python files
 since in one of the cases the script is used, it is isolated from the other python files. This
@@ -13,12 +13,15 @@ import logging
 import os
 import subprocess
 from subprocess import CalledProcessError
+import sys
 
 LOG = logging.getLogger(__name__)
 
 
 def destroy_resources():
-    """ Destroys AWS resources using terraform """
+    """
+    Destroys AWS resources using terraform.
+    """
     teardown_script_path = os.path.dirname(os.path.abspath(__file__))
     previous_directory = None
     terraform = None
@@ -56,9 +59,37 @@ def destroy_resources():
         os.chdir(previous_directory)
 
 
+def destroy_atlas_resources():
+    """
+    Destroys Atlas resources using atlas_client REST call.
+    """
+    # The following will work if run from a work directory, such as during an Evergreen task.
+    # It will cause ImportError when run from an Evergreen teardown hook.
+    # This means Atlas clusters must be shut down at the end of the task, they are not reused.
+    try:
+        import common.config
+        import common.atlas_setup as atlas_setup
+    except ImportError:
+        LOG.info("Cannot import ConfigDict. Skipping Atlas teardown.")
+        LOG.info("(This is benign inside evergreen teardown hook.)")
+        return True
+
+    # AtlasSetup.destroy() will write to mongodb_setup.out.yml
+    config = common.config.ConfigDict('mongodb_setup')
+    config.load()
+
+    # start a mongodb configuration using config
+    atlas = atlas_setup.AtlasSetup(config)
+    atlas.destroy()
+
+    return True
+
+
 def parse_command_line():
-    """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description='Destroy EC2 instances on AWS using terraform.')
+    """
+    Parse command line arguments.
+    """
+    parser = argparse.ArgumentParser(description='Destroy EC2 & Atlas resources.')
     parser.add_argument('--log-file', help='path to log file')
     parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
     args = parser.parse_args()
@@ -80,11 +111,30 @@ def setup_logging(verbose, filename=None):
 
 
 def main():
-    """ Main Function """
+    """
+    Main function.
+    """
+    return_value = 0
     args = parse_command_line()
     setup_logging(args.debug, args.log_file)
-    destroy_resources()
+    try:
+        destroy_resources()
+    except:  # pylint: disable=broad-except, bare-except
+        LOG.error("Teardown of EC2 resources failed.")
+        LOG.error("Check EC2 console to see if something still needs to be terminated.")
+        LOG.error("Stack trace:", exc_info=1)
+        return_value += 1
+
+    try:
+        destroy_atlas_resources()
+    except:  # pylint: disable=broad-except, bare-except
+        LOG.error("Teardown of Atlas resources failed.")
+        LOG.error("Check Atlas console to see if something still needs to be terminated.")
+        LOG.error("Stack trace:", exc_info=1)
+        return_value += 2  # Using powers of two to distinguish failures in return_value
+
+    return return_value
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

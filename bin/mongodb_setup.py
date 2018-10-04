@@ -11,6 +11,7 @@ import logging
 
 import argparse
 
+import common.atlas_setup as atlas_setup
 import common.host_utils
 from common.command_runner import run_host_commands, run_upon_error
 from common.download_mongodb import DownloadMongodb
@@ -40,7 +41,7 @@ class MongodbSetup(object):
 
     def parse_topologies(self):
         """Create cluster for each topology"""
-        for topology in self.config['mongodb_setup']['topology']:
+        for topology in self.mongodb_setup.get('topology', []):
             self.clusters.append(common.mongodb_cluster.create_cluster(topology, self.config))
 
     def add_default_users(self):
@@ -254,9 +255,14 @@ def main():
     config = ConfigDict('mongodb_setup')
     config.load()
 
-    # start a mongodb configuration using config module
+    # Start MongoDB cluster(s) using config given in mongodb_setup.topology (if any).
+    # Note: This also installs mongo client binary onto workload client.
     mongo = MongodbSetup(config=config)
     start_cluster(mongo, config)
+
+    # Start Atlas clusters using config given in mongodb_setup.atlas (if any).
+    atlas = atlas_setup.AtlasSetup(config)
+    atlas.start()
 
 
 if __name__ == '__main__':

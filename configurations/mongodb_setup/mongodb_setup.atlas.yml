@@ -2,6 +2,7 @@ atlas:
   api:
     root: https://cloud-dev.mongodb.com/api/atlas/v1.0/
     group_id: 5b991a4880eef5262645e0c7
+    # atlas_api_user and atlas_api_key are given in runtime_secret.yml
   clusters:
     - autoScaling:
         diskGBEnabled: false
@@ -16,17 +17,15 @@ atlas:
       diskSizeGB: 320  # sys-perf uses 320
 
 # Meta data about this mongodb setup
-# meta:
-#   # The list of hosts that can be used in a mongodb connection string
-#   hosts: ${mongodb_setup.topology.0.private_ip}:27017
-#   hostname: ${mongodb_setup.topology.0.private_ip}
-#   port: 27017
-#   is_sharded: false
-#   is_replset: false
-#   mongodb_setup: standalone
-#   mongodb_url: ${mongodb_setup.authentication.${bootstrap.authentication}.mongodb_url}
+meta:
+  mongodb_setup: atlas
+  username: ${runtime_secret.atlas_database_user}
+  password: ${runtime_secret.atlas_database_password}
+  # The list of hosts that can be used in a mongodb connection string
+  hosts: ${mongodb_setup.out.atlas.clusters.0.hosts}
+  is_sharded: false
+  is_replset: true
+  mongodb_url: mongodb://${mongodb_setup.meta.username}:${mongodb_setup.meta.password}@${mongodb_setup.out.atlas.clusters.0.mongodb_url}
 
-## Hosts to run correctness checks on.
-# validate:
-#   standalone:
-#     - ${mongodb_setup.topology.0.private_ip}:27017
+# No correctness checks can be run, since we don't have the log file and diagnostic.data.
+validate: This entry is here just to make yamllint happy :-(

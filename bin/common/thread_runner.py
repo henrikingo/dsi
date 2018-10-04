@@ -22,7 +22,7 @@ def run_threads(commands, daemon=False):
     Given a list of commands, run threads and return the results as a list.
     """
     if not commands:
-        return
+        return []
     threads = []
     thread_results = Queue.Queue(maxsize=len(commands))
     thread_exceptions_bucket = Queue.Queue()

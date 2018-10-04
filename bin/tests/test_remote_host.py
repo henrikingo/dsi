@@ -426,18 +426,18 @@ class RemoteHostTestCase(unittest.TestCase):
         test_host = 'test_host'
         test_script = 'test_script'
         test_connection_string = 'test_connection_string'
-        test_argv = ['bin/mongo', '--verbose']
+        expected_argv = ['bin/mongo', '--verbose']
         if mongodb_auth_settings is not None:
-            test_argv.extend(
+            expected_argv.extend(
                 ['-u', 'username', '-p', 'password', '--authenticationDatabase', 'admin'])
-        test_argv.extend([test_connection_string, test_file])
+        expected_argv.extend(['"' + test_connection_string + '"', test_file])
         remote = common.remote_host.RemoteHost(test_host, test_user, test_pem_file,
                                                mongodb_auth_settings)
         status_code = remote.exec_mongo_command(test_script, test_file, test_connection_string)
         self.assertTrue(status_code == 0)
         mock_create_file.assert_called_with(test_file, test_script)
         mock_exec_command.assert_called_with(
-            test_argv, stdout=None, stderr=None, max_time_ms=None, quiet=False)
+            expected_argv, stdout=None, stderr=None, max_time_ms=None, quiet=False)
 
     def test_exec_mongo_command_no_auth(self):
         self.helper_exec_mongo_command(None)
