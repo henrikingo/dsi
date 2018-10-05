@@ -28,7 +28,7 @@ PROVISION_LOG_PATH = 'terraform.stdout.log'
 CLUSTER_JSON = "cluster.json"
 
 # Increase this to force a teardown of clusters whose evg_data_dir is from a previous version.
-VERSION = "4"
+VERSION = "5"
 
 
 def check_version(file_path):

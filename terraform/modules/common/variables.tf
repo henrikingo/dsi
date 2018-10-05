@@ -1,16 +1,35 @@
 
 variable "amis" {
     default = {
-        "us-west-2a" = "ami-f173cc91" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
-        "us-west-2b" = "ami-f173cc91" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
-        "us-west-2c" = "ami-f173cc91" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
-        "us-west-2d" = "ami-f173cc91" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
 
-        "us-east-1a" = "ami-0b33d91d" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
+        #
+        # AMIs last updated 2018-09-28
+        #
+        # "Amazon Linux 2 - 9/25/2018 Update"
+        # https://aws.amazon.com/amazon-linux-2/release-notes/
+        #
+        # Get updated AMI IDs at the following URLs:
+        #
+        #   us-west-2: https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#LaunchInstanceWizard:
+        #   us-east-1: https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#LaunchInstanceWizard:
+        #   eu-west-1: https://eu-west-1.console.aws.amazon.com/ec2/v2/home?region=eu-west-1#LaunchInstanceWizard:
+        #
+        # Search for "Amazon Linux 2 AMI (HVM), SSD Volume Type"
+        #
+        # Refer to this PR for other things to consider changing:
+        # https://github.com/10gen/dsi/pull/189
+        #
 
-        "eu-west-1a" = "ami-70edb016" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
-        "eu-west-1b" = "ami-70edb016" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
-        "eu-west-1c" = "ami-70edb016" # Amazon Linux AMI 2016.09.1 (HVM), SSD Volume Type
+        "us-west-2a" = "ami-6cd6f714"
+        "us-west-2b" = "ami-6cd6f714"
+        "us-west-2c" = "ami-6cd6f714"
+        "us-west-2d" = "ami-6cd6f714"
+
+        "us-east-1a" = "ami-04681a1dbd79675a5"
+
+        "eu-west-1a" = "ami-0bdb1d6c15a40392c"
+        "eu-west-1b" = "ami-0bdb1d6c15a40392c"
+        "eu-west-1c" = "ami-0bdb1d6c15a40392c"
     }
 }
 
