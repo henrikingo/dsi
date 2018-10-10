@@ -29,6 +29,32 @@ class TestListBuildFailures(unittest.TestCase):
         mock_stringify_json.assert_called_once_with(mock_find.return_value[0], mock_config.compact)
 
     @patch('signal_processing.commands.list_build_failures.stringify_json', autospec=True)
+    def test_maps_fieldnames(self, mock_stringify_json):
+        """ Test that list_build_failures remaps field names."""
+
+        mock_find = MagicMock(name='find', return_value=[{}])
+        mock_linked_build_failures = MagicMock(name='linked_build_failures', find=mock_find)
+        mock_database = MagicMock(name='database', linked_build_failures=mock_linked_build_failures)
+        query = {
+            'find': 'me',
+            'variant': 'variant name',
+            'task': 'taskname',
+            'suspect_revision': 'revision'
+        }
+        expected = {
+            'find': 'me',
+            'buildvariants': 'variant name',
+            'tasks': 'taskname',
+            'revision': 'revision'
+        }
+
+        human_readable = False
+        mock_config = MagicMock(name='config', database=mock_database, compact=True)
+        list_build_failures(query, human_readable, mock_config)
+        mock_find.assert_called_once_with(expected)
+        mock_stringify_json.assert_called_once_with(mock_find.return_value[0], mock_config.compact)
+
+    @patch('signal_processing.commands.list_build_failures.stringify_json', autospec=True)
     def test_list_build_failures_expanded(self, mock_stringify_json):
         """ Test that list_build_failures works with the `expanded` option."""
 

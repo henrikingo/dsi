@@ -28,6 +28,11 @@ def list_build_failures(query, human_readable, command_config):
     if 'task' in query:
         query['tasks'] = query.pop('task')
 
+    if 'suspect_revision' in query:
+        suspect_revision = query.pop('suspect_revision')
+        if suspect_revision:
+            query['revision'] = suspect_revision
+
     for build_failure in collection.find(query):
         if human_readable:
             _print_human_readable(build_failure)
