@@ -28,6 +28,8 @@ PROVISION_LOG_PATH = 'terraform.stdout.log'
 CLUSTER_JSON = "cluster.json"
 
 # Increase this to force a teardown of clusters whose evg_data_dir is from a previous version.
+# You will also need to fix the tests (specifically the fixture files listed in
+# test_infrastructure_provisioning.py).
 VERSION = "5"
 
 

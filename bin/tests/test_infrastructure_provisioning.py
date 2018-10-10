@@ -22,6 +22,11 @@ import test_lib.structlog_for_test as structlog_for_test
 
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
+# If VERSION is updated then the following files also need to be modified
+# bin/tests/unittest-files/terraform/provisioned.initialsync-logkeeper
+# bin/tests/unittest-files/terraform/provisioned.replica
+# bin/tests/unittest-files/terraform/provisioned.shard
+
 
 class TestInfrastructureProvisioning(unittest.TestCase):
     """
