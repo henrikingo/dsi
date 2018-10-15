@@ -8,9 +8,10 @@ run:
       -P ../../workloadEvergreen
       -threads ${test_control.thread_levels.load.${mongodb_setup.meta.storageEngine}};
     config_filename: workloadEvergreen
+    # Increased recordcount for TIG-1118 to ensure at least 5M documents are loaded.
     workload_config: |
       mongodb.url=${mongodb_setup.meta.mongodb_url}&w=majority
-      recordcount=5000000
+      recordcount=5001000
       operationcount=20000000
       workload=com.yahoo.ycsb.workloads.CoreWorkload
       readallfields=true
