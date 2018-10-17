@@ -813,6 +813,7 @@ class QHatNumpyImp(object):  #pylint: disable=too-many-instance-attributes
         try:
             git_hashes = get_githashes_in_range_repo(older_revision, newer_revision,
                                                      self.mongo_repo)
+            LOG.debug("githashes from repo", git_hashes=git_hashes)
         except:
             LOG.error("unexpected error on rev-list", exc_info=1)
 
@@ -832,6 +833,7 @@ class QHatNumpyImp(object):  #pylint: disable=too-many-instance-attributes
                     for commit in get_githashes_in_range_github(
                         older_revision, newer_revision, token=github_token, per_page=100)
                 ]
+                LOG.debug("githashes from github", git_hashes=git_hashes)
             except:
                 LOG.error("unexpected error in get git hashes", exc_info=1)
                 git_hashes = []

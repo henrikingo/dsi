@@ -18,9 +18,9 @@ from bin.common import log
 
 LOG = structlog.getLogger(__name__)
 
-DEFAULT_MONGO_REPO = './src/mongo'
+DEFAULT_MONGO_REPO = '../src'
 """
-The expected mongo repo location.
+The expected mongo repo location for performance or sys-perf.
 """
 
 REQUIRED_KEYS = set(['revision', 'order', 'create_time'])
@@ -359,8 +359,9 @@ def detect_changes(task_id, patch, mongo_uri, pool_size, mongo_repo=DEFAULT_MONG
 @click.option('-v', 'verbose', count=True, help='Control the verbosity.')
 @click.option(
     '--mongo-repo',
+    'mongo_repo',
     default=DEFAULT_MONGO_REPO,
-    help='The location of the mongo repo. This location is used to get the git revisions.')
+    help='The location for the mongo repo. This location is used to get the git revisions.')
 def main(logfile, pool_size, verbose, mongo_repo):
     """
     Main function.

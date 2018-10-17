@@ -398,7 +398,7 @@ class TestMain(unittest.TestCase):
         mock_config.load.assert_called_once()
         mock_logging.assert_called_once_with(False, filename='detect_changes.log')
         mock_detect_changes.assert_called_once_with(
-            'tid', 'patch', 'muri', None, mongo_repo='./src/mongo')
+            'tid', 'patch', 'muri', None, mongo_repo='../src')
 
     @patch('signal_processing.detect_changes.detect_changes')
     @patch('signal_processing.detect_changes.config.ConfigDict', autospec=True)
