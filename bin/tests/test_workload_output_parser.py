@@ -19,6 +19,9 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
     def setUp(self):
         """Set some common input data"""
         self.tests = [
+            {'id': 'genny-unittest',
+             'type': 'genny',
+             'output_files': ['genny-metrics.json']},
             {'id': 'benchRun-unittest',
              'type': 'shell'},
             {'id': 'ycsb-unittest',
@@ -40,7 +43,7 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
         self.config = {
             'test_control': {
                 'task_name': 'parser_unittest',
-                'reports_dir_basename': 'bin/tests/artifacts',
+                'reports_dir_basename': 'bin/tests/unittest-files',
                 'perf_json': {
                     'path': 'perf.unittest-out.json'
                 },
@@ -52,6 +55,8 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
                     'tpcc': 'results.log',
                 },
                 'run': [
+                    {'id': 'mock-genny-foo',
+                     'type': 'genny'},
                     {'id': 'mock-test-foo',
                      'type': 'mongoshell'},
                     {'id': 'mock-test-bar',

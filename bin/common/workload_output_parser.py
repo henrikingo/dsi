@@ -14,7 +14,7 @@ from nose.tools import nottest
 
 LOG = logging.getLogger(__name__)
 
-SUPPORTED_TYPES = {'shell', 'mongoshell', 'ycsb', 'fio', 'iperf', 'linkbench', 'tpcc'}
+SUPPORTED_TYPES = {'shell', 'mongoshell', 'ycsb', 'fio', 'iperf', 'linkbench', 'tpcc', 'genny'}
 
 
 @nottest
@@ -51,7 +51,8 @@ def parser_factory(test, config, timer):
         'fio': FioParser,
         'iperf': IperfParser,
         'linkbench': LinkbenchResultParser,
-        'tpcc': TPCCResultParser
+        'tpcc': TPCCResultParser,
+        'genny': GennyResultsParser,
     }
     if test['type'] not in parsers:
         raise ValueError("parser_factory: Unsupported test type: {}".format(test['type']))
@@ -240,6 +241,39 @@ class ResultParser(object):
 class InvalidConfigurationException(ValueError):
     """We have bad configuration for the parser."""
     pass
+
+
+class GennyResultsParser(ResultParser):
+    """
+    Genny's output doesn't require a parser so this just merges
+    genny's output to the configured perf.json path.
+    """
+
+    def __init__(self, test, config, timer):
+        """
+        :param ConfigDict test test-level config
+        :param ConfigDict config top-level
+        :param timer used by ResultParser
+        """
+        super(GennyResultsParser, self).__init__(test, config, timer)
+
+        reports_root = config['test_control']['reports_dir_basename']
+        input_dir = os.path.join(reports_root, test['id'])
+
+        output_files = test.get('output_files')
+        if not output_files:
+            raise InvalidConfigurationException(
+                'Need single output_files entry. Got {}'.format(output_files))
+        if output_files and len(output_files) > 1:
+            LOG.info("Got files %s but will only report on first one", output_files)
+
+        self.genny_results_path = os.path.join(input_dir, output_files[0])
+
+    def _parse(self):
+        with open(self.genny_results_path) as file_handle:
+            for result in json.load(file_handle)['results']:
+                self.add_result(self.test_id + '.' + result['name'],
+                                result['results'].values()[0]['ops_per_sec'])
 
 
 class TPCCResultParser(ResultParser):
