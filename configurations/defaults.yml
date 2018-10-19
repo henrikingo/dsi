@@ -17,6 +17,7 @@ bootstrap:
   ycsb_dir: ./YCSB
   linkbench_dir: ./linkbench
   tpcc_dir: ./tpcc
+  genny_dir: ./genny
   authentication: disabled
 
 infrastructure_provisioning:
@@ -241,6 +242,7 @@ test_control:
     fio: fio.json
     iperf: iperf.json
     tpcc: results.log
+    genny: genny-perf.json
 
   # As I'm writing this, the basename IS the name. PERF-1096 will add a unique component.
   reports_dir_basename: reports

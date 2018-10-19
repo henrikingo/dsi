@@ -1,3 +1,94 @@
+genny:
+  - on_localhost:
+      checkout_repos:
+        - source: git@github.com:10gen/genny.git
+          target: ${bootstrap.genny_dir}
+          branch: master
+  - on_workload_client:
+      upload_files:
+        - source: ${bootstrap.genny_dir}
+          target: ./genny
+  - on_workload_client:
+      exec: |
+        set -eou pipefail
+
+        # <System Setup>
+        sudo yum update -y > ./yum-update.log
+        # https://aws.amazon.com/premiumsupport/knowledge-center/ec2-enable-epel/
+        sudo yum install -y https://s3-us-west-2.amazonaws.com/dsi-donot-remove/genny/epel-release-latest-7.noarch.rpm  || true > ./yum-epel-repo.log 2>&1
+        sudo yum-config-manager --enable epel > ./yum-epel.log 2>&1
+        sudo yum install -y gcc gcc-c++ cmake3 openssl-devel > ./yum-install.log 2>&1
+        # </System Setup>
+
+        # Install Dependencies
+        #
+        # If this ever becomes too annoying to do repeatedly,
+        # the resulting 'install' directory can probably be
+        # safely manually tar'ed up after doing the various compile steps
+        # and re-used on later invocations. As of 2018-10-08, this only
+        # saved 7 minutes of compile time and didn't seem to be worth
+        # the added complexity.
+
+        # go where we have more breathing room
+        ln -s /media/ephemeral0/ ~/install || true
+        pushd ~/install >/dev/null
+          sudo rm -rf ./* # clear out any existing attempted installs
+
+          # <Boost>
+          wget --quiet https://s3-us-west-2.amazonaws.com/dsi-donot-remove/genny/boost_1_68_0.tar.gz
+          tar xzf boost_1_68_0.tar.gz
+          pushd boost_1_68_0 >/dev/null
+            ./bootstrap.sh > ./configure.log 2>&1
+            ./b2 stage -j "$(nproc)" --build-type=complete --layout=versioned variant=release threading=multi -d0 > ./stage.log 2>&1
+            sudo ./b2 install -j "$(nproc)" -d0 > ./install.log  2>&1
+          popd >/dev/null
+          # </Boost>
+
+          # <YamlCPP>
+          # Commit 774f25800e6f19f4b927023c85d1389af322da5e is from master as of 2018-10-08
+          git clone https://github.com/jbeder/yaml-cpp.git
+          pushd yaml-cpp
+            git checkout 774f25800e6f19f4b927023c85d1389af322da5e
+            mkdir build
+            pushd build >/dev/null
+              cmake3 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON .. > ./configure.log 2>&1
+              make -j "$(nproc)" 2>&1 | tee ./compile.log | grep '%'
+              sudo make -j "$(nproc)" install > ./install.log 2>&1
+            popd >/dev/null
+          popd >/dev/null
+          # </YamlCPP>
+
+          # <Mongo C Driver>
+          wget --quiet https://github.com/mongodb/mongo-c-driver/releases/download/1.13.0/mongo-c-driver-1.13.0.tar.gz
+          tar xzf mongo-c-driver-1.13.0.tar.gz
+          pushd mongo-c-driver-1.13.0 >/dev/null
+            mkdir cmake-build
+            pushd cmake-build >/dev/null
+              cmake3 -DCMAKE_BUILD_TYPE=Release -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF .. > ./configure.log 2>&1
+              make -j "$(nproc)" 2>&1 | tee ./compile.log | grep '%'
+              sudo make -j "$(nproc)" install > ./install.log 2>&1
+            popd >/dev/null
+          popd >/dev/null
+          # </Mongo C Driver>
+
+          # <Mongo CXX Driver>
+          git clone https://github.com/mongodb/mongo-cxx-driver.git --branch releases/stable --depth 1
+          pushd mongo-cxx-driver/build >/dev/null
+            cmake3 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local .. > ./configure.log 2>&1
+            # need to `sudo make` first line because it installs MNMLSTC core
+            sudo make -j "$(nproc)" 2>&1 | tee ./compile.log | grep '%'
+            sudo make -j "$(nproc)" install > ./install.log 2>&1
+          popd >/dev/null
+          # </Mongo CXX Driver>
+        popd >/dev/null
+
+
+        # genny itself
+        pushd genny/build >/dev/null
+          cmake3 -DCMAKE_CXX_FLAGS="-lpthread" -DCMAKE_BUILD_TYPE=Release ..
+          make -j "$(nproc)"
+        popd >/dev/null
+
 mongoshell:
   - on_localhost:
       checkout_repos:

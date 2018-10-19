@@ -217,6 +217,7 @@ def run_test(test, config, reports_dir='reports'):
     # Automatically retrieve output files, if specified, and put them into the reports directory
     if 'output_files' in test:
         for output_file in test['output_files']:
+            # TODO: TIG-1130: if remote file doesn't exist, this will silently fail
             client_host.retrieve_path(output_file,
                                       os.path.join(directory, os.path.basename(output_file)))
     client_host.close()

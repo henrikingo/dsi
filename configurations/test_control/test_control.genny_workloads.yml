@@ -1,0 +1,26 @@
+task_name: genny_workloads
+run:
+  - id: InsertRemove
+    type: genny
+    cmd: |
+      ./genny/build/src/driver/genny ./genny/src/driver/test/InsertRemove.yml -m sys-perf -o ./genny-perf.json
+    output_files:
+      - genny-perf.json
+
+pre_task:
+ - on_workload_client:
+     # sed -i is to modify the workload config file
+     # to insert the correct mongo URI.
+     # until Genny can read from CLI or something else
+     exec: |
+      set -eou pipefail
+
+      # modify config file to connect to workload's mongo instance rather than localhost
+      pushd genny >/dev/null
+        sed -i "s/localhost/${mongodb_setup.meta.hostname}/g" ./src/driver/test/InsertRemove.yml
+        sed -i "s/27017/${mongodb_setup.meta.port}/g" ./src/driver/test/InsertRemove.yml
+        sed -i "s/replset/rs0/g" ./src/driver/test/InsertRemove.yml
+      popd >/dev/null
+
+      # remove existing output file (if any) since genny appends
+      rm -f ./genny-perf.json
