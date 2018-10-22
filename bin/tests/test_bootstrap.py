@@ -572,6 +572,7 @@ class TestBootstrap(unittest.TestCase):
             'storageEngine': 'wiredTiger',
             'terraform_version_check': 'Terraform v0.10.4',
             'test_control': 'core',
+            'genny_dir': './genny',
             'workloads_dir': './workloads',
             'ycsb_dir': './YCSB',
             'linkbench_dir': './linkbench',
