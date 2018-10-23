@@ -948,7 +948,7 @@ At the moment, it supports:
 
 
 @cli.command(name='visualize')
-@click.pass_obj
+@click.pass_context
 @click.option('--progressbar/--no-progressbar', default=True)
 @click.option('--show/--no-show', default=True)
 @click.option('--save/--no-save', default=False)
@@ -965,11 +965,16 @@ At the moment, it supports:
 @click.argument('variant', required=False)
 @click.argument('task', required=False)
 @click.argument('test', required=False)
-def visualize_command(command_config, progressbar, show, save, show_qhat, excludes, sigma,
-                      filter_type, only_change_points, project, variant, task, test):
+def visualize_command(context, progressbar, show, save, show_qhat, excludes, sigma, filter_type,
+                      only_change_points, project, variant, task, test):
     # pylint: disable=too-many-locals, too-many-arguments, line-too-long
     """
-*Note : this command is provided as is and is liable to change or break.*
+Note : this command is an optional command, provided as is and is liable to change or break.
+You must install the Plotting requirements for it to work.
+
+\b
+    $> pip install -e .[Plotting]
+    $> pip install 'git+https://github.com/10gen/dsi.git#egg=DSI[Plotting]'
 \b
 Visualize performance data and change points.
 
@@ -1010,6 +1015,26 @@ For Example:
     $> change-points -o ~/tmp -f svg visualize sys-perf --save
 """
     # pylint: enable=line-too-long
+    command_config = context.obj
+
+    # The visualize command is optional. The requirements are not installed
+    # by default as there can be issues on some OSes.
+    # See the help message in the following block for installation
+    # instructions.
+    try:
+        import matplotlib.pyplot as plt
+    except:  # pylint: disable=bare-except
+        message = 'matplotlib dependency is missing.'
+        help_message = '''
+Have you installed the optional `Plotting` requirements?
+
+$> pip install -e .[Plotting]
+$> pip install 'git+https://github.com/10gen/dsi.git#egg=DSI[Plotting]'
+'''
+
+        LOG.error('{}{}'.format(message, help_message), exc_info=1)
+        context.fail('{}{}'.format(message, help_message))
+
     LOG.debug('starting')
     points = command_config.points
 
@@ -1037,7 +1062,6 @@ For Example:
         info_width=info_width,
         padding=padding)
 
-    import matplotlib.pyplot as plt
     with plt.style.context(command_config.style):
         with click.progressbar(tests,
                                label=label,

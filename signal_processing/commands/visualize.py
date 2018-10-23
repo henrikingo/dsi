@@ -7,7 +7,6 @@ import json
 from collections import OrderedDict
 
 import structlog
-from matplotlib.lines import Line2D
 from scipy import stats, signal
 from scipy.signal import savgol_filter
 import numpy as np
@@ -128,7 +127,7 @@ def update_annotation(annotation, coordinates, index, series):
     annotation.get_bbox_patch().set_facecolor('k')
 
 
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments, too-many-locals
 def on_hover(event, axis=None, annotation=None, source=None, figure=None, series=None):
     """
     Handle a hover event, update the annotation and make it visible.
@@ -140,6 +139,7 @@ def on_hover(event, axis=None, annotation=None, source=None, figure=None, series
     :param object source: The matplotlib object in focus.
     :param object figure: The matplotlib figure.
     """
+    from matplotlib.lines import Line2D
     vis = annotation.get_visible()
     if event.inaxes == axis:
         cont, ind = source.contains(event)
