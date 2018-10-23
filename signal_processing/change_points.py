@@ -498,7 +498,8 @@ Examples:
     '--limit',
     callback=helpers.validate_int_none_options,
     default='10',
-    help='The maximum number of change points to display.')
+    help='''The maximum number of change points to display.
+    The default is 10. Use \'None\' for no limit.''')
 @click.option(
     '--no-older-than',
     callback=helpers.validate_int_none_options,
