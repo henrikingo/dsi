@@ -43,14 +43,14 @@ def qhat_diffs_wrapper(series):  # pylint: disable=unused-argument
 
 
 try:
+    so_path = os.path.dirname(os.path.abspath(__file__))
+
     # input type for the cos_doubles function
     # must be a double array, with single dimension that is contiguous
     ARRAY_DOUBLE = npct.ndpointer(dtype=np.double, ndim=1, flags='CONTIGUOUS')
     MATRIX_DOUBLE = npct.ndpointer(dtype=np.double, ndim=2, flags='CONTIGUOUS')
 
     # load the library, using numpy mechanisms
-    so_path = os.path.dirname(os.path.abspath(__file__))
-    LOG.info("loading qhat native", so_path=so_path)
     LIB_QHAT = npct.load_library("_qhat", so_path)
 
     # setup the return types and argument types
@@ -99,6 +99,5 @@ try:
         return diffs
 
     LOADED = True
-    LOG.warn("native QHat", loaded=True)
 except:  # pylint: disable=bare-except
-    LOG.warn("native QHat", loaded=False, exc_info=1)
+    LOG.warn("native QHat", loaded=False, so_path=so_path, exc_info=1)

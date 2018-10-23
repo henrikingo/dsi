@@ -11,6 +11,13 @@ import helpers
 DEFAULT_EVERGREEN_URL = 'https://evergreen.mongodb.com'
 """The default Evergreen URL."""
 
+TASK_STATUS_FAILED = 'failed'
+TASK_STATUS_STARTED = 'started'
+TASK_STATUS_SUCCEEDED = 'success'
+TASK_STATUS_UNDISPATCHED = 'undispatched'
+TASK_STATUS_DISPATCHED = 'dispatched'
+TASK_STATUS_CANCELLED = 'cancelled'
+
 
 class EvergreenError(Exception):
     """Generic class for Evergreen errors."""
@@ -23,6 +30,7 @@ class Empty(EvergreenError):
 
 
 class Client(object):
+    # pylint: disable=too-many-public-methods
     """Allows for interaction with an Evergreen server.
 
     This class has two sets of methods. The first type are the "query" functions, which are simple
@@ -156,6 +164,31 @@ class Client(object):
         :rtype: dict
         """
         return helpers.get_as_json('{}/rest/v1/tasks/{}/history'.format(self.base_url, task_name))
+
+    def query_project_tasks(self, project, statuses=None):
+        """Get all the task statuses for a project.
+
+        Evergreen endpoint: /rest/v2/projects/{project_name}/versions/tasks
+
+        :param str project: The name of the Evergreen project (e.g. 'performance', 'sys-perf').
+        :param list(str) statuses: A list of status types to filter on.
+        None / empty list imples no filter / all.
+        :rtype: list(dict)
+        :see TASK_STATUS_FAILED
+        :see TASK_STATUS_FAILED
+        :see TASK_STATUS_STARTED
+        :see TASK_STATUS_SUCCEEDED
+        :see TASK_STATUS_UNDISPATCHED
+        :see TASK_STATUS_DISPATCHED
+        :see TASK_STATUS_CANCELLED
+        """
+        params = {}
+        if statuses:
+            params['status'] = statuses
+        return helpers.get_as_json(
+            '{}/rest/v2/projects/{}/versions/tasks'.format(self.base_url, project),
+            headers=self.headers,
+            params=params)
 
     def get_recent_revisions(self, project_name, max_results=10):
         """Get the most recent revisions for an Evergreen project.
@@ -333,6 +366,20 @@ class Client(object):
         return [{'variant': variant_name, 'task': task_name}
                 for variant_name, variant_obj in builds.iteritems()
                 for task_name in variant_obj['tasks'].keys()]  #  yapf: disable
+
+    def get_project_tasks(self, project, statuses=None):
+        """
+        Get the tasks status for a given project.
+
+        :param str project: Evergreen project.
+        :param statuses: The list of task statuses to filter on. None or empty list
+        imples no filter.
+        :type statuses: None or list(str) or empty list()
+        :return: A list of {variant: variant_name, task: task_name} dicts
+        :rtype: list(dict)
+        :see query_project_tasks
+        """
+        return self.query_project_tasks(project, statuses=statuses)
 
     def find_perf_tag(self, project, tag):
         """

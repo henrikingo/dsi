@@ -28,7 +28,8 @@ def mark_change_points(processed_type, query, exclude_patterns, command_config):
     """
     Mark a point as hidden or real.
 
-    :param str processed_type: 'hidden' for hidden otherwise 'real'.
+    :param str processed_type: Set the type.
+    :see signal_processing.helpers.PROCESSED_TYPES.
     :param dict query: Find change points matching this query.
     :param list(re) exclude_patterns: Filter any points matching this list of excludes.
     :param CommandConfig command_config: Common configuration.

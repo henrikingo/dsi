@@ -40,6 +40,36 @@ class TestEvergreenClient(unittest.TestCase):
         result = evg_client.find_perf_tag('sys-perf', '3.4.14-Baseline')
         self.assertEqual(result, expected)
 
+    @patch('evergreen.evergreen_client.helpers.get_as_json')
+    def test_get_project_all_tasks(self, mock_get_as_json):
+        evg_client = evergreen_client.Client()
+
+        expected = {'the': 'json'}
+        mock_get_as_json.return_value = expected
+        result = evg_client.get_project_tasks('sys-perf')
+        mock_get_as_json.assert_called_once_with(
+            'https://evergreen.mongodb.com/rest/v2/projects/sys-perf/versions/tasks',
+            headers={},
+            params={})
+
+        self.assertEqual(result, expected)
+
+    @patch('evergreen.evergreen_client.helpers.get_as_json')
+    def test_get_project_failed_tasks(self, mock_get_as_json):
+        evg_client = evergreen_client.Client()
+
+        expected = {'the': 'json'}
+        mock_get_as_json.return_value = expected
+        result = evg_client.get_project_tasks('sys-perf', statuses=['failed'])
+        mock_get_as_json.assert_called_once_with(
+            'https://evergreen.mongodb.com/rest/v2/projects/sys-perf/versions/tasks',
+            headers={},
+            params={
+                'status': ['failed']
+            })
+
+        self.assertEqual(result, expected)
+
 
 # pylint: disable=line-too-long
 MOCK_EVG_HISTORY = {

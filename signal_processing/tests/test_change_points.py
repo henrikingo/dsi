@@ -6,7 +6,7 @@ import unittest
 
 from StringIO import StringIO
 import mock
-from mock import MagicMock, call, patch
+from mock import MagicMock, call, patch, mock_open
 
 # pylint: disable=invalid-name
 from click.testing import CliRunner
@@ -730,3 +730,85 @@ class TestListBuildFailures(ClickTest):
                                                     'industry_benchmarks', 'ycsb_load', None)
         self.assertEqual(result.exit_code, 0)
         mock_list_build_failures.assert_called_once_with(expected_query, True, expected_config)
+
+
+class TestListfailures(ClickTest):
+    """
+    Test failures command.
+    """
+
+    @patch('signal_processing.change_points.list_build_failures.list_build_failures', autospec=True)
+    @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
+    def test_no_params(self, mock_config, mock_list_build_failures):
+        """ Test failures requires parameters. """
+        expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
+        mock_config.return_value = expected_config
+        result = self.runner.invoke(cli, ['failures'])
+        self.assertEqual(result.exit_code, 2)
+
+    def _test_list_failures(self,
+                            command,
+                            project='sys-perf',
+                            human_readable=True,
+                            limit=None,
+                            no_older_than=14,
+                            show_wtdevelop=False,
+                            show_patches=False,
+                            evergreen_config='~/.evergreen.yml'):
+        """ test helper function. """
+        # pylint: disable=too-many-locals
+        with patch('signal_processing.change_points.open', mock_open(read_data='{client:[]}'))\
+             as m, \
+             patch('signal_processing.change_points.list_failures.list_failures', autospec=True)\
+             as mock_failures,\
+             patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)\
+             as mock_config,\
+             patch('signal_processing.change_points.os.path.expanduser') as mock_expanduser,\
+             patch('signal_processing.change_points.evergreen_client.Client') as mock_client:
+
+            expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
+            mock_config.return_value = expected_config
+            mock_expanduser.return_value = '/HOME/evergreen.yml'
+
+            mock_evg_client = MagicMock(name='evg_client')
+            mock_client.return_value = mock_evg_client
+            result = self.runner.invoke(cli, command)
+            self.assertEqual(result.exit_code, 0)
+
+            m.assert_called_once_with('/HOME/evergreen.yml')
+            mock_client.assert_called_once_with({'client': []})
+            mock_expanduser.assert_called_once_with(evergreen_config)
+
+            mock_failures.assert_called_once_with(project, show_wtdevelop, show_patches,
+                                                  human_readable, limit, no_older_than,
+                                                  mock_evg_client, expected_config)
+
+    def test_list_failures(self):
+        """ Test failures defaults params. """
+        command = ['failures', 'sys-perf']
+        self._test_list_failures(command)
+
+    def test_list_failures_show_params(self):
+        """ Test failures params. """
+        command = [
+            'failures', 'sys-perf', '--no-human-readable', '--limit', '1', '--no-older-than', '7',
+            '--show-wtdevelop', '--show-patches', '--evergreen-config', './.evergreen.yml'
+        ]
+        self._test_list_failures(
+            command,
+            project='sys-perf',
+            human_readable=False,
+            limit=1,
+            no_older_than=7,
+            show_wtdevelop=True,
+            show_patches=True,
+            evergreen_config='./.evergreen.yml')
+
+    def test_list_failures_hide_params(self):
+        """ Test failures params. """
+        command = [
+            'failures', 'sys-perf', '--no-human-readable', '--limit', '1', '--no-older-than', '7',
+            '--hide-wtdevelop', '--hide-patches'
+        ]
+        self._test_list_failures(
+            command, project='sys-perf', human_readable=False, limit=1, no_older_than=7)
