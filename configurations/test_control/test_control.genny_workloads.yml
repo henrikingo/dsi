@@ -3,7 +3,7 @@ run:
   - id: InsertRemove
     type: genny
     cmd: |
-      ./genny/build/src/driver/genny ./genny/src/driver/test/InsertRemove.yml -m sys-perf -o ./genny-perf.json
+      ./genny/build/src/driver/genny ./genny/src/driver/test/InsertRemove.yml -u "${mongodb_setup.meta.mongodb_url}" -m sys-perf -o ./genny-perf.json
     output_files:
       - genny-perf.json
 
@@ -14,13 +14,6 @@ pre_task:
       # until Genny can read from CLI or something else
       exec: |
        set -eou pipefail
-
-       # modify config file to connect to workload's mongo instance rather than localhost
-       pushd genny >/dev/null
-         sed -i "s/localhost/${mongodb_setup.meta.hostname}/g" ./src/driver/test/InsertRemove.yml
-         sed -i "s/27017/${mongodb_setup.meta.port}/g" ./src/driver/test/InsertRemove.yml
-         sed -i "s/replset/rs0/g" ./src/driver/test/InsertRemove.yml
-       popd >/dev/null
 
        # remove existing output file (if any) since genny appends
        rm -f ./genny-perf.json
