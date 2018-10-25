@@ -7,8 +7,12 @@ from collections import OrderedDict
 from mock import ANY, MagicMock, call, patch
 
 from signal_processing.commands.manage import (
-    create_linked_build_failures_view, create_points_indexes, create_unprocessed_change_points_view,
-    manage, create_change_points_indexes, create_processed_change_points_indexes)
+    create_linked_build_failures_view,
+    create_points_indexes,
+    create_change_points_with_attachments_view,
+    create_unprocessed_change_points_view,
+    manage, create_change_points_indexes,
+    create_processed_change_points_indexes)  #  yapf: disable
 
 
 class TestManage(unittest.TestCase):
@@ -16,13 +20,15 @@ class TestManage(unittest.TestCase):
     Test Manage group command.
     """
 
+    @patch('signal_processing.commands.manage.create_change_points_with_attachments_view')
     @patch('signal_processing.commands.manage.create_linked_build_failures_view')
     @patch('signal_processing.commands.manage.create_unprocessed_change_points_view')
     @patch('signal_processing.commands.manage.create_points_indexes')
     @patch('signal_processing.commands.manage.create_change_points_indexes')
     @patch('signal_processing.commands.manage.create_processed_change_points_indexes')
     def test_manage(self, mock_processed_indexes, mock_change_points_indexes, mock_points_indexes,
-                    mock_create_change_points_view, mock_create_build_failures_view):
+                    mock_create_change_points_view, mock_create_build_failures_view,
+                    mock_linked_change_points_view):
         """ Test that manage calls the view and index functions. """
         mock_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
 
@@ -32,6 +38,7 @@ class TestManage(unittest.TestCase):
         mock_create_change_points_view.assert_called_once()
         mock_create_build_failures_view.assert_called_once()
         mock_processed_indexes.assert_called_once()
+        mock_linked_change_points_view.assert_called_once()
 
 
 class TestCreatePointsIndex(unittest.TestCase):
@@ -112,19 +119,38 @@ class TestCreateBFView(unittest.TestCase):
                                                                     source_collection_name)]))
 
 
-class TestCreateChangePointView(unittest.TestCase):
+class TestChangePointsWithAttachmentsView(unittest.TestCase):
+    """
+    Test manage.create_change_points_with_attachments_view function.
+    """
+
+    def test_linked_change_point_view(self):
+        """ Test create_change_points_with_attachments_view. """
+        mock_database = MagicMock(name='database')
+        mock_config = MagicMock(name='config', database=mock_database)
+
+        create_change_points_with_attachments_view(mock_config)
+        view_name = 'change_points_with_attachments'
+        source_collection_name = 'change_points'
+        mock_database.drop_collection.assert_called_once_with(view_name)
+        mock_database.command.assert_called_once_with(
+            OrderedDict([('create', view_name), ('pipeline', ANY), ('viewOn',
+                                                                    source_collection_name)]))
+
+
+class TestUnprocessedChangePointView(unittest.TestCase):
     """
     Test manage.create_linked_build_failures_view function.
     """
 
-    def test_create_change_point_view(self):
-        """ Test create_points_indexes. """
+    def test_unprocessed_change_point_view(self):
+        """ Test create_unprocessed_change_points_view. """
         mock_database = MagicMock(name='database')
         mock_config = MagicMock(name='config', database=mock_database)
 
         create_unprocessed_change_points_view(mock_config)
         view_name = 'unprocessed_change_points'
-        source_collection_name = 'change_points'
+        source_collection_name = 'change_points_with_attachments'
         mock_database.drop_collection.assert_called_once_with(view_name)
         mock_database.command.assert_called_once_with(
             OrderedDict([('create', view_name), ('pipeline', ANY), ('viewOn',

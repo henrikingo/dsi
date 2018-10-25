@@ -132,9 +132,25 @@ def create_linked_build_failures_view(command_config):
                                   ('viewOn', source_collection_name)])) # yapf: disable
 
 
-def create_unprocessed_change_points_view(command_config):
+def create_change_points_with_attachments_view(command_config):
     """
-    Create the unprocessed change points view.
+    Create the change_points with attachments view.
+
+    This view contains all change points.
+
+    This view provides a convenience to lookup change points with
+    the associated processed_change_points (either acknowledged or
+    hidden) and associated build_failures embedded
+    into sub-document arrays.
+
+    The processed change_points lookup is through the common suspect_revision
+    fields.
+
+    TODO: they should be linked through all_suspect_revisions
+    but this would be too slow at the moment.
+
+    change_points are linked to the build_failures through the revsions and
+    all_suspect_revision fields.
 
     :param CommandConfig command_config: Common configuration.
     """
@@ -142,20 +158,20 @@ def create_unprocessed_change_points_view(command_config):
     LOG.debug('starting')
     database = command_config.database
 
-    # The pipeline for the unprocessed change points view. If you change this pipeline
-    # then you must also update ../README.md#unprocessed-change-points-view.
+    # This view provides a convenience to lookup change points with
+    # the associated processed_change_points (either acknowledged or
+    # hidden) and associated build_failures embedded
+    # into sub-document arrays.
     pipeline = [
         # pylint: disable=line-too-long
         {
             '$match': {
                 '$comment':
-                'This view represents the change points which have not '
-                'been hidden and are not associated with a Build Failure. '
-                'See https://github.com/10gen/dsi/tree/master/signal_processing/README.md#unprocessed-change-points-collection '
-                'for more details about this view.'
+                'This view represents all the change points with attached '
+                'processed change points and Build Failures.'
             }
         },
-        # Lookup hidden processed change points as processed_change_points field.
+        # Lookup processed change points as processed_change_points field.
         {
             '$lookup': {
                 'from':
@@ -169,8 +185,6 @@ def create_unprocessed_change_points_view(command_config):
                     'suspect_revision': '$suspect_revision'
                 },
 
-                # Note: we are only matching 'processed_type', 'hidden', this cuts down
-                # on the size of the embedded hidden_processed_change_points.
                 'pipeline': [{
                     '$match': {
                         '$expr': {
@@ -181,21 +195,14 @@ def create_unprocessed_change_points_view(command_config):
                                 {'$eq': ['$test', '$$test']},
                                 {'$eq': ['$thread_level', '$$thread_level']},
                                 {'$eq': ['$suspect_revision', '$$suspect_revision']},
-                                {'$eq': ['$processed_type', 'hidden']}
                             ]
                         }
-                    }
+                    },
+
                 }],
-                'as': 'hidden_processed_change_points'
+                'as': 'processed_change_points'
             }
         },
-
-        # The following match filters documents from the lookup phase with
-        # any processed_change_points. We only lookup hidden points so any document
-        # with a non-empty processed_change_points array should be hidden.
-        {'$match': {'$expr': {'$eq': [0, {'$size': '$hidden_processed_change_points'}]}}},
-
-        # Filter out real change points that have matching BF ticket.
         # Note the broad match: We expect a single BF per commit.
         # IOW a commit can only introduce one regression and all change_points
         # are therefore immediately covered by the same BF ticket.
@@ -235,18 +242,59 @@ def create_unprocessed_change_points_view(command_config):
                 'as': 'build_failures'
             }
         },
-        # Filter any change points with no attached build failures.
-        {'$match': {'$expr': {'$eq': [0, {'$size': '$build_failures'}]}}},
-        # Project a clean document without the empty build_failures.
-        {'$project': {'hidden_processed_change_points': False, 'build_failures': False}}
     ] # yapf:disable
 
-    view_name = 'unprocessed_change_points'
+    view_name = 'change_points_with_attachments'
     source_collection_name = 'change_points'
     database.drop_collection(view_name)
     database.command(OrderedDict([('create', view_name),
                                   ('pipeline', pipeline),
                                   ('viewOn', source_collection_name)])) # yapf: disable
+
+
+def create_unprocessed_change_points_view(command_config):
+    """
+    Create the unprocessed change points view.
+
+    :param CommandConfig command_config: Common configuration.
+    :method: `create_change_points_with_attachments_view` performs
+    the heavy lifting in the lookups.
+    """
+    # pylint: disable=invalid-name
+    LOG.debug('starting')
+    database = command_config.database
+
+    # The pipeline for the unprocessed change points view.
+    pipeline = [
+        # pylint: disable=line-too-long
+        {
+            '$match': {
+                '$comment':
+                'This view represents the change points which have not '
+                'been hidden and are not associated with a Build Failure. '
+                'See https://github.com/10gen/dsi/tree/master/signal_processing/README.md#unprocessed-change-points-collection '
+                'for more details about this view.'
+            }
+        },
+
+        # The following match filters documents from the lookup phase with
+        # any processed_change_points.
+        {'$match': {'processed_change_points.processed_type': {'$ne': 'hidden'}}},
+
+        # Filter out real change points that have matching BF ticket.
+        {'$match': {'$expr': {'$eq': [0, {'$size': '$build_failures'}]}}},
+
+        # Project a clean document without the empty build_failures.
+        {'$project': {'processed_change_points': False, 'build_failures': False}}
+    ] # yapf:disable
+
+    view_name = 'unprocessed_change_points'
+    source_collection_name = 'change_points_with_attachments'
+    database.drop_collection(view_name)
+    database.command(OrderedDict([('create', view_name),
+                                  ('pipeline', pipeline),
+                                  ('viewOn', source_collection_name)])) # yapf: disable
+
 
 
 def manage(command_config):
@@ -261,5 +309,6 @@ def manage(command_config):
     create_points_indexes(command_config)
     create_change_points_indexes(command_config)
 
+    create_change_points_with_attachments_view(command_config)
     create_unprocessed_change_points_view(command_config)
     create_linked_build_failures_view(command_config)
