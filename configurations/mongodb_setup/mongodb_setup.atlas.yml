@@ -26,6 +26,7 @@ meta:
   is_sharded: false
   is_replset: true
   mongodb_url: mongodb://${mongodb_setup.meta.username}:${mongodb_setup.meta.password}@${mongodb_setup.out.atlas.clusters.0.mongodb_url}
+  hostname: This.is.an.Atlas.cluster.SSH.not.supported
 
 # No correctness checks can be run, since we don't have the log file and diagnostic.data.
 validate: This entry is here just to make yamllint happy :-(

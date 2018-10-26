@@ -5,6 +5,14 @@ set -e
 HOSTNAME=$1
 THIS_HOST=$(hostname -i)
 
+ATLAS_CLUSTER="This.is.an.Atlas.cluster.SSH.not.supported"
+if [ "$HOSTNAME" == "$ATLAS_CLUSTER" ]
+then
+  echo "Detected Atlas cluster, skipping iperf."
+  exit 0
+fi
+
+
 echo "Run iperf network tests between $THIS_HOST and $HOSTNAME."
 
 sudo rm -f iperf.json
