@@ -2,6 +2,7 @@
 Task etl helper methods. This loads the translated task to a mongodb.
 """
 import copy
+import urlparse
 
 import pymongo
 import structlog
@@ -59,6 +60,8 @@ def translate_points(perf_json, tests):
     points = []
     for test_result in perf_json['data']['results']:
         if tests is not None and test_result['name'] not in tests:
+            continue
+        if 'start' not in test_result and 'start' not in test_result['results']:
             continue
         point = {}
         point['project'] = perf_json['project_id']
@@ -164,3 +167,18 @@ def create_descriptor(perf_json, test):
     """
     return "{}/{}/{}/{}".format(perf_json['project_id'], perf_json['variant'],
                                 perf_json['task_name'], test)
+
+
+def redact_url(url):
+    """
+    Redact a url so that is can be logged.
+
+    :param str url: The url to redact.
+    """
+    parsed = urlparse.urlparse(url)
+    if parsed.password:
+        replaced = parsed._replace(
+            netloc="{}:{}@{}".format(parsed.username, "???", parsed.hostname))
+    else:
+        replaced = parsed
+    return replaced.geturl()

@@ -135,3 +135,23 @@ class TestloadHistory(unittest.TestCase):
         """
         tests = set(['mixed_insert', 'mixed_findOne', 'mixed_insert_bad'])
         self.assertEqual(etl_helpers.extract_tests(self.sysperf_perf_json), tests)
+
+
+class TestRedactURL(unittest.TestCase):
+    """
+    Test suite for redact_url.
+    """
+
+    def test_no_password(self):
+        """
+        Test redact url with no password.
+        """
+        self.assertEquals('mongodb+srv://localhost/perf',
+                          etl_helpers.redact_url('mongodb+srv://localhost/perf'))
+
+    def test_password(self):
+        """
+        Test redact url with password.
+        """
+        self.assertEquals('mongodb+srv://user:???@localhost/perf',
+                          etl_helpers.redact_url('mongodb+srv://user:password@localhost/perf'))

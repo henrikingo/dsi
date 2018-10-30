@@ -559,3 +559,85 @@ class TestValidate(unittest.TestCase):
     def test_int_value(self):
         """ Test int value."""
         self.assertEquals(1, helpers.validate_int_none_options(None, None, 1))
+
+
+class TestFunctionAdapter(unittest.TestCase):
+    """
+    Test function_adapter.
+    """
+
+    def test_success(self):
+        """ Test successful call."""
+        mock_function = mock.MagicMock(name='dummy function')
+        expected = 'return'
+        mock_function.return_value = expected
+
+        status, return_value = helpers.function_adapter(
+            [mock_function, 'arguments'], thing=1, that='other')
+        self.assertTrue(status)
+        self.assertEquals(expected, return_value)
+
+        mock_function.assert_called_once_with('arguments', thing=1, that='other')
+
+    def test_exception(self):
+        """ Test exception is thrown ."""
+        mock_function = mock.MagicMock(name='dummy function')
+        expected = Exception("catch me")
+        mock_function.side_effect = expected
+
+        status, return_value = helpers.function_adapter(
+            [mock_function, 'arguments'], thing=1, that='other')
+        self.assertFalse(status)
+        self.assertEqual(expected, return_value)
+
+        mock_function.assert_called_once_with('arguments', thing=1, that='other')
+
+
+class TestFunctionAdapterGenerator(unittest.TestCase):
+    """
+    Test function_adapter.
+    """
+
+    def test_success(self):
+        """ Test successful call."""
+        mock_function = mock.MagicMock(name='dummy function')
+        expected = 'return'
+        mock_function.return_value = expected
+
+        generator = helpers.function_adapter_generator(
+            [(mock_function, 'arguments')], thing=1, that='other')
+        for status, return_value in generator:
+            self.assertTrue(status)
+            self.assertEquals(expected, return_value)
+
+        mock_function.assert_called_once_with('arguments', thing=1, that='other')
+
+    def test_exception(self):
+        """ Test exception is thrown ."""
+        mock_function = mock.MagicMock(name='dummy function')
+        expected = Exception("catch me")
+        mock_function.side_effect = expected
+
+        generator = helpers.function_adapter_generator(
+            [(mock_function, 'arguments')], thing=1, that='other')
+        for status, return_value in generator:
+            self.assertFalse(status)
+            self.assertEqual(expected, return_value)
+
+        mock_function.assert_called_once_with('arguments', thing=1, that='other')
+
+    def test_multiple(self):
+        """ Test multiple call."""
+        mock_function = mock.MagicMock(name='dummy function')
+        expected = 'return'
+        mock_function.return_value = expected
+
+        generator = helpers.function_adapter_generator(
+            [(mock_function, 'first'), (mock_function, 'second')], thing=1, that='other')
+        for status, return_value in generator:
+            self.assertTrue(status)
+            self.assertEquals(expected, return_value)
+
+        mock_function.assert_has_calls(
+            [mock.call('first', thing=1, that='other'),
+             mock.call('second', thing=1, that='other')])

@@ -717,6 +717,25 @@ def function_adapter(arguments, **kwargs):
         return False, e
 
 
+def function_adapter_generator(task_arguments, **kwargs):
+    """
+    Use this function to ensure that a single-process implementation of the code has the same
+    semantics as the multiprocess version.
+
+    That is:
+        1. This function returns after the task has completed.
+        2. The return values are the same.
+
+    Take a list of tasks, execute them through the helpers.function_adapter (to guarantee
+    the same return semantics) and return.
+
+    :param list(dict) task_arguments: The task arguments for helpers.function_adapter.
+    :return: A generator of the task results.
+    """
+    for arguments in task_arguments:
+        yield function_adapter(arguments, **kwargs)
+
+
 # TODO: As part of PERF-1638 this function needs to be put in a file where it is
 # appropriate to know about click. This is called by click so
 # click.BadParameter is the correct exception.

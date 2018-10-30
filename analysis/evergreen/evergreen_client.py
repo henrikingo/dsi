@@ -48,12 +48,40 @@ class Client(object):
         :param dict configuration: (optional) contents of personal Evergreen YAML config file
         :param bool verbose: (optional) Control the verbosity of logging statements
         """
+        self.__setstate__({'configuration': configuration, 'verbose': verbose})
+
+    def __getstate__(self):
+        """
+        Get state for pickle support.
+
+        Multiprocessor uses pickle to serialize and deserialize data to sub processes. However,
+        complex types cannot be pickled. They can be recreated with the core state (and
+        this is what this calls does).
+
+        :return: The pickled state.
+        """
+        return {'configuration': self.configuration, 'verbose': self.verbose}
+
+    def __setstate__(self, state):
+        """
+        Set state for pickle support.
+
+        Clear the lazy params so that the are recreated on demand.
+
+        :param dict state: The pickled state.
+        """
+        self.configuration = state['configuration']
+        self.verbose = state['verbose']
+
         self.logger = logging.getLogger('evergreen')
-        self.logger.level = logging.INFO if verbose else logging.WARNING
+        self.logger.level = logging.INFO if self.verbose else logging.WARNING
         # Parse the config file
         try:
-            self.headers = {'api-user': configuration['user'], 'api-key': configuration['api_key']}
-            self.base_url = configuration['ui_server_host']
+            self.headers = {
+                'api-user': self.configuration['user'],
+                'api-key': self.configuration['api_key']
+            }
+            self.base_url = self.configuration['ui_server_host']
         except (TypeError, KeyError):
             self.logger.warning("Using default evergreen credentials.")
             self.base_url = DEFAULT_EVERGREEN_URL
