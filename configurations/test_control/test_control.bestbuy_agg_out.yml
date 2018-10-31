@@ -42,6 +42,10 @@ run:
                 modes: ["replaceDocuments", "insertDocuments"]
                 targets: ["identical_distribution", "hashed_id"]
                 targetDB: target
+          # Now test the exchange functionality of $out
+          - bestbuy_wordcount:
+              - testDbName: bestbuy
+                testCollName: products
           - cpu_noise
 
       # These next five lines match existing

@@ -373,75 +373,74 @@ test_control:
       // In addition to sharding the main namespace of the workload, we also set up some collections
       // which are initially empty but meant to be targeted by an $out stage during the test.
       var targetNsIdenticalDistributionSameDB = 'bestbuy.target_identical_distribution';
+      var targetNsRangeIdSameDB = 'bestbuy.target_range_id';
       var targetDBName = 'target';
       var targetNsIdenticalDistributionOtherDB = 'target.identical_distribution';
       var targetNsIdHashedOtherDB = 'target.hashed_id';
 
-      var keyPattern = { "type" : 1, "productId" : 1 };
-      var splits = [
-        {type: MinKey,     productId: MinKey},
-        {type: 'Game',     productId: NumberLong('1218086489034')},
-        {type: 'HardGood', productId: NumberLong('1118840368488')},
-        {type: 'HardGood', productId: NumberLong('1218105505555')},
-        {type: 'HardGood', productId: NumberLong('1218379812886')},
-        {type: 'HardGood', productId: NumberLong('1218475610897')},
-        {type: 'HardGood', productId: NumberLong('1218618813745')},
-        {type: 'HardGood', productId: NumberLong('1218728444211')}, // 8,9
-        {type: 'HardGood', productId: NumberLong('1219080834391')},
-        {type: 'HardGood', productId: NumberLong('1219736622160')}, // 7
-        {type: 'Movie',    productId: NumberLong('28132')},         // 6
-        {type: 'Movie',    productId: NumberLong('44465')},
-        {type: 'Movie',    productId: NumberLong('59159')},         // 5
-        {type: 'Movie',    productId: NumberLong('1344253')},
-        {type: 'Movie',    productId: NumberLong('1459047')},       // 8,9
-        {type: 'Movie',    productId: NumberLong('1627489')},       // 4
-        {type: 'Movie',    productId: NumberLong('1921771')},
-        {type: 'Movie',    productId: NumberLong('2180510')},
-        {type: 'Movie',    productId: NumberLong('2702290')},       // 7
-        {type: 'Movie',    productId: NumberLong('3313579')},
-        {type: 'Music',    productId: NumberLong('73927')},         // 3,6
-        {type: 'Music',    productId: NumberLong('97408')},         // 8,9
-        {type: 'Music',    productId: NumberLong('120846')},
-        {type: 'Music',    productId: NumberLong('145563')},
-        {type: 'Music',    productId: NumberLong('172542')},        // 5
-        {type: 'Music',    productId: NumberLong('199025')},
-        {type: 'Music',    productId: NumberLong('226846')},
-        {type: 'Music',    productId: NumberLong('261778')},        // 7
-        {type: 'Music',    productId: NumberLong('301467')},        // 8,9
-        {type: 'Music',    productId: NumberLong('1337396')},
-        {type: 'Music',    productId: NumberLong('1393391')},       // 4,6
-        {type: 'Music',    productId: NumberLong('1443146')},
-        {type: 'Music',    productId: NumberLong('1484664')},
-        {type: 'Music',    productId: NumberLong('1531482')},
-        {type: 'Music',    productId: NumberLong('1582679')},
-        {type: 'Music',    productId: NumberLong('1624125')},       // 8,9
-        {type: 'Music',    productId: NumberLong('1686112')},       // 5,7
-        {type: 'Music',    productId: NumberLong('1778529')},
-        {type: 'Music',    productId: NumberLong('1815087')},
-        {type: 'Music',    productId: NumberLong('1858555')},
-        {type: 'Music',    productId: NumberLong('1920647')},       // 3,6
-        {type: 'Music',    productId: NumberLong('1992906')},
-        {type: 'Music',    productId: NumberLong('2067260')},       // 8,9
-        {type: 'Music',    productId: NumberLong('2149519')},
-        {type: 'Music',    productId: NumberLong('2229905')},
-        {type: 'Music',    productId: NumberLong('2305925')},       // 4
-        {type: 'Music',    productId: NumberLong('2428992')},
-        {type: 'Music',    productId: NumberLong('2558418')},
-        {type: 'Music',    productId: NumberLong('2656772')},       // 5,7
-        {type: 'Music',    productId: NumberLong('2709433')},       // 8,9
-        {type: 'Music',    productId: NumberLong('2776923')},       // 6
-        {type: 'Music',    productId: NumberLong('2820755')},
-        {type: 'Music',    productId: NumberLong('2864319')},
-        {type: 'Music',    productId: NumberLong('2900297')},
-        {type: 'Music',    productId: NumberLong('2933428')},
-        {type: 'Music',    productId: NumberLong('2971126')},
-        {type: 'Music',    productId: NumberLong('3230451')},       // 7,8,9
-        {type: 'Music',    productId: NumberLong('3310959')},
-        {type: 'Music',    productId: NumberLong('3383162')},
-        {type: 'Music',    productId: NumberLong('3514683')},
+      var keyPattern = {type: 1, productId: 1, _id: 1};
+      var typeAndProductSplits = [
+        {type: MinKey,     productId: MinKey, _id: 0},
+        {type: 'Game',     productId: NumberLong('1218086489034'), _id: 0},
+        {type: 'HardGood', productId: NumberLong('1118840368488'), _id: 0},
+        {type: 'HardGood', productId: NumberLong('1218105505555'), _id: 0},
+        {type: 'HardGood', productId: NumberLong('1218379812886'), _id: 0},
+        {type: 'HardGood', productId: NumberLong('1218475610897'), _id: 0},
+        {type: 'HardGood', productId: NumberLong('1218618813745'), _id: 0},
+        {type: 'HardGood', productId: NumberLong('1218728444211'), _id: 0}, // 8,9
+        {type: 'HardGood', productId: NumberLong('1219080834391'), _id: 0},
+        {type: 'HardGood', productId: NumberLong('1219736622160'), _id: 0}, // 7
+        {type: 'Movie',    productId: NumberLong('28132'), _id: 0},         // 6
+        {type: 'Movie',    productId: NumberLong('44465'), _id: 0},
+        {type: 'Movie',    productId: NumberLong('59159'), _id: 0},         // 5
+        {type: 'Movie',    productId: NumberLong('1344253'), _id: 0},
+        {type: 'Movie',    productId: NumberLong('1459047'), _id: 0},       // 8,9
+        {type: 'Movie',    productId: NumberLong('1627489'), _id: 0},       // 4
+        {type: 'Movie',    productId: NumberLong('1921771'), _id: 0},
+        {type: 'Movie',    productId: NumberLong('2180510'), _id: 0},
+        {type: 'Movie',    productId: NumberLong('2702290'), _id: 0},       // 7
+        {type: 'Movie',    productId: NumberLong('3313579'), _id: 0},
+        {type: 'Music',    productId: NumberLong('73927'), _id: 0},         // 3,6
+        {type: 'Music',    productId: NumberLong('97408'), _id: 0},         // 8,9
+        {type: 'Music',    productId: NumberLong('120846'), _id: 0},
+        {type: 'Music',    productId: NumberLong('145563'), _id: 0},
+        {type: 'Music',    productId: NumberLong('172542'), _id: 0},        // 5
+        {type: 'Music',    productId: NumberLong('199025'), _id: 0},
+        {type: 'Music',    productId: NumberLong('226846'), _id: 0},
+        {type: 'Music',    productId: NumberLong('261778'), _id: 0},        // 7
+        {type: 'Music',    productId: NumberLong('301467'), _id: 0},        // 8,9
+        {type: 'Music',    productId: NumberLong('1337396'), _id: 0},
+        {type: 'Music',    productId: NumberLong('1393391'), _id: 0},       // 4,6
+        {type: 'Music',    productId: NumberLong('1443146'), _id: 0},
+        {type: 'Music',    productId: NumberLong('1484664'), _id: 0},
+        {type: 'Music',    productId: NumberLong('1531482'), _id: 0},
+        {type: 'Music',    productId: NumberLong('1582679'), _id: 0},
+        {type: 'Music',    productId: NumberLong('1624125'), _id: 0},       // 8,9
+        {type: 'Music',    productId: NumberLong('1686112'), _id: 0},       // 5,7
+        {type: 'Music',    productId: NumberLong('1778529'), _id: 0},
+        {type: 'Music',    productId: NumberLong('1815087'), _id: 0},
+        {type: 'Music',    productId: NumberLong('1858555'), _id: 0},
+        {type: 'Music',    productId: NumberLong('1920647'), _id: 0},       // 3,6
+        {type: 'Music',    productId: NumberLong('1992906'), _id: 0},
+        {type: 'Music',    productId: NumberLong('2067260'), _id: 0},       // 8,9
+        {type: 'Music',    productId: NumberLong('2149519'), _id: 0},
+        {type: 'Music',    productId: NumberLong('2229905'), _id: 0},
+        {type: 'Music',    productId: NumberLong('2305925'), _id: 0},       // 4
+        {type: 'Music',    productId: NumberLong('2428992'), _id: 0},
+        {type: 'Music',    productId: NumberLong('2558418'), _id: 0},
+        {type: 'Music',    productId: NumberLong('2656772'), _id: 0},       // 5,7
+        {type: 'Music',    productId: NumberLong('2709433'), _id: 0},       // 8,9
+        {type: 'Music',    productId: NumberLong('2776923'), _id: 0},       // 6
+        {type: 'Music',    productId: NumberLong('2820755'), _id: 0},
+        {type: 'Music',    productId: NumberLong('2864319'), _id: 0},
+        {type: 'Music',    productId: NumberLong('2900297'), _id: 0},
+        {type: 'Music',    productId: NumberLong('2933428'), _id: 0},
+        {type: 'Music',    productId: NumberLong('2971126'), _id: 0},
+        {type: 'Music',    productId: NumberLong('3230451'), _id: 0},       // 7,8,9
+        {type: 'Music',    productId: NumberLong('3310959'), _id: 0},
+        {type: 'Music',    productId: NumberLong('3383162'), _id: 0},
+        {type: 'Music',    productId: NumberLong('3514683'), _id: 0},
       ];
-
-      // The remaining code should be boiler plate.
 
       // Get a list of the shard names.
       var config = db.getSiblingDB("config");
@@ -468,22 +467,27 @@ test_control:
       assert.commandWorked(sh.enableSharding(dbName));
       assert.commandWorked(sh.enableSharding(targetDBName));
       assert.commandWorked(sh.shardCollection(sourceNs, keyPattern));
-      assert.commandWorked(sh.shardCollection(targetNsIdenticalDistributionSameDB, keyPattern));
-      assert.commandWorked(sh.shardCollection(targetNsIdenticalDistributionOtherDB, keyPattern));
+      assert.commandWorked(sh.shardCollection(targetNsIdenticalDistributionSameDB, keyPattern, /*unique=*/true));
+      assert.commandWorked(sh.shardCollection(targetNsIdenticalDistributionOtherDB, keyPattern, /*unique=*/true));
 
       // For a shard key {_id: "hashed"}, MongoDB will automatically split the collection into
       // two chunks per shard so no further work is necessary.
       assert.commandWorked(sh.shardCollection(targetNsIdHashedOtherDB, {_id: "hashed"}));
 
-      var distributeColl = function (ns) {
+      var idAlphabetSplits = "abcdefghijklmnopqrstuvwxyz".split("").map(function(letter) {
+          return {_id: letter};
+      });
+      assert.commandWorked(sh.shardCollection(targetNsRangeIdSameDB, {_id: 1}));
 
-        // Given the split points defined above and 'nShards' shards, we try to partition the data
-        // such that each shard has one chunk, but each chunk is of a similar size. Assuming there
-        // is a similar amount of data between each split point above, this means dividing the
-        // splits into 'nShards' equal chunks.
+      var distributeColl = function (ns, splits) {
+
+        // Given the split points 'splits' and 'nShards' shards, we try to partition the data such
+        // that each shard has one chunk, but each chunk is of a similar size. Assuming there is a
+        // similar amount of data between each split point, this means dividing the splits into
+        // 'nShards' equal chunks.
         //
-        // For example, if there are 30 entries in 'splits' and 10 shards, we take the 0th, 10th,
-        // and 20th entries, resulting in a filtered array of length 3.
+        // For example, if there are 31 entries in 'splits' and 3 shards, we take the 0th, 11th,
+        // and 22nd entries, resulting in a filtered array of length 3.
         //
         // The map function creates a new document of the format required by the splitter and mover
         // functions. That is, it creates a document with:
@@ -494,7 +498,7 @@ test_control:
         // For a reasonable number of splits filter is ok. For a very large number
         // it will perform poorly. BUT, even in this case, it will probably be negligible.
         var distribution =  splits.filter(function(element, index){
-          return index % Math.floor(splits.length / shards.length) == 0;
+          return index % Math.ceil(splits.length / shards.length) == 0;
         }).map(function(middle, i) {
           return {shard:shards[i % shards.length], middle:middle, ns: ns};
         });
@@ -513,9 +517,10 @@ test_control:
       // at the end of the restore.
       sh.stopBalancer();
 
-      distributeColl(sourceNs);
-      distributeColl(targetNsIdenticalDistributionSameDB);
-      distributeColl(targetNsIdenticalDistributionOtherDB);
+      distributeColl(sourceNs, typeAndProductSplits);
+      distributeColl(targetNsIdenticalDistributionSameDB, typeAndProductSplits);
+      distributeColl(targetNsIdenticalDistributionOtherDB, typeAndProductSplits);
+      distributeColl(targetNsRangeIdSameDB, idAlphabetSplits);
 
       db.printShardingStatus();
     } else {
