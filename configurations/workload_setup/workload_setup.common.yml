@@ -137,7 +137,7 @@ tpcc:
       checkout_repos:
         - source: git@github.com:10gen/py-tpcc.git
           target: ${bootstrap.tpcc_dir}
-          branch: output_file
+          branch: 52185e96bf28be6608ea65b61ff1d134b7cb3f13
   - on_workload_client:
       exec: rm -rf tpcc*
   - on_workload_client:
@@ -146,11 +146,7 @@ tpcc:
           target: ./tpcc
   - on_workload_client:
       exec: |
-        sudo yum -y install gcc python-devel
-        curl -O --retry 10 -LfsS https://github.com/mongodb/mongo-python-driver/archive/3.7.0b0.tar.gz
-        tar xvfBmp 3.7.0b0.tar.gz
-        cd mongo-python-driver-3.7.0b0
-        sudo python setup.py install
+        python -m pip install pymongo==3.7.2 --user
 
 linkbench:
   - on_workload_client:
