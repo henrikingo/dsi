@@ -1,22 +1,44 @@
 # Shared by all mongods
 journal_dir: /media/ebs2/journal
+
 mongod_config_file:
   storage:
     engine: ${bootstrap.storageEngine}
   replication:
-    replSetName: initialsyncrs
+    replSetName: logkeeper-short-rs0
+
+pre_cluster_start:
+  # Load logkeeper data on all mongod nodes except an empty data bearing node that will
+  # sync data from its primary.
+  - on_mongod:
+      exec: |
+        host_addr=$(hostname -i)
+        if [ "$host_addr" == "${infrastructure_provisioning.out.mongod.0.private_ip}" ]
+        then
+           echo "Loading data on " $host_addr
+           cd data && { curl -O --retry 10 -fsS https://s3-us-west-2.amazonaws.com/dsi-donot-remove/InitialSyncLogKeeper/logkeeper-slice-data.tgz; cd -; }
+           db_path=${mongodb_setup.mongod_config_file.storage.dbPath}
+           rm -rf $db_path; mkdir -p $db_path
+           tar -xf ./data/logkeeper-slice-data.tgz -C $db_path
+        fi
 
 topology:
-  - id: initialsyncrs
+  - id: logkeeper-short-rs0
     cluster_type: replset
     mongod:
       - public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
         private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
+        clean_db_dir: false
+        use_journal_mnt: false
       - public_ip: ${infrastructure_provisioning.out.mongod.1.public_ip}
         private_ip: ${infrastructure_provisioning.out.mongod.1.private_ip}
+        use_journal_mnt: false
+        rs_conf_member:
+          arbiterOnly: true
   - cluster_type: standalone
     public_ip: ${infrastructure_provisioning.out.mongod.2.public_ip}
     private_ip: ${infrastructure_provisioning.out.mongod.2.private_ip}
+    use_journal_mnt: false
 
 # Meta data about this mongodb setup
 meta:
@@ -31,10 +53,3 @@ meta:
   secondaries: 1  # Only 1 secondary at start
   mongodb_setup: replica-2node
   mongodb_url: ${mongodb_setup.authentication.${bootstrap.authentication}.mongodb_url}
-
-# Hosts to run correctness tests on.
-# It is expected that the second standalone cluster will be part of the replica set at the end of
-# the test, and so is checked as part of the check on the primary.
-validate:
-  primaries:
-    - ${mongodb_setup.topology.0.mongod.0.private_ip}:27017
