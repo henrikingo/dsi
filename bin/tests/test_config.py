@@ -424,7 +424,6 @@ class ConfigDictTestCase(unittest.TestCase):
                 },
                 'setParameter': {
                     'enableTestCommands': True,
-                    'collectionClonerUsesExhaust': True,
                     'foo': True
                 },
                 'net': {
@@ -451,7 +450,6 @@ class ConfigDictTestCase(unittest.TestCase):
                 },
                 'setParameter': {
                     'enableTestCommands': True,
-                    'collectionClonerUsesExhaust': True,
                     'foo': True
                 },
                 'net': {
@@ -498,7 +496,6 @@ class ConfigDictTestCase(unittest.TestCase):
                 },
                 'setParameter': {
                     'enableTestCommands': True,
-                    'collectionClonerUsesExhaust': True,
                     'foo': True
                 },
                 'net': {
@@ -590,7 +587,6 @@ class ConfigDictTestCase(unittest.TestCase):
                 },
                 'setParameter': {
                     'enableTestCommands': True,
-                    'collectionClonerUsesExhaust': True,
                     'foo': True
                 },
                 'net': {

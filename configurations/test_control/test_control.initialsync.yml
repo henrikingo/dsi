@@ -13,16 +13,13 @@ run:
               num_collections: 1
               num_dbs: 1
               write_load: false
-              empty_node_addr: ${mongodb_setup.meta.empty_node}
-              primary_addr: ${mongodb_setup.meta.hostname}
-              sync_type: "initialSync"
-              start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
-              db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
+              third_node_addr: ${mongodb_setup.meta.third_node}
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      third_node_addr: ${mongodb_setup.meta.third_node}
 
   - id: initialsync_c_1_d_32_w_f
     type: mongoshell
@@ -37,16 +34,13 @@ run:
               num_collections: 1
               num_dbs: 32
               write_load: false
-              empty_node_addr: ${mongodb_setup.meta.empty_node}
-              primary_addr: ${mongodb_setup.meta.hostname}
-              sync_type: "initialSync"
-              start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
-              db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
+              third_node_addr: ${mongodb_setup.meta.third_node}
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      third_node_addr: ${mongodb_setup.meta.third_node}
 
   - id: initialsync_c_32_d_1_w_f
     type: mongoshell
@@ -62,16 +56,13 @@ run:
               num_collections: 32
               num_dbs: 1
               write_load: false
-              empty_node_addr: ${mongodb_setup.meta.empty_node}
-              primary_addr: ${mongodb_setup.meta.hostname}
-              sync_type: "initialSync"
-              start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
-              db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
+              third_node_addr: ${mongodb_setup.meta.third_node}
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      third_node_addr: ${mongodb_setup.meta.third_node}
 
   - id: initialsync_c_32_d_32_w_f
     type: mongoshell
@@ -87,16 +78,13 @@ run:
               num_collections: 32
               num_dbs: 32
               write_load: false
-              empty_node_addr: ${mongodb_setup.meta.empty_node}
-              primary_addr: ${mongodb_setup.meta.hostname}
-              sync_type: "initialSync"
-              start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
-              db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
+              third_node_addr: ${mongodb_setup.meta.third_node}
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      third_node_addr: ${mongodb_setup.meta.third_node}
 
   - id: initialsync_c_1_d_1_w_t
     type: mongoshell
@@ -112,16 +100,13 @@ run:
               num_collections: 1
               num_dbs: 1
               write_load: true
-              empty_node_addr: ${mongodb_setup.meta.empty_node}
-              primary_addr: ${mongodb_setup.meta.hostname}
-              sync_type: "initialSync"
-              start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
-              db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
+              third_node_addr: ${mongodb_setup.meta.third_node}
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      third_node_addr: ${mongodb_setup.meta.third_node}
 
   - id: initialsync_c_1_d_32_w_t
     type: mongoshell
@@ -137,16 +122,13 @@ run:
               num_collections: 1
               num_dbs: 32
               write_load: true
-              empty_node_addr: ${mongodb_setup.meta.empty_node}
-              primary_addr: ${mongodb_setup.meta.hostname}
-              sync_type: "initialSync"
-              start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
-              db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
+              third_node_addr: ${mongodb_setup.meta.third_node}
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      third_node_addr: ${mongodb_setup.meta.third_node}
 
   - id: initialsync_c_32_d_1_w_t
     type: mongoshell
@@ -162,16 +144,13 @@ run:
               num_collections: 32
               num_dbs: 1
               write_load: true
-              empty_node_addr: ${mongodb_setup.meta.empty_node}
-              primary_addr: ${mongodb_setup.meta.hostname}
-              sync_type: "initialSync"
-              start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
-              db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
+              third_node_addr: ${mongodb_setup.meta.third_node}
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      third_node_addr: ${mongodb_setup.meta.third_node}
 
   - id: initialsync_c_32_d_32_w_t
     type: mongoshell
@@ -187,17 +166,14 @@ run:
               num_collections: 32
               num_dbs: 32
               write_load: true
-              empty_node_addr: ${mongodb_setup.meta.empty_node}
-              primary_addr: ${mongodb_setup.meta.hostname}
-              sync_type: "initialSync"
-              start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
-              db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
+              third_node_addr: ${mongodb_setup.meta.third_node}
           - cpu_noise
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      third_node_addr: ${mongodb_setup.meta.third_node}
 
   - id: fio
     type: fio

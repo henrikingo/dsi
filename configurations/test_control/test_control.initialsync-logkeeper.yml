@@ -82,23 +82,7 @@
 #
 # 8) Finally, update the value of mongod_seeded_ebs_snapshot_id in infrastructure_provisioning.initialsync-logkeeper.yml.
 #
-# Note: The logkeeper-short test uses pre-compressed data files (of a node that got restored from snapshot
-# "snap-09d40a2412085bc5a") to load primary data. And, the snapshot was taken out of this dataset
-# https://s3-us-west-2.amazon/usr/bin/aws.com/dsi-donot-remove/InitialSyncLogKeeper/logkeeper_slice.json.gz.
-# Periodically, usually when a new major version becomes available, the snapshot and its corresponding compressed data files
-# have to be updated. The most common update that needs to be  performed relates to the Feature Compatibility Version.
-#
 task_name: initialsync-logkeeper
-post_test:
-  # Clean-up dbPath+'-tmp' directory that got created during rsync.
-  - on_mongod:
-      exec: |
-        host_addr=$(hostname -i)
-        if [ "$host_addr" == "${mongodb_setup.meta.empty_node}" ]
-        then
-           echo "Cleaning the temp data directory on " $host_addr
-           rm -rf ${mongodb_setup.mongod_config_file.storage.dbPath}-tmp
-        fi
 run:
   - id: benchRun
     type: mongoshell
@@ -112,19 +96,15 @@ run:
       - workloads/workload_timestamps.csv
     workload_config:
       tests:
-        default:
-          - large_initialsync:
-              primary_addr: ${mongodb_setup.meta.hostname}
-              empty_node_addr: ${mongodb_setup.meta.empty_node}
-              sync_type: "initialSync"
-              start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
-              db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
+        initialsync-logkeeper:
+          - large_initialsync
 
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      test_list: initialsync-logkeeper
 
 # Disable jstest validations, it just takes too long to run it for this test.
 jstests_dir: ""
