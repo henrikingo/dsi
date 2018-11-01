@@ -72,5 +72,5 @@ thread_levels:
   standalone: [4, 60]
   single-replica: [20, 60]
   replica: [20, 60]
-  shard: [4, 60]
+  shard: [60]
   shard-lite: [60]
