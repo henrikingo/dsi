@@ -14,3 +14,6 @@ tfvars:
 
   region: us-east-1
   availability_zone: us-east-1a
+
+  tags:
+    expire-on-delta: 3      # adjust expire_on to now + expire-on-delta hours

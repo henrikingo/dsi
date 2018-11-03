@@ -211,7 +211,7 @@ class TestTerraformConfiguration(unittest.TestCase):
             return datetime.datetime(2018, 10, 13, 14, 19, 51)
 
         tag = terraform_config.generate_expire_on_tag(_datetime_now=fake_datetime_now)
-        self.assertEqual(tag, "2018-10-15 14:19:51")
+        self.assertEqual(tag, "2018-10-13 16:19:51")
 
         tag = terraform_config.generate_expire_on_tag(1, _datetime_now=fake_datetime_now)
         self.assertEqual(tag, "2018-10-13 15:19:51")

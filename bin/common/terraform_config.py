@@ -74,10 +74,10 @@ def generate_placement_group(tfvars, prefix="dsi"):
     return tfvars
 
 
-def generate_expire_on_tag(hour_delta=48, _datetime_now=datetime.datetime.now):
+def generate_expire_on_tag(hour_delta=2, _datetime_now=datetime.datetime.now):
     """
     This will generate expire-on tag based on current time or input time,
-    expired-on tag will be (now + hour_delta) hours, default to 48 hours.
+    expired-on tag will be (now + hour_delta) hours, default to 2 hours.
 
     :param int hour_delta: How many hours to add to _datetime_now()
     :param function _datetime_now: 0-argument function to call to get the current time as a

@@ -37,7 +37,7 @@ infrastructure_provisioning:
     ssh_key_file: aws_ssh_key.pem
 
     tags:
-      expire-on-delta: 2     # adjust expire_on to today + expire-on-delta days
+      expire-on-delta: 2     # adjust expire_on to now + expire-on-delta hours
       owner: serverteam-perf@10gen.com
       Project: sys-perf
   numactl_prefix: numactl --interleave=all --cpunodebind=1

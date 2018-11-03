@@ -23,7 +23,7 @@ tfvars:
   # Note: Name is generated per instance, cannot be set in config file.
   tags:
     owner: linus.torvalds@10gen.com  # Valid email address
-    expire-on-delta: 1  # Set expire-on tag used by reaper script. Note: must be lower case. Delta is days added to current date (default: 1).
+    expire-on-delta: 2  # Set expire-on tag used by reaper script. Note: must be lower case. Delta is hours added to current date (default: 2).
     Variant: Linux 3-shard cluster
     Project: sys-perf
 

@@ -314,7 +314,7 @@ class ConfigDictTestCase(unittest.TestCase):
                     'Project': 'sys-perf',
                     'owner': 'linus.torvalds@10gen.com',
                     'Variant': 'Linux 3-shard cluster',
-                    'expire-on-delta': 1
+                    'expire-on-delta': 2
                 },
                 'configsvr_instance_type': 't1.micro'
             })
@@ -558,7 +558,7 @@ class ConfigDictTestCase(unittest.TestCase):
                 'Project': 'sys-perf',
                 'owner': 'linus.torvalds@10gen.com',
                 'Variant': 'Linux 3-shard cluster',
-                'expire-on-delta': 1
+                'expire-on-delta': 2
             }, 't1.micro'
         ])
         self.assert_equal_lists(mycluster['shard'][2]['mongod'][0].values(), [
