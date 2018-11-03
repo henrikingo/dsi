@@ -74,18 +74,20 @@ def generate_placement_group(tfvars, prefix="dsi"):
     return tfvars
 
 
-def generate_expire_on_tag(day_delta=2):
+def generate_expire_on_tag(hour_delta=48, _datetime_now=datetime.datetime.now):
     """
     This will generate expire-on tag based on current time or input time,
-    expired-on tag will be (now + day_delta) day, default to 2 day.
+    expired-on tag will be (now + hour_delta) hours, default to 48 hours.
 
-    :param int day_delta: How many days to add to datetime.now()
-    :return: An ISO datestring such as "2017-12-31"
+    :param int hour_delta: How many hours to add to _datetime_now()
+    :param function _datetime_now: 0-argument function to call to get the current time as a
+    datetime. Only meant to be used for testing purposes due to the inability to mock datetime.now.
+    :return: A datestring with second-level precision, such as "2006-01-02 15:04:05"
     :rtype: str
     """
-    now = datetime.datetime.now()
-    expire_on = now + datetime.timedelta(days=day_delta)
-    return "{}-{}-{}".format(expire_on.year, expire_on.month, expire_on.day)
+    now = _datetime_now()
+    expire_on = now + datetime.timedelta(hours=hour_delta)
+    return expire_on.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def generate_runner():
