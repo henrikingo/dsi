@@ -9,8 +9,7 @@ Example:
 etl_jira_mongo.py --jira-user USERNAME --jira-password PASSWORD --mongo-uri \
     'mongodb+srv://USERNAME:PASSWORD@performancedata-g6tsc.mongodb.net/perf?retryWrites=true' -d
 
-If called from command line, main() is the entry point. In Lambda, we use zappa_handler() as
-entry point. They are the same except for the fact that Zappa has already setup logging for us.
+If called from command line, main() is the entry point.
 """
 
 import argparse
@@ -288,17 +287,6 @@ def parse_options():
             options[key] = os.environ[key.upper()]
 
     return options
-
-
-def zappa_handler(event, context):  #pylint: disable=unused-argument
-    """
-    When deployed with Zappa, this is the entry point.
-
-    Like main(), but without setup_logging(). Zappa manages logging, including whether to log DEBUG
-    or not.
-    """
-    options = parse_options()
-    EtlJira(options).run()
 
 
 def main():
