@@ -1,0 +1,528 @@
+stepback: false
+command_type: system
+
+pre:
+
+post:
+    - command: shell.exec
+      params:
+        working_dir: work
+        script: |
+          source ./dsienv.sh
+          make_artifact.sh
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: work/dsi-artifacts.tgz
+        remote_file: ${project_dir}/${build_variant}/${revision}/${task_id}/${version_id}/logs/dsi-artifacts-${task_name}-${build_id}-${execution}.${ext|tgz}
+        bucket: mciuploads
+        permissions: public-read
+        content_type: ${content_type|application/x-gzip}
+        display_name: Dsi Artifacts - Execution ${execution}
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: src/workloads/workloads/jsdoc/jsdocs-redirect.html
+        remote_file: ${project_dir}/${build_variant}/${revision}/${task_id}/${version_id}/logs/workloads-${task_name}-${build_id}.html
+        bucket: mciuploads
+        permissions: public-read
+        content_type: text/html
+        display_name: workloads documentation
+    - command: attach.results
+      params:
+        file_location: work/report.json
+    - command: "json.send"
+      params:
+         name: "perf"
+         file: "work/perf.json"
+    - command: shell.exec
+      params:
+        working_dir: work
+        script: |
+          source ./dsienv.sh
+          infrastructure_teardown.py
+
+functions:
+  "prepare environment":
+    - command: shell.exec
+      params:
+        script: |
+          rm -rf ./*
+          mkdir src
+          mkdir work
+    - command: manifest.load
+    - command: git.get_project
+      params:
+        directory: src
+        revisions: # for each module include revision as <module_name> : ${<module_name>_rev}
+          dsi: ${dsi_rev}
+          workloads: ${workloads_rev}
+          linkbench: ${linkbench_rev}
+    - command: shell.exec
+      params:
+        working_dir: work
+        script: |
+          cat > bootstrap.yml <<EOF
+          infrastructure_provisioning: ${cluster}
+          platform: ${platform}
+          mongodb_setup: ${setup}
+          test_control: ${test}
+          production: true
+          workloads_dir: ../src/workloads/workloads
+          ycsb_dir: ../src/YCSB/YCSB
+          linkbench_dir: ../src/linkbench/linkbench
+          EOF
+
+          cat > runtime.yml <<EOF
+          # evergreen default expansions
+          is_patch: ${is_patch}
+          task_id: ${task_id}
+          task_name: ${task_name}
+          execution: ${execution}
+          build_id: ${build_id}
+          build_variant: ${build_variant}
+          version_id: ${version_id}
+          workdir: ${workdir}
+          revision: ${revision}
+          project_dir: ${project_dir}
+          branch_name: ${branch_name}
+
+          # sys-perf expansions
+          # Shouldn't be needed: testList: ${testList}
+          ext: ${ext}
+          script_flags : ${script_flags}
+          dsi_rev: ${dsi_rev}
+          workloads_rev: ${workloads_rev}
+          enterprise_rev: ${enterprise_rev}
+          EOF
+
+    - command: shell.exec
+      params:
+        silent: true
+        working_dir: work
+        script: |
+          # AWS ssh secret key
+          echo "${ec2_pem}" > aws_ssh_key.pem
+          chmod 400 aws_ssh_key.pem
+
+          cat > runtime_secret.yml <<EOF
+          # Note that inside system_perf.yml we have ${aws_key} & ${aws_secret}, which are used for
+          # Evergreen resources. The below are used for dsi resources, and are NOT the same!
+          aws_access_key: "${terraform_key}"
+          aws_secret_key: "${terraform_secret}"
+          perf_jira_user: "${perf_jira_user}"
+          perf_jira_pw: "${perf_jira_pw}"
+          dsi_analysis_atlas_user: "${dsi_analysis_atlas_user}"
+          dsi_analysis_atlas_pw: "${dsi_analysis_atlas_pw}"
+          atlas_api_user: "${atlas_api_user}"
+          atlas_api_key: "${atlas_api_key}"
+          atlas_database_user: "${atlas_database_user}"
+          atlas_database_password: "${atlas_database_password}"
+          EOF
+          chmod 400 runtime_secret.yml
+    - command: shell.exec
+      params:
+        working_dir: work
+        script: |
+          set -e
+          ../src/dsi/dsi/run-dsi python ../src/dsi/dsi/bin/bootstrap.py
+    # Different work directory due to historical reasons
+    - command: shell.exec
+      params:
+        script: |
+          set -v
+          set -e
+          source work/dsienv.sh
+          setup-dsi-env.sh
+          ls -a work
+
+  "deploy cluster":
+    - command: shell.exec
+      params:
+        working_dir: work
+        script: |
+          set -e
+          set -v
+          source ./dsienv.sh
+          ../src/dsi/dsi/run-dsi infrastructure_provisioning.py
+          ../src/dsi/dsi/run-dsi workload_setup.py
+          ../src/dsi/dsi/run-dsi mongodb_setup.py
+
+  "run test":
+    - command: shell.exec
+      type: test
+      params:
+        working_dir: work
+        script: |
+          set -e
+          set -v
+          source ./dsienv.sh
+          ../src/dsi/dsi/run-dsi test_control.py
+    - command: "json.send"
+      params:
+         name: "perf"
+         file: "work/perf.json"
+
+  "analyze":
+    - command: shell.exec
+      params:
+        working_dir: work
+        script: |
+          ../src/dsi/dsi/run-dsi detect-changes
+    - command: shell.exec
+      type : test
+      params:
+        working_dir: work
+        script: |
+          set -o errexit
+          set -o verbose
+          TAG="4.0.2-Baseline"
+          OVERRIDEFILE="../src/dsi/dsi/analysis/${branch_name}/system_perf_override.json"
+          python -u ../src/dsi/dsi/analysis/post_run_check.py ${script_flags} --reports-analysis reports --perf-file perf.json --rev ${revision} --refTag $TAG --overrideFile $OVERRIDEFILE --project_id sys-perf --variant ${build_variant} --task ${task_name}
+
+#######################################
+#               Tasks                 #
+#######################################
+
+tasks:
+- name: linkbench
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "linkbench"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: tpcc
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "tpcc"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: industry_benchmarks
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "ycsb"
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+      vars:
+        script_flags: --ycsb-throughput-analysis reports
+
+- name: industry_benchmarks_secondary_reads
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "ycsb-secondary-reads"
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+      vars:
+        script_flags: --ycsb-throughput-analysis reports
+
+- name: industry_benchmarks_wmajority
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "ycsb-wmajority"
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+      vars:
+        script_flags: --ycsb-throughput-analysis reports
+
+- name: crud_workloads
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "crud_workloads"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: mixed_workloads
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "mixed_workloads"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: misc_workloads
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "misc_workloads"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: map_reduce_workloads
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "map_reduce_workloads"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: smoke_test
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "short"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: retryable_writes_workloads
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "retryable_writes"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: snapshot_reads
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "snapshot_reads"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: secondary_reads
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "secondary_reads"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: bestbuy_agg
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "bestbuy_agg"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: bestbuy_query
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "bestbuy_query"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: non_sharded_workloads
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "non_sharded"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: mongos_workloads
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "mongos"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: move_chunk_workloads
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "move_chunk"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: move_chunk_waiting_workloads
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "move_chunk_waiting"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: secondary_performance
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        # Unfortunately the dash/underscore style is different for mongodb_setup and test_control
+        test: "secondary_performance"
+        setup: "secondary-performance"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: initialsync
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "initialsync"
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: initialsync-logkeeper
+  priority: 5
+  exec_timeout_secs: 216000 # 2.5 days
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "initialsync-logkeeper"
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: change_streams_throughput
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "change_streams_throughput"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: change_streams_latency
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "change_streams_latency"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: change_streams_multi_mongos
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "change_streams_multi_mongos"
+        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+#######################################
+#               Modules               #
+#######################################
+# if a module is added and to be added to the manifest
+# be sure to add the module to git.get_project revisions parameter
+modules:
+- name: dsi
+  repo: git@github.com:10gen/dsi.git
+  prefix: dsi
+  branch: master
+
+- name: workloads
+  repo: git@github.com:10gen/workloads.git
+  prefix: workloads
+  branch: master
+
+- name: linkbench
+  repo: git@github.com:10gen/linkbench.git
+  prefix: linkbench
+  branch: master
+
+#######################################
+#         Buildvariants               #
+#######################################
+buildvariants:
+- name: atlas-replSet
+  display_name: Atlas 3-Node ReplSet
+  # 10 years. The intent is to only schedule Atlas tests manually when needed.
+  batchtime: 5256000
+  modules: &modules
+    - dsi
+    - workloads
+    - linkbench
+  expansions:
+    setup: atlas
+    cluster: workload_client
+    platform: linux
+    project_dir: &project_dir dsi
+  run_on:
+        # TODO: Need dedicated distro to deploy single workload client
+      - "rhel70-perf-single"
+  tasks: &3nodetasks
+    - name: industry_benchmarks
+    - name: industry_benchmarks_secondary_reads
+    - name: crud_workloads
+    - name: mixed_workloads
+    - name: misc_workloads
+    - name: map_reduce_workloads
+    - name: smoke_test
+    - name: retryable_writes_workloads
+    - name: industry_benchmarks_wmajority
+    - name: secondary_performance
+    - name: non_sharded_workloads
+    - name: bestbuy_agg
+    - name: bestbuy_query
+    - name: change_streams_throughput
+    - name: change_streams_latency
+    - name: snapshot_reads
+    - name: secondary_reads
+    - name: linkbench

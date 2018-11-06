@@ -65,14 +65,14 @@ class AtlasSetup(object):
         # Repeated calls to start() would generate new cluster(s) with new unique name(s).
         # I decided that would probably be a bad thing, so not supporting repeated start() without
         # calling destroy() in between.
-        LOG.info("AtlasSetup.start")
         if self.mongodb_setup["out"]["atlas"]["clusters"]:
             LOG.error("Clusters already exist in mongodb_setup.out.atlas.clusters.")
-            LOG.error("Please shutdown existing clusters first with atlas_teardown.py.")
+            LOG.error("Please shutdown existing clusters first with infrastructure_teardown.py.")
             LOG.debug(self.mongodb_setup["out"])
             return False
 
         if "atlas" in self.mongodb_setup and "clusters" in self.mongodb_setup["atlas"]:
+            LOG.info("AtlasSetup.start")
             return all(
                 self.create_cluster(atlas_cluster)
                 for atlas_cluster in self.mongodb_setup["atlas"]["clusters"])

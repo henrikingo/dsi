@@ -4,7 +4,7 @@ BUILDIR=$(dirname $0)
 source ${BUILDIR}/test-common.sh
 
 #yamllint linting
-CMD="yamllint $(find . -name '*.yml' ! -path './tests/unittest-files/perf.yml' ! -path './tests/unittest-files/system_perf.yml' ! -path './tests/unittest-files/valid_evergreen.yml' ! -path './bin/tests/unittest-files/config_test_control/workloads.yml') .yamllint"
+CMD="yamllint $(find . -name '*.yml' ! -path './tests/unittest-files/perf.yml' ! -path './tests/unittest-files/system_perf.yml' ! -path './tests/unittest-files/valid_evergreen.yml' ! -path './bin/tests/unittest-files/config_test_control/workloads.yml' ! -path './atlas/system_perf_atlas.yml') .yamllint"
 failed=0
 
 echo "Linting yaml files"
