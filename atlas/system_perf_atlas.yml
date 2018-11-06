@@ -505,8 +505,7 @@ buildvariants:
     platform: linux
     project_dir: &project_dir dsi
   run_on:
-        # TODO: Need dedicated distro to deploy single workload client
-      - "rhel70-perf-single"
+      - "rhel70-perf-atlas"
   tasks: &3nodetasks
     - name: industry_benchmarks
     - name: industry_benchmarks_secondary_reads
