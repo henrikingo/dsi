@@ -2,7 +2,6 @@
 ETL history at project level into the `points` collection of the Mongo cluster.
 """
 import datetime
-import functools
 import multiprocessing
 import os
 import re
@@ -33,7 +32,7 @@ ALL_PROJECTS = [
     'mongo-longevity-4.0',
     'mongo-longevity-3.6',
     'mongo-longevity-3.4'
-] #  yapf: disable
+]  # yapf: disable
 """
 The list of all valid projects.
 """
@@ -47,7 +46,7 @@ DEFAULT_PROJECTS = [
     'performance-4.0',
     'performance-3.6',
     'performance-3.4'
-]#  yapf: disable
+]  # yapf: disable
 """
 The list of default projects.
 """
@@ -214,6 +213,53 @@ def _etl_single_task(evg_client, mongo_uri, task):
     return task
 
 
+def _get_task_identifiers(evg_client, projects, progressbar, pool_size=1):
+    """
+    Get a list of task identifiers from evergreen for each of the projects.
+
+    :param str evg_client: The evergreen client instance.
+    :param list projects: The list of projects to load.
+    :param bool progressbar: Render a progressbar.
+    :param int pool_size: The size of the process pool. 1 implies runs everything inline.
+    """
+    # pylint: disable=too-many-locals
+    task_identifiers = []
+    label = 'loading tasks'
+    LOG.info(label, projects=projects)
+
+    max_length = max(len(project) for project in projects + [label])
+    job_list = [
+        helpers.Job(
+            _get_project_variant_tasks, arguments=(evg_client, project), identifier=project)
+        for project in projects
+    ]
+
+    bar_template, show_label = helpers.query_terminal_for_bar()
+    with helpers.pool_manager(job_list, pool_size) as job_iterator:
+        exceptions = []
+        with click.progressbar(job_iterator,
+                               length=len(job_list),
+                               label=label.ljust(max_length + 2),
+                               item_show_func=show_label,
+                               file=None if progressbar else StringIO(),
+                               bar_template=bar_template) as progress: # yapf: disable
+            for job in progress:
+                if job.exception is None:
+                    status = job.identifier
+                    task_identifiers.append(job.result)
+                    if progress.finished:
+                        status = 'tasks loaded'.ljust(max_length + 2)
+                else:
+                    status = 'Exception: {} {}'.format(job.identifier, job.exception)
+                    exceptions.append(job.exception)
+                progress.label = status.ljust(max_length + 2)
+                progress.render_progress()
+
+        if exceptions:
+            raise exceptions[0]
+    return task_identifiers
+
+
 def _etl_evg_mongo(evg_client, mongo_uri, projects, progressbar, pool_size=1):
     """
     Determines the most recent point existing in the mongodb, and then fetches all newer points from
@@ -227,72 +273,34 @@ def _etl_evg_mongo(evg_client, mongo_uri, projects, progressbar, pool_size=1):
     :param int pool_size: The size of the process pool. 1 implies runs everything inline.
     """
     # pylint: disable=too-many-locals
-    task_identifiers = []
-    label = 'loading tasks'
-    LOG.info(label, projects=projects)
-
-    max_length = max(len(project) for project in projects + [label])
-    with click.progressbar(projects,
-                           label=label.ljust(max_length + 2),
-                           file=None if progressbar else StringIO()) as progress: # yapf: disable
-
-        for project in projects:
-            project_variant_tasks = _get_project_variant_tasks(evg_client, project)
-            task_identifiers.extend(project_variant_tasks)
-
-            progress.label = project.ljust(max_length + 2)
-            progress.update(1)
-            progress.render_progress()
-        progress.label = 'tasks loaded'.ljust(max_length + 2)
-        progress.render_progress()
+    task_identifiers = _get_task_identifiers(evg_client, projects, progressbar, pool_size=pool_size)
 
     LOG.info('loaded tasks', tasks=len(task_identifiers))
     LOG.debug('loaded tasks', tasks=task_identifiers)
     label = 'loading data'
-    label_width, bar_width, info_width, padding = helpers.get_bar_widths()
-    bar_template = helpers.get_bar_template(label_width, bar_width, info_width)
-    show_label = functools.partial(
-        helpers.show_label_function,
-        label_width=label_width,
-        bar_width=bar_width,
-        info_width=info_width,
-        padding=padding)
 
-    tasks = [(_etl_single_task, evg_client, mongo_uri, task) for task in task_identifiers]
-
-    pool = None
-    # task_iterator in the following block returns a
-    # result only after one of the tasks completes.
-    #
-    # For multiprocessing, imap_unordered provides this behavior.
-    # In the single process case :method: `helpers.function_adapter_generator`
-    # provides this behavior.
-    if pool_size > 1:
-        pool = multiprocessing.Pool(processes=pool_size)
-        task_iterator = pool.imap_unordered(helpers.function_adapter, tasks)
-    else:
-        task_iterator = helpers.function_adapter_generator(tasks)
+    bar_template, show_label = helpers.query_terminal_for_bar()
+    job_list = [
+        helpers.Job(_etl_single_task, arguments=(evg_client, mongo_uri, task), identifier=task)
+        for task in task_identifiers
+    ]
 
     exceptions = []
-    with click.progressbar(task_iterator,
-                           length=len(task_identifiers),
-                           label=label,
-                           item_show_func=show_label,
-                           file=None if progressbar else StringIO(),
-                           bar_template=bar_template) as progress: # yapf: disable
-        for status, return_value in progress:
-            if status:
-                task = return_value
-                progress.label = show_label(task)
-            else:
-                exception = return_value
-                exceptions.append(return_value)
-                progress.label = str(exception)
-            progress.render_progress()
-
-    if pool:
-        pool.close()
-        pool.join()
+    with helpers.pool_manager(job_list, pool_size) as job_iterator:
+        with click.progressbar(job_iterator,
+                               length=len(job_list),
+                               label=label,
+                               item_show_func=show_label,
+                               file=None if progressbar else StringIO(),
+                               bar_template=bar_template) as progress: # yapf: disable
+            for job in progress:
+                if job.exception is None:
+                    status = job.identifier['task']
+                else:
+                    status = 'Exception: {} {}'.format(job.identifier['task'], job.exception)
+                    exceptions.append(job.exception)
+                progress.label = status
+                progress.render_progress()
 
     if exceptions:
         raise exceptions[0]

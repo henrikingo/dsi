@@ -402,37 +402,43 @@ class TestFilterExcludes(unittest.TestCase):
 
 class TestItemShowFunc(unittest.TestCase):
     """
-    Test show_label_function.
+    Test show_item_function.
     """
 
-    def test_show_label_function_empty(self):
+    def test_empty(self):
         """ Test empty."""
-        self.assertEqual(helpers.show_label_function(None), None)
+        self.assertEqual(helpers.show_item_function(None), None)
 
-    def test_show_label_function_string(self):
+    def test_string(self):
         """ Test string."""
-        self.assertEqual(helpers.show_label_function(''), None)
+        self.assertEqual(helpers.show_item_function(''), None)
 
-    def test_show_label_function(self):
-        """ Test expected."""
+    def test_dict(self):
+        """ Test dict."""
         item = {'project': 'project', 'variant': 'variant', 'task': 'task'}
         expected = 'project/variant/task'
-        actual = helpers.show_label_function(item)
+        actual = helpers.show_item_function(item)
         self.assertEqual(expected, actual)
 
-    def test_show_label_function_short(self):
+    def test_short(self):
         """ Test short."""
         item = {'project': 'project', 'variant': 'variant', 'task': 'task'}
         expected = 'variant/task'
-        actual = helpers.show_label_function(item, info_width=24)
+        actual = helpers.show_item_function(item, info_width=24)
         self.assertEqual(expected, actual)
 
-    def test_show_label_function_shorter(self):
+    def test_shorter(self):
         """ Test shorter."""
         item = {'project': 'project', 'variant': 'variant', 'task': 'task'}
         expected = 'task'
-        actual = helpers.show_label_function(item, info_width=16)
+        actual = helpers.show_item_function(item, info_width=16)
         self.assertEqual(expected, actual)
+
+    def test_job(self):
+        """ Test shorter."""
+        expected = 'task'
+        item = helpers.Job(None, identifier=expected)
+        self.assertEqual(expected, helpers.show_item_function(item, info_width=16))
 
 
 class TestGetMatchingTasks(unittest.TestCase):
@@ -442,7 +448,7 @@ class TestGetMatchingTasks(unittest.TestCase):
 
     def test_get_matching_tasks(self):
         """ Test the core function."""
-        self.assertEqual(helpers.show_label_function(None), None)
+        self.assertEqual(helpers.show_item_function(None), None)
         database = mock.MagicMock(name='database')
 
         database.aggregate.return_value = 'expected'
@@ -561,83 +567,106 @@ class TestValidate(unittest.TestCase):
         self.assertEquals(1, helpers.validate_int_none_options(None, None, 1))
 
 
-class TestFunctionAdapter(unittest.TestCase):
+def _create_job(exception=None):
+    mock_function = mock.MagicMock(name='dummy function', return_value='return')
+    if exception is not None:
+        mock_function.side_effect = exception
+    job = helpers.Job(
+        mock_function,
+        arguments=('arguments', ),
+        kwargs={'thing': 1,
+                'that': 'other'},
+        identifier='identifier')
+    return job
+
+
+class TestJob(unittest.TestCase):
     """
-    Test function_adapter.
+    Test Job.
     """
 
-    def test_success(self):
+    def test_before_call(self):
+        """ Test before call."""
+        job = _create_job()
+        self.assertFalse(job.complete)
+        self.assertIsNone(job.result)
+        self.assertIsNone(job.exception)
+
+    def test_call(self):
         """ Test successful call."""
-        mock_function = mock.MagicMock(name='dummy function')
-        expected = 'return'
-        mock_function.return_value = expected
-
-        status, return_value = helpers.function_adapter(
-            [mock_function, 'arguments'], thing=1, that='other')
-        self.assertTrue(status)
-        self.assertEquals(expected, return_value)
-
-        mock_function.assert_called_once_with('arguments', thing=1, that='other')
+        job = _create_job()
+        job()
+        self.assertTrue(job.complete)
+        self.assertEquals('return', job.result)
+        self.assertIsNone(job.exception)
 
     def test_exception(self):
-        """ Test exception is thrown ."""
-        mock_function = mock.MagicMock(name='dummy function')
-        expected = Exception("catch me")
-        mock_function.side_effect = expected
-
-        status, return_value = helpers.function_adapter(
-            [mock_function, 'arguments'], thing=1, that='other')
-        self.assertFalse(status)
-        self.assertEqual(expected, return_value)
-
-        mock_function.assert_called_once_with('arguments', thing=1, that='other')
+        """ Test exception."""
+        exception = Exception('exception')
+        job = _create_job(exception=exception)
+        job()
+        self.assertTrue(job.complete)
+        self.assertIsNone(job.result)
+        self.assertEqual(exception, job.exception)
 
 
-class TestFunctionAdapterGenerator(unittest.TestCase):
+class TestPoolManager(unittest.TestCase):
     """
-    Test function_adapter.
+    Test pool_manager.
     """
 
-    def test_success(self):
-        """ Test successful call."""
-        mock_function = mock.MagicMock(name='dummy function')
-        expected = 'return'
-        mock_function.return_value = expected
+    def _test_helper(self, job_list=(), pool_size=1):
+        with patch('multiprocessing.Pool') as mock_pool_cls, \
+             patch('signal_processing.commands.helpers.async_job_runner_adapter')\
+                     as mock_async_job_runner_adapter:
+            mock_pool = mock.MagicMock(name='dummy function', return_value='return')
+            mock_pool_cls.return_value = mock_pool
+            mock_pool.imap_unordered.return_value = 'imap_unordered'
+            mock_async_job_runner_adapter.return_value = 'adapter'
+            with helpers.pool_manager(job_list, pool_size) as iterator:
+                pass
 
-        generator = helpers.function_adapter_generator(
-            [(mock_function, 'arguments')], thing=1, that='other')
-        for status, return_value in generator:
-            self.assertTrue(status)
-            self.assertEquals(expected, return_value)
+            if pool_size == 1:
+                self.assertEqual('adapter', iterator)
+                mock_pool_cls.assert_not_called()
+                mock_async_job_runner_adapter.assert_called_once_with(job_list)
+            else:
+                self.assertEqual('imap_unordered', iterator)
+                mock_pool_cls.assert_called_once_with(processes=pool_size)
+                mock_pool.imap_unordered.assert_called_once_with(helpers.async_job_runner, job_list)
+                mock_pool.close.assert_called_once()
+                mock_pool.join.assert_called_once()
+                mock_async_job_runner_adapter.assert_not_called()
 
-        mock_function.assert_called_once_with('arguments', thing=1, that='other')
-
-    def test_exception(self):
-        """ Test exception is thrown ."""
-        mock_function = mock.MagicMock(name='dummy function')
-        expected = Exception("catch me")
-        mock_function.side_effect = expected
-
-        generator = helpers.function_adapter_generator(
-            [(mock_function, 'arguments')], thing=1, that='other')
-        for status, return_value in generator:
-            self.assertFalse(status)
-            self.assertEqual(expected, return_value)
-
-        mock_function.assert_called_once_with('arguments', thing=1, that='other')
+    def test_single(self):
+        """ Test pool size 1."""
+        self._test_helper()
 
     def test_multiple(self):
-        """ Test multiple call."""
-        mock_function = mock.MagicMock(name='dummy function')
-        expected = 'return'
-        mock_function.return_value = expected
+        """ Test pool size 2."""
+        self._test_helper(pool_size=2)
 
-        generator = helpers.function_adapter_generator(
-            [(mock_function, 'first'), (mock_function, 'second')], thing=1, that='other')
-        for status, return_value in generator:
-            self.assertTrue(status)
-            self.assertEquals(expected, return_value)
 
-        mock_function.assert_has_calls(
-            [mock.call('first', thing=1, that='other'),
-             mock.call('second', thing=1, that='other')])
+class TestAsyncJobRunner(unittest.TestCase):
+    """
+    Test async_job_runner.
+    """
+
+    def test_async_job_runner(self):
+        mock_function = mock.MagicMock(name='dummy function', return_value='return')
+        self.assertEqual('return', helpers.async_job_runner(mock_function))
+        mock_function.assert_called_once_with()
+
+
+class TestAsyncJobRunnerAdapter(unittest.TestCase):
+    """
+    Test async_job_runner_adapter.
+    """
+
+    def test_async_job_runner(self):
+        expected = ['return1', 'return2']
+        mock_functions = [mock.MagicMock(name=name, return_value=name) for name in expected]
+        actual = [result for result in helpers.async_job_runner_adapter(mock_functions)]
+        self.assertEqual(expected, actual)
+        for mock_function in mock_functions:
+            mock_function.assert_called_once_with()

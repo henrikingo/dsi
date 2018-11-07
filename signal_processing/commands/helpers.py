@@ -2,11 +2,15 @@
 Common Command helpers and objects.
 """
 import functools
+import multiprocessing
 import os
 import re
 from collections import OrderedDict
+import copy_reg
+import types
 
 # pylint: disable=too-many-instance-attributes,too-many-arguments,too-few-public-methods
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 
 import structlog
@@ -510,12 +514,12 @@ def filter_excludes(points, keys, exclude_patterns):
             yield point
 
 
-def show_label_function(task_identifier, label_width=22, bar_width=34, info_width=70, padding=10):
+def show_item_function(task_identifier, label_width=22, bar_width=34, info_width=70, padding=10):
     """
-    Show task in progressbar status.
+    Show task item in info area of progressbar status.
 
-    :param task_identifier: The 'project', 'variant', 'task', and 'task' values.
-    :type task_identifier: None, dict.
+    :param task_identifier: An object identifying a task.
+    :type task_identifier: None, dict. str.
     :param int label_width: The label width.
     :param int bar_width: The bar width.
     :param int info_width: The info width.
@@ -528,6 +532,13 @@ def show_label_function(task_identifier, label_width=22, bar_width=34, info_widt
     """
     _ = label_width
     _ = bar_width
+
+    if task_identifier and isinstance(task_identifier, Job):
+        task_identifier = task_identifier.identifier
+
+    if task_identifier and isinstance(task_identifier, basestring):
+        return str(task_identifier)
+
     if task_identifier and isinstance(task_identifier, dict):
         available = info_width - padding
         info = '/'.join(task_identifier[k] for k in ['project', 'variant', 'task'])
@@ -551,6 +562,24 @@ def get_bar_template(label_width, bar_width, info_width):
     bar_template = '%(label)-{0}.{0}s [%(bar){1}.{1}s] %(info)-{2}.{2}s'.format(
         label_width, bar_width, info_width)
     return bar_template
+
+
+def query_terminal_for_bar():
+    """
+    Query the current terminal and get a bar_template and show item function for this
+    configuration.
+
+    :return: bar_template and show_label_function.
+    """
+    label_width, bar_width, info_width, padding = get_bar_widths()
+    bar_template = get_bar_template(label_width, bar_width, info_width)
+    bound_show_item_function = functools.partial(
+        show_item_function,
+        label_width=label_width,
+        bar_width=bar_width,
+        info_width=info_width,
+        padding=padding)
+    return bar_template, bound_show_item_function
 
 
 # TODO: As part of PERF-1638 this function needs to be put in a file where it is
@@ -691,51 +720,6 @@ def save_plot(figure, pathname, filename):
     figure.savefig(full_filename)
 
 
-def function_adapter(arguments, **kwargs):
-    """
-    Worker function to adapt calls in imap_unordered. This function unwraps the incoming arguments
-    to extract the function and actual function arguments. It also adapts the returned values to
-    include a status bool. Status indicates that the function ran (not that it worked), simply
-    that it did not raise an exception.
-
-    :param list args: The function (arguments[0]) and the parameters (arguments[1:]).
-    :param dict kwargs: The key word args.
-    :return: A bool status followed by the return value of function or the exception thrown.
-    :rtype: bool, object.
-    See method `Pool.imap_unordered`.
-    """
-    function_reference = arguments[0]
-    function_arguments = arguments[1:]
-    try:
-        return True, function_reference(*function_arguments, **kwargs)
-    except Exception as e:  # pylint: disable=broad-except
-        LOG.warn(
-            "error in function call",
-            function=function_reference,
-            arguments=function_arguments,
-            exc_info=1)
-        return False, e
-
-
-def function_adapter_generator(task_arguments, **kwargs):
-    """
-    Use this function to ensure that a single-process implementation of the code has the same
-    semantics as the multiprocess version.
-
-    That is:
-        1. This function returns after the task has completed.
-        2. The return values are the same.
-
-    Take a list of tasks, execute them through the helpers.function_adapter (to guarantee
-    the same return semantics) and return.
-
-    :param list(dict) task_arguments: The task arguments for helpers.function_adapter.
-    :return: A generator of the task results.
-    """
-    for arguments in task_arguments:
-        yield function_adapter(arguments, **kwargs)
-
-
 # TODO: As part of PERF-1638 this function needs to be put in a file where it is
 # appropriate to know about click. This is called by click so
 # click.BadParameter is the correct exception.
@@ -758,3 +742,181 @@ def validate_int_none_options(context, param, value):
     except ValueError:
         pass
     raise click.BadParameter('{} is not a valid integer or None.'.format(value))
+
+
+def _pickle_method(method):
+    """
+    A functions for pickling a method.
+
+    :param object method: The instance method reference.
+    See 'pickle instancemethods
+    <https://bytes.com/topic/python/answers/552476-why-cant-you-pickle-instancemethods>'.
+    """
+    func_name = method.im_func.__name__
+    obj = method.im_self
+    cls = method.im_class
+    return _unpickle_method, (func_name, obj, cls)
+
+
+def _unpickle_method(func_name, obj, cls):
+    """
+    A functions for unpickling a method.
+
+    :param str func_name: The instance method name.
+    :param object obj: The object instance reference.
+    :param object cls: The object class reference.
+    See 'pickle instancemethods
+    <https://bytes.com/topic/python/answers/552476-why-cant-you-pickle-instancemethods>'.
+    """
+    for clazz in cls.mro():
+        try:
+            func = clazz.__dict__[func_name]
+        except KeyError:
+            pass
+        else:
+            break
+    return func.__get__(obj, cls)
+
+
+# register the pickle functions for MethodType
+copy_reg.pickle(types.MethodType, _pickle_method, _unpickle_method)
+
+
+class Job(object):
+    """
+    Encapsulate a job. This class abstracts a generic job to a standard set of inputs
+    and outputs. It allows jobs to be handled in a cleaner / clearer and more consistent manner.
+    Finally, as a result, the same code to handle multi and single process execution.
+
+    When called as a function, it executes the wrapped function. That is:
+
+           self.return_value = self.function_reference(*self.function_arguments, **self.kwargs)
+
+    In addition it will set:
+       *complete* to True (once the function has returned or has thrown an exception).
+       *result* is set to the return of the function if exception is None and complete is
+       True
+       *exception* is set if an exception was thrown and complete is True.
+    """
+
+    # pylint: disable=too-few-public-methods,too-many-arguments
+    def __init__(self, function_reference, arguments=(), kwargs=None, identifier=None):
+        """
+        Create a call to evaluate a method or function.
+
+        :param function_reference: The function or method to call.
+        :type function_reference: method or function.
+        :param tuple arguments: The function arguments.
+        :param dict kwargs: The keyword arguments for the function.
+        :param object identifier: An identifier for this job. It doesn't have to be unique.
+        """
+        self.function_reference = function_reference
+        self.function_arguments = arguments
+
+        self.kwargs = kwargs if kwargs is not None else {}
+        if identifier is not None:
+            self.identifier = identifier
+        else:
+            self.identifier = "{}({}, {})".format(function_reference, self.function_arguments,
+                                                  self.kwargs)
+        self.complete = False
+        self.result = None
+        self.exception = None
+
+    def __call__(self):
+        """
+        Execute the wrapped function.
+
+        :return: This job instance.
+        """
+        LOG.debug(
+            "starting job",
+            function=self.function_reference,
+            arguments=self.function_arguments,
+            kwargs=self.kwargs)
+        try:
+            self.result = self.function_reference(*self.function_arguments, **self.kwargs)
+        except Exception as e:  # pylint: disable=broad-except
+            LOG.warn(
+                "error in function call",
+                function=self.function_reference,
+                arguments=self.function_arguments,
+                exc_info=1)
+            self.exception = e
+        LOG.debug(
+            "completed job",
+            function=self.function_reference,
+            function_arguments=self.function_arguments,
+            kwargs=self.kwargs,
+            return_value=self.result)
+        self.complete = True
+        return self
+
+    def __str__(self):
+        """ Get a string representation of the job.
+
+        :return: identifier as a string if no exception, otherwise exception and identifier as
+        string.
+        """
+        to_string = "{} '{}({},{})'".format(self.identifier, self.function_reference,
+                                            self.function_arguments, self.kwargs)
+        if self.exception is not None:
+            to_string = "{} {}".format(self.exception, to_string)
+        return to_string
+
+
+@contextmanager
+def pool_manager(job_list, pool_size):
+    """
+    A multiprocess or single process pool manager context.
+
+    :param list(callable) job_list: The list of jobs to execute.
+    :param int pool_size: The number of processes to map the jobs across. 1 implies the
+    current process, this is useful for debugging.
+
+    :return: A job_iterator, you need to iterate over it to get the single process
+    version to evaluate the results.
+    """
+    # result only after one of the tasks completes.
+    #
+    # For multiprocessing, imap_unordered provides this behavior.
+    # In the single process case :method: `helpers.async_job_runner_adapter` and
+    # :method: `helpers.async_job_runner` provides this behavior.
+    pool = None
+    if pool_size > 1:
+        pool = multiprocessing.Pool(processes=pool_size)
+        job_iterator = pool.imap_unordered(async_job_runner, job_list)
+    else:
+        job_iterator = async_job_runner_adapter(job_list)
+
+    try:
+        yield job_iterator
+    finally:
+        if pool:
+            pool.close()
+            pool.join()
+
+
+def async_job_runner(job):
+    """
+    multiprocessing.Pool.imap_unordered requires a function and a list of parameters, This function
+    simply invokes job as a function with no parameters.
+
+    :param callable job: The callable reference.
+    :return: The return type of job.
+    See method `Pool.imap_unordered`.
+    """
+    return job()
+
+
+def async_job_runner_adapter(jobs):
+    """
+    A generator to make single process (pool size is 1) implementations work the same way as
+    multi process versions.
+
+    :param list jobs: The list  of callable instances.
+    :return: Yields the return of each callable invocation.
+    See method `Pool.imap_unordered`.
+    """
+    for job in jobs:
+        yield job()

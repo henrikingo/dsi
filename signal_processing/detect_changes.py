@@ -1,20 +1,22 @@
 """
 Run the QHat algorithm and store results.
 """
-from datetime import datetime
-from multiprocessing import Pool, cpu_count
+import os
 import time
 from collections import OrderedDict, defaultdict
+from datetime import datetime
+import multiprocessing
+from StringIO import StringIO
 
 import click
 import pymongo
 import structlog
 
 import etl_helpers
-from qhat import QHat, DEFAULT_WEIGHTING
+import qhat
+import signal_processing.commands.helpers as helpers
 from analysis.evergreen import evergreen_client
-from bin.common import config
-from bin.common import log
+from bin.common import config, log
 
 LOG = structlog.getLogger(__name__)
 
@@ -165,7 +167,7 @@ class PointsModel(object):
         change_points = {}
         size_change_points = 0
         for thread_level in points['series']:
-            change_points[thread_level] = QHat(
+            change_points[thread_level] = qhat.QHat(
                 {
                     'series': points['series'][thread_level],
                     'revisions': points['revisions'][thread_level],
@@ -179,23 +181,37 @@ class PointsModel(object):
                 mongo_repo=self.mongo_repo,
                 credentials=self.credentials).change_points
             size_change_points += len(change_points[thread_level])
+            LOG.debug(
+                "compute_change_points starting",
+                change_points=len(change_points[thread_level]),
+                testname=test,
+                thread_level=thread_level)
 
-        # TODO: Revisit implementation of insert.
-        bulk = self.db.change_points.initialize_ordered_bulk_op()
-        bulk.find(query).remove()
+        # Poor mans transaction. Upgrade to 4.0?
+        # TODO: TIG-1174
+        before = list(self.db.change_points.find(query))
 
-        for thread_level in change_points:
-            for point in change_points[thread_level]:
-                change_point = query.copy()
-                change_point.update(point)
-                index = points['orders'][thread_level].index(point['order'])
-                change_point['task_id'] = points['task_ids'][thread_level][index]
-                bulk.insert(change_point)
+        try:
+            requests = [pymongo.DeleteMany(query)]
 
-        bulk.execute()
+            for thread_level in change_points:
+                for point in change_points[thread_level]:
+                    change_point = query.copy()
+                    change_point.update(point)
+                    index = points['orders'][thread_level].index(point['order'])
+                    change_point['task_id'] = points['task_ids'][thread_level][index]
+                    requests.append(pymongo.InsertOne(change_point))
 
-        ended_at = int(round(time.time() * 1000))
-        return size_points, size_change_points, (ended_at - started_at)
+            self.db.change_points.bulk_write(requests)
+
+            ended_at = int(round(time.time() * 1000))
+            return size_points, size_change_points, (ended_at - started_at)
+        except:
+            LOG.warn('compute_change_points failed. Attempting to rollback.', exc_info=True)
+            requests = [pymongo.DeleteMany(query)] +\
+                       [pymongo.InsertOne(point) for point in before]
+            self.db.change_points.bulk_write(requests)
+            raise
 
     def __getstate__(self):
         """
@@ -231,38 +247,16 @@ class PointsModel(object):
         self.credentials = state['credentials']
 
 
-def method_adapter(model, test, weighting):
-    """
-    Multiprocessor doesn't like method references so creating an adapter to handle calling the
-    method and return the required types.
-
-    :param PointsModel model: The points model reference.
-    :param str test: The test name.
-    :param float weighting: The weighting value for the computations.
-    :param str test: The name of the test.
-    :return: A bool status followed by the return value of method or the exception thrown.
-    :rtype: bool, object.
-    """
-    try:
-        many_points, many_change_points, duration = model.compute_change_points(test, weighting)
-        return True, model, test, many_points, many_change_points, duration
-    except Exception as e:  # pylint: disable=broad-except
-        LOG.warn("error in method call", function=model.compute_change_points, exc_info=1)
-        return False, e, model, test
-
-
-def print_result(args):
+def print_result(job):
     """
     Print a description of the test and the results from running the QHat algorithm on the
     points for that test.
 
-    :param list args: The arguments to the function. These comprise of model, many_points,
-    many_change_points, duration and test.
+    :param Job job: The job instance.
     """
-    status = args[0]
-    if status:
-        _, model, test, many_points, many_change_points, duration = args
-        descriptor = etl_helpers.create_descriptor(model.perf_json, test).ljust(120)
+    if job.exception is None:
+        many_points, many_change_points, duration = job.result
+        descriptor = etl_helpers.create_descriptor(job.identifier).ljust(120)
         print("{0}: {1:1} -> {2:2} {3:3,}ms".format(descriptor, many_points, many_change_points,
                                                     duration))
         LOG.debug(
@@ -272,8 +266,8 @@ def print_result(args):
             count_change_points=many_change_points,
             duration=duration)
     else:
-        _, exception, model, test = args
-        descriptor = etl_helpers.create_descriptor(model.perf_json, test).ljust(120)
+        exception = job.exception
+        descriptor = etl_helpers.create_descriptor(job.identifier).ljust(120)
         print "{0}: error: {1:1}".format(descriptor, str(exception))
         LOG.debug(
             "compute_change_points failed", test_identifier=descriptor, exception=str(exception))
@@ -281,7 +275,7 @@ def print_result(args):
 
 class DetectChangesDriver(object):
     """
-    An entrypoint for detecting change points.
+    An entry point for detecting change points.
     """
 
     # pylint: disable=too-few-public-methods,too-many-arguments
@@ -291,7 +285,8 @@ class DetectChangesDriver(object):
                  weighting,
                  mongo_repo,
                  credentials=None,
-                 pool_size=None):
+                 pool_size=None,
+                 progressbar=False):
         """
         :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
         :param str mongo_uri: The uri to connect to the cluster.
@@ -306,9 +301,11 @@ class DetectChangesDriver(object):
         self.mongo_repo = mongo_repo
         self.credentials = credentials
         if pool_size is None:
-            pool_size = max(1, cpu_count() - 1)
+            pool_size = max(1, multiprocessing.cpu_count() - 1)
         self.pool_size = pool_size
+        self.progressbar = progressbar
 
+    # pylint: disable=too-many-locals
     def run(self):
         """
         Run the analysis to compute any change points with the new data.
@@ -319,20 +316,66 @@ class DetectChangesDriver(object):
             mongo_repo=self.mongo_repo,
             credentials=self.credentials)
 
+        test_names = etl_helpers.extract_tests(self.perf_json)
+        LOG.info('loaded tests', tasks=len(test_names))
+        LOG.debug('loaded tests', test_names=test_names)
+        label = 'detecting changes'
+        bar_template, show_label = helpers.query_terminal_for_bar()
+
+        project = self.perf_json['project_id']
+        variant = self.perf_json['variant']
+        task = self.perf_json['task_name']
+        job_list = [
+            helpers.Job(
+                model.compute_change_points,
+                arguments=(test_name, self.weighting),
+                identifier={
+                    'project': project,
+                    'variant': variant,
+                    'task': task,
+                    'test': test_name
+                }) for test_name in test_names
+        ]
         start = datetime.now()
-        pool = Pool(self.pool_size)
-        for test in etl_helpers.extract_tests(self.perf_json):
-            pool.apply_async(
-                method_adapter, args=(model, test, self.weighting), callback=print_result)
-        pool.close()
-        pool.join()
+        exceptions = []
+        completed_jobs = []
+        with helpers.pool_manager(job_list, self.pool_size) as job_iterator:
+            with click.progressbar(job_iterator,
+                                   length=len(job_list),
+                                   label=label,
+                                   item_show_func=show_label,
+                                   file=None if self.progressbar else StringIO(),
+                                   bar_template=bar_template) as progress:  # yapf: disable
+                for job in progress:
+                    completed_jobs.append(job)
+                    if job.exception is None:
+                        status = job.identifier['test']
+                    else:
+                        status = 'Exception: {} {}'.format(job.identifier['test'], job.exception)
+                        exceptions.append(job.exception)
+                    progress.label = status
+                    progress.render_progress()
+
+        for job in completed_jobs:
+            print_result(job)
+
         duration = (datetime.now() - start).total_seconds()
         LOG.debug("Detect changes complete", duration=duration, pool_size=self.pool_size)
         print "Detect changes complete duration={} over {} processes.".format(
             duration, self.pool_size)
 
+        # throw exception last as we want to print as much as possible
+        if exceptions:
+            raise exceptions[0]
 
-def detect_changes(task_id, patch, mongo_uri, pool_size, mongo_repo=DEFAULT_MONGO_REPO):
+
+# pylint: disable=too-many-arguments
+def detect_changes(task_id,
+                   patch,
+                   mongo_uri,
+                   pool_size,
+                   mongo_repo=DEFAULT_MONGO_REPO,
+                   progressbar=False):
     """
     Setup and run the detect changes algorithm.
     """
@@ -346,9 +389,10 @@ def detect_changes(task_id, patch, mongo_uri, pool_size, mongo_repo=DEFAULT_MONG
     changes_driver = DetectChangesDriver(
         perf_json,
         mongo_uri,
-        weighting=DEFAULT_WEIGHTING,
+        weighting=qhat.DEFAULT_WEIGHTING,
         mongo_repo=mongo_repo,
-        pool_size=pool_size)
+        pool_size=pool_size,
+        progressbar=progressbar)
     changes_driver.run()
 
 
@@ -362,7 +406,8 @@ def detect_changes(task_id, patch, mongo_uri, pool_size, mongo_repo=DEFAULT_MONG
     'mongo_repo',
     default=DEFAULT_MONGO_REPO,
     help='The location for the mongo repo. This location is used to get the git revisions.')
-def main(logfile, pool_size, verbose, mongo_repo):
+@click.option('--progressbar/--no-progressbar', default=False)
+def main(logfile, pool_size, verbose, mongo_repo, progressbar):
     """
     Main function.
 
@@ -383,7 +428,9 @@ def main(logfile, pool_size, verbose, mongo_repo):
         if pool_size is not None:
             pool_size = int(pool_size)
 
-        detect_changes(task_id, patch, mongo_uri, pool_size, mongo_repo=mongo_repo)
+        mongo_repo = os.path.expanduser(mongo_repo)
+        detect_changes(
+            task_id, patch, mongo_uri, pool_size, mongo_repo=mongo_repo, progressbar=progressbar)
     except Exception:
         # Note: If setup_logging() failed, this will just print:
         #     No handlers could be found for logger "signal_processing.detect_changes"

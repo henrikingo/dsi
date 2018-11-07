@@ -10,7 +10,6 @@ To get access to the help try the following command:
 # pylint: disable=too-many-lines
 
 from __future__ import print_function
-import functools
 from datetime import datetime
 import os
 
@@ -743,15 +742,7 @@ For Example:
 
     label = 'Compare'
 
-    label_width, bar_width, info_width, bar_padding = helpers.get_bar_widths()
-    bar_template = helpers.get_bar_template(label_width, bar_width, info_width)
-    show_label = functools.partial(
-        helpers.show_label_function,
-        label_width=label_width,
-        bar_width=bar_width,
-        info_width=info_width,
-        padding=bar_padding)
-
+    bar_template, show_label = helpers.query_terminal_for_bar()
     with click.progressbar(tests,
                            label=label,
                            item_show_func=show_label,
@@ -804,7 +795,7 @@ For Example:
 
 
 @cli.command(name='compute')
-@click.pass_obj
+@click.pass_context
 @click.option(
     '--exclude',
     'excludes',
@@ -822,8 +813,8 @@ For Example:
 @click.argument('variant', required=False)
 @click.argument('task', required=False)
 @click.argument('test', required=False)
-def compute_command(command_config, excludes, progressbar, weighting, pool_size, legacy, project,
-                    variant, task, test):
+def compute_command(context, excludes, progressbar, weighting, pool_size, legacy, project, variant,
+                    task, test):
     # pylint: disable=too-many-locals, too-many-arguments, line-too-long
     """
 Compute / recompute change point(s). This deletes and then replaces the current change points
@@ -866,7 +857,9 @@ Examples:
     #  compute the revision sys-perf find_limit-useAgg
     $> change-points compute sys-perf '' '' find_limit-useAgg
 """
+    # pylint: disable=too-many-locals, too-many-branches
     LOG.debug('starting')
+    command_config = context.obj
     points = command_config.points
     query = helpers.process_params(None, project, variant, task, test, None)
 
@@ -884,49 +877,41 @@ Examples:
         if not helpers.filter_tests(test_identifier['test'], exclude_patterns))
 
     label = 'compute'
-    label_width, bar_width, info_width, padding = helpers.get_bar_widths()
-    bar_template = helpers.get_bar_template(label_width, bar_width, info_width)
-    show_label = functools.partial(
-        helpers.show_label_function,
-        label_width=label_width,
-        bar_width=bar_width,
-        info_width=info_width,
-        padding=padding)
+    bar_template, show_item = helpers.query_terminal_for_bar()
 
     start_time = datetime.utcnow()
     LOG.debug('finding matching tests in tasks', tests=tests)
     # It is useful for profiling (and testing) to be able to run in a single process
-    if pool_size != 1:
-        pool = multiprocessing.Pool(processes=pool_size)
-        tasks = ((compute.compute_change_points, test_identifier, weighting, command_config)
-                 for test_identifier in tests)
-        task_iterator = pool.imap_unordered(helpers.function_adapter, tasks)
-    else:
-        task_iterator = tests
-
-    with click.progressbar(task_iterator,
-                           length=len(tests),
-                           label=label,
-                           item_show_func=show_label,
-                           file=None if progressbar else StringIO(),
-                           bar_template=bar_template) as progress: # yapf: disable
-        if pool_size != 1:
-            for success, return_value in progress:
-                if success:
-                    test_identifier = return_value
-                    status = test_identifier['test']
+    job_list = [
+        helpers.Job(
+            compute.compute_change_points,
+            arguments=(test_identifier, weighting, command_config),
+            identifier=test_identifier) for test_identifier in tests
+    ]
+    exceptions = []
+    with helpers.pool_manager(job_list, pool_size=pool_size) as job_iterator:
+        with click.progressbar(job_iterator,
+                               length=len(tests),
+                               label=label,
+                               item_show_func=show_item,
+                               file=None if progressbar else StringIO(),
+                               bar_template=bar_template) as progress:  # yapf: disable
+            for job in progress:
+                if job.exception is None:
+                    status = job.identifier['test']
                 else:
-                    exception = return_value
-                    status = 'Exception: ' + str(exception)
+                    exceptions.append(job)
+                    status = 'Exception: {} {}'.format(job.identifier['test'], job.exception)
                 progress.label = status
                 progress.render_progress()
-        else:
-            for test_identifier in progress:
-                compute.compute_change_points(test_identifier, weighting, command_config)
 
-        if pool_size != 1:
-            pool.close()
-            pool.join()
+    if exceptions:
+        message = '{} Unexpected Exceptions.'.format(len(exceptions))
+        status = ["{} {}".format(job, job.exception) for job in exceptions]
+        help_message = "\n".join(status)
+
+        LOG.warn(message, exceptions=exceptions)
+        context.fail('{}{}'.format(message, help_message))
     LOG.info("computed change points", duration=str(datetime.utcnow() - start_time))
 
 
@@ -1054,14 +1039,7 @@ $> pip install 'git+https://github.com/10gen/dsi.git#egg=DSI[Plotting]'
 
     label = 'visualize'
 
-    label_width, bar_width, info_width, padding = helpers.get_bar_widths()
-    bar_template = helpers.get_bar_template(label_width, bar_width, info_width)
-    show_label = functools.partial(
-        helpers.show_label_function,
-        label_width=label_width,
-        bar_width=bar_width,
-        info_width=info_width,
-        padding=padding)
+    bar_template, show_label = helpers.query_terminal_for_bar()
 
     with plt.style.context(command_config.style):
         with click.progressbar(tests,

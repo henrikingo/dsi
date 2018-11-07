@@ -7,12 +7,15 @@ from collections import OrderedDict
 from mock import ANY, MagicMock, call, patch
 
 from signal_processing.commands.manage import (
+    _create_common_change_points_validator,
+    create_change_points_with_attachments_view,
+    create_change_points_indexes,
+    create_change_points_validators,
     create_linked_build_failures_view,
     create_points_indexes,
-    create_change_points_with_attachments_view,
+    create_processed_change_points_indexes,
     create_unprocessed_change_points_view,
-    manage, create_change_points_indexes,
-    create_processed_change_points_indexes)  #  yapf: disable
+    manage) # yapf: disable
 
 
 class TestManage(unittest.TestCase):
@@ -21,6 +24,7 @@ class TestManage(unittest.TestCase):
     """
 
     @patch('signal_processing.commands.manage.create_change_points_with_attachments_view')
+    @patch('signal_processing.commands.manage.create_change_points_validators')
     @patch('signal_processing.commands.manage.create_linked_build_failures_view')
     @patch('signal_processing.commands.manage.create_unprocessed_change_points_view')
     @patch('signal_processing.commands.manage.create_points_indexes')
@@ -28,7 +32,8 @@ class TestManage(unittest.TestCase):
     @patch('signal_processing.commands.manage.create_processed_change_points_indexes')
     def test_manage(self, mock_processed_indexes, mock_change_points_indexes, mock_points_indexes,
                     mock_create_change_points_view, mock_create_build_failures_view,
-                    mock_linked_change_points_view):
+                    mock_change_points_validators, mock_change_points_with_attachments_view):
+        # pylint: disable=invalid-name
         """ Test that manage calls the view and index functions. """
         mock_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
 
@@ -38,7 +43,8 @@ class TestManage(unittest.TestCase):
         mock_create_change_points_view.assert_called_once()
         mock_create_build_failures_view.assert_called_once()
         mock_processed_indexes.assert_called_once()
-        mock_linked_change_points_view.assert_called_once()
+        mock_change_points_with_attachments_view.assert_called_once()
+        mock_change_points_validators.assert_called_once()
 
 
 class TestCreatePointsIndex(unittest.TestCase):
@@ -155,3 +161,60 @@ class TestUnprocessedChangePointView(unittest.TestCase):
         mock_database.command.assert_called_once_with(
             OrderedDict([('create', view_name), ('pipeline', ANY), ('viewOn',
                                                                     source_collection_name)]))
+
+
+class TestCreateChangePointsValidators(unittest.TestCase):
+    """
+    Test validator functions.
+    """
+
+    def test_common_change_points_validator(self):
+        """ Test common change_points validator. """
+        mock_database = MagicMock(name='database')
+        mock_change_points = MagicMock(name='change_points', database=mock_database)
+        mock_change_points.name = "database.change_points"
+        mock_config = MagicMock(name='command_config', change_points=mock_change_points)
+
+        _create_common_change_points_validator(mock_config, mock_change_points)
+        mock_database.command.assert_called_once_with(
+            'collMod',
+            'database.change_points',
+            validator=ANY,
+            validationAction='error') # yapf: disable
+        args = mock_database.command.call_args_list
+
+        # Get the validator from the call args list.
+        validator = args[0][1]['validator']
+
+        # Only match on the all_suspect_revisions property.
+        self.assertTrue('$jsonSchema' in validator)
+        self.assertTrue('required' in validator['$jsonSchema'])
+        self.assertTrue('all_suspect_revisions' in validator['$jsonSchema']['required'])
+        self.assertDictContainsSubset({
+            'all_suspect_revisions': {
+                'bsonType': 'array',
+                'items': {
+                    'type': 'string'
+                },
+                'minItems': 1,
+                'description': "must be an array of strings with at least one element"
+            }
+        }, validator['$jsonSchema']['properties'])
+
+    @patch('signal_processing.commands.manage._create_common_change_points_validator')
+    def test_change_points_validator(self, mock_common_validator):
+        """ Test change_points validator. """
+        mock_database = MagicMock(name='database')
+        mock_change_points = MagicMock(name='change_points', database=mock_database)
+        mock_processed_change_points = MagicMock(
+            name='processed_change_points', database=mock_database)
+        mock_config = MagicMock(
+            name='command_config',
+            change_points=mock_change_points,
+            processed_change_points=mock_processed_change_points)
+
+        create_change_points_validators(mock_config)
+        mock_common_validator.assert_has_calls([
+            call(mock_config, mock_change_points),
+            call(mock_config, mock_processed_change_points)
+        ])

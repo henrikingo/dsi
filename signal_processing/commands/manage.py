@@ -21,6 +21,26 @@ def _create_indexes(collection, indexes):
         collection.create_index(index['keys'], **options)
 
 
+def _create_validator(collection, validator, action='error'):
+    """
+    Modify a collection to apply validation rules to a collection.
+
+    :param pymongo.collection collection: The target collection.
+    :param dict validator: The validation rules.
+    :param str action: The validation action. This controls the response to a
+    validation issue. The default is error.
+
+    See `schema-validation <https://docs.mongodb.com/manual/core/schema-validation/>`_
+    See `json-schema <http://json-schema.org/>`_
+    """
+    LOG.debug('_create_validator', collection=collection, validator=validator)
+    collection.database.command(
+        'collMod',
+        collection.name,
+        validator=validator,
+        validationAction=action) # yapf: disable
+
+
 def create_points_indexes(command_config):
     """
     Create indexes for the points collections.
@@ -53,6 +73,47 @@ def create_change_points_indexes(command_config):
     }, {
         'keys': [("create_time", pymongo.ASCENDING)]
     }])
+
+
+# TODO: TIG-1173 Add more validation to signal processing collections
+def _create_common_change_points_validator(command_config, collection):
+    """
+    Create change_points and processed change_points common validation rules.
+
+    :param CommandConfig command_config: Common configuration.
+    :param pymongo.collection collection: The target collection.
+    """
+    # pylint: disable=invalid-name, unused-argument
+    LOG.debug('create common change points validation rules', collection=collection.name)
+    _create_validator(
+        collection, {
+            '$jsonSchema': {
+                'bsonType': 'object',
+                'required': ['all_suspect_revisions'],
+                'properties': {
+                    'all_suspect_revisions': {
+                        'bsonType': 'array',
+                        'items': {
+                            'type': 'string'
+                        },
+                        'minItems': 1,
+                        'description': "must be an array of strings with at least one element"
+                    }
+                }
+            }
+        })
+
+
+def create_change_points_validators(command_config):
+    """
+    Create change_points validation rules.
+
+    :param CommandConfig command_config: Common configuration.
+    """
+    # pylint: disable=invalid-name
+    LOG.debug('create change_points validation rules')
+    _create_common_change_points_validator(command_config, command_config.change_points)
+    _create_common_change_points_validator(command_config, command_config.processed_change_points)
 
 
 def create_processed_change_points_indexes(command_config):
@@ -296,7 +357,6 @@ def create_unprocessed_change_points_view(command_config):
                                   ('viewOn', source_collection_name)])) # yapf: disable
 
 
-
 def manage(command_config):
     """
     Manage the database. At the moment, this comand contains code to
@@ -312,3 +372,5 @@ def manage(command_config):
     create_change_points_with_attachments_view(command_config)
     create_unprocessed_change_points_view(command_config)
     create_linked_build_failures_view(command_config)
+
+    create_change_points_validators(command_config)

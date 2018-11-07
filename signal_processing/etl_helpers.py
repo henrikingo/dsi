@@ -158,15 +158,34 @@ def extract_tests(perf_json):
     return set([it['name'] for it in perf_json['data']['results']])
 
 
-def create_descriptor(perf_json, test):
+def extract_test_identifiers(perf_json):
+    """
+    Extract the test identifiers from the raw data file from Evergreen.
+
+    :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
+    """
+    project = perf_json['project_id']
+    variant = perf_json['variant']
+    task = perf_json['task_name']
+    return [{
+        'project': project,
+        'variant': variant,
+        'task': task,
+        'test': test
+    } for test in extract_tests(perf_json)]
+
+
+def create_descriptor(perf_json, test=None):
     """
     Print a description of the relevant test.
 
     :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
     :param str test: The name of the test.
     """
-    return "{}/{}/{}/{}".format(perf_json['project_id'], perf_json['variant'],
-                                perf_json['task_name'], test)
+    return "{}/{}/{}/{}".format(perf_json['project_id'] if 'project_id' in perf_json else
+                                perf_json['project'], perf_json['variant'], perf_json['task_name']
+                                if 'task_name' in perf_json else perf_json['task'], test
+                                if test is not None else perf_json['test'])
 
 
 def redact_url(url):
