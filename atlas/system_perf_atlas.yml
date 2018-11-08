@@ -57,7 +57,6 @@ functions:
       params:
         directory: src
         revisions: # for each module include revision as <module_name> : ${<module_name>_rev}
-          dsi: ${dsi_rev}
           workloads: ${workloads_rev}
           linkbench: ${linkbench_rev}
     - command: shell.exec
@@ -127,7 +126,7 @@ functions:
         working_dir: work
         script: |
           set -e
-          ../src/dsi/dsi/run-dsi python ../src/dsi/dsi/bin/bootstrap.py
+          ../src/run-dsi python ../src/bin/bootstrap.py
     # Different work directory due to historical reasons
     - command: shell.exec
       params:
@@ -146,9 +145,9 @@ functions:
           set -e
           set -v
           source ./dsienv.sh
-          ../src/dsi/dsi/run-dsi infrastructure_provisioning.py
-          ../src/dsi/dsi/run-dsi workload_setup.py
-          ../src/dsi/dsi/run-dsi mongodb_setup.py
+          ../src/run-dsi infrastructure_provisioning.py
+          ../src/run-dsi workload_setup.py
+          ../src/run-dsi mongodb_setup.py
 
   "run test":
     - command: shell.exec
@@ -159,7 +158,7 @@ functions:
           set -e
           set -v
           source ./dsienv.sh
-          ../src/dsi/dsi/run-dsi test_control.py
+          ../src/run-dsi test_control.py
     - command: "json.send"
       params:
          name: "perf"
@@ -170,7 +169,7 @@ functions:
       params:
         working_dir: work
         script: |
-          ../src/dsi/dsi/run-dsi detect-changes
+          ../src/run-dsi detect-changes
     - command: shell.exec
       type : test
       params:
@@ -179,8 +178,8 @@ functions:
           set -o errexit
           set -o verbose
           TAG="4.0.2-Baseline"
-          OVERRIDEFILE="../src/dsi/dsi/analysis/${branch_name}/system_perf_override.json"
-          python -u ../src/dsi/dsi/analysis/post_run_check.py ${script_flags} --reports-analysis reports --perf-file perf.json --rev ${revision} --refTag $TAG --overrideFile $OVERRIDEFILE --project_id sys-perf --variant ${build_variant} --task ${task_name}
+          OVERRIDEFILE="../src/analysis/${branch_name}/system_perf_override.json"
+          python -u ../src/analysis/post_run_check.py ${script_flags} --reports-analysis reports --perf-file perf.json --rev ${revision} --refTag $TAG --overrideFile $OVERRIDEFILE --project_id sys-perf --variant ${build_variant} --task ${task_name}
 
 #######################################
 #               Tasks                 #
@@ -472,11 +471,6 @@ tasks:
 # if a module is added and to be added to the manifest
 # be sure to add the module to git.get_project revisions parameter
 modules:
-- name: dsi
-  repo: git@github.com:10gen/dsi.git
-  prefix: dsi
-  branch: master
-
 - name: workloads
   repo: git@github.com:10gen/workloads.git
   prefix: workloads
