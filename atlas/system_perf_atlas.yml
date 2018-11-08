@@ -15,7 +15,7 @@ post:
         aws_key: ${aws_key}
         aws_secret: ${aws_secret}
         local_file: work/dsi-artifacts.tgz
-        remote_file: ${project_dir}/${build_variant}/${revision}/${task_id}/${version_id}/logs/dsi-artifacts-${task_name}-${build_id}-${execution}.${ext|tgz}
+        remote_file: ${project}/${build_variant}/${revision}/${task_id}/${version_id}/logs/dsi-artifacts-${task_name}-${build_id}-${execution}.${ext|tgz}
         bucket: mciuploads
         permissions: public-read
         content_type: ${content_type|application/x-gzip}
@@ -25,7 +25,7 @@ post:
         aws_key: ${aws_key}
         aws_secret: ${aws_secret}
         local_file: src/workloads/workloads/jsdoc/jsdocs-redirect.html
-        remote_file: ${project_dir}/${build_variant}/${revision}/${task_id}/${version_id}/logs/workloads-${task_name}-${build_id}.html
+        remote_file: ${project}/${build_variant}/${revision}/${task_id}/${version_id}/logs/workloads-${task_name}-${build_id}.html
         bucket: mciuploads
         permissions: public-read
         content_type: text/html
@@ -85,7 +85,6 @@ functions:
           version_id: ${version_id}
           workdir: ${workdir}
           revision: ${revision}
-          project_dir: ${project_dir}
           branch_name: ${branch_name}
 
           # sys-perf expansions
@@ -497,7 +496,6 @@ buildvariants:
     setup: atlas
     cluster: workload_client
     platform: linux
-    project_dir: &project_dir dsi
   run_on:
       - "rhel70-perf-atlas"
   tasks: &3nodetasks
