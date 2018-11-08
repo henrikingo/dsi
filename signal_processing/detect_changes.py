@@ -2,11 +2,9 @@
 Run the QHat algorithm and store results.
 """
 import os
-import time
 from collections import OrderedDict, defaultdict
 from datetime import datetime
 import multiprocessing
-from StringIO import StringIO
 
 import click
 import pymongo
@@ -15,6 +13,7 @@ import structlog
 import etl_helpers
 import qhat
 import signal_processing.commands.helpers as helpers
+import signal_processing.commands.jobs as jobs
 from analysis.evergreen import evergreen_client
 from bin.common import config, log
 
@@ -160,8 +159,6 @@ class PointsModel(object):
         See 'QHat.DEFAULT_WEIGHTING' for the recommended default value.
         """
         # pylint: disable=too-many-locals
-        started_at = int(round(time.time() * 1000))
-
         size_points, query, points = self.get_points(test)
 
         change_points = {}
@@ -204,8 +201,7 @@ class PointsModel(object):
 
             self.db.change_points.bulk_write(requests)
 
-            ended_at = int(round(time.time() * 1000))
-            return size_points, size_change_points, (ended_at - started_at)
+            return size_points, size_change_points
         except:
             LOG.warn('compute_change_points failed. Attempting to rollback.', exc_info=True)
             requests = [pymongo.DeleteMany(query)] +\
@@ -255,22 +251,14 @@ def print_result(job):
     :param Job job: The job instance.
     """
     if job.exception is None:
-        many_points, many_change_points, duration = job.result
+        many_points, many_change_points = job.result
         descriptor = etl_helpers.create_descriptor(job.identifier).ljust(120)
         print("{0}: {1:1} -> {2:2} {3:3,}ms".format(descriptor, many_points, many_change_points,
-                                                    duration))
-        LOG.debug(
-            "compute_change_points",
-            test_identifier=descriptor,
-            count_points=many_points,
-            count_change_points=many_change_points,
-            duration=duration)
+                                                    job.duration))
     else:
         exception = job.exception
         descriptor = etl_helpers.create_descriptor(job.identifier).ljust(120)
         print "{0}: error: {1:1}".format(descriptor, str(exception))
-        LOG.debug(
-            "compute_change_points failed", test_identifier=descriptor, exception=str(exception))
 
 
 class DetectChangesDriver(object):
@@ -320,13 +308,13 @@ class DetectChangesDriver(object):
         LOG.info('loaded tests', tasks=len(test_names))
         LOG.debug('loaded tests', test_names=test_names)
         label = 'detecting changes'
-        bar_template, show_label = helpers.query_terminal_for_bar()
+        bar_template, show_item = helpers.query_terminal_for_bar()
 
         project = self.perf_json['project_id']
         variant = self.perf_json['variant']
         task = self.perf_json['task_name']
         job_list = [
-            helpers.Job(
+            jobs.Job(
                 model.compute_change_points,
                 arguments=(test_name, self.weighting),
                 identifier={
@@ -337,24 +325,9 @@ class DetectChangesDriver(object):
                 }) for test_name in test_names
         ]
         start = datetime.now()
-        exceptions = []
-        completed_jobs = []
-        with helpers.pool_manager(job_list, self.pool_size) as job_iterator:
-            with click.progressbar(job_iterator,
-                                   length=len(job_list),
-                                   label=label,
-                                   item_show_func=show_label,
-                                   file=None if self.progressbar else StringIO(),
-                                   bar_template=bar_template) as progress:  # yapf: disable
-                for job in progress:
-                    completed_jobs.append(job)
-                    if job.exception is None:
-                        status = job.identifier['test']
-                    else:
-                        status = 'Exception: {} {}'.format(job.identifier['test'], job.exception)
-                        exceptions.append(job.exception)
-                    progress.label = status
-                    progress.render_progress()
+        completed_jobs = jobs.process_jobs(
+            job_list, self.pool_size, label, self.progressbar, bar_template, show_item, key='test')
+        jobs_with_exceptions = [job for job in completed_jobs if job.exception is not None]
 
         for job in completed_jobs:
             print_result(job)
@@ -364,9 +337,7 @@ class DetectChangesDriver(object):
         print "Detect changes complete duration={} over {} processes.".format(
             duration, self.pool_size)
 
-        # throw exception last as we want to print as much as possible
-        if exceptions:
-            raise exceptions[0]
+        return jobs_with_exceptions
 
 
 # pylint: disable=too-many-arguments
@@ -393,10 +364,11 @@ def detect_changes(task_id,
         mongo_repo=mongo_repo,
         pool_size=pool_size,
         progressbar=progressbar)
-    changes_driver.run()
+    return changes_driver.run()
 
 
 @click.command()
+@click.pass_context
 @click.option('-l', '--logfile', default='detect_changes.log', help='The log file location.')
 @click.option(
     '--pool-size', default=None, help='The multiprocessor pool size. None => num(cpus) -1.')
@@ -407,7 +379,7 @@ def detect_changes(task_id,
     default=DEFAULT_MONGO_REPO,
     help='The location for the mongo repo. This location is used to get the git revisions.')
 @click.option('--progressbar/--no-progressbar', default=False)
-def main(logfile, pool_size, verbose, mongo_repo, progressbar):
+def main(context, logfile, pool_size, verbose, mongo_repo, progressbar):
     """
     Main function.
 
@@ -416,24 +388,19 @@ def main(logfile, pool_size, verbose, mongo_repo, progressbar):
     TIG-1065: Capture numpy errors and warnings to logs.
     """
     # pylint: disable=broad-except
-    try:
-        log.setup_logging(True if verbose > 0 else False, filename=logfile)
-        conf = config.ConfigDict('analysis')
-        conf.load()
+    log.setup_logging(True if verbose > 0 else False, filename=logfile)
+    conf = config.ConfigDict('analysis')
+    conf.load()
 
-        task_id = conf['runtime']['task_id']
-        patch = conf['runtime'].get('is_patch', False)
-        mongo_uri = conf['analysis']['mongo_uri']
+    task_id = conf['runtime']['task_id']
+    patch = conf['runtime'].get('is_patch', False)
+    mongo_uri = conf['analysis']['mongo_uri']
 
-        if pool_size is not None:
-            pool_size = int(pool_size)
+    if pool_size is not None:
+        pool_size = int(pool_size)
 
-        mongo_repo = os.path.expanduser(mongo_repo)
-        detect_changes(
-            task_id, patch, mongo_uri, pool_size, mongo_repo=mongo_repo, progressbar=progressbar)
-    except Exception:
-        # Note: If setup_logging() failed, this will just print:
-        #     No handlers could be found for logger "signal_processing.detect_changes"
-        LOG.error("detect_changes() exited with an exception. Will print it now...", exc_info=1)
-        LOG.error("Will now make a clean exit, so that we don't cause Evergreen task to abort.")
-    return 0
+    mongo_repo = os.path.expanduser(mongo_repo)
+    jobs_with_exceptions = detect_changes(
+        task_id, patch, mongo_uri, pool_size, mongo_repo=mongo_repo, progressbar=progressbar)
+
+    jobs.handle_exceptions(context, jobs_with_exceptions, logfile)

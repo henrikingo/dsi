@@ -50,7 +50,7 @@ class TestCompute(unittest.TestCase):
             credentials=credentials)
 
         mock_model_instance = mock_model.return_value
-        mock_model_instance.compute_change_points.return_value = (1, [1], 2)
+        mock_model_instance.compute_change_points.return_value = (1, [1])
         compute_change_points(test_identifier, .1, mock_config)
 
         perf_json = {'project_id': 'project', 'variant': 'variant_name', 'task_name': 'task'}

@@ -4,6 +4,8 @@ QHat start end related tests.
 import os
 import unittest
 
+import numpy as np
+
 from bin.common.log import setup_logging
 from signal_processing.qhat import select_start_end, generate_start_and_end, DEFAULT_WEIGHTING
 from test_lib.fixture_files import FixtureFiles
@@ -104,6 +106,12 @@ class TestGenerateStartEnd(unittest.TestCase):
     Test generate_start_and_end.
     """
 
+    def setUp(self):
+        self.old_err_state = np.seterr(all='raise')
+
+    def tearDown(self):
+        np.seterr(**self.old_err_state)
+
     def test_empty(self):
         """
         Test empty array.
@@ -132,7 +140,7 @@ class TestGenerateStartEnd(unittest.TestCase):
         """
         Test single at end.
         """
-        array = [10 if a < 9 else 5 for a in range(10)]
+        array = [10 if a < 9 else 5 for a in range(11)]
         expected = [{'index': 9, 'start': 8, 'end': 9, 'location': 'behind'}]
         actual = list(generate_start_and_end([9], array))
         self.assertEqual(actual, expected)
@@ -218,23 +226,30 @@ class TestGenerateStartEnd(unittest.TestCase):
         actual = list(generate_start_and_end([7], array))
         self.assertEqual(actual, expected)
 
+    def test_exception(self):
+        """
+        Test raises exception.
+        """
+        array = [15 for _ in range(5)] + [14, 10, 19] + [15 for _ in range(5)]
+        self.assertRaises(FloatingPointError, generate_start_and_end, [6, 7], array)
+
     def test_outlier_bounded_left(self):
         """
         Test bound left.
         """
         array = [15 for _ in range(5)] + [14, 10, 19] + [15 for _ in range(5)]
         expected = [{
-            "location": "behind",
+            "location": "ahead",
             'end': 6,
             'index': 6,
             'start': 5
         }, {
-            'location': 'ahead',
-            'end': 7,
-            'index': 7,
-            'start': 6
+            'location': 'behind',
+            'end': 9,
+            'index': 9,
+            'start': 8
         }]
-        actual = list(generate_start_and_end([6, 7], array))
+        actual = list(generate_start_and_end([6, 9], array))
         self.assertEqual(actual, expected)
 
     def test_outlier_bounded_right(self):
@@ -243,15 +258,15 @@ class TestGenerateStartEnd(unittest.TestCase):
         """
         array = [15 for _ in range(5)] + [14, 10, 20] + [15 for _ in range(5)]
         expected = [{
-            "location": "behind",
+            "location": "ahead",
             'end': 6,
             'index': 6,
             'start': 5
         }, {
             'location': 'ahead',
-            'end': 7,
-            'index': 7,
-            'start': 6
+            'end': 9,
+            'index': 9,
+            'start': 9
         }]
-        actual = list(generate_start_and_end([6, 7], array))
+        actual = list(generate_start_and_end([6, 9], array))
         self.assertEqual(actual, expected)

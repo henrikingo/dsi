@@ -713,11 +713,17 @@ class QHatNumpyImp(object):  #pylint: disable=too-many-instance-attributes
     def change_points(self, seed=1234):
         """
         Property to access change points.
+
+        :raises: FloatingPointError for numpy errors.
+        :see: 'numpy.seterr
+        <https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.seterr.html>
+        :see: 'numpy.errstate
+        <https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.errstate.html>'
         """
-        with deterministic_random(seed):
+        with deterministic_random(seed), np.errstate(all='raise'):
             return self._compute_change_points()
 
-    def _compute_change_points(self):  #pylint: disable=too-many-locals
+    def _compute_change_points(self):  # pylint: disable=too-many-locals
         """
         Compute the change points. This is lazy and only runs once.
         """

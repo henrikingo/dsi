@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+from copy import deepcopy
 import logging
 import requests
 
@@ -86,6 +87,42 @@ class Client(object):
             self.logger.warning("Using default evergreen credentials.")
             self.base_url = DEFAULT_EVERGREEN_URL
             self.headers = {}
+
+    def _redact_copy(self):
+        """
+        Get a copy of the state and redact any sensitive info.
+
+        :returns: A redacted copy of the state.
+        """
+        copy = deepcopy(self.__getstate__())
+        if 'configuration' in copy:
+            configuration = copy['configuration']
+            if 'api_key' in configuration:
+                configuration['api_key'] = 'XXXXXXXXX'
+            if 'evergreen' in configuration and 'api_key' in configuration['evergreen']:
+                configuration['evergreen']['api_key'] = 'XXXXXXXXX'
+            if 'github' in configuration and 'token' in configuration['github']:
+                configuration['github']['token'] = 'XXXXXXXXX'
+
+        return copy
+
+    def __str__(self):
+        """
+        Get a readable string for this job.
+
+        :returns: A readable string.
+        """
+        copy = self._redact_copy()
+        return str(copy)
+
+    def __repr__(self):
+        """
+        Get an unambiguous string for this job.
+
+        :returns: An unambiguous string.
+        """
+        copy = self._redact_copy()
+        return '<{}{}({!r})>'.format(self.__module__, self.__class__.__name__, copy)
 
     def query_project_history(self, project):
         """Gets all the information on the most recent revisions.

@@ -26,6 +26,7 @@ import signal_processing.commands.list_build_failures as list_build_failures
 import signal_processing.commands.compare as compare
 import signal_processing.commands.compute as compute
 import signal_processing.commands.helpers as helpers
+import signal_processing.commands.jobs as jobs
 import signal_processing.commands.list_change_points as list_change_points
 import signal_processing.commands.manage as manage
 import signal_processing.commands.mark as mark
@@ -877,42 +878,29 @@ Examples:
         if not helpers.filter_tests(test_identifier['test'], exclude_patterns))
 
     label = 'compute'
-    bar_template, show_item = helpers.query_terminal_for_bar()
 
     start_time = datetime.utcnow()
     LOG.debug('finding matching tests in tasks', tests=tests)
     # It is useful for profiling (and testing) to be able to run in a single process
     job_list = [
-        helpers.Job(
+        jobs.Job(
             compute.compute_change_points,
             arguments=(test_identifier, weighting, command_config),
             identifier=test_identifier) for test_identifier in tests
     ]
-    exceptions = []
-    with helpers.pool_manager(job_list, pool_size=pool_size) as job_iterator:
-        with click.progressbar(job_iterator,
-                               length=len(tests),
-                               label=label,
-                               item_show_func=show_item,
-                               file=None if progressbar else StringIO(),
-                               bar_template=bar_template) as progress:  # yapf: disable
-            for job in progress:
-                if job.exception is None:
-                    status = job.identifier['test']
-                else:
-                    exceptions.append(job)
-                    status = 'Exception: {} {}'.format(job.identifier['test'], job.exception)
-                progress.label = status
-                progress.render_progress()
+    bar_template, show_item = helpers.query_terminal_for_bar()
+    completed_jobs = jobs.process_jobs(
+        job_list,
+        pool_size=pool_size,
+        label=label,
+        progressbar=progressbar,
+        bar_template=bar_template,
+        show_item=show_item,
+        key='test')
+    jobs_with_exceptions = [job for job in completed_jobs if job.exception is not None]
 
-    if exceptions:
-        message = '{} Unexpected Exceptions.'.format(len(exceptions))
-        status = ["{} {}".format(job, job.exception) for job in exceptions]
-        help_message = "\n".join(status)
-
-        LOG.warn(message, exceptions=exceptions)
-        context.fail('{}{}'.format(message, help_message))
     LOG.info("computed change points", duration=str(datetime.utcnow() - start_time))
+    jobs.handle_exceptions(context, jobs_with_exceptions, command_config.log_file)
 
 
 @cli.command(name='manage')
@@ -1018,7 +1006,7 @@ $> pip install -e .[Plotting]
 $> pip install 'git+https://github.com/10gen/dsi.git#egg=DSI[Plotting]'
 '''
 
-        LOG.error('{}{}'.format(message, help_message), exc_info=1)
+        LOG.warn(message, help_message=help_message, exc_info=1)
         context.fail('{}{}'.format(message, help_message))
 
     LOG.debug('starting')

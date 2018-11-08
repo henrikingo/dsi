@@ -3,11 +3,13 @@ Unit tests for signal_processing/detect_changes.py.
 """
 
 import os
+import time
 import unittest
 from collections import OrderedDict, defaultdict
 from mock import ANY, MagicMock, call, patch
 
 import signal_processing.detect_changes as detect_changes
+from signal_processing.commands import jobs
 from signal_processing.detect_changes import main
 from test_lib.fixture_files import FixtureFiles
 from click.testing import CliRunner
@@ -40,13 +42,14 @@ class TestDetectChangesDriver(unittest.TestCase):
         self.assertEquals(test_driver.pool_size, 99)
 
     @patch('multiprocessing.cpu_count', autospec=True)
-    @patch('signal_processing.commands.helpers.Job', autospec=True)
-    @patch('signal_processing.commands.helpers.pool_manager', autospec=True)
+    @patch('signal_processing.commands.jobs.Job', autospec=True)
+    @patch('signal_processing.commands.jobs.process_jobs', autospec=True)
     @patch('signal_processing.detect_changes.PointsModel', autospec=True)
-    def test_run(self, mock_PointsModel, mock_pool_manager, mock_job_cls, mock_cpu_count):
+    def test_run(self, mock_PointsModel, mock_process_jobs, mock_job_cls, mock_cpu_count):
         mock_job = MagicMock(name='mock_job')
         mock_job_cls.return_value = mock_job
 
+        mock_process_jobs.return_value = ()
         mock_cpu_count.return_value = 101
         mock_model = mock_PointsModel.return_value
         mock_model.compute_change_points.return_value = (1, 2, 3)
@@ -237,7 +240,7 @@ class TestPointsModel(unittest.TestCase):
             [call(expected_insert) for expected_insert in expected_inserts])
         mock_db.change_points.bulk_write.assert_called_once_with(
             ["DeleteMany", "InsertOne 1", "InsertOne 2"])
-        self.assertEqual(actual, ('many_points', 2, ANY))
+        self.assertEqual(actual, ('many_points', 2))
         mock_mongo_client.assert_called_once_with(self.mongo_uri)
         mock_mongo_client.return_value.get_database.assert_called_once_with()
         mock_db.change_points.find.assert_called_once_with(expected_query)
@@ -466,6 +469,7 @@ class TestMain(unittest.TestCase):
         """
         Test default params.
         """
+        mock_detect_changes.return_value = None
         mock_config = mock_config_dict.return_value
 
         result = self.runner.invoke(main)
@@ -483,6 +487,7 @@ class TestMain(unittest.TestCase):
         """
         Test main with params.
         """
+        mock_detect_changes.return_value = None
         mock_config = mock_config_dict.return_value
         config = {
             'runtime': {
@@ -513,6 +518,7 @@ class TestMain(unittest.TestCase):
         """
         Test main config dict params.
         """
+        mock_detect_changes.return_value = None
         mock_config = mock_config_dict.return_value
         config = {
             'runtime': {
@@ -543,6 +549,7 @@ class TestMain(unittest.TestCase):
         TODO: remove on completion of PERF-1519 / TIG-1065.
 
         """
-        mock_logging.side_effect = Exception('foo')
+        mock_detect_changes.return_value = (jobs.Job(time.sleep), )
         result = self.runner.invoke(main)
-        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(result.exit_code, 2)
+        self.assertIn('1 Unexpected Exceptions', result.output)

@@ -1,16 +1,13 @@
 """
 Common Command helpers and objects.
 """
+from copy import deepcopy
 import functools
-import multiprocessing
 import os
 import re
 from collections import OrderedDict
-import copy_reg
-import types
 
 # pylint: disable=too-many-instance-attributes,too-many-arguments,too-few-public-methods
-from contextlib import contextmanager
 from datetime import datetime, timedelta
 
 import structlog
@@ -23,6 +20,8 @@ from pymongo import MongoClient
 from pymongo.uri_parser import parse_uri
 
 from bin.common.utils import mkdir_p
+from signal_processing.etl_helpers import redact_url
+import signal_processing.commands.jobs
 
 DEFAULT_KEY_ORDER = ('_id', 'suspect_revision', 'project', 'variant', 'task', 'test',
                      'thread_level', 'processed_type')
@@ -355,6 +354,33 @@ class CommandConfiguration(object):
         self._mongo_repo = state['mongo_repo']
         self._credentials = None
 
+    def _redact_copy(self):
+        """
+        Get a copy of the state and redact any sensitive info.
+
+        :returns: A redacted copy of the state.
+        """
+        copy = deepcopy(self.__getstate__())
+        if 'mongo_uri' in copy:
+            copy['mongo_uri'] = redact_url(copy['mongo_uri'])
+        return copy
+
+    def __str__(self):
+        """
+        Get a readable string for this job.
+
+        :returns: A readable string.
+        """
+        return str(self._redact_copy())
+
+    def __repr__(self):
+        """
+        Get an unambiguous string for this job.
+
+        :returns: An unambiguous string.
+        """
+        return '{}.{}({!r})'.format(self.__module__, self.__class__.__name__, self._redact_copy())
+
 
 def flags_to_value(flags):
     """
@@ -533,7 +559,7 @@ def show_item_function(task_identifier, label_width=22, bar_width=34, info_width
     _ = label_width
     _ = bar_width
 
-    if task_identifier and isinstance(task_identifier, Job):
+    if task_identifier and isinstance(task_identifier, signal_processing.commands.jobs.Job):
         task_identifier = task_identifier.identifier
 
     if task_identifier and isinstance(task_identifier, basestring):
@@ -742,181 +768,3 @@ def validate_int_none_options(context, param, value):
     except ValueError:
         pass
     raise click.BadParameter('{} is not a valid integer or None.'.format(value))
-
-
-def _pickle_method(method):
-    """
-    A functions for pickling a method.
-
-    :param object method: The instance method reference.
-    See 'pickle instancemethods
-    <https://bytes.com/topic/python/answers/552476-why-cant-you-pickle-instancemethods>'.
-    """
-    func_name = method.im_func.__name__
-    obj = method.im_self
-    cls = method.im_class
-    return _unpickle_method, (func_name, obj, cls)
-
-
-def _unpickle_method(func_name, obj, cls):
-    """
-    A functions for unpickling a method.
-
-    :param str func_name: The instance method name.
-    :param object obj: The object instance reference.
-    :param object cls: The object class reference.
-    See 'pickle instancemethods
-    <https://bytes.com/topic/python/answers/552476-why-cant-you-pickle-instancemethods>'.
-    """
-    for clazz in cls.mro():
-        try:
-            func = clazz.__dict__[func_name]
-        except KeyError:
-            pass
-        else:
-            break
-    return func.__get__(obj, cls)
-
-
-# register the pickle functions for MethodType
-copy_reg.pickle(types.MethodType, _pickle_method, _unpickle_method)
-
-
-class Job(object):
-    """
-    Encapsulate a job. This class abstracts a generic job to a standard set of inputs
-    and outputs. It allows jobs to be handled in a cleaner / clearer and more consistent manner.
-    Finally, as a result, the same code to handle multi and single process execution.
-
-    When called as a function, it executes the wrapped function. That is:
-
-           self.return_value = self.function_reference(*self.function_arguments, **self.kwargs)
-
-    In addition it will set:
-       *complete* to True (once the function has returned or has thrown an exception).
-       *result* is set to the return of the function if exception is None and complete is
-       True
-       *exception* is set if an exception was thrown and complete is True.
-    """
-
-    # pylint: disable=too-few-public-methods,too-many-arguments
-    def __init__(self, function_reference, arguments=(), kwargs=None, identifier=None):
-        """
-        Create a call to evaluate a method or function.
-
-        :param function_reference: The function or method to call.
-        :type function_reference: method or function.
-        :param tuple arguments: The function arguments.
-        :param dict kwargs: The keyword arguments for the function.
-        :param object identifier: An identifier for this job. It doesn't have to be unique.
-        """
-        self.function_reference = function_reference
-        self.function_arguments = arguments
-
-        self.kwargs = kwargs if kwargs is not None else {}
-        if identifier is not None:
-            self.identifier = identifier
-        else:
-            self.identifier = "{}({}, {})".format(function_reference, self.function_arguments,
-                                                  self.kwargs)
-        self.complete = False
-        self.result = None
-        self.exception = None
-
-    def __call__(self):
-        """
-        Execute the wrapped function.
-
-        :return: This job instance.
-        """
-        LOG.debug(
-            "starting job",
-            function=self.function_reference,
-            arguments=self.function_arguments,
-            kwargs=self.kwargs)
-        try:
-            self.result = self.function_reference(*self.function_arguments, **self.kwargs)
-        except Exception as e:  # pylint: disable=broad-except
-            LOG.warn(
-                "error in function call",
-                function=self.function_reference,
-                arguments=self.function_arguments,
-                exc_info=1)
-            self.exception = e
-        LOG.debug(
-            "completed job",
-            function=self.function_reference,
-            function_arguments=self.function_arguments,
-            kwargs=self.kwargs,
-            return_value=self.result)
-        self.complete = True
-        return self
-
-    def __str__(self):
-        """ Get a string representation of the job.
-
-        :return: identifier as a string if no exception, otherwise exception and identifier as
-        string.
-        """
-        to_string = "{} '{}({},{})'".format(self.identifier, self.function_reference,
-                                            self.function_arguments, self.kwargs)
-        if self.exception is not None:
-            to_string = "{} {}".format(self.exception, to_string)
-        return to_string
-
-
-@contextmanager
-def pool_manager(job_list, pool_size):
-    """
-    A multiprocess or single process pool manager context.
-
-    :param list(callable) job_list: The list of jobs to execute.
-    :param int pool_size: The number of processes to map the jobs across. 1 implies the
-    current process, this is useful for debugging.
-
-    :return: A job_iterator, you need to iterate over it to get the single process
-    version to evaluate the results.
-    """
-    # result only after one of the tasks completes.
-    #
-    # For multiprocessing, imap_unordered provides this behavior.
-    # In the single process case :method: `helpers.async_job_runner_adapter` and
-    # :method: `helpers.async_job_runner` provides this behavior.
-    pool = None
-    if pool_size > 1:
-        pool = multiprocessing.Pool(processes=pool_size)
-        job_iterator = pool.imap_unordered(async_job_runner, job_list)
-    else:
-        job_iterator = async_job_runner_adapter(job_list)
-
-    try:
-        yield job_iterator
-    finally:
-        if pool:
-            pool.close()
-            pool.join()
-
-
-def async_job_runner(job):
-    """
-    multiprocessing.Pool.imap_unordered requires a function and a list of parameters, This function
-    simply invokes job as a function with no parameters.
-
-    :param callable job: The callable reference.
-    :return: The return type of job.
-    See method `Pool.imap_unordered`.
-    """
-    return job()
-
-
-def async_job_runner_adapter(jobs):
-    """
-    A generator to make single process (pool size is 1) implementations work the same way as
-    multi process versions.
-
-    :param list jobs: The list  of callable instances.
-    :return: Yields the return of each callable invocation.
-    See method `Pool.imap_unordered`.
-    """
-    for job in jobs:
-        yield job()

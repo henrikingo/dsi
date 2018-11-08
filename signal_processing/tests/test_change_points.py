@@ -1,9 +1,11 @@
 """
 Unit tests for signal_processing/change_points.py.
 """
+import time
 import unittest
 
-from StringIO import StringIO
+from datetime import datetime
+
 import mock
 from mock import MagicMock, patch, mock_open
 
@@ -13,6 +15,7 @@ from signal_processing.commands import compute
 
 from signal_processing.change_points import cli
 import signal_processing.commands.helpers as helpers
+import signal_processing.commands.jobs as jobs
 
 
 class ClickTest(unittest.TestCase):
@@ -479,27 +482,22 @@ class TestCompute(ClickTest):
     Test compute command.
     """
 
-    @patch('signal_processing.change_points.helpers', autospec=True)
-    def test_compute_requires_params(self, mock_helpers):
+    def test_compute_requires_params(self):
         """ Test compute with no parameters. """
 
-        mock_points = MagicMock(name='config')
-        expected_config = MagicMock(
-            name='config', style=['bmh'], points=mock_points, debug=0, log_file='/tmp/log_file')
-        mock_helpers.CommandConfiguration.return_value = expected_config
         result = self.runner.invoke(cli, ['compute'])
         self.assertEqual(result.exit_code, 2)
 
-    @patch('signal_processing.change_points.helpers.pool_manager', autospec=True)
+    @patch('signal_processing.change_points.jobs.process_jobs', autospec=True)
     @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
-    def test_compute(self, mock_command_config_cls, mock_pool_manager):
+    def test_compute(self, mock_command_config_cls, mock_process_jobs):
         """ Test compute. """
         mock_points = MagicMock(name='config')
         mock_points.aggregate.return_value = ()
         expected_config = MagicMock(
             name='config', points=mock_points, debug=0, log_file='/tmp/log_file')
         mock_command_config_cls.return_value = expected_config
-        mock_pool_manager.return_value.__enter__.return_value = ()
+        mock_process_jobs.return_value.__enter__.return_value = ()
 
         result = self.runner.invoke(cli, ['compute', 'sys-perf'])
         self.assertEqual(result.exit_code, 0)
@@ -516,8 +514,8 @@ class TestCompute(ClickTest):
 
         with patch(
             'signal_processing.change_points.helpers.process_params') as mock_process_params, \
-                patch('signal_processing.change_points.helpers.pool_manager') as mock_pool_manager:
-            mock_pool_manager.return_value.__enter__.return_value = ()
+                patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+            mock_process_jobs.return_value.__enter__.return_value = ()
             result = self.runner.invoke(
                 cli,
                 ['compute', 'sys-perf', 'linux-standalone', 'industry_benchmarks', 'ycsb_load'])
@@ -538,9 +536,8 @@ class TestCompute(ClickTest):
         with patch(
             'signal_processing.change_points.helpers.filter_legacy_tasks')\
             as mock_filter_legacy_tasks, \
-                patch('signal_processing.change_points.helpers.pool_manager')\
-                        as mock_pool_manager:
-            mock_pool_manager.return_value.__enter__.return_value = ()
+                patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+            mock_process_jobs.return_value.__enter__.return_value = ()
 
             result = self.runner.invoke(cli, ['compute', 'sys-perf', '--legacy'])
             self.assertEqual(result.exit_code, 0)
@@ -559,8 +556,8 @@ class TestCompute(ClickTest):
         with patch(
             'signal_processing.change_points.helpers.filter_legacy_tasks')\
                 as mock_filter_legacy_tasks, \
-                patch('signal_processing.change_points.helpers.pool_manager') as mock_pool_manager:
-            mock_pool_manager.return_value.__enter__.return_value = ()
+                patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+            mock_process_jobs.return_value.__enter__.return_value = ()
 
             result = self.runner.invoke(cli, ['compute', 'sys-perf'])
             self.assertEqual(result.exit_code, 0)
@@ -575,13 +572,14 @@ class TestCompute(ClickTest):
         expected_config = MagicMock(
             name='config', points=mock_points, debug=0, log_file='/tmp/log_file')
         mock_command_config_cls.return_value = expected_config
+        pool_size = 2
+        with patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+            mock_process_jobs.return_value.__enter__.return_value = ()
 
-        with patch('signal_processing.change_points.helpers.pool_manager') as mock_pool_manager:
-            mock_pool_manager.return_value.__enter__.return_value = ()
-
-            result = self.runner.invoke(cli, ['compute', 'sys-perf', '--pool-size', '2'])
+            result = self.runner.invoke(cli, ['compute', 'sys-perf', '--pool-size', str(pool_size)])
             self.assertEqual(result.exit_code, 0)
-            mock_pool_manager.assert_called_once_with(mock.ANY, pool_size=2)
+            _, kwargs = mock_process_jobs.call_args
+            self.assertEquals(kwargs['pool_size'], pool_size)
 
     @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
     def test_compute_weighting(self, mock_command_config_cls):
@@ -593,8 +591,8 @@ class TestCompute(ClickTest):
             name='config', points=mock_points, debug=0, log_file='/tmp/log_file')
         mock_command_config_cls.return_value = expected_config
 
-        with patch('signal_processing.change_points.helpers.pool_manager') as mock_pool_manager:
-            mock_pool_manager.return_value.__enter__.return_value = ()
+        with patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+            mock_process_jobs.return_value.__enter__.return_value = ()
 
             result = self.runner.invoke(cli, ['compute', 'sys-perf', '--weighting', '.002'])
             self.assertEqual(result.exit_code, 0)
@@ -612,8 +610,8 @@ class TestCompute(ClickTest):
         with patch(
             'signal_processing.change_points.helpers.process_excludes')\
                 as mock_process_excludes, \
-                patch('signal_processing.change_points.helpers.pool_manager') as mock_pool_manager:
-            mock_pool_manager.return_value.__enter__.return_value = ()
+                patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+            mock_process_jobs.return_value.__enter__.return_value = ()
 
             result = self.runner.invoke(cli, ['compute', 'sys-perf', '--exclude', 'fio'])
             self.assertEqual(result.exit_code, 0)
@@ -632,44 +630,47 @@ class TestCompute(ClickTest):
         with patch(
             'signal_processing.change_points.helpers.process_excludes')\
                 as mock_process_excludes, \
-                patch('signal_processing.change_points.helpers.pool_manager') as mock_pool_manager:
-            mock_pool_manager.return_value.__enter__.return_value = ()
+                patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+            mock_process_jobs.return_value.__enter__.return_value = ()
 
             result = self.runner.invoke(cli, ['compute', 'sys-perf'])
             self.assertEqual(result.exit_code, 0)
             mock_process_excludes.assert_called_once_with(())
 
-    @patch('signal_processing.change_points.helpers.pool_manager', autospec=True)
     @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
-    def test_compute_progress_bar(self, mock_command_config_cls, mock_pool_manager):
+    def test_compute_progress_bar(self, mock_command_config_cls):
         """ Test compute uses the `--progressbar` flag correctly. """
 
-        progressbar = 'signal_processing.change_points.click.progressbar'
         mock_points = MagicMock(name='config')
         mock_points.aggregate.return_value = ()
         expected_config = MagicMock(
             name='config', points=mock_points, debug=0, log_file='/tmp/log_file')
         mock_command_config_cls.return_value = expected_config
-        mock_pool_manager.return_value.__enter__.return_value = ()
 
         # Defaults to `--progressbar`.
-        with patch(progressbar, autospec=True) as mock_progressbar:
+        with patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+            mock_process_jobs.return_value.__enter__.return_value = ()
+
             result = self.runner.invoke(cli, ['compute', 'sys-perf'])
             self.assertEqual(result.exit_code, 0)
-            _, kwargs = mock_progressbar.call_args
-            self.assertEqual(kwargs['file'], None)
+            _, kwargs = mock_process_jobs.call_args
+            self.assertTrue(kwargs['progressbar'])
 
-        with patch(progressbar, autospec=True) as mock_progressbar:
+        with patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+            mock_process_jobs.return_value.__enter__.return_value = ()
+
             result = self.runner.invoke(cli, ['compute', 'sys-perf', '--progressbar'])
             self.assertEqual(result.exit_code, 0)
-            _, kwargs = mock_progressbar.call_args
-            self.assertEqual(kwargs['file'], None)
+            _, kwargs = mock_process_jobs.call_args
+            self.assertTrue(kwargs['progressbar'])
 
-        with patch(progressbar, autospec=True) as mock_progressbar:
+        with patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+            mock_process_jobs.return_value.__enter__.return_value = ()
+
             result = self.runner.invoke(cli, ['compute', 'sys-perf', '--no-progressbar'])
             self.assertEqual(result.exit_code, 0)
-            _, kwargs = mock_progressbar.call_args
-            self.assertTrue(isinstance(kwargs['file'], StringIO))
+            _, kwargs = mock_process_jobs.call_args
+            self.assertFalse(kwargs['progressbar'])
 
     @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
     def test_compute_creates_jobs(self, mock_command_config_cls):
@@ -683,10 +684,9 @@ class TestCompute(ClickTest):
 
         with patch(
             'signal_processing.change_points.helpers.generate_tests') as mock_generate_tests, \
-                patch('signal_processing.change_points.helpers.pool_manager')\
-                        as mock_pool_manager,\
-                patch('signal_processing.change_points.helpers.Job') as mock_job_cls:
-            mock_pool_manager.return_value.__enter__.return_value = ()
+                patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs,\
+                patch('signal_processing.change_points.jobs.Job') as mock_job_cls:
+            mock_process_jobs.return_value.__enter__.return_value = ()
 
             test_identifiers = [{'test': str(i)} for i in range(5)]
             mock_generate_tests.return_value = test_identifiers
@@ -710,16 +710,11 @@ class TestCompute(ClickTest):
             name='config', points=mock_points, debug=0, log_file='/tmp/log_file')
         mock_command_config_cls.return_value = expected_config
 
-        with patch('signal_processing.change_points.helpers.pool_manager') as mock_pool_manager,\
-            patch('click.progressbar') as mock_progressbar:
+        with patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
             mock_job = MagicMock(name='job', exception=None, identifier={'test': 'name'})
-            mock_pool_manager.return_value.__enter__.return_value = [mock_job]
-            mock_progressbar.return_value.__enter__.return_value = mock_progressbar
-            mock_progressbar.__iter__ = MagicMock(return_value=iter([mock_job]))
+            mock_process_jobs.return_value.__enter__.return_value = [mock_job]
             result = self.runner.invoke(cli, ['compute', 'sys-perf'])
             self.assertEqual(result.exit_code, 0)
-            self.assertEqual(mock_progressbar.label, 'name')
-            mock_progressbar.render_progress.assert_called_once_with()
 
     @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
     def test_compute_exceptions(self, mock_command_config_cls):
@@ -731,11 +726,11 @@ class TestCompute(ClickTest):
             name='config', points=mock_points, debug=0, log_file='/tmp/log_file')
         mock_command_config_cls.return_value = expected_config
 
-        with patch('signal_processing.change_points.helpers.pool_manager'),\
-            patch('click.progressbar') as mock_progressbar:
-            jobs = [helpers.Job(None) for i in range(3)]
-            for i, job in enumerate(jobs):
-                job.complete = True
+        with patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+            job_list = [jobs.Job(time.sleep, arguments=(0.0, )) for _ in range(3)]
+            for i, job in enumerate(job_list):
+                job.started_at = datetime.utcnow()
+                job.ended_at = datetime.utcnow()
                 job.identifier = {'test': 'identifier{}'.format(i)}
                 if i == 0:
                     job.exception = None
@@ -743,8 +738,7 @@ class TestCompute(ClickTest):
                 else:
                     job.exception = Exception(str(i))
                     job.status = 'status {}'.format(i)
-            mock_progressbar.return_value.__enter__.return_value = mock_progressbar
-            mock_progressbar.__iter__ = MagicMock(return_value=iter(jobs))
+            mock_process_jobs.return_value = job_list
             result = self.runner.invoke(cli, ['compute', 'sys-perf'])
             self.assertEqual(result.exit_code, 2)
 

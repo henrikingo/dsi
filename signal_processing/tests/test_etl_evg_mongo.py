@@ -150,8 +150,10 @@ class TestGetTaskIdentifiers(unittest.TestCase):
         projects = list(projects)
         with patch('signal_processing.etl_evg_mongo._get_project_variant_tasks')\
             as mock__get_project_variant_tasks, \
-             patch('signal_processing.commands.helpers.Job', autospec=True)\
-            as mock_job_cls:
+             patch('signal_processing.commands.jobs.Job', autospec=True)\
+            as mock_job_cls, \
+            patch('signal_processing.commands.jobs.process_jobs', autospec=True)\
+                    as mock_process_jobs:
 
             mock_evg_client = MagicMock(name='evg_client', autospec=True)
             mock__get_project_variant_tasks.return_value = []
@@ -162,11 +164,12 @@ class TestGetTaskIdentifiers(unittest.TestCase):
                     autospec=True,
                     exception=exceptions[i] if i < len(exceptions) else None,
                     identifier=project,
-                    result=project) for i, project in enumerate(projects)
+                    result=[project]) for i, project in enumerate(projects)
             ]
             for mock_job in mock_jobs:
                 mock_job.return_value = mock_job
             mock_job_cls.side_effect = mock_jobs
+            mock_process_jobs.return_value = mock_jobs
 
             first_exception = next((exception for exception in exceptions if exception is not None),
                                    None)
@@ -175,8 +178,8 @@ class TestGetTaskIdentifiers(unittest.TestCase):
                     etl_evg_mongo._get_task_identifiers(mock_evg_client, projects, False, 1)
                 self.assertTrue(str(first_exception) in context.exception)
             else:
-                etl_evg_mongo._get_task_identifiers(mock_evg_client, projects, False, 1)
-
+                actual = etl_evg_mongo._get_task_identifiers(mock_evg_client, projects, False, 1)
+                self.assertEqual(actual, projects)
             mock_job_cls.assert_has_calls([
                 call(
                     mock__get_project_variant_tasks,
@@ -185,8 +188,6 @@ class TestGetTaskIdentifiers(unittest.TestCase):
             ])
 
             mock_evg_client.query_mongo_perf_task_history.assert_not_called()
-            for mock_job in mock_jobs:
-                mock_job.assert_called_once()
 
     #pylint: enable=invalid-name
     def test_no_projects(self):
@@ -195,7 +196,7 @@ class TestGetTaskIdentifiers(unittest.TestCase):
         """
         self._test_projects()
 
-    def test_1_projects(self):
+    def test_2_projects(self):
         """
         Test _get_task_identifiers with multiple project and no tasks.
         """
@@ -221,13 +222,14 @@ class TestGetTaskIdentifiers(unittest.TestCase):
         pool_size = 2
         with patch('signal_processing.etl_evg_mongo._get_project_variant_tasks')\
             as mock__get_project_variant_tasks, \
-             patch('signal_processing.commands.helpers.pool_manager', autospec=True)\
-            as mock_pool_manager:
+             patch('signal_processing.commands.jobs.process_jobs', autospec=True)\
+            as mock_process_jobs:
 
             mock_evg_client = MagicMock(name='evg_client', autospec=True)
             mock__get_project_variant_tasks.return_value = []
             etl_evg_mongo._get_task_identifiers(mock_evg_client, [], False, pool_size)
-        mock_pool_manager.assert_called_once_with([], pool_size)
+        _, kwargs = mock_process_jobs.call_args
+        self.assertEquals(kwargs['pool_size'], pool_size)
 
 
 class TestEtlEvgMongo(unittest.TestCase):
@@ -252,11 +254,13 @@ class TestEtlEvgMongo(unittest.TestCase):
                 as mock__get_task_identifiers, \
             patch('signal_processing.etl_evg_mongo._etl_single_task')\
                 as mock__etl_single_task, \
-             patch('signal_processing.commands.helpers.Job', autospec=True)\
-            as mock_job_cls:
+             patch('signal_processing.commands.jobs.Job', autospec=True)\
+            as mock_job_cls, \
+             patch('signal_processing.commands.jobs.process_jobs', autospec=True)\
+            as mock_job_process_jobs:
             mock_evg_client = MagicMock(name='evg_client', autospec=True)
             mock__get_task_identifiers.return_value = task_identifiers
-
+            mock_job_process_jobs.return_value = ()
             mock_jobs = [
                 MagicMock(
                     name=task['task'],
@@ -268,25 +272,17 @@ class TestEtlEvgMongo(unittest.TestCase):
             for mock_job in mock_jobs:
                 mock_job.return_value = mock_job
             mock_job_cls.side_effect = mock_jobs
+            mock_job_process_jobs.return_value = mock_jobs
 
-            first_exception = next((exception for exception in exceptions if exception is not None),
-                                   None)
-            if first_exception is not None:
-                with self.assertRaises(Exception) as context:
-                    etl_evg_mongo._etl_evg_mongo(mock_evg_client, self.mongo_uri, [], False, 1)
-                self.assertTrue(str(first_exception) in context.exception)
-            else:
-                etl_evg_mongo._etl_evg_mongo(mock_evg_client, self.mongo_uri, task_identifiers,
-                                             False, 1)
-
+            results = etl_evg_mongo._etl_evg_mongo(mock_evg_client, self.mongo_uri,
+                                                   task_identifiers, False, 1)
+            self.assertEquals(results, [job for job in mock_jobs if job.exception])
             mock_job_cls.assert_has_calls([
                 call(
                     mock__etl_single_task,
                     arguments=(mock_evg_client, self.mongo_uri, task),
                     identifier=task) for task in task_identifiers
             ])
-            for mock_job in mock_jobs:
-                mock_job.assert_called_once()
 
     #pylint: enable=invalid-name
     def test_no_tasks(self):
@@ -321,13 +317,14 @@ class TestEtlEvgMongo(unittest.TestCase):
         pool_size = 2
         with patch('signal_processing.etl_evg_mongo._get_task_identifiers')\
             as mock__get_project_variant_tasks, \
-             patch('signal_processing.commands.helpers.pool_manager', autospec=True)\
-            as mock_pool_manager:
+                patch('signal_processing.commands.jobs.process_jobs', autospec=True) \
+                        as mock_process_jobs:
 
             mock_evg_client = MagicMock(name='evg_client', autospec=True)
             mock__get_project_variant_tasks.return_value = []
             etl_evg_mongo._etl_evg_mongo(mock_evg_client, self.mongo_uri, [], False, pool_size)
-        mock_pool_manager.assert_called_once_with([], pool_size)
+            _, kwargs = mock_process_jobs.call_args
+            self.assertEquals(kwargs['pool_size'], pool_size)
 
 
 class TestEtlSingleTask(unittest.TestCase):

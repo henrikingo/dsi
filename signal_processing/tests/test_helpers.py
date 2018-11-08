@@ -2,6 +2,7 @@
 Unit tests for signal_processing/helpers.py.
 """
 import re
+import time
 import unittest
 from collections import OrderedDict
 
@@ -10,6 +11,7 @@ import mock
 from mock import patch
 
 import signal_processing.commands.helpers as helpers
+import signal_processing.commands.jobs as jobs
 
 
 class TestReadConfig(unittest.TestCase):
@@ -437,7 +439,7 @@ class TestItemShowFunc(unittest.TestCase):
     def test_job(self):
         """ Test shorter."""
         expected = 'task'
-        item = helpers.Job(None, identifier=expected)
+        item = jobs.Job(time.sleep, identifier=expected)
         self.assertEqual(expected, helpers.show_item_function(item, info_width=16))
 
 
@@ -565,108 +567,3 @@ class TestValidate(unittest.TestCase):
     def test_int_value(self):
         """ Test int value."""
         self.assertEquals(1, helpers.validate_int_none_options(None, None, 1))
-
-
-def _create_job(exception=None):
-    mock_function = mock.MagicMock(name='dummy function', return_value='return')
-    if exception is not None:
-        mock_function.side_effect = exception
-    job = helpers.Job(
-        mock_function,
-        arguments=('arguments', ),
-        kwargs={'thing': 1,
-                'that': 'other'},
-        identifier='identifier')
-    return job
-
-
-class TestJob(unittest.TestCase):
-    """
-    Test Job.
-    """
-
-    def test_before_call(self):
-        """ Test before call."""
-        job = _create_job()
-        self.assertFalse(job.complete)
-        self.assertIsNone(job.result)
-        self.assertIsNone(job.exception)
-
-    def test_call(self):
-        """ Test successful call."""
-        job = _create_job()
-        job()
-        self.assertTrue(job.complete)
-        self.assertEquals('return', job.result)
-        self.assertIsNone(job.exception)
-
-    def test_exception(self):
-        """ Test exception."""
-        exception = Exception('exception')
-        job = _create_job(exception=exception)
-        job()
-        self.assertTrue(job.complete)
-        self.assertIsNone(job.result)
-        self.assertEqual(exception, job.exception)
-
-
-class TestPoolManager(unittest.TestCase):
-    """
-    Test pool_manager.
-    """
-
-    def _test_helper(self, job_list=(), pool_size=1):
-        with patch('multiprocessing.Pool') as mock_pool_cls, \
-             patch('signal_processing.commands.helpers.async_job_runner_adapter')\
-                     as mock_async_job_runner_adapter:
-            mock_pool = mock.MagicMock(name='dummy function', return_value='return')
-            mock_pool_cls.return_value = mock_pool
-            mock_pool.imap_unordered.return_value = 'imap_unordered'
-            mock_async_job_runner_adapter.return_value = 'adapter'
-            with helpers.pool_manager(job_list, pool_size) as iterator:
-                pass
-
-            if pool_size == 1:
-                self.assertEqual('adapter', iterator)
-                mock_pool_cls.assert_not_called()
-                mock_async_job_runner_adapter.assert_called_once_with(job_list)
-            else:
-                self.assertEqual('imap_unordered', iterator)
-                mock_pool_cls.assert_called_once_with(processes=pool_size)
-                mock_pool.imap_unordered.assert_called_once_with(helpers.async_job_runner, job_list)
-                mock_pool.close.assert_called_once()
-                mock_pool.join.assert_called_once()
-                mock_async_job_runner_adapter.assert_not_called()
-
-    def test_single(self):
-        """ Test pool size 1."""
-        self._test_helper()
-
-    def test_multiple(self):
-        """ Test pool size 2."""
-        self._test_helper(pool_size=2)
-
-
-class TestAsyncJobRunner(unittest.TestCase):
-    """
-    Test async_job_runner.
-    """
-
-    def test_async_job_runner(self):
-        mock_function = mock.MagicMock(name='dummy function', return_value='return')
-        self.assertEqual('return', helpers.async_job_runner(mock_function))
-        mock_function.assert_called_once_with()
-
-
-class TestAsyncJobRunnerAdapter(unittest.TestCase):
-    """
-    Test async_job_runner_adapter.
-    """
-
-    def test_async_job_runner(self):
-        expected = ['return1', 'return2']
-        mock_functions = [mock.MagicMock(name=name, return_value=name) for name in expected]
-        actual = [result for result in helpers.async_job_runner_adapter(mock_functions)]
-        self.assertEqual(expected, actual)
-        for mock_function in mock_functions:
-            mock_function.assert_called_once_with()

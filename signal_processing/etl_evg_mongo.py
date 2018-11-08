@@ -5,7 +5,6 @@ import datetime
 import multiprocessing
 import os
 import re
-from StringIO import StringIO
 
 import click
 import pymongo
@@ -14,6 +13,7 @@ import yaml
 
 import etl_helpers
 import signal_processing.commands.helpers as helpers
+import signal_processing.commands.jobs as jobs
 from analysis.evergreen import evergreen_client
 from bin.common import log
 
@@ -228,35 +228,26 @@ def _get_task_identifiers(evg_client, projects, progressbar, pool_size=1):
     LOG.info(label, projects=projects)
 
     max_length = max(len(project) for project in projects + [label])
+
+    # Add 2 so that there is some whitespace between the label and progress bar.
+    label = label.ljust(max_length + 2)
     job_list = [
-        helpers.Job(
-            _get_project_variant_tasks, arguments=(evg_client, project), identifier=project)
+        jobs.Job(_get_project_variant_tasks, arguments=(evg_client, project), identifier=project)
         for project in projects
     ]
 
-    bar_template, show_label = helpers.query_terminal_for_bar()
-    with helpers.pool_manager(job_list, pool_size) as job_iterator:
-        exceptions = []
-        with click.progressbar(job_iterator,
-                               length=len(job_list),
-                               label=label.ljust(max_length + 2),
-                               item_show_func=show_label,
-                               file=None if progressbar else StringIO(),
-                               bar_template=bar_template) as progress: # yapf: disable
-            for job in progress:
-                if job.exception is None:
-                    status = job.identifier
-                    task_identifiers.append(job.result)
-                    if progress.finished:
-                        status = 'tasks loaded'.ljust(max_length + 2)
-                else:
-                    status = 'Exception: {} {}'.format(job.identifier, job.exception)
-                    exceptions.append(job.exception)
-                progress.label = status.ljust(max_length + 2)
-                progress.render_progress()
-
-        if exceptions:
-            raise exceptions[0]
+    bar_template, show_item = helpers.query_terminal_for_bar()
+    completed_jobs = jobs.process_jobs(
+        job_list,
+        pool_size=pool_size,
+        label=label,
+        progressbar=progressbar,
+        bar_template=bar_template,
+        show_item=show_item)
+    for job in completed_jobs:
+        if job.exception is not None:
+            raise job.exception
+        task_identifiers.extend(job.result)
     return task_identifiers
 
 
@@ -279,34 +270,26 @@ def _etl_evg_mongo(evg_client, mongo_uri, projects, progressbar, pool_size=1):
     LOG.debug('loaded tasks', tasks=task_identifiers)
     label = 'loading data'
 
-    bar_template, show_label = helpers.query_terminal_for_bar()
     job_list = [
-        helpers.Job(_etl_single_task, arguments=(evg_client, mongo_uri, task), identifier=task)
+        jobs.Job(_etl_single_task, arguments=(evg_client, mongo_uri, task), identifier=task)
         for task in task_identifiers
     ]
 
-    exceptions = []
-    with helpers.pool_manager(job_list, pool_size) as job_iterator:
-        with click.progressbar(job_iterator,
-                               length=len(job_list),
-                               label=label,
-                               item_show_func=show_label,
-                               file=None if progressbar else StringIO(),
-                               bar_template=bar_template) as progress: # yapf: disable
-            for job in progress:
-                if job.exception is None:
-                    status = job.identifier['task']
-                else:
-                    status = 'Exception: {} {}'.format(job.identifier['task'], job.exception)
-                    exceptions.append(job.exception)
-                progress.label = status
-                progress.render_progress()
-
-    if exceptions:
-        raise exceptions[0]
+    bar_template, show_item = helpers.query_terminal_for_bar()
+    completed_jobs = jobs.process_jobs(
+        job_list,
+        pool_size=pool_size,
+        label=label,
+        progressbar=progressbar,
+        bar_template=bar_template,
+        show_item=show_item,
+        key='task')
+    jobs_with_exceptions = [job for job in completed_jobs if job.exception is not None]
+    return jobs_with_exceptions
 
 
 @click.command(context_settings=dict(help_option_names=['-h', '--help']))
+@click.pass_context
 @click.option(
     '--evergreen-config',
     default='~/.evergreen.yml',
@@ -335,8 +318,8 @@ def _etl_evg_mongo(evg_client, mongo_uri, projects, progressbar, pool_size=1):
     required=False,
     multiple=True,
     help='The list of projects to loads. Defaults to {}'.format(DEFAULT_PROJECTS))
-def etl(evergreen_config, mongo_uri, verbose, logfile, progressbar, all_projects, pool_size,
-        projects):
+def etl(context, evergreen_config, mongo_uri, verbose, logfile, progressbar, all_projects,
+        pool_size, projects):
     # pylint: disable=too-many-arguments
     """
 Load the history from Evergreen into the Mongo Atlas cluster.
@@ -390,4 +373,7 @@ Examples:
         mongo_uri=etl_helpers.redact_url(mongo_uri),
         projects=projects)
 
-    _etl_evg_mongo(evg_client, mongo_uri, list(projects), progressbar, pool_size=pool_size)
+    jobs_with_exceptions = _etl_evg_mongo(
+        evg_client, mongo_uri, list(projects), progressbar, pool_size=pool_size)
+
+    jobs.handle_exceptions(context, jobs_with_exceptions, logfile)
