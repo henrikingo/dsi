@@ -3,17 +3,18 @@ run:
   - id: InsertRemove
     type: genny
     cmd: |
-      ./genny/build/src/driver/genny ./genny/src/driver/test/InsertRemove.yml -u "${mongodb_setup.meta.mongodb_url}" -m sys-perf -o ./genny-perf.json
+      set -eou pipefail
+      ./genny/build/src/driver/genny ./genny/src/driver/test/InsertRemove.yml -u "${mongodb_setup.meta.mongodb_url}" -m csv -o ./genny-perf.csv
+      genny-metrics-to-perf-json < ./genny-perf.csv > ./genny-perf.json
     output_files:
+      # Genny output-parser only parses the first file (must be the json)
+      # but we want to retrieve the .csv for the reports dir.
       - genny-perf.json
+      - genny-perf.csv
 
 pre_task:
+  # remove existing output file (if any) since genny appends
   - on_workload_client:
-      # sed -i is to modify the workload config file
-      # to insert the correct mongo URI.
-      # until Genny can read from CLI or something else
       exec: |
-       set -eou pipefail
+       rm -f ./genny-perf.csv ./genny-perf.json
 
-       # remove existing output file (if any) since genny appends
-       rm -f ./genny-perf.json
