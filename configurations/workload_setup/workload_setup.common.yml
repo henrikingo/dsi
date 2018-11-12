@@ -16,7 +16,7 @@ genny:
         # https://aws.amazon.com/premiumsupport/knowledge-center/ec2-enable-epel/
         sudo yum install -y https://s3-us-west-2.amazonaws.com/dsi-donot-remove/genny/epel-release-latest-7.noarch.rpm  || true > ./yum-epel-repo.log 2>&1
         sudo yum-config-manager --enable epel > ./yum-epel.log 2>&1
-        sudo yum install -y gcc gcc-c++ cmake3 openssl-devel python36 python3-pip > ./yum-install.log 2>&1
+        sudo yum install -y gcc gcc-c++ cmake3 openssl-devel python36 python3-pip golang > ./yum-install.log 2>&1
   # Install Genny System Dependencies
   #
   # If this ever becomes too annoying to do repeatedly,
@@ -79,11 +79,38 @@ genny:
           sudo make -j "$(nproc)" install > ./install.log 2>&1
         popd >/dev/null
         # </Mongo CXX Driver>
+  # Build gRPC. This script should be synchronized with genny's own Evergreen compilation script:
+  # https://github.com/10gen/genny/blob/master/evergreen.yml as of 11/2018.
+  - on_workload_client:
+      exec: |
+        set -eou pipefail
+        cd genny/build
+        git clone --recurse-submodules https://github.com/grpc/grpc.git
+        pushd grpc >/dev/null
+          git checkout b79462f186cc22550bc8d53a00ae751f50d194f5
+
+          # Work around https://github.com/grpc/grpc/issues/16675 by checking out a newer commit.
+          pushd third_party/boringssl >/dev/null
+            git pull origin master > /dev/null
+            git checkout 9edbc7ff9f56dff801a49f5ecb15ee06718b995c
+          popd >/dev/null
+
+          mkdir cmake-build
+          pushd cmake-build >/dev/null
+            cmake3 ..
+            make -j "$(nproc)"
+          popd >/dev/null
+        popd >/dev/null
   # Build Genny's C++ Component
   - on_workload_client:
       exec: |
         set -eou pipefail
         cd genny/build
+
+        cwd=$(pwd)
+        export LIBRARY_PATH="$cwd/grpc/cmake-build/:$cwd/grpc/cmake-build/third_party/protobuf"
+        export CPLUS_INCLUDE_PATH="$cwd/grpc/include:$cwd/grpc/third_party/protobuf/src"
+
         cmake3 -DCMAKE_CXX_FLAGS="-lpthread" -DCMAKE_BUILD_TYPE=Release ..
         make -j "$(nproc)"
   # Build Genny's Python Component
