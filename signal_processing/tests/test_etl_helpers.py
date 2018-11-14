@@ -155,3 +155,110 @@ class TestRedactURL(unittest.TestCase):
         """
         self.assertEquals('mongodb+srv://user:???@localhost/perf',
                           etl_helpers.redact_url('mongodb+srv://user:password@localhost/perf'))
+
+
+class TestGenerateThreadLevels(unittest.TestCase):
+    """
+    Test suite for generate_thread_levels.
+    """
+
+    def _test_generate_thread_levels(self, return_value=()):
+        """
+        Test generate_thread_levels identifier.
+        """
+        return_value = list(return_value)
+        mock_collection = MagicMock(name="points collection")
+        mock_collection.aggregate.return_value = return_value
+        actual = list(etl_helpers.generate_thread_levels('test_identifier', mock_collection))
+        self.assertEquals(actual, return_value)
+
+        calls = mock_collection.aggregate.call_args_list
+        self.assertEquals(len(calls), 1)
+        arguments = calls[0][0][0]
+
+        self.assertEquals(arguments[0], {'$match': 'test_identifier'})
+
+    def test_identifier(self):
+        """
+        Test generate_thread_levels identifier.
+        """
+        self._test_generate_thread_levels()
+
+    def test_yields(self):
+        """
+        Test generate_thread_levels yields.
+        """
+        self._test_generate_thread_levels(return_value=['values'])
+
+
+class TestCreateDescriptor(unittest.TestCase):
+    """
+    Test suite for create_descriptor.
+    """
+
+    def _test_create_descriptor(self, expected, test_identifier, test=None):
+        self.assertEqual(etl_helpers.create_descriptor(test_identifier, test=test), expected)
+
+    def test_defaults(self):
+        """
+        Test create_descriptor defaults.
+        """
+        self._test_create_descriptor(
+            'project_id/variant/task/test/thread_level', {
+                'project_id': 'project_id',
+                'variant': 'variant',
+                'task_name': 'task',
+                'test': 'test',
+                'thread_level': 'thread_level',
+            })
+
+    def test_project(self):
+        """
+        Test create_descriptor project field.
+        """
+        self._test_create_descriptor(
+            'project/variant/task/test/thread_level', {
+                'project': 'project',
+                'variant': 'variant',
+                'task_name': 'task',
+                'test': 'test',
+                'thread_level': 'thread_level',
+            })
+
+    def test_task(self):
+        """
+        Test create_descriptor task field.
+        """
+        self._test_create_descriptor(
+            'project/variant/task_name/test/thread_level', {
+                'project': 'project',
+                'variant': 'variant',
+                'task': 'task_name',
+                'test': 'test',
+                'thread_level': 'thread_level',
+            })
+
+    def test_test_param(self):
+        """
+        Test create_descriptor test param.
+        """
+        self._test_create_descriptor(
+            'project/variant/task_name/TEST/thread_level', {
+                'project': 'project',
+                'variant': 'variant',
+                'task': 'task_name',
+                'test': 'test',
+                'thread_level': 'thread_level',
+            },
+            test='TEST')
+
+    def test_no_thread_level(self):
+        """
+        Test create_descriptor no thread level.
+        """
+        self._test_create_descriptor('project/variant/task_name/test', {
+            'project': 'project',
+            'variant': 'variant',
+            'task': 'task_name',
+            'test': 'test',
+        })

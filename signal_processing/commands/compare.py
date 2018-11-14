@@ -2,9 +2,7 @@
 Functionality to compare R v Py change point generation.
 """
 import itertools
-import json
 import os
-from collections import OrderedDict
 from datetime import datetime
 
 import structlog
@@ -505,79 +503,40 @@ def compare(test_identifier, command_config, weighting, sig_lvl=0.05, minsizes=(
     :return: list(calculations).
     See 'QHat.DEFAULT_WEIGHTING' for the recommended default value.
     """
-    project = test_identifier['project']
-    variant = test_identifier['variant']
-    task = test_identifier['task']
-    test = test_identifier['test']
-    calculations = []
-
     credentials = command_config.credentials
     mongo_repo = command_config.mongo_repo
 
-    qry = {'project': project, 'variant': variant, 'task': task, 'test': test}
+    model = PointsModel(command_config.mongo_uri, mongo_repo=mongo_repo, credentials=credentials)
+    results = model.get_points(test_identifier)
+    if padding:
+        values = [results['series'][-1]] * padding
+        results['series'].extend(values)
 
-    LOG.debug('db.change_points.find(%s).pretty()', json.dumps(qry))
-    perf_json = OrderedDict([('project_id', project), ('variant', variant), ('task_name', task)])
+        values = [results['revisions'][-1]] * padding
+        results['revisions'].extend(values)
 
-    model = PointsModel(
-        perf_json, command_config.mongo_uri, mongo_repo=mongo_repo, credentials=credentials)
-    _, _, points = model.get_points(test)
-    series = points['series']
-    revisions = points['revisions']
-    orders = points['orders']
-    create_times = points['create_times']
+        start = results['orders'][-1] + 1
+        values = list(range(start, start + padding))
+        results['orders'].extend(values)
 
-    thread_levels = series.keys()
-    thread_levels.sort(key=int)
-    for thread_level in thread_levels:
-        data = OrderedDict([('project', test_identifier['project']),
-                            ('variant', test_identifier['variant']),
-                            ('task', test_identifier['task']),
-                            ('test', test_identifier['test']),
-                            ('task_name', test_identifier['task']),
-                            ('testname', test_identifier['test']),
-                            ('thread_level', thread_level)]) #yapf: disable
+        values = [results['create_times'][-1]] * padding
+        results['create_times'].extend(values)
 
-        calculations.append(data)
-
-        data['series'] = series[thread_level]
-        data['revisions'] = revisions[thread_level]
-        data['orders'] = orders[thread_level]
-        data['create_times'] = create_times[thread_level]
-        data['thread_level'] = thread_level
-
-        if padding:
-            values = [data['series'][-1]] * padding
-            data['series'].extend(values)
-
-            values = [data['revisions'][-1]] * padding
-            data['revisions'].extend(values)
-
-            start = data['orders'][-1] + 1
-            values = list(range(start, start + padding))
-            data['orders'].extend(values)
-
-            values = [data['create_times'][-1]] * padding
-            data['create_times'].extend(values)
-
-        data['python_points'] = PyChangePoint(
-            data,
+    results['python_points'] = PyChangePoint(
+        results,
+        sig_lvl,
+        minsizes[0],
+        weighting=weighting,
+        mongo_repo=mongo_repo,
+        credentials=credentials)
+    results['r_points'] = [
+        RChangePoint(
+            results,
             sig_lvl,
-            minsizes[0],
+            minsize,
             weighting=weighting,
             mongo_repo=mongo_repo,
-            credentials=credentials)
-        data['r_points'] = [
-            RChangePoint(
-                data,
-                sig_lvl,
-                minsize,
-                weighting=weighting,
-                mongo_repo=mongo_repo,
-                credentials=credentials) for minsize in minsizes
-        ]
+            credentials=credentials) for minsize in minsizes
+    ]
 
-        del data['task_name']
-        del data['testname']
-
-    return calculations
+    return results

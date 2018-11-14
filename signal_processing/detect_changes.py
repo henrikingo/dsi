@@ -2,7 +2,6 @@
 Run the QHat algorithm and store results.
 """
 import os
-from collections import OrderedDict, defaultdict
 from datetime import datetime
 import multiprocessing
 
@@ -29,6 +28,11 @@ REQUIRED_KEYS = set(['revision', 'order', 'create_time'])
 The set of keys that a valid performance point must in include.
 """
 
+ARRAY_FIELDS = set(['series', 'revisions', 'orders', 'create_times', 'task_ids', 'version_ids'])
+"""
+The set of array field keys. These arrays must be equal in size.
+"""
+
 
 class PointsModel(object):
     """
@@ -36,20 +40,13 @@ class PointsModel(object):
     """
 
     # pylint: disable=invalid-name, too-many-instance-attributes
-    def __init__(self,
-                 perf_json,
-                 mongo_uri,
-                 limit=None,
-                 pvalue=None,
-                 mongo_repo=None,
-                 credentials=None):
+    def __init__(self, mongo_uri, limit=None, pvalue=None, mongo_repo=None, credentials=None):
         # pylint: disable=too-many-arguments
         """
         PointsModel is serializable through pickle. To maintain a consistent stable interface, it
         delegates configuration to __setstate__.
         See methods '__getstate__' and '__setstate__'.
 
-        :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
         :param str mongo_uri: The uri to connect to the cluster.
         :param limit: The limit for the number of points to retrieve from the database.
         :type limit: int, None.
@@ -59,7 +56,6 @@ class PointsModel(object):
         :param credentials: The git credentials.
         """
         self.__setstate__({
-            'perf_json': perf_json,
             'mongo_uri': mongo_uri,
             'limit': limit,
             'pvalue': pvalue,
@@ -77,11 +73,11 @@ class PointsModel(object):
             self._db = pymongo.MongoClient(self.mongo_uri).get_database()
         return self._db
 
-    def get_points(self, test):
+    def get_points(self, test_identifier):
         """
         Retrieve the documents from the `points` collection in the database for the given test.
 
-        :param str test: The name of the test.
+        :param dict test_identifier: The project / variant / task / test and thread_level.
         :return: The results from the query to the database as well as some additional information
         extracted from those results.
         :return: The number of points (and thus the length of the lists), the query used to retrieve
@@ -90,68 +86,112 @@ class PointsModel(object):
         :rtype: tuple(int, OrderedDict, dict).
         """
 
-        query = OrderedDict([('project', self.perf_json['project_id']),
-                             ('variant', self.perf_json['variant']),
-                             ('task', self.perf_json['task_name']),
-                             ('test', test)]) #yapf: disable
-
-        projection = {
-            'results': 1,
+        required_fields = {
+            'project': 1,
             'revision': 1,
+            'variant': 1,
+            'task': 1,
+            'test': 1,
             'order': 1,
             'create_time': 1,
             'task_id': 1,
-            '_id': 0
+            'version_id': 1,
         }
 
-        cursor = self.db.points.find(query, projection).sort([('order', pymongo.ASCENDING)])
+        filter_thread_level = required_fields.copy()
+        filter_thread_level['results'] = {
+            '$filter': {
+                'input': '$results',
+                'as': 'result',
+                'cond': {
+                    '$eq': ['$$result.thread_level', test_identifier['thread_level']]
+                }
+            }
+        }
 
+        query = test_identifier.copy()
+        thread_level = query['thread_level']
+        del query['thread_level']
+        query['results.thread_level'] = thread_level
+
+        grouping = {
+            '_id': {
+                'project': '$project',
+                'variant': '$variant',
+                'task': '$task',
+                'test': '$test',
+                'thread_level': {
+                    '$arrayElemAt': ['$results.thread_level', 0]
+                }
+            },
+            'size': {
+                '$sum': 1
+            },
+            'series': {
+                '$push': {
+                    '$arrayElemAt': ['$results.ops_per_sec', 0]
+                }
+            },
+            'revisions': {
+                '$push': '$revision'
+            },
+            'orders': {
+                '$push': '$order'
+            },
+            'create_times': {
+                '$push': '$create_time'
+            },
+            'task_ids': {
+                '$push': '$task_id'
+            },
+            'version_ids': {
+                '$push': '$version_id'
+            }
+        }
+
+        # filter documents that contain no or empty field values
+        required_keys = {'$and': [{key: {'$ne': None}} for key in REQUIRED_KEYS]}
+
+        pipeline = [{'$match': query},
+                    {'$match': required_keys},
+                    {'$sort': {'order': 1}},
+                    {'$project': filter_thread_level}] # yapf: disable
         if self.limit is not None:
-            cursor.limit(self.limit)
+            pipeline.append({'$limit': self.limit})
+        pipeline.append({'$group': grouping})
+        pipeline.append({
+            '$project': {
+                '_id': 0,
+                'project': '$_id.project',
+                'variant': '$_id.variant',
+                'task': '$_id.task',
+                'test': '$_id.test',
+                'testname': '$_id.test',
+                'thread_level': '$_id.thread_level',
+                'size': 1,
+                'series': 1,
+                'revisions': 1,
+                'orders': 1,
+                'create_times': 1,
+                'task_ids': 1,
+                'version_ids': 1
+            }
+        })
 
-        # The following defaultdicts return new lists for missing keys.
-        series = defaultdict(list)
-        revisions = defaultdict(list)
-        orders = defaultdict(list)
-        create_times = defaultdict(list)
-        task_ids = defaultdict(list)
-        size = 0
+        points = list(self.db.points.aggregate(pipeline))
+        results = points[0]
+        sizes = {key: len(results[key]) for key in ARRAY_FIELDS}
+        if not all(current == sizes.values()[0] for current in sizes.values()):
+            raise Exception('All array sizes were not equal: {}'.format(sizes))
 
-        points = {
-            'series': series,
-            'revisions': revisions,
-            'orders': orders,
-            'create_times': create_times,
-            'task_ids': task_ids
-        }
+        return results
 
-        for point in cursor:
-            missing = REQUIRED_KEYS - REQUIRED_KEYS.intersection(point.keys())
-            if missing:
-                LOG.debug("point missing fields", query=query, point=point, missing=missing)
-                continue
-            for result in point['results']:
-                if 'ops_per_sec' not in result:
-                    LOG.debug(
-                        "result missing fields",
-                        query=query,
-                        result=result,
-                        missing=['ops_per_sec'])
-                    continue
-                series[result['thread_level']].append(result['ops_per_sec'])
-                revisions[result['thread_level']].append(point['revision'])
-                orders[result['thread_level']].append(point['order'])
-                create_times[result['thread_level']].append(point['create_time'])
-                task_ids[result['thread_level']].append(point['task_id'])
-                size += 1
-        return size, query, points
-
-    def compute_change_points(self, test, weighting):
+    def compute_change_points(self, test_identifier, weighting):
         """
         Compute the change points for the given test using the QHat algorithm and insert them into
         the `change_points` collection of the database.
 
-        :param str test: The name of the test.
+        :param dict test_identifier: The project / variant / task / test and thread_level.
         :param float weighting: The weighting for the decay on compute.
         :return: The number of points for the test, the number of change points found by the QHat
         algorithm, and the time taken for this method to run.
@@ -159,52 +199,40 @@ class PointsModel(object):
         See 'QHat.DEFAULT_WEIGHTING' for the recommended default value.
         """
         # pylint: disable=too-many-locals
-        size_points, query, points = self.get_points(test)
+        thread_level_results = self.get_points(test_identifier)
 
-        change_points = {}
-        size_change_points = 0
-        for thread_level in points['series']:
-            change_points[thread_level] = qhat.QHat(
-                {
-                    'series': points['series'][thread_level],
-                    'revisions': points['revisions'][thread_level],
-                    'orders': points['orders'][thread_level],
-                    'create_times': points['create_times'][thread_level],
-                    'testname': test,
-                    'thread_level': thread_level
-                },
-                pvalue=self.pvalue,
-                weighting=weighting,
-                mongo_repo=self.mongo_repo,
-                credentials=self.credentials).change_points
-            size_change_points += len(change_points[thread_level])
-            LOG.debug(
-                "compute_change_points starting",
-                change_points=len(change_points[thread_level]),
-                testname=test,
-                thread_level=thread_level)
+        change_points = qhat.QHat(
+            thread_level_results,
+            pvalue=self.pvalue,
+            weighting=weighting,
+            mongo_repo=self.mongo_repo,
+            credentials=self.credentials).change_points
+        LOG.debug(
+            "compute_change_points starting",
+            change_points=len(change_points),
+            test_identifier=test_identifier)
 
         # Poor mans transaction. Upgrade to 4.0?
         # TODO: TIG-1174
-        before = list(self.db.change_points.find(query))
+        before = list(self.db.change_points.find(test_identifier))
 
         try:
-            requests = [pymongo.DeleteMany(query)]
+            requests = [pymongo.DeleteMany(test_identifier)]
 
-            for thread_level in change_points:
-                for point in change_points[thread_level]:
-                    change_point = query.copy()
-                    change_point.update(point)
-                    index = points['orders'][thread_level].index(point['order'])
-                    change_point['task_id'] = points['task_ids'][thread_level][index]
-                    requests.append(pymongo.InsertOne(change_point))
+            for point in change_points:
+                change_point = test_identifier.copy()
+                change_point.update(point)
+                index = thread_level_results['orders'].index(point['order'])
+                change_point['task_id'] = thread_level_results['task_ids'][index]
+                change_point['version_id'] = thread_level_results['version_ids'][index]
+                requests.append(pymongo.InsertOne(change_point))
 
             self.db.change_points.bulk_write(requests)
 
-            return size_points, size_change_points
+            return thread_level_results['size'], len(change_points)
         except:
             LOG.warn('compute_change_points failed. Attempting to rollback.', exc_info=True)
-            requests = [pymongo.DeleteMany(query)] +\
+            requests = [pymongo.DeleteMany(test_identifier)] +\
                        [pymongo.InsertOne(point) for point in before]
             self.db.change_points.bulk_write(requests)
             raise
@@ -220,7 +248,6 @@ class PointsModel(object):
         :return: The pickle state.
         """
         return {
-            'perf_json': self.perf_json,
             'mongo_uri': self.mongo_uri,
             'limit': self.limit,
             'pvalue': self.pvalue,
@@ -234,7 +261,6 @@ class PointsModel(object):
 
         :param dict state: The pickled state.
         """
-        self.perf_json = state['perf_json']
         self.mongo_uri = state['mongo_uri']
         self._db = None
         self.limit = state['limit']
@@ -289,7 +315,7 @@ class DetectChangesDriver(object):
         self.mongo_repo = mongo_repo
         self.credentials = credentials
         if pool_size is None:
-            pool_size = max(1, multiprocessing.cpu_count() - 1)
+            pool_size = max(1, (multiprocessing.cpu_count() - 1) * 2)
         self.pool_size = pool_size
         self.progressbar = progressbar
 
@@ -299,30 +325,27 @@ class DetectChangesDriver(object):
         Run the analysis to compute any change points with the new data.
         """
         model = PointsModel(
-            self.perf_json,
-            self.mongo_uri,
-            mongo_repo=self.mongo_repo,
-            credentials=self.credentials)
+            self.mongo_uri, mongo_repo=self.mongo_repo, credentials=self.credentials)
 
-        test_names = etl_helpers.extract_tests(self.perf_json)
-        LOG.info('loaded tests', tasks=len(test_names))
-        LOG.debug('loaded tests', test_names=test_names)
+        test_identifiers = etl_helpers.extract_test_identifiers(self.perf_json)
+        LOG.info('loaded tests', test_identifiers=len(test_identifiers))
+        LOG.debug('loaded tests', test_identifiers=test_identifiers)
         label = 'detecting changes'
+
+        test_identifiers = [
+            thread_identifier
+            for test_identifier in test_identifiers
+            for thread_identifier in etl_helpers.generate_thread_levels(
+                test_identifier, model.db.points)
+        ]
+
         bar_template, show_item = helpers.query_terminal_for_bar()
 
-        project = self.perf_json['project_id']
-        variant = self.perf_json['variant']
-        task = self.perf_json['task_name']
         job_list = [
             jobs.Job(
                 model.compute_change_points,
-                arguments=(test_name, self.weighting),
-                identifier={
-                    'project': project,
-                    'variant': variant,
-                    'task': task,
-                    'test': test_name
-                }) for test_name in test_names
+                arguments=(test_identifier, self.weighting),
+                identifier=test_identifier) for test_identifier in test_identifiers
         ]
         start = datetime.now()
         completed_jobs = jobs.process_jobs(

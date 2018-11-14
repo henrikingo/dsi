@@ -135,6 +135,7 @@ class Job(object):
         self.started_at = datetime.utcnow()
         LOG.debug(
             "job started",
+            identifier=self.identifier,
             arguments=self.function_arguments,
             kwargs=self.kwargs,
             started_at=self.started_at.isoformat())
@@ -152,6 +153,7 @@ class Job(object):
         self.ended_at = datetime.utcnow()
         LOG.debug(
             "job completed",
+            identifier=self.identifier,
             function=self.function_reference,
             function_arguments=self.function_arguments,
             kwargs=self.kwargs,

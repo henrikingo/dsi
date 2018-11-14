@@ -10,31 +10,33 @@ To get access to the help try the following command:
 # pylint: disable=too-many-lines
 
 from __future__ import print_function
-from datetime import datetime
-import os
 
+import multiprocessing
+import os
 from StringIO import StringIO
 from collections import OrderedDict
-import multiprocessing
+from datetime import datetime
+
 import click
 import structlog
 import yaml
 
-from bin.common import log
-from analysis.evergreen import evergreen_client
-import signal_processing.commands.list_build_failures as list_build_failures
 import signal_processing.commands.compare as compare
 import signal_processing.commands.compute as compute
 import signal_processing.commands.helpers as helpers
 import signal_processing.commands.jobs as jobs
+import signal_processing.commands.list_build_failures as list_build_failures
 import signal_processing.commands.list_change_points as list_change_points
+import signal_processing.commands.list_failures as list_failures
 import signal_processing.commands.manage as manage
 import signal_processing.commands.mark as mark
 import signal_processing.commands.unmark as unmark
 import signal_processing.commands.update as update
 import signal_processing.commands.visualize as visualize
-import signal_processing.commands.list_failures as list_failures
 import signal_processing.qhat as qhat
+from signal_processing import etl_helpers
+from analysis.evergreen import evergreen_client
+from bin.common import log
 
 DB = 'perf'
 PROCESSED_CHANGE_POINTS = 'processed_change_points'
@@ -737,6 +739,12 @@ For Example:
     ]
     LOG.debug('matched tests', tests=tests)
 
+    test_identifiers = [
+        thread_identifier
+        for test_identifier in tests for thread_identifier in etl_helpers.generate_thread_levels(
+            test_identifier, command_config.points)
+    ]
+
     all_calculations = []
     group_by_task = OrderedDict()
     group_by_test = OrderedDict()
@@ -744,7 +752,7 @@ For Example:
     label = 'Compare'
 
     bar_template, show_label = helpers.query_terminal_for_bar()
-    with click.progressbar(tests,
+    with click.progressbar(test_identifiers,
                            label=label,
                            item_show_func=show_label,
                            file=None if progressbar else StringIO(),
@@ -759,24 +767,23 @@ For Example:
             progress.render_progress()
             try:
                 LOG.debug('compare', test_identifier=test_identifier)
-                calculations = compare.compare(
+                calculation = compare.compare(
                     test_identifier,
                     command_config,
                     sig_lvl=sig_lvl,
                     minsizes=minsizes,
                     padding=padding,
                     weighting=weighting)
-                all_calculations.extend(calculations)
-                for calculation in calculations:
-                    identifier = (project, variant, task_name)
-                    if identifier not in group_by_task:
-                        group_by_task[identifier] = []
-                    group_by_task[identifier].append(calculation)
+                all_calculations.append(calculation)
+                identifier = (project, variant, task_name)
+                if identifier not in group_by_task:
+                    group_by_task[identifier] = []
+                group_by_task[identifier].append(calculation)
 
                 identifier = (project, variant, task_name, test_name)
                 if identifier not in group_by_test:
                     group_by_test[identifier] = []
-                group_by_test[identifier].extend(calculations)
+                group_by_test[identifier].append(calculation)
             except KeyError:
                 LOG.error('unexpected error', exc_info=1)
 
@@ -877,6 +884,12 @@ Examples:
         test_identifier for test_identifier in helpers.generate_tests(matching_tasks)
         if not helpers.filter_tests(test_identifier['test'], exclude_patterns))
 
+    test_identifiers = [
+        thread_identifier
+        for test_identifier in tests for thread_identifier in etl_helpers.generate_thread_levels(
+            test_identifier, command_config.points)
+    ]
+
     label = 'compute'
 
     start_time = datetime.utcnow()
@@ -886,7 +899,7 @@ Examples:
         jobs.Job(
             compute.compute_change_points,
             arguments=(test_identifier, weighting, command_config),
-            identifier=test_identifier) for test_identifier in tests
+            identifier=test_identifier) for test_identifier in test_identifiers
     ]
     bar_template, show_item = helpers.query_terminal_for_bar()
     completed_jobs = jobs.process_jobs(
@@ -1025,12 +1038,18 @@ $> pip install 'git+https://github.com/10gen/dsi.git#egg=DSI[Plotting]'
     ]
     LOG.debug('matched tests', tests=tests)
 
+    test_identifiers = [
+        thread_identifier
+        for test_identifier in tests for thread_identifier in etl_helpers.generate_thread_levels(
+            test_identifier, command_config.points)
+    ]
+
     label = 'visualize'
 
     bar_template, show_label = helpers.query_terminal_for_bar()
 
     with plt.style.context(command_config.style):
-        with click.progressbar(tests,
+        with click.progressbar(test_identifiers,
                                label=label,
                                item_show_func=show_label,
                                file=None if progressbar else StringIO(),
@@ -1038,11 +1057,12 @@ $> pip install 'git+https://github.com/10gen/dsi.git#egg=DSI[Plotting]'
             figure = None
             for test_identifier in progress:
                 test_name = test_identifier['test']
+                thread_level = test_identifier['thread_level']
                 progress.label = test_name
                 progress.render_progress()
                 try:
                     LOG.debug('visualize', test_identifier=test_identifier)
-                    for figure, thread_level in visualize.visualize(
+                    for figure in visualize.visualize(
                             test_identifier,
                             filter_type,
                             command_config,

@@ -33,7 +33,7 @@ class TestDetectChangesDriver(unittest.TestCase):
         mock_cpu_count.return_value = 101
         test_driver = detect_changes.DetectChangesDriver(self.sysperf_perf_json, self.mongo_uri,
                                                          0.001, 'mongo_repo')
-        self.assertEquals(test_driver.pool_size, 100)
+        self.assertEquals(test_driver.pool_size, 200)
 
     @patch('multiprocessing.cpu_count', autospec=True)
     def test_constructor_pool_size(self, mock_cpu_count):
@@ -52,23 +52,28 @@ class TestDetectChangesDriver(unittest.TestCase):
         mock_process_jobs.return_value = ()
         mock_cpu_count.return_value = 101
         mock_model = mock_PointsModel.return_value
+
+        test_identifiers = ({
+            'project': self.sysperf_perf_json['project_id'],
+            'variant': self.sysperf_perf_json['variant'],
+            'task': self.sysperf_perf_json['task_name'],
+            'test': test,
+            'thread_level': '1'
+        } for test in (u'mixed_insert', u'mixed_insert_bad', u'mixed_findOne'))
+
+        mock_model.db.points.aggregate.return_value = test_identifiers
         mock_model.compute_change_points.return_value = (1, 2, 3)
         test_driver = detect_changes.DetectChangesDriver(self.sysperf_perf_json, self.mongo_uri,
                                                          0.001, 'mongo_repo')
         test_driver.run()
         mock_PointsModel.assert_called_once_with(
-            self.sysperf_perf_json, self.mongo_uri, mongo_repo='mongo_repo', credentials=None)
+            self.mongo_uri, mongo_repo='mongo_repo', credentials=None)
 
         calls = [
             call(
                 mock_model.compute_change_points,
-                arguments=(test, 0.001),
-                identifier={
-                    'project': self.sysperf_perf_json['project_id'],
-                    'variant': self.sysperf_perf_json['variant'],
-                    'task': self.sysperf_perf_json['task_name'],
-                    'test': test
-                }) for test in [u'mixed_insert', u'mixed_insert_bad', u'mixed_findOne']
+                arguments=(test_identifier, 0.001),
+                identifier=test_identifier) for test_identifier in test_identifiers
         ]
         mock_job_cls.assert_has_calls(calls)
 
@@ -115,297 +120,161 @@ class TestPointsModel(unittest.TestCase):
                 expected_num_points += 1
         return expected_num_points, expected_points
 
-    @patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True)
-    def test_get_points(self, mock_mongo_client):
-        expected_query = OrderedDict(
-            [('project', self.sysperf_perf_json['project_id']),
-             ('variant', self.sysperf_perf_json['variant']), ('task',
-                                                              self.sysperf_perf_json['task_name']),
-             ('test', self.sysperf_perf_json['data']['results'][0]['name'])])
-        expected_projection = {
-            'results': 1,
-            'revision': 1,
-            'order': 1,
-            'create_time': 1,
-            'task_id': 1,
-            '_id': 0
+    def _test_get_points(self, limit=None, expected=None):
+        with patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True) \
+                as mock_mongo_client:
+            test_identifier = {
+                'project': self.sysperf_perf_json['project_id'],
+                'variant': self.sysperf_perf_json['variant'],
+                'task': self.sysperf_perf_json['task_name'],
+                'test': 'mixed_insert',
+                'thread_level': '1'
+            }
+
+            mock_db = MagicMock(name='db', autospec=True)
+            mock_cursor = MagicMock(name='cursor', autospec=True)
+            mock_mongo_client.return_value.get_database.return_value = mock_db
+            if expected is None:
+                expected = {key: [] for key in detect_changes.ARRAY_FIELDS}
+            mock_db.points.aggregate.return_value = [expected]
+            mock_cursor.return_value = self.sysperf_points
+            test_model = detect_changes.PointsModel(self.mongo_uri, limit=limit)
+
+            self.assertEqual(expected, test_model.get_points(test_identifier))
+            calls = mock_db.points.aggregate.call_args_list
+            self.assertTrue(len(calls) == 1)
+            pipeline_stages = 6
+            if limit is not None:
+                pipeline_stages += 1
+            self.assertTrue(len(calls[0][0][0]) == pipeline_stages)
+
+    def test_get_points(self):
+        self._test_get_points()
+
+    def test_get_points_assertion(self):
+        """ test get point asserts invalid sizes. """
+        expected = {
+            key: range(10) if key != 'create_times' else range(5)
+            for key in detect_changes.ARRAY_FIELDS
         }
-        expected_num_points, expected_points = self.load_expected_points()
 
-        mock_db = MagicMock(name='db', autospec=True)
-        mock_cursor = MagicMock(name='cursor', autospec=True)
-        mock_mongo_client.return_value.get_database.return_value = mock_db
-        mock_db.points.find.return_value.sort = mock_cursor
-        mock_cursor.return_value = self.sysperf_points
-        test_model = detect_changes.PointsModel(self.sysperf_perf_json, self.mongo_uri)
+        with self.assertRaisesRegexp(Exception, 'All array sizes were not equal:'):
+            self._test_get_points(expected=expected)
 
-        actual_num_points, actual_query, actual_points = test_model.get_points(
-            self.sysperf_perf_json['data']['results'][0]['name'])
-
-        self.assertEqual(actual_num_points, expected_num_points)
-        self.assertEqual(actual_query, expected_query)
-        self.assertEqual(actual_points, expected_points)
-
-        mock_mongo_client.assert_called_once_with(self.mongo_uri)
-        mock_mongo_client.return_value.get_database.assert_called_once_with()
-        mock_db.points.find.assert_called_once_with(expected_query, expected_projection)
-        mock_db.points.find.return_value.sort.assert_called_once_with([('order', 1)])
-
-    @patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True)
-    def test_get_points_custom_limit(self, mock_mongo_client):
+    def test_get_points_custom_limit(self):
         """
         Test that limit is called on cursor when specified.
         """
-        limit = 10
-        mock_db = MagicMock(name='db', autospec=True)
-        mock_cursor = MagicMock(name='cursor', autospec=True)
-        mock_mongo_client.return_value.get_database.return_value = mock_db
-        mock_db.points.find.return_value.sort = mock_cursor
-        test_model = detect_changes.PointsModel(self.sysperf_perf_json, self.mongo_uri, limit=limit)
-        test_model.get_points(self.sysperf_perf_json['data']['results'][0]['name'])
-        mock_cursor.return_value.limit.assert_called_with(limit)
+        self._test_get_points(limit=10)
 
-    @patch('pymongo.InsertOne')
-    @patch('pymongo.DeleteMany')
-    @patch('signal_processing.qhat.get_githashes_in_range_repo')
-    @patch('signal_processing.qhat.QHat', autospec=True)
-    @patch('signal_processing.detect_changes.PointsModel.get_points', autospec=True)
-    @patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True)
-    def test_compute_change_points(self, mock_mongo_client, mock_get_points, mock_qhat_class,
-                                   mock_git, mock_delete, mock_insert):
+    def _test_compute_change_points(self, exception=False):
         # pylint: disable=too-many-locals
-        mock_delete.return_value = "DeleteMany"
-        mock_insert.side_effect = ["InsertOne 1", "InsertOne 2"]
-        expected_query = OrderedDict(
-            [('project', self.sysperf_perf_json['project_id']),
-             ('variant', self.sysperf_perf_json['variant']),
-             ('task', self.sysperf_perf_json['task_name']),
-             ('test', self.sysperf_perf_json['data']['results'][0]['name'])])  # yapf: disable
-        expected_inserts = [
-            OrderedDict([
-                ('project', self.sysperf_perf_json['project_id']),
-                ('variant', self.sysperf_perf_json['variant']),
-                ('task', self.sysperf_perf_json['task_name']),
-                ('test', self.sysperf_perf_json['data']['results'][0]['name']),
-                ('order', i),
-                ('task_id', 'task {}'.format(i))]) for i in range(1, 3)]   # yapf: disable
-        mock_db = MagicMock(name='db', autospec=True)
-        mock_bulk = MagicMock(name='bulk', autospec=True)
-        mock_mongo_client.return_value.get_database.return_value = mock_db
-        mock_db.change_points.find.return_value = []
-        mock_db.change_points.bulk_write.return_value = mock_bulk
 
-        expected_data = {
-            'series': {
-                4: [1, 2]
-            },
-            'revisions': {
-                4: ['revision 1', 'revision 2']
-            },
-            'orders': {
-                4: [1, 2]
-            },
-            'create_times': {
-                4: [1, 2]
-            },
-            'task_ids': {
-                4: ['task 1', 'task 2']
+        with patch('pymongo.InsertOne') as mock_insert,\
+             patch('pymongo.DeleteMany') as mock_delete,\
+             patch('signal_processing.qhat.get_githashes_in_range_repo'),\
+             patch('signal_processing.qhat.QHat', autospec=True) as mock_qhat_class,\
+             patch('signal_processing.detect_changes.pymongo.MongoClient') as mock_mongo_client:
+
+            mock_db = MagicMock(name='db', autospec=True)
+            thread_level = '4'
+
+            if exception:
+                mock_delete.side_effect = [Exception('boom'), "DeleteMany"]
+                expected_inserts = [1, 2]
+                mock_db.change_points.find.return_value = expected_inserts
+            else:
+                mock_delete.return_value = "DeleteMany"
+                mock_db.change_points.find.return_value = []
+
+                expected_inserts = [
+                    OrderedDict([
+                        ('project', self.sysperf_perf_json['project_id']),
+                        ('variant', self.sysperf_perf_json['variant']),
+                        ('task', self.sysperf_perf_json['task_name']),
+                        ('test', self.sysperf_perf_json['data']['results'][0]['name']),
+                        ('thread_level', thread_level),
+                        ('order', i),
+                        ('task_id', 'task {}'.format(i)),
+                        ('version_id', 'version {}'.format(i))
+                    ]) for i in range(1, 3)]   # yapf: disable
+
+            mock_insert.side_effect = ["InsertOne 1", "InsertOne 2"]
+            mock_bulk = MagicMock(name='bulk', autospec=True)
+            mock_mongo_client.return_value.get_database.return_value = mock_db
+            mock_db.change_points.bulk_write.return_value = mock_bulk
+
+            size = 3
+            values = range(1, size + 1)
+            thread_level_results = {
+                'project': self.sysperf_perf_json['project_id'],
+                'variant': self.sysperf_perf_json['variant'],
+                'task': self.sysperf_perf_json['task_name'],
+                'test': self.sysperf_perf_json['data']['results'][0]['name'],
+                'thread_level': thread_level,
+                'size': size,
+                'series': values,
+                'revisions': ['revision {}'.format(i) for i in values],
+                'orders': values,
+                'create_times': values,
+                'task_ids': ['task {}'.format(i) for i in values],
+                'version_ids': ['version {}'.format(i) for i in values],
             }
-        }
 
-        mock_get_points.return_value = ['many_points', expected_query, expected_data]
-        mock_qhat = MagicMock(
-            name='qhat', autospec=True, change_points=[{
-                'order': 1
-            }, {
-                'order': 2
-            }])
-        mock_qhat_class.return_value = mock_qhat
+            mock_db.points.aggregate.return_value = [thread_level_results]
+            mock_qhat = MagicMock(
+                name='qhat', autospec=True, change_points=[{
+                    'order': 1
+                }, {
+                    'order': 2
+                }])
+            mock_qhat_class.return_value = mock_qhat
 
-        test = self.sysperf_perf_json['data']['results'][0]['name']
-        test_model = detect_changes.PointsModel(self.sysperf_perf_json, self.mongo_uri)
-        actual = test_model.compute_change_points(test, weighting=0.001)
-        thread_level = 4
-        expected_params = {
-            k: v[thread_level]
-            for k, v in expected_data.iteritems() if k != 'task_ids'
-        }
-        expected_params['thread_level'] = thread_level
-        expected_params['testname'] = test
-        mock_qhat_class.assert_called_once_with(
-            expected_params, pvalue=None, credentials=None, mongo_repo=None, weighting=0.001)
-
-        mock_delete.assert_called_once_with(expected_query)
-        mock_insert.assert_has_calls(
-            [call(expected_insert) for expected_insert in expected_inserts])
-        mock_db.change_points.bulk_write.assert_called_once_with(
-            ["DeleteMany", "InsertOne 1", "InsertOne 2"])
-        self.assertEqual(actual, ('many_points', 2))
-        mock_mongo_client.assert_called_once_with(self.mongo_uri)
-        mock_mongo_client.return_value.get_database.assert_called_once_with()
-        mock_db.change_points.find.assert_called_once_with(expected_query)
-
-    @patch('pymongo.InsertOne')
-    @patch('pymongo.DeleteMany')
-    @patch('signal_processing.qhat.get_githashes_in_range_repo')
-    @patch('signal_processing.qhat.QHat', autospec=True)
-    @patch('signal_processing.detect_changes.PointsModel.get_points', autospec=True)
-    @patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True)
-    def test_compute_change_points_rollback(self, mock_mongo_client, mock_get_points,
-                                            mock_qhat_class, mock_git, mock_delete, mock_insert):
-        # pylint: disable=too-many-locals
-        mock_delete.side_effect = [Exception('boom'), "DeleteMany"]
-        mock_insert.side_effect = ["InsertOne 1", "InsertOne 2"]
-        expected_query = OrderedDict(
-            [('project', self.sysperf_perf_json['project_id']),
-             ('variant', self.sysperf_perf_json['variant']),
-             ('task', self.sysperf_perf_json['task_name']),
-             ('test', self.sysperf_perf_json['data']['results'][0]['name'])])  # yapf: disable
-
-        mock_db = MagicMock(name='db', autospec=True)
-        mock_bulk = MagicMock(name='bulk', autospec=True)
-        mock_mongo_client.return_value.get_database.return_value = mock_db
-
-        before = [1, 2]
-        mock_db.change_points.find.return_value = before
-        mock_db.change_points.bulk_write.return_value = mock_bulk
-
-        expected_data = {
-            'series': {
-                4: [1, 2]
-            },
-            'revisions': {
-                4: ['revision 1', 'revision 2']
-            },
-            'orders': {
-                4: [1, 2]
-            },
-            'create_times': {
-                4: [1, 2]
-            },
-            'task_ids': {
-                4: ['task 1', 'task 2']
+            test_identifier = {
+                'project': self.sysperf_perf_json['project_id'],
+                'variant': self.sysperf_perf_json['variant'],
+                'task': self.sysperf_perf_json['task_name'],
+                'test': self.sysperf_perf_json['data']['results'][0]['name'],
+                'thread_level': thread_level
             }
-        }
 
-        mock_get_points.return_value = ['many_points', expected_query, expected_data]
-        mock_qhat = MagicMock(
-            name='qhat', autospec=True, change_points=[{
-                'order': 1
-            }, {
-                'order': 2
-            }])
-        mock_qhat_class.return_value = mock_qhat
+            test_model = detect_changes.PointsModel(self.mongo_uri)
+            if exception:
+                with self.assertRaises(Exception) as context:
+                    test_model.compute_change_points(test_identifier, weighting=0.001)
+                self.assertTrue('boom' in context.exception)
 
-        test = self.sysperf_perf_json['data']['results'][0]['name']
-        test_model = detect_changes.PointsModel(self.sysperf_perf_json, self.mongo_uri)
-        with self.assertRaises(Exception) as context:
-            test_model.compute_change_points(test, weighting=0.001)
-        self.assertTrue('boom' in context.exception)
+                # delete is called twice in this case
+                mock_delete.assert_has_calls([call(test_identifier), call(test_identifier)])
+            else:
+                actual_size, num_change_points = test_model.compute_change_points(
+                    test_identifier, weighting=0.001)
 
-        thread_level = 4
-        expected_params = {
-            k: v[thread_level]
-            for k, v in expected_data.iteritems() if k != 'task_ids'
-        }
-        expected_params['thread_level'] = thread_level
-        expected_params['testname'] = test
-        mock_qhat_class.assert_called_once_with(
-            expected_params, pvalue=None, credentials=None, mongo_repo=None, weighting=0.001)
+                self.assertEqual(actual_size, size)
+                self.assertEqual(num_change_points, 2)
 
-        # delete is called twice in this case
-        mock_delete.assert_has_calls([call(expected_query), call(expected_query)])
-        mock_insert.assert_has_calls([call(expected_insert) for expected_insert in before])
-        mock_db.change_points.bulk_write.assert_called_once_with(
-            ["DeleteMany", "InsertOne 1", "InsertOne 2"])
-        mock_mongo_client.assert_called_once_with(self.mongo_uri)
-        mock_mongo_client.return_value.get_database.assert_called_once_with()
-        mock_insert.assert_has_calls([call(1), call(2)])
+                mock_delete.assert_called_once_with(test_identifier)
 
-    @patch('pymongo.InsertOne')
-    @patch('pymongo.DeleteMany')
-    @patch('signal_processing.qhat.get_githashes_in_range_repo')
-    @patch('signal_processing.qhat.QHat', autospec=True)
-    @patch('signal_processing.detect_changes.PointsModel.get_points', autospec=True)
-    @patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True)
-    def test_compute_change_points_thread_level(self, mock_mongo_client, mock_get_points,
-                                                mock_qhat_class, mock_git, mock_delete,
-                                                mock_insert):
-        """
-        Test compute_change_points when a point has multiple thread levels.
-        """
-        mock_delete.return_value = "DeleteMany"
-        mock_insert.side_effects = ["InsertOne 1"]
-
-        expected_query = OrderedDict(
-            [('project', self.sysperf_perf_json['project_id']),
-             ('variant', self.sysperf_perf_json['variant']),
-             ('task', self.sysperf_perf_json['task_name']),
-             ('test', self.sysperf_perf_json['data']['results'][0]['name'])])  # yapf: disable
-        mock_get_points.return_value = [
-            'many_points', expected_query, {
-                'series': OrderedDict([(4, [1, 2, 3]), (16, [3])]),
-                'revisions': {
-                    4: ['abc', 'bcd', 'cde'],
-                    16: ['cde']
-                },
-                'orders': {
-                    4: [0, 1, 2],
-                    16: [2]
-                },
-                'create_times': {
-                    4: [1, 2, 3],
-                    16: [3]
-                },
-                'task_ids': {
-                    4: ['task 1', 'task 2', 'task 3'],
-                    16: ['task 3']
-                }
-            }
-        ]
-        test = self.sysperf_perf_json['data']['results'][0]['name']
-        qhat_calls = [
-            call(
-                {
-                    'series': [1, 2, 3],
-                    'revisions': ['abc', 'bcd', 'cde'],
-                    'orders': [0, 1, 2],
-                    'create_times': [1, 2, 3],
-                    'testname': test,
-                    'thread_level': 4
-                },
+            mock_db.change_points.find.assert_called_once_with(test_identifier)
+            mock_insert.assert_has_calls(
+                [call(expected_insert) for expected_insert in expected_inserts])
+            mock_mongo_client.return_value.get_database.assert_called_once_with()
+            mock_mongo_client.assert_called_once_with(self.mongo_uri)
+            mock_db.change_points.bulk_write.assert_called_once_with(
+                ["DeleteMany", "InsertOne 1", "InsertOne 2"])
+            mock_qhat_class.assert_called_once_with(
+                thread_level_results,
                 pvalue=None,
-                weighting=ANY,
-                mongo_repo=ANY,
-                credentials=ANY),
-            call(
-                {
-                    'series': [3],
-                    'revisions': ['cde'],
-                    'orders': [2],
-                    'create_times': [3],
-                    'testname': test,
-                    'thread_level': 16
-                },
-                pvalue=None,
-                weighting=ANY,
-                mongo_repo=ANY,
-                credentials=ANY),
-        ]
+                credentials=None,
+                mongo_repo=None,
+                weighting=0.001)
 
-        mock_qhats = [
-            MagicMock(name='qhat tl 4', autospec=True, change_points=[{
-                'order': 0
-            }]),
-            MagicMock(name='qhat tl 16', autospec=True, change_points=[{
-                'order': 2
-            }])
-        ]
-        mock_qhat_class.side_effect = mock_qhats
+    def test_compute_change_points(self):
+        """ test compute change points. """
+        self._test_compute_change_points()
 
-        test_model = detect_changes.PointsModel(self.sysperf_perf_json, self.mongo_uri)
-        test_model.compute_change_points(test, weighting=0.001)
-        mock_qhat_class.assert_has_calls(qhat_calls)
+    def test_compute_change_points_rollback(self):
+        self._test_compute_change_points(True)
 
     def _test_detect_changes(self, mock_evg_client, mock_etl_helpers, mock_driver, is_patch=False):
         """

@@ -39,7 +39,8 @@ class TestCompute(unittest.TestCase):
             'project': 'project',
             'variant': 'variant_name',
             'task': 'task',
-            'test': 'test'
+            'test': 'test',
+            'thread_level': '1',
         }
         credentials = {'credentials': 'credentials'}
         mock_config = MagicMock(
@@ -53,7 +54,7 @@ class TestCompute(unittest.TestCase):
         mock_model_instance.compute_change_points.return_value = (1, [1])
         compute_change_points(test_identifier, .1, mock_config)
 
-        perf_json = {'project_id': 'project', 'variant': 'variant_name', 'task_name': 'task'}
         mock_model.assert_called_once_with(
-            perf_json, 'mongo_uri', mongo_repo='mongo_repo', credentials=credentials)
-        mock_model_instance.compute_change_points.assert_called_once_with('test', weighting=.1)
+            'mongo_uri', mongo_repo='mongo_repo', credentials=credentials)
+        mock_model_instance.compute_change_points.assert_called_once_with(
+            test_identifier, weighting=.1)

@@ -417,23 +417,50 @@ class TestItemShowFunc(unittest.TestCase):
 
     def test_dict(self):
         """ Test dict."""
-        item = {'project': 'project', 'variant': 'variant', 'task': 'task'}
-        expected = 'project/variant/task'
+        item = {
+            'project': 'project',
+            'variant': 'variant',
+            'task': 'task',
+            'thread_level': 'thread_level'
+        }
+        expected = 'thread_level/task/variant/project'
         actual = helpers.show_item_function(item)
         self.assertEqual(expected, actual)
 
     def test_short(self):
         """ Test short."""
-        item = {'project': 'project', 'variant': 'variant', 'task': 'task'}
-        expected = 'variant/task'
-        actual = helpers.show_item_function(item, info_width=24)
+        item = {
+            'project': 'project',
+            'variant': 'variant',
+            'task': 'task',
+            'thread_level': 'thread_level'
+        }
+        expected = 'thread_level/task/variant'
+        actual = helpers.show_item_function(item, info_width=42)
         self.assertEqual(expected, actual)
 
     def test_shorter(self):
         """ Test shorter."""
-        item = {'project': 'project', 'variant': 'variant', 'task': 'task'}
-        expected = 'task'
-        actual = helpers.show_item_function(item, info_width=16)
+        item = {
+            'project': 'project',
+            'variant': 'variant',
+            'task': 'task',
+            'thread_level': 'thread_level'
+        }
+        expected = 'thread_level/task'
+        actual = helpers.show_item_function(item, info_width=32)
+        self.assertEqual(expected, actual)
+
+    def test_shortest(self):
+        """ Test shorter."""
+        item = {
+            'project': 'project',
+            'variant': 'variant',
+            'task': 'task',
+            'thread_level': 'thread_level'
+        }
+        expected = 'thread_level'
+        actual = helpers.show_item_function(item, info_width=22)
         self.assertEqual(expected, actual)
 
     def test_job(self):

@@ -567,11 +567,17 @@ def show_item_function(task_identifier, label_width=22, bar_width=34, info_width
 
     if task_identifier and isinstance(task_identifier, dict):
         available = info_width - padding
-        info = '/'.join(task_identifier[k] for k in ['project', 'variant', 'task'])
-        if len(info) > available:
-            info = '/'.join(task_identifier[k] for k in ['variant', 'task'])
-        if len(info) > available:
-            info = '/'.join(task_identifier[k] for k in ['task'])
+        parts = [
+            task_identifier[k] for k in ['project', 'variant', 'task', 'test', 'thread_level']
+            if k in task_identifier and task_identifier[k] is not None
+        ]
+        parts.reverse()
+        info = '/'.join(parts)
+        while len(info) > available:
+            parts.pop()
+            info = '/'.join(parts)
+            if len(parts) == 1:
+                break
         return info
     return None
 

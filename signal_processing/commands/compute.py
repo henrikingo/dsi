@@ -1,7 +1,6 @@
 """
 Functionality to compute / recompute change points.
 """
-from collections import OrderedDict
 
 import structlog
 
@@ -25,16 +24,13 @@ def compute_change_points(test_identifier, weighting, command_config):
 
     points_count = None
     change_points = None
-    perf_json = OrderedDict([('project_id', test_identifier['project']),
-                             ('variant', test_identifier['variant']),
-                             ('task_name', test_identifier['task'])]) # yapf: disable
     if not command_config.dry_run:
         mongo_repo = command_config.mongo_repo
         credentials = command_config.credentials
         model = PointsModel(
-            perf_json, command_config.mongo_uri, mongo_repo=mongo_repo, credentials=credentials)
-        test_name = test_identifier['test']
-        points_count, change_points = model.compute_change_points(test_name, weighting=weighting)
+            command_config.mongo_uri, mongo_repo=mongo_repo, credentials=credentials)
+        points_count, change_points = model.compute_change_points(
+            test_identifier, weighting=weighting)
         LOG.info(
             "compute",
             test_identifier=test_identifier,

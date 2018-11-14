@@ -175,17 +175,58 @@ def extract_test_identifiers(perf_json):
     } for test in extract_tests(perf_json)]
 
 
+def generate_thread_levels(test_identifier, points_collection):
+    """
+    Given a test identifier of project / variant / task and test, get the thread levels from
+    the points collection.
+
+    :param dict test_identifier: The project / variant / task and test.
+    :param pymongo.Collection points_collection: The points collection ref.
+    """
+
+    pipeline = [{
+        '$match': test_identifier
+    }, {
+        '$unwind': '$results'
+    }, {
+        '$group': {
+            '_id': {
+                'project': '$project',
+                'variant': '$variant',
+                'task': '$task',
+                'test': '$test',
+                'thread_level': '$results.thread_level'
+            }
+        }
+    }, {
+        '$project': {
+            '_id': 0,
+            'project': '$_id.project',
+            'variant': '$_id.variant',
+            'task': '$_id.task',
+            'test': '$_id.test',
+            'thread_level': '$_id.thread_level'
+        }
+    }]
+    for identifier in points_collection.aggregate(pipeline):
+        yield identifier
+
+
 def create_descriptor(perf_json, test=None):
     """
-    Print a description of the relevant test.
+    Create a description for the relevant test.
 
     :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
     :param str test: The name of the test.
     """
-    return "{}/{}/{}/{}".format(perf_json['project_id'] if 'project_id' in perf_json else
-                                perf_json['project'], perf_json['variant'], perf_json['task_name']
-                                if 'task_name' in perf_json else perf_json['task'], test
-                                if test is not None else perf_json['test'])
+    parts = []
+    parts.append(perf_json['project_id'] if 'project_id' in perf_json else perf_json['project'])
+    parts.append(perf_json['variant'])
+    parts.append(perf_json['task_name'] if 'task_name' in perf_json else perf_json['task'])
+    parts.append(test if test is not None else perf_json['test'])
+    if 'thread_level' in perf_json:
+        parts.append(perf_json['thread_level'])
+    return '/'.join(parts)
 
 
 def redact_url(url):

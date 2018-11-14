@@ -4,7 +4,6 @@ Functionality to visualize change points.
 """
 import functools
 import json
-from collections import OrderedDict
 
 import structlog
 from scipy import stats, signal
@@ -311,12 +310,13 @@ def plot_qhat_values(qhat,
     return qhat_lines
 
 
-def plot(result, sigma, filter_name="butter", show_qhat=True):
+def plot(result, change_points, sigma, filter_name="butter", show_qhat=True):
     # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     """
     Plot performance and change point data.
 
     :param dict result: The performance data set.
+    :param list(dict) change_points: A list of change points for the performance data.
     :param float sigma: The number of standard deviations to render in bounds around the lines.
     :param str filter_name: The filter to apply.
     """
@@ -327,7 +327,6 @@ def plot(result, sigma, filter_name="butter", show_qhat=True):
     series = np.array(result['series'], dtype=np.float64)
     revisions = result['revisions']
     create_times = result['create_times']
-    change_points = result['change_points']
 
     labeled_items = {}
     line_labeled_items = []
@@ -476,8 +475,7 @@ def plot(result, sigma, filter_name="butter", show_qhat=True):
     if change_points:
         label = "change points"
         change_points_indexes = [
-            revisions.index(change_point['suspect_revision'])
-            for change_point in result['change_points']
+            revisions.index(change_point['suspect_revision']) for change_point in change_points
         ]
         change_points_scatter = axis.scatter(
             change_points_indexes, [series[index] for index in change_points_indexes],
@@ -555,46 +553,12 @@ def visualize(test_identifier,
     :param bool only_change_points: Skip plots for series with no change points if set to True.
     :yield: The plot and thread level
     """
-    project = test_identifier['project']
-    variant = test_identifier['variant']
-    task = test_identifier['task']
-    test = test_identifier['test']
+    LOG.debug('db.change_points.find(%s).pretty()', json.dumps(test_identifier))
 
-    qry = {'project': project, 'variant': variant, 'task': task, 'test': test}
-
-    LOG.debug('db.change_points.find(%s).pretty()', json.dumps(qry))
-    perf_json = OrderedDict([('project_id', project), ('variant', variant), ('task_name', task)])
-
-    model = PointsModel(perf_json, command_config.mongo_uri)
-    _, query, points = model.get_points(test)
-    series = points['series']
-    revisions = points['revisions']
-    orders = points['orders']
-    create_times = points['create_times']
-
-    thread_levels = series.keys()
-    thread_levels.sort(key=int)
-    for thread_level in thread_levels:
-        query = OrderedDict([('project', test_identifier['project']),
-                             ('variant', test_identifier['variant']),
-                             ('task', test_identifier['task']),
-                             ('test', test_identifier['test']),
-                             ('thread_level', thread_level)]) #yapf: disable
-
-        change_points = list(
-            command_config.change_points.find(query).sort([('order', pymongo.ASCENDING)]))
-        if not only_change_points or change_points:
-            LOG.debug("found change points", change_points=change_points)
-            result = OrderedDict([('project', test_identifier['project']),
-                                  ('variant', test_identifier['variant']),
-                                  ('task', test_identifier['task']),
-                                  ('test', test_identifier['test']),
-                                  ('thread_level', thread_level),
-                                  ('series', series[thread_level]),
-                                  ('revisions', revisions[thread_level]),
-                                  ('orders', orders[thread_level]),
-                                  ('create_times', create_times[thread_level]),
-                                  ('change_points', change_points)
-                                 ]) #yapf: disable
-
-            yield plot(result, sigma, filter_name=filter_name, show_qhat=show_qhat), thread_level
+    model = PointsModel(command_config.mongo_uri)
+    result = model.get_points(test_identifier)
+    change_points = list(
+        command_config.change_points.find(test_identifier).sort([('order', pymongo.ASCENDING)]))
+    if not only_change_points or change_points:
+        LOG.debug("found change points", change_points=change_points)
+        yield plot(result, change_points, sigma, filter_name=filter_name, show_qhat=show_qhat)
