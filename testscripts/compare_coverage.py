@@ -22,6 +22,17 @@ import requests
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/analysis")
 from evergreen import evergreen_client
 
+
+def _does_url_exist(url):
+    """
+    Check if the url is accessible.
+
+    :return: True if _baseline_url is accessible.
+    """
+    res = requests.head(url)
+    return res.ok
+
+
 class CompareCoverage(object):
     """
     Compare a new coverage.xml file against a previous one.
@@ -69,9 +80,13 @@ class CompareCoverage(object):
                 build = history_obj['builds'].keys()[0]
                 domain = "https://s3.amazonaws.com"
 
-                self._baseline_url = "{}/mciuploads/dsi/{}/{}/{}/coverage.xml".format(
+                potential_url = "{}/mciuploads/dsi/{}/{}/{}/coverage.xml".format(
                     domain, build, revision, version_id)
 
+                if not _does_url_exist(potential_url):
+                    continue
+
+                self._baseline_url = potential_url
                 return self._baseline_url
 
         raise evergreen_client.EvergreenError("Did not find a completed task in Evergreen dsi history!")
