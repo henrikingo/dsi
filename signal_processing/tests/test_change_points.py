@@ -699,6 +699,7 @@ class TestCompute(ClickTest):
                 mock.call(
                     compute.compute_change_points,
                     arguments=(test_identifier, .001, expected_config),
+                    kwargs=dict(min_points=500),
                     identifier=test_identifier) for test_identifier in test_identifiers
             ])
 

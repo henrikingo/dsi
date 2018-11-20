@@ -18,7 +18,7 @@ class TestCompare(unittest.TestCase):
     Test suite for compare.
     """
 
-    @patch('signal_processing.commands.compare.PointsModel', autospec=True)
+    @patch('signal_processing.commands.compare.PointsModel')
     def test_attributes(self, mock_model):
         """ Test compare."""
         test_identifier = {
@@ -42,7 +42,7 @@ class TestCompare(unittest.TestCase):
             'create_times': create_times,
             'task_ids': task_ids,
         }
-        compare(test_identifier, mock_config, weighting=DEFAULT_WEIGHTING)
+        compare(test_identifier, 1, mock_config, weighting=DEFAULT_WEIGHTING)
 
 
 class TestBestFit(unittest.TestCase):

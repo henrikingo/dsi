@@ -6,6 +6,8 @@ import os
 import time
 import unittest
 from collections import OrderedDict, defaultdict
+
+import pymongo
 from mock import ANY, MagicMock, call, patch
 
 import signal_processing.detect_changes as detect_changes
@@ -32,50 +34,61 @@ class TestDetectChangesDriver(unittest.TestCase):
     def test_constructor(self, mock_cpu_count):
         mock_cpu_count.return_value = 101
         test_driver = detect_changes.DetectChangesDriver(self.sysperf_perf_json, self.mongo_uri,
-                                                         0.001, 'mongo_repo')
+                                                         None, 0.001, 'mongo_repo')
         self.assertEquals(test_driver.pool_size, 200)
 
     @patch('multiprocessing.cpu_count', autospec=True)
     def test_constructor_pool_size(self, mock_cpu_count):
         test_driver = detect_changes.DetectChangesDriver(
-            self.sysperf_perf_json, self.mongo_uri, 0.001, 'mongo_repo', pool_size=99)
+            self.sysperf_perf_json, self.mongo_uri, None, 0.001, 'mongo_repo', pool_size=99)
         self.assertEquals(test_driver.pool_size, 99)
 
-    @patch('multiprocessing.cpu_count', autospec=True)
-    @patch('signal_processing.commands.jobs.Job', autospec=True)
-    @patch('signal_processing.commands.jobs.process_jobs', autospec=True)
-    @patch('signal_processing.detect_changes.PointsModel', autospec=True)
-    def test_run(self, mock_PointsModel, mock_process_jobs, mock_job_cls, mock_cpu_count):
-        mock_job = MagicMock(name='mock_job')
-        mock_job_cls.return_value = mock_job
+    def _test_run(self, min_points=None):
+        """ test run. """
 
-        mock_process_jobs.return_value = ()
-        mock_cpu_count.return_value = 101
-        mock_model = mock_PointsModel.return_value
+        with patch('multiprocessing.cpu_count', autospec=True) as mock_cpu_count, \
+             patch('signal_processing.commands.jobs.Job', autospec=True) as mock_job_cls,\
+             patch('signal_processing.commands.jobs.process_jobs', autospec=True) as mock_process_jobs,\
+             patch('signal_processing.detect_changes.PointsModel', autospec=True) as mock_PointsModel:
 
-        test_identifiers = ({
-            'project': self.sysperf_perf_json['project_id'],
-            'variant': self.sysperf_perf_json['variant'],
-            'task': self.sysperf_perf_json['task_name'],
-            'test': test,
-            'thread_level': '1'
-        } for test in (u'mixed_insert', u'mixed_insert_bad', u'mixed_findOne'))
+            mock_job = MagicMock(name='mock_job')
+            mock_job_cls.return_value = mock_job
 
-        mock_model.db.points.aggregate.return_value = test_identifiers
-        mock_model.compute_change_points.return_value = (1, 2, 3)
-        test_driver = detect_changes.DetectChangesDriver(self.sysperf_perf_json, self.mongo_uri,
-                                                         0.001, 'mongo_repo')
-        test_driver.run()
-        mock_PointsModel.assert_called_once_with(
-            self.mongo_uri, mongo_repo='mongo_repo', credentials=None)
+            mock_process_jobs.return_value = ()
+            mock_cpu_count.return_value = 101
+            mock_model = mock_PointsModel.return_value
 
-        calls = [
-            call(
-                mock_model.compute_change_points,
-                arguments=(test_identifier, 0.001),
-                identifier=test_identifier) for test_identifier in test_identifiers
-        ]
-        mock_job_cls.assert_has_calls(calls)
+            test_identifiers = [{
+                'project': self.sysperf_perf_json['project_id'],
+                'variant': self.sysperf_perf_json['variant'],
+                'task': self.sysperf_perf_json['task_name'],
+                'test': test,
+                'thread_level': '1'
+            } for test in (u'mixed_insert', u'mixed_insert_bad', u'mixed_findOne')]
+
+            mock_model.db.points.aggregate.return_value = test_identifiers
+            mock_model.compute_change_points.return_value = (1, 2, 3)
+            test_driver = detect_changes.DetectChangesDriver(
+                self.sysperf_perf_json, self.mongo_uri, 0.001, 'mongo_repo', min_points=min_points)
+            test_driver.run()
+            mock_PointsModel.assert_called_once_with(
+                self.mongo_uri, min_points, mongo_repo='mongo_repo', credentials=None)
+
+            calls = [
+                call(
+                    mock_model.compute_change_points,
+                    arguments=(test_identifier, 0.001),
+                    identifier=test_identifier) for test_identifier in test_identifiers
+            ]
+            mock_job_cls.assert_has_calls(calls)
+
+    def test_run_no_min_points(self):
+        """ test run no min_points. """
+        self._test_run()
+
+    def test_run_with_min_points(self):
+        """ test run with min_points. """
+        self._test_run(min_points=750)
 
 
 def copy_and_update(x, **kwargs):
@@ -84,9 +97,321 @@ def copy_and_update(x, **kwargs):
     return z
 
 
-class TestPointsModel(unittest.TestCase):
+class TestGetPoints(unittest.TestCase):
     """
-    Test suite for the PointsModel class.
+    Test suite for the PointsModel.get_points.
+    """
+
+    def setUp(self):
+        self.mongo_uri = 'mongodb+srv://fake@dummy-server.mongodb.net/perf'
+        self.sysperf_perf_json = FIXTURE_FILES.load_json_file('sysperf_perf.json')
+        self.sysperf_points = FIXTURE_FILES.load_json_file('sysperf_points.json')
+
+    def _test_get_points(self, min_points=None, expected=None, order=101):
+        with patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True) \
+                as mock_mongo_client:
+            test_identifier = {
+                'project': self.sysperf_perf_json['project_id'],
+                'variant': self.sysperf_perf_json['variant'],
+                'task': self.sysperf_perf_json['task_name'],
+                'test': 'mixed_insert',
+                'thread_level': '1'
+            }
+
+            mock_db = MagicMock(name='db', autospec=True)
+            mock_cursor = MagicMock(name='cursor', autospec=True)
+            mock_mongo_client.return_value.get_database.return_value = mock_db
+            if expected is None:
+                expected = {key: [] for key in detect_changes.ARRAY_FIELDS}
+            mock_db.points.aggregate.return_value = [expected]
+            mock_cursor.return_value = self.sysperf_points
+            test_model = detect_changes.PointsModel(self.mongo_uri, min_points=min_points)
+
+            self.assertEqual(expected, test_model.get_points(test_identifier, order))
+            calls = mock_db.points.aggregate.call_args_list
+            self.assertTrue(len(calls) == 1)
+
+            self.assertTrue(len(calls[0][0][0]) == 6)
+
+            pipeline = calls[0][0][0]
+            first = pipeline[0]
+            self.assertIn('$match', first)
+            match = first['$match']
+
+            if order is not None:
+                self.assertIn('order', match)
+                self.assertEquals(match['order'], {'$gt': order})
+            else:
+                self.assertNotIn('order', match)
+
+    def test_get_points(self):
+        """ test get points. """
+        self._test_get_points()
+
+    def test_get_points_no_order(self):
+        """ test get points no order. """
+        self._test_get_points(order=None)
+
+    def test_get_points_assertion(self):
+        """ test get point asserts invalid sizes. """
+        expected = {
+            key: range(10) if key != 'create_times' else range(5)
+            for key in detect_changes.ARRAY_FIELDS
+        }
+
+        with self.assertRaisesRegexp(Exception, 'All array sizes were not equal:'):
+            self._test_get_points(expected=expected)
+
+    def test_get_points_custom_min_points(self):
+        """
+        Test that min_points is called on cursor when specified.
+        """
+        self._test_get_points(min_points=10)
+
+
+class TestGetClosestOrderNoChangePoints(unittest.TestCase):
+    """
+    Test suite for the PointsModel._get_closest_order_no_change_points.
+    """
+
+    def setUp(self):
+        self.mongo_uri = 'mongodb+srv://fake@dummy-server.mongodb.net/perf'
+        self.test_identifier = {'thread_level': '1'}
+
+    def _test_gte_zero_none(self, min_points=None):
+        with patch('signal_processing.detect_changes.pymongo.MongoClient') as mock_mongo_client:
+            mock_change_points = MagicMock(name='change_points', autospec=True)
+            mock_db = MagicMock(name='db', autospec=True, change_points=mock_change_points)
+
+            mock_mongo_client.return_value.get_database.return_value = mock_db
+            test_model = detect_changes.PointsModel(self.mongo_uri, min_points=min_points)
+            self.assertIsNone(test_model._get_closest_order_no_change_points(self.test_identifier))
+
+    def test_with_min_points_none(self):
+        self._test_gte_zero_none()
+
+    def test_with_min_points_0(self):
+        self._test_gte_zero_none(min_points=0)
+
+    def test_with_min_points_gt_0(self):
+        self._test_gte_zero_none(min_points=12)
+
+    def _test_lt_0(self, min_points=-101, count=0):
+        with patch('signal_processing.detect_changes.pymongo.MongoClient') as mock_mongo_client:
+            mock_points = MagicMock(name='points', autospec=True)
+            mock_db = MagicMock(name='db', autospec=True, points=mock_points)
+
+            mock_mongo_client.return_value.get_database.return_value = mock_db
+
+            mock_points.count.return_value = count
+
+            test_model = detect_changes.PointsModel(self.mongo_uri, min_points=min_points)
+            self.assertIsNone(test_model._get_closest_order_no_change_points(self.test_identifier))
+            mock_points.count.assert_called_once_with({'results.thread_level': '1'})
+
+    def test_with_min_points_lt_0(self):
+        self._test_lt_0()
+
+    def test_with_min_points_lt_0_gt_count(self):
+        self._test_lt_0(min_points=-101, count=10)
+
+    def _test_count_gt_min_points(self, min_points=-101, count=200):
+        with patch('signal_processing.detect_changes.pymongo.MongoClient') as mock_mongo_client:
+            mock_points = MagicMock(name='points', autospec=True)
+            mock_db = MagicMock(name='db', autospec=True, points=mock_points)
+
+            mock_mongo_client.return_value.get_database.return_value = mock_db
+
+            mock_points.count.return_value = count
+            order = count + 1
+            return_value = [{'order': order}]
+            mock_points.find.return_value.sort.return_value.skip.return_value.limit.return_value = return_value
+
+            test_model = detect_changes.PointsModel(self.mongo_uri, min_points=min_points)
+            self.assertEquals(order,
+                              test_model._get_closest_order_no_change_points(self.test_identifier))
+            mock_points.count.assert_called_once_with({'results.thread_level': '1'})
+            chained = call({'results.thread_level': '1'}, {'order': 1}).\
+                sort('order', pymongo.DESCENDING).\
+                skip(abs(min_points) - 1).\
+                limit(1)
+            self.assertEquals(mock_points.find.mock_calls, chained.call_list())
+
+    def test_count_gt_min_points(self):
+        self._test_count_gt_min_points()
+
+
+class TestGetClosestOrderWithChangePoints(unittest.TestCase):
+    """
+    Test suite for the PointsModel._get_closest_order_for_change_points.
+    """
+
+    def setUp(self):
+        self.mongo_uri = 'mongodb+srv://fake@dummy-server.mongodb.net/perf'
+        boundaries = FIXTURE_FILES.load_json_file('boundaries.json')
+        self.buckets = boundaries['buckets']
+        self.change_points = boundaries['change_points']
+
+        self.change_point_orders = [change_point['order'] for change_point in self.change_points]
+
+    def _test_change_point(self, min_points=1, expected=14117):
+        """ test helper first change point expected. """
+
+        # boundaries = db.change_points.find(cp_query).sort({order: 1}).toArray().map(x= > x.order)
+
+        with patch('signal_processing.detect_changes.pymongo.MongoClient') as mock_mongo_client:
+            mock_change_points = MagicMock(name='change_points', autospec=True)
+            mock_points = MagicMock(name='points', autospec=True)
+            mock_db = MagicMock(
+                name='db', autospec=True, points=mock_points, change_points=mock_change_points)
+
+            mock_mongo_client.return_value.get_database.return_value = mock_db
+
+            mock_change_points.find.return_value.sort.return_value = self.change_points
+            mock_points.aggregate.return_value = self.buckets
+
+            test_model = detect_changes.PointsModel(self.mongo_uri, min_points=min_points)
+
+            result = test_model._get_closest_order_for_change_points(self.change_point_orders, {
+                'thread_level': '1'
+            })
+            self.assertEquals(expected, result)
+
+            mock_points.aggregate.assert_called_once_with([{
+                '$match': {
+                    'results.thread_level': '1'
+                }
+            }, {
+                '$bucket': {
+                    'groupBy': "$order",
+                    'boundaries': ANY,
+                    'default': "Other",
+                    'output': {
+                        'count': {
+                            '$sum': 1
+                        }
+                    }
+                }
+            }])
+
+    def test_1(self):
+        """ Test min_points 1 returns first change point. """
+        self._test_change_point()
+
+    def test_lt_first(self):
+        """ Test min_points less than first change point returns first. """
+        self._test_change_point(min_points=292)
+
+    def test_eq_first(self):
+        """ Test min_points less than first change point returns first. """
+        self._test_change_point(min_points=293)
+
+    def test_lt_second(self):
+        """ Test lt second return first. """
+        self._test_change_point(min_points=294, expected=14033)
+
+    def test_lt_last_changepoint(self):
+        """ Test get_closest_order at actual last change point. """
+        self._test_change_point(min_points=1286, expected=11287)
+
+    def test_eq_last_changepoint(self):
+        """ Test get_closest_order at actual last change point. """
+        self._test_change_point(min_points=1287, expected=11287)
+
+    def test_gt_last_changepoint(self):
+        """ Test get_closest_order at actual last change point. """
+        self._test_change_point(min_points=1288, expected=None)
+
+    def test_eq_end(self):
+        """ Test at end boundary returns None. """
+        self._test_change_point(min_points=1360, expected=None)
+
+    def test_beyond_end(self):
+        """ Test beyond end boundary returns None. """
+        self._test_change_point(min_points=100000, expected=None)
+
+
+class TestGetClosestOrder(unittest.TestCase):
+    """
+    Test suite for the PointsModel.get_closest_order.
+    """
+
+    def setUp(self):
+        self.mongo_uri = 'mongodb+srv://fake@dummy-server.mongodb.net/perf'
+        boundaries = FIXTURE_FILES.load_json_file('boundaries.json')
+        self.buckets = boundaries['buckets']
+        self.change_points = boundaries['change_points']
+
+        self.change_point_orders = [change_point['order'] for change_point in self.change_points]
+
+    def _test_get_closest_order_min_points_none(self, min_points_is_none=True):
+        with patch('signal_processing.detect_changes.pymongo.MongoClient') as mock_mongo_client:
+            mock_change_points = MagicMock(name='change_points', autospec=True)
+            mock_db = MagicMock(name='db', autospec=True, change_points=mock_change_points)
+
+            mock_mongo_client.return_value.get_database.return_value = mock_db
+            min_points = None if min_points_is_none else 0
+            test_model = detect_changes.PointsModel(self.mongo_uri, min_points=min_points)
+            self.assertIsNone(test_model.get_closest_order({}))
+            mock_change_points.find.assert_not_called()
+
+    def test_with_min_points_none(self):
+        self._test_get_closest_order_min_points_none()
+
+    def test_with_min_points_0(self):
+        self._test_get_closest_order_min_points_none(False)
+
+    def _test_get_closest_order(self, no_change_points=True):
+        with patch('signal_processing.detect_changes.pymongo.MongoClient') as mock_mongo_client:
+            mock_change_points = MagicMock(name='change_points', autospec=True)
+            mock_points = MagicMock(name='points', autospec=True)
+            mock_db = MagicMock(
+                name='db', autospec=True, points=mock_points, change_points=mock_change_points)
+
+            mock_mongo_client.return_value.get_database.return_value = mock_db
+
+            mock_points.count.return_value = 0
+
+            if no_change_points:
+                mock_change_points.find.return_value.sort.return_value = []
+            else:
+                mock_change_points.find.return_value.sort.return_value = self.change_points
+
+            min_points = 101
+            test_model = detect_changes.PointsModel(self.mongo_uri, min_points=min_points)
+            mock_change_points = MagicMock(name='_get_closest_order_for_change_points')
+            mock_change_points.return_value = '_get_closest_order_for_change_points'
+            test_model._get_closest_order_for_change_points = mock_change_points
+
+            mock_no_change_points = MagicMock(name='_get_closest_order_no_change_points')
+            test_model._get_closest_order_no_change_points = mock_no_change_points
+            mock_no_change_points.return_value = '_get_closest_order_no_change_points'
+
+            if no_change_points:
+                expected = '_get_closest_order_no_change_points'
+            else:
+                expected = '_get_closest_order_for_change_points'
+            test_identifier = {'thread_level': '1'}
+            self.assertEquals(expected, test_model.get_closest_order(test_identifier))
+
+            if no_change_points:
+                mock_change_points.assert_not_called()
+                mock_no_change_points.assert_called_once_with(test_identifier)
+            else:
+                mock_change_points.assert_called_once_with(self.change_point_orders,
+                                                           test_identifier)
+                mock_no_change_points.assert_not_called()
+
+    def test_with_no_change_points(self):
+        self._test_get_closest_order()
+
+    def test_with_change_points(self):
+        self._test_get_closest_order(True)
+
+
+class TestComputeChangePoints(unittest.TestCase):
+    """
+    Test suite for the PointsModel.compute_change_points class.
     """
 
     def setUp(self):
@@ -120,61 +445,15 @@ class TestPointsModel(unittest.TestCase):
                 expected_num_points += 1
         return expected_num_points, expected_points
 
-    def _test_get_points(self, limit=None, expected=None):
-        with patch('signal_processing.detect_changes.pymongo.MongoClient', autospec=True) \
-                as mock_mongo_client:
-            test_identifier = {
-                'project': self.sysperf_perf_json['project_id'],
-                'variant': self.sysperf_perf_json['variant'],
-                'task': self.sysperf_perf_json['task_name'],
-                'test': 'mixed_insert',
-                'thread_level': '1'
-            }
-
-            mock_db = MagicMock(name='db', autospec=True)
-            mock_cursor = MagicMock(name='cursor', autospec=True)
-            mock_mongo_client.return_value.get_database.return_value = mock_db
-            if expected is None:
-                expected = {key: [] for key in detect_changes.ARRAY_FIELDS}
-            mock_db.points.aggregate.return_value = [expected]
-            mock_cursor.return_value = self.sysperf_points
-            test_model = detect_changes.PointsModel(self.mongo_uri, limit=limit)
-
-            self.assertEqual(expected, test_model.get_points(test_identifier))
-            calls = mock_db.points.aggregate.call_args_list
-            self.assertTrue(len(calls) == 1)
-            pipeline_stages = 6
-            if limit is not None:
-                pipeline_stages += 1
-            self.assertTrue(len(calls[0][0][0]) == pipeline_stages)
-
-    def test_get_points(self):
-        self._test_get_points()
-
-    def test_get_points_assertion(self):
-        """ test get point asserts invalid sizes. """
-        expected = {
-            key: range(10) if key != 'create_times' else range(5)
-            for key in detect_changes.ARRAY_FIELDS
-        }
-
-        with self.assertRaisesRegexp(Exception, 'All array sizes were not equal:'):
-            self._test_get_points(expected=expected)
-
-    def test_get_points_custom_limit(self):
-        """
-        Test that limit is called on cursor when specified.
-        """
-        self._test_get_points(limit=10)
-
-    def _test_compute_change_points(self, exception=False):
+    def _test_compute_change_points(self, exception=False, order=None):
         # pylint: disable=too-many-locals
 
-        with patch('pymongo.InsertOne') as mock_insert,\
-             patch('pymongo.DeleteMany') as mock_delete,\
-             patch('signal_processing.qhat.get_githashes_in_range_repo'),\
-             patch('signal_processing.qhat.QHat', autospec=True) as mock_qhat_class,\
-             patch('signal_processing.detect_changes.pymongo.MongoClient') as mock_mongo_client:
+        with patch('pymongo.InsertOne') as mock_insert, \
+                patch('pymongo.DeleteMany') as mock_delete, \
+                patch('signal_processing.qhat.get_githashes_in_range_repo'), \
+                patch('signal_processing.qhat.QHat', autospec=True) as mock_qhat_class, \
+                patch(
+                    'signal_processing.detect_changes.pymongo.MongoClient') as mock_mongo_client:
 
             mock_db = MagicMock(name='db', autospec=True)
             thread_level = '4'
@@ -197,7 +476,7 @@ class TestPointsModel(unittest.TestCase):
                         ('order', i),
                         ('task_id', 'task {}'.format(i)),
                         ('version_id', 'version {}'.format(i))
-                    ]) for i in range(1, 3)]   # yapf: disable
+                    ]) for i in range(1, 3)]  # yapf: disable
 
             mock_insert.side_effect = ["InsertOne 1", "InsertOne 2"]
             mock_bulk = MagicMock(name='bulk', autospec=True)
@@ -222,6 +501,7 @@ class TestPointsModel(unittest.TestCase):
             }
 
             mock_db.points.aggregate.return_value = [thread_level_results]
+            mock_db.points.count.return_value = 100
             mock_qhat = MagicMock(
                 name='qhat', autospec=True, change_points=[{
                     'order': 1
@@ -239,13 +519,22 @@ class TestPointsModel(unittest.TestCase):
             }
 
             test_model = detect_changes.PointsModel(self.mongo_uri)
+            test_model.get_closest_order = MagicMock(name='get_closest_order')
+            test_model.get_closest_order.return_value = order
+
+            if order is None:
+                query = test_identifier
+            else:
+                query = test_identifier.copy()
+                query['order'] = {'$gt': order}
+
             if exception:
                 with self.assertRaises(Exception) as context:
                     test_model.compute_change_points(test_identifier, weighting=0.001)
                 self.assertTrue('boom' in context.exception)
 
                 # delete is called twice in this case
-                mock_delete.assert_has_calls([call(test_identifier), call(test_identifier)])
+                delete_calls = [call(query), call(query)]
             else:
                 actual_size, num_change_points = test_model.compute_change_points(
                     test_identifier, weighting=0.001)
@@ -253,9 +542,14 @@ class TestPointsModel(unittest.TestCase):
                 self.assertEqual(actual_size, size)
                 self.assertEqual(num_change_points, 2)
 
-                mock_delete.assert_called_once_with(test_identifier)
+                delete_calls = [call(query)]
 
-            mock_db.change_points.find.assert_called_once_with(test_identifier)
+            # delete is called once or twice
+            mock_delete.assert_has_calls(delete_calls)
+
+            test_model.get_closest_order.assert_called_once_with(test_identifier)
+
+            mock_db.change_points.find.assert_called_once_with(query)
             mock_insert.assert_has_calls(
                 [call(expected_insert) for expected_insert in expected_inserts])
             mock_mongo_client.return_value.get_database.assert_called_once_with()
@@ -270,8 +564,12 @@ class TestPointsModel(unittest.TestCase):
                 weighting=0.001)
 
     def test_compute_change_points(self):
-        """ test compute change points. """
+        """ test compute change points no order. """
         self._test_compute_change_points()
+
+    def test_compute_change_points_with_order(self):
+        """ test compute change points with order. """
+        self._test_compute_change_points(order=101)
 
     def test_compute_change_points_rollback(self):
         self._test_compute_change_points(True)
@@ -281,8 +579,8 @@ class TestPointsModel(unittest.TestCase):
         test_detect_changes helper.
         """
         mock_runner = mock_driver.return_value
-
-        detect_changes.detect_changes('task_id', is_patch, 'mongo_uri', 1)
+        min_points = None
+        detect_changes.detect_changes('task_id', is_patch, 'mongo_uri', min_points, 1)
         mock_evg_client.assert_called_once()
         mock_driver.assert_called_once()
         mock_runner.run.assert_called_once()
@@ -369,16 +667,17 @@ class TestMain(unittest.TestCase):
         }
         mock_config.__getitem__.side_effect = config.__getitem__
 
-        result = self.runner.invoke(
-            main,
-            ['-l', 'logfile', '--pool-size', '1', '-v', '--mongo-repo', 'repo', '--progressbar'])
+        result = self.runner.invoke(main, [
+            '-l', 'logfile', '--pool-size', '1', '--minimum', '700', '-v', '--mongo-repo', 'repo',
+            '--progressbar'
+        ])
         self.assertEqual(result.exit_code, 0)
 
         mock_config_dict.assert_called_once()
         mock_config.load.assert_called_once()
         mock_logging.assert_called_once_with(True, filename='logfile')
         mock_detect_changes.assert_called_once_with(
-            ANY, ANY, 'muri', 1, mongo_repo='repo', progressbar=True)
+            ANY, ANY, 'muri', 700, 1, mongo_repo='repo', progressbar=True)
 
     @patch('signal_processing.detect_changes.detect_changes')
     @patch('signal_processing.detect_changes.config.ConfigDict', autospec=True)
@@ -407,7 +706,7 @@ class TestMain(unittest.TestCase):
         mock_config.load.assert_called_once()
         mock_logging.assert_called_once_with(False, filename='detect_changes.log')
         mock_detect_changes.assert_called_once_with(
-            'tid', 'patch', 'muri', None, mongo_repo='../src', progressbar=False)
+            'tid', 'patch', 'muri', 500, None, mongo_repo='../src', progressbar=False)
 
     @patch('signal_processing.detect_changes.detect_changes')
     @patch('signal_processing.detect_changes.config.ConfigDict', autospec=True)

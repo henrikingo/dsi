@@ -536,6 +536,7 @@ def plot(result, change_points, sigma, filter_name="butter", show_qhat=True):
 
 
 def visualize(test_identifier,
+              min_points,
               filter_name,
               command_config,
               sigma=1,
@@ -547,6 +548,9 @@ def visualize(test_identifier,
     so that the calling code can decide if and how to save.
 
     :param tuple(str) test_identifier: The test identifier (project, variant, task test).
+    :param min_points: The minimum number of points to consider when detecting change points.
+    :type min_points: int or None.
+    See 'PointsModel' for more information about the limit parameter.
     :param str filter_name: The scipy filters to use.
     :param CommandConfig command_config: The common command config.
     :param float sigma: The  number of standard deviations to get bounds for.
@@ -555,8 +559,9 @@ def visualize(test_identifier,
     """
     LOG.debug('db.change_points.find(%s).pretty()', json.dumps(test_identifier))
 
-    model = PointsModel(command_config.mongo_uri)
-    result = model.get_points(test_identifier)
+    model = PointsModel(command_config.mongo_uri, min_points)
+    order = model.get_closest_order(test_identifier)
+    result = model.get_points(test_identifier, order)
     change_points = list(
         command_config.change_points.find(test_identifier).sort([('order', pymongo.ASCENDING)]))
     if not only_change_points or change_points:

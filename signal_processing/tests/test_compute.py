@@ -32,29 +32,37 @@ class TestCompute(unittest.TestCase):
 
         mock_model.assert_not_called()
 
-    @patch('signal_processing.commands.compute.PointsModel', autospec=True)
-    def test_compute_with_credentials(self, mock_model):
+    def _test_compute_with_credentials(self, min_points=None):
+        with patch('signal_processing.commands.compute.PointsModel', autospec=True) as mock_model:
+
+            test_identifier = {
+                'project': 'project',
+                'variant': 'variant_name',
+                'task': 'task',
+                'test': 'test',
+                'thread_level': '1',
+            }
+            credentials = {'credentials': 'credentials'}
+            mock_config = MagicMock(
+                name='config',
+                dry_run=False,
+                mongo_uri='mongo_uri',
+                mongo_repo='mongo_repo',
+                credentials=credentials)
+
+            mock_model_instance = mock_model.return_value
+            mock_model_instance.compute_change_points.return_value = (1, [1])
+            compute_change_points(test_identifier, .1, mock_config, min_points=min_points)
+
+            mock_model.assert_called_once_with(
+                'mongo_uri', min_points, mongo_repo='mongo_repo', credentials=credentials)
+            mock_model_instance.compute_change_points.assert_called_once_with(
+                test_identifier, weighting=.1)
+
+    def test_compute_with_credentials(self):
         """ Test compute with credentials."""
-        test_identifier = {
-            'project': 'project',
-            'variant': 'variant_name',
-            'task': 'task',
-            'test': 'test',
-            'thread_level': '1',
-        }
-        credentials = {'credentials': 'credentials'}
-        mock_config = MagicMock(
-            name='config',
-            dry_run=False,
-            mongo_uri='mongo_uri',
-            mongo_repo='mongo_repo',
-            credentials=credentials)
+        self._test_compute_with_credentials()
 
-        mock_model_instance = mock_model.return_value
-        mock_model_instance.compute_change_points.return_value = (1, [1])
-        compute_change_points(test_identifier, .1, mock_config)
-
-        mock_model.assert_called_once_with(
-            'mongo_uri', mongo_repo='mongo_repo', credentials=credentials)
-        mock_model_instance.compute_change_points.assert_called_once_with(
-            test_identifier, weighting=.1)
+    def test_compute_with_limit(self):
+        """ Test compute with credentials."""
+        self._test_compute_with_credentials(10)

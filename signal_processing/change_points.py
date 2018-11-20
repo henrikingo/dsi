@@ -34,7 +34,7 @@ import signal_processing.commands.unmark as unmark
 import signal_processing.commands.update as update
 import signal_processing.commands.visualize as visualize
 import signal_processing.qhat as qhat
-from signal_processing import etl_helpers
+from signal_processing import etl_helpers, detect_changes
 from analysis.evergreen import evergreen_client
 from bin.common import log
 
@@ -636,6 +636,11 @@ Examples:
 @click.option('-m', '--minsize', 'minsizes', default=[20], type=click.INT, multiple=True)
 @click.option('-s', '--sig', 'sig_lvl', default=.05)
 @click.option('-p', '--padding', default=0, help='append this many repetitions of the last result.')
+@click.option(
+    '--minimum',
+    callback=helpers.validate_int_none_options,
+    default=detect_changes.DEFAULT_MIN_SIZE,
+    help='The minimum number of points to process. None or zero for all points.')
 @click.option('--progressbar/--no-progressbar', default=True)
 @click.option('--show/--no-show', default=False)
 @click.option('--save/--no-save', default=False)
@@ -649,8 +654,8 @@ Examples:
 @click.argument('variant', required=False)
 @click.argument('task', required=False)
 @click.argument('test', required=False)
-def compare_command(command_config, minsizes, sig_lvl, padding, progressbar, show, save, excludes,
-                    no_older_than, weighting, project, variant, task, test):
+def compare_command(command_config, minsizes, sig_lvl, padding, minimum, progressbar, show, save,
+                    excludes, no_older_than, weighting, project, variant, task, test):
     # pylint: disable=too-many-locals, too-many-arguments, line-too-long
     """
 Compare points generated from R and python. This requires R and the ecp library to be installed.
@@ -769,6 +774,7 @@ For Example:
                 LOG.debug('compare', test_identifier=test_identifier)
                 calculation = compare.compare(
                     test_identifier,
+                    minimum,
                     command_config,
                     sig_lvl=sig_lvl,
                     minsizes=minsizes,
@@ -810,6 +816,11 @@ For Example:
     multiple=True,
     help='Exclude all points matching this pattern. This parameter can be provided multiple times.')
 @click.option('--progressbar/--no-progressbar', default=True)
+@click.option(
+    '--minimum',
+    callback=helpers.validate_int_none_options,
+    default=detect_changes.DEFAULT_MIN_SIZE,
+    help='The minimum number of points to process. None or zero for all points.')
 @click.option('--weighting', default=.001)
 @click.option(
     '--pool-size',
@@ -821,8 +832,8 @@ For Example:
 @click.argument('variant', required=False)
 @click.argument('task', required=False)
 @click.argument('test', required=False)
-def compute_command(context, excludes, progressbar, weighting, pool_size, legacy, project, variant,
-                    task, test):
+def compute_command(context, excludes, progressbar, minimum, weighting, pool_size, legacy, project,
+                    variant, task, test):
     # pylint: disable=too-many-locals, too-many-arguments, line-too-long
     """
 Compute / recompute change point(s). This deletes and then replaces the current change points
@@ -847,6 +858,16 @@ Examples:
 \b
     # compute all sys-perf change points
     $> change-points compute sys-perf
+\b
+    # compute all performance change points with a minimum number of data points.
+    $> change-points compute sys-perf --minimum 500
+    $> change-points compute sys-perf
+\b
+    # compute all performance change points with all data points
+    $> change-points compute sys-perf --minimum 0
+\b
+    # compute all performance change points from the first change point forward
+    $> change-points compute sys-perf --minimum 1
 \b
     # compute linux-1-node-replSet sys-perf change points
     $> change-points compute sys-perf linux-1-node-replSet
@@ -899,6 +920,7 @@ Examples:
         jobs.Job(
             compute.compute_change_points,
             arguments=(test_identifier, weighting, command_config),
+            kwargs=dict(min_points=minimum),
             identifier=test_identifier) for test_identifier in test_identifiers
     ]
     bar_template, show_item = helpers.query_terminal_for_bar()
@@ -948,12 +970,17 @@ At the moment, it supports:
 @click.option('--sigma', 'sigma', default=1.0)
 @click.option('--filter', 'filter_type', default='butter')
 @click.option('--only-change-points/--no-only-change-points', 'only_change_points', default=True)
+@click.option(
+    '--minimum',
+    callback=helpers.validate_int_none_options,
+    default=detect_changes.DEFAULT_MIN_SIZE,
+    help='The minimum number of points to process. None or zero for all points.')
 @click.argument('project', required=False)
 @click.argument('variant', required=False)
 @click.argument('task', required=False)
 @click.argument('test', required=False)
 def visualize_command(context, progressbar, show, save, show_qhat, excludes, sigma, filter_type,
-                      only_change_points, project, variant, task, test):
+                      only_change_points, minimum, project, variant, task, test):
     # pylint: disable=too-many-locals, too-many-arguments, line-too-long
     """
 Note : this command is an optional command, provided as is and is liable to change or break.
@@ -1064,6 +1091,7 @@ $> pip install 'git+https://github.com/10gen/dsi.git#egg=DSI[Plotting]'
                     LOG.debug('visualize', test_identifier=test_identifier)
                     for figure in visualize.visualize(
                             test_identifier,
+                            minimum,
                             filter_type,
                             command_config,
                             sigma=sigma,

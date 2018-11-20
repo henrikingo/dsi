@@ -489,12 +489,21 @@ def plot(python_points, r_points, result, axes):
     axes.legend(loc="upper left")
 
 
-def compare(test_identifier, command_config, weighting, sig_lvl=0.05, minsizes=(20, ), padding=0):
+def compare(test_identifier,
+            min_points,
+            command_config,
+            weighting,
+            sig_lvl=0.05,
+            minsizes=(20, ),
+            padding=0):
     # pylint: disable=too-many-locals, too-many-arguments
     """
     Calculate change points for comparison.
 
-    :param tuple(str) test_identifier: The test identifier (project, variant, task test).
+    :param dict() test_identifier: The test identifier (project, variant, task test).
+    :param min_points: The minimum number of points to consider when detecting change points.
+    :type min_points: int or None.
+    See 'PointsModel' for more information about the limit parameter.
     :param CommandConfig command_config: The common command config.
     :param float sig_lvl: The significance level test.
     :param list(int) minsizes: The minimum distance between change points.
@@ -506,8 +515,13 @@ def compare(test_identifier, command_config, weighting, sig_lvl=0.05, minsizes=(
     credentials = command_config.credentials
     mongo_repo = command_config.mongo_repo
 
-    model = PointsModel(command_config.mongo_uri, mongo_repo=mongo_repo, credentials=credentials)
-    results = model.get_points(test_identifier)
+    model = PointsModel(
+        command_config.mongo_uri,
+        min_points=min_points,
+        mongo_repo=mongo_repo,
+        credentials=credentials)
+    order = model.get_closest_order(test_identifier)
+    results = model.get_points(test_identifier, order)
     if padding:
         values = [results['series'][-1]] * padding
         results['series'].extend(values)
