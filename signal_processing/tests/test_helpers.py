@@ -14,6 +14,119 @@ import signal_processing.commands.helpers as helpers
 import signal_processing.commands.jobs as jobs
 
 
+class TestIsMaxThreadLevel(unittest.TestCase):
+    """
+    Test suite for is_max_thread_level.
+    """
+
+    def _test_is_max_thread_level(self, test_identifier, expected):
+        """
+        Test generate_thread_levels identifier.
+        """
+        self.assertEquals(helpers.is_max_thread_level(test_identifier), expected)
+
+    def test_empty(self):
+        """
+        Test no thread_level set.
+        """
+        self._test_is_max_thread_level({}, False)
+
+    def test_max(self):
+        """
+        Test max thread_level set.
+        """
+        self._test_is_max_thread_level({'thread_level': 'max'}, True)
+
+    def test_not_max(self):
+        """
+        Test thread_level set but not max.
+        """
+        self._test_is_max_thread_level({'thread_level': '1'}, False)
+
+
+class TestGenerateThreadLevels(unittest.TestCase):
+    """
+    Test suite for generate_thread_levels.
+    """
+
+    def _test_generate_thread_levels(self, return_value=(), expected=None):
+        """
+        Test generate_thread_levels identifier.
+        """
+        return_value = list(return_value)
+        mock_collection = mock.MagicMock(name="points collection")
+        mock_collection.aggregate.return_value = return_value
+        actual = list(helpers.generate_thread_levels('test_identifier', mock_collection))
+        if expected is None:
+            expected = return_value
+        self.assertEquals(actual, expected)
+
+        calls = mock_collection.aggregate.call_args_list
+        self.assertEquals(len(calls), 1)
+        arguments = calls[0][0][0]
+
+        self.assertEquals(arguments[0], {'$match': 'test_identifier'})
+
+    def test_identifier(self):
+        """
+        Test generate_thread_levels identifier.
+        """
+        self._test_generate_thread_levels()
+
+    def test_yields(self):
+        """
+        Test generate_thread_levels yields.
+        """
+        self._test_generate_thread_levels(return_value=[{'thread_level': '1'}])
+
+    def test_yields_max(self):
+        """
+        Test generate_thread_levels yields.
+        """
+        return_value = [{'thread_level': '1'}, {'thread_level': '2'}]
+        self._test_generate_thread_levels(
+            return_value=return_value, expected=return_value + [{
+                'thread_level': 'max'
+            }])
+
+
+class TestGetQueryForPoints(unittest.TestCase):
+    """
+    Test suite for the get_query_for_points.
+    """
+
+    def _test(self, test_identifier, expected=None):
+        """ test helper. """
+        if expected is None:
+            expected = test_identifier
+
+        self.assertEquals(expected, helpers.get_query_for_points(test_identifier))
+
+    def test_empty(self):
+        """ test empty. """
+        self._test({})
+
+    def test_not_empty(self):
+        """ test not empty. """
+
+        self._test({
+            'project': 'project_id',
+            'variant': 'variant',
+            'task': 'task_name',
+            'test': 'testname'
+        })
+
+    def test_thread_level(self):
+        """ test a thread level. """
+
+        self._test({'thread_level': '1'}, {'results.thread_level': '1'})
+
+    def test_max_thread_level(self):
+        """ test a thread level. """
+
+        self._test({'thread_level': 'max'}, {})
+
+
 class TestReadConfig(unittest.TestCase):
     """
     Test suite for the read_default_config.

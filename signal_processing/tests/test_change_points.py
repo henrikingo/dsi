@@ -684,7 +684,7 @@ class TestCompute(ClickTest):
 
         with patch(
             'signal_processing.change_points.helpers.generate_tests') as mock_generate_tests, \
-                patch('signal_processing.change_points.etl_helpers.generate_thread_levels') as mock_generate_thread_levels,\
+                patch('signal_processing.change_points.helpers.generate_thread_levels') as mock_generate_thread_levels,\
                 patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs,\
                 patch('signal_processing.change_points.jobs.Job') as mock_job_cls:
             mock_process_jobs.return_value.__enter__.return_value = ()

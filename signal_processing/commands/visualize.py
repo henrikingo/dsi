@@ -5,18 +5,23 @@ Functionality to visualize change points.
 import functools
 import json
 
-import structlog
-from scipy import stats, signal
-from scipy.signal import savgol_filter
 import numpy as np
 import pymongo
-from signal_processing.commands.compare import LANDSCAPE_FIGSIZE
+import scipy
+import scipy.stats
+import scipy.signal
+import structlog
 
+from signal_processing.commands.compare import LANDSCAPE_FIGSIZE
+from signal_processing.detect_changes import PointsModel
 from signal_processing.qhat import QHat, DEFAULT_WEIGHTING
 
-from signal_processing.detect_changes import PointsModel
-
 LOG = structlog.getLogger(__name__)
+
+DEFAULT_OUTLIER_LIMIT = 3.0
+"""
+The default value for outlier detection. Any zscore greater than this is an outlier.
+"""
 
 
 def create_format_fn(revisions, create_times):
@@ -199,9 +204,12 @@ def create_lower_upper_bounds(series, start, end, sigma):
     :param float sigma: The number of standard deviations.
     :return: lower, values, upper lists for the range
     """
-    array = series[start:end]
-    description = stats.describe(array)
-    values = np.repeat(description.mean, len(array))
+
+    # Exclude first and last points as these are change points can skew the mean, variance
+    # and stddev.
+    array = series[start + 1:end - 1]
+    description = scipy.stats.describe(array)
+    values = np.repeat(description.mean, len(array) + 2)
 
     lower, upper = generate_upper_lower_bounds(values, description, sigma)
 
@@ -310,7 +318,193 @@ def plot_qhat_values(qhat,
     return qhat_lines
 
 
-def plot(result, change_points, sigma, filter_name="butter", show_qhat=True):
+def find_outliers(subseries, outlier_limit=DEFAULT_OUTLIER_LIMIT, offset=0):
+    """  Given a set of data, calculate the z scores for the series and then find the indexes of
+    all outliers (where abs(zscore) > outlier_limit).
+
+    The value of the z score equals the number of standard deviations from the mean.
+    So:
+      * 0 implies this value is equal to the mean.
+      * -1 represents an element that is 1 standard deviation less than the mean.
+      * 1 represents an element that is 1 standard deviation greater than the mean.
+
+    :param list(float) subseries: The series of data.
+    :param float outlier_limit: Any abs(z score) greater than this value is an outlier.
+    :param int offset: Add this value to the outlier indexes to get the real indexes in the
+    containing series.
+
+    :return: list of outlier indexes.
+    :see: 'scipy.stats.zscore
+        <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.zscore.html>'
+    :see: 'z-scores-review
+        <https://www.khanacademy.org/math/statistics-probability/modeling-distributions-of-data/z-scores/a/z-scores-review>'
+    :see: 'Z-scores
+        <https://stattrek.com/statistics/dictionary.aspx?definition=z_score>'
+    """
+    zscores = scipy.stats.zscore(subseries)
+    outliers = abs(zscores) > outlier_limit
+    indexes = np.where(outliers)[0]
+    indexes += offset
+    return indexes
+
+
+def plot_outliers(change_points,
+                  series,
+                  xvals,
+                  revisions,
+                  axis,
+                  outlier_limit=DEFAULT_OUTLIER_LIMIT,
+                  marker='r*'):
+    """ Plot outliers on the graph.
+    :param list(dict) change_points: A list of the change points.
+    :param list(float) series: The performance data.
+    :param list() xvals: The xaxis values.
+    :param list(str) revisions: A list of the revisions.
+    :param matplotlib.Axes axis: The matplotlib axis to draw on.
+    :param float outlier_limit: The limit for the z score comparison.
+    :param str marker: The matplotlib marker for outliers.
+
+    :return: tuple of label, lines
+    """
+    outliers = np.array([], dtype=np.int32)
+    previous_index = 0
+    for change_point in change_points:
+        suspect_revision_index = revisions.index(change_point['suspect_revision'])
+        outlier_indexes = find_outliers(
+            series[previous_index:suspect_revision_index],
+            outlier_limit=outlier_limit,
+            offset=previous_index)
+        outliers = np.append(outliers, outlier_indexes)
+        previous_index = suspect_revision_index
+
+    outlier_indexes = find_outliers(
+        series[previous_index:], outlier_limit=outlier_limit, offset=previous_index)
+    outliers = np.append(outliers, outlier_indexes)
+
+    label = "outliers"
+    outlier_lines, = axis.plot(
+        xvals[outliers], series[outliers], marker, label=label, markersize=12)
+
+    return label, outlier_lines
+
+
+def plot_change_point_ranges(change_points,
+                             series,
+                             xvals,
+                             revisions,
+                             axis,
+                             sigma,
+                             data,
+                             lower_bound,
+                             upper_bound,
+                             marker='--'):
+    """ Plot change point ranges on the graph.
+    :param list(dict) change_points: A list of the change points.
+    :param list(float) series: The performance data.
+    :param list() xvals: The xaxis values.
+    :param list(str) revisions: A list of the revisions.
+    :param matplotlib.Axes axis: The matplotlib axis to draw on.
+    :param float sigma: The std dev range to calculate the upper and lower bounds.
+    :param str marker: The matplotlib marker for outliers.
+    :param list data: The median line data.
+    :param list lower_bound: The lower bound data (-sigma).
+    :param list upper_bound: The upper bound data (+sigma)
+
+    :return: tuple of label, lines
+    """
+
+    for change_point_index, change_point in enumerate(change_points):
+        suspect_revision_index = revisions.index(change_point['suspect_revision'])
+        stable_revision_index = suspect_revision_index - 1
+        if 'next' in change_point['statistics']:
+            next_index = suspect_revision_index + change_point['statistics']['next']['nobs']
+        else:
+            next_index = len(series)
+
+        if change_point_index == 0:
+            if 'previous' in change_point['statistics']:
+                previous_index = stable_revision_index - \
+                                 change_point['statistics']['previous']['nobs']
+            else:
+                previous_index = 0
+            lower, values, upper = create_lower_upper_bounds(series, previous_index,
+                                                             stable_revision_index, sigma)
+            data[previous_index:previous_index + len(values)] = values
+            lower_bound[previous_index:previous_index + len(values)] = lower
+            upper_bound[previous_index:previous_index + len(values)] = upper
+
+        lower, values, upper = create_lower_upper_bounds(series, suspect_revision_index - 1,
+                                                         next_index, sigma)
+        data[suspect_revision_index - 1:suspect_revision_index - 1 + len(values)] = values
+        lower_bound[suspect_revision_index - 1:suspect_revision_index - 1 + len(values)] = lower
+        upper_bound[suspect_revision_index - 1:suspect_revision_index - 1 + len(values)] = upper
+
+    label = "discrete"
+    discrete_lines, = axis.plot(xvals, data, marker, label=label)
+
+    return label, discrete_lines
+
+
+def plot_change_point_lines(change_points, series, revisions, axis, marker='ro-'):
+    """ Plot change point lines on the graph.
+    :param list(dict) change_points: A list of the change points.
+    :param list(float) series: The performance data.
+    :param list(str) revisions: A list of the revisions.
+    :param matplotlib.Axes axis: The matplotlib axis to draw on.
+    :param str marker: The matplotlib marker for outliers.
+
+    :return: tuple of label, lines
+    """
+    change_point_lines = []
+    label = "change"
+    for change_point_index, change_point in enumerate(change_points):
+        suspect_revision_index = revisions.index(change_point['suspect_revision'])
+        stable_revision_index = suspect_revision_index - 1
+
+        coordinates = (stable_revision_index, suspect_revision_index)
+        if not change_point_index:
+            line, = axis.plot(
+                coordinates, [series[pos] for pos in coordinates], marker, label=label)
+        else:
+            line, = axis.plot(coordinates, [series[pos] for pos in coordinates], marker)
+        change_point_lines.append(line)
+
+    add_arrow(line, size=20)
+
+    return label, change_point_lines
+
+
+def plot_change_point_scatter(change_points, series, revisions, axis, marker='o'):
+    """ Plot scatter change point on the graph.
+    :param list(dict) change_points: A list of the change points.
+    :param list(float) series: The performance data.
+    :param list(str) revisions: A list of the revisions.
+    :param matplotlib.Axes axis: The matplotlib axis to draw on.
+    :param str marker: The matplotlib marker for outliers.
+
+    :return: tuple of label, lines
+    """
+    label = "change points"
+    change_points_indexes = [
+        revisions.index(change_point['suspect_revision']) for change_point in change_points
+    ]
+    change_points_scatter = axis.scatter(
+        change_points_indexes, [series[index] for index in change_points_indexes],
+        marker=marker,
+        color='k',
+        s=50,
+        label=label)
+
+    return label, change_points_scatter
+
+
+def plot(result,
+         change_points,
+         sigma,
+         filter_name="butter",
+         show_qhat=True,
+         show_outliers=True,
+         outlier_limit=DEFAULT_OUTLIER_LIMIT):
     # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     """
     Plot performance and change point data.
@@ -353,11 +547,11 @@ def plot(result, change_points, sigma, filter_name="butter", show_qhat=True):
         tick.set_visible(True)
 
     if filter_name == "butter":
-        numerator, denominator = signal.butter(8, 0.125)
+        numerator, denominator = scipy.signal.butter(8, 0.125)
         try:
-            yhat = signal.filtfilt(numerator, denominator, series)
+            yhat = scipy.signal.filtfilt(numerator, denominator, series)
         except ValueError:
-            yhat = signal.filtfilt(numerator, denominator, series, padlen=0)
+            yhat = scipy.signal.filtfilt(numerator, denominator, series, padlen=0)
 
     else:
         window_size = len(series) / 2
@@ -365,55 +559,35 @@ def plot(result, change_points, sigma, filter_name="butter", show_qhat=True):
         polynomial_order = 2
         if window_size < polynomial_order:
             window_size = 3
-        yhat = savgol_filter(series, window_size, polynomial_order, mode='nearest')
+        yhat = scipy.signal.savgol_filter(series, window_size, polynomial_order, mode='nearest')
 
     label = "smooth"
     smooth, = axis.plot(xvals, yhat, '-', label=label)
     line_labeled_items.append(smooth)
     labeled_items[label] = smooth
+
+    data = np.zeros(len(series))
+    lower_bound = np.zeros(len(series))
+    upper_bound = np.zeros(len(series))
+
     if change_points:
-        data = np.zeros(len(series))
-        lower_bound = np.zeros(len(series))
-        upper_bound = np.zeros(len(series))
-
-        for change_point_index, change_point in enumerate(change_points):
-            # sorted(change_points, key=lambda x: x['order'])):
-            suspect_revision_index = revisions.index(change_point['suspect_revision'])
-            stable_revision_index = suspect_revision_index - 1
-            if 'next' in change_point['statistics']:
-                next_index = suspect_revision_index + change_point['statistics']['next']['nobs']
-            else:
-                next_index = len(series)
-
-            if change_point_index == 0:
-                if 'previous' in change_point['statistics']:
-                    previous_index = stable_revision_index - \
-                                    change_point['statistics']['previous']['nobs']
-                else:
-                    previous_index = 0
-                lower, values, upper = create_lower_upper_bounds(series, previous_index,
-                                                                 stable_revision_index, sigma)
-                data[previous_index:previous_index + len(values)] = values
-                lower_bound[previous_index:previous_index + len(values)] = lower
-                upper_bound[previous_index:previous_index + len(values)] = upper
-
-            lower, values, upper = create_lower_upper_bounds(series, suspect_revision_index - 1,
-                                                             next_index, sigma)
-            data[suspect_revision_index - 1:suspect_revision_index - 1 + len(values)] = values
-            lower_bound[suspect_revision_index - 1:suspect_revision_index - 1 + len(values)] = lower
-            upper_bound[suspect_revision_index - 1:suspect_revision_index - 1 + len(values)] = upper
-        label = "discrete"
-        discrete_lines, = axis.plot(xvals, data, '--', label=label)
-
+        label, discrete_lines = plot_change_point_ranges(
+            change_points, series, xvals, revisions, axis, sigma, data, lower_bound, upper_bound)
         line_labeled_items.append(discrete_lines)
         labeled_items[label] = discrete_lines
-
     else:
 
-        description = stats.describe(series)
+        description = scipy.stats.describe(series)
 
         data = yhat
         lower_bound, upper_bound = generate_upper_lower_bounds(data, description, sigma)
+
+    if change_points and show_outliers:
+        label, outlier_lines = plot_outliers(
+            change_points, series, xvals, revisions, axis, outlier_limit=outlier_limit)
+
+        line_labeled_items.append(outlier_lines)
+        labeled_items[label] = outlier_lines
 
     if change_points and show_qhat:
         qhat = QHat(
@@ -453,36 +627,13 @@ def plot(result, change_points, sigma, filter_name="butter", show_qhat=True):
     labeled_items[label] = sigma_fil
 
     if change_points:
-        change_point_lines = []
-        label = "change"
-        for change_point_index, change_point in enumerate(change_points):
-            # sorted(change_points, key=lambda x: x['order'])):
-            suspect_revision_index = revisions.index(change_point['suspect_revision'])
-            stable_revision_index = suspect_revision_index - 1
-
-            coordinates = (stable_revision_index, suspect_revision_index)
-            if not change_point_index:
-                line, = axis.plot(
-                    coordinates, [series[pos] for pos in coordinates], 'ro-', label=label)
-            else:
-                line, = axis.plot(coordinates, [series[pos] for pos in coordinates], 'ro-')
-            change_point_lines.append(line)
+        label, change_point_lines = plot_change_point_lines(change_points, series, revisions, axis)
         if change_point_lines:
             line_labeled_items.append(change_point_lines)
             labeled_items[label] = change_point_lines
 
-        add_arrow(line, size=20)
-    if change_points:
-        label = "change points"
-        change_points_indexes = [
-            revisions.index(change_point['suspect_revision']) for change_point in change_points
-        ]
-        change_points_scatter = axis.scatter(
-            change_points_indexes, [series[index] for index in change_points_indexes],
-            marker="o",
-            color='k',
-            s=50,
-            label=label)
+        label, change_points_scatter = plot_change_point_scatter(change_points, series, revisions,
+                                                                 axis)
         other_labeled_items.append(change_points_scatter)
         labeled_items[label] = change_points_scatter
 
@@ -541,7 +692,9 @@ def visualize(test_identifier,
               command_config,
               sigma=1,
               only_change_points=True,
-              show_qhat=False):
+              show_qhat=False,
+              show_outliers=False,
+              outlier_limit=DEFAULT_OUTLIER_LIMIT):
     # pylint: disable=too-many-locals
     """
     Visualize the series including change points, yield the plot and thread level to the caller
@@ -555,6 +708,10 @@ def visualize(test_identifier,
     :param CommandConfig command_config: The common command config.
     :param float sigma: The  number of standard deviations to get bounds for.
     :param bool only_change_points: Skip plots for series with no change points if set to True.
+    :param bool show_qhat: Show qhat lines if set to True.
+    :param bool show_outliers: Show outliers if set to True.
+    :param float outlier_limit: Calculate outliers with a z score greater than this value. Default
+    is 3 (standard deviations from the mean).
     :yield: The plot and thread level
     """
     LOG.debug('db.change_points.find(%s).pretty()', json.dumps(test_identifier))
@@ -566,4 +723,11 @@ def visualize(test_identifier,
         command_config.change_points.find(test_identifier).sort([('order', pymongo.ASCENDING)]))
     if not only_change_points or change_points:
         LOG.debug("found change points", change_points=change_points)
-        yield plot(result, change_points, sigma, filter_name=filter_name, show_qhat=show_qhat)
+        yield plot(
+            result,
+            change_points,
+            sigma,
+            filter_name=filter_name,
+            show_qhat=show_qhat,
+            show_outliers=show_outliers,
+            outlier_limit=outlier_limit)

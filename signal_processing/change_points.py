@@ -34,7 +34,7 @@ import signal_processing.commands.unmark as unmark
 import signal_processing.commands.update as update
 import signal_processing.commands.visualize as visualize
 import signal_processing.qhat as qhat
-from signal_processing import etl_helpers, detect_changes
+from signal_processing import detect_changes
 from analysis.evergreen import evergreen_client
 from bin.common import log
 
@@ -746,7 +746,7 @@ For Example:
 
     test_identifiers = [
         thread_identifier
-        for test_identifier in tests for thread_identifier in etl_helpers.generate_thread_levels(
+        for test_identifier in tests for thread_identifier in helpers.generate_thread_levels(
             test_identifier, command_config.points)
     ]
 
@@ -832,8 +832,9 @@ For Example:
 @click.argument('variant', required=False)
 @click.argument('task', required=False)
 @click.argument('test', required=False)
+@click.argument('thread_level', required=False)
 def compute_command(context, excludes, progressbar, minimum, weighting, pool_size, legacy, project,
-                    variant, task, test):
+                    variant, task, test, thread_level):
     # pylint: disable=too-many-locals, too-many-arguments, line-too-long
     """
 Compute / recompute change point(s). This deletes and then replaces the current change points
@@ -890,7 +891,7 @@ Examples:
     LOG.debug('starting')
     command_config = context.obj
     points = command_config.points
-    query = helpers.process_params(None, project, variant, task, test, None)
+    query = helpers.process_params(None, project, variant, task, test, thread_level)
 
     LOG.debug('finding matching tasks', query=query)
     matching_tasks = helpers.get_matching_tasks(points, query)
@@ -907,8 +908,8 @@ Examples:
 
     test_identifiers = [
         thread_identifier
-        for test_identifier in tests for thread_identifier in etl_helpers.generate_thread_levels(
-            test_identifier, command_config.points)
+        for test_identifier in tests for thread_identifier in helpers.generate_thread_levels(
+            test_identifier, command_config.points, thread_level=query.get('thread_level', None))
     ]
 
     label = 'compute'
@@ -975,12 +976,16 @@ At the moment, it supports:
     callback=helpers.validate_int_none_options,
     default=detect_changes.DEFAULT_MIN_SIZE,
     help='The minimum number of points to process. None or zero for all points.')
+@click.option('--show-outliers/--no-show-outliers', 'show_outliers', default=True)
+@click.option('--outlier-limit', 'outlier_limit', default=visualize.DEFAULT_OUTLIER_LIMIT)
 @click.argument('project', required=False)
 @click.argument('variant', required=False)
 @click.argument('task', required=False)
 @click.argument('test', required=False)
+@click.argument('thread_level', required=False)
 def visualize_command(context, progressbar, show, save, show_qhat, excludes, sigma, filter_type,
-                      only_change_points, minimum, project, variant, task, test):
+                      only_change_points, minimum, show_outliers, outlier_limit, project, variant,
+                      task, test, thread_level):
     # pylint: disable=too-many-locals, too-many-arguments, line-too-long
     """
 Note : this command is an optional command, provided as is and is liable to change or break.
@@ -1052,7 +1057,7 @@ $> pip install 'git+https://github.com/10gen/dsi.git#egg=DSI[Plotting]'
     LOG.debug('starting')
     points = command_config.points
 
-    query = helpers.process_params(None, project, variant, task, test, None)
+    query = helpers.process_params(None, project, variant, task, test, thread_level)
     LOG.debug('processed params', query=query)
 
     matching_tasks = helpers.filter_legacy_tasks(helpers.get_matching_tasks(points, query))
@@ -1067,8 +1072,8 @@ $> pip install 'git+https://github.com/10gen/dsi.git#egg=DSI[Plotting]'
 
     test_identifiers = [
         thread_identifier
-        for test_identifier in tests for thread_identifier in etl_helpers.generate_thread_levels(
-            test_identifier, command_config.points)
+        for test_identifier in tests for thread_identifier in helpers.generate_thread_levels(
+            test_identifier, command_config.points, thread_level=query.get('thread_level', None))
     ]
 
     label = 'visualize'
@@ -1096,7 +1101,9 @@ $> pip install 'git+https://github.com/10gen/dsi.git#egg=DSI[Plotting]'
                             command_config,
                             sigma=sigma,
                             only_change_points=only_change_points,
-                            show_qhat=show_qhat): # yapf: disable
+                            show_qhat=show_qhat,
+                            show_outliers=show_outliers,
+                            outlier_limit=outlier_limit): # yapf: disable
                         if save:
                             pathname = os.path.join(command_config.out, test_identifier['project'],
                                                     test_identifier['variant'],

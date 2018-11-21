@@ -716,7 +716,7 @@ class QHatNumpyImp(object):  #pylint: disable=too-many-instance-attributes
 
         :raises: FloatingPointError for numpy errors.
         :see: 'numpy.seterr
-        <https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.seterr.html>
+        <https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.seterr.html>'
         :see: 'numpy.errstate
         <https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.errstate.html>'
         """

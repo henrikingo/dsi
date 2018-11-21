@@ -19,43 +19,6 @@ from click.testing import CliRunner
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
-class TestGetQueryForPoints(unittest.TestCase):
-    """
-    Test suite for the get_query_for_points.
-    """
-
-    def _test(self, test_identifier, expected=None):
-        """ test helper. """
-        if expected is None:
-            expected = test_identifier
-
-        self.assertEquals(expected, detect_changes.get_query_for_points(test_identifier))
-
-    def test_empty(self):
-        """ test empty. """
-        self._test({})
-
-    def test_not_empty(self):
-        """ test not empty. """
-
-        self._test({
-            'project': 'project_id',
-            'variant': 'variant',
-            'task': 'task_name',
-            'test': 'testname'
-        })
-
-    def test_thread_level(self):
-        """ test a thread level. """
-
-        self._test({'thread_level': '1'}, {'results.thread_level': '1'})
-
-    def test_max_thread_level(self):
-        """ test a thread level. """
-
-        self._test({'thread_level': 'max'}, {})
-
-
 # pylint: disable=invalid-name
 class TestDetectChangesDriver(unittest.TestCase):
     """

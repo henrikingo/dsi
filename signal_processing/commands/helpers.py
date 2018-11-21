@@ -20,8 +20,13 @@ from pymongo import MongoClient
 from pymongo.uri_parser import parse_uri
 
 from bin.common.utils import mkdir_p
-from signal_processing.etl_helpers import redact_url
+from signal_processing.etl_helpers import redact_url, extract_tests
 import signal_processing.commands.jobs
+
+MAX_THREAD_LEVEL = 'max'
+"""
+The value of the 'thread_level' field for the max thread level.
+"""
 
 DEFAULT_KEY_ORDER = ('_id', 'suspect_revision', 'project', 'variant', 'task', 'test',
                      'thread_level', 'processed_type')
@@ -638,19 +643,39 @@ def get_bar_widths(label_width=22, max_bar_width=34, max_info_width=75, padding=
     return label_width, bar_width, info_width, padding
 
 
-def get_matching_tasks(points, query, no_older=None):
+def get_query_for_points(test_identifier):
+    """ Create a points query from a test identifier.
+
+    :param dict test_identifier: The project / variant / task / test and thread level values.
+
+    :return: A query to get the points for this identifier.
+    :rtype: dict
+    """
+    points_query = test_identifier.copy()
+    if 'thread_level' in test_identifier:
+        thread_level = test_identifier['thread_level']
+        del points_query['thread_level']
+
+        # The max_ops_per_sec is the correct value, so we don't need results.thread_level.
+        if thread_level != MAX_THREAD_LEVEL:
+            points_query['results.thread_level'] = thread_level
+    return points_query
+
+
+def get_matching_tasks(points, test_identifier, no_older=None):
     """
     Get all the tasks in the point collection that match project, variant, task, test and have
     data newer than no_older.
 
     :param collection points: The points collection.
-    :param dict query: The query to use (generated from command line params).
+    :param dict test_identifier: The test identifier to use (generated from command line params).
     :param no_older: Filter tasks only with data older than this. If no value is supplied then
     don't filter on start time.
     :type no_older: int, None.
     :return: Unique matching tasks.
     :rtype: list(dict).
     """
+    query = get_query_for_points(test_identifier)
     if no_older is not None:
         old = datetime.now() - timedelta(days=no_older)
         query['start'] = {"$gt": int(old.strftime('%s'))}
@@ -774,3 +799,92 @@ def validate_int_none_options(context, param, value):
     except ValueError:
         pass
     raise click.BadParameter('{} is not a valid integer or None.'.format(value))
+
+
+def extract_test_identifiers(perf_json):
+    """
+    Extract the test identifiers from the raw data file from Evergreen.
+
+    :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
+    """
+    project = perf_json['project_id']
+    variant = perf_json['variant']
+    task = perf_json['task_name']
+    return [{
+        'project': project,
+        'variant': variant,
+        'task': task,
+        'test': test
+    } for test in extract_tests(perf_json)]
+
+
+def _matches(pattern_or_string, thread_level):
+    """
+    Match a pattern, string or None to the thread level.
+
+    :param pattern_or_string: The pattern or string to match against.
+    :type pattern_or_string: re.pattern, string or None.
+    :param string thread_level: The thread level
+    :return: True if pattern is None, regex matches thread level or string matches thread level.
+    """
+    if pattern_or_string is None:
+        return True
+    if isinstance(pattern_or_string, basestring):
+        return pattern_or_string == thread_level
+    if isinstance(pattern_or_string, type(re.compile(''))):
+        return pattern_or_string.match(thread_level)
+    return False
+
+
+def generate_thread_levels(test_identifier, points_collection, thread_level=None):
+    """
+    Given a test identifier of project / variant / task and test, get the thread levels from
+    the points collection.
+
+    :param dict test_identifier: The project / variant / task and test.
+    :param pymongo.Collection points_collection: The points collection ref.
+    :param re.pattern thread_level: A thread level pattern or None for all.
+    """
+
+    pipeline = [{
+        '$match': test_identifier
+    }, {
+        '$unwind': '$results'
+    }, {
+        '$group': {
+            '_id': {
+                'project': '$project',
+                'variant': '$variant',
+                'task': '$task',
+                'test': '$test',
+                'thread_level': '$results.thread_level'
+            }
+        }
+    }, {
+        '$project': {
+            '_id': 0,
+            'project': '$_id.project',
+            'variant': '$_id.variant',
+            'task': '$_id.task',
+            'test': '$_id.test',
+            'thread_level': '$_id.thread_level'
+        }
+    }]
+    levels = list(points_collection.aggregate(pipeline))
+
+    for identifier in levels:
+        if _matches(thread_level, identifier['thread_level']):
+            yield identifier
+    if len(levels) > 1 and _matches(thread_level, MAX_THREAD_LEVEL):
+        max_level = levels[0].copy()
+        max_level['thread_level'] = MAX_THREAD_LEVEL
+        yield max_level
+
+
+def is_max_thread_level(test_identifier):
+    """
+    Check if a test identifier is for the max thread level.
+
+    :return: true if thread_level is set and equal to MAX_THREAD_LEVEL.
+    """
+    return test_identifier.get('thread_level', None) == MAX_THREAD_LEVEL

@@ -9,11 +9,6 @@ import structlog
 
 LOG = structlog.get_logger(__name__)
 
-MAX_THREAD_LEVEL = 'max'
-"""
-The value of the 'thread_level' field for the max thread level.
-"""
-
 
 def make_filter(point):
     """
@@ -161,65 +156,6 @@ def extract_tests(perf_json):
     :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
     """
     return set([it['name'] for it in perf_json['data']['results']])
-
-
-def extract_test_identifiers(perf_json):
-    """
-    Extract the test identifiers from the raw data file from Evergreen.
-
-    :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
-    """
-    project = perf_json['project_id']
-    variant = perf_json['variant']
-    task = perf_json['task_name']
-    return [{
-        'project': project,
-        'variant': variant,
-        'task': task,
-        'test': test
-    } for test in extract_tests(perf_json)]
-
-
-def generate_thread_levels(test_identifier, points_collection):
-    """
-    Given a test identifier of project / variant / task and test, get the thread levels from
-    the points collection.
-
-    :param dict test_identifier: The project / variant / task and test.
-    :param pymongo.Collection points_collection: The points collection ref.
-    """
-
-    pipeline = [{
-        '$match': test_identifier
-    }, {
-        '$unwind': '$results'
-    }, {
-        '$group': {
-            '_id': {
-                'project': '$project',
-                'variant': '$variant',
-                'task': '$task',
-                'test': '$test',
-                'thread_level': '$results.thread_level'
-            }
-        }
-    }, {
-        '$project': {
-            '_id': 0,
-            'project': '$_id.project',
-            'variant': '$_id.variant',
-            'task': '$_id.task',
-            'test': '$_id.test',
-            'thread_level': '$_id.thread_level'
-        }
-    }]
-    levels = list(points_collection.aggregate(pipeline))
-    for identifier in levels:
-        yield identifier
-    if len(levels) > 1:
-        max_level = levels[0].copy()
-        max_level['thread_level'] = MAX_THREAD_LEVEL
-        yield max_level
 
 
 def create_descriptor(perf_json, test=None):

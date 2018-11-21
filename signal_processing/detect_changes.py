@@ -42,25 +42,6 @@ find the change point nearest min size.
 """
 
 
-def get_query_for_points(test_identifier):
-    """ Create a points query from a test identifier.
-
-    :param dict test_identifier: The project / variant / task / test and thread level values.
-
-    :return: A query to get the points for this identifier.
-    :rtype: dict
-    """
-    points_query = test_identifier.copy()
-    if 'thread_level' in test_identifier:
-        thread_level = test_identifier['thread_level']
-        del points_query['thread_level']
-
-        # The max_ops_per_sec is the correct value, so we don't need results.thread_level.
-        if thread_level != etl_helpers.MAX_THREAD_LEVEL:
-            points_query['results.thread_level'] = thread_level
-    return points_query
-
-
 class PointsModel(object):
     """
     Model that gathers the point data and runs QHat to find change points.
@@ -144,11 +125,11 @@ class PointsModel(object):
         :rtype: tuple(int, OrderedDict, dict).
         """
 
-        is_max_thread_level = test_identifier['thread_level'] == etl_helpers.MAX_THREAD_LEVEL
+        max_thread_level = helpers.is_max_thread_level(test_identifier)
         pipeline = []
 
         # Step 1: Match test identifier and correct thread level.
-        query = get_query_for_points(test_identifier)
+        query = helpers.get_query_for_points(test_identifier)
         # If order was given, only get points after that point.
         if min_order is not None:
             query['order'] = {'$gt': min_order}
@@ -174,7 +155,7 @@ class PointsModel(object):
             'task_id': 1,
             'version_id': 1,
         }
-        if is_max_thread_level:
+        if max_thread_level:
             # The max_ops_per_sec is the correct value.
             filter_thread_level['max_ops_per_sec'] = 1
         else:
@@ -192,7 +173,7 @@ class PointsModel(object):
 
         # Step 5: Group by project / variant / task  / test and thread level and simultaneously
         # accumulate the data required for change point detection.
-        if is_max_thread_level:
+        if max_thread_level:
             # Push max_ops_per_sec to series.
             ops_per_sec = '$max_ops_per_sec'
         else:
@@ -247,7 +228,7 @@ class PointsModel(object):
         :return: The order closest to the min_size or None.
         :rtype: int or None.
         """
-        points_query = get_query_for_points(test_identifier)
+        points_query = helpers.get_query_for_points(test_identifier)
 
         # Get the orders for each change point. The first and last points
         # cannot be change points so add these orders to the array. orders are positive,
@@ -327,7 +308,7 @@ class PointsModel(object):
         if self.min_points is None or self.min_points >= 0:
             return None
 
-        points_query = get_query_for_points(test_identifier)
+        points_query = helpers.get_query_for_points(test_identifier)
         count = self.db.points.count(points_query)
         min_points = abs(self.min_points)
 
@@ -519,16 +500,15 @@ class DetectChangesDriver(object):
             mongo_repo=self.mongo_repo,
             credentials=self.credentials)
 
-        test_identifiers = etl_helpers.extract_test_identifiers(self.perf_json)
+        test_identifiers = helpers.extract_test_identifiers(self.perf_json)
         LOG.info('loaded tests', test_identifiers=len(test_identifiers))
         LOG.debug('loaded tests', test_identifiers=test_identifiers)
         label = 'detecting changes'
 
         test_identifiers = [
             thread_identifier
-            for test_identifier in test_identifiers
-            for thread_identifier in etl_helpers.generate_thread_levels(
-                test_identifier, model.db.points)
+            for test_identifier in test_identifiers for thread_identifier in
+            helpers.generate_thread_levels(test_identifier, model.db.points)
         ]
 
         bar_template, show_item = helpers.query_terminal_for_bar()

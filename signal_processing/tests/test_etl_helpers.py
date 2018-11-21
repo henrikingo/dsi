@@ -157,52 +157,6 @@ class TestRedactURL(unittest.TestCase):
                           etl_helpers.redact_url('mongodb+srv://user:password@localhost/perf'))
 
 
-class TestGenerateThreadLevels(unittest.TestCase):
-    """
-    Test suite for generate_thread_levels.
-    """
-
-    def _test_generate_thread_levels(self, return_value=(), expected=None):
-        """
-        Test generate_thread_levels identifier.
-        """
-        return_value = list(return_value)
-        mock_collection = MagicMock(name="points collection")
-        mock_collection.aggregate.return_value = return_value
-        actual = list(etl_helpers.generate_thread_levels('test_identifier', mock_collection))
-        if expected is None:
-            expected = return_value
-        self.assertEquals(actual, expected)
-
-        calls = mock_collection.aggregate.call_args_list
-        self.assertEquals(len(calls), 1)
-        arguments = calls[0][0][0]
-
-        self.assertEquals(arguments[0], {'$match': 'test_identifier'})
-
-    def test_identifier(self):
-        """
-        Test generate_thread_levels identifier.
-        """
-        self._test_generate_thread_levels()
-
-    def test_yields(self):
-        """
-        Test generate_thread_levels yields.
-        """
-        self._test_generate_thread_levels(return_value=['values'])
-
-    def test_yields_max(self):
-        """
-        Test generate_thread_levels yields.
-        """
-        return_value = [{'thread_level': '1'}, {'thread_level': '2'}]
-        self._test_generate_thread_levels(
-            return_value=return_value, expected=return_value + [{
-                'thread_level': 'max'
-            }])
-
-
 class TestCreateDescriptor(unittest.TestCase):
     """
     Test suite for create_descriptor.
