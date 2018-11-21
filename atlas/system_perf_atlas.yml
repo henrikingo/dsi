@@ -64,9 +64,10 @@ functions:
         working_dir: work
         script: |
           cat > bootstrap.yml <<EOF
-          infrastructure_provisioning: ${cluster}
-          platform: ${platform}
-          mongodb_setup: ${setup}
+          infrastructure_provisioning: workload_client
+          platform: linux
+          mongodb_setup: atlas
+          atlas_setup: ${atlas_setup}
           test_control: ${test}
           production: true
           workloads_dir: ../src/workloads/workloads
@@ -483,9 +484,11 @@ modules:
 #######################################
 #         Buildvariants               #
 #######################################
-buildvariants:
-- name: atlas-replSet
-  display_name: Atlas 3-Node ReplSet
+
+buildvariant_templates:  # Dummy key that evergreen ignores
+- &buildvariant_template
+  name: variant-name-here
+  display_name: Variant Name Here
   # 10 years. The intent is to only schedule Atlas tests manually when needed.
   batchtime: 5256000
   modules: &modules
@@ -493,27 +496,64 @@ buildvariants:
     - workloads
     - linkbench
   expansions:
-    setup: atlas
-    cluster: workload_client
-    platform: linux
+    atlas_setup: lookup-key
   run_on:
       - "rhel70-perf-atlas"
   tasks: &3nodetasks
     - name: industry_benchmarks
     - name: industry_benchmarks_secondary_reads
-    - name: crud_workloads
-    - name: mixed_workloads
-    - name: misc_workloads
-    - name: map_reduce_workloads
-    - name: smoke_test
-    - name: retryable_writes_workloads
+#    - name: crud_workloads
+#    - name: mixed_workloads
+#    - name: misc_workloads
+#    - name: map_reduce_workloads
+#    - name: smoke_test
+#    - name: retryable_writes_workloads
     - name: industry_benchmarks_wmajority
-    - name: secondary_performance
-    - name: non_sharded_workloads
-    - name: bestbuy_agg
-    - name: bestbuy_query
-    - name: change_streams_throughput
-    - name: change_streams_latency
-    - name: snapshot_reads
-    - name: secondary_reads
-    - name: linkbench
+#    - name: secondary_performance
+#    - name: non_sharded_workloads
+#    - name: bestbuy_agg
+#    - name: bestbuy_query
+#    - name: change_streams_throughput
+#    - name: change_streams_latency
+#    - name: snapshot_reads
+#    - name: secondary_reads
+#    - name: linkbench
+
+
+
+buildvariants:
+- <<: *buildvariant_template
+  name: M10-atlas-repl
+  display_name: M10 Atlas ReplSet
+  expansions:
+    atlas_setup: M10-repl
+
+- <<: *buildvariant_template
+  name: M30-atlas-repl
+  display_name: M30 Atlas ReplSet
+  expansions:
+    atlas_setup: M30-repl
+
+- <<: *buildvariant_template
+  name: M60-atlas-repl
+  display_name: M60 Atlas ReplSet
+  expansions:
+    atlas_setup: M60-repl
+
+- <<: *buildvariant_template
+  name: M100-atlas-repl
+  display_name: M100 Atlas ReplSet
+  expansions:
+    atlas_setup: M100-repl
+
+- <<: *buildvariant_template
+  name: M200-atlas-repl
+  display_name: M200 Atlas ReplSet
+  expansions:
+    atlas_setup: M200-repl
+
+- <<: *buildvariant_template
+  name: M400-atlas-repl
+  display_name: M400 Atlas ReplSet
+  expansions:
+    atlas_setup: M400-repl

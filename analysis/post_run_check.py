@@ -436,69 +436,70 @@ def main(args):  # pylint: disable=too-many-locals,too-many-statements,too-many-
     global history, tag_history, overrides, replica_lag_line  # pylint: disable=invalid-name,global-statement
     (history, tag_history, overrides) = read_histories(args.variant, args.task, ofile=args.ofile)
     task_max_thread_level = 0
-    results = []
 
     # replication lag table lines
     replica_lag_line = []
 
-    # iterate through tests and check for regressions and other violations
-    testnames = history.testnames()
-    for test in testnames:
-        result = {'test_file': test, 'exit_code': 0, 'log_raw': '\n'}
-        to_test = {'ref_tag': args.reference}
-        series = history.series_at_revision(test, args.rev)
-        if series:
-            to_test.update(series)
-            result['start'] = series.get('start', 0)
-            result['end'] = series.get('end', 1)
-            if len(to_test) == 1:
-                print('\tno data at this revision, skipping')
-                continue
-            # Use project_id and variant to identify the rule set
-            # May want to use task_name for further differentiation
-            try:
-                # Redirect stdout to log_stdout to capture per test log
-                real_stdout = sys.stdout
-                log_stdout = StringIO.StringIO()
-                sys.stdout = log_stdout
-                result.update(project_test_rules(args.project_id, args.variant, to_test))
-                # Store log_stdout in log_raw
-                test_log = log_stdout.getvalue()
-                result['log_raw'] += log_header(test)
-                result['log_raw'] += test_log
-                # Restore stdout (important) and print test_log to it
-                sys.stdout = real_stdout
+    report = {'results': []}
+    if history is not None:
+        # iterate through tests and check for regressions and other violations
+        results = []
+        testnames = history.testnames()
+        for test in testnames:
+            result = {'test_file': test, 'exit_code': 0, 'log_raw': '\n'}
+            to_test = {'ref_tag': args.reference}
+            series = history.series_at_revision(test, args.rev)
+            if series:
+                to_test.update(series)
+                result['start'] = series.get('start', 0)
+                result['end'] = series.get('end', 1)
+                if len(to_test) == 1:
+                    print('\tno data at this revision, skipping')
+                    continue
+                # Use project_id and variant to identify the rule set
+                # May want to use task_name for further differentiation
+                try:
+                    # Redirect stdout to log_stdout to capture per test log
+                    real_stdout = sys.stdout
+                    log_stdout = StringIO.StringIO()
+                    sys.stdout = log_stdout
+                    result.update(project_test_rules(args.project_id, args.variant, to_test))
+                    # Store log_stdout in log_raw
+                    test_log = log_stdout.getvalue()
+                    result['log_raw'] += log_header(test)
+                    result['log_raw'] += test_log
+                    # Restore stdout (important) and print test_log to it
+                    sys.stdout = real_stdout
 
-                # what is the maximum thread level for this test?
-                test_max_thread_level = max(int(x) for x in to_test['results'].keys())
-                # update the maximum thread level of the entire task as necessary
-                task_max_thread_level = max(test_max_thread_level, task_max_thread_level)
+                    # what is the maximum thread level for this test?
+                    test_max_thread_level = max(int(x) for x in to_test['results'].keys())
+                    # update the maximum thread level of the entire task as necessary
+                    task_max_thread_level = max(test_max_thread_level, task_max_thread_level)
 
-                if args.out_file is None:
-                    print(result['log_raw'])
+                    if args.out_file is None:
+                        print(result['log_raw'])
+                    else:
+                        with open(args.out_file, 'w') as out_file:
+                            out_file.write(result['log_raw'])
+
+                except Exception as err:  # pylint: disable=broad-except
+                    # Need to restore and print stdout in case of Exception
+                    test_log = log_stdout.getvalue()
+                    sys.stdout = real_stdout
+                    print(test_log)
+                    print('The (project_id, variant) combination is not supported ' \
+                        'in post_run_check.py: {0}'.format(str(err)))
+                    print(sys.exc_info()[0])
+                    print(sys.exc_info()[1])
+                    traceback.print_tb(sys.exc_info()[2])
+                    sys.exit(1)
+                if any(val == 'fail' for val in result.itervalues()):
+                    result['status'] = 'fail'
                 else:
-                    with open(args.out_file, 'w') as out_file:
-                        out_file.write(result['log_raw'])
+                    result['status'] = 'pass'
+                results.append(result)
 
-            except Exception as err:  # pylint: disable=broad-except
-                # Need to restore and print stdout in case of Exception
-                test_log = log_stdout.getvalue()
-                sys.stdout = real_stdout
-                print(test_log)
-                print('The (project_id, variant) combination is not supported ' \
-                    'in post_run_check.py: {0}'.format(str(err)))
-                print(sys.exc_info()[0])
-                print(sys.exc_info()[1])
-                traceback.print_tb(sys.exc_info()[2])
-                sys.exit(1)
-            if any(val == 'fail' for val in result.itervalues()):
-                result['status'] = 'fail'
-            else:
-                result['status'] = 'pass'
-            results.append(result)
-
-    report = {}
-    report['results'] = results
+        report['results'] = results
 
     # flush stdout to the log file
     sys.stdout.flush()

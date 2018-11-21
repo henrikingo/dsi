@@ -3,18 +3,7 @@ atlas:
     root: https://cloud-dev.mongodb.com/api/atlas/v1.0/
     group_id: 5b991a4880eef5262645e0c7
     # atlas_api_user and atlas_api_key are given in runtime_secret.yml
-  clusters:
-    - autoScaling:
-        diskGBEnabled: false
-      clusterType: REPLICASET
-      mongoDBMajorVersion: 3.6
-      numShards: 1
-      providerSettings:
-        providerName: AWS
-        regionName: US_WEST_2
-        instanceSizeName: M60  # M60 roughly corresponds to c3.8xlarge
-        diskIOPS: 5280  # sys-perf uses 5500
-      diskSizeGB: 320  # sys-perf uses 320
+  clusters: ${mongodb_setup.atlas_types.${bootstrap.atlas_setup}}
 
 # Meta data about this mongodb setup
 meta:
@@ -29,4 +18,78 @@ meta:
   hostname: This.is.an.Atlas.cluster.SSH.not.supported
 
 # No correctness checks can be run, since we don't have the log file and diagnostic.data.
-validate: This entry is here just to make yamllint happy :-(
+# validate:
+
+
+# The keys in this lookup table map to atlas-setup expansion in system_perf_atlas.yml
+atlas_types:
+  just_a_template:
+    - &repl_template
+      autoScaling:
+        diskGBEnabled: false
+      clusterType: REPLICASET
+      mongoDBMajorVersion: 4.0
+      numShards: 1
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_2
+        instanceSizeName: REPLACE
+        diskIOPS: REPLACE
+      diskSizeGB: REPLACE
+
+  M10-repl:
+    - <<: *repl_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_2
+        instanceSizeName: M10
+        diskIOPS: 300
+      diskSizeGB: 100
+
+  M30-repl:
+    - <<: *repl_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_2
+        instanceSizeName: M30
+        diskIOPS: 3600
+      diskSizeGB: 320
+
+  # M60 happens to be similar to what we use in sys-perf
+  M60-repl:
+    - <<: *repl_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_2
+        instanceSizeName: M60  # M60 roughly corresponds to c3.8xlarge
+        diskIOPS: 5280  # sys-perf uses 5500
+      diskSizeGB: 320  # sys-perf uses 320
+
+
+
+  M100-repl:
+    - <<: *repl_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_2
+        instanceSizeName: M100
+        diskIOPS: 8448
+      diskSizeGB: 512
+
+  M200-repl:
+    - <<: *repl_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_2
+        instanceSizeName: M200
+        diskIOPS: 8448
+      diskSizeGB: 512
+
+  M400-repl:
+    - <<: *repl_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_2
+        instanceSizeName: M400
+        diskIOPS: 8448
+      diskSizeGB: 512
