@@ -19,6 +19,43 @@ from click.testing import CliRunner
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
+class TestGetQueryForPoints(unittest.TestCase):
+    """
+    Test suite for the get_query_for_points.
+    """
+
+    def _test(self, test_identifier, expected=None):
+        """ test helper. """
+        if expected is None:
+            expected = test_identifier
+
+        self.assertEquals(expected, detect_changes.get_query_for_points(test_identifier))
+
+    def test_empty(self):
+        """ test empty. """
+        self._test({})
+
+    def test_not_empty(self):
+        """ test not empty. """
+
+        self._test({
+            'project': 'project_id',
+            'variant': 'variant',
+            'task': 'task_name',
+            'test': 'testname'
+        })
+
+    def test_thread_level(self):
+        """ test a thread level. """
+
+        self._test({'thread_level': '1'}, {'results.thread_level': '1'})
+
+    def test_max_thread_level(self):
+        """ test a thread level. """
+
+        self._test({'thread_level': 'max'}, {})
+
+
 # pylint: disable=invalid-name
 class TestDetectChangesDriver(unittest.TestCase):
     """
@@ -123,6 +160,8 @@ class TestGetPoints(unittest.TestCase):
             mock_mongo_client.return_value.get_database.return_value = mock_db
             if expected is None:
                 expected = {key: [] for key in detect_changes.ARRAY_FIELDS}
+            if '_id' not in expected:
+                expected['_id'] = None
             mock_db.points.aggregate.return_value = [expected]
             mock_cursor.return_value = self.sysperf_points
             test_model = detect_changes.PointsModel(self.mongo_uri, min_points=min_points)
@@ -131,7 +170,7 @@ class TestGetPoints(unittest.TestCase):
             calls = mock_db.points.aggregate.call_args_list
             self.assertTrue(len(calls) == 1)
 
-            self.assertTrue(len(calls[0][0][0]) == 6)
+            self.assertTrue(len(calls[0][0][0]) == 5)
 
             pipeline = calls[0][0][0]
             first = pipeline[0]
@@ -486,10 +525,7 @@ class TestComputeChangePoints(unittest.TestCase):
             size = 3
             values = range(1, size + 1)
             thread_level_results = {
-                'project': self.sysperf_perf_json['project_id'],
-                'variant': self.sysperf_perf_json['variant'],
-                'task': self.sysperf_perf_json['task_name'],
-                'test': self.sysperf_perf_json['data']['results'][0]['name'],
+                '_id': None,
                 'thread_level': thread_level,
                 'size': size,
                 'series': values,

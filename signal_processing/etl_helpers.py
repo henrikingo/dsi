@@ -9,6 +9,11 @@ import structlog
 
 LOG = structlog.get_logger(__name__)
 
+MAX_THREAD_LEVEL = 'max'
+"""
+The value of the 'thread_level' field for the max thread level.
+"""
+
 
 def make_filter(point):
     """
@@ -208,8 +213,13 @@ def generate_thread_levels(test_identifier, points_collection):
             'thread_level': '$_id.thread_level'
         }
     }]
-    for identifier in points_collection.aggregate(pipeline):
+    levels = list(points_collection.aggregate(pipeline))
+    for identifier in levels:
         yield identifier
+    if len(levels) > 1:
+        max_level = levels[0].copy()
+        max_level['thread_level'] = MAX_THREAD_LEVEL
+        yield max_level
 
 
 def create_descriptor(perf_json, test=None):

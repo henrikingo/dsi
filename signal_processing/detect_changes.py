@@ -51,10 +51,13 @@ def get_query_for_points(test_identifier):
     :rtype: dict
     """
     points_query = test_identifier.copy()
-    thread_level = points_query['thread_level']
-    del points_query['thread_level']
-    points_query['results.thread_level'] = thread_level
+    if 'thread_level' in test_identifier:
+        thread_level = test_identifier['thread_level']
+        del points_query['thread_level']
 
+        # The max_ops_per_sec is the correct value, so we don't need results.thread_level.
+        if thread_level != etl_helpers.MAX_THREAD_LEVEL:
+            points_query['results.thread_level'] = thread_level
     return points_query
 
 
@@ -141,7 +144,26 @@ class PointsModel(object):
         :rtype: tuple(int, OrderedDict, dict).
         """
 
-        required_fields = {
+        is_max_thread_level = test_identifier['thread_level'] == etl_helpers.MAX_THREAD_LEVEL
+        pipeline = []
+
+        # Step 1: Match test identifier and correct thread level.
+        query = get_query_for_points(test_identifier)
+        # If order was given, only get points after that point.
+        if min_order is not None:
+            query['order'] = {'$gt': min_order}
+
+        pipeline.append({'$match': query})
+
+        # Step 2: A valid document must contain values for REQUIRED_KEYS.
+        pipeline.append({'$match': {'$and': [{key: {'$ne': None}} for key in REQUIRED_KEYS]}})
+
+        # Step 3: Sort by order.
+        pipeline.append({'$sort': {'order': 1}})
+
+        # Step 4: Project fields to ensure we only have the required fields.
+        # For non-max thread level, this removes results that don't match the correct thread level.
+        filter_thread_level = {
             'project': 1,
             'revision': 1,
             'variant': 1,
@@ -152,88 +174,62 @@ class PointsModel(object):
             'task_id': 1,
             'version_id': 1,
         }
-
-        filter_thread_level = required_fields.copy()
-        filter_thread_level['results'] = {
-            '$filter': {
-                'input': '$results',
-                'as': 'result',
-                'cond': {
-                    '$eq': ['$$result.thread_level', test_identifier['thread_level']]
+        if is_max_thread_level:
+            # The max_ops_per_sec is the correct value.
+            filter_thread_level['max_ops_per_sec'] = 1
+        else:
+            # Remove results not matching the correct thread level.
+            filter_thread_level['results'] = {
+                '$filter': {
+                    'input': '$results',
+                    'as': 'result',
+                    'cond': {
+                        '$eq': ['$$result.thread_level', test_identifier['thread_level']]
+                    }
                 }
             }
-        }
+        pipeline.append({'$project': filter_thread_level})
 
-        query = get_query_for_points(test_identifier)
+        # Step 5: Group by project / variant / task  / test and thread level and simultaneously
+        # accumulate the data required for change point detection.
+        if is_max_thread_level:
+            # Push max_ops_per_sec to series.
+            ops_per_sec = '$max_ops_per_sec'
+        else:
+            # Push the first results.ops_per_sec. There can only be one.
+            ops_per_sec = {'$arrayElemAt': ['$results.ops_per_sec', 0]}
 
-        # If order was given, only get points after that point.
-        if min_order is not None:
-            query['order'] = {'$gt': min_order}
-
-        grouping = {
-            '_id': {
-                'project': '$project',
-                'variant': '$variant',
-                'task': '$task',
-                'test': '$test',
-                'thread_level': {
-                    '$arrayElemAt': ['$results.thread_level', 0]
-                }
-            },
-            'size': {
-                '$sum': 1
-            },
-            'series': {
-                '$push': {
-                    '$arrayElemAt': ['$results.ops_per_sec', 0]
-                }
-            },
-            'revisions': {
-                '$push': '$revision'
-            },
-            'orders': {
-                '$push': '$order'
-            },
-            'create_times': {
-                '$push': '$create_time'
-            },
-            'task_ids': {
-                '$push': '$task_id'
-            },
-            'version_ids': {
-                '$push': '$version_id'
-            }
-        }
-
-        # filter documents that contain no or empty field values
-        required_keys = {'$and': [{key: {'$ne': None}} for key in REQUIRED_KEYS]}
-
-        pipeline = [{'$match': query},
-                    {'$match': required_keys},
-                    {'$sort': {'order': 1}},
-                    {'$project': filter_thread_level}] # yapf: disable
-        pipeline.append({'$group': grouping})
         pipeline.append({
-            '$project': {
-                '_id': 0,
-                'project': '$_id.project',
-                'variant': '$_id.variant',
-                'task': '$_id.task',
-                'test': '$_id.test',
-                'testname': '$_id.test',
-                'thread_level': '$_id.thread_level',
-                'size': 1,
-                'series': 1,
-                'revisions': 1,
-                'orders': 1,
-                'create_times': 1,
-                'task_ids': 1,
-                'version_ids': 1
+            '$group': {
+                '_id': None,
+                'size': {
+                    '$sum': 1
+                },
+                'revisions': {
+                    '$push': '$revision'
+                },
+                'series': {
+                    '$push': ops_per_sec
+                },
+                'orders': {
+                    '$push': '$order'
+                },
+                'create_times': {
+                    '$push': '$create_time'
+                },
+                'task_ids': {
+                    '$push': '$task_id'
+                },
+                'version_ids': {
+                    '$push': '$version_id'
+                }
             }
         })
 
-        points = list(self.db.points.aggregate(pipeline))
-        results = points[0]
+        results = list(self.db.points.aggregate(pipeline))[0]
+        results.update(test_identifier)
+        del results['_id']
+
         sizes = {key: len(results[key]) for key in ARRAY_FIELDS}
         if not all(current == sizes.values()[0] for current in sizes.values()):
             raise Exception('All array sizes were not equal: {}'.format(sizes))
