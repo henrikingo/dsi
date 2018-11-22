@@ -1,6 +1,9 @@
 # This config file will deploy a single workload client host and no mongod nodes.
 # We use this to benchmark Atlas clusters.
 
+evergreen:
+  reuse_cluster: false
+
 tfvars:
   cluster_name: workload_client
 
