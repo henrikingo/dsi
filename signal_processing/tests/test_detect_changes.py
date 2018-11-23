@@ -19,6 +19,15 @@ from click.testing import CliRunner
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
+def statistics(i):
+    """ helper function to create dummy stats:
+
+    :parameter int i: An int, generally the index.
+    :return: A stats dict().
+    """
+    return {'next': i * 10, 'previous': (i * 10) + 1}
+
+
 # pylint: disable=invalid-name
 class TestDetectChangesDriver(unittest.TestCase):
     """
@@ -227,7 +236,8 @@ class TestGetClosestOrderNoChangePoints(unittest.TestCase):
             mock_points.count.return_value = count
             order = count + 1
             return_value = [{'order': order}]
-            mock_points.find.return_value.sort.return_value.skip.return_value.limit.return_value = return_value
+            mock_points.find.return_value.sort.return_value.skip.return_value.limit.return_value =\
+                return_value
 
             test_model = detect_changes.PointsModel(self.mongo_uri, min_points=min_points)
             self.assertEquals(order,
@@ -411,6 +421,85 @@ class TestGetClosestOrder(unittest.TestCase):
         self._test_get_closest_order(True)
 
 
+class TestFindPreviousChangePoint(unittest.TestCase):
+    def setUp(self):
+        self.mongo_uri = 'mongodb+srv://fake@dummy-server.mongodb.net/perf'
+
+    def _test(self, previous=None):
+        if previous is None:
+            previous = []
+        mock_db = MagicMock(name='db', autospec=True)
+
+        with patch('signal_processing.detect_changes.pymongo.MongoClient') as mock_mongo_client:
+            mock_mongo_client.return_value.get_database.return_value = mock_db
+            test_model = detect_changes.PointsModel(self.mongo_uri)
+            mock_db.change_points.find.return_value.sort.return_value.limit.return_value = previous
+
+            return_value = test_model._find_previous_change_point({
+                'test': 'identifier'
+            }, {
+                'order': 'current'
+            })
+
+            chained = call({'test': 'identifier', 'order': {'$lt': 'current'}}).\
+                sort('order', pymongo.DESCENDING).\
+                limit(1)
+            self.assertEquals(mock_db.change_points.find.mock_calls, chained.call_list())
+            return return_value
+
+    def test_no_previous(self):
+        """ test no previous """
+        self.assertIsNone(self._test())
+
+    def test_previous(self):
+        """ test with previous"""
+        self.assertEquals('previous', self._test(previous=['previous']))
+
+
+class TestUpdatePreviousChangePoint(unittest.TestCase):
+    """
+    Test suite for the PointsModel.update_previous_change_point class.
+    """
+
+    def setUp(self):
+        self.mongo_uri = 'mongodb+srv://fake@dummy-server.mongodb.net/perf'
+
+    def _test(self, has_previous=False):
+        mock_db = MagicMock(name='db', autospec=True)
+
+        with patch('signal_processing.detect_changes.pymongo.MongoClient') as mock_mongo_client:
+            mock_mongo_client.return_value.get_database.return_value = mock_db
+            test_model = detect_changes.PointsModel(self.mongo_uri)
+            test_model._find_previous_change_point = MagicMock(name='_find_previous_change_point')
+            previous = None
+            if has_previous:
+                previous = {'order': 'previous'}
+            test_model._find_previous_change_point.return_value = previous
+
+            test_identifier = {'test': 'identifier'}
+            change_point = {'order': 'current', 'statistics': statistics(0)}
+
+            test_model.update_previous_change_point(test_identifier, change_point)
+
+            test_model._find_previous_change_point.assert_called_once_with(
+                test_identifier, change_point)
+            if previous:
+                query = test_identifier.copy()
+                query['order'] = previous['order']
+
+                # next of previous is previous of current
+                update = {'$set': {'statistics.next': change_point['statistics']['previous']}}
+                mock_db.change_points.update_one.assert_called_once_with(query, update)
+
+    def test_no_previous(self):
+        """ test no previous """
+        self._test()
+
+    def test_previous(self):
+        """ test with previous"""
+        self._test(has_previous=True)
+
+
 class TestComputeChangePoints(unittest.TestCase):
     """
     Test suite for the PointsModel.compute_change_points class.
@@ -447,8 +536,8 @@ class TestComputeChangePoints(unittest.TestCase):
                 expected_num_points += 1
         return expected_num_points, expected_points
 
-    def _test_compute_change_points(self, exception=False, order=None):
-        # pylint: disable=too-many-locals
+    def _test_compute_change_points(self, exception=False, order=None, old_change_points=True):
+        # pylint: disable=too-many-locals, too-many-branches
 
         with patch('pymongo.InsertOne') as mock_insert, \
                 patch('pymongo.DeleteMany') as mock_delete, \
@@ -477,11 +566,12 @@ class TestComputeChangePoints(unittest.TestCase):
                         ('thread_level', thread_level),
                         ('order', i),
                         ('task_id', 'task {}'.format(i)),
-                        ('version_id', 'version {}'.format(i))
+                        ('version_id', 'version {}'.format(i)),
+                        ('statistics', statistics(i))
                     ]) for i in range(1, 3)]  # yapf: disable
 
             mock_insert.side_effect = ["InsertOne 1", "InsertOne 2"]
-            mock_bulk = MagicMock(name='bulk', autospec=True)
+            mock_bulk = MagicMock(name='bulk', autospec=True, bulk_api_result='bulk_api_result')
             mock_mongo_client.return_value.get_database.return_value = mock_db
             mock_db.change_points.bulk_write.return_value = mock_bulk
 
@@ -499,14 +589,14 @@ class TestComputeChangePoints(unittest.TestCase):
                 'version_ids': ['version {}'.format(i) for i in values],
             }
 
+            if old_change_points:
+                change_points = [{'order': i, 'statistics': statistics(i)} for i in range(1, 3)]
+            else:
+                change_points = []
+
             mock_db.points.aggregate.return_value = [thread_level_results]
             mock_db.points.count.return_value = 100
-            mock_qhat = MagicMock(
-                name='qhat', autospec=True, change_points=[{
-                    'order': 1
-                }, {
-                    'order': 2
-                }])
+            mock_qhat = MagicMock(name='qhat', autospec=True, change_points=change_points)
             mock_qhat_class.return_value = mock_qhat
 
             test_identifier = {
@@ -527,6 +617,8 @@ class TestComputeChangePoints(unittest.TestCase):
                 query = test_identifier.copy()
                 query['order'] = {'$gt': order}
 
+            test_model.update_previous_change_point = MagicMock(name='update_previous_change_point')
+
             if exception:
                 with self.assertRaises(Exception) as context:
                     test_model.compute_change_points(test_identifier, weighting=0.001)
@@ -539,22 +631,34 @@ class TestComputeChangePoints(unittest.TestCase):
                     test_identifier, weighting=0.001)
 
                 self.assertEqual(actual_size, size)
-                self.assertEqual(num_change_points, 2)
+                self.assertEqual(num_change_points, 2 if old_change_points else 0)
 
                 delete_calls = [call(query)]
+
+                if old_change_points:
+                    test_model.update_previous_change_point.assert_called_once_with(
+                        test_identifier, change_points[0])
+                else:
+                    test_model.update_previous_change_point.assert_not_called()
 
             # delete is called once or twice
             mock_delete.assert_has_calls(delete_calls)
 
             test_model.get_closest_order.assert_called_once_with(test_identifier)
-
             mock_db.change_points.find.assert_called_once_with(query)
-            mock_insert.assert_has_calls(
-                [call(expected_insert) for expected_insert in expected_inserts])
+            if old_change_points:
+                mock_insert.assert_has_calls(
+                    [call(expected_insert) for expected_insert in expected_inserts])
+            else:
+                mock_insert.assert_not_called()
+
             mock_mongo_client.return_value.get_database.assert_called_once_with()
             mock_mongo_client.assert_called_once_with(self.mongo_uri)
-            mock_db.change_points.bulk_write.assert_called_once_with(
-                ["DeleteMany", "InsertOne 1", "InsertOne 2"])
+
+            expected_bulk_writes = ["DeleteMany"]
+            if old_change_points:
+                expected_bulk_writes.extend(["InsertOne 1", "InsertOne 2"])
+            mock_db.change_points.bulk_write.assert_called_once_with(expected_bulk_writes)
             mock_qhat_class.assert_called_once_with(
                 thread_level_results,
                 pvalue=None,
@@ -572,6 +676,9 @@ class TestComputeChangePoints(unittest.TestCase):
 
     def test_compute_change_points_rollback(self):
         self._test_compute_change_points(True)
+
+    def test_compute_no_change_points(self):
+        self._test_compute_change_points(old_change_points=False)
 
     def _test_detect_changes(self, mock_evg_client, mock_etl_helpers, mock_driver, is_patch=False):
         """

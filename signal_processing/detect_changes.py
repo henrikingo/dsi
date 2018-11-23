@@ -344,6 +344,50 @@ class PointsModel(object):
             return self._get_closest_order_for_change_points(change_point_orders, test_identifier)
         return self._get_closest_order_no_change_points(test_identifier)
 
+    def _find_previous_change_point(self, test_identifier, current):
+        """
+        Get the change point before current.
+
+        :param dict test_identifier: The test identifier.
+        :param dict current:  The current change point.
+        :return: The previous change point or None.
+        :rtype: dict or None.
+        """
+        change_point_query = test_identifier.copy()
+        change_point_query['order'] = {'$lt': current['order']}
+        previous_change_point = list(
+            self.db.change_points.find(change_point_query).sort('order',
+                                                                pymongo.DESCENDING).limit(1))
+
+        if previous_change_point:
+            return previous_change_point[0]
+        return None
+
+    def update_previous_change_point(self, test_identifier, change_point):
+        """
+        Update the statistics of the previous point.
+
+        :param dict test_identifier: The test identifier.
+        :param dict change_point: The current change point.
+        :return: The previous change point or None.
+        :rtype: dict or None.
+        """
+        previous = self._find_previous_change_point(test_identifier, change_point)
+
+        if previous is not None:
+            previous_change_point_query = test_identifier.copy()
+            previous_change_point_query['order'] = previous['order']
+            statistics = change_point['statistics']['previous']
+            result = self.db.change_points.update_one(previous_change_point_query, {
+                '$set': {
+                    'statistics.next': statistics
+                }
+            })
+            LOG.info(
+                "previous change point update",
+                test_identifier=test_identifier,
+                results=result.raw_result)
+
     def compute_change_points(self, test_identifier, weighting):
         """
         Compute the change points for the given test using the QHat algorithm and insert them into
@@ -374,6 +418,7 @@ class PointsModel(object):
         # Poor mans transaction. Upgrade to 4.0?
         # TODO: TIG-1174
         query = test_identifier
+
         if order is not None:
             query = test_identifier.copy()
             query['order'] = {'$gt': order}
@@ -391,14 +436,29 @@ class PointsModel(object):
                 change_point['version_id'] = thread_level_results['version_ids'][index]
                 requests.append(pymongo.InsertOne(change_point))
 
-            self.db.change_points.bulk_write(requests)
+            bulk_write_result = self.db.change_points.bulk_write(requests)
+            LOG.debug(
+                "change points bulk_write",
+                test_identifier=test_identifier,
+                results=bulk_write_result.bulk_api_result)
+
+            if change_points:
+                self.update_previous_change_point(test_identifier, change_points[0])
 
             return thread_level_results['size'], len(change_points)
-        except:
-            LOG.warn('compute_change_points failed. Attempting to rollback.', exc_info=True)
+        except Exception as e:
+            # pylint: disable=no-member
+            LOG.warn(
+                'compute_change_points failed. Attempting to rollback.',
+                exc_info=True,
+                details=e.details if hasattr(e, 'details') else str(e))
             requests = [pymongo.DeleteMany(query)] +\
                        [pymongo.InsertOne(point) for point in before]
-            self.db.change_points.bulk_write(requests)
+            bulk_write_result = self.db.change_points.bulk_write(requests)
+            LOG.debug(
+                "rollback bulk_write",
+                test_identifier=test_identifier,
+                results=bulk_write_result.bulk_api_result)
             raise
 
     def __getstate__(self):
