@@ -410,6 +410,8 @@ class PointsModel(object):
             weighting=weighting,
             mongo_repo=self.mongo_repo,
             credentials=self.credentials).change_points
+        change_points = sorted(change_points, key=lambda k: k['order'])
+
         LOG.debug(
             "compute_change_points starting",
             change_points=len(change_points),

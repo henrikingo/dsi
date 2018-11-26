@@ -536,7 +536,11 @@ class TestComputeChangePoints(unittest.TestCase):
                 expected_num_points += 1
         return expected_num_points, expected_points
 
-    def _test_compute_change_points(self, exception=False, order=None, old_change_points=True):
+    def _test_compute_change_points(self,
+                                    exception=False,
+                                    order=None,
+                                    old_change_points=True,
+                                    reverse=False):
         # pylint: disable=too-many-locals, too-many-branches
 
         with patch('pymongo.InsertOne') as mock_insert, \
@@ -596,7 +600,10 @@ class TestComputeChangePoints(unittest.TestCase):
 
             mock_db.points.aggregate.return_value = [thread_level_results]
             mock_db.points.count.return_value = 100
-            mock_qhat = MagicMock(name='qhat', autospec=True, change_points=change_points)
+            mock_qhat = MagicMock(
+                name='qhat',
+                autospec=True,
+                change_points=list(reversed(change_points)) if reverse else change_points)
             mock_qhat_class.return_value = mock_qhat
 
             test_identifier = {
@@ -673,6 +680,10 @@ class TestComputeChangePoints(unittest.TestCase):
     def test_compute_change_points_with_order(self):
         """ test compute change points with order. """
         self._test_compute_change_points(order=101)
+
+    def test_compute_change_points_reversed_order(self):
+        """ test compute change points reversed order. """
+        self._test_compute_change_points(reverse=True)
 
     def test_compute_change_points_rollback(self):
         self._test_compute_change_points(True)
