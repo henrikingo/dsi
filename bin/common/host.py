@@ -8,6 +8,8 @@ import os
 import signal
 import time
 
+import pymongo.uri_parser
+
 import common.host_utils
 from common.utils import mkdir_p
 from common.log import IOLogAdapter
@@ -105,10 +107,61 @@ class Host(object):
 
         return all(self.exec_command(argv, quiet=quiet) == 0 for argv in argvs)
 
+    def _validate_connection_string(self, connection_string):
+        """
+        Validates that self.mongodb_auth_settings matches what is specified in the connection string
+        if auth credentials are present in both places.
+
+        :param str connection_string: Connection information regarding a MongoDB instance.
+
+        :rtype: (bool, str)
+        :return: A pair with the first element indicating whether the username and password were
+        found in the connection string and the second element representing a valid MongoDB
+        connection URI.
+
+        :raises: ValueError for invalid connection strings.
+        """
+
+        if not connection_string:
+            # command_runner.py only forwards the 'connection_string' argument so we permit using
+            # the empty string to represent using the default value.
+            connection_string = "mongodb://localhost:27017"
+
+        if not connection_string.startswith(("mongodb://", "mongodb+srv://")):
+            # Some callers omit the mongodb:// scheme so we add it ourselves to make
+            # pymongo.uri_parser.parse_uri() happy.
+            connection_string = "mongodb://" + connection_string
+
+        # The changes from SERVER-32164 made it possible for the mongo shell to receive both the
+        # --username/--password command line options and for "username:password@" to appear in the
+        # connection string. Until we stop supporting MongoDB 3.4, we need to avoid specifying the
+        # command line options if the auth settings are already present in the connection string. We
+        # reimplement the check here to verify that both sets of usernames and passwords match.
+        parsed_options = pymongo.uri_parser.parse_uri(connection_string)
+        if parsed_options.get("username") and parsed_options.get("password"):
+            if self.mongodb_auth_settings:
+                if self.mongodb_auth_settings.mongo_user != parsed_options.get("username"):
+                    raise ValueError(
+                        "Username '{}' in mongodb_auth_settings doesn't match username '{}' in"
+                        " connection string".format(self.mongodb_auth_settings.mongo_user,
+                                                    parsed_options.get("username")))
+                if self.mongodb_auth_settings.mongo_password != parsed_options.get("password"):
+                    raise ValueError(
+                        "Password '{}' in mongodb_auth_settings doesn't match password '{}' in"
+                        " connection string".format(self.mongodb_auth_settings.mongo_password,
+                                                    parsed_options.get("password")))
+            return (True, connection_string)
+
+        if parsed_options.get("username") or parsed_options.get("password"):
+            raise ValueError(
+                "Must specify both username and password in connection string, or neither")
+
+        return (False, connection_string)
+
     def exec_mongo_command(self,
                            script,
                            remote_file_name="script.js",
-                           connection_string="localhost:27017",
+                           connection_string="",
                            stdout=None,
                            stderr=None,
                            max_time_ms=None,
@@ -125,10 +178,11 @@ class Host(object):
         :type max_time_ms: int, float, None
         :param bool quiet: don't log failures if set to True. Defaults to False.
         """
-        self.create_file(remote_file_name, script)
-        self.run(['cat', remote_file_name])
         argv = ['bin/mongo', '--verbose']
-        if self.mongodb_auth_settings:
+
+        (has_auth_settings, connection_string) = self._validate_connection_string(connection_string)
+
+        if self.mongodb_auth_settings and not has_auth_settings:
             argv.extend([
                 '-u', self.mongodb_auth_settings.mongo_user, '-p',
                 self.mongodb_auth_settings.mongo_password, '--authenticationDatabase', 'admin'
@@ -136,6 +190,10 @@ class Host(object):
         # connection_string can contain ampersands. Quote it as a point fix.
         connection_string = '"' + connection_string + '"'
         argv.extend([connection_string, remote_file_name])
+
+        self.create_file(remote_file_name, script)
+        self.run(['cat', remote_file_name])
+
         status_code = self.exec_command(
             argv, stdout=stdout, stderr=stderr, max_time_ms=max_time_ms, quiet=quiet)
         return status_code

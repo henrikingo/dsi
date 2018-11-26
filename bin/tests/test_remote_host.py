@@ -412,38 +412,77 @@ class RemoteHostTestCase(unittest.TestCase):
             mock.call('remote_dir/logs/mongod.log', 'reports/local_dir/logs/mongod.log')
         ])
 
-    @patch("common.remote_host.RemoteHost.exec_command")
-    @patch("common.remote_host.RemoteHost.create_file")
-    @patch('paramiko.SSHClient')
-    def helper_exec_mongo_command(self, mongodb_auth_settings, mock_ssh, mock_create_file,
-                                  mock_exec_command):
+    def helper_exec_mongo_command(
+            self,
+            connection_string='mongodb://test_connection_string',
+            mongodb_auth_settings=None,
+            expect_auth_command_line=True,
+    ):
         """ Test run RemoteHost.exec_mongo_command """
 
-        mock_exec_command.return_value = 0
-        test_file = 'test_file'
-        test_user = 'test_user'
-        test_pem_file = 'test_pem_file'
-        test_host = 'test_host'
-        test_script = 'test_script'
-        test_connection_string = 'test_connection_string'
-        expected_argv = ['bin/mongo', '--verbose']
-        if mongodb_auth_settings is not None:
-            expected_argv.extend(
-                ['-u', 'username', '-p', 'password', '--authenticationDatabase', 'admin'])
-        expected_argv.extend(['"' + test_connection_string + '"', test_file])
-        remote = common.remote_host.RemoteHost(test_host, test_user, test_pem_file,
-                                               mongodb_auth_settings)
-        status_code = remote.exec_mongo_command(test_script, test_file, test_connection_string)
-        self.assertTrue(status_code == 0)
-        mock_create_file.assert_called_with(test_file, test_script)
-        mock_exec_command.assert_called_with(
-            expected_argv, stdout=None, stderr=None, max_time_ms=None, quiet=False)
+        # We define an extra function for setting up the mocked values in order to make the
+        # 'connection_string' and 'mongodb_auth_settings' parameters optional.
+        @patch("common.remote_host.RemoteHost.exec_command")
+        @patch("common.remote_host.RemoteHost.create_file")
+        @patch('paramiko.SSHClient')
+        def run_test(mock_ssh, mock_create_file, mock_exec_command):
+            mock_exec_command.return_value = 0
+            test_file = 'test_file'
+            test_user = 'test_user'
+            test_pem_file = 'test_pem_file'
+            test_host = 'test_host'
+            test_script = 'test_script'
+            expected_argv = ['bin/mongo', '--verbose']
+            if mongodb_auth_settings is not None and expect_auth_command_line:
+                expected_argv.extend(
+                    ['-u', 'username', '-p', 'password', '--authenticationDatabase', 'admin'])
+            expected_argv.extend(['"' + connection_string + '"', test_file])
+            remote = common.remote_host.RemoteHost(test_host, test_user, test_pem_file,
+                                                   mongodb_auth_settings)
+            status_code = remote.exec_mongo_command(test_script, test_file, connection_string)
+            self.assertEqual(0, status_code)
+            mock_create_file.assert_called_with(test_file, test_script)
+            mock_exec_command.assert_called_with(
+                expected_argv, stdout=None, stderr=None, max_time_ms=None, quiet=False)
+
+        run_test()
 
     def test_exec_mongo_command_no_auth(self):
-        self.helper_exec_mongo_command(None)
+        self.helper_exec_mongo_command()
 
-    def test_exec_mongo_command_with_auth(self):
-        self.helper_exec_mongo_command(MongoDBAuthSettings('username', 'password'))
+    def test_exec_mongo_command_with_auth_settings(self):
+        self.helper_exec_mongo_command(
+            mongodb_auth_settings=MongoDBAuthSettings('username', 'password'))
+
+    def test_exec_mongo_command_with_auth_connection_string(self):
+        self.helper_exec_mongo_command(
+            connection_string="mongodb://username:password@test_connection_string")
+
+        self.assertRaisesRegexp(
+            ValueError,
+            "Must specify both username and password",
+            self.helper_exec_mongo_command,
+            connection_string="mongodb://username@test_connection_string")
+
+    def test_exec_mongo_command_with_auth_settings_and_connection_string(self):
+        self.helper_exec_mongo_command(
+            connection_string="mongodb://username:password@test_connection_string",
+            mongodb_auth_settings=MongoDBAuthSettings('username', 'password'),
+            expect_auth_command_line=False)
+
+        self.assertRaisesRegexp(
+            ValueError,
+            "Username.*doesn't match",
+            self.helper_exec_mongo_command,
+            connection_string="mongodb://username:password@test_connection_string",
+            mongodb_auth_settings=MongoDBAuthSettings('username2', 'password'))
+
+        self.assertRaisesRegexp(
+            ValueError,
+            "Password.*doesn't match",
+            self.helper_exec_mongo_command,
+            connection_string="mongodb://username:password@test_connection_string",
+            mongodb_auth_settings=MongoDBAuthSettings('username', 'password2'))
 
     # normally wouldn't test internal method, but the collaboration with other
     # objects is complicated within host.exec_command and leads to the core logic
