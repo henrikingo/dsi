@@ -3,6 +3,7 @@ Unit tests for `setup_baselines.py`.
 """
 
 from __future__ import print_function
+import copy
 import os
 import textwrap
 import unittest
@@ -33,42 +34,165 @@ class TestSetupBaselines(unittest.TestCase):
         self.perfyaml = FIXTURE_FILES.load_yaml_file('perf.yml')
         self.sysperfyaml = FIXTURE_FILES.load_yaml_file('system_perf.yml')
 
-    def test_remove_depenencies(self):
+    def test_remove_dependencies(self):
         ''' Test remove_dependencies with simple input '''
 
         input_object = {
             'functions': {
-                'start server': [
-                    None, {
-                        'params': {
-                            'remote_file': 'original_mongod'
-                        }
-                    }, {
-                        'params': {
-                            'remote_file': 'original_mongo'
-                        }
+                'start server': [{
+                    'params': {
+                        'remote_file': 'original_mongod'
                     }
-                ]
+                }, {
+                    'params': {
+                        'remote_file': 'original_mongo'
+                    }
+                }]
             },
             'tasks': [{
+                'name':
+                    'perf test before',
                 'depends_on': [{
-                    'name': 'foo'
+                    'name': 'other dep before',
+                    'variant': 'some variant'
                 }, {
                     'name': 'compile'
+                }, {
+                    'name': 'other dep after',
+                    'variant': 'some variant'
+                }]
+            }, {
+                'name': 'compile'
+            }, {
+                'name':
+                    'perf test after',
+                'depends_on': [{
+                    'name': 'other dep before'
+                }, {
+                    'name': 'compile',
+                    'variant': 'some variant'
+                }, {
+                    'name': 'other dep after'
+                }]
+            }, {
+                'name': 'perf test only depends on compile',
+                'depends_on': [{
+                    'name': 'compile',
+                    'variant': 'some variant'
+                }]
+            }],
+            'buildvariants': [{
+                'name': 'compile build variant',
+                'tasks': [{
+                    'name': 'compile'
+                }]
+            }, {
+                'name':
+                    'perf test build variant',
+                'tasks': [{
+                    'name': 'perf test'
+                }],
+                'depends_on': [{
+                    'name': 'other dep before'
+                }, {
+                    'name': 'compile',
+                    'variant': 'some variant'
+                }, {
+                    'name': 'other dep after',
+                    'variant': 'some variant'
+                }]
+            }, {
+                'name': 'perf test only depends on compile build variant',
+                'tasks': [{
+                    'name': 'perf test'
+                }],
+                'depends_on': [{
+                    'name': 'compile',
+                    'variant': 'some variant'
+                }, ]
+            }]
+        }
+
+        expected_output = {
+            'functions': {
+                'start server': [{
+                    'params': {
+                        'remote_file': 'original_mongod'
+                    }
+                }, {
+                    'params': {
+                        'remote_file': 'original_mongo'
+                    }
+                }]
+            },
+            'tasks': [
+                {
+                    'name':
+                        'perf test before',
+                    'depends_on': [{
+                        'name': 'other dep before',
+                        'variant': 'some variant'
+                    }, {
+                        'name': 'other dep after',
+                        'variant': 'some variant'
+                    }]
+                },
+                # The setup_baselines.remove_dependencies() function removes the "compile" task from
+                # the list of "depends_on" tasks but doesn't actually remove the "compile" task itself.
+                # This is acceptable because the actual etc/perf.yml and etc/system_perf.yml project
+                # configurations have a separate build variant for the "compile" task.
+                {
+                    'name': 'compile'
+                },
+                {
+                    'name': 'perf test after',
+                    'depends_on': [{
+                        'name': 'other dep before'
+                    }, {
+                        'name': 'other dep after'
+                    }]
+                },
+                {
+                    'name': 'perf test only depends on compile'
+                }
+            ],
+            'buildvariants': [{
+                'name': 'compile build variant',
+                'tasks': [{
+                    'name': 'compile'
+                }]
+            }, {
+                'name':
+                    'perf test build variant',
+                'tasks': [{
+                    'name': 'perf test'
+                }],
+                'depends_on': [{
+                    'name': 'other dep before'
+                }, {
+                    'name': 'other dep after',
+                    'variant': 'some variant'
+                }]
+            }, {
+                'name': 'perf test only depends on compile build variant',
+                'tasks': [{
+                    'name': 'perf test'
                 }]
             }]
         }
-        output_object = setup_baselines.remove_dependenies(input_object)
-        # Check output is correct
-        self.assertTrue('functions' in output_object)
-        self.assertTrue('start server' in output_object['functions'])
-        self.assertEqual(output_object['functions']['start server'][1]['params']['remote_file'],
-                         'original_mongod')
-        self.assertEqual(output_object['functions']['start server'][2]['params']['remote_file'],
-                         'original_mongo')
-        self.assertEqual(output_object['tasks'][0]['depends_on'][0]['name'], 'foo')
-        # Length should be 1, because compile dependency was removed.
-        self.assertEqual(len(output_object['tasks'][0]['depends_on']), 1)
+
+        input_copy = copy.deepcopy(input_object)
+        output_object = setup_baselines.remove_dependencies(input_object)
+
+        # We want to show the full diff for the assertions we make below.
+        # pylint: disable=invalid-name
+        self.maxDiff = None
+
+        # Verify that the input wasn't modified.
+        self.assertEqual(input_object, input_copy)
+
+        # Check output is correct.
+        self.assertEqual(expected_output, output_object)
 
     def test_patch_sysperf_mongod_link(self):
         '''

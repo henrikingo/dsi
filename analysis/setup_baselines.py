@@ -22,7 +22,7 @@ class UnsupportedBaselineError(Exception):
     pass
 
 
-def remove_dependenies(input_yaml):
+def remove_dependencies(input_yaml):
     '''Generates a new evergreen yaml file with dependency on the compile
     task removed.
 
@@ -31,8 +31,9 @@ def remove_dependenies(input_yaml):
 
     '''
     outyaml = copy.deepcopy(input_yaml)  # Don't change the input dictionary
-    # Remove the depenencies on compile
-    for task in outyaml['tasks']:
+    # Remove the dependencies on the "compile" task from both the task definitions and the build
+    # variant definitions.
+    for task in chain(outyaml['tasks'], outyaml.get('buildvariants', [])):
         if 'depends_on' in task:
             task['depends_on'] = [
                 dependency for dependency in task['depends_on'] if dependency['name'] != "compile"
@@ -57,7 +58,7 @@ def patch_sysperf_mongod_link(sysperf_yaml, version_link):
             script = re.sub('mongodb_binary_archive: (.*)',
                             'mongodb_binary_archive: {}'.format(version_link), script)
             item["params"]["script"] = script
-    return remove_dependenies(outyaml)
+    return remove_dependencies(outyaml)
 
 
 def patch_perf_yaml_strings(perfyaml, version_link, shell_link):
@@ -75,7 +76,7 @@ def patch_perf_yaml_strings(perfyaml, version_link, shell_link):
     outyaml['functions']['start server'][1]['params']['remote_file'] = version_link
     outyaml['functions']['start server'][2]['params']['remote_file'] = shell_link
 
-    return remove_dependenies(outyaml)
+    return remove_dependencies(outyaml)
 
 
 def get_base_version(version):
