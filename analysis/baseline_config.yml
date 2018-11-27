@@ -102,15 +102,20 @@ project_files:
 # Tasks not to run on old versions
 disabled_tasks:
   '3.6':
+    - initialsync-logkeeper
+    - initialsync-logkeeper-short
     - linkbench
     - tpcc
   '3.4':
     - agg_query_comparison_bestbuy
     - bestbuy_agg
+    - bestbuy_agg_out
     - bestbuy_query
     - change_streams_latency
+    - change_streams_multi_mongos
     - change_streams_throughput
     - initialsync-logkeeper
+    - initialsync-logkeeper-short
     - linkbench
     - retryable_writes_workloads
     - snapshot_reads
@@ -118,11 +123,14 @@ disabled_tasks:
   '3.2':
     - agg_query_comparison_bestbuy
     - bestbuy_agg
+    - bestbuy_agg_out
     - bestbuy_query
     - change_streams_latency
+    - change_streams_multi_mongos
     - change_streams_throughput
     - initialsync
     - initialsync-logkeeper
+    - initialsync-logkeeper-short
     - linkbench
     - retryable_writes_workloads
     - secondary_performance
