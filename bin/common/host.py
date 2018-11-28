@@ -27,9 +27,9 @@ class Host(object):
     Base class for hosts
     """
 
-    def __init__(self, host, mongodb_auth_settings=None):
+    def __init__(self, hostname, mongodb_auth_settings=None):
         self._alias = None
-        self.host = host
+        self.hostname = hostname
         self.mongodb_auth_settings = mongodb_auth_settings
 
     @property
@@ -40,7 +40,7 @@ class Host(object):
         :rtype: The alias or the host if alias is not set
         """
         if not self._alias:
-            return self.host
+            return self.hostname
         return self._alias
 
     @alias.setter
@@ -187,8 +187,12 @@ class Host(object):
                 '-u', self.mongodb_auth_settings.mongo_user, '-p',
                 self.mongodb_auth_settings.mongo_password, '--authenticationDatabase', 'admin'
             ])
-        # connection_string can contain ampersands. Quote it as a point fix.
-        connection_string = '"' + connection_string + '"'
+
+        # connection_string can contain ampersands, escape them.
+        # Note that quoting doesn't work because gRPC is not a shell and treats quotes
+        # around strings as just literal quote characters.
+        connection_string = connection_string.replace('&', r'\&')
+
         argv.extend([connection_string, remote_file_name])
 
         self.create_file(remote_file_name, script)

@@ -31,13 +31,14 @@ class MongodbSetup(object):
         self.config = config
         self.mongodb_setup = self.config['mongodb_setup']
         self.clusters = []
-        self.parse_topologies()
 
         self._downloader = None
 
         timeouts = self.config['mongodb_setup'].get('timeouts', {})
         self.shutdown_ms = timeouts.get('shutdown_ms', 9 * common.host_utils.ONE_MINUTE_MILLIS)
         self.sigterm_ms = timeouts.get('sigterm_ms', common.host_utils.ONE_MINUTE_MILLIS)
+
+        self.parse_topologies()
 
     def parse_topologies(self):
         """Create cluster for each topology"""
@@ -183,7 +184,7 @@ class MongodbSetup(object):
         LOG.info('starting topology: %s', cluster)
         if not cluster.setup_host(
                 restart_clean_db_dir=restart_clean_db_dir, restart_clean_logs=restart_clean_logs):
-            LOG.error("Could not setup host in start_cluster")
+            LOG.error("Could not set up host in start_cluster")
             return False
         # Don't initialize if restarting mongodb and keeping (not cleaning) the db dir
         initialize = not (is_restart and not restart_clean_db_dir)
@@ -258,6 +259,7 @@ def main():
     # Start MongoDB cluster(s) using config given in mongodb_setup.topology (if any).
     # Note: This also installs mongo client binary onto workload client.
     mongo = MongodbSetup(config=config)
+
     start_cluster(mongo, config)
 
     # Start Atlas clusters using config given in mongodb_setup.atlas (if any).

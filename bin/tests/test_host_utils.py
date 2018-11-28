@@ -1,5 +1,5 @@
 """Tests for bin/common/host_utils.py"""
-
+import copy
 import os
 import shutil
 import socket
@@ -67,19 +67,33 @@ class HostUtilsTestCase(unittest.TestCase):
 
     def test_extract_hosts(self):
         """ Test extract hosts using config info """
-        mongods = [
-            common.host_utils.HostInfo('53.1.1.{}'.format(i + 1), "mongod", i) for i in range(0, 9)
-        ]
+
+        default_host_info = common.host_utils.HostInfo(
+            public_ip=None,
+            # These are the user and key files used by this test.
+            ssh_user='ec2-user',
+            ssh_key_file=os.path.join(os.path.expanduser('~'), '.ssh', 'linustorvalds.pem'),
+            category=None,
+            offset=-1)
+
+        def customize_host_info(new_ip, new_category, offset):
+            new_host_info = copy.copy(default_host_info)
+            new_host_info.public_ip = new_ip
+            new_host_info.category = new_category
+            new_host_info.offset = offset
+            return new_host_info
+
+        mongods = [customize_host_info('53.1.1.{}'.format(i + 1), 'mongod', i) for i in range(0, 9)]
         configsvrs = [
-            common.host_utils.HostInfo('53.1.1.{}'.format(i + 51), "configsvr", i)
-            for i in range(0, 3)
+            customize_host_info('53.1.1.{}'.format(i + 51), "configsvr", i) for i in range(0, 3)
         ]
         mongos = [
-            common.host_utils.HostInfo('53.1.1.{}'.format(i + 100), "mongos", i)
-            for i in range(0, 3)
+            customize_host_info('53.1.1.{}'.format(i + 100), "mongos", i) for i in range(0, 3)
         ]
-        workload_clients = [common.host_utils.HostInfo('53.1.1.101', "workload_client", 0)]
-        localhost = [common.host_utils.HostInfo('localhost', 'localhost', 0)]
+        workload_clients = [customize_host_info('53.1.1.101', 'workload_client', 0)]
+        localhost = [
+            common.host_utils.HostInfo(public_ip='localhost', category='localhost', offset=0)
+        ]
 
         self.assertEqual(common.host_utils.extract_hosts('localhost', self.config), localhost)
         self.assertEqual(

@@ -52,6 +52,7 @@ mongodb_setup:
   mongo_dir: mongodb
   journal_dir: /media/ephemeral1/journal
   clean_db_dir: true
+  spawn_using: ssh
   mongodb_binary_archive: ${bootstrap.mongodb_binary_archive}
   mongod_config_file:  # Note these defaults can be overridden by user, but not unset.
     net: ${mongodb_setup.authentication.${bootstrap.authentication}.net}
@@ -231,6 +232,7 @@ test_control:
   timeouts:
     no_output_ms: 5400000  # 90 minutes
   jstests_dir: ./jstests/hooks
+  spawn_using: ssh
   between_tests:
     - restart_mongodb:
         clean_logs: true

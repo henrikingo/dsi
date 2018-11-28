@@ -32,7 +32,7 @@ LOG = logging.getLogger(__name__)
 
 
 def legacy_copy_perf_output():
-    ''' Put perf.json in the legacy place for backward compatibility'''
+    """Put perf.json in the legacy place for backward compatibility"""
     if os.path.exists('../perf.json'):
         os.remove('../perf.json')
     shutil.copyfile('perf.json', '../perf.json')
@@ -88,7 +88,7 @@ def copy_timeseries(config):
             #
             # In the non matching case, next would throw StopIteration . The
             # None final param ensures that something 'Falsey' is returned instead.
-            host = next((host for host in hosts if name.endswith(host.ip_or_name)), None)
+            host = next((host for host in hosts if name.endswith(host.public_ip)), None)
             if host:
                 source = os.path.join(root, name)
                 alias = "{category}.{offset}".format(category=host.category, offset=host.offset)
@@ -149,14 +149,11 @@ def start_background_tasks(config, command_dict, test_id, reports_dir='./reports
         background_tasks_spec = command_dict['background_tasks']
         LOG.info('%s BackgroundTask:map %s', test_id, background_tasks_spec)
         task_name = config['test_control']['task_name']
-        ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
-        ssh_key_file = os.path.expanduser(ssh_key_file)
-        ssh_user = config['infrastructure_provisioning']['tfvars']['ssh_user']
 
         for name, command in background_tasks_spec.iteritems():
             # only a single workload_client is currently possible
             host_info = extract_hosts('workload_client', config)[0]
-            remote_host = make_host(host_info, ssh_user, ssh_key_file)
+            remote_host = make_host(host_info)
             basename = "{}.log--{}@{}".format(name, remote_host.user, remote_host.alias)
             filename = os.path.join(reports_dir, task_name, test_id, basename)
             background = BackgroundCommand(remote_host, command, filename)

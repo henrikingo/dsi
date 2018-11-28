@@ -43,15 +43,11 @@ def prepare_reports_dir(reports_dir='reports'):
     os.symlink(real_reports_dir, reports_dir)
 
 
-# https://jira.mongodb.org/browse/PERF-1311 will replace ssh_user and ssh_key_file with a
-# NamedTuple, and remove the need for this pylint disable.
-#pylint: disable=too-many-arguments
-def make_host_runner(host_info, command, ssh_user, ssh_key_file, prefix,
-                     mongodb_auth_settings=None):
+def make_host_runner(host_info, command, prefix, mongodb_auth_settings=None):
     """
     For the host, make an appropriate RemoteHost or LocalHost Object and run the set of commands.
 
-    :param namedtuple host_info: Public IP address or the string localhost, category and offset
+    :param HostInfo host_info
     :param str ssh_user: The user id to use
     :param str ssh_key_file: The keyfile to use
     :param command: The command to execute. If str, run that command. If dict, type is one of
@@ -62,8 +58,7 @@ def make_host_runner(host_info, command, ssh_user, ssh_key_file, prefix,
     hook that the command belongs to, such as between_tests, post_task, and so on.
     """
     # Create the appropriate host type
-    target_host = common.host_factory.make_host(host_info, ssh_user, ssh_key_file,
-                                                mongodb_auth_settings)
+    target_host = common.host_factory.make_host(host_info, mongodb_auth_settings)
     try:
         # If command is a string, pass it directly to run
         if isinstance(command, str):
@@ -94,16 +89,11 @@ def _run_host_command(host_list, command, config, prefix):
         return
 
     LOG.debug('Calling run command for %s with command %s', str(host_list), str(command))
-    ssh_user = config['infrastructure_provisioning']['tfvars']['ssh_user']
-    ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
-    ssh_key_file = os.path.expanduser(ssh_key_file)
-
     mongodb_auth_settings = common.mongodb_setup_helpers.mongodb_auth_settings(config)
     thread_commands = []
     for host_info in host_list:
         thread_commands.append(
-            partial(make_host_runner, host_info, command, ssh_user, ssh_key_file, prefix,
-                    mongodb_auth_settings))
+            partial(make_host_runner, host_info, command, prefix, mongodb_auth_settings))
 
     run_threads(thread_commands, daemon=True)
 
@@ -147,7 +137,7 @@ def _run_host_command_map(target_host, command, prefix):
                 target_host.retrieve_path(source, target)
         elif key == "exec":
             LOG.debug('Executing command %s', value)
-            success = target_host.run(value.split(' '))
+            success = target_host.run(value)
             common.host_utils.raise_if_not_success(success, value)
         elif key == "exec_mongo_shell":
             LOG.debug('Executing command %s in mongo shell', value)
@@ -221,12 +211,9 @@ def make_workload_runner_host(config):
 
     :param ConfigDict config: The system configuration
     """
-    ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
-    ssh_key_file = os.path.expanduser(ssh_key_file)
-    ssh_user = config['infrastructure_provisioning']['tfvars']['ssh_user']
     host_info = common.host_utils.extract_hosts('workload_client', config)[0]
     mongodb_auth_settings = common.mongodb_setup_helpers.mongodb_auth_settings(config)
-    return common.host_factory.make_host(host_info, ssh_user, ssh_key_file, mongodb_auth_settings)
+    return common.host_factory.make_host(host_info, mongodb_auth_settings)
 
 
 def print_trace(trace, exception):

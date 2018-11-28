@@ -18,29 +18,9 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
     YML infrastructure_provisioning.out.yml.
     """
     INSTANCE_TYPES = [
-        "private_config_ip", "private_member_ip", "private_mongos_ip", "public_config_ip",
-        "public_ip_mc", "public_member_ip", "public_mongos_ip"
+        "private_config_ip", "private_ip_mc", "private_member_ip", "private_mongos_ip",
+        "public_config_ip", "public_ip_mc", "public_member_ip", "public_mongos_ip"
     ]
-
-    INSTANCE_CATEGORY = {
-        "private_config_ip": "configsvr",
-        "private_member_ip": "mongod",
-        "private_mongos_ip": "mongos",
-        "public_config_ip": "configsvr",
-        "public_ip_mc": "workload_client",
-        "public_member_ip": "mongod",
-        "public_mongos_ip": "mongos"
-    }
-
-    IP_SUBNET = {
-        "private_config_ip": "private",
-        "private_member_ip": "private",
-        "private_mongos_ip": "private",
-        "public_config_ip": "public",
-        "public_ip_mc": "public",
-        "public_member_ip": "public",
-        "public_mongos_ip": "public"
-    }
 
     def __init__(self, input_file=None, terraform_output=None):
         self._file = input_file
@@ -80,15 +60,8 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
         # mongod IP address
         out_data = self._get_ips("public_member_ip", "private_member_ip", "mongod", out_data)
 
-        # workload_client IP addresses
-        if not self._ips["public_ip_mc"]:
-            LOG.error("Workload client: public and private IP address counts mismatch!")
-            raise ValueError("Workload client: public and private IP address counts mismatch!")
-
-        out_data["workload_client"] = []
-
-        for index in range(len(self._ips["public_ip_mc"])):
-            out_data["workload_client"].append({"public_ip": self._ips["public_ip_mc"][index]})
+        # workload_client(mc) IP addresses
+        out_data = self._get_ips("public_ip_mc", "private_ip_mc", "workload_client", out_data)
 
         # mongos IP addresses
         out_data = self._get_ips("public_mongos_ip", "private_mongos_ip", "mongos", out_data)

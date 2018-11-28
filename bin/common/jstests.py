@@ -146,10 +146,7 @@ def _remote_exists(config):
     """
     Check on remote workload_client whether jstests_dir exists.
     """
-    tfvars = config['infrastructure_provisioning']['tfvars']
-    ssh_user = tfvars['ssh_user']
-    ssh_key_file = os.path.expanduser(tfvars['ssh_key_file'])
     host_info = extract_hosts('workload_client', config)[0]
-    remote_host = make_host(host_info, ssh_user, ssh_key_file)
+    remote_host = make_host(host_info)
     remote_command = ["[ -e {} ]".format(config['test_control']['jstests_dir'])]
     return remote_host.run(remote_command)

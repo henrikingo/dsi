@@ -2,7 +2,6 @@
 Utilities shared by different types of host objects
 """
 
-from collections import namedtuple
 from datetime import datetime
 from functools import partial
 import itertools
@@ -13,16 +12,13 @@ import socket
 import subprocess
 import os
 
-import paramiko
-
 from common.exit_status import EXIT_STATUS_OK
 from common.log import IOLogAdapter
+from common.models.host_info import HostInfo
 
 ONE_SECOND_MILLIS = 1000.0
 ONE_MINUTE_MILLIS = 60 * ONE_SECOND_MILLIS
 TEN_MINUTE_MILLIS = 10 * ONE_MINUTE_MILLIS
-
-HostInfo = namedtuple('HostInfo', ['ip_or_name', 'category', 'offset'])
 
 LOG = logging.getLogger(__name__)
 # This stream only log error or above messages
@@ -48,8 +44,7 @@ def setup_ssh_agent(config):
     # the data into lines, and then for any line of the form "key=value", adds {key: value} to the
     # environment.
     os.environ.update(dict([line.split('=') for line in ssh_agent_info.split(';') if '=' in line]))
-    ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
-    ssh_key_file = os.path.expanduser(ssh_key_file)
+    (_, ssh_key_file) = ssh_user_and_key_file(config)
     subprocess.check_call(['ssh-add', ssh_key_file])
 
 
@@ -99,19 +94,26 @@ def reraise_as_host_exception(exception):
     raise HostException(status, message)
 
 
-def _extract_hosts(key, config):
+def _extract_hosts(category, config):
     """
-    Extract a list of public IP addresses for hosts based off of the key. Valid keys are mongod,
-    mongos, configsvr, and workload_client.
+    Extract a list of public IP addresses for hosts based off of the category.
+    Valid categories are mongod, mongos, configsvr, and workload_client.
 
-    :param str key: The key to use (mongod, mongod, ...)
+    :param str category: The category to use (mongod, mongod, ...)
     :param ConfigDict config: The system configuration
     :rtype: list of HostInfo objects
     """
-    if key in config['infrastructure_provisioning']['out']:
+    if category in config['infrastructure_provisioning']['out']:
+        ssh_user, ssh_key_file = ssh_user_and_key_file(config)
         return [
-            HostInfo(host_info['public_ip'], key, i)
-            for i, host_info in enumerate(config['infrastructure_provisioning']['out'][key])
+            HostInfo(
+                public_ip=host_info['public_ip'],
+                private_ip=host_info['private_ip'],
+                ssh_user=ssh_user,
+                ssh_key_file=ssh_key_file,
+                category=category,
+                offset=i)
+            for i, host_info in enumerate(config['infrastructure_provisioning']['out'][category])
         ]
     return list()
 
@@ -125,7 +127,10 @@ def extract_hosts(key, config):
     """
 
     if key == 'localhost':
-        return [HostInfo('localhost', 'localhost', 0)]
+        # `offset` is arbitrary for localhost, for other hosts, it represents the index of a node.
+        return [
+            HostInfo(public_ip='localhost', private_ip='localhost', category='localhost', offset=0)
+        ]
     if key == 'all_servers':
         return list(
             itertools.chain.from_iterable(
@@ -233,26 +238,14 @@ def stream_lines(source, destination):
     return any_lines
 
 
-def connected_ssh(host, user, pem_file):
+def ssh_user_and_key_file(config):
     """
-    Create a connected paramiko ssh client and ftp connection
-    or raise if cannot connect.
+    Get ssh user and key file from the config.
 
-    :param host: hostname to connect to
-    :param user: username to use
-    :param pem_file: ssh pem file for connection
-    :return: paramiko (SSHClient, SFTPClient) tuple
+    :param ConfigDict config: the config dictionary.
+    :return: 2-tuple of strings for the ssh user and ssh key file.
     """
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
-    try:
-        ssh.connect(host, username=user, key_filename=pem_file)
-        ftp = ssh.open_sftp()
-        # Setup authentication forwarding. See
-        # https://stackoverflow.com/questions/23666600/ssh-key-forwarding-using-python-paramiko
-        session = ssh.get_transport().open_session()
-        paramiko.agent.AgentRequestHandler(session)
-    except (paramiko.SSHException, socket.error) as err:
-        LOG.exception('failed to connect to %s@%s', user, host)
-        raise err
-    return ssh, ftp
+    ssh_user = config['infrastructure_provisioning']['tfvars']['ssh_user']
+    ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+    ssh_key_file = os.path.expanduser(ssh_key_file)
+    return ssh_user, ssh_key_file

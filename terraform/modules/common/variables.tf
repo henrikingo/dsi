@@ -1,5 +1,6 @@
 
 variable "amis" {
+    type = "map"
     default = {
 
         #
@@ -34,6 +35,7 @@ variable "amis" {
 }
 
 variable "private_ips" {
+    type = "map"
     default = {
         "workloadclient0" = "10.2.0.10"
         "workloadclient1" = "10.2.0.11"

@@ -2,15 +2,13 @@
 # pylint: disable=protected-access
 import os
 
-import sys
 import unittest
 import string
 
 from mock import patch, mock, Mock
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
-
-from download_mongodb import DownloadMongodb, temp_file  # pylint: disable=wrong-import-position
+from common.download_mongodb import DownloadMongodb, temp_file
+from common.models.host_info import HostInfo
 
 
 class DownloadMongodbTestCase(unittest.TestCase):
@@ -95,43 +93,36 @@ class DownloadMongodbTestCase(unittest.TestCase):
         }
         # self.downloader = None
 
-    @patch('common.host_factory.RemoteHost')
-    def test_basic_use(self, mock_remote_host):
+    @patch('common.download_mongodb.common.host_utils.extract_hosts')
+    @patch('common.download_mongodb.common.host_factory.make_host')
+    def test_basic_use(self, mock_remote_host, mock_extract_hosts):
         """
         Init DownloadMongodb with ConfigDict structure with
         mongodb_binary specified in mongodb_setup.
         """
-        mongodb_setup = self.config['mongodb_setup']
-        infrastructure = self.config['infrastructure_provisioning']
-        downloader = DownloadMongodb(self.config)
-        self.assertEqual(downloader.mongodb_binary_archive, mongodb_setup['mongodb_binary_archive'])
-        expected_ssh_key_file = os.path.expanduser(infrastructure['tfvars']['ssh_key_file'])
-        self.assertEqual(downloader.ssh_key_file, expected_ssh_key_file)
-        expected_ssh_user = infrastructure['tfvars']['ssh_user']
-        self.assertEqual(downloader.ssh_user, expected_ssh_user)
 
-        calls = [
-            mock.call("10.2.3.{}".format(i), expected_ssh_user, expected_ssh_key_file, None)
-            for i in range(4, 16)
-        ]
+        mock_extract_hosts.return_value = \
+            [HostInfo(public_ip="dummy_ip", offset=i) for i in range(10)]
+
+        DownloadMongodb(self.config)
+
+        calls = [mock.call(HostInfo(public_ip="dummy_ip", offset=i)) for i in range(10)]
         mock_remote_host.assert_has_calls(calls=calls, any_order=True)
 
-    @patch('download_mongodb.common.host_factory.make_host')
+    @patch('common.download_mongodb.common.host_factory.make_host')
     def test_mongodb_binary(self, mock_make_host):
         """
         Init DownloadMongodb with ConfigDict structure with
         mongodb_binary specified in bootstrap.
         """
         _ = mock_make_host
+
         mongodb_url = 'http://bar.tgz'
         self.config['mongodb_setup']['mongodb_binary_archive'] = mongodb_url
-        infrastructure = self.config['infrastructure_provisioning']
+
         downloader = DownloadMongodb(self.config)
+
         self.assertEqual(downloader.mongodb_binary_archive, mongodb_url)
-        expected_ssh_key_file = os.path.expanduser(infrastructure['tfvars']['ssh_key_file'])
-        self.assertEqual(downloader.ssh_key_file, expected_ssh_key_file)
-        self.assertEqual(downloader.ssh_user, infrastructure['tfvars']['ssh_user'])
-        self.config['mongodb_setup']['mongodb_binary_archive'] = 'http://foo.tgz'
 
     def test_temp_file(self):
         """ Test temp_file() to ensure it makes properly named random files """
@@ -158,8 +149,8 @@ class DownloadMongodbTestCase(unittest.TestCase):
         path = mongodb_binary_archive + "?test=ing"
         _test_temp_file(self, temp_file(path=path, sanitize=lambda x: x), "foo.tgz?test=ing")
 
-    @patch('download_mongodb.temp_file')
-    @patch('download_mongodb.common.host_factory.make_host')
+    @patch('common.download_mongodb.temp_file')
+    @patch('common.download_mongodb.common.host_factory.make_host')
     def test_remove_temp_file(self, mock_make_host, mock_temp_file):
         """test that mongo_dir and tmp_file removal."""
         # mongodb_binary_archive = self.config['mongodb_setup']['mongodb_binary_archive']

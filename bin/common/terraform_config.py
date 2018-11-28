@@ -90,23 +90,37 @@ def generate_expire_on_tag(hour_delta=2, _datetime_now=datetime.datetime.now):
     return expire_on.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def generate_runner():
+def generate_runner_hostname():
     """
-    Get the IP address of the (evergreen) runner for labelling cluster
+    Get the hostname of the runner.
+    """
+    return _do_generate_runner('public-hostname')
 
-    Will try to get the public IP from AWS metadata first, then from
-    reverse lookup, and then fall back to using the hostname
+
+def generate_runner_ip():
+    """
+    Get the public IPv4 address of the runner.
+    """
+    return _do_generate_runner('public-ipv4')
+
+
+def _do_generate_runner(endpoint):
+    """
+    Get the hostname or IP of the runner.
+
+    Will try to get the public host name from AWS metadata first, then from
+    reverse lookup, and then fall back to using the local hostname
 
     :return: An ip address or a hostname
     :rtype: str
     """
     try:
         response = requests.get(
-            'http://169.254.169.254/latest/meta-data/public-hostname', timeout=0.01)
+            'http://169.254.169.254/latest/meta-data/%s' % endpoint, timeout=0.01)
         response.raise_for_status()
         return response.text
     except RequestException as exception:
-        LOG.info("Terraform_config.py generate_runner could not access AWS"
+        LOG.info("Terraform_config.py _do_generate_runner could not access AWS"
                  "meta-data. Falling back to other methods")
         LOG.info(repr(exception))
 
@@ -115,7 +129,7 @@ def generate_runner():
         response.raise_for_status()
         return response.text
     except RequestException as exception:
-        LOG.info("Terraform_config.py generate_runner could not access ip.42.pl"
+        LOG.info("Terraform_config.py _do_generate_runner could not access ip.42.pl "
                  "to get public IP. Falling back to gethostname")
         LOG.info(repr(exception))
 
@@ -168,7 +182,8 @@ class TerraformConfiguration(object):
             # Since this is a new cluster, generate a unique id for the placement group to be
             self.tfvars = generate_placement_group(self.tfvars, self.tfvars.get("cluster_name"))
             # Cluster metadata
-            self.tfvars["runner"] = generate_runner()
+            self.tfvars["runner_hostname"] = generate_runner_hostname()
+            self.tfvars["runner_ip"] = generate_runner_ip()
 
         self.refresh_tfvars()
 

@@ -1,6 +1,7 @@
 variable owner                          { default = "serverteam-perf@10gen.com" }
 variable topology                       {}
-variable runner                         { default = "missing" } # Hostname of the machine using it
+variable runner_hostname                { default = "missing" } # Hostname of the machine using DSI
+variable runner_ip                      { default = "none" } # IP of the machine using DSI
 variable runner_instance_id             { default = "none" }
 variable status                         { default = "idle" } #Idle, running
 variable task_id                        { default = "none" }
@@ -54,7 +55,8 @@ module "VPC" {
     availability_zone   = "${var.availability_zone}"
     owner               = "${var.owner}"
     expire_on           = "${var.expire_on}"
-    runner              = "${var.runner}"
+    runner_hostname     = "${var.runner_hostname}"
+    runner_ip           = "${var.runner_ip}"
     runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"
     task_id             = "${var.task_id}"
@@ -78,7 +80,7 @@ module "mongod_instance" {
     provisioner_file    = "system-setup.sh"
     topology            = "${var.topology}"
     type                = "mongod"
-    runner              = "${var.runner}"
+    runner              = "${var.runner_hostname}"
     runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"
     task_id             = "${var.task_id}"
@@ -102,7 +104,7 @@ module "mongod_ebs_instance" {
     provisioner_file    = "system-setup.sh"
     topology            = "${var.topology}"
     type                = "mongod_ebs"
-    runner              = "${var.runner}"
+    runner              = "${var.runner_hostname}"
     runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"
     task_id             = "${var.task_id}"
@@ -128,7 +130,7 @@ module "mongod_seeded_ebs_instance" {
     provisioner_file        = "system-setup.sh"
     topology                = "${var.topology}"
     type                    = "mongod_seeded_ebs"
-    runner                  = "${var.runner}"
+    runner                  = "${var.runner_hostname}"
     runner_instance_id      = "${var.runner_instance_id}"
     status                  = "${var.status}"
     task_id                 = "${var.task_id}"
@@ -156,7 +158,7 @@ module "mongos_instance" {
     provisioner_file    = "system-setup.sh"
     topology            = "${var.topology}"
     type                = "mongos"
-    runner              = "${var.runner}"
+    runner              = "${var.runner_hostname}"
     runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"
     task_id             = "${var.task_id}"
@@ -180,7 +182,7 @@ module "configsvr_instance" {
     provisioner_file    = "system-setup.sh"
     topology            = "${var.topology}"
     type                = "configsvr"
-    runner              = "${var.runner}"
+    runner              = "${var.runner_hostname}"
     runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"
     task_id             = "${var.task_id}"
@@ -204,7 +206,7 @@ module "workload_instance" {
     provisioner_file    = "system-setup.sh"
     topology            = "${var.topology}"
     type                = "workloadclient"
-    runner              = "${var.runner}"
+    runner              = "${var.runner_hostname}"
     runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"
     task_id             = "${var.task_id}"

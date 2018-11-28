@@ -32,6 +32,7 @@ class TestTerraformOutputParser(unittest.TestCase):
 
         print(output._ips)
 
+        self.assertEqual(["10.2.0.10"], output._ips["private_ip_mc"])
         self.assertEqual(["52.32.13.97"], output._ips["public_ip_mc"])
         self.assertEqual(["52.26.153.91"], output._ips["public_member_ip"])
         self.assertEqual(["10.2.0.100"], output._ips["private_member_ip"])
@@ -43,7 +44,8 @@ class TestTerraformOutputParser(unittest.TestCase):
 
         print(output._ips)
 
-        self.assertEqual(["52.33.30.1"], output._ips["public_ip_mc"])
+        self.assertEqual("52.33.30.1", output._ips["public_ip_mc"][0])
+        self.assertEqual("10.2.0.10", output._ips["private_ip_mc"][0])
         self.assertEqual("52.41.40.0", output._ips["public_member_ip"][0])
         self.assertEqual("52.37.52.162", output._ips["public_member_ip"][1])
         self.assertEqual("52.25.102.16", output._ips["public_member_ip"][2])
@@ -58,7 +60,8 @@ class TestTerraformOutputParser(unittest.TestCase):
         print(output._ips)
 
         # Test ip address is correct for different members
-        self.assertEqual(["52.11.198.150"], output._ips["public_ip_mc"])
+        self.assertEqual("10.2.0.10", output._ips["private_ip_mc"][0])
+        self.assertEqual("52.11.198.150", output._ips["public_ip_mc"][0])
         self.assertEqual("52.26.155.122", output._ips["public_member_ip"][0])
         self.assertEqual("52.38.108.78", output._ips["public_member_ip"][4])
         self.assertEqual("10.2.0.100", output._ips["private_member_ip"][0])
@@ -97,7 +100,6 @@ class TestTerraformOutputParser(unittest.TestCase):
             input_file=FIXTURE_FILES.fixture_file_path('terraform_shard_cluster_output.txt'))
 
         output._generate_output()
-        reference = {}
         with open(FIXTURE_FILES.fixture_file_path('terraform_shard.out.yml')) as fread:
             reference = yaml.safe_load(fread)
 

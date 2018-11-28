@@ -6,6 +6,10 @@ output "public_member_ip" {
   value = "${module.cluster.public_mongod_seeded_ebs_ip} ${module.cluster.public_member_ip} ${module.cluster.public_mongod_ebs_ip}"
 }
 
+output "private_ip_mc" {
+  value = "${module.cluster.private_ip_mc}"
+}
+
 output "public_ip_mc" {
   value = "${module.cluster.public_ip_mc}"
 }

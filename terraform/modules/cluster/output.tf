@@ -6,6 +6,10 @@ output "public_member_ip" {
   value = "${module.mongod_instance.public_ips}"
 }
 
+output "private_ip_mc" {
+  value = "${module.workload_instance.private_ips}"
+}
+
 output "public_ip_mc" {
   value = "${module.workload_instance.public_ips}"
 }

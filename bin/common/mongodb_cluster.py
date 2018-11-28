@@ -13,10 +13,12 @@ import yaml
 
 # pylint: disable=too-many-instance-attributes
 import mongodb_setup_helpers
-from remote_host import RemoteHost
-from local_host import LocalHost
-from config import copy_obj
-from thread_runner import run_threads
+
+from common import host_factory
+from common.host_utils import ssh_user_and_key_file
+from common.models.host_info import HostInfo
+from common.config import copy_obj
+from common.thread_runner import run_threads
 
 LOG = logging.getLogger(__name__)
 
@@ -58,6 +60,7 @@ class MongoCluster(object):
         """
         self.config = config
         self.topology = topology
+        self.spawn_using = config['test_control'].get('spawn_using', 'ssh')
 
     def wait_until_up(self):
         """ Checks to make sure node is up and accessible"""
@@ -67,7 +70,7 @@ class MongoCluster(object):
         """ Start the cluster """
         raise NotImplementedError()
 
-    def shutdown(self, max_time_ms, auth_enabled):
+    def shutdown(self, max_time_ms, auth_enabled, retries=20):
         """ Shutdown the cluster gracefully """
         raise NotImplementedError()
 
@@ -76,7 +79,13 @@ class MongoCluster(object):
         raise NotImplementedError()
 
     def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None):
-        """Ensures necessary files are setup """
+        """Ensures necessary files are setup
+
+        :param restart_clean_db_dir Should we clean db dir on restart. If not specified, uses value
+        from ConfigDict.
+        :param restart_clean_logs   Should we clean logs and diagnostic data. If not specified,
+        uses value from ConfigDict.
+        """
         raise NotImplementedError()
 
     def run_mongo_shell(self, js_string, max_time_ms=None):
@@ -161,7 +170,7 @@ class MongoNode(MongoCluster):
         self.shutdown_options = json.dumps(
             copy_obj(self.config['mongodb_setup']['shutdown_options']))
 
-        # Accessed via @properties
+        # Accessed via @property
         self._host = None
 
     # This is a @property versus a plain self.host var for 2 reasons:
@@ -173,27 +182,18 @@ class MongoNode(MongoCluster):
     def host(self):
         """Access to remote or local host."""
         if self._host is None:
-            self._host = self._compute_host()
+            host_info = self._compute_host_info()
+            self._host = host_factory.make_host(host_info, spawn_using=self.spawn_using)
         return self._host
 
-    @host.setter  # only visible for testing - see _commands_run_during_setup_host
-    def host(self, val):
-        self._host = val
-
-    def _compute_host(self):
+    def _compute_host_info(self):
         """Create host wrapper to run commands."""
-        # TODO: can we use the factory methods in host.py to create this?
-        if self.public_ip in ['localhost', '127.0.0.1', '0.0.0.0']:
-            return LocalHost()
-
-        (ssh_user, ssh_key_file) = self._ssh_user_and_key_file()
-        return RemoteHost(self.public_ip, ssh_user, ssh_key_file)
-
-    def _ssh_user_and_key_file(self):
-        ssh_user = self.config['infrastructure_provisioning']['tfvars']['ssh_user']
-        ssh_key_file = self.config['infrastructure_provisioning']['tfvars']['ssh_key_file']
-        ssh_key_file = os.path.expanduser(ssh_key_file)
-        return ssh_user, ssh_key_file
+        (ssh_user, ssh_key_file) = ssh_user_and_key_file(self.config)
+        return HostInfo(
+            public_ip=self.public_ip,
+            private_ip=self.private_ip,
+            ssh_user=ssh_user,
+            ssh_key_file=ssh_key_file)
 
     def wait_until_up(self):
         """ Checks to make sure node is up and accessible"""
@@ -214,12 +214,6 @@ class MongoNode(MongoCluster):
         return True
 
     def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None):
-        """Ensures necessary files are setup.
-        :param restart_clean_db_dir Should we clean db dir on restart. If not specified, uses value
-        from ConfigDict.
-        :param restart_clean_logs   Should we clean logs and diagnostic data. If not specified,
-        uses value from ConfigDict.
-        """
         self.host.kill_mongo_procs()
 
         if restart_clean_db_dir is not None:
@@ -288,23 +282,23 @@ class MongoNode(MongoCluster):
         commands.append(['ls', '-la'])
         return commands
 
-    def launch_cmd(self, numactl=True, auth_enabled=False):
+    def launch_cmd(self, use_numactl=True, auth_enabled=False):
         """Returns the command to start this node."""
         remote_file_name = '/tmp/mongo_port_{0}.conf'.format(self.port)
         config_contents = yaml.dump(self.mongo_config_file, default_flow_style=False)
         self.host.create_file(remote_file_name, config_contents)
         self.host.run(['cat', remote_file_name])
+
+        cmd = [os.path.join(self.bin_dir, self.mongo_program), "--config", remote_file_name]
+
         if auth_enabled:
             # Temporarily disable SSL.
-            #mongodb_args = ' --clusterAuthMode x509'
-            mongodb_args = ''
-        else:
-            mongodb_args = ''
-        cmd = '{}{} --config {}'.format(
-            os.path.join(self.bin_dir, self.mongo_program), mongodb_args, remote_file_name)
-        numactl_prefix = self.numactl_prefix
-        if numactl and isinstance(numactl_prefix, basestring) and numactl_prefix != "":
-            cmd = '{} {}'.format(numactl_prefix, cmd)
+            # cmd.extend(['--clusterAuthMode', 'x509'])
+            pass
+
+        if use_numactl and self.numactl_prefix and isinstance(self.numactl_prefix, list):
+            cmd = self.numactl_prefix + cmd
+
         LOG.debug("cmd is %s", str(cmd))
         return cmd
 
@@ -318,7 +312,9 @@ class MongoNode(MongoCluster):
         # the future
         _ = initialize
         self.auth_enabled = enable_auth
-        if not self.host.run(self.launch_cmd(numactl, enable_auth)):
+        launch_cmd = self.launch_cmd(numactl, enable_auth)
+        if not self.host.run(launch_cmd):
+            LOG.error("failed launch command: %s", launch_cmd)
             self.dump_mongo_log()
             return False
         return self.wait_until_up()
@@ -338,7 +334,9 @@ class MongoNode(MongoCluster):
         else:
             self.host.mongodb_auth_settings = None
         if self.host.exec_mongo_command(
-                js_string, remote_file_name, "localhost:" + str(self.port),
+                js_string,
+                remote_file_name=remote_file_name,
+                connection_string="localhost:" + str(self.port),
                 max_time_ms=max_time_ms) != 0:
             self.dump_mongo_log()
             return False
@@ -347,7 +345,7 @@ class MongoNode(MongoCluster):
     def dump_mongo_log(self):
         """Dump the mongo[ds] log file to the process log"""
         LOG.info('Dumping log for node %s', self.hostport_public())
-        self.host.run(['tail -n 100', self.mongo_config_file['systemLog']['path']])
+        self.host.run(['tail', '-n', '100', self.mongo_config_file['systemLog']['path']])
 
     def hostport_private(self):
         """Returns the string representation this host/port."""
@@ -361,7 +359,7 @@ class MongoNode(MongoCluster):
 
     connection_string_public = hostport_public
 
-    def shutdown(self, max_time_ms, auth_enabled=None):
+    def shutdown(self, max_time_ms, auth_enabled=None, retries=20):
         """
         Shutdown the node gracefully.
 
@@ -371,7 +369,7 @@ class MongoNode(MongoCluster):
         try:
             if auth_enabled is not None:
                 self.auth_enabled = auth_enabled
-            for _ in range(20):
+            for _ in range(retries):
                 self.run_mongo_shell(
                     'db.getSiblingDB("admin").shutdownServer({})'.format(self.shutdown_options),
                     max_time_ms=max_time_ms)
@@ -510,12 +508,6 @@ class ReplSet(MongoCluster):
         return True
 
     def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None):
-        """Ensures necessary files are setup.
-        :param restart_clean_db_dir Should we clean db dir. If not specified, uses value from
-        ConfigDict.
-        :param restart_clean_logs   Should we clean logs and diagnostic data. If not specified,
-        uses value from ConfigDict.
-        """
         return all(
             run_threads(
                 [
@@ -593,7 +585,7 @@ class ReplSet(MongoCluster):
         """
         mongodb_setup_helpers.add_user(self, self.config, write_concern=len(self.nodes))
 
-    def shutdown(self, max_time_ms, auth_enabled=None):
+    def shutdown(self, max_time_ms, auth_enabled=None, retries=20):
         """Shutdown gracefully
         For the max_time_ms parameter, see
             :method:`Host.exec_command`
@@ -696,12 +688,6 @@ class ShardedCluster(MongoCluster):
         return True
 
     def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None):
-        """Ensures necessary files are setup.
-        :param restart_clean_db_dir Should we clean db dir. If not specified, uses value from
-        ConfigDict.
-        :param restart_clean_logs   Should we clean logs and diagnostic data. If not specified,
-        uses value from ConfigDict.
-        """
         commands = [
             partial(
                 self.config_svr.setup_host,
@@ -712,12 +698,14 @@ class ShardedCluster(MongoCluster):
             partial(
                 shard.setup_host,
                 restart_clean_db_dir=restart_clean_db_dir,
-                restart_clean_logs=restart_clean_logs) for shard in self.shards)
+                restart_clean_logs=restart_clean_logs,
+            ) for shard in self.shards)
         commands.extend(
             partial(
                 mongos.setup_host,
                 restart_clean_db_dir=restart_clean_db_dir,
-                restart_clean_logs=restart_clean_logs) for mongos in self.mongoses)
+                restart_clean_logs=restart_clean_logs,
+            ) for mongos in self.mongoses)
         return all(run_threads(commands, daemon=True))
 
     def launch(self, initialize=True, numactl=True, enable_auth=False):
@@ -782,7 +770,7 @@ class ShardedCluster(MongoCluster):
         for shard in self.shards:
             shard.add_default_users()
 
-    def shutdown(self, max_time_ms, auth_enabled=None):
+    def shutdown(self, max_time_ms, auth_enabled=None, retries=20):
         """Shutdown the mongodb cluster gracefully.
         For the max_time_ms parameter, see
             :method:`Host.exec_command`

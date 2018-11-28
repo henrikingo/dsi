@@ -29,4 +29,5 @@ out:
     - private_ip: 10.2.0.99
       public_ip: 52.40.159.38
   workload_client:
-    - public_ip: 52.11.198.150
+    - private_ip: 10.2.0.10
+      public_ip: 52.11.198.150

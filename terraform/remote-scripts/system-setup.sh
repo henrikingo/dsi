@@ -86,4 +86,34 @@ echo "/home/ec2-user/data/logs/core.%e.%p.%h.%t" |sudo tee -a  /proc/sys/kernel/
 
 echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCmHUZLsuGvNUlCiaZ83jS9f49S0plAtCH19Z2iATOYPH1XE2T8ULcHdFX2GkYiaEqI+fCf1J1opif45sW/5yeDtIp4BfRAdOu2tOvkKvzlnGZndnLzFKuFfBPcysKyrGxkqBvdupOdUROiSIMwPcFgEzyLHk3pQ8lzURiJNtplQ82g3aDi4wneLDK+zuIVCl+QdP/jCc0kpYyrsWKSbxi0YrdpG3E25Q4Rn9uom58c66/3h6MVlk22w7/lMYXWc5fXmyMLwyv4KndH2u3lV45UAb6cuJ6vn6wowiD9N9J1GS57m8jAKaQC1ZVgcZBbDXMR8fbGdc9AH044JVtXe3lT shardtest@test.mongo' | tee -a ~/.ssh/authorized_keys
 
+cd /data
+mkdir tmp
+cd tmp
+
+# Please refer to README.md in jasper.proto's directory on steps for updating jasper.proto and the
+# curator binary.
+curl -o curator.tar.gz --retry 10 -LsS https://s3.amazonaws.com/mciuploads/curator/curator_rhel70_245ae90412200d1245cadac38d18025bb678c066_18_11_08_19_22_23-rhel70/curator-dist-245ae90412200d1245cadac38d18025bb678c066.tar.gz
+tar xvf curator.tar.gz
+
+sudo cp ./curator /usr/local/bin/curator
+curator --version
+
+# Use `tee` here instead of `cat` to retain sudo privilege when writing the heredoc.
+sudo tee /etc/systemd/system/jasper.service > /dev/null <<'EOF'
+[Unit]
+Description=Jasper Process Management Service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/curator jasper grpc --host 0.0.0.0
+ExecReload=/bin/kill -HUP $MAINPID
+Restart     = always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl enable jasper
+sudo systemctl start jasper
+
 exit 0

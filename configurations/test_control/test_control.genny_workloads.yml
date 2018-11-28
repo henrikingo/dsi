@@ -18,3 +18,4 @@ pre_task:
       exec: |
        rm -f ./genny-perf.csv ./genny-perf.json
 
+spawn_using: jasper

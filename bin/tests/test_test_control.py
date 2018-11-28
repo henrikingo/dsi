@@ -166,7 +166,11 @@ class RunTestsTestCase(unittest.TestCase):
         mock_walk.return_value = [
             ('/dirpath', ('dirnames', ), ()),
         ]
-        mock_hosts.return_value = [common.host_utils.HostInfo('10.0.0.0', 'mongod', 0)]
+
+        dummy_host_info = common.host_utils.HostInfo(
+            public_ip='10.0.0.0', category='mongod', offset=0)
+
+        mock_hosts.return_value = [dummy_host_info]
 
         copy_timeseries(self.config)
         self.assertFalse(mock_copyfile.called)
@@ -177,7 +181,7 @@ class RunTestsTestCase(unittest.TestCase):
         mock_walk.return_value = [
             ('/dirpath', ('dirnames', ), ('baz', )),
         ]
-        mock_hosts.return_value = [common.host_utils.HostInfo('10.0.0.0', 'mongod', 0)]
+        mock_hosts.return_value = [dummy_host_info]
 
         copy_timeseries(self.config)
         self.assertFalse(mock_copyfile.called)
@@ -189,7 +193,7 @@ class RunTestsTestCase(unittest.TestCase):
             ('/dirpath', ('dirnames', ), ('10.0.0.0--notmatching', )),
             ('/foo/bar', (), ('spam', 'eggs')),
         ]
-        mock_hosts.return_value = [common.host_utils.HostInfo('10.0.0.0', 'mongod', 0)]
+        mock_hosts.return_value = [dummy_host_info]
 
         copy_timeseries(self.config)
         self.assertFalse(mock_copyfile.called)
@@ -200,7 +204,7 @@ class RunTestsTestCase(unittest.TestCase):
         mock_walk.return_value = [
             ('/dirpath', ('dirnames', ), ('matching--10.0.0.0', )),
         ]
-        mock_hosts.return_value = [common.host_utils.HostInfo('10.0.0.0', 'mongod', 0)]
+        mock_hosts.return_value = [dummy_host_info]
 
         copy_timeseries(self.config)
         self.assertTrue(
@@ -215,10 +219,7 @@ class RunTestsTestCase(unittest.TestCase):
             ('/dirpath1', ('dirnames1', ), ('file1--10.0.0.1', )),
             ('/dirpath2', ('dirnames2', ), ('file2--10.0.0.2', )),
         ]
-        mock_hosts.return_value = [
-            common.host_utils.HostInfo('10.0.0.0', 'mongod', 0),
-            common.host_utils.HostInfo('10.0.0.1', 'mongod', 1)
-        ]
+        mock_hosts.return_value = [dummy_host_info, dummy_host_info]
 
         copy_timeseries(self.config)
         self.assertTrue(mock_copyfile.called)

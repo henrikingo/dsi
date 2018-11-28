@@ -36,4 +36,5 @@ out:
       private_ip: 10.2.1.53
   workload_client:
     - public_ip: 53.1.1.101
+      private_ip: 10.2.1.10
 

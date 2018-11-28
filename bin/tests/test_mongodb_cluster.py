@@ -10,6 +10,7 @@ from mock import MagicMock, mock
 import common.mongodb_cluster
 import common.mongodb_setup_helpers
 import common.host
+from common.host_utils import ssh_user_and_key_file
 from test_lib.comparator_utils import ANY_IN_STRING
 
 # Mock the remote host module.
@@ -17,6 +18,7 @@ common.mongodb_cluster.RemoteHost = mock.MagicMock()
 
 MONGOD_OPTS = {
     'public_ip': '1.2.3.4',
+    'private_ip': '10.2.0.1',
     'mongo_dir': '/usr/',
     'config_file': {
         'net': {
@@ -40,7 +42,7 @@ DEFAULT_CONFIG = {
             'ssh_user': 'ec2-user',
             'ssh_key_file': '~/.ssh/user_ssh_key.pem'
         },
-        'numactl_prefix': 'numactl test',
+        'numactl_prefix': ['numactl', 'test'],
         'out': []
     },
     'mongodb_setup': {
@@ -70,7 +72,8 @@ DEFAULT_CONFIG = {
                 }
             }
         }]
-    }
+    },
+    'test_control': {}
 }
 
 
@@ -83,31 +86,38 @@ class TestMongoNode(unittest.TestCase):
         self.topology = topology
         self.config = DEFAULT_CONFIG
         self.mongo_node = common.mongodb_cluster.MongoNode(topology=topology, config=self.config)
+        mock_host = mock.MagicMock(name='host')
+        self.mongo_node._host = mock_host
 
     def test_run_mongo_shell(self):
         """Test hostport format"""
 
-        mock_host = mock.MagicMock(name='host')
-        self.mongo_node.host = mock_host
+        mock_host = self.mongo_node.host
         mock_host.exec_mongo_command.return_value = 0
         self.assertTrue(self.mongo_node.run_mongo_shell('js command'))
         mock_host.exec_mongo_command.assert_called_once_with(
-            'js command', '/tmp/mongo_port_9999.js', 'localhost:9999', max_time_ms=None)
+            'js command',
+            remote_file_name='/tmp/mongo_port_9999.js',
+            connection_string='localhost:9999',
+            max_time_ms=None)
 
         mock_host = mock.MagicMock(name='host')
         mock_dump_mongo_log = mock.MagicMock(name='dump_mongo_log')
-        self.mongo_node.host = mock_host
+        self.mongo_node._host = mock_host
         self.mongo_node.dump_mongo_log = mock_dump_mongo_log
         mock_host.exec_mongo_command.return_value = 1
 
         self.assertFalse(self.mongo_node.run_mongo_shell('js command', max_time_ms=1))
         mock_dump_mongo_log.assert_called_once()
         mock_host.exec_mongo_command.assert_called_once_with(
-            'js command', '/tmp/mongo_port_9999.js', 'localhost:9999', max_time_ms=1)
+            'js command',
+            remote_file_name='/tmp/mongo_port_9999.js',
+            connection_string='localhost:9999',
+            max_time_ms=1)
 
     def test_hostport(self):
         """Test hostport format"""
-        self.assertEquals(self.mongo_node.hostport_private(), '1.2.3.4:9999')
+        self.assertEquals(self.mongo_node.hostport_private(), '10.2.0.1:9999')
 
     def test_logdir(self):
         """Default log dir is empty"""
@@ -118,7 +128,7 @@ class TestMongoNode(unittest.TestCase):
         made during invocation of setup_host with the given setup_host_args."""
         host = mock.MagicMock()
         host.run.return_value = '<Expected>'
-        self.mongo_node.host = host
+        self.mongo_node._host = host
 
         return_value = self.mongo_node.setup_host(
             restart_clean_db_dir=restart_clean_db_dir, restart_clean_logs=restart_clean_logs)
@@ -167,7 +177,7 @@ class TestMongoNode(unittest.TestCase):
 
         node = common.mongodb_cluster.MongoNode(
             topology=self.config['mongodb_setup']['topology'][0], config=self.config)
-        (actual_user, actual_key) = node._ssh_user_and_key_file()
+        (actual_user, actual_key) = ssh_user_and_key_file(node.config)
         self.assertEquals(actual_key, expected_ssh_key_file)
         self.assertEquals(actual_user, 'ec2-user')
 
@@ -367,18 +377,19 @@ class TestMongoNode(unittest.TestCase):
 
         if modified:
             config = common.mongodb_setup_helpers.copy_obj(DEFAULT_CONFIG)
-            expected_full_command = "numactl --interleave=all --cpunodebind=1"
-            config['infrastructure_provisioning']['numactl_prefix'] = expected_full_command
+            config['infrastructure_provisioning']['numactl_prefix'] =\
+                ["numactl", "--interleave=all", "--cpunodebind=1"]
             node = common.mongodb_cluster.MongoNode(self.topology, config)
+            node._host = mock.MagicMock(name='host')
+            numa_prefix = config['infrastructure_provisioning']['numactl_prefix']
         else:
             node = self.mongo_node
-            expected_full_command = DEFAULT_CONFIG['infrastructure_provisioning']['numactl_prefix']
+            numa_prefix = DEFAULT_CONFIG['infrastructure_provisioning']['numactl_prefix']
 
-        expected_full_command += " /usr/bin/mongod"
+        expected_full_command = numa_prefix +\
+                                ["/usr/bin/mongod", "--config", "/tmp/mongo_port_9999.conf"]
         #if auth_enabled:
         #    expected_full_command += " --clusterAuthMode x509"
-        expected_full_command += " --config /tmp/mongo_port_9999.conf"
-
         self.assertEqual(node.launch_cmd(auth_enabled=auth_enabled), expected_full_command)
 
     def test_launch_cmd_default_auth_disabled(self):
@@ -417,9 +428,10 @@ class TestMongoNode(unittest.TestCase):
         common.mongodb_cluster.LOG.warn = mock_logger
         self.mongo_node.shutdown_options = 'options'
         self.mongo_node.run_mongo_shell = mock.MagicMock(name='run_mongo_shell')
-        self.mongo_node.host.run = mock.MagicMock(name='run')
-        self.mongo_node.host.run.return_value = True
-        self.assertFalse(self.mongo_node.shutdown(None))
+        self.mongo_node._host.run = mock.MagicMock(name='run')
+        self.mongo_node._host.run.return_value = True
+        # Use a lower `retry` to speed up the test.
+        self.assertFalse(self.mongo_node.shutdown(None, retries=1))
         self.mongo_node.run_mongo_shell.assert_called_with(
             'db.getSiblingDB("admin").shutdownServer(options)', max_time_ms=None)
         self.mongo_node.host.run.assert_called_with(['pgrep -l', 'mongo'])
@@ -542,7 +554,10 @@ class TestReplSet(unittest.TestCase):
         }
 
         # All default priorities
-        replset = common.mongodb_cluster.ReplSet(topology=repl_set_opts, config=DEFAULT_CONFIG)
+        replset = common.mongodb_cluster.ReplSet(
+            topology=repl_set_opts,
+            config=DEFAULT_CONFIG,
+        )
         replset._set_explicit_priorities()
         self.assertEquals(replset.highest_priority_node(), replset.nodes[0])
         self.assertEquals(replset.rs_conf_members[0]['priority'], 2)

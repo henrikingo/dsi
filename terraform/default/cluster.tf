@@ -35,7 +35,8 @@ variable mongod_seeded_ebs_iops            { default = 240 }
 variable mongod_ebs_size            { default = 100 }
 variable mongod_ebs_iops            { default = 240 }
 
-variable runner                     { default = "missing" }
+variable runner_hostname            { default = "missing" }
+variable runner_ip                  { default = "none" }
 variable runner_instance_id         { default = "none" }
 variable status                     { default = "idle" }
 variable task_id                    { default = "none" }
@@ -99,7 +100,8 @@ module "cluster" {
     key_file            = "${var.key_file}"
     key_name            = "${var.key_name}"
 
-    runner              = "${var.runner}"
+    runner_hostname     = "${var.runner_hostname}"
+    runner_ip           = "${var.runner_ip}"
     runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"
     task_id             = "${var.task_id}"

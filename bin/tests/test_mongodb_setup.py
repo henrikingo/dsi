@@ -58,7 +58,8 @@ DEFAULT_CONFIG = {
                 'password': 'password'
             }
         }
-    }
+    },
+    'test_control': {}
 }
 
 
@@ -200,6 +201,7 @@ class TestMongodbSetup(unittest.TestCase):
         def _test__start(run_threads, success=True):
 
             setup = mongodb_setup.MongodbSetup(config=self.config)
+
             setup.downloader = mock.MagicMock()
             setup.downloader.download_and_extract.return_value = False
             common.mongodb_cluster.MongoNode.wait_until_up = mock.MagicMock()
@@ -239,6 +241,7 @@ class TestMongodbSetup(unittest.TestCase):
         """ Test _start with auth enabled for is_restart=False """
         self.config['bootstrap']['authentication'] = 'enabled'
         setup = mongodb_setup.MongodbSetup(config=self.config)
+
         mock_add_default_users = mock.MagicMock(name='add_default_users')
         mock_shutdown = mock.MagicMock(name='shutdown')
         setup.add_default_users = mock_add_default_users
@@ -271,6 +274,7 @@ class TestMongodbSetup(unittest.TestCase):
         """ Test _start with auth enabled for is_restart=True, and clean_db_dir=True"""
         self.config['bootstrap']['authentication'] = 'enabled'
         setup = mongodb_setup.MongodbSetup(config=self.config)
+
         mock_add_default_users = mock.MagicMock(name='add_default_users')
         mock_shutdown = mock.MagicMock(name='shutdown')
         setup.add_default_users = mock_add_default_users
@@ -305,6 +309,7 @@ class TestMongodbSetup(unittest.TestCase):
         """ Test _start with auth enabled for is_restart=True and clean_db_dir=False."""
         self.config['bootstrap']['authentication'] = 'enabled'
         setup = mongodb_setup.MongodbSetup(config=self.config)
+
         mock_add_default_users = mock.MagicMock(name='add_default_users')
         mock_shutdown = mock.MagicMock(name='shutdown')
         setup.add_default_users = mock_add_default_users
