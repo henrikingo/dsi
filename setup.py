@@ -14,6 +14,7 @@ from distutils.command.build_ext import build_ext
 from distutils.errors import (CCompilerError, DistutilsExecError,
                               DistutilsPlatformError)
 
+import platform
 from setuptools import setup
 
 
@@ -78,7 +79,7 @@ ext_modules = [
         'signal_processing.native._qhat',
         sources=['./signal_processing/native/qhat.c'],
         extra_compile_args=["-O3"],
-        extra_link_args=["-shared"])
+        extra_link_args=[] if 'Darwin' in platform.system() else ["-shared"])
 ]
 extra_opts = {}
 
