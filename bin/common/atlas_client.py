@@ -5,13 +5,13 @@ A thin client around Atlas REST API calls we use.
 Not complete, rather add calls as you need them.
 """
 
-import logging
 import time
 
 import requests
 import requests.auth as auth
+import structlog
 
-LOG = logging.getLogger(__name__)
+LOG = structlog.get_logger(__name__)
 
 DEFAULT_ROOT_URL = "https://cloud.mongodb.com/api/atlas/v1.0/"
 
@@ -60,10 +60,10 @@ class AtlasClient(object):
         """
         url = "{}groups/{}/clusters".format(self.root, self.group_id)
         response = requests.post(url, json=configuration, auth=self.auth)
-        LOG.debug(response.request.headers)
-        LOG.debug(response.request.body)
+        LOG.debug(
+            "Create cluster response", headers=response.request.headers, body=response.request.body)
         if not response.ok:
-            LOG.error(response.json())
+            LOG.error("HTTP error in create_cluster", response=response.json())
             response.raise_for_status()
         else:
             return response.json()
@@ -81,9 +81,9 @@ class AtlasClient(object):
         """
         url = "{}groups/{}/clusters/{}".format(self.root, self.group_id, cluster_name)
         response = requests.get(url, auth=self.auth)
-        LOG.debug(response.request.headers)
+        LOG.debug("Get one cluster", headers=response.request.headers)
         if not response.ok:
-            LOG.error(response.json())
+            LOG.error("HTTP error in get_one_cluster", response=response.json())
             response.raise_for_status()
         else:
             return response.json()
@@ -111,7 +111,11 @@ class AtlasClient(object):
         """
         while True:
             cluster = self.get_one_cluster(cluster_name)
-            LOG.info("%s status: %s", cluster_name, cluster["stateName"])
+            LOG.info(
+                "Await state",
+                cluster_name=cluster_name,
+                status=cluster["stateName"],
+                target_state=target_state)
             if cluster["stateName"] == target_state:
                 return cluster
             time.sleep(30)
@@ -129,8 +133,9 @@ class AtlasClient(object):
         """
         url = "{}groups/{}/clusters/{}".format(self.root, self.group_id, cluster_name)
         response = requests.delete(url, auth=self.auth)
-        LOG.debug(response.request.headers)
+        LOG.debug("Delete cluster", headers=response.request.headers)
         if not response.ok:
+            LOG.error("HTTP error in delete_cluster", response=response.json())
             response.raise_for_status()
         else:
             return True

@@ -5,12 +5,13 @@ MongoDB Setup but for Atlas clusters
 Instead of creating our own MongoDB clusters, we make REST calls to Atlas instead.
 """
 import copy
-import logging
 import random
+
+import structlog
 
 import atlas_client
 
-LOG = logging.getLogger(__name__)
+LOG = structlog.get_logger(__name__)
 
 
 class AtlasSetup(object):
@@ -32,7 +33,7 @@ class AtlasSetup(object):
         self.api = {}
         if "atlas" in self.mongodb_setup and "api" in self.mongodb_setup["atlas"]:
             self.api = self.mongodb_setup["atlas"]["api"].as_dict()
-        LOG.debug("Atlas api config = %s", self.api)
+        LOG.debug("Atlas api config", api_config=self.api)
 
         self.api_credentials = {}
         if ("atlas_api_user" in self.config["runtime_secret"]
@@ -40,9 +41,12 @@ class AtlasSetup(object):
 
             self.api_credentials["user"] = self.config["runtime_secret"].get("atlas_api_user", "")
             self.api_credentials["key"] = self.config["runtime_secret"].get("atlas_api_key", "")
-            LOG.debug("Atlas credentials = %s:%s***", self.api_credentials["user"],
-                      self.api_credentials["key"][0:5] if self.api_credentials["key"] else "")
+            LOG.debug(
+                "Atlas credentials",
+                user=self.api_credentials["user"],
+                key=(self.api_credentials["key"][0:5] if self.api_credentials["key"] else ""))
 
+        self.atlas_client = None
         if "root" in self.api and "group_id" in self.api and self.api_credentials:
             self.atlas_client = atlas_client.AtlasClient(self.api, self.api_credentials)
 
@@ -68,11 +72,18 @@ class AtlasSetup(object):
         if self.mongodb_setup["out"]["atlas"]["clusters"]:
             LOG.error("Clusters already exist in mongodb_setup.out.atlas.clusters.")
             LOG.error("Please shutdown existing clusters first with infrastructure_teardown.py.")
-            LOG.debug(self.mongodb_setup["out"])
+            LOG.debug("Start atlas cluster", out=self.mongodb_setup["out"])
             return False
 
         if "atlas" in self.mongodb_setup and "clusters" in self.mongodb_setup["atlas"]:
             LOG.info("AtlasSetup.start")
+            if not self.atlas_client:
+                LOG.error("Trying to start Atlas Clusters, but self.atlas_client not initialized")
+                raise (UserWarning(
+                    "Atlas_setup trying to start clusters, but self.atlas_client not initialized\n"
+                    "Do you have a runtime_secret.yml file with atlas api information?\n See"
+                    "https://github.com/10gen/dsi/blob/master/docs/config-specs/runtime_secret.yml")
+                      ) #yapf: disable
             return all(
                 self.create_cluster(atlas_cluster)
                 for atlas_cluster in self.mongodb_setup["atlas"]["clusters"])
@@ -85,8 +96,12 @@ class AtlasSetup(object):
         """
         Destroy the cluster(s) listed in `mongodb_setup.out.atlas.clusters`.
         """
-        LOG.info("About to shutdown these Atlas clusters:  %s",
-                 [obj["name"] for obj in self.mongodb_setup["out"]["atlas"]["clusters"]])
+        LOG.info(
+            "About to shutdown Atlas clusters",
+            clusters=[
+                atlas_cluster["name"]
+                for atlas_cluster in self.mongodb_setup["out"]["atlas"]["clusters"]
+            ])
         return all(
             self.delete_cluster(atlas_cluster)
             for atlas_cluster in self.mongodb_setup["out"]["atlas"]["clusters"])
@@ -106,18 +121,24 @@ class AtlasSetup(object):
         body = atlas_cluster.as_dict()
         body["name"] = name
 
-        LOG.info("Create %s Atlas %s with name: %s", body["providerSettings"]["instanceSizeName"],
-                 body["clusterType"], body["name"])
+        LOG.info(
+            "Create Atlas Cluster",
+            instance_size_name=body["providerSettings"]["instanceSizeName"],
+            cluster_type=body["clusterType"],
+            name=body["name"])
         response = self.atlas_client.create_cluster(body)
-        LOG.debug(response)
+        LOG.debug("Create cluster response", response=response)
         # This response still lacks meta data, but we want to persist the cluster name asap
         self._save_create_response(response)
         response = self.atlas_client.await(name)
-        LOG.debug(response)
+        LOG.debug("After cluster await", response=response)
         # Save MongoDB URI and such to mongodb_setup.out.yml
         self._save_create_response(response)
-        LOG.info("Done creating %s Atlas %s with name: %s",
-                 body["providerSettings"]["instanceSizeName"], body["clusterType"], body["name"])
+        LOG.info(
+            "Done creating Atlas cluster",
+            instance_size_name=body["providerSettings"]["instanceSizeName"],
+            cluster_type=body["clusterType"],
+            name=body["name"])
         return True
 
     @staticmethod
@@ -158,7 +179,7 @@ class AtlasSetup(object):
         # Then assign the entire list back to the ConfigDict
         self.mongodb_setup["out"]["atlas"]["clusters"] = clusters_list
 
-        LOG.debug(self.mongodb_setup["out"])
+        LOG.debug("Mongodb_setup output", out=self.mongodb_setup["out"])
         self.config.save()  # Creates mongodb_setup.out.yml
 
     def delete_cluster(self, atlas_cluster):
@@ -175,17 +196,17 @@ class AtlasSetup(object):
             return False
 
         name = atlas_cluster["name"]
-        LOG.info("Shutting down Atlas cluster: %s...", name)
+        LOG.info("Shutting down Atlas cluster", name=name)
         if self.atlas_client.delete_cluster(name):
-            LOG.info("Shutting down Atlas cluster: %s succeeded.", name)
+            LOG.info("Shutting down Atlas cluster succeeded.", name=name)
             # Bookkeeping: delete this cluster from `mongodb_setup.out.atlas.clusters`
             self._remove_cluster_from_list(atlas_cluster)
-            LOG.debug(self.mongodb_setup["out"])
+            LOG.debug("Mongodb_setup.out after shutdown", out=self.mongodb_setup["out"])
             self.config.save()
             return True
 
         # else:
-        LOG.error("Shutting down Atlas cluster: %s FAILED.", name)
+        LOG.error("Shutting down Atlas cluster FAILED.", name=name)
         return False
 
     def _remove_cluster_from_list(self, atlas_cluster):
