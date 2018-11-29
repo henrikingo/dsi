@@ -75,7 +75,8 @@ class DownloadMongodb(object):
     def _remote_commands(self, host):
         mongo_dir = self.config["mongodb_setup"]["mongo_dir"]
         tmp_file = os.path.join(mongo_dir, temp_file(self.mongodb_binary_archive))
-        return [['echo', 'Downloading {} to {}.'.format(self.mongodb_binary_archive, host.hostname)],
+        return [['echo', 'Downloading {} to {}.'.format(self.mongodb_binary_archive,
+                                                        host.hostname)],
                 ['rm', '-rf', mongo_dir],
                 ['rm', '-rf', 'bin'],
                 ['rm', '-rf', 'jstests'],
