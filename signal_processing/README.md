@@ -264,3 +264,92 @@ The configuration values are applied in the following order:
 1. Defined in the .change-points file (where this is available).
 1. Specified in an env var (where this is available).
 1. Provided on the command line.
+
+#### Keyring support
+
+The attach / detach commands attempt to save to the system keyring if available.
+
+As a first step, in your virtualenv try:
+
+   $ pip install -e .[Keyring]
+   
+   $ change-points attach BF-11372  e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf 
+   $ change-points detach BF-11372  e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf 
+
+If this works (you are only prompted for a username / password once), then you are good to go. If
+there are errors then refer to the section for your OS.
+
+##### Linux
+
+Installation can be tricky on Linux.
+
+If the __pip install -e .[Keyring]__ failed then create a virtualenv with access to the system
+packages. For mkvirtualenv, the following set of commands may work:
+
+   $ mkvirtualenv keyring --system-site-packages
+   $ workon keyring
+   $ pip install -e .
+                          
+If this diesn't work then refer to the [keyring homepage](https://pypi.org/project/keyring/#linux).
+ 
+##### MacOS
+
+On MacOS the  __pip install -e .[Keyring]__ generally succeeds but the commands fail with an error
+like:
+
+    keyring.errors.PasswordSetError: Can't store password on keychain
+
+Check the signature of your python executable by running the following command:
+   
+    $ codesign -dvvvvv $(which python)
+    Executable=~/.venv/bin/python
+    Identifier=org.python.python
+    Format=Mach-O universal (i386 x86_64)
+    CodeDirectory v=20100 size=290 flags=0x0(none) hashes=4+3 location=embedded
+    Platform identifier=4
+    Hash type=sha256 size=32
+    CandidateCDHash sha256=3e046a90783ab10480cf09372a77c70acba04354
+    Hash choices=sha256
+    Page size=4096
+        -3=7e4502120634435e8591decb7d459047e4536a6180ae689fdc52245c65a7415b
+        -2=834eaf91749aac19928be4fd53207f129c9eec188c1facd0012ba2066de9e95c
+    CDHash=3e046a90783ab10480cf09372a77c70acba04354
+    Signature size=4485
+    Authority=Software Signing
+    Authority=Apple Code Signing Certification Authority
+    Authority=Apple Root CA
+    Info.plist=not bound
+    TeamIdentifier=not set
+    Sealed Resources=none
+    Internal requirements count=1 size=68   
+
+The output shows a signature but it is not set to __Signature=adhoc__.
+
+Execute the following command and try the attach / detach command again:
+
+    $ codesign -f -s - $(which python)
+    $ change-points attach BF-11372  e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf 
+    $ change-points detach BF-11372  e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf 
+   
+
+##### Miscellaneous
+
+If there is no keyring available or you do not want to install a keyring, then you can pass in the 
+credentials or you will be prompted for them each time.
+   
+You can disable keyring usage on a machine where the keyring is installed with either
+__--no-keyring__ or __--guest__:
+
+    $ change-points attach BF-11372  e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf --guest
+
+In this case you will be prompted for the credentials.
+
+
+You can also provide a username  with __--no-keyring__ or __--guest__:
+
+    $ change-points attach BF-11372  e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf --guest \
+    --username jira_username
+
+In this case, you should only be prompted for the password.
+
+

@@ -11,6 +11,8 @@ etl_jira_mongo.py --jira-user USERNAME --jira-password PASSWORD --mongo-uri \
 
 If called from command line, main() is the entry point.
 """
+# pylint: disable=redefined-builtin
+from builtins import input  # input does an eval on 2.7
 
 import argparse
 from collections import OrderedDict

@@ -115,9 +115,11 @@ install_requirements = ['boto3==1.4.7',
                         'PyYAML==3.12',
                         'requests==2.18.4',
                         'scipy==1.1.0',
-                        'structlog==18.1.0']
+                        'structlog==18.1.0',
+                        'future==0.16.0']
 extras_require = {
-    'Plotting':  ["matplotlib==2.1.0"]
+    'Plotting':  ['matplotlib==2.1.0'],
+    'Keyring':  ['keyring==10.6.0']
 }
 setup(
     name='DSI',

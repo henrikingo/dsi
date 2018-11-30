@@ -35,6 +35,8 @@ import signal_processing.commands.update as update
 import signal_processing.commands.visualize as visualize
 import signal_processing.qhat as qhat
 from signal_processing import detect_changes
+from signal_processing.commands import attach
+from signal_processing.keyring.jira_keyring import jira_keyring
 from analysis.evergreen import evergreen_client
 from bin.common import log
 
@@ -254,7 +256,8 @@ Examples:
     $> change-points mark $revision sys-perf '' '' find_limit-useAgg
     $> change-points mark $revision sys-perf '' '' find_limit-useAgg ''
 """
-    query = helpers.process_params(revision, project, variant, task, test, thread_level)
+    query = helpers.process_params(
+        project, variant, task, test, revision=revision, thread_level=thread_level)
     mark.mark_change_points(helpers.PROCESSED_TYPE_ACKNOWLEDGED, query,
                             helpers.process_excludes(exclude_patterns), command_config)
 
@@ -317,7 +320,8 @@ Examples:
     $> change-points hide $revision sys-perf '' '' find_limit-useAgg ''
 """
 
-    query = helpers.process_params(revision, project, variant, task, test, thread_level)
+    query = helpers.process_params(
+        project, variant, task, test, revision=revision, thread_level=thread_level)
     mark.mark_change_points(helpers.PROCESSED_TYPE_HIDDEN, query,
                             helpers.process_excludes(exclude_patterns), command_config)
 
@@ -396,7 +400,8 @@ Examples:
     $> change-points update $revision sys-perf '' '' find_limit-useAgg '' \\
     --processed-type acknowledged
 """
-    query = helpers.process_params(revision, project, variant, task, test, thread_level)
+    query = helpers.process_params(
+        project, variant, task, test, revision=revision, thread_level=thread_level)
     update.update_change_points(processed_type, query, helpers.process_excludes(exclude_patterns),
                                 command_config)
 
@@ -478,7 +483,8 @@ Examples:
     $> change-points update $revision sys-perf '' '' find_limit-useAgg '' \\
     --processed-type acknowledged
 """
-    query = helpers.process_params(revision, project, variant, task, test, thread_level)
+    query = helpers.process_params(
+        project, variant, task, test, revision=revision, thread_level=thread_level)
     unmark.unmark_change_points(None if processed_type == 'any' else processed_type, query,
                                 helpers.process_excludes(exclude_patterns), command_config)
 
@@ -617,7 +623,8 @@ Examples:
     $> change-points list sys-perf  --point-type processed --processed-type acknowledged\
     --processed-type hidden
 """
-    query = helpers.process_params(revision, project, variant, task, test, thread_level)
+    query = helpers.process_params(
+        project, variant, task, test, revision=revision, thread_level=thread_level)
     list_change_points.list_change_points(
         change_point_type=point_type,
         query=query,
@@ -730,7 +737,7 @@ For Example:
     LOG.debug('starting')
     points = command_config.points
 
-    query = helpers.process_params(None, project, variant, task, test, None)
+    query = helpers.process_params(project, variant, task, test)
     LOG.debug('processed params', query=query)
 
     matching_tasks = helpers.filter_legacy_tasks(
@@ -891,7 +898,7 @@ Examples:
     LOG.debug('starting')
     command_config = context.obj
     points = command_config.points
-    query = helpers.process_params(None, project, variant, task, test, thread_level)
+    query = helpers.process_params(project, variant, task, test, thread_level=thread_level)
 
     LOG.debug('finding matching tasks', query=query)
     matching_tasks = helpers.get_matching_tasks(points, query)
@@ -1057,7 +1064,7 @@ $> pip install 'git+https://github.com/10gen/dsi.git#egg=DSI[Plotting]'
     LOG.debug('starting')
     points = command_config.points
 
-    query = helpers.process_params(None, project, variant, task, test, thread_level)
+    query = helpers.process_params(project, variant, task, test, thread_level=thread_level)
     LOG.debug('processed params', query=query)
 
     matching_tasks = helpers.filter_legacy_tasks(helpers.get_matching_tasks(points, query))
@@ -1179,7 +1186,7 @@ Examples:
     $> change-points list-build-failures --human-readable
     $> change-points list-build-failures $revision sys-perf linux-1-node-replSet --human-readable
 """
-    query = helpers.process_params(revision, project, variant, task, test, None)
+    query = helpers.process_params(project, variant, task, test, revision=revision)
     list_build_failures.list_build_failures(query, human_readable, command_config)
 
 
@@ -1252,3 +1259,246 @@ Examples:
 
     list_failures.list_failures(project, show_wtdevelop, show_patches, human_readable, limit,
                                 no_older_than, evg_client, command_config)
+
+
+@cli.command(name='attach')
+@click.pass_obj
+@click.option(
+    '--exclude',
+    'excludes',
+    multiple=True,
+    help='''Exclude all points matching this pattern. This parameter can be provided
+multiple times.''')
+@click.option(
+    '--username',
+    'username',
+    required=False,
+    help='''The jira username, you will be prompted if none is available here or
+in the keyring. If credentials are provided and the command succeeds and a keyring is in use,
+the credentials are stored in the keyring for subsequent calls.''')
+@click.option(
+    '--password',
+    'password',
+    required=False,
+    help='''The jira password, you will be prompted if none is available here or
+in the keyring. If credentials are provided and the command succeeds and a keyring is in use,
+the credentials are stored in the keyring for subsequent calls.''')
+@click.option(
+    '--keyring / --no-keyring',
+    'use_keyring',
+    is_flag=True,
+    default=True,
+    help='Never use keyring if --no-keyring is provided.')
+@click.option(
+    '--guest',
+    'use_keyring',
+    flag_value=False,
+    default=True,
+    help='Never use keyring same as --no-keyring.')
+@click.option(
+    '--fail / --fix',
+    'fail',
+    is_flag=True,
+    default=True,
+    help='Set the first fail or fix. Default is first fail.')
+@click.argument('build_failure', required=True)
+@click.argument('revision', required=True)
+@click.argument('project', required=True)
+@click.argument('variant', required=False)
+@click.argument('task', required=False)
+@click.argument('test', required=False)
+def attach_command(command_config, excludes, username, password, use_keyring, fail, build_failure,
+                   revision, project, variant, task, test):
+    # pylint: disable=too-many-arguments, too-many-locals
+    """
+    Attach meta data to a build failure. This command looks for points matching the project /
+    variant / task / test when attempting to detach.
+
+
+Argument can be strings.
+
+\b
+BUILD FAILURE, the Jira issue id, something like BF-0001.
+REVISION, the revision id.
+PROJECT, the project name e.g. sys-perf.
+VARIANT, the build variant e.g. linux-standalone or '/repl/'.
+VARIANT, the task e.g. bestbuy_agg or '/bestbuy/'.
+Test, the test e.g. canary_client-cpuloop-10x or '/canary/'.
+\b
+Examples:
+\b
+    # Attach a specific first_fail_revision point
+    $> change-points attach BF-0001 e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf \
+    linux-shard-lite mongos_workloads mongos_insert_vector_sharded_raw
+OR:
+    $> change-points attach BF-0001 e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf \
+    linux-shard-lite mongos_workloads mongos_insert_vector_sharded_raw --fail
+
+\b
+    # Attach a specific fix_revision point
+    $> change-points attach BF-0001 e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf \
+    linux-shard-lite mongos_workloads mongos_insert_vector_sharded_raw --fix
+
+\b
+    # Attach all tests for the specific change point task
+    $> change-points attach BF-0001 e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf \
+    linux-shard-lite mongos_workloads
+
+\b
+    # Attach all tasks / tests for the specific change point variant
+    $> change-points attach BF-0001 e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf \
+    linux-shard-lite
+
+\b
+    # Attach all variants / tasks / tests for the specific change point project
+    $> change-points attach BF-0001 e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf
+
+\b
+    # You are a guest on this host and don't want your credentials saved.
+    $> change-points attach BF-11372  e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf\
+     --no-keyring --username jira_user
+
+    # same as --no-keyring
+    $> change-points attach BF-11372  e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf\
+     --guest --username jira_user
+
+"""
+    with jira_keyring(username, password, use_keyring=use_keyring) as etl_jira:
+        jira = etl_jira.jira
+        issue = jira.issue(build_failure)
+
+        points = command_config.points
+        query = helpers.process_params_for_points(project, variant, task, test, revision=revision)
+        LOG.debug('processed params', query=query)
+
+        matching_tasks = helpers.filter_legacy_tasks(helpers.get_matching_tasks(points, query))
+        LOG.debug('matched tasks', matching_tasks=matching_tasks)
+
+        exclude_patterns = helpers.process_excludes(excludes)
+        test_identifiers = [
+            test_identifier for test_identifier in helpers.generate_tests(matching_tasks)
+            if not helpers.filter_tests(test_identifier['test'], exclude_patterns)
+        ]
+        LOG.debug('matched test_identifiers', test_identifiers=test_identifiers)
+
+        attach.attach(issue, test_identifiers, not fail, command_config)
+
+
+@cli.command(name='detach')
+@click.pass_obj
+@click.option(
+    '--exclude',
+    'excludes',
+    multiple=True,
+    help='''Exclude all points matching this pattern. This parameter can be provided
+multiple times.''')
+@click.option(
+    '--username',
+    'username',
+    required=False,
+    help='''The jira username, you will be prompted if none is available here or
+in the keyring. If credentials are provided and the command succeeds and a keyring is in use,
+the credentials are stored in the keyring for subsequent calls.''')
+@click.option(
+    '--password',
+    'password',
+    required=False,
+    help='''The jira password, you will be prompted if none is available here or
+in the keyring. If credentials are provided and the command succeeds and a keyring is in use,
+the credentials are stored in the keyring for subsequent calls.''')
+@click.option(
+    '--keyring / --no-keyring',
+    'use_keyring',
+    is_flag=True,
+    default=True,
+    help='Never use keyring if --no-keyring is provided.')
+@click.option(
+    '--guest',
+    'use_keyring',
+    flag_value=False,
+    default=True,
+    help='Never use keyring same as --no-keyring.')
+@click.option(
+    '--fail / --fix',
+    'fail',
+    is_flag=True,
+    default=True,
+    help='Set the first fail or fix. Default is first fail.')
+@click.argument('build_failure', required=True)
+@click.argument('revision', required=True)
+@click.argument('project', required=True)
+@click.argument('variant', required=False)
+@click.argument('task', required=False)
+@click.argument('test', required=False)
+def detach_command(command_config, excludes, username, password, use_keyring, fail, build_failure,
+                   revision, project, variant, task, test):
+    # pylint: disable=too-many-arguments, too-many-locals
+    """
+    Detach meta data from a build failure. This command looks for points matching the project /
+    variant / task / test when attempting to detach.
+
+Argument can be strings.
+
+\b
+BUILD FAILURE, the Jira issue id, something like BF-0001.
+REVISION, the revision id.
+PROJECT, the project name e.g. sys-perf.
+VARIANT, the build variant e.g. linux-standalone or '/repl/'.
+VARIANT, the task e.g. bestbuy_agg or '/bestbuy/'.
+Test, the test e.g. canary_client-cpuloop-10x or '/canary/'.
+\b
+Examples:
+\b
+    # Detach a specific first_fail_revision point
+    $> change-points detach BF-0001 e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf \
+    linux-shard-lite mongos_workloads mongos_insert_vector_sharded_raw
+OR:
+    $> change-points detach BF-0001 e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf \
+    linux-shard-lite mongos_workloads mongos_insert_vector_sharded_raw --fail
+
+    # Detach a specific fix_revision  point
+    $> change-points detach BF-0001 e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf \
+    linux-shard-lite mongos_workloads mongos_insert_vector_sharded_raw --fix
+
+\b
+    # Detach all tests for the specific point task
+    $> change-points detach BF-0001 e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf \
+    linux-shard-lite mongos_workloads
+
+\b
+    # Detach all tasks / tests for the specific point variant
+    $> change-points detach BF-0001 e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf \
+    linux-shard-lite
+
+\b
+    # Detach all variants / tasks / tests for the specific point project
+    $> change-points detach BF-0001 e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf
+
+\b
+    # You are a guest on this host and don't want your credentials saved.
+    $> change-points detach BF-11372  e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf\
+     --no-keyring --username jira_user
+
+    # same as --no-keyring
+    $> change-points detach BF-11372  e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf\
+     --guest --username jira_user
+"""
+
+    with jira_keyring(username, password, use_keyring=use_keyring) as etl_jira:
+        jira = etl_jira.jira
+        issue = jira.issue(build_failure)
+
+        query = helpers.process_params_for_points(project, variant, task, test, revision=revision)
+        LOG.debug('processed params', query=query)
+
+        matching_tasks = helpers.filter_legacy_tasks(
+            helpers.get_matching_tasks(command_config.points, query))
+        LOG.debug('matched tasks', matching_tasks=matching_tasks)
+
+        exclude_patterns = helpers.process_excludes(excludes)
+        test_identifiers = [
+            test_identifier for test_identifier in helpers.generate_tests(matching_tasks)
+            if not helpers.filter_tests(test_identifier['test'], exclude_patterns)
+        ]
+        LOG.debug('matched test_identifiers', test_identifiers=test_identifiers)
+        attach.detach(issue, test_identifiers, not fail, command_config)

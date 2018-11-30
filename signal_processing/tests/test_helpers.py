@@ -338,8 +338,8 @@ class TestProcessParams(unittest.TestCase):
     # called.
     def test_process_params_empty(self):
         """ Test empty."""
-        self.assertEqual(helpers.process_params('', '', '', '', '', ''), {})
-        self.assertEqual(helpers.process_params(None, None, None, None, None, None), {})
+        self.assertEqual(helpers.process_params('', '', '', '', revision='', thread_level=''), {})
+        self.assertEqual(helpers.process_params(None, None, None, None), {})
 
     def test_process_params_strings(self):
         """ Test strings."""
@@ -347,8 +347,13 @@ class TestProcessParams(unittest.TestCase):
             k: k
             for k in ('suspect_revision', 'project', 'variant', 'task', 'test', 'thread_level')
         }
-        actual = helpers.process_params('suspect_revision', 'project', 'variant', 'task', 'test',
-                                        'thread_level')
+        actual = helpers.process_params(
+            'project',
+            'variant',
+            'task',
+            'test',
+            revision='suspect_revision',
+            thread_level='thread_level')
         self.assertDictEqual(expected, actual)
 
     @patch(
@@ -365,11 +370,73 @@ class TestProcessParams(unittest.TestCase):
             'test': 5,
             'thread_level': 6
         }
-        actual = helpers.process_params('/suspect_revision/', '/project/', '/variant/', '/task/',
-                                        '/test/', '/thread_level/')
+        actual = helpers.process_params(
+            '/project/',
+            '/variant/',
+            '/task/',
+            '/test/',
+            revision='/suspect_revision/',
+            thread_level='/thread_level/')
         self.assertDictEqual(expected, actual)
         calls = [
             mock.call('suspect_revision', 0),
+            mock.call('project', 0),
+            mock.call('variant', 0),
+            mock.call('task', 0),
+            mock.call('test', 0),
+            mock.call('thread_level', 0),
+        ]
+        mock_compile.assert_has_calls(calls=calls)
+
+
+class TestProcessParamsForPoints(unittest.TestCase):
+    """
+    Test process_params.
+    """
+
+    # comparing compiled re's seem to be randomly broken
+    # on linux falling back to asserting that the compile is
+    # called.
+    def test_process_params_empty(self):
+        """ Test empty."""
+        self.assertEqual(
+            helpers.process_params_for_points('', '', '', '', revision='', thread_level=''), {})
+        self.assertEqual(helpers.process_params_for_points(None, None, None, None), {})
+
+    def test_process_params_strings(self):
+        """ Test strings."""
+        expected = {
+            k: k
+            for k in ('revision', 'project', 'variant', 'task', 'test', 'thread_level')
+        }
+        actual = helpers.process_params_for_points(
+            'project', 'variant', 'task', 'test', revision='revision', thread_level='thread_level')
+        self.assertDictEqual(expected, actual)
+
+    @patch(
+        'signal_processing.commands.helpers.re.compile',
+        autospec=True,
+        side_effect=[1, 2, 3, 4, 5, 6])
+    def test_process_params_re_strings(self, mock_compile):
+        """ Test re strings."""
+        expected = {
+            'revision': 1,
+            'project': 2,
+            'variant': 3,
+            'task': 4,
+            'test': 5,
+            'thread_level': 6
+        }
+        actual = helpers.process_params_for_points(
+            '/project/',
+            '/variant/',
+            '/task/',
+            '/test/',
+            revision='/revision/',
+            thread_level='/thread_level/')
+        self.assertDictEqual(expected, actual)
+        calls = [
+            mock.call('revision', 0),
             mock.call('project', 0),
             mock.call('variant', 0),
             mock.call('task', 0),
@@ -588,15 +655,70 @@ class TestGetMatchingTasks(unittest.TestCase):
     Test get_matching_tasks.
     """
 
-    def test_get_matching_tasks(self):
+    def _test(self, no_older=True, revision=False):
         """ Test the core function."""
         self.assertEqual(helpers.show_item_function(None), None)
         database = mock.MagicMock(name='database')
 
         database.aggregate.return_value = 'expected'
-        value = helpers.get_matching_tasks(database, {}, 30)
+        if revision:
+            query = {'revision': 'badf'}
+        else:
+            query = {'find': 'me'}
+
+        value = helpers.get_matching_tasks(database, query, 30 if no_older else None)
         self.assertEqual(value, 'expected')
         database.aggregate.assert_called_once()
+        arguments = database.aggregate.call_args_list[0][0][0]
+        match = arguments[0]['$match']
+        self.assertDictContainsSubset(query, match)
+
+        if no_older:
+            self.assertIn('start', match)
+
+        if revision:
+            arguments = database.aggregate.call_args_list[0][0][0]
+            grouping = arguments[1]['$group']
+            self.assertIn('_id', grouping)
+            self.assertIn('revision', grouping['_id'])
+            self.assertEquals('$revision', grouping['_id']['revision'])
+
+            projection = arguments[-1]['$project']
+            self.assertIn('revision', projection)
+            self.assertEquals('$_id.revision', projection['revision'])
+
+    def test_get_matching_tasks(self):
+        """ Test the core function."""
+        self._test()
+
+    def test_get_matching_tasks_no_older(self):
+        """ Test the core function with no older."""
+        self._test(no_older=True)
+
+    def test_get_matching_tasks_revision(self):
+        """ Test the core function with revision."""
+        self._test(revision=True)
+
+
+class TestGetMatchingChangePoints(unittest.TestCase):
+    """
+    Test get_matching_change_points.
+    """
+
+    def test_get_matching_change_points(self):
+        """ Test the core function."""
+        self.assertEqual(helpers.show_item_function(None), None)
+        database = mock.MagicMock(name='database')
+
+        database.aggregate.return_value = 'expected'
+        test_identifier = {'find': 'me'}
+
+        value = helpers.get_matching_tasks(database, test_identifier)
+        self.assertEqual(value, 'expected')
+        database.aggregate.assert_called_once()
+        arguments = database.aggregate.call_args_list[0][0][0]
+        match = arguments[0]['$match']
+        self.assertEquals(test_identifier, match)
 
 
 class TestFilterTests(unittest.TestCase):

@@ -22,6 +22,7 @@ top_paths=(
     bin/common
     signal_processing
     signal_processing/commands
+    signal_processing/keyring
 )
 
 # this set of directories uses /tests/pylintrc
@@ -31,6 +32,7 @@ test_paths=(
     tests/test_evergreen
     testscripts
     signal_processing/tests
+    signal_processing/keyring/tests
     test_lib
 )
 

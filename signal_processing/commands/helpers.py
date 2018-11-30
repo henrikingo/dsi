@@ -426,7 +426,27 @@ def extract_pattern(parameter, string_is_pattern=False):
     return parameter
 
 
-def process_params(revision, project, variant, task_name, test, thread_level):
+def process_params(project, variant, task_name, test, revision=None, thread_level=None):
+    # pylint: disable=too-many-arguments
+    """
+    Convert the command line parameters to a change points query.
+    For parameters and return type see :method: `_process_params`.
+    """
+    return _process_params(revision, project, variant, task_name, test, thread_level,
+                           'suspect_revision')
+
+
+def process_params_for_points(project, variant, task_name, test, revision=None, thread_level=None):
+    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments
+    """
+    Convert the command line parameters to a points query.
+    For parameters and return type see :method: `_process_params`.
+    """
+    return _process_params(revision, project, variant, task_name, test, thread_level, 'revision')
+
+
+def _process_params(revision, project, variant, task_name, test, thread_level, revision_name):
     # pylint: disable=too-many-arguments
     """
     Convert the command line parameters to a query. Parameters are converted according to the
@@ -447,16 +467,17 @@ def process_params(revision, project, variant, task_name, test, thread_level):
     :type test: str, None.
     :param thread_level: The thread_level to match.
     :type thread_level: str, None.
+    :param str revision_name: The field name for revisions.
     :return: dict.
 
     """
     params = {
-        "suspect_revision": extract_pattern(revision),
-        "project": extract_pattern(project),
-        "variant": extract_pattern(variant),
-        "task": extract_pattern(task_name),
-        "test": extract_pattern(test),
-        "thread_level": extract_pattern(thread_level)
+        revision_name: extract_pattern(revision),
+        'project': extract_pattern(project),
+        'variant': extract_pattern(variant),
+        'task': extract_pattern(task_name),
+        'test': extract_pattern(test),
+        'thread_level': extract_pattern(thread_level)
     }
     match = {k: v for (k, v) in params.items() if v}
     return match
@@ -673,15 +694,15 @@ def get_matching_tasks(points, test_identifier, no_older=None):
     don't filter on start time.
     :type no_older: int, None.
     :return: Unique matching tasks.
-    :rtype: list(dict).
+    :rtype: pymongo.Cursor.
     """
     query = get_query_for_points(test_identifier)
     if no_older is not None:
         old = datetime.now() - timedelta(days=no_older)
-        query['start'] = {"$gt": int(old.strftime('%s'))}
-    pipeline = [{
-        '$match': query
-    }, {
+        query['start'] = {'$gt': int(old.strftime('%s'))}
+    add_revision = 'revision' in query
+    pipeline = [{'$match': query}]
+    grouping = {
         '$group': {
             '_id': {
                 'project': '$project',
@@ -692,22 +713,72 @@ def get_matching_tasks(points, test_identifier, no_older=None):
                 '$addToSet': '$test'
             }
         }
+    }
+    if add_revision:
+        grouping['$group']['_id']['revision'] = '$revision'
+    pipeline.append(grouping)
+    pipeline.append({'$sort': {'_id.project': 1, '_id.variant': 1, '_id.task': 1}})
+
+    projection = {
+        '$project': {
+            'project': '$_id.project',
+            'variant': '$_id.variant',
+            'task': '$_id.task',
+            'tests': 1,
+            '_id': 0
+        }
+    }
+
+    if add_revision:
+        projection['$project']['revision'] = '$_id.revision'
+    pipeline.append(projection)
+
+    return points.aggregate(pipeline)
+
+
+def get_matching_change_points(change_points, test_identifier):
+    """
+    Get all the tasks in the change points collection that match project, variant, task, test.
+
+    :param collection change_points: The change_points collection.
+    :param dict test_identifier: The test identifier to use (generated from command line params).
+    :return: Unique matching tasks.
+    :rtype: pymongo.Cursor.
+    """
+    query = test_identifier
+    pipeline = [{
+        '$match': query
+    }, {
+        '$group': {
+            '_id': {
+                'suspect_revision': '$suspect_revision',
+                'project': '$project',
+                'variant': '$variant',
+                'task': '$task'
+            },
+            'tests': {
+                '$addToSet': '$test'
+            }
+        }
     }, {
         '$sort': {
-            "_id.project": 1,
-            "_id.variant": 1,
-            "_id.task": 1
+            '_id.suspect_revision': 1,
+            '_id.project': 1,
+            '_id.variant': 1,
+            '_id.task': 1
         }
     }, {
         '$project': {
-            "project": "$_id.project",
-            "variant": "$_id.variant",
-            "task": "$_id.task",
-            "tests": 1,
-            "_id": 0
+            'suspect_revision': '$_id.suspect_revision',
+            'project': '$_id.project',
+            'variant': '$_id.variant',
+            'task': '$_id.task',
+            'tests': 1,
+            '_id': 0
         }
     }]
-    return points.aggregate(pipeline)
+
+    return change_points.aggregate(pipeline)
 
 
 def filter_tests(test_name, excludes):

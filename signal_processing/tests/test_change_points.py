@@ -18,6 +18,7 @@ import signal_processing.commands.helpers as helpers
 import signal_processing.commands.jobs as jobs
 
 
+# pylint: disable=too-many-lines
 class ClickTest(unittest.TestCase):
     """
     Test Cli group command.
@@ -94,7 +95,8 @@ class TestMark(ClickTest):
 
         result = self.runner.invoke(cli, ['mark', 'badf', 'sys-perf'])
         self.assertEqual(result.exit_code, 0)
-        mock_process_params.assert_called_once_with('badf', 'sys-perf', None, None, None, None)
+        mock_process_params.assert_called_once_with(
+            'sys-perf', None, None, None, revision='badf', thread_level=None)
         mock_process_excludes.assert_called_once_with(())
         mock_mark.assert_called_once_with(helpers.PROCESSED_TYPE_ACKNOWLEDGED, expected_query,
                                           expected_excludes, expected_config)
@@ -117,8 +119,13 @@ class TestMark(ClickTest):
             '--exclude', 'fio'
         ])
         self.assertEqual(result.exit_code, 0)
-        mock_process_params.assert_called_once_with('badf', 'sys-perf', 'linux-standalone',
-                                                    'industry_benchmarks', 'ycsb_load', '1')
+        mock_process_params.assert_called_once_with(
+            'sys-perf',
+            'linux-standalone',
+            'industry_benchmarks',
+            'ycsb_load',
+            revision='badf',
+            thread_level='1')
         mock_process_excludes.assert_called_once_with(('fio', ))
         mock_mark.assert_called_once_with(helpers.PROCESSED_TYPE_ACKNOWLEDGED, expected_query,
                                           expected_excludes, expected_config)
@@ -161,7 +168,8 @@ class TestUnmark(ClickTest):
                 params.append(processed_type)
             result = self.runner.invoke(cli, params)
             self.assertEqual(result.exit_code, 0)
-            mock_process_params.assert_called_once_with('badf', 'sys-perf', None, None, None, None)
+            mock_process_params.assert_called_once_with(
+                'sys-perf', None, None, None, revision='badf', thread_level=None)
             mock_process_excludes.assert_called_once_with(())
             mock_unmark.assert_called_once_with(expected, expected_query, expected_excludes,
                                                 expected_config)
@@ -208,7 +216,8 @@ class TestHide(ClickTest):
 
         result = self.runner.invoke(cli, ['hide', 'badf', 'sys-perf'])
         self.assertEqual(result.exit_code, 0)
-        mock_process_params.assert_called_once_with('badf', 'sys-perf', None, None, None, None)
+        mock_process_params.assert_called_once_with(
+            'sys-perf', None, None, None, revision='badf', thread_level=None)
         mock_process_excludes.assert_called_once_with(())
         mock_mark.assert_called_once_with(helpers.PROCESSED_TYPE_HIDDEN, expected_query,
                                           expected_excludes, expected_config)
@@ -231,8 +240,13 @@ class TestHide(ClickTest):
             '--exclude', 'fio'
         ])
         self.assertEqual(result.exit_code, 0)
-        mock_process_params.assert_called_once_with('badf', 'sys-perf', 'linux-standalone',
-                                                    'industry_benchmarks', 'ycsb_load', '1')
+        mock_process_params.assert_called_once_with(
+            'sys-perf',
+            'linux-standalone',
+            'industry_benchmarks',
+            'ycsb_load',
+            revision='badf',
+            thread_level='1')
         mock_process_excludes.assert_called_once_with(('fio', ))
         mock_mark.assert_called_once_with(helpers.PROCESSED_TYPE_HIDDEN, expected_query,
                                           expected_excludes, expected_config)
@@ -263,7 +277,8 @@ class TestUpdate(ClickTest):
 
         result = self.runner.invoke(cli, ['update', 'badf', 'sys-perf'])
         self.assertEqual(result.exit_code, 0)
-        mock_process_params.assert_called_once_with('badf', 'sys-perf', None, None, None, None)
+        mock_process_params.assert_called_once_with(
+            'sys-perf', None, None, None, revision='badf', thread_level=None)
         mock_process_excludes.assert_called_once_with(())
         # Defaults `processed_type` to hidden.
         mock_update.assert_called_once_with(helpers.PROCESSED_TYPE_HIDDEN, expected_query,
@@ -288,12 +303,18 @@ class TestUpdate(ClickTest):
             '1', '--exclude', 'fio', '--processed-type', 'acknowledged'
         ])
         self.assertEqual(result.exit_code, 0)
-        mock_process_params.assert_called_once_with('badf', 'sys-perf', 'linux-standalone',
-                                                    'industry_benchmarks', 'ycsb_load', '1')
+        mock_process_params.assert_called_once_with(
+            'sys-perf',
+            'linux-standalone',
+            'industry_benchmarks',
+            'ycsb_load',
+            revision='badf',
+            thread_level='1')
         mock_process_excludes.assert_called_once_with(('fio', ))
         mock_update.assert_called_once_with(helpers.PROCESSED_TYPE_ACKNOWLEDGED, expected_query,
                                             expected_excludes, expected_config)
 
+    # pylint: disable=unused-argument, too-many-lines
     @patch('signal_processing.change_points.update.update_change_points', autospec=True)
     @patch('signal_processing.change_points.helpers', autospec=True)
     def test_update_type(self, mock_helpers, mock_update_change_points):
@@ -312,6 +333,7 @@ class TestList(ClickTest):
     Test list command.
     """
 
+    # pylint: disable=unused-argument
     @patch('signal_processing.change_points.list_change_points', autospec=True)
     def test_list_check_return(self, mock_list):
         """ Test list with no parameters. """
@@ -520,8 +542,12 @@ class TestCompute(ClickTest):
                 cli,
                 ['compute', 'sys-perf', 'linux-standalone', 'industry_benchmarks', 'ycsb_load'])
             self.assertEqual(result.exit_code, 0)
-            mock_process_params.assert_called_once_with(None, 'sys-perf', 'linux-standalone',
-                                                        'industry_benchmarks', 'ycsb_load', None)
+            mock_process_params.assert_called_once_with(
+                'sys-perf',
+                'linux-standalone',
+                'industry_benchmarks',
+                'ycsb_load',
+                thread_level=None)
 
     @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
     def test_compute_legacy(self, mock_command_config_cls):
@@ -682,11 +708,13 @@ class TestCompute(ClickTest):
             name='config', points=mock_points, debug=0, log_file='/tmp/log_file')
         mock_command_config_cls.return_value = expected_config
 
-        with patch(
-            'signal_processing.change_points.helpers.generate_tests') as mock_generate_tests, \
-                patch('signal_processing.change_points.helpers.generate_thread_levels') as mock_generate_thread_levels,\
-                patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs,\
-                patch('signal_processing.change_points.jobs.Job') as mock_job_cls:
+        with patch('signal_processing.change_points.helpers.generate_tests') \
+                as mock_generate_tests, \
+             patch('signal_processing.change_points.helpers.generate_thread_levels') \
+                as mock_generate_thread_levels, \
+             patch('signal_processing.change_points.jobs.process_jobs') \
+                as mock_process_jobs, \
+             patch('signal_processing.change_points.jobs.Job') as mock_job_cls:
             mock_process_jobs.return_value.__enter__.return_value = ()
 
             mock_generate_tests.return_value = [{'test': str(i)} for i in range(1)]
@@ -768,6 +796,7 @@ class TestVisualize(ClickTest):
     Test visualize command.
     """
 
+    # pylint: disable=unused-argument
     @unittest.skip("test_visualize_no_params fails in evergreen")
     @patch('signal_processing.change_points.visualize', autospec=True)
     @patch('signal_processing.change_points.helpers.CommandConfiguration', style=['bmh'])
@@ -782,6 +811,7 @@ class TestListBuildFailures(ClickTest):
     """
     Test list-build-failures command.
     """
+    # pylint: disable=unused-argument
 
     @patch('signal_processing.change_points.list_build_failures.list_build_failures', autospec=True)
     @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
@@ -808,7 +838,7 @@ class TestListBuildFailures(ClickTest):
 
         result = self.runner.invoke(cli, ['list-build-failures', 'badf', 'sys-perf'])
         self.assertEqual(result.exit_code, 0)
-        mock_process_params.assert_called_once_with('badf', 'sys-perf', None, None, None, None)
+        mock_process_params.assert_called_once_with('sys-perf', None, None, None, revision='badf')
         # Defaults `human_readable` to False.
         mock_list_build_failures.assert_called_once_with(expected_query, False, expected_config)
 
@@ -832,8 +862,8 @@ class TestListBuildFailures(ClickTest):
         ])
         self.assertEqual(result.exit_code, 0)
         # Never pass in `thread_level`.
-        mock_process_params.assert_called_once_with('badf', 'sys-perf', 'linux-standalone',
-                                                    'industry_benchmarks', 'ycsb_load', None)
+        mock_process_params.assert_called_once_with(
+            'sys-perf', 'linux-standalone', 'industry_benchmarks', 'ycsb_load', revision='badf')
         self.assertEqual(result.exit_code, 0)
         mock_list_build_failures.assert_called_once_with(expected_query, True, expected_config)
 
@@ -843,6 +873,7 @@ class TestListfailures(ClickTest):
     Test failures command.
     """
 
+    # pylint: disable=unused-argument
     @patch('signal_processing.change_points.list_build_failures.list_build_failures', autospec=True)
     @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
     def test_no_params(self, mock_config, mock_list_build_failures):
@@ -852,6 +883,7 @@ class TestListfailures(ClickTest):
         result = self.runner.invoke(cli, ['failures'])
         self.assertEqual(result.exit_code, 2)
 
+    # pylint: disable=too-many-arguments
     def _test_list_failures(self,
                             command,
                             project='sys-perf',
@@ -918,3 +950,194 @@ class TestListfailures(ClickTest):
         ]
         self._test_list_failures(
             command, project='sys-perf', human_readable=False, limit=1, no_older_than=7)
+
+
+class TestAttach(ClickTest):
+    """
+    Test attach command.
+    """
+
+    def _test_params_fails(self, args=None, name='build_failure'):
+        """ Test with invalid params. """
+        if args is None:
+            args = []
+        result = self.runner.invoke(cli, ['attach'] + args)
+        self.assertEqual(result.exit_code, 2)
+        self.assertIn('Error: Missing argument \"{}\"'.format(name), result.output)
+
+    def test_no_params_fails(self):
+        """ Test attach no params. """
+        self._test_params_fails()
+
+    def test_no_revision_fails(self):
+        """ Test attach no revision. """
+        self._test_params_fails(args=['badf'], name='revision')
+
+    def test_no_project_fails(self):
+        """ Test attach no project. """
+        self._test_params_fails(args=['badf', 'revision'], name='project')
+
+    def _test(self, keyring_flag=None, use_keyring=True, fix_flag=None, fix=False):
+        """ Test attach. """
+
+        # pylint: disable=too-many-locals
+        with patch('signal_processing.change_points.attach.attach', autospec=True)\
+                as mock_attach, \
+             patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)\
+                as mock_config,\
+             patch('signal_processing.change_points.jira_keyring', autospec=True)\
+                as mock_keyring,\
+             patch('signal_processing.change_points.helpers.process_params_for_points', autospec=True)\
+                as mock_process_params_for_points,\
+             patch('signal_processing.change_points.helpers.get_matching_tasks')\
+                as mock_get_matching_tasks:
+
+            expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
+            mock_config.return_value = expected_config
+
+            mock_issue = MagicMock(name='issue')
+            mock_jira = MagicMock(name='jira')
+            mock_jira.issue.return_value = mock_issue
+
+            mock_keyring.return_value.__enter__.return_value.jira = mock_jira
+
+            mock_process_params_for_points.return_value = 'query'
+            mock_get_matching_tasks.return_value = []
+            build_failure = 'BF-11372'
+            revision = 'badf'
+            project = 'sys-perf'
+
+            args = ['attach', build_failure, revision, project, keyring_flag, fix_flag]
+
+            result = self.runner.invoke(cli, [arg for arg in args if arg is not None])
+            self.assertEqual(result.exit_code, 0)
+
+            mock_process_params_for_points.assert_called_once_with(
+                project, None, None, None, revision=revision)
+            mock_get_matching_tasks.assert_called_once_with(expected_config.points, 'query')
+            mock_attach.assert_called_once_with(mock.ANY, [], fix, expected_config)
+            mock_jira.issue.assert_called_once_with(build_failure)
+            mock_keyring.assert_called_once_with(None, None, use_keyring=use_keyring)
+
+    def test(self):
+        """ Test attach default (keyring / fail). """
+        self._test()
+
+    def test_fail(self):
+        """ Test attach fail. """
+        self._test(fix_flag='--fail')
+
+    def test_fix(self):
+        """ Test attach fix. """
+        self._test(fix_flag='--fix', fix=True)
+
+    def test_keyring(self):
+        """ Test attach --keyring. """
+        self._test(keyring_flag='--keyring')
+
+    def test_no_keyring(self):
+        """ Test attach --no-keyring. """
+        self._test(keyring_flag='--no-keyring', use_keyring=False)
+
+    def test_guest(self):
+        """ Test attach guest (no keyring). """
+        self._test(keyring_flag='--guest', use_keyring=False)
+
+    def test_keyring_and_fail(self):
+        """ Test attach --keyring / --fail. """
+        self._test(keyring_flag='--keyring', fix_flag='--fail')
+
+
+class TestDetach(ClickTest):
+    """
+    Test detach command.
+    """
+
+    def _test_params_fails(self, args=None, name='build_failure'):
+        """ Test with invalid params. """
+        if args is None:
+            args = []
+        result = self.runner.invoke(cli, ['detach'] + args)
+        self.assertEqual(result.exit_code, 2)
+        self.assertIn('Error: Missing argument \"{}\"'.format(name), result.output)
+
+    def test_no_params_fails(self):
+        """ Test detach no params. """
+        self._test_params_fails()
+
+    def test_no_revision_fails(self):
+        """ Test detach no params. """
+        self._test_params_fails(args=['badf'], name='revision')
+
+    def test_no_project_fails(self):
+        """ Test detach no params. """
+        self._test_params_fails(args=['badf', 'revision'], name='project')
+
+    def _test(self, keyring_flag=None, use_keyring=True, fix_flag=None, fix=False):
+
+        # pylint: disable=too-many-locals
+        with patch('signal_processing.change_points.attach.detach', autospec=True)\
+                as mock_detach,\
+             patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)\
+                as mock_config,\
+             patch('signal_processing.change_points.jira_keyring', autospec=True)\
+                as mock_keyring,\
+             patch('signal_processing.change_points.helpers.process_params_for_points')\
+                as mock_process_params,\
+             patch('signal_processing.change_points.helpers.get_matching_tasks', autospec=True)\
+                as mock_get_matching_tasks:
+
+            expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
+            mock_config.return_value = expected_config
+
+            mock_issue = MagicMock(name='issue')
+            mock_jira = MagicMock(name='jira')
+            mock_jira.issue.return_value = mock_issue
+
+            mock_keyring.return_value.__enter__.return_value.jira = mock_jira
+            query = 'query'
+            mock_process_params.return_value = query
+            mock_get_matching_tasks.return_value = []
+            build_failure = 'BF-11372'
+            revision = 'badf'
+            project = 'sys-perf'
+
+            args = ['detach', build_failure, revision, project, keyring_flag, fix_flag]
+
+            result = self.runner.invoke(cli, [arg for arg in args if arg is not None])
+            self.assertEqual(result.exit_code, 0)
+
+            mock_process_params.assert_called_once_with(
+                project, None, None, None, revision=revision)
+            mock_get_matching_tasks.assert_called_once_with(expected_config.points, query)
+            mock_detach.assert_called_once_with(mock.ANY, [], fix, expected_config)
+            mock_keyring.assert_called_once_with(None, None, use_keyring=use_keyring)
+            mock_jira.issue.assert_called_once_with(build_failure)
+
+    def test(self):
+        """ Test detach default (keyring / fail). """
+        self._test()
+
+    def test_fail(self):
+        """ Test detach fail. """
+        self._test(fix_flag='--fail')
+
+    def test_fix(self):
+        """ Test detach fix. """
+        self._test(fix_flag='--fix', fix=True)
+
+    def test_keyring(self):
+        """ Test detach --keyring. """
+        self._test(keyring_flag='--keyring')
+
+    def test_no_keyring(self):
+        """ Test detach --no-keyring. """
+        self._test(keyring_flag='--no-keyring', use_keyring=False)
+
+    def test_guest(self):
+        """ Test detach --guest (no keyring). """
+        self._test(keyring_flag='--guest', use_keyring=False)
+
+    def test_keyring_and_fail(self):
+        """ Test detach --keyring / --fail. """
+        self._test(keyring_flag='--keyring', fix_flag='--fail')
