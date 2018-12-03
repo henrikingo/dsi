@@ -26,9 +26,22 @@ run:
       cd YCSB/ycsb-mongodb;
       for level in ${test_control.thread_levels.level100r.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}; do
         ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s \
-        -P ../../workloadEvergreen \
+        -P ../../workloadEvergreen_100read \
         -threads $level;
       done
+    config_filename: workloadEvergreen_100read
+    workload_config: |
+      mongodb.url=${mongodb_setup.meta.mongodb_url}
+      recordcount=5000000
+      operationcount=20000000
+      maxexecutiontime=1200
+      workload=com.yahoo.ycsb.workloads.CoreWorkload
+      readallfields=true
+      readproportion=1.0
+      updateproportion=0.0
+      scanproportion=0
+      insertproportion=0.0
+      requestdistribution=zipfian
 
   - id: ycsb_95read5update
     type: ycsb
@@ -44,6 +57,7 @@ run:
       mongodb.url=${mongodb_setup.meta.mongodb_url}
       recordcount=5000000
       operationcount=20000000
+      maxexecutiontime=1200
       workload=com.yahoo.ycsb.workloads.CoreWorkload
       readallfields=true
       readproportion=0.95
@@ -66,6 +80,7 @@ run:
       mongodb.url=${mongodb_setup.meta.mongodb_url}
       recordcount=5000000
       operationcount=20000000
+      maxexecutiontime=1200
       workload=com.yahoo.ycsb.workloads.CoreWorkload
       readallfields=true
       readproportion=0
@@ -88,6 +103,7 @@ run:
       mongodb.url=${mongodb_setup.meta.mongodb_url}
       recordcount=5000000
       operationcount=20000000
+      maxexecutiontime=1200
       workload=com.yahoo.ycsb.workloads.CoreWorkload
       readallfields=true
       readproportion=0.5

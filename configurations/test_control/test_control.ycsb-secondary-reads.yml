@@ -27,8 +27,23 @@ run:
     cmd: >
       cd YCSB/ycsb-mongodb;
       ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s
-      -P ../../workloadEvergreen
+      -P ../../workloadEvergreen_100read
       -threads ${test_control.thread_levels.level100-0};
+    config_filename: workloadEvergreen_100read
+    workload_config: |
+      mongodb.url=${mongodb_setup.meta.mongodb_url}&replicaSet=rs0&readPreference=secondary
+      // This way to set readPreference is deprecated in Java driver but in case YCSB uses an older version
+      mongodb.readPreference=secondary
+      recordcount=5000000
+      operationcount=20000000
+      maxexecutiontime=1200
+      workload=com.yahoo.ycsb.workloads.CoreWorkload
+      readallfields=true
+      readproportion=1.0
+      updateproportion=0.0
+      scanproportion=0
+      insertproportion=0.0
+      requestdistribution=uniform
 
   - id: ycsb_95read5update_secondary_reads
     type: ycsb
@@ -44,6 +59,7 @@ run:
       mongodb.readPreference=secondary
       recordcount=5000000
       operationcount=20000000
+      maxexecutiontime=1200
       workload=com.yahoo.ycsb.workloads.CoreWorkload
       readallfields=true
       readproportion=0.95
@@ -66,6 +82,7 @@ run:
       mongodb.readPreference=secondary
       recordcount=5000000
       operationcount=20000000
+      maxexecutiontime=1200
       workload=com.yahoo.ycsb.workloads.CoreWorkload
       readallfields=true
       readproportion=0.5
