@@ -42,7 +42,7 @@ DEFAULT_CONFIG = {
             'ssh_user': 'ec2-user',
             'ssh_key_file': '~/.ssh/user_ssh_key.pem'
         },
-        'numactl_prefix': ['numactl', 'test'],
+        'numactl_prefix': 'numactl test',
         'out': []
     },
     'mongodb_setup': {
@@ -372,13 +372,13 @@ class TestMongoNode(unittest.TestCase):
             'logdir': 'logdir',
         }, [['mkdir', '-p', 'logdir'], ['ls', '-la']])
 
-    def launch_cmd_helper(self, modified, auth_enabled):
+    def launch_cmd_helper(self, modified, enable_auth):
         """Test launch command uses proper config file."""
 
         if modified:
             config = common.mongodb_setup_helpers.copy_obj(DEFAULT_CONFIG)
             config['infrastructure_provisioning']['numactl_prefix'] =\
-                ["numactl", "--interleave=all", "--cpunodebind=1"]
+                'numactl --interleave=all --cpunodebind=1'
             node = common.mongodb_cluster.MongoNode(self.topology, config)
             node._host = mock.MagicMock(name='host')
             numa_prefix = config['infrastructure_provisioning']['numactl_prefix']
@@ -386,11 +386,11 @@ class TestMongoNode(unittest.TestCase):
             node = self.mongo_node
             numa_prefix = DEFAULT_CONFIG['infrastructure_provisioning']['numactl_prefix']
 
-        expected_full_command = numa_prefix +\
+        expected_full_command = numa_prefix.split(' ') +\
                                 ["/usr/bin/mongod", "--config", "/tmp/mongo_port_9999.conf"]
-        #if auth_enabled:
+        #if enable_auth:
         #    expected_full_command += " --clusterAuthMode x509"
-        self.assertEqual(node.launch_cmd(auth_enabled=auth_enabled), expected_full_command)
+        self.assertEqual(node.launch_cmd(enable_auth=enable_auth), expected_full_command)
 
     def test_launch_cmd_default_auth_disabled(self):
         self.launch_cmd_helper(False, False)

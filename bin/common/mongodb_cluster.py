@@ -66,7 +66,7 @@ class MongoCluster(object):
         """ Checks to make sure node is up and accessible"""
         raise NotImplementedError()
 
-    def launch(self, initialize=True, numactl=True, enable_auth=False):
+    def launch(self, initialize=True, use_numactl=True, enable_auth=False):
         """ Start the cluster """
         raise NotImplementedError()
 
@@ -166,7 +166,14 @@ class MongoNode(MongoCluster):
         else:
             self.dbdir = self.mongo_config_file['storage']['dbPath']
 
-        self.numactl_prefix = self.config['infrastructure_provisioning'].get('numactl_prefix', "")
+        self.numactl_prefix = self.config['infrastructure_provisioning'].get('numactl_prefix', '')
+
+        # The numactl_prefix is used in shell scripts directly invoked from yaml configs as a shell
+        # variable, so it has to be a string. Ideally we want the configuration for numactl to
+        # already be a list of commandline arguments.
+        if isinstance(self.numactl_prefix, basestring):
+            self.numactl_prefix = self.numactl_prefix.split(' ')
+
         self.shutdown_options = json.dumps(
             copy_obj(self.config['mongodb_setup']['shutdown_options']))
 
@@ -282,7 +289,7 @@ class MongoNode(MongoCluster):
         commands.append(['ls', '-la'])
         return commands
 
-    def launch_cmd(self, use_numactl=True, auth_enabled=False):
+    def launch_cmd(self, use_numactl=True, enable_auth=False):
         """Returns the command to start this node."""
         remote_file_name = '/tmp/mongo_port_{0}.conf'.format(self.port)
         config_contents = yaml.dump(self.mongo_config_file, default_flow_style=False)
@@ -291,18 +298,21 @@ class MongoNode(MongoCluster):
 
         cmd = [os.path.join(self.bin_dir, self.mongo_program), "--config", remote_file_name]
 
-        if auth_enabled:
+        if enable_auth:
             # Temporarily disable SSL.
             # cmd.extend(['--clusterAuthMode', 'x509'])
             pass
 
-        if use_numactl and self.numactl_prefix and isinstance(self.numactl_prefix, list):
+        if use_numactl and self.numactl_prefix:
+            if not isinstance(self.numactl_prefix, list):
+                raise ValueError('numactl_prefix must be a list of commands, given: %s',
+                                 self.numactl_prefix)
             cmd = self.numactl_prefix + cmd
 
         LOG.debug("cmd is %s", str(cmd))
         return cmd
 
-    def launch(self, initialize=True, numactl=True, enable_auth=False):
+    def launch(self, initialize=True, use_numactl=True, enable_auth=False):
         """Starts this node.
 
         :param boolean initialize: Initialize the node. This doesn't do anything for the
@@ -312,7 +322,7 @@ class MongoNode(MongoCluster):
         # the future
         _ = initialize
         self.auth_enabled = enable_auth
-        launch_cmd = self.launch_cmd(numactl, enable_auth)
+        launch_cmd = self.launch_cmd(use_numactl=use_numactl, enable_auth=enable_auth)
         if not self.host.run(launch_cmd):
             LOG.error("failed launch command: %s", launch_cmd)
             self.dump_mongo_log()
@@ -518,14 +528,17 @@ class ReplSet(MongoCluster):
                 ],
                 daemon=True))
 
-    def launch(self, initialize=True, numactl=True, enable_auth=False):
+    def launch(self, initialize=True, use_numactl=True, enable_auth=False):
         """Starts the replica set.
         :param boolean initialize: Initialize the replica set"""
         if not all(
                 run_threads(
                     [
-                        partial(node.launch, initialize, numactl, enable_auth=enable_auth)
-                        for node in self.nodes
+                        partial(
+                            node.launch,
+                            initialize,
+                            use_numactl=use_numactl,
+                            enable_auth=enable_auth) for node in self.nodes
                     ],
                     daemon=True)):
             return False
@@ -708,7 +721,7 @@ class ShardedCluster(MongoCluster):
             ) for mongos in self.mongoses)
         return all(run_threads(commands, daemon=True))
 
-    def launch(self, initialize=True, numactl=True, enable_auth=False):
+    def launch(self, initialize=True, use_numactl=True, enable_auth=False):
         """Starts the sharded cluster.
 
         :param boolean initialize: Initialize the cluster
@@ -718,15 +731,21 @@ class ShardedCluster(MongoCluster):
             partial(
                 self.config_svr.launch,
                 initialize=initialize,
-                numactl=False,
+                use_numactl=False,
                 enable_auth=enable_auth)
         ]
         commands.extend(
-            partial(shard.launch, initialize=initialize, numactl=numactl, enable_auth=enable_auth)
-            for shard in self.shards)
+            partial(
+                shard.launch,
+                initialize=initialize,
+                use_numactl=use_numactl,
+                enable_auth=enable_auth) for shard in self.shards)
         commands.extend(
-            partial(mongos.launch, initialize=initialize, numactl=numactl, enable_auth=enable_auth)
-            for mongos in self.mongoses)
+            partial(
+                mongos.launch,
+                initialize=initialize,
+                use_numactl=use_numactl,
+                enable_auth=enable_auth) for mongos in self.mongoses)
         if not all(run_threads(commands, daemon=True)):
             return False
         if initialize:
