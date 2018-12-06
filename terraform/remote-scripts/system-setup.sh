@@ -107,7 +107,8 @@ After=network.target
 [Service]
 ExecStart=/usr/local/bin/curator jasper grpc --host 0.0.0.0
 ExecReload=/bin/kill -HUP $MAINPID
-Restart     = always
+Restart=always
+User=ec2-user
 
 [Install]
 WantedBy=multi-user.target
