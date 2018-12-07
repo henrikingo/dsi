@@ -116,10 +116,10 @@ install_requirements = ['boto3==1.4.7',
                         'requests==2.18.4',
                         'scipy==1.1.0',
                         'structlog==18.1.0',
-                        'future==0.16.0']
+                        'future==0.16.0',
+                        'keyring==10.6.0']
 extras_require = {
-    'Plotting':  ['matplotlib==2.1.0'],
-    'Keyring':  ['keyring==10.6.0']
+    'Plotting':  ['matplotlib==2.1.0']
 }
 setup(
     name='DSI',
@@ -133,6 +133,7 @@ setup(
               'signal_processing.commands',
               'signal_processing.profiling',
               'signal_processing.native',
+              'signal_processing.keyring',
               'analysis',
               'analysis.evergreen'],
     install_requires=install_requirements,

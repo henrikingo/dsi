@@ -19,11 +19,12 @@ from __future__ import print_function
 
 import ast
 from contextlib import contextmanager
+from keyring.errors import PasswordSetError
 
 from jira.exceptions import JIRAError
 
 from signal_processing.etl_jira_mongo import EtlJira, JIRA_URL
-from signal_processing.keyring import Keyring
+from signal_processing.keyring.keyring_impl import Keyring
 import structlog
 
 LOG = structlog.getLogger(__name__)
@@ -116,15 +117,12 @@ def jira_keyring(jira_user=None, jira_password=None, use_keyring=True):
     :param bool use_keyring: Don't use a keyring even if it is available if this is set to False.
     :yield: EtlJira instance.
     """
-    # local import so that the tests can work when no keyring is available and so that
-    # except PasswordSetError: can be used.
-    from keyring.errors import PasswordSetError
     etl_jira = None
-    keyring = Keyring(KEYRING_SERVICE_NAME)
+    keyring_impl = Keyring(KEYRING_SERVICE_NAME)
     username, password = jira_user, jira_password
     try:
         if use_keyring and jira_user is None and jira_password is None:
-            username, password = _decode_credentials(keyring.read(KEYRING_PROPERTY_NAME))
+            username, password = _decode_credentials(keyring_impl.read(KEYRING_PROPERTY_NAME))
         LOG.debug(
             'jira_keyring_helper: input',
             jira_user=username,
@@ -160,4 +158,4 @@ You may need to codesign your python executable, refer to signal_processing/READ
             use_keyring=use_keyring,
             credentials_changed=_credentials_changed(username, password, options))
         if use_keyring and _credentials_changed(username, password, options):
-            keyring.write(KEYRING_PROPERTY_NAME, _encode_credentials(options))
+            keyring_impl.write(KEYRING_PROPERTY_NAME, _encode_credentials(options))

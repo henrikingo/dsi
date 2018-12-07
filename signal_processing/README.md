@@ -267,11 +267,16 @@ The configuration values are applied in the following order:
 
 #### Keyring support
 
+__NOTE: It is not recommended that you use the keyrings.alt package. In this case your credentials
+are stored in plaintext.__
+
 The attach / detach commands attempt to save to the system keyring if available.
 
 As a first step, in your virtualenv try:
 
-   $ pip install -e .[Keyring]
+   $ virtualenv venv --system-site-packages
+   $ source venv/bin/activate
+   $ pip install -e .                          
    
    $ change-points attach BF-11372  e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf 
    $ change-points detach BF-11372  e573d7f2f908f3fbe96716851cd1b1e3d65fe7c9 sys-perf 
@@ -283,18 +288,18 @@ there are errors then refer to the section for your OS.
 
 Installation can be tricky on Linux.
 
-If the __pip install -e .[Keyring]__ failed then create a virtualenv with access to the system
+If the __pip install -e .__ failed then create a virtualenv with access to the system
 packages. For mkvirtualenv, the following set of commands may work:
 
-   $ mkvirtualenv keyring --system-site-packages
-   $ workon keyring
-   $ pip install -e .
-                          
-If this diesn't work then refer to the [keyring homepage](https://pypi.org/project/keyring/#linux).
+   $ virtualenv venv --system-site-packages
+   $ source venv/bin/activate
+   $ pip install -e .                          
+                             
+If this doesn't work then refer to the [keyring homepage](https://pypi.org/project/keyring/#linux).
  
 ##### MacOS
 
-On MacOS the  __pip install -e .[Keyring]__ generally succeeds but the commands fail with an error
+On MacOS the  __pip install -e .__ generally succeeds but the commands fail with an error
 like:
 
     keyring.errors.PasswordSetError: Can't store password on keychain

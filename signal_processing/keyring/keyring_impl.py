@@ -17,24 +17,15 @@ There is a context manager to simplify jira usage, see :func:
 `signal_processing.jira_helpers.jira_keyring_helper`.
 """
 from __future__ import print_function
-
 import structlog
+import keyring
 
 LOG = structlog.getLogger(__name__)
 
-# This doesn't fail to aid testing, but you shouldn't import this class directly use the package
-# like from signal_processing.keyring import Keyring
-try:
-    import keyring
-except (ImportError, RuntimeError):
-    # This is Logged in __init__.py
-    pass
 
+class Keyring(object):
+    """ Read / Write properties from keyring. """
 
-class NoopKeyring(object):
-    """ Noop keyring implementation. """
-
-    # pylint: disable=unused-argument, no-self-use
     def __init__(self, service_name):
         """
         Create a noop keyring.
@@ -48,9 +39,14 @@ class NoopKeyring(object):
         :parameter str property_name: The name of the property to read.
 
         :return: The property.
-        :rtype: str or None.
         """
-        return None
+        try:
+            return keyring.get_password(self.service_name, property_name)
+        except RuntimeError as rte:
+            LOG.error('exception', exc_info=1)
+            if 'No recommended backend was available.' not in rte.message:
+                raise rte
+            return None
 
     def write(self, property_name, value):
         """ Write name property to keyring.
@@ -58,38 +54,19 @@ class NoopKeyring(object):
         :parameter str property_name: The name of the property to read.
         :parameter object value: The property to write.
         """
-        pass
+        try:
+            keyring.set_password(self.service_name, property_name, value)
+        except RuntimeError as rte:
+            if 'No recommended backend was available.' not in rte.message:
+                raise rte
 
     def delete(self, property_name):
         """ Delete property from keyring.
 
         :parameter str property_name: The name of the property to read.
         """
-        pass
-
-
-class Keyring(NoopKeyring):
-    """ Read / Write properties from keyring. """
-
-    def read(self, property_name):
-        """ Read property from keyring.
-        :parameter str property_name: The name of the property to read.
-
-        :return: The property.
-        """
-        return keyring.get_password(self.service_name, property_name)
-
-    def write(self, property_name, value):
-        """ Write name property to keyring.
-
-        :parameter str property_name: The name of the property to read.
-        :parameter object value: The property to write.
-        """
-        keyring.set_password(self.service_name, property_name, value)
-
-    def delete(self, property_name):
-        """ Delete property from keyring.
-
-        :parameter str property_name: The name of the property to read.
-        """
-        keyring.delete_password(self.service_name, property_name)
+        try:
+            keyring.delete_password(self.service_name, property_name)
+        except RuntimeError as rte:
+            if 'No recommended backend was available.' not in rte.message:
+                raise rte

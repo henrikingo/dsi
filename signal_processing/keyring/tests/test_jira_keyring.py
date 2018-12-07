@@ -10,12 +10,7 @@ from signal_processing.keyring.jira_keyring import redact_password, redact_crede
     JIRA_PASSWORD, _credentials_changed, JIRA_USER, _encode_credentials, _decode_credentials, \
     jira_keyring, KEYRING_PROPERTY_NAME
 from jira.exceptions import JIRAError
-
-try:
-    from keyring.errors import PasswordSetError
-    KEYRING_IMPORT_FAILS = False
-except ImportError:
-    KEYRING_IMPORT_FAILS = True
+from keyring.errors import PasswordSetError
 
 
 class TestRedactPassword(unittest.TestCase):
@@ -166,27 +161,6 @@ class TestJiraKeyring(unittest.TestCase):
     Test jira_keyring.
     """
 
-    def setUp(self):
-        """
-        patch keyring, keyring.errors imports when no implementation is available.
-        """
-
-        if KEYRING_IMPORT_FAILS:
-            modules = {
-                'keyring': MagicMock(name='keyring'),
-                'keyring.errors': MagicMock(name='keyring.errors')
-            }
-            self.module_patcher = patch.dict('sys.modules', modules)
-            self.module_patcher.start()
-
-    def tearDown(self):
-        """
-        clean up keyring, keyring.errors imports.
-        """
-
-        if KEYRING_IMPORT_FAILS:
-            self.module_patcher.stop()
-
     # pylint: disable=no-self-use
     def test_exception_in_keyring(self):
         """ Test exception."""
@@ -268,7 +242,6 @@ class TestJiraKeyring(unittest.TestCase):
         mock_etl_jira.assert_called_once_with(dict(jira_user='username', jira_password='password'))
         self.assertIn('Captcha verification has been triggered by', str(context.exception))
 
-    @unittest.skipIf(KEYRING_IMPORT_FAILS, 'no keyring implmenetation')
     def test_codesign_exception(self):
         """ Test mac specific code sign issue exception."""
 

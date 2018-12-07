@@ -6,29 +6,7 @@ import unittest
 
 from mock import patch
 
-from signal_processing.keyring.keyring_impl import NoopKeyring, Keyring
-
-
-class TestNoopKeyring(unittest.TestCase):
-    """
-    Test NoopKeyring.
-    """
-
-    def setUp(self):
-        self.service_name = 'service'
-        self.keyring = NoopKeyring(self.service_name)
-
-    def test_service_name(self):
-        """ Test service name."""
-        self.assertEquals(self.service_name, self.keyring.service_name)
-
-    def test_read(self):
-        """ Test read."""
-        self.assertIsNone(self.keyring.read('name'))
-
-    def test_write(self):
-        """ Test write."""
-        self.keyring.write('name', 'value ')
+from signal_processing.keyring.keyring_impl import Keyring
 
 
 class TestKeyring(unittest.TestCase):

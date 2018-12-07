@@ -4,3 +4,4 @@ pymongo==3.6.1
 dnspython==1.15.0
 click==6.7
 scipy==1.1.0
+keyring==10.6.0
