@@ -85,7 +85,7 @@ genny:
       exec: |
         set -eou pipefail
         cd genny/build
-        rm -rf grpc # remove if already exists
+        rm -rf * # Remove grpc and any cmake config copied up from runner
         git clone --recurse-submodules https://github.com/grpc/grpc.git
         pushd grpc >/dev/null
           git checkout b79462f186cc22550bc8d53a00ae751f50d194f5
