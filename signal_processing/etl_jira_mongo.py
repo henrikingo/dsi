@@ -14,13 +14,12 @@ If called from command line, main() is the entry point.
 # pylint: disable=redefined-builtin
 from builtins import input  # input does an eval on 2.7
 
-import argparse
+import ast
 from collections import OrderedDict
-import copy
 from getpass import getpass
-import os
 import structlog
 
+import click
 import dateutil.parser
 import jira
 import pymongo
@@ -29,22 +28,12 @@ from bin.common import log
 
 DB = 'perf'
 COLLECTION = 'build_failures'
-BATCH_SIZE = 1000
-PROJECTS = [
-    'performance', 'performance-4.0', 'performance-3.6', 'performance-3.4', 'performance-3.2',
-    'performance-3.0', 'sys-perf', 'sys-perf-4.0', 'sys-perf-3.6', 'sys-perf-3.4', 'sys-perf-3.2'
-]
+DEFAULT_BATCH_SIZE = 1000
+DEFAULT_PROJECTS = ('performance', 'performance-4.0', 'performance-3.6', 'performance-3.4',
+                    'performance-3.2', 'performance-3.0', 'sys-perf', 'sys-perf-4.0',
+                    'sys-perf-3.6', 'sys-perf-3.4', 'sys-perf-3.2')
+DEFAULT_MONGO_URI = 'mongodb://localhost:27017/' + DB
 JIRA_URL = 'https://jira.mongodb.org'
-
-# Provide all options here. Use None when no default exists.
-DEFAULT_OPTIONS = {
-    'jira_user': None,
-    'jira_password': None,
-    'mongo_uri': 'mongodb://localhost:27017/' + DB,
-    'projects': PROJECTS,
-    'batch': BATCH_SIZE,
-    'debug': False
-}
 
 # Dict to translate Jira field names we use in our mongodb collection into the internal Jira path.
 FIELDS = OrderedDict([
@@ -98,93 +87,117 @@ def lookup(issue, path):
     return lookup_object
 
 
+class JiraCredentials(object):
+    """Jira basic authentication credentials."""
+
+    # pylint: disable=too-few-public-methods
+
+    def __init__(self, username, password):
+        """Create a JiraCredentials from a username and password."""
+        self.username = username
+        self.password = password
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return other.username == self.username and other.password == self.password
+        return False
+
+    def __str__(self):
+        return '({}, {})'.format(self.username, self._redact_password(self.password))
+
+    @staticmethod
+    def _redact_password(password):
+        """
+        Redact the password.
+
+        :param password: The password to redact.
+        :type password: str or None.
+        :return: A redacted password.
+        """
+
+        if password is not None:
+            return '*' * min(8, max(8, len(password)))
+        return password
+
+    def encode(self):
+        """
+        Encode the Jira credentials.
+
+        :return: A string of encoded credentials.
+        """
+        return '{}'.format([self.username, self.password])
+
+    @staticmethod
+    def decode(credentials):
+        """
+        Decode the Jira credentials
+
+        :param str credentials: The encoded Jira credentials.
+        :return: A JiraCredentials instance.
+        """
+        if credentials is not None:
+            username, password = ast.literal_eval(credentials)
+            return JiraCredentials(username, password)
+        return JiraCredentials(None, None)
+
+
+def new_jira_client(jira_user=None, jira_password=None):
+    """
+    Create a new Jira client.
+
+    Will prompt for username and password if not specified.
+    This will clearly raise a JIRAError on 401/403.
+
+    :return: a tuple with the Jira client and the credentials that were used or throw
+        an exception if there is an authentication issue.
+    """
+    LOG.debug('Initializing a new Jira client.')
+    if jira_user is None:
+        jira_user = input('JIRA user id: ')
+    if jira_password is None:
+        jira_password = getpass()
+    jira_client = jira.JIRA(basic_auth=(jira_user, jira_password), options={'server': JIRA_URL})
+    # The following will fail on authentication error.
+    # UPDATE: As of 2018-06-12 already the above constructor now properly 403 fails on
+    # on authentication error. Still leaving this here in case behavior changes again in the
+    # future.
+    LOG.debug("About to connect to jira.")
+    jira_client.issue('PERF-1234')
+    return jira_client, JiraCredentials(jira_user, jira_password)
+
+
 class EtlJira(object):
     """
     Class to load BF tickets from JIRA into database.
     """
 
-    def __init__(self, options):
+    def __init__(self, jira_client, mongo_client, projects, batch_size):
         """
-        Constructor merely stores args, they are used from self.jira and self.mongo properties.
+        Constructor merely stores args.
 
-        :param dict options: Options dictionary. See :const:`OPTIONS` above.
+        :param jira.Jira jira_client: A Jira client..
+        :param mongo.MongoClient mongo_client: A Mongo client.
+        :param tuple(str) projects: A tuple containing the Evergreen projects to process.
+        :param int batch_size: The insert batch size.
         """
-        LOG.debug("Create EtlJira", options=options)
-        self.options = options
+        LOG.debug('Create EtlJira')
 
-        self._jira = None
-        self._mongo = None
-        self._db = None
-        self._coll = None
+        self._jira = jira_client
+        self._build_failures = mongo_client.get_database().get_collection(COLLECTION)
 
-    @property
-    def jira(self):
-        """
-        Get the remote jira reference. Will prompt for username and password if not in self.options.
-
-        This will clearly raise a JIRAError on 401/403.
-
-        :return: a jira reference or throw an exception if there is an auth issue
-        """
-        if self._jira is None:
-            LOG.debug("About to connect to jira.")
-            if self.options['jira_user'] is None:
-                self.options['jira_user'] = input("JIRA user id:")
-            if self.options['jira_password'] is None:
-                self.options['jira_password'] = getpass()
-            self._jira = jira.JIRA(
-                basic_auth=(self.options['jira_user'], self.options['jira_password']),
-                options={
-                    'server': JIRA_URL
-                })
-            # The following will fail on authentication error.
-            # UPDATE: As of 2018-06-12 already the above contstructor now properly 403 fails on
-            # on authentication error. Still leaving this here in case behavior changes again in the
-            # future.
-            self._jira.issue("PERF-1234")
-        LOG.debug("About to connect to jira.")
-        return self._jira
-
-    @property
-    def mongo(self):
-        """
-        Get the MongoClient instance.
-        """
-        if self._mongo is None:
-            LOG.debug("Creating MongoClient instance.")
-            self._mongo = pymongo.MongoClient(self.options['mongo_uri'])
-        return self._mongo
-
-    @property
-    def db(self):
-        """
-        Get the db handle defined in mongo_uri.
-        """
-        if self._db is None:
-            LOG.debug("Creating self.db handle.")
-            self._db = self.mongo.get_database()
-        return self._db
-
-    @property
-    def coll(self):
-        """
-        Get the build_failures collection.
-        """
-        if self._coll is None:
-            LOG.debug("Creating self.coll handle.")
-            self._coll = self.db.get_collection(COLLECTION)
-        return self._coll
+        self._projects = projects
+        self._batch_size = batch_size
 
     def query_bfs(self):
         """
         Return a list of BF issues.
         """
         jql = 'project = BF AND "Evergreen Project" in (' + ", ".join(
-            self.options['projects']) + ') order by KEY DESC'
+            self._projects) + ') order by KEY DESC'
         # maxResults default is 50.
         # At the time of writing this, query returned 544 BF issues. (After 4 years in operation.)
         # main() would need a loop to be able to handle paginated result sets.
-        issues = self.jira.search_issues(jql, maxResults=-1)
+        issues = self._jira.search_issues(jql, maxResults=-1)
         LOG.debug("Jira found issues.", issues=issues)
         return issues
 
@@ -192,7 +205,7 @@ class EtlJira(object):
         """
         Drop the build_failures collection.
         """
-        self.coll.drop()
+        self._build_failures.drop()
 
     def create_indexes(self):
         """
@@ -204,10 +217,10 @@ class EtlJira(object):
         # are all arrays...
         # Intentionally leaving "project" unindexed. It's low cardinality and redundant with
         # both variants and tasks.
-        self.coll.create_index([('buildvariants', pymongo.ASCENDING)])
-        self.coll.create_index([('tasks', pymongo.ASCENDING)])
-        self.coll.create_index([('first_failing_revision', pymongo.ASCENDING)])
-        self.coll.create_index([('fix_revision', pymongo.ASCENDING)])
+        self._build_failures.create_index([('buildvariants', pymongo.ASCENDING)])
+        self._build_failures.create_index([('tasks', pymongo.ASCENDING)])
+        self._build_failures.create_index([('first_failing_revision', pymongo.ASCENDING)])
+        self._build_failures.create_index([('fix_revision', pymongo.ASCENDING)])
         # In addition, note that 'key' field is copied into '_id'
 
     def insert_bf_in_mongo(self, issues):
@@ -230,12 +243,12 @@ class EtlJira(object):
             for field in MANDATORY_ARRAY_FIELDS:
                 if field not in doc:
                     doc[field] = []
-            if len(docs) > self.options['batch']:
-                self.coll.insert(docs)
+            if len(docs) > self._batch_size:
+                self._build_failures.insert(docs)
                 docs = []
         LOG.info("Inserting issues.", count=len(docs))
         if docs:
-            self.coll.insert(docs)
+            self._build_failures.insert(docs)
 
     def save_bf_in_mongo(self, issues):
         """
@@ -255,50 +268,28 @@ class EtlJira(object):
         self.save_bf_in_mongo(issues)
 
 
-def parse_command_line():
+@click.command()
+@click.option('-u', '--jira-user', help='Your Jira username')
+@click.option('-p', '--jira-password', help='Your Jira password')
+@click.option('--mongo-uri', default=DEFAULT_MONGO_URI, help='MongoDB connection string')
+@click.option(
+    '--project',
+    'projects',
+    type=str,
+    default=DEFAULT_PROJECTS,
+    multiple=True,
+    help='An Evergreen project to load. Can be specified multiple times to include '
+    'several projects. Defaults to {}'.format(DEFAULT_PROJECTS))
+@click.option('--batch', type=int, default=DEFAULT_BATCH_SIZE, help='The insert batch size')
+@click.option('-d', '--debug', is_flag=True, default=False, help='Enable debug output')
+def main(jira_user, jira_password, mongo_uri, projects, batch, debug):
+    # pylint: disable=too-many-arguments
     """
-    Parse the command line options
+    Copy perf BF tickets from Jira to MongoDB.
+
+    You will be prompted for --jira-user and --jira-password if not provided.
     """
-    parser = argparse.ArgumentParser(
-        description='Copy perf BF tickets from Jira to MongoDB.',
-        epilog='You will be prompted for --jira-user and --jira-password if not provided.')
-    parser.add_argument('-u', '--jira-user', help='Your Jira username')
-    parser.add_argument('-p', '--jira-password', help='Your Jira password')
-    parser.add_argument('--mongo-uri', help='MongoDB connection string.')
-    parser.add_argument('--projects', help='the Projects', nargs='+')
-    parser.add_argument('--batch', help='The insert batch size', type=int)
-    parser.add_argument('-d', '--debug', action='store_true', help='Enable debug output')
-    args = parser.parse_args()
-
-    return args
-
-
-def parse_options():
-    """
-    Get options from 1) command line, 2) environment, 3) DEFAULT_OPTIONS
-    """
-    options = copy.copy(DEFAULT_OPTIONS)
-
-    args = parse_command_line()
-
-    for key in options:
-        arg = lookup(args, (key, ))
-        if arg:
-            options[key] = arg
-        elif key.upper() in os.environ:
-            options[key] = os.environ[key.upper()]
-
-    return options
-
-
-def main():
-    """
-    Main function.
-    """
-    options = parse_options()
-    log.setup_logging(options['debug'])
-    EtlJira(options).run()
-
-
-if __name__ == '__main__':
-    main()
+    log.setup_logging(debug)
+    jira_client, _ = new_jira_client(jira_user, jira_password)
+    mongo_client = pymongo.MongoClient(mongo_uri)
+    EtlJira(jira_client, mongo_client, projects, batch).run()

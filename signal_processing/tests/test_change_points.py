@@ -999,7 +999,7 @@ class TestAttach(ClickTest):
             mock_jira = MagicMock(name='jira')
             mock_jira.issue.return_value = mock_issue
 
-            mock_keyring.return_value.__enter__.return_value.jira = mock_jira
+            mock_keyring.return_value.__enter__.return_value = mock_jira
 
             mock_process_params_for_points.return_value = 'query'
             mock_get_matching_tasks.return_value = []
@@ -1094,7 +1094,7 @@ class TestDetach(ClickTest):
             mock_jira = MagicMock(name='jira')
             mock_jira.issue.return_value = mock_issue
 
-            mock_keyring.return_value.__enter__.return_value.jira = mock_jira
+            mock_keyring.return_value.__enter__.return_value = mock_jira
             query = 'query'
             mock_process_params.return_value = query
             mock_get_matching_tasks.return_value = []

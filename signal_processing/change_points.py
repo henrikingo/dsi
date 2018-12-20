@@ -1363,8 +1363,7 @@ OR:
      --guest --username jira_user
 
 """
-    with jira_keyring(username, password, use_keyring=use_keyring) as etl_jira:
-        jira = etl_jira.jira
+    with jira_keyring(username, password, use_keyring=use_keyring) as jira:
         issue = jira.issue(build_failure)
 
         points = command_config.points
@@ -1484,8 +1483,7 @@ OR:
      --guest --username jira_user
 """
 
-    with jira_keyring(username, password, use_keyring=use_keyring) as etl_jira:
-        jira = etl_jira.jira
+    with jira_keyring(username, password, use_keyring=use_keyring) as jira:
         issue = jira.issue(build_failure)
 
         query = helpers.process_params_for_points(project, variant, task, test, revision=revision)
