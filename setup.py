@@ -131,6 +131,7 @@ setup(
               'bin.common',
               'signal_processing',
               'signal_processing.commands',
+              'signal_processing.commands.outliers',
               'signal_processing.profiling',
               'signal_processing.native',
               'signal_processing.keyring',
@@ -151,6 +152,7 @@ setup(
             'detect-changes = signal_processing.detect_changes:main',
             'etl-jira-mongo = signal_processing.etl_jira_mongo:main',
             'change-points = signal_processing.change_points:cli',
+            'outliers = signal_processing.outliers_cli:cli',
             'etl-evg-mongo = signal_processing.etl_evg_mongo:etl',
             'compare-algorithms = signal_processing.profiling.cli:cli',
         ]

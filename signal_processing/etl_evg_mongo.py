@@ -309,7 +309,7 @@ def _etl_evg_mongo(evg_client, mongo_uri, projects, progressbar, pool_size=1):
 @click.option(
     '--pool-size',
     default=max(multiprocessing.cpu_count() - 1, 1),
-    help='Set the process pool size. The default is the number of cores -1.')
+    help='Set the process pool size. The default is the number of cores - 1.')
 @click.option(
     '--project',
     'projects',

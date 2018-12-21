@@ -22,6 +22,8 @@ top_paths=(
     bin/common
     signal_processing
     signal_processing/commands
+    signal_processing/commands/outliers
+    signal_processing/outliers
     signal_processing/keyring
 )
 
@@ -33,6 +35,8 @@ test_paths=(
     testscripts
     signal_processing/tests
     signal_processing/keyring/tests
+    signal_processing/commands/outliers/tests
+    signal_processing/outliers/tests
     test_lib
 )
 

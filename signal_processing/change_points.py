@@ -60,7 +60,7 @@ APP_CONF_LOCATION = os.environ.get('DSI_APP_CONF_LOCATION', None)
 The config files are looked up in the following locations (in the following order):
   1. The current directory.
   1. The DSI_APP_CONF_LOCATION env var.
-  1. The direcory returned from click.get_app_dir with force_posix set to True.
+  1. The directory returned from click.get_app_dir with force_posix set to True.
 See `click.get_app_dir<http://click.pocoo.org/5/api/#click.get_app_dir>'.
 """
 
@@ -832,7 +832,7 @@ For Example:
 @click.option(
     '--pool-size',
     default=max(multiprocessing.cpu_count() - 1, 1),
-    help='Set the process pool size. The default is the number of cores -1.')
+    help='Set the process pool size. The default is the number of cores - 1.')
 @click.option(
     '--legacy/--no-legacy', default=False, help='Enable creation of legacy change points.')
 @click.argument('project', required=True)
