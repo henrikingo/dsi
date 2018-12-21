@@ -1,4 +1,4 @@
-task_name: mongos
+task_name: mongos_large_catalog
 run:
   - id: benchRun
     type: mongoshell
