@@ -30,12 +30,14 @@ RESOURCE_RULES_FTDC_CHUNK = {
     'sys-perf': {
         'default':
             COMMON_RULES + [
-                rules.max_connections,  # rule not run for 3 shard
-                rules.repl_member_state
-            ],  # rule not run for initialsync
+                rules.max_connections,  # rule not run for 3-shard or shard-lite
+                rules.repl_member_state,  # rule not run for initialsync
+            ],
         'linux-3-shard':
             COMMON_RULES + [rules.repl_member_state],
-        'linux-3-node-replSet-initiasync':
+        'linux-shard-lite':
+            COMMON_RULES + [rules.repl_member_state],
+        'linux-3-node-replSet-initialsync':
             COMMON_RULES + [rules.max_connections]
     }
 }
