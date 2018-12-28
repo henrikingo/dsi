@@ -334,18 +334,18 @@ class TestList(ClickTest):
     """
 
     # pylint: disable=unused-argument
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points', autospec=True)
     def test_list_check_return(self, mock_list):
         """ Test list with no parameters. """
         result = self.runner.invoke(cli, ['list'])
         self.assertEqual(result.exit_code, 0)
 
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points')
     def test_list_check_defaults(self, mock_list):
         """ Test list check default parameters. """
         self.runner.invoke(cli, ['list'])
-        mock_list.list_change_points.assert_called_once()
-        _, kwargs = mock_list.list_change_points.call_args
+        mock_list.assert_called_once()
+        _, kwargs = mock_list.call_args
         self.assertEquals(
             kwargs, {
                 'change_point_type': 'unprocessed',
@@ -361,18 +361,18 @@ class TestList(ClickTest):
             })
 
     @patch('signal_processing.change_points.helpers.process_excludes', autospec=True)
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points')
     def test_list_excludes(self, mock_list, mock_process_excludes):
         """ Test list --exclude. """
         mock_process_excludes.return_value = 'excludes'
         self.runner.invoke(cli, ['list', '--exclude', 'pattern'])
         mock_process_excludes.assert_called_once_with(('pattern', ))
-        mock_list.list_change_points.assert_called_once()
-        _, kwargs = mock_list.list_change_points.call_args
+        mock_list.assert_called_once()
+        _, kwargs = mock_list.call_args
         self.assertEquals(kwargs['exclude_patterns'], 'excludes')
 
     @patch('signal_processing.change_points.helpers.process_excludes', autospec=True)
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points')
     def test_list_multiple_excludes(self, mock_list, mock_process_excludes):
         """ Test list --exclude. """
         mock_process_excludes.return_value = 'excludes'
@@ -381,121 +381,122 @@ class TestList(ClickTest):
             'pattern1',
             'pattern2',
         ))
-        mock_list.list_change_points.assert_called_once()
-        _, kwargs = mock_list.list_change_points.call_args
+        mock_list.assert_called_once()
+        _, kwargs = mock_list.call_args
         self.assertEquals(kwargs['exclude_patterns'], 'excludes')
 
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points')
     def test_list_unprocessed(self, mock_list):
         """ Test list unprocessed. """
         result = self.runner.invoke(cli, ['list', '--point-type', 'unprocessed'])
-        mock_list.list_change_points.assert_called_once()
-        _, kwargs = mock_list.list_change_points.call_args
+        mock_list.assert_called_once()
+        _, kwargs = mock_list.call_args
         self.assertEquals(kwargs['change_point_type'], 'unprocessed')
         self.assertEqual(result.exit_code, 0)
 
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points')
     def test_list_processed(self, mock_list):
         """ Test list processed. """
         result = self.runner.invoke(cli, ['list', '--point-type', 'processed'])
-        mock_list.list_change_points.assert_called_once()
-        _, kwargs = mock_list.list_change_points.call_args
+        mock_list.assert_called_once()
+        _, kwargs = mock_list.call_args
         self.assertEquals(kwargs['change_point_type'], 'processed')
         self.assertEqual(result.exit_code, 0)
 
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points')
     def test_list_raw(self, mock_list):
         """ Test list raw. """
         result = self.runner.invoke(cli, ['list', '--point-type', 'raw'])
-        mock_list.list_change_points.assert_called_once()
-        _, kwargs = mock_list.list_change_points.call_args
+        mock.Mock.assert_called_once(mock_list)
+        mock_list.assert_called_once()
+        _, kwargs = mock_list.call_args
         self.assertEquals(kwargs['change_point_type'], 'raw')
         self.assertEqual(result.exit_code, 0)
 
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points')
     def test_list_invalid(self, mock_list):
         """ Test list invalid. """
         result = self.runner.invoke(cli, ['list', '--point-type', 'war'])
         self.assertEqual(result.exit_code, 2)
 
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points')
     def test_list_limit(self, mock_list):
         """ Test list check --limit 10. """
         self.runner.invoke(cli, ['list', '--limit', '10'])
-        mock_list.list_change_points.assert_called_once()
-        _, kwargs = mock_list.list_change_points.call_args
+        mock_list.assert_called_once()
+        _, kwargs = mock_list.call_args
         self.assertEquals(kwargs['limit'], 10)
 
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points')
     def test_list_limit_none(self, mock_list):
         """ Test list check --limit None. """
         self.runner.invoke(cli, ['list', '--limit', 'None'])
-        mock_list.list_change_points.assert_called_once()
-        _, kwargs = mock_list.list_change_points.call_args
+        mock_list.assert_called_once()
+        _, kwargs = mock_list.call_args
         self.assertIsNone(kwargs['limit'])
 
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points')
     def test_list_no_older(self, mock_list):
         """ Test list check --non-older-than 1. """
         self.runner.invoke(cli, ['list', '--no-older-than', '1'])
-        mock_list.list_change_points.assert_called_once()
-        _, kwargs = mock_list.list_change_points.call_args
+        mock_list.assert_called_once()
+        _, kwargs = mock_list.call_args
         self.assertEquals(kwargs['no_older_than'], 1)
 
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points')
     def test_list_no_older_none(self, mock_list):
         """ Test list check --non-older-than None. """
         self.runner.invoke(cli, ['list', '--no-older-than', 'None'])
-        mock_list.list_change_points.assert_called_once()
-        _, kwargs = mock_list.list_change_points.call_args
+        mock_list.assert_called_once()
+        _, kwargs = mock_list.call_args
         self.assertEquals(kwargs['no_older_than'], None)
 
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points')
     def test_list_human_readable(self, mock_list):
         """ Test list check --no-human-readable. """
         self.runner.invoke(cli, ['list', '--human-readable'])
-        mock_list.list_change_points.assert_called_once()
-        _, kwargs = mock_list.list_change_points.call_args
+        mock_list.assert_called_once()
+        _, kwargs = mock_list.call_args
         self.assertEquals(kwargs['human_readable'], True)
 
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points')
     def test_list_no_human_readable(self, mock_list):
         """ Test list check --no-human-readable. """
         self.runner.invoke(cli, ['list', '--no-human-readable'])
-        mock_list.list_change_points.assert_called_once()
-        _, kwargs = mock_list.list_change_points.call_args
+        mock_list.assert_called_once()
+        _, kwargs = mock_list.call_args
         self.assertEquals(kwargs['human_readable'], False)
 
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points')
     def test_list_show_canaries(self, mock_list):
         """ Test list check --show-canaries. """
         self.runner.invoke(cli, ['list', '--show-canaries'])
-        mock_list.list_change_points.assert_called_once()
-        _, kwargs = mock_list.list_change_points.call_args
+        mock_list.assert_called_once()
+        _, kwargs = mock_list.call_args
         self.assertEquals(kwargs['hide_canaries'], False)
 
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points')
     def test_list_hide_canaries(self, mock_list):
         """ Test list check --hide-canaries. """
         self.runner.invoke(cli, ['list', '--hide-canaries'])
-        mock_list.list_change_points.assert_called_once()
-        _, kwargs = mock_list.list_change_points.call_args
+        mock_list.assert_called_once()
+        _, kwargs = mock_list.call_args
         self.assertEquals(kwargs['hide_canaries'], True)
 
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points')
     def test_list_show_wtdevelop(self, mock_list):
         """ Test list check --show-wtdevelop. """
         self.runner.invoke(cli, ['list', '--show-wtdevelop'])
-        mock_list.list_change_points.assert_called_once()
-        _, kwargs = mock_list.list_change_points.call_args
+        mock_list.assert_called_once()
+        _, kwargs = mock_list.call_args
         self.assertEquals(kwargs['hide_wtdevelop'], False)
 
-    @patch('signal_processing.change_points.list_change_points', autospec=True)
+    @patch('signal_processing.change_points.list_change_points.list_change_points')
     def test_list_hide_wtdevelop(self, mock_list):
         """ Test list check --hide-wtdevelop. """
         self.runner.invoke(cli, ['list', '--hide-wtdevelop'])
-        mock_list.list_change_points.assert_called_once()
-        _, kwargs = mock_list.list_change_points.call_args
+        mock_list.assert_called_once()
+        _, kwargs = mock_list.call_args
         self.assertEquals(kwargs['hide_wtdevelop'], True)
 
 
@@ -510,7 +511,7 @@ class TestCompute(ClickTest):
         result = self.runner.invoke(cli, ['compute'])
         self.assertEqual(result.exit_code, 2)
 
-    @patch('signal_processing.change_points.jobs.process_jobs', autospec=True)
+    @patch('signal_processing.commands.jobs.process_jobs', autospec=True)
     @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
     def test_compute(self, mock_command_config_cls, mock_process_jobs):
         """ Test compute. """
@@ -536,7 +537,7 @@ class TestCompute(ClickTest):
 
         with patch(
             'signal_processing.change_points.helpers.process_params') as mock_process_params, \
-                patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+                patch('signal_processing.commands.jobs.process_jobs') as mock_process_jobs:
             mock_process_jobs.return_value.__enter__.return_value = ()
             result = self.runner.invoke(
                 cli,
@@ -562,7 +563,7 @@ class TestCompute(ClickTest):
         with patch(
             'signal_processing.change_points.helpers.filter_legacy_tasks')\
             as mock_filter_legacy_tasks, \
-                patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+                patch('signal_processing.commands.jobs.process_jobs') as mock_process_jobs:
             mock_process_jobs.return_value.__enter__.return_value = ()
 
             result = self.runner.invoke(cli, ['compute', 'sys-perf', '--legacy'])
@@ -582,7 +583,7 @@ class TestCompute(ClickTest):
         with patch(
             'signal_processing.change_points.helpers.filter_legacy_tasks')\
                 as mock_filter_legacy_tasks, \
-                patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+                patch('signal_processing.commands.jobs.process_jobs') as mock_process_jobs:
             mock_process_jobs.return_value.__enter__.return_value = ()
 
             result = self.runner.invoke(cli, ['compute', 'sys-perf'])
@@ -599,7 +600,7 @@ class TestCompute(ClickTest):
             name='config', points=mock_points, debug=0, log_file='/tmp/log_file')
         mock_command_config_cls.return_value = expected_config
         pool_size = 2
-        with patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+        with patch('signal_processing.commands.jobs.process_jobs') as mock_process_jobs:
             mock_process_jobs.return_value.__enter__.return_value = ()
 
             result = self.runner.invoke(cli, ['compute', 'sys-perf', '--pool-size', str(pool_size)])
@@ -617,7 +618,7 @@ class TestCompute(ClickTest):
             name='config', points=mock_points, debug=0, log_file='/tmp/log_file')
         mock_command_config_cls.return_value = expected_config
 
-        with patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+        with patch('signal_processing.commands.jobs.process_jobs') as mock_process_jobs:
             mock_process_jobs.return_value.__enter__.return_value = ()
 
             result = self.runner.invoke(cli, ['compute', 'sys-perf', '--weighting', '.002'])
@@ -636,7 +637,7 @@ class TestCompute(ClickTest):
         with patch(
             'signal_processing.change_points.helpers.process_excludes')\
                 as mock_process_excludes, \
-                patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+                patch('signal_processing.commands.jobs.process_jobs') as mock_process_jobs:
             mock_process_jobs.return_value.__enter__.return_value = ()
 
             result = self.runner.invoke(cli, ['compute', 'sys-perf', '--exclude', 'fio'])
@@ -656,7 +657,7 @@ class TestCompute(ClickTest):
         with patch(
             'signal_processing.change_points.helpers.process_excludes')\
                 as mock_process_excludes, \
-                patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+                patch('signal_processing.commands.jobs.process_jobs') as mock_process_jobs:
             mock_process_jobs.return_value.__enter__.return_value = ()
 
             result = self.runner.invoke(cli, ['compute', 'sys-perf'])
@@ -674,7 +675,7 @@ class TestCompute(ClickTest):
         mock_command_config_cls.return_value = expected_config
 
         # Defaults to `--progressbar`.
-        with patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+        with patch('signal_processing.commands.jobs.process_jobs') as mock_process_jobs:
             mock_process_jobs.return_value.__enter__.return_value = ()
 
             result = self.runner.invoke(cli, ['compute', 'sys-perf'])
@@ -682,7 +683,7 @@ class TestCompute(ClickTest):
             _, kwargs = mock_process_jobs.call_args
             self.assertTrue(kwargs['progressbar'])
 
-        with patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+        with patch('signal_processing.commands.jobs.process_jobs') as mock_process_jobs:
             mock_process_jobs.return_value.__enter__.return_value = ()
 
             result = self.runner.invoke(cli, ['compute', 'sys-perf', '--progressbar'])
@@ -690,7 +691,7 @@ class TestCompute(ClickTest):
             _, kwargs = mock_process_jobs.call_args
             self.assertTrue(kwargs['progressbar'])
 
-        with patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+        with patch('signal_processing.commands.jobs.process_jobs') as mock_process_jobs:
             mock_process_jobs.return_value.__enter__.return_value = ()
 
             result = self.runner.invoke(cli, ['compute', 'sys-perf', '--no-progressbar'])
@@ -712,9 +713,9 @@ class TestCompute(ClickTest):
                 as mock_generate_tests, \
              patch('signal_processing.change_points.helpers.generate_thread_levels') \
                 as mock_generate_thread_levels, \
-             patch('signal_processing.change_points.jobs.process_jobs') \
+             patch('signal_processing.commands.jobs.process_jobs') \
                 as mock_process_jobs, \
-             patch('signal_processing.change_points.jobs.Job') as mock_job_cls:
+             patch('signal_processing.commands.jobs.Job') as mock_job_cls:
             mock_process_jobs.return_value.__enter__.return_value = ()
 
             mock_generate_tests.return_value = [{'test': str(i)} for i in range(1)]
@@ -741,7 +742,7 @@ class TestCompute(ClickTest):
             name='config', points=mock_points, debug=0, log_file='/tmp/log_file')
         mock_command_config_cls.return_value = expected_config
 
-        with patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+        with patch('signal_processing.commands.jobs.process_jobs') as mock_process_jobs:
             mock_job = MagicMock(name='job', exception=None, identifier={'test': 'name'})
             mock_process_jobs.return_value.__enter__.return_value = [mock_job]
             result = self.runner.invoke(cli, ['compute', 'sys-perf'])
@@ -757,7 +758,7 @@ class TestCompute(ClickTest):
             name='config', points=mock_points, debug=0, log_file='/tmp/log_file')
         mock_command_config_cls.return_value = expected_config
 
-        with patch('signal_processing.change_points.jobs.process_jobs') as mock_process_jobs:
+        with patch('signal_processing.commands.jobs.process_jobs') as mock_process_jobs:
             job_list = [jobs.Job(time.sleep, arguments=(0.0, )) for _ in range(3)]
             for i, job in enumerate(job_list):
                 job.started_at = datetime.utcnow()
@@ -798,7 +799,7 @@ class TestVisualize(ClickTest):
 
     # pylint: disable=unused-argument
     @unittest.skip("test_visualize_no_params fails in evergreen")
-    @patch('signal_processing.change_points.visualize', autospec=True)
+    @patch('signal_processing.change_points.visualize.visualize', autospec=True)
     @patch('signal_processing.change_points.helpers.CommandConfiguration', style=['bmh'])
     def test_visualize_no_params(self, mock_config, mock_visualize):
         """ Test visualize with no parameters. """
@@ -895,14 +896,14 @@ class TestListfailures(ClickTest):
                             evergreen_config='~/.evergreen.yml'):
         """ test helper function. """
         # pylint: disable=too-many-locals
-        with patch('signal_processing.change_points.open', mock_open(read_data='{client:[]}'))\
+        with patch('signal_processing.change_points.list_failures.open', mock_open(read_data='{client:[]}'))\
              as m, \
              patch('signal_processing.change_points.list_failures.list_failures', autospec=True)\
              as mock_failures,\
              patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)\
              as mock_config,\
-             patch('signal_processing.change_points.os.path.expanduser') as mock_expanduser,\
-             patch('signal_processing.change_points.evergreen_client.Client') as mock_client:
+             patch('signal_processing.change_points.list_failures.os.path.expanduser') as mock_expanduser,\
+             patch('signal_processing.change_points.list_failures.evergreen_client.Client') as mock_client:
 
             expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
             mock_config.return_value = expected_config
@@ -985,7 +986,7 @@ class TestAttach(ClickTest):
                 as mock_attach, \
              patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)\
                 as mock_config,\
-             patch('signal_processing.change_points.jira_keyring', autospec=True)\
+             patch('signal_processing.change_points.attach.jira_keyring', autospec=True)\
                 as mock_keyring,\
              patch('signal_processing.change_points.helpers.process_params_for_points', autospec=True)\
                 as mock_process_params_for_points,\
@@ -1080,7 +1081,7 @@ class TestDetach(ClickTest):
                 as mock_detach,\
              patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)\
                 as mock_config,\
-             patch('signal_processing.change_points.jira_keyring', autospec=True)\
+             patch('signal_processing.change_points.attach.jira_keyring', autospec=True)\
                 as mock_keyring,\
              patch('signal_processing.change_points.helpers.process_params_for_points')\
                 as mock_process_params,\

@@ -2,6 +2,8 @@
 Functionality to create or recreate the unprocessed change points view.
 """
 from collections import OrderedDict
+
+import click
 import structlog
 import pymongo
 
@@ -12,7 +14,7 @@ def _create_indexes(collection, indexes):
     """
     Create indexes for a given collections.
 
-    :param pymongo.collection collection: The target collection.
+    :param pymongo.Collection collection: The target collection.
     :param list(dict) indexes: The indexes to create.
     """
     LOG.debug('create indexes', collection=collection, indexes=indexes)
@@ -25,7 +27,7 @@ def _create_validator(collection, validator, action='error'):
     """
     Modify a collection to apply validation rules to a collection.
 
-    :param pymongo.collection collection: The target collection.
+    :param pymongo.Collection collection: The target collection.
     :param dict validator: The validation rules.
     :param str action: The validation action. This controls the response to a
     validation issue. The default is error.
@@ -81,7 +83,7 @@ def _create_common_change_points_validator(command_config, collection):
     Create change_points and processed change_points common validation rules.
 
     :param CommandConfig command_config: Common configuration.
-    :param pymongo.collection collection: The target collection.
+    :param pymongo.Collection collection: The target collection.
     """
     # pylint: disable=invalid-name, unused-argument
     LOG.debug('create common change points validation rules', collection=collection.name)
@@ -374,3 +376,21 @@ def manage(command_config):
     create_linked_build_failures_view(command_config)
 
     create_change_points_validators(command_config)
+
+
+@click.command(name='manage')
+@click.pass_obj
+def manage_command(command_config):
+    # pylint: disable=too-many-locals, too-many-arguments, line-too-long
+    """
+Manage the infrastructural elements of the performance database. That is, indexes,
+views etc.
+
+\b
+At the moment, it supports:
+        1. The unprocessed change points view.
+        2. The linked build failures view.
+        3. The indexes for the point collection.
+"""
+    LOG.debug('starting')
+    manage(command_config)

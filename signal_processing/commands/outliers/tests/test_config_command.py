@@ -38,7 +38,7 @@ class TestOutliersParams(ClickTest):
         self.assertEqual(result.exit_code, 0)
         self.assertTrue(result.output.startswith("Usage"))
 
-    @patch('signal_processing.change_points.jobs.process_jobs', autospec=True)
+    @patch('signal_processing.commands.jobs.process_jobs', autospec=True)
     @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
     def test_basic(self, mock_command_config_cls, mock_process_jobs):
         """ Test compute. """
