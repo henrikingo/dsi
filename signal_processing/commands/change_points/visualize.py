@@ -12,7 +12,7 @@ import scipy.stats
 import scipy.signal
 import structlog
 
-from signal_processing.commands.compare import LANDSCAPE_FIGSIZE
+from signal_processing.commands.helpers import LANDSCAPE_FIGSIZE
 from signal_processing.detect_changes import PointsModel
 from signal_processing.qhat import QHat, DEFAULT_WEIGHTING
 

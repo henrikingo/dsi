@@ -1,12 +1,12 @@
 """
-Unit tests for signal_processing/mark.py.
+Unit tests for signal_processing/commands/change_points/mark.py.
 """
 import unittest
 
 from bin.common.log import setup_logging
 from mock import MagicMock, call
 
-from signal_processing.commands.mark import mark_change_points
+from signal_processing.commands.change_points.mark import mark_change_points
 
 setup_logging(False)
 

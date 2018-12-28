@@ -21,21 +21,21 @@ import click
 import structlog
 import yaml
 
-import signal_processing.commands.compare as compare
-import signal_processing.commands.compute as compute
 import signal_processing.commands.helpers as helpers
 import signal_processing.commands.jobs as jobs
-import signal_processing.commands.list_build_failures as list_build_failures
-import signal_processing.commands.list_change_points as list_change_points
-import signal_processing.commands.list_failures as list_failures
-import signal_processing.commands.manage as manage
-import signal_processing.commands.mark as mark
-import signal_processing.commands.unmark as unmark
-import signal_processing.commands.update as update
-import signal_processing.commands.visualize as visualize
+import signal_processing.commands.change_points.attach as attach
+import signal_processing.commands.change_points.compare as compare
+import signal_processing.commands.change_points.compute as compute
+import signal_processing.commands.change_points.list_build_failures as list_build_failures
+import signal_processing.commands.change_points.list_change_points as list_change_points
+import signal_processing.commands.change_points.list_failures as list_failures
+import signal_processing.commands.change_points.manage as manage
+import signal_processing.commands.change_points.mark as mark
+import signal_processing.commands.change_points.unmark as unmark
+import signal_processing.commands.change_points.update as update
+import signal_processing.commands.change_points.visualize as visualize
 import signal_processing.qhat as qhat
 from signal_processing import detect_changes
-from signal_processing.commands import attach
 from signal_processing.keyring.jira_keyring import jira_keyring
 from analysis.evergreen import evergreen_client
 from bin.common import log

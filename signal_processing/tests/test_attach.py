@@ -1,13 +1,13 @@
 """
-Unit tests for signal_processing/commands/attach.py.
+Unit tests for signal_processing/commands/change_points/attach.py.
 """
 
 import unittest
 
 from mock import MagicMock, patch, call
 
-from signal_processing.commands.attach import get_field_value, get_issue_state, REMOTE_KEYS, \
-    map_identifiers, attach, detach
+from signal_processing.commands.change_points.attach import get_field_value, get_issue_state, \
+    REMOTE_KEYS, map_identifiers, attach, detach
 
 
 class TestGetFieldValue(unittest.TestCase):
@@ -44,7 +44,8 @@ class TestGetIssueState(unittest.TestCase):
     def test(self):
         """ Test get_issue_state."""
 
-        with patch('signal_processing.commands.attach.get_field_value') as mock_get_field_value:
+        with patch('signal_processing.commands.change_points.attach.get_field_value'
+                   ) as mock_get_field_value:  # pylint: disable=bad-continuation
             mock_build_failure = MagicMock(name='build_failure', key=None)
 
             expected = {k: k.upper() for k in REMOTE_KEYS}

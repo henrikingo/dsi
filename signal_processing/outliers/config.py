@@ -19,7 +19,7 @@ from scipy.stats import probplot, describe
 
 from bin.common.utils import mkdir_p
 from signal_processing.commands import helpers, jobs
-from signal_processing.commands.compare import PORTRAIT_FIGSIZE
+from signal_processing.commands.helpers import PORTRAIT_FIGSIZE
 from signal_processing.detect_changes import PointsModel
 from signal_processing.outliers.gesd import gesd
 

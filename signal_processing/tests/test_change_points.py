@@ -11,7 +11,7 @@ from mock import MagicMock, patch, mock_open
 
 # pylint: disable=invalid-name
 from click.testing import CliRunner
-from signal_processing.commands import compute
+from signal_processing.commands.change_points import compute
 
 from signal_processing.change_points import cli
 import signal_processing.commands.helpers as helpers

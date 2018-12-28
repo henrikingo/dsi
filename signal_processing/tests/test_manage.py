@@ -1,12 +1,12 @@
 """
-Unit tests for signal_processing/change_points.py.
+Unit tests for signal_processing/commands/change_points/manage.py.
 """
 import unittest
 from collections import OrderedDict
 
 from mock import ANY, MagicMock, call, patch
 
-from signal_processing.commands.manage import (
+from signal_processing.commands.change_points.manage import (
     _create_common_change_points_validator,
     create_change_points_with_attachments_view,
     create_change_points_indexes,
@@ -23,13 +23,15 @@ class TestManage(unittest.TestCase):
     Test Manage group command.
     """
 
-    @patch('signal_processing.commands.manage.create_change_points_with_attachments_view')
-    @patch('signal_processing.commands.manage.create_change_points_validators')
-    @patch('signal_processing.commands.manage.create_linked_build_failures_view')
-    @patch('signal_processing.commands.manage.create_unprocessed_change_points_view')
-    @patch('signal_processing.commands.manage.create_points_indexes')
-    @patch('signal_processing.commands.manage.create_change_points_indexes')
-    @patch('signal_processing.commands.manage.create_processed_change_points_indexes')
+    @patch(
+        'signal_processing.commands.change_points.manage.create_change_points_with_attachments_view'
+    )
+    @patch('signal_processing.commands.change_points.manage.create_change_points_validators')
+    @patch('signal_processing.commands.change_points.manage.create_linked_build_failures_view')
+    @patch('signal_processing.commands.change_points.manage.create_unprocessed_change_points_view')
+    @patch('signal_processing.commands.change_points.manage.create_points_indexes')
+    @patch('signal_processing.commands.change_points.manage.create_change_points_indexes')
+    @patch('signal_processing.commands.change_points.manage.create_processed_change_points_indexes')
     def test_manage(self, mock_processed_indexes, mock_change_points_indexes, mock_points_indexes,
                     mock_create_change_points_view, mock_create_build_failures_view,
                     mock_change_points_validators, mock_change_points_with_attachments_view):
@@ -201,7 +203,7 @@ class TestCreateChangePointsValidators(unittest.TestCase):
             }
         }, validator['$jsonSchema']['properties'])
 
-    @patch('signal_processing.commands.manage._create_common_change_points_validator')
+    @patch('signal_processing.commands.change_points.manage._create_common_change_points_validator')
     def test_change_points_validator(self, mock_common_validator):
         """ Test change_points validator. """
         mock_database = MagicMock(name='database')

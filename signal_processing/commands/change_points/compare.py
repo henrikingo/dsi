@@ -9,18 +9,9 @@ import structlog
 from bin.common.utils import mkdir_p
 import numpy as np
 
+from signal_processing.commands.helpers import PORTRAIT_FIGSIZE
 from signal_processing.detect_changes import PointsModel
 from signal_processing.qhat import QHat
-
-PORTRAIT_FIGSIZE = (8.27, 11.69)
-"""
-The dimensions required to render a portrait image.
-"""
-
-LANDSCAPE_FIGSIZE = tuple(reversed(PORTRAIT_FIGSIZE))
-"""
-The dimensions required to render a landscape image.
-"""
 
 LOG = structlog.getLogger(__name__)
 

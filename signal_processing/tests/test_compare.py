@@ -1,5 +1,5 @@
 """
-Unit tests for signal_processing/compare.py.
+Unit tests for signal_processing/change_points/compare.py.
 """
 import unittest
 
@@ -7,7 +7,7 @@ from bin.common.log import setup_logging
 from mock import patch, MagicMock, mock
 
 # pylint: disable=invalid-name
-from signal_processing.commands.compare import compare, best_fit, print_result
+from signal_processing.commands.change_points.compare import compare, best_fit, print_result
 from signal_processing.qhat import DEFAULT_WEIGHTING
 
 setup_logging(False)
@@ -18,7 +18,7 @@ class TestCompare(unittest.TestCase):
     Test suite for compare.
     """
 
-    @patch('signal_processing.commands.compare.PointsModel')
+    @patch('signal_processing.commands.change_points.compare.PointsModel')
     def test_attributes(self, mock_model):
         """ Test compare."""
         test_identifier = {
@@ -71,5 +71,5 @@ class TestPrintResult(unittest.TestCase):
             'revisions': [0, 1],
         }
         mock_config = MagicMock(name='config', dry_run=True)
-        with mock.patch('signal_processing.commands.compare.print'):
+        with mock.patch('signal_processing.commands.change_points.compare.print'):
             print_result(result, mock_config)

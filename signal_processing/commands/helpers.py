@@ -23,6 +23,16 @@ from bin.common.utils import mkdir_p
 from signal_processing.etl_helpers import redact_url, extract_tests
 import signal_processing.commands.jobs
 
+PORTRAIT_FIGSIZE = (8.27, 11.69)
+"""
+The dimensions required to render a portrait image.
+"""
+
+LANDSCAPE_FIGSIZE = tuple(reversed(PORTRAIT_FIGSIZE))
+"""
+The dimensions required to render a landscape image.
+"""
+
 MAX_THREAD_LEVEL = 'max'
 """
 The value of the 'thread_level' field for the max thread level.

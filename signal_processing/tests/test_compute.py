@@ -1,12 +1,12 @@
 """
-Unit tests for signal_processing/compute.py.
+Unit tests for signal_processing/change_points/compute.py.
 """
 import unittest
 
 from bin.common.log import setup_logging
 from mock import patch, MagicMock
 
-from signal_processing.commands.compute import compute_change_points
+from signal_processing.commands.change_points.compute import compute_change_points
 
 setup_logging(False)
 
@@ -16,7 +16,7 @@ class TestCompute(unittest.TestCase):
     Test suite for compute_change_points method.
     """
 
-    @patch('signal_processing.commands.compute.PointsModel', autospec=True)
+    @patch('signal_processing.commands.change_points.compute.PointsModel', autospec=True)
     def test_dry_run(self, mock_model):
         """ Test dry run."""
         test_identifier = {
@@ -33,7 +33,11 @@ class TestCompute(unittest.TestCase):
         mock_model.assert_not_called()
 
     def _test_compute_with_credentials(self, min_points=None):
-        with patch('signal_processing.commands.compute.PointsModel', autospec=True) as mock_model:
+        # Disabling check because pylint and yapf disagree
+        # pylint: disable=bad-continuation
+        with patch(
+                'signal_processing.commands.change_points.compute.PointsModel',
+                autospec=True) as mock_model:
 
             test_identifier = {
                 'project': 'project',

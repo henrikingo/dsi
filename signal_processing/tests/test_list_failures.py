@@ -1,5 +1,5 @@
 """
-Unit tests for signal_processing/commands/linked_build_failures.py.
+Unit tests for signal_processing/commands/change_points/list_failures.py.
 """
 
 import datetime
@@ -8,8 +8,8 @@ import unittest
 
 from mock import MagicMock, patch, call
 
-import signal_processing.commands.list_failures
-from signal_processing.commands.list_failures import list_failures
+import signal_processing.commands.change_points.list_failures
+from signal_processing.commands.change_points.list_failures import list_failures
 from test_lib.comparator_utils import ANY_IN_STRING
 from test_lib.fixture_files import FixtureFiles
 
@@ -48,7 +48,7 @@ class TestListFailures(unittest.TestCase):
         mock_evg_client.get_project_tasks.return_value = []
         mock_config = MagicMock(name='config', compact=True)
         mock_logger = MagicMock(name='LOG')
-        signal_processing.commands.list_failures.LOG.info = mock_logger
+        signal_processing.commands.change_points.list_failures.LOG.info = mock_logger
 
         project = 'sys-perf'
         show_wtdevelop = False
@@ -94,7 +94,7 @@ class TestListFailures(unittest.TestCase):
         }]
         mock_config = MagicMock(name='config', compact=True)
         mock_logger = MagicMock(name='LOG')
-        signal_processing.commands.list_failures.LOG.info = mock_logger
+        signal_processing.commands.change_points.list_failures.LOG.info = mock_logger
 
         project = 'sys-perf'
         show_wtdevelop = False
@@ -128,11 +128,11 @@ class TestListFailures(unittest.TestCase):
         if today is None:
             today = datetime.date(2018, 10, 11)
 
-        with patch('signal_processing.commands.list_failures.stream_human_readable')\
+        with patch('signal_processing.commands.change_points.list_failures.stream_human_readable')\
              as mock_stream,\
-             patch('signal_processing.commands.list_failures.stringify_json')\
+             patch('signal_processing.commands.change_points.list_failures.stringify_json')\
              as mock_stringify_json,\
-             patch('signal_processing.commands.list_failures.date') as mock_date:
+             patch('signal_processing.commands.change_points.list_failures.date') as mock_date:
 
             mock_date.today.return_value = today
             mock_evg_client = MagicMock(name='evg_client')
