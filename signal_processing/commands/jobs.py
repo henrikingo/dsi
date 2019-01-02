@@ -2,6 +2,7 @@
 Common Job helpers and objects.
 """
 import multiprocessing
+import signal
 import sys
 from StringIO import StringIO
 import copy_reg
@@ -228,13 +229,19 @@ def pool_manager(job_list, pool_size):
     # :method: `jobs.async_job_runner` provides this behavior.
     pool = None
     if pool_size is not None and pool_size >= 1:
+        original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
         pool = multiprocessing.Pool(processes=pool_size)
+        signal.signal(signal.SIGINT, original_sigint_handler)
         job_iterator = pool.imap_unordered(async_job_runner, job_list)
     else:
         job_iterator = async_job_runner_adapter(job_list)
 
     try:
         yield job_iterator
+    except KeyboardInterrupt:
+        LOG.warn("Caught KeyboardInterrupt, terminating workers")
+        if pool:
+            pool.terminate()
     finally:
         if pool:
             pool.close()

@@ -1,6 +1,7 @@
 """
 Unit tests for signal_processing/helpers.py.
 """
+import signal
 import time
 import unittest
 
@@ -96,22 +97,38 @@ class TestPoolManager(unittest.TestCase):
     Test pool_manager.
     """
 
-    def _test_helper(self, job_list=(), pool_size=0):
+    def _test_helper(self, job_list=(), pool_size=0, interrupt=False):
         with patch('multiprocessing.Pool') as mock_pool_cls, \
              patch('signal_processing.commands.jobs.async_job_runner_adapter')\
-                     as mock_async_job_runner_adapter:
+                     as mock_async_job_runner_adapter,\
+             patch('signal_processing.commands.jobs.signal.signal')\
+                     as mock_signal:
             mock_pool = mock.MagicMock(name='dummy function', return_value='return')
             mock_pool_cls.return_value = mock_pool
             mock_pool.imap_unordered.return_value = 'imap_unordered'
             mock_async_job_runner_adapter.return_value = 'adapter'
+
+            original_signal_handler = 'original signal handler'
+            mock_signal.return_value = original_signal_handler
             with jobs.pool_manager(job_list, pool_size) as iterator:
-                pass
+                if interrupt:
+                    raise KeyboardInterrupt()
 
             if pool_size == 0:
+                mock_signal.assert_not_called()
+                if interrupt:
+                    mock_pool.terminate.assert_not_called()
+
                 self.assertEqual('adapter', iterator)
                 mock_pool_cls.assert_not_called()
                 mock_async_job_runner_adapter.assert_called_once_with(job_list)
             else:
+                mock_signal.assert_any_call(signal.SIGINT, signal.SIG_IGN)
+                mock_signal.assert_any_call(signal.SIGINT, original_signal_handler)
+
+                if interrupt:
+                    mock_pool.terminate.assert_called()
+
                 self.assertEqual('imap_unordered', iterator)
                 mock_pool_cls.assert_called_once_with(processes=pool_size)
                 mock_pool.imap_unordered.assert_called_once_with(jobs.async_job_runner, job_list)
@@ -126,6 +143,14 @@ class TestPoolManager(unittest.TestCase):
     def test_multiple(self):
         """ Test pool size 2."""
         self._test_helper(pool_size=2)
+
+    def test_single_interrupt(self):
+        """ Test KeyboardInterrupt, no pool."""
+        self._test_helper(interrupt=True)
+
+    def test_multiple_interrupt(self):
+        """ Test KeyboardInterrupt, with pool."""
+        self._test_helper(pool_size=2, interrupt=True)
 
 
 class TestAsyncJobRunner(unittest.TestCase):
