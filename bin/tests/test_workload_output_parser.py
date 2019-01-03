@@ -43,9 +43,9 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
         self.config = {
             'test_control': {
                 'task_name': 'parser_unittest',
-                'reports_dir_basename': 'bin/tests/unittest-files',
+                'reports_dir_basename': FIXTURE_FILES.fixture_dir_path,
                 'perf_json': {
-                    'path': 'perf.unittest-out.json'
+                    'path': FIXTURE_FILES.fixture_file_path('perf.unittest-out.json')
                 },
                 'output_file': {
                     'mongoshell': 'test_output.log',

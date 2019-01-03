@@ -2,6 +2,20 @@
     "results":[
         {
             "end":2.002,
+            "name":"genny-unittest.dummy_inserts",
+            "results":{
+                "1":{
+                    "ops_per_sec":10780115,
+                    "ops_per_sec_values":[
+                        10780115
+                    ]
+                }
+            },
+            "start":1.001,
+            "workload":"genny"
+        },
+        {
+            "end":2.002,
             "name":"contended_update",
             "results":{
                 "1":{

@@ -98,8 +98,11 @@ class FixtureFiles(object):
         :param IO actual: actual json file IO.
         """
         expect = self.fixture_file_path(expect)
-        actual = self.fixture_file_path(expect)
-        diff = json_diff.Comparator(open(expect), open(actual))
+        actual = self.fixture_file_path(actual)
+
+        with open(expect) as file_handle_expect, open(actual) as file_handle_actual:
+            diff = json_diff.Comparator(file_handle_expect, file_handle_actual)
+
         diff_res = diff.compare_dicts()
         outs = unicode(json_diff.HTMLFormatter(diff_res))
 
