@@ -54,8 +54,8 @@ mongo connection created with mongodb://10.2.0.80:27017,10.2.0.81:27017,10.2.0.8
 [UPDATE], AverageLatency(us), 1395.1558125208226
 [UPDATE], MinLatency(us), 555
 [UPDATE], MaxLatency(us), 1664453
-[UPDATE], 95thPercentileLatency(ms), 2
-[UPDATE], 99thPercentileLatency(ms), 3
+[UPDATE], 95thPercentileLatency(us), 2000
+[UPDATE], 99thPercentileLatency(us), 3000
 [UPDATE], Return=0, 10004119
 [UPDATE], 0, 2148184
 [UPDATE], 1, 6814276
@@ -1062,8 +1062,8 @@ mongo connection created with mongodb://10.2.0.80:27017,10.2.0.81:27017,10.2.0.8
 [READ], AverageLatency(us), 1289.2202832346643
 [READ], MinLatency(us), 474
 [READ], MaxLatency(us), 1694402
-[READ], 95thPercentileLatency(ms), 2
-[READ], 99thPercentileLatency(ms), 3
+[READ], 95thPercentileLatency(us), 2100.937896666666
+[READ], 99thPercentileLatency(us), 3200.937896666666
 [READ], Return=0, 9995881
 [READ], 0, 3304996
 [READ], 1, 5891992
@@ -2070,8 +2070,8 @@ mongo connection created with mongodb://10.2.0.80:27017,10.2.0.81:27017,10.2.0.8
 [CLEANUP], AverageLatency(us), 91.6875
 [CLEANUP], MinLatency(us), 1
 [CLEANUP], MaxLatency(us), 5764
-[CLEANUP], 95thPercentileLatency(ms), 0
-[CLEANUP], 99thPercentileLatency(ms), 5
+[CLEANUP], 95thPercentileLatency(us), 0
+[CLEANUP], 99thPercentileLatency(us), 5
 [CLEANUP], 0, 63
 [CLEANUP], 1, 0
 [CLEANUP], 2, 0

@@ -91,13 +91,20 @@ class Results(object):
                 self.results = json.load(file_handle)['results']
 
     # pylint: disable=too-many-arguments
-    def add_result(self, test_type, start, end, name, result, threads="1"):
+    def add_result(self,
+                   test_type,
+                   start,
+                   end,
+                   name,
+                   result,
+                   threads="1",
+                   metric_type="ops_per_sec"):
         """
         Merge new result into (potentially) existing perf_json structure.
 
         There are 3 scenarios:
         1. If the same name+threads exists, we need to find it and add the result to
-           ops_per_sec_values list, then recompute ops_per_sec as an average of that.
+           [metric_type]_values list, then recompute [metric_type] as an average of that.
         2. If the same name exists, but doesn't have this thread level, then add this thread level
         3. If same name+threads doesn't yet exist, we append the new entry to the end of the list.
 
@@ -111,21 +118,31 @@ class Results(object):
         :param str threads": The number of client threads the test (name) was run with. Note that
                              this is used as a json key, and therefore must be a string. The
                              combination name+threads defines a unique result in the sense that if
-                             there is more than one occurrence, the ops_per_sec field will contain
+                             there is more than one occurrence, the [metric_type] field will contain
                              the average of them.
         """
         assert isinstance(name, basestring)
         assert isinstance(threads, basestring)
-
+        metric_type_values = metric_type + '_values'
         existing_entry = self._find_existing_result(name)
         if existing_entry:
-            if threads in existing_entry['results']:
-                existing_entry['results'][threads]["ops_per_sec_values"].append(result)
-                values = existing_entry['results'][threads]["ops_per_sec_values"]
-                existing_entry['results'][threads]["ops_per_sec"] = sum(values) / float(len(values))
+            existing_thread = threads in existing_entry['results']
+            if existing_thread:
+                existing_metric = metric_type in existing_entry['results'][threads]
+                if existing_metric:
+                    existing_entry['results'][threads][metric_type_values].append(result)
+                    values = existing_entry['results'][threads][metric_type_values]
+                    existing_entry['results'][threads][metric_type] = sum(values) / \
+                                                                      float(len(values))
+                else:
+                    existing_entry['results'][threads][metric_type] = result
+                    existing_entry['results'][threads][metric_type_values] = [result]
             else:
-                new_thread = {"ops_per_sec": result, "ops_per_sec_values": [result]}
-                existing_entry['results'][threads] = new_thread
+                existing_entry['results'][threads] = {
+                    metric_type: result,
+                    metric_type_values: [result]
+                }
+
         else:
             new_entry = {
                 "workload": test_type,
@@ -134,8 +151,8 @@ class Results(object):
                 "end": end,
                 "results": {
                     threads: {
-                        "ops_per_sec": result,
-                        "ops_per_sec_values": [result]
+                        metric_type: result,
+                        metric_type_values: [result]
                     }
                 }
             } # yapf: disable
@@ -203,12 +220,12 @@ class ResultParser(object):
         self.results.save()
         return passed
 
-    def add_result(self, name, result, threads="1"):
+    def add_result(self, name, result, threads="1", metric_type="ops_per_sec"):
         """
         For parameters/returns, see :method: `Results.add_result`
         """
         self.results.add_result(self.test_type, self.timer['start'], self.timer['end'], name,
-                                result, threads)
+                                result, threads, metric_type)
 
     def parse(self):
         """
@@ -398,19 +415,29 @@ class YcsbParser(ResultParser):
                     if part == "-threads":
                         self.threads = str(parts[index + 1])  # In perf.json threads is a string
                 continue
-
-            # YCSB produces lots of stats, we're only looking for this single line
             if line.startswith("[OVERALL], Throughput(ops/sec), "):
                 parts = line.rstrip().split(", ")
                 result = float(parts[2])
                 name = self.test_id
-                self.add_result(name, result, self.threads)
+                self.add_result(name, result, self.threads, "ops_per_sec")
 
-            # if line.startswith("[READ], 95thPercentileLatency(ms), "):
-            #     parts = line.rstrip().split(", ")
-            #     result = -float(parts[2])
-            #     name = self.test_id + "_95th_read_latency_ms"
-            #     self.add_result(name, result, self.threads)
+            if line.startswith("[READ], 95thPercentileLatency(us), "):
+                parts = line.rstrip().split(", ")
+                result = float(parts[2])
+                name = self.test_id
+                self.add_result(name, result, self.threads, "95th_read_latency_us")
+
+            if line.startswith("[READ], 99thPercentileLatency(us), "):
+                parts = line.rstrip().split(", ")
+                result = float(parts[2])
+                name = self.test_id
+                self.add_result(name, result, self.threads, "99th_read_latency_us")
+
+            if line.startswith("[READ], AverageLatency(us), "):
+                parts = line.rstrip().split(", ")
+                result = float(parts[2])
+                name = self.test_id
+                self.add_result(name, result, self.threads, "average_read_latency_us")
 
 
 class FioParser(ResultParser):

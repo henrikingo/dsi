@@ -585,6 +585,18 @@
             "name":"ycsb-unittest",
             "results":{
                 "64":{
+                    "95th_read_latency_us":2100.937896666666,
+                    "95th_read_latency_us_values":[
+                        2100.937896666666
+                    ],
+                    "99th_read_latency_us":3200.937896666666,
+                    "99th_read_latency_us_values":[
+                        3200.937896666666
+                    ],
+                    "average_read_latency_us":1289.2202832346643,
+                    "average_read_latency_us_values":[
+                        1289.2202832346643
+                    ],
                     "ops_per_sec":47494.99521487923,
                     "ops_per_sec_values":[
                         47494.99521487923
