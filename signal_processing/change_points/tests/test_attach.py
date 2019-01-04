@@ -1,13 +1,19 @@
 """
-Unit tests for signal_processing/commands/change_points/attach.py.
+Unit tests for signal_processing/change_points/attach.py.
 """
 
 import unittest
 
 from mock import MagicMock, patch, call
 
-from signal_processing.commands.change_points.attach import get_field_value, get_issue_state, \
-    REMOTE_KEYS, map_identifiers, attach, detach
+from signal_processing.change_points import attach
+
+NS = 'signal_processing.change_points.attach'
+
+
+def ns(relative_name):  # pylint: disable=invalid-name
+    """Return a full name from a name relative to the tested module's name space."""
+    return NS + '.' + relative_name
 
 
 class TestGetFieldValue(unittest.TestCase):
@@ -19,13 +25,13 @@ class TestGetFieldValue(unittest.TestCase):
         """ Test get_field_value None."""
 
         mock_build_failure = MagicMock(name='build_failure', key=None)
-        self.assertEquals(set(), get_field_value(mock_build_failure, 'key'))
+        self.assertEquals(set(), attach.get_field_value(mock_build_failure, 'key'))
 
     def test_get_key(self):
         """ Test get_field_value single level."""
 
         mock_build_failure = MagicMock(name='build_failure', key=['value'])
-        self.assertEquals(set(['value']), get_field_value(mock_build_failure, 'key'))
+        self.assertEquals(set(['value']), attach.get_field_value(mock_build_failure, 'key'))
 
     def test_get_field(self):
         """ Test get_field_value multiple level."""
@@ -33,7 +39,7 @@ class TestGetFieldValue(unittest.TestCase):
         mock_build_failure = MagicMock(name='build_failure')
         expected = ['fields', 'values']
         mock_build_failure.fields.customfield_14852 = expected
-        self.assertEquals(set(expected), get_field_value(mock_build_failure, 'fix_revision'))
+        self.assertEquals(set(expected), attach.get_field_value(mock_build_failure, 'fix_revision'))
 
 
 class TestGetIssueState(unittest.TestCase):
@@ -44,15 +50,14 @@ class TestGetIssueState(unittest.TestCase):
     def test(self):
         """ Test get_issue_state."""
 
-        with patch('signal_processing.commands.change_points.attach.get_field_value'
-                   ) as mock_get_field_value:  # pylint: disable=bad-continuation
+        with patch(ns('get_field_value')) as mock_get_field_value:
             mock_build_failure = MagicMock(name='build_failure', key=None)
 
-            expected = {k: k.upper() for k in REMOTE_KEYS}
-            mock_get_field_value.side_effect = [k.upper() for k in REMOTE_KEYS]
+            expected = {k: k.upper() for k in attach.REMOTE_KEYS}
+            mock_get_field_value.side_effect = [k.upper() for k in attach.REMOTE_KEYS]
 
-            self.assertEquals(expected, get_issue_state(mock_build_failure))
-            calls = [call(mock_build_failure, k) for k in REMOTE_KEYS]
+            self.assertEquals(expected, attach.get_issue_state(mock_build_failure))
+            calls = [call(mock_build_failure, k) for k in attach.REMOTE_KEYS]
             mock_get_field_value.assert_has_calls(calls)
 
 
@@ -80,7 +85,7 @@ class TestMapIdentifiers(unittest.TestCase):
             'tasks': set(['bestbuy_agg {}'.format(i) for i in range(1, limit)]),
             'tests': set(['NetworkBandwith {}'.format(i) for i in range(1, limit)])
         }
-        actual = map_identifiers(test_identifiers, True)
+        actual = attach.map_identifiers(test_identifiers, True)
         self.assertEquals(expected, actual)
 
     def test_no_fix(self):
@@ -102,7 +107,7 @@ class TestMapIdentifiers(unittest.TestCase):
             'tasks': set(['bestbuy_agg {}'.format(i) for i in range(1, limit)]),
             'tests': set(['NetworkBandwith {}'.format(i) for i in range(1, limit)])
         }
-        actual = map_identifiers(test_identifiers, False)
+        actual = attach.map_identifiers(test_identifiers, False)
         self.assertEquals(expected, actual)
 
     def test_field_name(self):
@@ -124,7 +129,7 @@ class TestMapIdentifiers(unittest.TestCase):
             'tasks': set(['bestbuy_agg {}'.format(i) for i in range(1, limit)]),
             'tests': set(['NetworkBandwith {}'.format(i) for i in range(1, limit)])
         }
-        actual = map_identifiers(test_identifiers, False, revision_field_name='revision')
+        actual = attach.map_identifiers(test_identifiers, False, revision_field_name='revision')
         self.assertEquals(expected, actual)
 
     def test_set(self):
@@ -155,7 +160,7 @@ class TestMapIdentifiers(unittest.TestCase):
             'tests':
                 set(['NetworkBandwith {}'.format(i) for i in range(1, limit)])
         }
-        actual = map_identifiers(test_identifiers, False)
+        actual = attach.map_identifiers(test_identifiers, False)
         self.assertEquals(expected, actual)
 
 
@@ -178,31 +183,27 @@ class TestAttach(unittest.TestCase):
     def test_no_identifiers(self):
         """ Test no test identifiers."""
 
-        with patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True) as mock_command_config_cls, \
-             patch('signal_processing.change_points.attach.get_issue_state') as mock_get_issue_state:
+        with patch(ns('get_issue_state')) as mock_get_issue_state:
 
             mock_build_failure = MagicMock(name='build_failure')
             mock_config = MagicMock(name='config')
-            mock_command_config_cls.return_value = mock_config
             test_identifiers = []
-            attach(mock_build_failure, test_identifiers, True, mock_config)
+            attach.attach(mock_build_failure, test_identifiers, True, mock_config)
             mock_get_issue_state.assert_not_called()
 
     def _test(self, remote_state, mapped_test_identifiers, expected_fields=None, fix=True):
 
-        with patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True) as mock_command_config_cls, \
-             patch('signal_processing.change_points.attach.get_issue_state') as mock_get_issue_state,\
-             patch('signal_processing.change_points.attach.map_identifiers') as mock_map_test_identifiers:
+        with patch(ns('get_issue_state')) as mock_get_issue_state,\
+             patch(ns('map_identifiers')) as mock_map_test_identifiers:
 
             mock_build_failure = MagicMock(name='build_failure')
             mock_config = MagicMock(name='config')
-            mock_command_config_cls.return_value = mock_config
 
             mock_get_issue_state.return_value = remote_state
             mock_map_test_identifiers.return_value = mapped_test_identifiers
 
             test_identifiers = ['test_identifiers']
-            attach(mock_build_failure, test_identifiers, fix, mock_config)
+            attach.attach(mock_build_failure, test_identifiers, fix, mock_config)
             mock_get_issue_state.assert_called_once_with(mock_build_failure)
             mock_map_test_identifiers.assert_called_once_with(
                 test_identifiers, fix, revision_field_name='revision')
@@ -248,32 +249,28 @@ class TestDetach(unittest.TestCase):
     def test_no_identifiers(self):
         """ Test no test identifiers."""
 
-        with patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True) as mock_command_config_cls, \
-             patch('signal_processing.change_points.attach.get_issue_state') as mock_get_issue_state:
+        with patch(ns('get_issue_state')) as mock_get_issue_state:
 
             mock_build_failure = MagicMock(name='build_failure')
             mock_config = MagicMock(
                 name='config')  #, points=mock_points, debug=0, log_file='/tmp/log_file')
-            mock_command_config_cls.return_value = mock_config
             test_identifiers = []
-            detach(mock_build_failure, test_identifiers, True, mock_config)
+            attach.detach(mock_build_failure, test_identifiers, True, mock_config)
             mock_get_issue_state.assert_not_called()
 
     def _test(self, remote_state, mapped_test_identifiers, expected_fields=None, fix=True):
 
-        with patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True) as mock_command_config_cls, \
-             patch('signal_processing.change_points.attach.get_issue_state') as mock_get_issue_state,\
-             patch('signal_processing.change_points.attach.map_identifiers') as mock_map_test_identifiers:
+        with patch(ns('get_issue_state')) as mock_get_issue_state,\
+             patch(ns('map_identifiers')) as mock_map_test_identifiers:
 
             mock_build_failure = MagicMock(name='build_failure')
             mock_config = MagicMock(name='config', dry_run=False)
-            mock_command_config_cls.return_value = mock_config
 
             mock_get_issue_state.return_value = remote_state
             mock_map_test_identifiers.return_value = mapped_test_identifiers
 
             test_identifiers = ['test_identifiers']
-            detach(mock_build_failure, test_identifiers, fix, mock_config)
+            attach.detach(mock_build_failure, test_identifiers, fix, mock_config)
             mock_get_issue_state.assert_called_once_with(mock_build_failure)
             mock_map_test_identifiers.assert_called_once_with(
                 test_identifiers, fix, revision_field_name='revision')

@@ -1,5 +1,5 @@
 """
-Unit tests for signal_processing/commands/change_points/list_change_points.py.
+Unit tests for signal_processing/change_points/list_change_points.py.
 """
 import re
 import unittest
@@ -9,11 +9,18 @@ import jinja2
 import pymongo
 from mock import ANY, MagicMock, patch
 
-import signal_processing.commands.change_points.list_change_points as list_change_points
-import signal_processing.commands.helpers as helpers
+from signal_processing.change_points import list_change_points
+from signal_processing.commands import helpers
 from bin.common.log import setup_logging
 
 setup_logging(False)
+
+NS = 'signal_processing.change_points.list_change_points'
+
+
+def ns(relative_name):  # pylint: disable=invalid-name
+    """Return a full name from a name relative to the tested module's name space."""
+    return NS + '.' + relative_name
 
 
 class TestMapCollection(unittest.TestCase):
@@ -100,25 +107,17 @@ class TestListChangePoints(unittest.TestCase):
         else:
             mock_stream_human_readable.assert_not_called()
 
-    @patch('signal_processing.commands.change_points.list_change_points.stream_human_readable')
-    @patch(
-        'signal_processing.commands.change_points.list_change_points.filter_excludes',
-        return_value='filtered_cursor')
-    @patch(
-        'signal_processing.commands.change_points.list_change_points.create_pipeline',
-        return_value='pipeline')
+    @patch(ns('stream_human_readable'))
+    @patch(ns('filter_excludes'), return_value='filtered_cursor')
+    @patch(ns('create_pipeline'), return_value='pipeline')
     def test_list_change_points(self, mock_create_pipeline, mock_filter,
                                 mock_stream_human_readable):
         """ test list_change_points human readable."""
         self._test_helper(True, mock_create_pipeline, mock_filter, mock_stream_human_readable)
 
-    @patch('signal_processing.commands.change_points.list_change_points.stream_human_readable')
-    @patch(
-        'signal_processing.commands.change_points.list_change_points.filter_excludes',
-        return_value=[])
-    @patch(
-        'signal_processing.commands.change_points.list_change_points.create_pipeline',
-        return_value='pipeline')
+    @patch(ns('stream_human_readable'))
+    @patch(ns('filter_excludes'), return_value=[])
+    @patch(ns('create_pipeline'), return_value='pipeline')
     def test_list_change_points_not(self, mock_create_pipeline, mock_filter,
                                     mock_stream_human_readable):
         """ test list_change_points not human readable."""
@@ -142,12 +141,12 @@ class TestRender(unittest.TestCase):
         mock_template.stream.assert_called_once_with(
             points='points', collection=mock_collection, limit='limit', no_older_than=no_older_than)
 
-    @patch('signal_processing.commands.change_points.list_change_points.HUMAN_READABLE_TEMPLATE')
+    @patch(ns('HUMAN_READABLE_TEMPLATE'))
     def test_render_no_date(self, mock_template):
         """ test list_change_points helper."""
         self._test_render_date(mock_template, True)
 
-    @patch('signal_processing.commands.change_points.list_change_points.HUMAN_READABLE_TEMPLATE')
+    @patch(ns('HUMAN_READABLE_TEMPLATE'))
     def test_render_date(self, mock_template):
         """ test list_change_points helper."""
         self._test_render_date(mock_template, False)

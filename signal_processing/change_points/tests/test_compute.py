@@ -6,9 +6,16 @@ import unittest
 from bin.common.log import setup_logging
 from mock import patch, MagicMock
 
-from signal_processing.commands.change_points.compute import compute_change_points
+from signal_processing.change_points import compute
 
 setup_logging(False)
+
+NS = 'signal_processing.change_points.compute'
+
+
+def ns(relative_name):  # pylint: disable=invalid-name
+    """Return a full name from a name relative to the tested module's name space."""
+    return NS + '.' + relative_name
 
 
 class TestCompute(unittest.TestCase):
@@ -16,7 +23,7 @@ class TestCompute(unittest.TestCase):
     Test suite for compute_change_points method.
     """
 
-    @patch('signal_processing.commands.change_points.compute.PointsModel', autospec=True)
+    @patch(ns('PointsModel'), autospec=True)
     def test_dry_run(self, mock_model):
         """ Test dry run."""
         test_identifier = {
@@ -28,17 +35,12 @@ class TestCompute(unittest.TestCase):
         mock_config = MagicMock(
             name='config', dry_run=True, mongo_repo='mongo_repo', credentials=None)
 
-        compute_change_points(test_identifier, .1, mock_config)
+        compute.compute_change_points(test_identifier, .1, mock_config)
 
         mock_model.assert_not_called()
 
     def _test_compute_with_credentials(self, min_points=None):
-        # Disabling check because pylint and yapf disagree
-        # pylint: disable=bad-continuation
-        with patch(
-                'signal_processing.commands.change_points.compute.PointsModel',
-                autospec=True) as mock_model:
-
+        with patch(ns('PointsModel'), autospec=True) as mock_model:
             test_identifier = {
                 'project': 'project',
                 'variant': 'variant_name',
@@ -56,7 +58,7 @@ class TestCompute(unittest.TestCase):
 
             mock_model_instance = mock_model.return_value
             mock_model_instance.compute_change_points.return_value = (1, [1])
-            compute_change_points(test_identifier, .1, mock_config, min_points=min_points)
+            compute.compute_change_points(test_identifier, .1, mock_config, min_points=min_points)
 
             mock_model.assert_called_once_with(
                 'mongo_uri', min_points, mongo_repo='mongo_repo', credentials=credentials)

@@ -1,5 +1,5 @@
 """
-Unit tests for signal_processing/commands/outliers/config_command.py.
+Unit tests for signal_processing/commands/outliers/config.py.
 """
 # pylint: disable=missing-docstring
 from __future__ import print_function
@@ -10,6 +10,13 @@ from mock import MagicMock, patch
 from click.testing import CliRunner
 
 from signal_processing.outliers_cli import cli
+
+NS = 'signal_processing.commands.outliers.config'
+
+
+def ns(relative_name):  # pylint: disable=invalid-name
+    """Return a full name from a name relative to the tested module's name space."""
+    return NS + '.' + relative_name
 
 
 class ClickTest(unittest.TestCase):
@@ -38,10 +45,10 @@ class TestOutliersParams(ClickTest):
         self.assertEqual(result.exit_code, 0)
         self.assertTrue(result.output.startswith("Usage"))
 
-    @patch('signal_processing.commands.jobs.process_jobs', autospec=True)
-    @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
+    @patch(ns('jobs.process_jobs'), autospec=True)
+    @patch('signal_processing.commands.helpers.CommandConfiguration', autospec=True)
     def test_basic(self, mock_command_config_cls, mock_process_jobs):
-        """ Test compute. """
+        """ Test outliers config. """
         mock_points = MagicMock(name='config')
         mock_points.aggregate.return_value = ()
         expected_config = MagicMock(
@@ -52,10 +59,10 @@ class TestOutliersParams(ClickTest):
         result = self.runner.invoke(cli, ['config', 'sys-perf'])
         self.assertEqual(result.exit_code, 0)
 
-    @patch('signal_processing.change_points.helpers.process_params', autospec=True)
-    @patch('signal_processing.change_points.helpers.CommandConfiguration', autospec=True)
+    @patch(ns('helpers.process_params'), autospec=True)
+    @patch('signal_processing.commands.helpers.CommandConfiguration', autospec=True)
     def test_no_jobs(self, mock_config, mock_process_params):
-        """ Test mark correctly uses parameters. """
+        """ Test outliers config correctly uses parameters. """
         expected_query = {'find': 'me'}
         mock_process_params.return_value = expected_query
         expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')

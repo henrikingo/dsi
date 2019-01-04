@@ -1,12 +1,12 @@
 """
-Unit tests for signal_processing/commands/change_points/update.py.
+Unit tests for signal_processing/change_points/update.py.
 """
 import unittest
 
 from bin.common.log import setup_logging
 from mock import MagicMock, call
 
-from signal_processing.commands.change_points.update import update_change_points
+from signal_processing.change_points import update
 
 setup_logging(False)
 
@@ -35,7 +35,7 @@ class TestUpdateChangePoints(unittest.TestCase):
         mock_config = MagicMock(
             name='config', processed_change_points=mock_processed_change_points, dry_run=True)
 
-        update_change_points('type', query, [], mock_config)
+        update.update_change_points('type', query, [], mock_config)
 
         mock_find.assert_called_with(query)
         mock_update_one.assert_not_called()
@@ -59,7 +59,7 @@ class TestUpdateChangePoints(unittest.TestCase):
         mock_config = MagicMock(
             name='config', processed_change_points=mock_processed_change_points, dry_run=False)
 
-        update_change_points('type', query, [], mock_config)
+        update.update_change_points('type', query, [], mock_config)
 
         mock_find.assert_called_with(query)
         mock_update_one.assert_has_calls([

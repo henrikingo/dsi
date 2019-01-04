@@ -1,5 +1,5 @@
 """
-Functionality to compute / recompute change points.
+Command to compute / recompute change points.
 """
 import multiprocessing
 from datetime import datetime
@@ -8,44 +8,10 @@ import click
 import structlog
 
 from signal_processing import detect_changes
-from signal_processing.commands import helpers as helpers, jobs as jobs
-
-from signal_processing.detect_changes import PointsModel
+from signal_processing.change_points import compute
+from signal_processing.commands import helpers, jobs
 
 LOG = structlog.getLogger(__name__)
-
-
-def compute_change_points(test_identifier, weighting, command_config, min_points=None):
-    """
-    Compute all the change points for the test identifier.
-
-    :param dict test_identifier: The project, variant, task, test identifier.
-    :param float weighting: The weighting on the decay.
-    :param CommandConfig command_config: Common configuration.
-    :param min_points: The minimum number of points to consider when detecting change points.
-    :type min_points: int or None.
-    See 'PointsModel' for more information about the limit parameter.
-    :return: The number of points and the change points detected.
-    :rtype: dict.
-    """
-    LOG.debug(
-        'computing change points', test_identifier=test_identifier, dry_run=command_config.dry_run)
-
-    points_count = None
-    change_points = None
-    if not command_config.dry_run:
-        mongo_repo = command_config.mongo_repo
-        credentials = command_config.credentials
-        model = PointsModel(
-            command_config.mongo_uri, min_points, mongo_repo=mongo_repo, credentials=credentials)
-        points_count, change_points = model.compute_change_points(
-            test_identifier, weighting=weighting)
-        LOG.info(
-            "compute",
-            test_identifier=test_identifier,
-            points_count=points_count,
-            change_points=change_points)
-    return {'points': points_count, 'change_points': change_points}
 
 
 @click.command(name='compute')
@@ -159,7 +125,7 @@ Examples:
     # It is useful for profiling (and testing) to be able to run in a single process
     job_list = [
         jobs.Job(
-            compute_change_points,
+            compute.compute_change_points,
             arguments=(test_identifier, weighting, command_config),
             kwargs=dict(min_points=minimum),
             identifier=test_identifier) for test_identifier in test_identifiers

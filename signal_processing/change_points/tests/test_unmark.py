@@ -1,12 +1,12 @@
 """
-Unit tests for signal_processing/commands/change_points/unmark.py.
+Unit tests for signal_processing/change_points/unmark.py.
 """
 import unittest
 
 from bin.common.log import setup_logging
 from mock import MagicMock, call
 
-from signal_processing.commands.change_points.unmark import unmark_change_points
+from signal_processing.change_points import unmark
 
 setup_logging(False)
 
@@ -35,7 +35,7 @@ class TestUnmarkChangePoints(unittest.TestCase):
         mock_config = MagicMock(
             name='config', processed_change_points=mock_processed_change_points, dry_run=True)
 
-        unmark_change_points(processed_type, query, [], mock_config)
+        unmark.unmark_change_points(processed_type, query, [], mock_config)
         mock_find.assert_called_with(expected)
         mock_remove.assert_not_called()
 
@@ -69,7 +69,7 @@ class TestUnmarkChangePoints(unittest.TestCase):
             name='config', processed_change_points=mock_processed_change_points, dry_run=False)
         processed_type = None
         expected = query
-        unmark_change_points(processed_type, query, [], mock_config)
+        unmark.unmark_change_points(processed_type, query, [], mock_config)
         mock_find.assert_called_with(expected)
         calls = [call({'_id': 1}), call({'_id': 2})]
         mock_remove.assert_has_calls(calls)

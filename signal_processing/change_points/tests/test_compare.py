@@ -4,13 +4,20 @@ Unit tests for signal_processing/change_points/compare.py.
 import unittest
 
 from bin.common.log import setup_logging
-from mock import patch, MagicMock, mock
+from mock import patch, MagicMock
 
 # pylint: disable=invalid-name
-from signal_processing.commands.change_points.compare import compare, best_fit, print_result
+from signal_processing.change_points import compare
 from signal_processing.qhat import DEFAULT_WEIGHTING
 
 setup_logging(False)
+
+NS = 'signal_processing.change_points.compare'
+
+
+def ns(relative_name):  # pylint: disable=invalid-name
+    """Return a full name from a name relative to the tested module's name space."""
+    return NS + '.' + relative_name
 
 
 class TestCompare(unittest.TestCase):
@@ -18,7 +25,7 @@ class TestCompare(unittest.TestCase):
     Test suite for compare.
     """
 
-    @patch('signal_processing.commands.change_points.compare.PointsModel')
+    @patch(ns('PointsModel'))
     def test_attributes(self, mock_model):
         """ Test compare."""
         test_identifier = {
@@ -42,7 +49,7 @@ class TestCompare(unittest.TestCase):
             'create_times': create_times,
             'task_ids': task_ids,
         }
-        compare(test_identifier, 1, mock_config, weighting=DEFAULT_WEIGHTING)
+        compare.compare(test_identifier, 1, mock_config, weighting=DEFAULT_WEIGHTING)
 
 
 class TestBestFit(unittest.TestCase):
@@ -52,7 +59,7 @@ class TestBestFit(unittest.TestCase):
 
     def test_best_fit(self):
         """ Test best fit."""
-        slope, intercept = best_fit([0, 1, 2, 3, 4], [0, 1, 2, 3, 4])
+        slope, intercept = compare.best_fit([0, 1, 2, 3, 4], [0, 1, 2, 3, 4])
         self.assertEqual(intercept, 0.0)
         self.assertEqual(slope, 1.0)
 
@@ -71,5 +78,5 @@ class TestPrintResult(unittest.TestCase):
             'revisions': [0, 1],
         }
         mock_config = MagicMock(name='config', dry_run=True)
-        with mock.patch('signal_processing.commands.change_points.compare.print'):
-            print_result(result, mock_config)
+        with patch(ns('print')):
+            compare.print_result(result, mock_config)

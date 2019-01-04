@@ -2,39 +2,9 @@
 Functionality to unmark change points.
 """
 import click
-import structlog
 
-from signal_processing.commands import helpers as helpers
-
-from signal_processing.commands.helpers import filter_excludes
-
-LOG = structlog.getLogger(__name__)
-
-
-def unmark_change_points(processed_type, query, exclude_patterns, command_config):
-    """
-    Delete marked change points.
-
-    :param str processed_type: 'hidden' for hidden otherwise 'real'.
-    :param dict query: Find change points matching this query.
-    :param list(re) exclude_patterns: Filter any points matching this list of excludes.
-    :param CommandConfig command_config: Common configuration.
-    """
-    LOG.debug('unmark', processed_type=processed_type)
-    collection = command_config.processed_change_points
-
-    keys = query.keys()
-    if processed_type:
-        query['processed_type'] = processed_type
-
-    count = 0
-    for point in filter_excludes(collection.find(query), keys, exclude_patterns):
-        LOG.info("unmark", point=point)
-        count += 1
-        if not command_config.dry_run:
-            result = collection.remove({'_id': point['_id']})
-            LOG.debug('unmark', _id=point['_id'], result=result)
-    LOG.info('unmark', count=count, dry_run=command_config.dry_run)
+from signal_processing.change_points import unmark
+from signal_processing.commands import helpers
 
 
 @click.command(name='unmark')
@@ -116,5 +86,5 @@ Examples:
 """
     query = helpers.process_params(
         project, variant, task, test, revision=revision, thread_level=thread_level)
-    unmark_change_points(None if processed_type == 'any' else processed_type, query,
-                         helpers.process_excludes(exclude_patterns), command_config)
+    unmark.unmark_change_points(None if processed_type == 'any' else processed_type, query,
+                                helpers.process_excludes(exclude_patterns), command_config)

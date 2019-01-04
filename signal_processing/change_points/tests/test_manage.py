@@ -1,21 +1,19 @@
 """
-Unit tests for signal_processing/commands/change_points/manage.py.
+Unit tests for signal_processing/change_points/manage.py.
 """
 import unittest
 from collections import OrderedDict
 
 from mock import ANY, MagicMock, call, patch
 
-from signal_processing.commands.change_points.manage import (
-    _create_common_change_points_validator,
-    create_change_points_with_attachments_view,
-    create_change_points_indexes,
-    create_change_points_validators,
-    create_linked_build_failures_view,
-    create_points_indexes,
-    create_processed_change_points_indexes,
-    create_unprocessed_change_points_view,
-    manage) # yapf: disable
+from signal_processing.change_points import manage
+
+NS = 'signal_processing.change_points.manage'
+
+
+def ns(relative_name):  # pylint: disable=invalid-name
+    """Return a full name from a name relative to the tested module's name space."""
+    return NS + '.' + relative_name
 
 
 class TestManage(unittest.TestCase):
@@ -23,15 +21,13 @@ class TestManage(unittest.TestCase):
     Test Manage group command.
     """
 
-    @patch(
-        'signal_processing.commands.change_points.manage.create_change_points_with_attachments_view'
-    )
-    @patch('signal_processing.commands.change_points.manage.create_change_points_validators')
-    @patch('signal_processing.commands.change_points.manage.create_linked_build_failures_view')
-    @patch('signal_processing.commands.change_points.manage.create_unprocessed_change_points_view')
-    @patch('signal_processing.commands.change_points.manage.create_points_indexes')
-    @patch('signal_processing.commands.change_points.manage.create_change_points_indexes')
-    @patch('signal_processing.commands.change_points.manage.create_processed_change_points_indexes')
+    @patch(ns('create_change_points_with_attachments_view'))
+    @patch(ns('create_change_points_validators'))
+    @patch(ns('create_linked_build_failures_view'))
+    @patch(ns('create_unprocessed_change_points_view'))
+    @patch(ns('create_points_indexes'))
+    @patch(ns('create_change_points_indexes'))
+    @patch(ns('create_processed_change_points_indexes'))
     def test_manage(self, mock_processed_indexes, mock_change_points_indexes, mock_points_indexes,
                     mock_create_change_points_view, mock_create_build_failures_view,
                     mock_change_points_validators, mock_change_points_with_attachments_view):
@@ -39,7 +35,7 @@ class TestManage(unittest.TestCase):
         """ Test that manage calls the view and index functions. """
         mock_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
 
-        manage(mock_config)
+        manage.manage(mock_config)
         mock_points_indexes.assert_called_once()
         mock_change_points_indexes.assert_called_once()
         mock_create_change_points_view.assert_called_once()
@@ -59,7 +55,7 @@ class TestCreatePointsIndex(unittest.TestCase):
         mock_points = MagicMock(name='point')
         mock_config = MagicMock(name='config', points=mock_points)
 
-        create_points_indexes(mock_config)
+        manage.create_points_indexes(mock_config)
         calls = [
             call([('project', 1), ('variant', 1), ('task', 1), ('test', 1), ('order', 1)]),
             call([('project', 1), ('variant', 1), ('task', 1), ('order', 1)])
@@ -78,7 +74,7 @@ class TestCreateChangePointsIndex(unittest.TestCase):
         mock_change_points = MagicMock(name='change_points')
         mock_config = MagicMock(name='config', change_points=mock_change_points)
 
-        create_change_points_indexes(mock_config)
+        manage.create_change_points_indexes(mock_config)
         calls = [
             call([('project', 1), ('variant', 1), ('task', 1), ('test', 1)]),
             call([('create_time', 1)])
@@ -97,7 +93,7 @@ class TestCreateProcessedChangePointsIndex(unittest.TestCase):
         mock_processed_change_points = MagicMock(name='processed_change_points')
         mock_config = MagicMock(name='config', processed_change_points=mock_processed_change_points)
 
-        create_processed_change_points_indexes(mock_config)
+        manage.create_processed_change_points_indexes(mock_config)
         calls = [
             call(
                 [('suspect_revision', 1), ('project', 1), ('variant', 1), ('task', 1), ('test', 1),
@@ -118,7 +114,7 @@ class TestCreateBFView(unittest.TestCase):
         mock_database = MagicMock(name='database')
         mock_config = MagicMock(name='config', database=mock_database)
 
-        create_linked_build_failures_view(mock_config)
+        manage.create_linked_build_failures_view(mock_config)
         view_name = 'linked_build_failures'
         source_collection_name = 'build_failures'
         mock_database.drop_collection.assert_called_once_with(view_name)
@@ -137,7 +133,7 @@ class TestChangePointsWithAttachmentsView(unittest.TestCase):
         mock_database = MagicMock(name='database')
         mock_config = MagicMock(name='config', database=mock_database)
 
-        create_change_points_with_attachments_view(mock_config)
+        manage.create_change_points_with_attachments_view(mock_config)
         view_name = 'change_points_with_attachments'
         source_collection_name = 'change_points'
         mock_database.drop_collection.assert_called_once_with(view_name)
@@ -156,7 +152,7 @@ class TestUnprocessedChangePointView(unittest.TestCase):
         mock_database = MagicMock(name='database')
         mock_config = MagicMock(name='config', database=mock_database)
 
-        create_unprocessed_change_points_view(mock_config)
+        manage.create_unprocessed_change_points_view(mock_config)
         view_name = 'unprocessed_change_points'
         source_collection_name = 'change_points_with_attachments'
         mock_database.drop_collection.assert_called_once_with(view_name)
@@ -177,7 +173,7 @@ class TestCreateChangePointsValidators(unittest.TestCase):
         mock_change_points.name = "database.change_points"
         mock_config = MagicMock(name='command_config', change_points=mock_change_points)
 
-        _create_common_change_points_validator(mock_config, mock_change_points)
+        manage._create_common_change_points_validator(mock_config, mock_change_points)
         mock_database.command.assert_called_once_with(
             'collMod',
             'database.change_points',
@@ -203,7 +199,7 @@ class TestCreateChangePointsValidators(unittest.TestCase):
             }
         }, validator['$jsonSchema']['properties'])
 
-    @patch('signal_processing.commands.change_points.manage._create_common_change_points_validator')
+    @patch(ns('_create_common_change_points_validator'))
     def test_change_points_validator(self, mock_common_validator):
         """ Test change_points validator. """
         mock_database = MagicMock(name='database')
@@ -215,7 +211,7 @@ class TestCreateChangePointsValidators(unittest.TestCase):
             change_points=mock_change_points,
             processed_change_points=mock_processed_change_points)
 
-        create_change_points_validators(mock_config)
+        manage.create_change_points_validators(mock_config)
         mock_common_validator.assert_has_calls([
             call(mock_config, mock_change_points),
             call(mock_config, mock_processed_change_points)

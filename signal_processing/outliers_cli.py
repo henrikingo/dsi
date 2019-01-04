@@ -15,11 +15,11 @@ import structlog
 
 from bin.common import log
 from signal_processing.commands import helpers
-from signal_processing.commands.outliers.config_command import config_command
+from signal_processing.commands.outliers.config import config_command
 
 LOG = structlog.getLogger(__name__)
 
-# Much of the following code (from here to cli.add_command ...) is common to change_points.py.
+# Much of the following code (from here to cli.add_command ...) is common to change_points_cli.py.
 # The following implementation is a preview of what we should / could do in PERF-1638.
 # TODO: PERF-1638.
 DB = 'perf'

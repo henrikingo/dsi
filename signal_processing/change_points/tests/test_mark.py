@@ -1,14 +1,21 @@
 """
-Unit tests for signal_processing/commands/change_points/mark.py.
+Unit tests for signal_processing/change_points/mark.py.
 """
 import unittest
 
 from bin.common.log import setup_logging
 from mock import MagicMock, call
 
-from signal_processing.commands.change_points.mark import mark_change_points
+from signal_processing.change_points import mark
 
 setup_logging(False)
+
+NS = 'signal_processing.change_points.mark'
+
+
+def ns(relative_name):  # pylint: disable=invalid-name
+    """Return a full name from a name relative to the tested module's name space."""
+    return NS + '.' + relative_name
 
 
 class TestMarkChangePoints(unittest.TestCase):
@@ -38,7 +45,7 @@ class TestMarkChangePoints(unittest.TestCase):
             change_points=mock_change_points,
             dry_run=True)
 
-        mark_change_points('type', query, [], mock_config)
+        mark.mark_change_points('type', query, [], mock_config)
 
         mock_find.assert_called_with(query)
         mock_insert.assert_not_called()
@@ -78,7 +85,7 @@ class TestMarkChangePoints(unittest.TestCase):
             change_points=mock_change_points,
             dry_run=False)
 
-        mark_change_points('type', query, [], mock_config)
+        mark.mark_change_points('type', query, [], mock_config)
 
         mock_find.assert_called_with(query)
         mock_update.assert_has_calls([
