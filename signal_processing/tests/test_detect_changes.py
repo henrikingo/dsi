@@ -830,8 +830,7 @@ class TestMain(unittest.TestCase):
     @patch('signal_processing.detect_changes.log.setup_logging')
     def test_exception(self, mock_logging, mock_config_dict, mock_detect_changes):
         """
-        Test main silently handles errors.
-        TODO: remove on completion of PERF-1519 / TIG-1065.
+        Test main handles errors.
 
         """
         mock_detect_changes.return_value = (jobs.Job(time.sleep), )

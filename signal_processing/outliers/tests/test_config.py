@@ -1,17 +1,24 @@
 """
-Unit tests for signal_processing/change_points.py.
+Unit tests for signal_processing/outliers/config.py.
 """
 # pylint: disable=missing-docstring
 from __future__ import print_function
 import unittest
 
 from mock import MagicMock, patch, mock_open
+import numpy as np
 
 from signal_processing.outliers.config import normalize_series, \
     standardize_series, mask_outliers, plot_confirmed_outliers, plot_without_confirmed_outliers, \
     plot_without_any_outliers, plot_test_scores, plot_probability, \
     plot_histogram, plot_gesd, TestGesd, config_gesd
-import numpy as np
+
+NS = 'signal_processing.outliers.config'
+
+
+def ns(relative_name):  # pylint: disable=invalid-name
+    """Return a full name from a name relative to the tested module's name space."""
+    return NS + '.' + relative_name
 
 
 class TestNormalizeSeries(unittest.TestCase):
@@ -196,8 +203,7 @@ class TestPlotProbability(unittest.TestCase):
         series = np.zeros(10, dtype=float)
         mock_ax = MagicMock(name='ax')
         mock_plt = MagicMock(name='matplotlib')
-        with patch('signal_processing.outliers.config.probplot')\
-                        as mock_probplt:
+        with patch(ns('probplot')) as mock_probplt:
             mock_plt.subplot.return_value = mock_ax
             pos = plot_probability(
                 mock_plt, 1, 1, 1, series, title='title', axis=None if new_ax else mock_ax)
@@ -263,11 +269,11 @@ class TestPlotGesd(unittest.TestCase):
         full_series = {'create_times': [str(i) + "" * 4 for i in range(end + 1)]}
 
         # pylint: disable=line-too-long
-        with patch('signal_processing.outliers.config.get_matplotlib'),\
-             patch('signal_processing.outliers.config.plot_confirmed_outliers'),\
-            patch('signal_processing.outliers.config.plot_without_confirmed_outliers'),\
-            patch('signal_processing.outliers.config.plot_probability'),\
-            patch('signal_processing.outliers.config.plot_histogram'):
+        with patch(ns('get_matplotlib')), \
+             patch(ns('plot_confirmed_outliers')), \
+             patch(ns('plot_without_confirmed_outliers')), \
+             patch(ns('plot_probability')), \
+             patch(ns('plot_histogram')):
 
             plot_gesd(
                 test_identifier,
@@ -310,21 +316,20 @@ class TestConfigGesd(unittest.TestCase):
             change_point=mock_change_point,
             plot_critical=False)
 
-        with patch('signal_processing.outliers.config.get_change_point_range')\
-                as mock_get_change_point_range,\
-             patch('signal_processing.outliers.config.gesd') as mock_gesd,\
-             patch('signal_processing.outliers.config.plot_gesd')\
-                     as mock_plot_gesd,\
-             patch('signal_processing.outliers.config.PointsModel'),\
-             patch('signal_processing.outliers.config.helpers.save_plot')\
-                     as mock_save_plot,\
-             patch('signal_processing.outliers.config.mkdir_p'),\
-            patch('signal_processing.outliers.config.open', mock_open()):
-            mock_get_change_point_range.return_value = [0, 1, [1, 2]]
-            mock_gesd.return_value = [1, range(10), range(10), range(10), range(10)]
+        with patch(ns('get_change_point_range')) as mock_get_change_point_range, \
+             patch(ns('run_outlier_detection')) as mock_detect, \
+             patch(ns('print_outliers')) as mock_print, \
+             patch(ns('plot_gesd')) as mock_plot_gesd, \
+             patch(ns('PointsModel')), \
+             patch(ns('helpers.save_plot')) as mock_save_plot, \
+             patch(ns('mkdir_p')), \
+             patch(ns('open'), mock_open()):
+            mock_get_change_point_range.return_value = [1, 2, [1, 2]]
 
             config_gesd(parameters, mock_command_config)
 
+        mock_detect.assert_called_once()
+        mock_print.assert_called_once()
         if not visualize and not save:
             mock_plot_gesd.assert_not_called()
         else:

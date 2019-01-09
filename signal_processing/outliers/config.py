@@ -5,23 +5,21 @@ from __future__ import print_function
 
 import multiprocessing
 import os
-import sys
 from collections import namedtuple
 from datetime import datetime
 
 import click
-import jinja2
 import numpy as np
 import pymongo
 import structlog
 from nose.tools import nottest
-from scipy.stats import probplot, describe
+from scipy.stats import probplot
 
 from bin.common.utils import mkdir_p
 from signal_processing.commands import helpers, jobs
 from signal_processing.commands.helpers import PORTRAIT_FIGSIZE
 from signal_processing.detect_changes import PointsModel
-from signal_processing.outliers.gesd import gesd
+from signal_processing.outliers.detection import run_outlier_detection, print_outliers
 
 from matplotlib.ticker import MaxNLocator
 
@@ -31,38 +29,6 @@ TestGesd = namedtuple('TestGesd', [
     'test_identifier', 'max_outliers', 'significance_level', 'mad', 'standardize', 'use_subseries',
     'visualize', 'save', 'change_point', 'plot_critical'
 ])
-
-HUMAN_READABLE_TEMPLATE_STR = '''
-[ {{ now() }} ] Running: `{{ command_line }}`
-## {{ identifier }}
-## max_outliers={{ max_outliers }}, 
-## start={{ start }}, 
-## end={{ end }},
-## p={{ p }} 
-## StartTime {{ full_series.create_times[start][:-4] }} 
-## EndTime {{ full_series.create_times[end][:-4] }} 
-## stats=(nobs={{ stats.nobs }},
-##        minmax={{ stats.minmax }},
-##        mean={{ stats.mean }},
-##        std={{ std }},
-##        variance={{ stats.variance }},
-##        skewness={{ stats.skewness }},
-##        kurtosis={{ stats.kurtosis }})
-
-|  pos  | Index |   Z-Score  |  %change   | critical |   match  | accepted | revision |       Time       | {{ "%102s" | format(" ",) }} |
-| ----- | ----- | ---------- | ---------- | -------- | -------- | -------- | -------- | ---------------- | {{ '-' * 102 }} |
-{% for outlier in outliers -%}
-| {{ "% -5s" | format(loop.index,) }} | {{ "% -5s" | format(outlier.index,) }} | {{ "% -9.3f" | format(outlier.z_score,) }} {{'M' if mad}} | {{ "% -9.3f" | format( 100 * ( full_series.series[outlier.index] - mean) / mean,) }}  | {{ "%-7.3f" | format(outlier.critical,) }}  |    {{ '(/)' if abs(outlier.z_score) > outlier.critical else '(x)' }}   |  {{ "%-5s" | format(loop.index <= count,) }}   | {{ full_series.revisions[outlier.index][0:8] }} | {{ full_series.create_times[outlier.index][:-4] }} | <{{outlier.version_id}}> |
-{% endfor %}
-'''
-
-ENVIRONMENT = jinja2.Environment()
-ENVIRONMENT.globals.update({
-    'command_line': " ".join([value if value else "''" for value in sys.argv]),
-    'now': datetime.utcnow,
-    'abs': abs,
-})
-HUMAN_READABLE_TEMPLATE = ENVIRONMENT.from_string(HUMAN_READABLE_TEMPLATE_STR)
 
 
 def get_matplotlib():
@@ -413,62 +379,6 @@ def get_change_point_range(test_identifier, change_points, series, index=-1):
     return start, end, sub_series
 
 
-# TODO: TIG-1288: Determine the max outliers based on the input data.
-def check_max_outliers(outliers, test_identifier, series):
-    """ convert max outliers to a sane value for this series. """
-    # pylint: disable=too-many-branches
-    if outliers == 0:
-        if test_identifier['test'] == 'fio_streaming_bandwidth_test_write_iops':
-            if len(series) <= 10:
-                num_outliers = 2
-            elif 10 < len(series) <= 15:
-                num_outliers = 3
-            elif 15 < len(series) <= 25:
-                num_outliers = 5
-            elif 25 < len(series) <= 40:
-                num_outliers = 7
-            elif 40 < len(series) <= 100:
-                num_outliers = int(len(series) / 2)
-            elif 100 < len(series) <= 300:
-                num_outliers = int(len(series) / 2)
-            else:
-                num_outliers = int(len(series) / 2)
-        elif test_identifier['test'] == 'fio_streaming_bandwidth_test_read_iops':
-            if len(series) <= 10:
-                num_outliers = 2
-            elif 10 < len(series) <= 15:
-                num_outliers = 3
-            elif 15 < len(series) <= 25:
-                num_outliers = 5 * 2
-            elif 25 < len(series) <= 40:
-                num_outliers = 7 * 2
-            elif 40 < len(series) <= 100:
-                # num_outliers = 10 * 2
-                num_outliers = int(len(series) / 2)
-            elif 100 < len(series) <= 300:
-                num_outliers = int(len(series) / 2)
-            else:
-                num_outliers = int(len(series) / 2)
-        else:
-            if len(series) <= 10:
-                num_outliers = 2
-            elif 10 < len(series) <= 15:
-                num_outliers = 3
-            elif 15 < len(series) <= 25:
-                num_outliers = 5
-            elif 25 < len(series) <= 40:
-                num_outliers = 7
-            elif 40 < len(series) <= 100:
-                num_outliers = 10
-            elif 100 < len(series) <= 300:
-                num_outliers = 25
-            else:
-                num_outliers = 30
-    else:
-        num_outliers = outliers
-    return num_outliers
-
-
 def config_gesd(command, command_config):
     """ Test Gesd Outlier Detection with different parameters. """
     # pylint: disable=too-many-locals
@@ -487,69 +397,29 @@ def config_gesd(command, command_config):
         full_series,
         index=command.change_point)
 
-    identifier = "{project} {variant} {task} {test} {thread_level}".format(
-        **command.test_identifier)
+    detection_result = run_outlier_detection(full_series, start, end, series,
+                                             command.test_identifier, command.max_outliers,
+                                             command.mad, command.significance_level)
 
-    if len(series) == 1:
-        print("\n{identifier} {start} {end}".format(identifier=identifier, start=start, end=end))
+    if len(detection_result.series) == 1:
+        print("\n{identifier} {start} {end}".format(
+            identifier=detection_result.identifier,
+            start=detection_result.start,
+            end=detection_result.end))
         return
 
-    LOG.debug('investigating range', start=start, end=end, subseries=series)
-    significance = command.significance_level
-    num_outliers = check_max_outliers(command.max_outliers, command.test_identifier, series)
+    lines = print_outliers(detection_result)
 
-    count, suspicious_indexes, test_statistics, critical_values, all_z_scores = gesd(
-        series, num_outliers, significance_level=significance, mad=command.mad)
-
-    LOG.debug("adjusting indexes", suspicious_indexes=suspicious_indexes, start=start)
-    adjusted_indexes = np.array(suspicious_indexes, dtype=int) + start
-    LOG.debug(
-        "gesd outliers",
-        series=full_series,
-        start=start,
-        count=count,
-        suspicious_indexes=suspicious_indexes,
-        test_statistics=test_statistics,
-        critical_values=critical_values)
     pathname = os.path.join(command_config.out, command.test_identifier['project'],
                             command.test_identifier['variant'], command.test_identifier['task'],
-                            "{:03f}".format(significance))
+                            "{:03f}".format(command.significance_level))
 
     filename_no_ext = '{test}-{thread_level}-{outliers}-{mad}-{p}'.format(
         test=command.test_identifier['test'],
-        outliers=num_outliers,
+        outliers=detection_result.num_outliers,
         thread_level=command.test_identifier['thread_level'],
         mad='on' if command.mad else 'off',
-        p=significance)
-
-    outliers = [
-        dict(
-            index=outlier,
-            mad=command.mad,
-            match=abs(test_statistics[i]) > critical_values[i],
-            accepted='   (/)' if i < count else '   (x)',
-            z_score=round(test_statistics[i], 3),
-            critical=round(critical_values[i], 3),
-            version_id=full_series['task_ids'][outlier])
-        for i, outlier in enumerate(adjusted_indexes)
-    ]
-    dump = HUMAN_READABLE_TEMPLATE.stream(
-        outliers=outliers,
-        count=count,
-        max_outliers=num_outliers,
-        full_series=full_series,
-        start=start,
-        end=end - 1,
-        length=len(series),
-        p=significance,
-        identifier=identifier,
-        mean=np.mean(series),
-        std=np.std(series),
-        stats=describe(series))
-
-    lines = list(dump)
-    for line in lines:
-        print(line, end='')
+        p=command.significance_level)
 
     if command.save:
         filename = '{filename}.{file_format}'.format(filename=filename_no_ext, file_format='txt')
@@ -559,25 +429,25 @@ def config_gesd(command, command_config):
 
     if command.visualize or command.save:
         if command.use_subseries:
-            data = series
-            indexes = suspicious_indexes
+            data = detection_result.series
+            indexes = detection_result.gesd_result.suspicious_indexes
         else:
-            data = full_series['series']
-            indexes = adjusted_indexes
+            data = detection_result.full_series['series']
+            indexes = detection_result.adjusted_indexes
 
         figure = plot_gesd(
-            identifier,
+            detection_result.identifier,
             data,
-            indexes[:count],
-            indexes[count:],
-            test_statistics,
-            critical_values,
-            all_z_scores,
+            indexes[:detection_result.gesd_result.count],
+            indexes[detection_result.gesd_result.count:],
+            detection_result.gesd_result.test_statistics,
+            detection_result.gesd_result.critical_values,
+            detection_result.gesd_result.all_z_scores,
             command.mad,
-            full_series,
-            start,
-            end - 1,
-            significance=significance,
+            detection_result.full_series,
+            detection_result.start,
+            detection_result.end - 1,
+            significance=command.significance_level,
             standardize=command.standardize,
             plot_critical=command.plot_critical)
         if figure is not None:

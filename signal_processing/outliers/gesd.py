@@ -3,12 +3,27 @@
 Outlier Detection using  Generalized ESD Test for Outliers
 see 'GESD<https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h3.htm>'
 """
+import collections
+
 import structlog
 from scipy.stats import t
 import numpy as np
 import numpy.ma as ma
 
 LOG = structlog.getLogger(__name__)
+
+GesdResult = collections.namedtuple(
+    'GesdResult',
+    ['count', 'suspicious_indexes', 'test_statistics', 'critical_values', 'all_z_scores'])
+"""
+A named tuple for the results of the GESD algorithm.
+
+:type count: int,
+:type suspicious_indexes: list(int)
+:type test_statistics: list(float)
+:type critical_values: list(float)
+:type all_z_scores: list(float, float)
+"""
 
 
 def gesd(data, max_outliers=10, significance_level=0.05, mad=False):
@@ -19,11 +34,14 @@ def gesd(data, max_outliers=10, significance_level=0.05, mad=False):
     more outliers in a univariate data set that follows an approximately normal distribution.
 
     Usage:
-        count, suspicious_indexes, test_statistics, critical_values = gesd(
+        gesd_result = gesd(
             series,
             max_outliers,
             significance_level=significance,
             mad=True)
+
+        count = gesd_result.count
+        suspicious_indexes = gesd_result.suspicious_indexes
 
         print("confirmed outliers indexes {}".format(suspicious_indexes[:count])
         print("potential outliers indexes {}".format(suspicious_indexes[count:])
@@ -42,8 +60,8 @@ def gesd(data, max_outliers=10, significance_level=0.05, mad=False):
     :param int max_outliers: Test for up to max outliers.
     :param float significance_level: Test for up to max outliers.
     :param bool mad: Use Median Absolute Deviation.
-    :return: The number of outliers, suspicious indexes, test_statistics, critical_values.
-    :rtype: tuple(int, list(int), list(float), list(float))
+    :return: The number of outliers, suspicious indexes, test_statistics, critical_values, z_values.
+    :rtype: GesdResult
     see 'here<https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h3.htm>'
     """
     # pylint: disable=too-many-locals
@@ -125,7 +143,7 @@ def gesd(data, max_outliers=10, significance_level=0.05, mad=False):
                     number_outliers=number_outliers,
                     outliers=potential_outlier_indices[0:number_outliers])
 
-                return number_outliers, potential_outlier_indices, test_statistics,\
-                    critical_values, all_z_scores[potential_outlier_indices]
-    return 0, potential_outlier_indices, test_statistics, critical_values,\
-        all_z_scores[potential_outlier_indices] if potential_outlier_indices else []
+                return GesdResult(number_outliers, potential_outlier_indices, test_statistics,
+                                  critical_values, all_z_scores[potential_outlier_indices])
+    return GesdResult(0, potential_outlier_indices, test_statistics, critical_values,
+                      all_z_scores[potential_outlier_indices] if potential_outlier_indices else [])

@@ -150,6 +150,7 @@ setup(
             'delete-task-cluster = aws_tools.entry_points:delete_cluster_for_task',
             'delete-placement-groups = aws_tools.entry_points:delete_placement_groups',
             'detect-changes = signal_processing.detect_changes:main',
+            'detect-outliers = signal_processing.detect_outliers:main',
             'etl-jira-mongo = signal_processing.etl_jira_mongo:main',
             'change-points = signal_processing.change_points_cli:cli',
             'outliers = signal_processing.outliers_cli:cli',
