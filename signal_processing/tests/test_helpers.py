@@ -12,6 +12,7 @@ from mock import patch
 
 import signal_processing.commands.helpers as helpers
 import signal_processing.commands.jobs as jobs
+from signal_processing.keyring.credentials import Credentials
 
 
 class TestIsMaxThreadLevel(unittest.TestCase):
@@ -229,7 +230,7 @@ class TestCommandConfiguration(unittest.TestCase):
     def setUp(self):
         self.mongo_uri = 'mongodb+srv://fake@dummy-server.mongodb.net/perf'
 
-    @patch('signal_processing.commands.helpers.MongoClient', autospec=True)
+    @patch('signal_processing.commands.helpers.new_mongo_client', autospec=True)
     @patch('signal_processing.commands.helpers.parse_uri', autospec=True)
     @patch('signal_processing.commands.helpers.get_git_credentials', autospec=True)
     def test_attributes(self, mock_get_git_credentials, mock_parse_uri, mock_mongo_client):
@@ -240,6 +241,7 @@ class TestCommandConfiguration(unittest.TestCase):
 
         mock_parse_uri.return_value = {'database': 'database name'}
         mock_get_git_credentials.return_value = 'credentials'
+
         subject = helpers.CommandConfiguration(
             debug='debug',
             log_file='/tmp/log_file',
@@ -278,6 +280,51 @@ class TestCommandConfiguration(unittest.TestCase):
         self.assertEqual(mock_collection, subject.processed_change_points)
         self.assertEqual(mock_collection, subject.unprocessed_change_points)
         self.assertEqual(mock_collection, subject.build_failures)
+
+    @patch('signal_processing.commands.helpers.new_mongo_client', autospec=True)
+    def test_mongo_username_password_can_be_specified(self, new_mongo_client_mock):
+        subject = helpers.CommandConfiguration(
+            debug='debug',
+            log_file='/tmp/log_file',
+            out='out',
+            file_format='file_format',
+            mongo_uri='mongodb://mongo_uri',
+            queryable='queryable',
+            dry_run='dry_run',
+            compact='compact',
+            style=('style', ),
+            token_file='token_file',
+            mongo_repo='mongo_repo',
+            mongo_username='mongo_user',
+            mongo_password='mongo_password')
+
+        self.assertEquals(new_mongo_client_mock.return_value, subject.mongo_client)
+
+        new_mongo_client_mock.assert_called_with(
+            'mongodb://mongo_uri',
+            auth_type=None,
+            credentials=Credentials('mongo_user', 'mongo_password'))
+
+    @patch('signal_processing.commands.helpers.new_mongo_client', autospec=True)
+    def test_mongo_keyring_can_be_specified(self, new_mongo_client_mock):
+        subject = helpers.CommandConfiguration(
+            debug='debug',
+            log_file='/tmp/log_file',
+            out='out',
+            file_format='file_format',
+            mongo_uri='mongodb://mongo_uri',
+            queryable='queryable',
+            dry_run='dry_run',
+            compact='compact',
+            style=('style', ),
+            token_file='token_file',
+            mongo_repo='mongo_repo',
+            auth_mode='keyring')
+
+        self.assertEquals(new_mongo_client_mock.return_value, subject.mongo_client)
+
+        new_mongo_client_mock.assert_called_with(
+            'mongodb://mongo_uri', auth_type='keyring', credentials=None)
 
 
 class TestFlagsToValue(unittest.TestCase):

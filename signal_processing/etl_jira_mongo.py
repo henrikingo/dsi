@@ -25,6 +25,7 @@ import jira
 import pymongo
 
 from bin.common import log
+from signal_processing.keyring.credentials import Credentials
 
 DB = 'perf'
 COLLECTION = 'build_failures'
@@ -163,7 +164,7 @@ def new_jira_client(jira_user=None, jira_password=None):
     # future.
     LOG.debug("About to connect to jira.")
     jira_client.issue('PERF-1234')
-    return jira_client, JiraCredentials(jira_user, jira_password)
+    return jira_client, Credentials(jira_user, jira_password)
 
 
 class EtlJira(object):

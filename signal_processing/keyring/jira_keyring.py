@@ -22,8 +22,9 @@ from keyring.errors import PasswordSetError
 
 from jira.exceptions import JIRAError
 
-from signal_processing.etl_jira_mongo import JiraCredentials, JIRA_URL, new_jira_client
+from signal_processing.etl_jira_mongo import JIRA_URL, new_jira_client
 from signal_processing.keyring.keyring_impl import Keyring
+from signal_processing.keyring.credentials import Credentials
 import structlog
 
 LOG = structlog.getLogger(__name__)
@@ -49,10 +50,10 @@ def jira_keyring(jira_user=None, jira_password=None, use_keyring=True):
     :yield: Jira client instance.
     """
     keyring_impl = Keyring(KEYRING_SERVICE_NAME)
-    initial_credentials = JiraCredentials(jira_user, jira_password)
+    initial_credentials = Credentials(jira_user, jira_password)
     try:
         if use_keyring and jira_user is None and jira_password is None:
-            initial_credentials = JiraCredentials.decode(keyring_impl.read(KEYRING_PROPERTY_NAME))
+            initial_credentials = Credentials.decode(keyring_impl.read(KEYRING_PROPERTY_NAME))
         LOG.debug('jira_keyring_helper: input', jira_credentials=initial_credentials)
         jira, used_credentials = new_jira_client(initial_credentials)
         yield jira

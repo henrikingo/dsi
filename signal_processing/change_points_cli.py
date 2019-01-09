@@ -20,6 +20,7 @@ import signal_processing.commands.helpers as helpers
 import signal_processing.commands.change_points.attach as attach
 import signal_processing.commands.change_points.compare as compare
 import signal_processing.commands.change_points.compute as compute
+import signal_processing.commands.change_points.init as init
 import signal_processing.commands.change_points.list_build_failures as list_build_failures
 import signal_processing.commands.change_points.list_change_points as list_change_points
 import signal_processing.commands.change_points.list_failures as list_failures
@@ -30,7 +31,6 @@ import signal_processing.commands.change_points.update as update
 import signal_processing.commands.change_points.visualize as visualize
 from bin.common import log
 
-DB = 'perf'
 PROCESSED_CHANGE_POINTS = 'processed_change_points'
 CHANGE_POINTS = 'change_points'
 POINTS = 'points'
@@ -68,11 +68,21 @@ CONTEXT_SETTINGS = dict(
 @click.option(
     '-f', '--format', 'file_format', default='png', help='The format to save any files in.')
 @click.option(
-    '-u',
     '--mongo-uri',
-    default='mongodb://localhost:27017/' + DB,
+    'mongo_uri',
+    default=helpers.DEFAULT_MONGO_URI,
     help='MongoDB connection string. The database name comes from here too.',
-    envvar="DSI_MONGO_URI")
+    envvar='DSI_MONGO_URI')
+@click.option(
+    '--auth-mode',
+    'auth_mode',
+    default=None,
+    type=click.Choice(['keyring', 'prompt']),
+    help='How mongodb authentication information is discovered.')
+@click.option(
+    '--mongo-username', 'mongo_username', default=None, help='Username to connect to MongoDB.')
+@click.option(
+    '--mongo-password', 'mongo_password', default=None, help='Password to connect to MongoDB.')
 @click.option('-q', '--queryable', default=False, help='Print ids as queries')
 @click.option('-n', '--dry-run', is_flag=True, default=False, help='Do not actually run anything.')
 @click.option(
@@ -82,8 +92,8 @@ CONTEXT_SETTINGS = dict(
 @click.option('--token-file', default=None, envvar='DSI_TOKEN_FILE')
 @click.option('--mongo-repo', 'mongo_repo', default='~/src', envvar='DSI_MONGO_REPO')
 @click.pass_context
-def cli(context, debug, logfile, out, file_format, mongo_uri, queryable, dry_run, compact, style,
-        token_file, mongo_repo):
+def cli(context, debug, logfile, out, file_format, mongo_uri, auth_mode, mongo_username,
+        mongo_password, queryable, dry_run, compact, style, token_file, mongo_repo):
     """
 For a list of styles see 'style sheets<https://matplotlib.org/users/style_sheets.html>'.
 
@@ -159,6 +169,9 @@ The configuration values are applied in the following order:
         log_file=logfile,
         file_format=file_format,
         mongo_uri=mongo_uri,
+        auth_mode=auth_mode,
+        mongo_username=mongo_username,
+        mongo_password=mongo_password,
         queryable=queryable,
         dry_run=dry_run,
         compact=compact,
@@ -193,3 +206,4 @@ cli.add_command(list_build_failures.list_build_failures_command)
 cli.add_command(list_failures.list_failures_command)
 cli.add_command(attach.attach_command)
 cli.add_command(attach.detach_command)
+cli.add_command(init.init_command)

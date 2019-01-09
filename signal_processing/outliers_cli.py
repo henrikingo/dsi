@@ -22,7 +22,6 @@ LOG = structlog.getLogger(__name__)
 # Much of the following code (from here to cli.add_command ...) is common to change_points_cli.py.
 # The following implementation is a preview of what we should / could do in PERF-1638.
 # TODO: PERF-1638.
-DB = 'perf'
 PROCESSED_CHANGE_POINTS = 'processed_change_points'
 CHANGE_POINTS = 'change_points'
 POINTS = 'points'
@@ -60,9 +59,17 @@ CONTEXT_SETTINGS = dict(
 @click.option(
     '-u',
     '--mongo-uri',
-    default='mongodb://localhost:27017/' + DB,
+    default=helpers.DEFAULT_MONGO_URI,
     help='MongoDB connection string. The database name comes from here too.',
-    envvar="DSI_MONGO_URI")
+    envvar='DSI_MONGO_URI')
+@click.option(
+    '--auth-mode',
+    'auth_mode',
+    default=None,
+    type=click.Choice(['keyring', 'prompt']),
+    help='How mongodb authentication information is discovered.')
+@click.option('--mongo-username', 'mongo_username', help='Username to connect to MongoDB.')
+@click.option('--mongo-password', 'mongo_password', help='Password to connect to MongoDB.')
 @click.option('-q', '--queryable', default=False, help='Print ids as queries')
 @click.option('-n', '--dry-run', is_flag=True, default=False, help='Do not actually run anything.')
 @click.option(
@@ -72,8 +79,8 @@ CONTEXT_SETTINGS = dict(
 @click.option('--token-file', default=None, envvar='DSI_TOKEN_FILE')
 @click.option('--mongo-repo', 'mongo_repo', default='~/src', envvar='DSI_MONGO_REPO')
 @click.pass_context
-def cli(context, debug, logfile, out, file_format, mongo_uri, queryable, dry_run, compact, style,
-        token_file, mongo_repo):
+def cli(context, debug, logfile, out, file_format, mongo_uri, auth_mode, mongo_username,
+        mongo_password, queryable, dry_run, compact, style, token_file, mongo_repo):
     """ Outliers CLI. """
     # pylint: disable=missing-docstring, too-many-arguments, too-many-locals
     config = helpers.CommandConfiguration(
@@ -82,6 +89,9 @@ def cli(context, debug, logfile, out, file_format, mongo_uri, queryable, dry_run
         log_file=logfile,
         file_format=file_format,
         mongo_uri=mongo_uri,
+        auth_mode=auth_mode,
+        mongo_username=mongo_username,
+        mongo_password=mongo_password,
         queryable=queryable,
         dry_run=dry_run,
         compact=compact,

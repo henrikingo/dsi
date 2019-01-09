@@ -9,7 +9,7 @@ from click.testing import CliRunner
 from mock import MagicMock, patch
 
 from signal_processing import etl_jira_mongo
-from signal_processing.etl_jira_mongo import EtlJira, JiraCredentials, main
+from signal_processing.etl_jira_mongo import EtlJira, main
 
 
 class MockJiraIssue(object):
@@ -40,105 +40,6 @@ class MockJiraClass(object):
         :return: A list with 2 MockJiraIssue instances
         """
         return [MockJiraIssue("MOCK-1"), MockJiraIssue("MOCK-2")]
-
-
-class TestJiraCredentials(unittest.TestCase):
-    """
-    Test the JiraCredentials class.
-    """
-
-    def test_redact_password_none(self):
-        """ Test service name."""
-        self.assertIsNone(JiraCredentials._redact_password(None))
-
-    def test_redact_password_short(self):
-        """ Test short password."""
-        self.assertEqual('********', JiraCredentials._redact_password(''))
-
-    def test_redact_password_long(self):
-        """ Test long password."""
-        self.assertEqual('********', JiraCredentials._redact_password(' ' * 20))
-
-    def test_str_empty(self):
-        """ Test service name."""
-        credentials = JiraCredentials(None, None)
-        self.assertEqual('(None, None)', str(credentials))
-
-    def test_str_short(self):
-        """ Test short password."""
-        credentials = JiraCredentials('user', '')
-        self.assertEqual('(user, ********)', str(credentials))
-
-    def test_str_long(self):
-        """ Test long password."""
-        credentials = JiraCredentials('user', ' ' * 20)
-        self.assertEqual('(user, ********)', str(credentials))
-
-    def test_eq_self(self):
-        """ Test no change."""
-        credentials = JiraCredentials(None, None)
-        self.assertTrue(credentials, credentials)
-
-    def test_eq_same(self):
-        """ Test no change."""
-        credentials1 = JiraCredentials(None, None)
-        credentials2 = JiraCredentials(None, None)
-        self.assertEqual(credentials1, credentials2)
-        self.assertEqual(credentials2, credentials1)
-
-    def test_eq_username_change(self):
-        """ Test no change."""
-        credentials1 = JiraCredentials('user', None)
-        credentials2 = JiraCredentials(None, None)
-        self.assertNotEqual(credentials1, credentials2)
-        self.assertNotEqual(credentials2, credentials1)
-
-    def test_eq_password_change(self):
-        """ Test no change."""
-        credentials1 = JiraCredentials('user', 'password')
-        credentials2 = JiraCredentials('user', None)
-        self.assertNotEqual(credentials1, credentials2)
-        self.assertNotEqual(credentials2, credentials1)
-
-    def test_encode_none(self):
-        """ Test no change."""
-        encoded = JiraCredentials(None, None).encode()
-        self.assertEquals('[None, None]', encoded)
-
-    def test_encode_username(self):
-        """ Test username."""
-        encoded = JiraCredentials('username', None).encode()
-        self.assertEquals("['username', None]", encoded)
-
-    def test_encode_password(self):
-        """ Test password."""
-        encoded = JiraCredentials(None, 'password').encode()
-        self.assertEquals("[None, 'password']", encoded)
-
-    def test_encode_both(self):
-        """ Test password."""
-        encoded = JiraCredentials('username', 'password').encode()
-        self.assertEquals("['username', 'password']", encoded)
-
-    def test_decode_none(self):
-        """ Test no change."""
-        decoded = JiraCredentials.decode('[None, None]')
-        self.assertEquals(JiraCredentials(None, None), decoded)
-
-    def test_decode_username(self):
-        """ Test username."""
-        decoded = JiraCredentials.decode("['username', None]")
-        self.assertEquals(JiraCredentials('username', None), decoded)
-
-    def test_decode_password(self):
-        """ Test password."""
-        decoded = JiraCredentials.decode("[None, 'password']")
-        self.assertEquals(JiraCredentials(None, 'password'), decoded)
-
-    def test_decoded_both(self):
-        """ Test password."""
-        decoded = JiraCredentials.decode("['username', 'password']")
-        self.assertEquals(JiraCredentials('username', 'password'), decoded)
 
 
 class TestEtlJira(unittest.TestCase):

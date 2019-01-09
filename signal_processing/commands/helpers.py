@@ -16,11 +16,12 @@ import yaml
 
 from analysis.evergreen.helpers import get_git_credentials
 from bson.json_util import RELAXED_JSON_OPTIONS, dumps
-from pymongo import MongoClient
 from pymongo.uri_parser import parse_uri
 
 from bin.common.utils import mkdir_p
 from signal_processing.etl_helpers import redact_url, extract_tests
+from signal_processing.keyring.mongo_keyring import new_mongo_client
+from signal_processing.keyring.credentials import Credentials
 import signal_processing.commands.jobs
 
 PORTRAIT_FIGSIZE = (8.27, 11.69)
@@ -66,6 +67,8 @@ UNPROCESSED_CHANGE_POINTS = 'unprocessed_change_points'
 CHANGE_POINTS = 'change_points'
 POINTS = 'points'
 BUILD_FAILURES = 'build_failures'
+
+DEFAULT_MONGO_URI = 'mongodb+srv://performancedata-g6tsc.mongodb.net/perf'
 
 
 def read_default_config(app_name, app_conf_location):
@@ -135,7 +138,10 @@ class CommandConfiguration(object):
                  change_points=CHANGE_POINTS,
                  processed_change_points=PROCESSED_CHANGE_POINTS,
                  unprocessed_change_points=UNPROCESSED_CHANGE_POINTS,
-                 build_failures=BUILD_FAILURES):
+                 build_failures=BUILD_FAILURES,
+                 auth_mode=None,
+                 mongo_username=None,
+                 mongo_password=None):
         # pylint: disable=too-many-arguments
         """
         Create the command configuration.
@@ -157,6 +163,9 @@ class CommandConfiguration(object):
         :param str processed_change_points: The processed change points collection name.
         :param str unprocessed_change_points: The unprocessed change points collection name.
         :param str build_failures: The build failures collection name.
+        :param str auth_mode: How mongo db credentials are obtained.
+        :param str mongo_username: The mongo db username.
+        :param str mongo_password: The mongo db password.
         """
         if log_file is not None:
             log_file = os.path.expanduser(log_file)
@@ -166,6 +175,9 @@ class CommandConfiguration(object):
             'out': out,
             'file_format': file_format,
             'mongo_uri': mongo_uri,
+            'auth_mode': auth_mode,
+            'mongodb_username': mongo_username,
+            'mongodb_password': mongo_password,
             'queryable': queryable,
             'dry_run': dry_run,
             'compact': compact,
@@ -214,11 +226,13 @@ class CommandConfiguration(object):
         :return: MongoClient.
         """
         if self._mongo_client is None:
-            uri = parse_uri(self.mongo_uri)
-            if 'password' in uri and uri['password'] is not None:
-                uri['password'] = '*********'
+            uri = redact_url(self.mongo_uri)
             LOG.info('Create Mongo Client', uri=uri)
-            self._mongo_client = MongoClient(self.mongo_uri)
+            credentials = None
+            if self._mongo_username is not None or self._mongo_password is not None:
+                credentials = Credentials(self._mongo_username, self._mongo_password)
+            self._mongo_client = new_mongo_client(
+                self.mongo_uri, auth_type=self.auth_mode, credentials=credentials)
         return self._mongo_client
 
     # pylint: disable=attribute-defined-outside-init
@@ -313,6 +327,9 @@ class CommandConfiguration(object):
             'out': self.out,
             'file_format': self.file_format,
             'mongo_uri': self.mongo_uri,
+            'auth_mode': self.auth_mode,
+            'mongodb_username': self._mongo_username,
+            'mongodb_password': self._mongo_password,
             'queryable': self.queryable,
             'dry_run': self.dry_run,
             'compact': self.compact,
@@ -339,10 +356,13 @@ class CommandConfiguration(object):
         self.out = os.path.expandvars(os.path.expanduser(state['out']))
         self.file_format = state['file_format']
         self.mongo_uri = state['mongo_uri']
+        self.auth_mode = state['auth_mode']
         self.queryable = state['queryable']
         self.dry_run = state['dry_run']
         self.compact = state['compact']
 
+        self._mongo_username = state['mongodb_username']
+        self._mongo_password = state['mongodb_password']
         self._mongo_client = None
 
         self._database = None
@@ -378,6 +398,8 @@ class CommandConfiguration(object):
         copy = deepcopy(self.__getstate__())
         if 'mongo_uri' in copy:
             copy['mongo_uri'] = redact_url(copy['mongo_uri'])
+        if 'mongo_password' in copy:
+            copy['mongo_password'] = '*' * 8
         return copy
 
     def __str__(self):
