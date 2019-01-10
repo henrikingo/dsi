@@ -16,104 +16,24 @@ genny:
         # https://aws.amazon.com/premiumsupport/knowledge-center/ec2-enable-epel/
         sudo yum install -y https://s3-us-west-2.amazonaws.com/dsi-donot-remove/genny/epel-release-latest-7.noarch.rpm  || true > ./yum-epel-repo.log 2>&1
         sudo yum-config-manager --enable epel > ./yum-epel.log 2>&1
-        sudo yum install -y gcc gcc-c++ cmake3 openssl-devel python36 python3-pip golang > ./yum-install.log 2>&1
-  # Install Genny System Dependencies
-  #
-  # If this ever becomes too annoying to do repeatedly,
-  # the resulting 'install' directory can probably be
-  # safely manually tar'ed up after doing the various compile steps
-  # and re-used on later invocations. As of 2018-10-08, this only
-  # saved 7 minutes of compile time and didn't seem to be worth
-  # the added complexity.
+        sudo yum install -y gcc gcc-c++ openssl-devel python36 python3-pip > ./yum-install.log 2>&1
+  # Get Genny's distribution
   - on_workload_client:
       exec: |
         set -eou pipefail
-        # go where we have more breathing room
-        ln -s /media/ephemeral0/ ~/install || true
-        cd ~/install
-        sudo rm -rf ./* # clear out any existing attempted installs
 
-        # <Boost>
-        wget --quiet https://s3-us-west-2.amazonaws.com/dsi-donot-remove/genny/boost_1_68_0.tar.gz
-        tar xzf boost_1_68_0.tar.gz
-        pushd boost_1_68_0 >/dev/null
-          ./bootstrap.sh > ./configure.log 2>&1
-          ./b2 stage -j "$(nproc)" --build-type=complete --layout=versioned variant=release threading=multi -d0 > ./stage.log 2>&1
-          sudo ./b2 install -j "$(nproc)" -d0 > ./install.log  2>&1
-        popd >/dev/null
-        # </Boost>
+        cd genny
 
-        # <YamlCPP>
-        # Commit 774f25800e6f19f4b927023c85d1389af322da5e is from master as of 2018-10-08
-        git clone https://github.com/jbeder/yaml-cpp.git
-        pushd yaml-cpp
-          git checkout 774f25800e6f19f4b927023c85d1389af322da5e
-          mkdir build
-          pushd build >/dev/null
-            cmake3 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON .. > ./configure.log 2>&1
-            make -j "$(nproc)" 2>&1 | tee ./compile.log | grep '%'
-            sudo make -j "$(nproc)" install > ./install.log 2>&1
-          popd >/dev/null
-        popd >/dev/null
-        # </YamlCPP>
+        # Grab the genny tarball
+        genny_revision="$(git rev-parse HEAD)"
+        genny_url="https://s3.amazonaws.com/mciuploads/genny/genny/genny-amazon2-$genny_revision.tgz"
+        curl -Lo genny.tgz "$genny_url"
+        tar -zxvf genny.tgz
 
-        # <Mongo C Driver>
-        wget --quiet https://github.com/mongodb/mongo-c-driver/releases/download/1.13.0/mongo-c-driver-1.13.0.tar.gz
-        tar xzf mongo-c-driver-1.13.0.tar.gz
-        pushd mongo-c-driver-1.13.0 >/dev/null
-          mkdir cmake-build
-          pushd cmake-build >/dev/null
-            cmake3 -DCMAKE_BUILD_TYPE=Release -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF .. > ./configure.log 2>&1
-            make -j "$(nproc)" 2>&1 | tee ./compile.log | grep '%'
-            sudo make -j "$(nproc)" install > ./install.log 2>&1
-          popd >/dev/null
-        popd >/dev/null
-        # </Mongo C Driver>
+        # Make sure the genny executable is reasonable
+        ldd ./bin/genny
+        ./bin/genny --list-actors
 
-        # <Mongo CXX Driver>
-        git clone https://github.com/mongodb/mongo-cxx-driver.git --branch releases/stable --depth 1
-        pushd mongo-cxx-driver/build >/dev/null
-          cmake3 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local .. > ./configure.log 2>&1
-          # need to `sudo make` first line because it installs MNMLSTC core
-          sudo make -j "$(nproc)" 2>&1 | tee ./compile.log | grep '%'
-          sudo make -j "$(nproc)" install > ./install.log 2>&1
-        popd >/dev/null
-        # </Mongo CXX Driver>
-  # Build gRPC. This script should be synchronized with genny's own Evergreen compilation script:
-  # https://github.com/10gen/genny/blob/master/evergreen.yml as of 11/2018.
-  - on_workload_client:
-      exec: |
-        set -eou pipefail
-        cd genny/build
-        rm -rf * # Remove grpc and any cmake config copied up from runner
-        git clone --recurse-submodules https://github.com/grpc/grpc.git
-        pushd grpc >/dev/null
-          git checkout b79462f186cc22550bc8d53a00ae751f50d194f5
-
-          # Work around https://github.com/grpc/grpc/issues/16675 by checking out a newer commit.
-          pushd third_party/boringssl >/dev/null
-            git pull origin master > /dev/null
-            git checkout 9edbc7ff9f56dff801a49f5ecb15ee06718b995c
-          popd >/dev/null
-
-          mkdir cmake-build
-          pushd cmake-build >/dev/null
-            cmake3 ..
-            make -j "$(nproc)"
-          popd >/dev/null
-        popd >/dev/null
-  # Build Genny's C++ Component
-  - on_workload_client:
-      exec: |
-        set -eou pipefail
-        cd genny/build
-
-        cwd=$(pwd)
-        export LIBRARY_PATH="$cwd/grpc/cmake-build/:$cwd/grpc/cmake-build/third_party/protobuf"
-        export CPLUS_INCLUDE_PATH="$cwd/grpc/include:$cwd/grpc/third_party/protobuf/src"
-
-        cmake3 -DCMAKE_CXX_FLAGS="-lpthread" -DCMAKE_BUILD_TYPE=Release ..
-        make -j "$(nproc)"
   # Build Genny's Python Component
   - on_workload_client:
       exec: |
