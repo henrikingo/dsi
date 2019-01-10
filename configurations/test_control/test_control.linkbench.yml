@@ -17,8 +17,12 @@ run:
       - load-phase-stats.csv
     config_filename: mongo_linkbench_config.properties
     # see PR#31 for some context on these numbers
+    # the url is set to a connection to mongos if in a sharded cluster, otherwise it is set
+    # to a connection to a replica set. Until the java driver supports pinning mongos (JAVA-3069),
+    # set to a connection to a specific mongos. Once this is done, this can be changed to
+    # `${mongodb_setup.meta.mongodb_url}&replicaSet=${mongodb_setup.topology.0.id}`.
     workload_config: &linkbench_config |
-      url=${mongodb_setup.meta.mongodb_url}&replicaSet=${mongodb_setup.topology.0.id}
+      url=mongodb://${mongodb_setup.meta.hostname}/test?retryWrites=true${test_control.connection_options.${mongodb_setup.meta.is_replset}}
       data_file = config/Distribution.dat
       startid1 = 1
       # 10e6 ids is approx 7.5gb of data
@@ -160,25 +164,12 @@ pre_task:
 
           db.nodetable.createIndex({id: 1})
 
-  - on_workload_client:
-      exec_mongo_shell:
-        connection_string: "${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}"
-        # Shard if sharding enabled
-        script: |
-          if ("${mongodb_setup.meta.is_sharded}" == "True") {
-            assert.commandWorked(sh.enableSharding("linkdb0"));
-            assert.commandWorked(
-              sh.shardCollection("linkdb0.linktable", {_id: "hashed"}));
-            assert.commandWorked(
-              sh.shardCollection("linkdb0.counttable", {_id: "hashed"}));
-            assert.commandWorked(
-              sh.shardCollection("linkdb0.nodetable", {_id: "hashed"}));
-            db.printShardingStatus();
-          } else {
-            print ("Non-sharded cluster");
-          }
-
 between_tests:
   - restart_mongodb:
       clean_logs: true
       clean_db_dir: false
+
+# This is just a lookup table. Each test may reference some leaf node here from a test parameter.
+connection_options:
+  "True": "&replicaSet=${mongodb_setup.topology.0.id}"
+  "False": ""

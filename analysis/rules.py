@@ -49,8 +49,11 @@ BAD_MESSAGES = [
     ]
 ]
 # Whitelisting message "Not starting an election": BF-4019
+# Whitelisting message "older than oldest timestamp" until SERVER-38871 is done (TODO: TIG-1357)
 MESSAGE_WHITELIST = [
-    msg.lower() for msg in ["ttl query execution for index", "not starting an election"]
+    msg.lower()
+    for msg in
+    ["ttl query execution for index", "not starting an election", "older than oldest timestamp"]
 ]
 
 # Resource sanity check rules
