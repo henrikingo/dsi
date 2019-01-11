@@ -209,16 +209,16 @@ class TestTerraformConfiguration(unittest.TestCase):
     def test_generate_expire_on_tag(self):
         """Test expire-on tag generator."""
 
-        def fake_datetime_now():
+        def fake_datetime_utcnow():
             return datetime.datetime(2018, 10, 13, 14, 19, 51)
 
-        tag = terraform_config.generate_expire_on_tag(_datetime_now=fake_datetime_now)
+        tag = terraform_config.generate_expire_on_tag(_datetime_utcnow=fake_datetime_utcnow)
         self.assertEqual(tag, "2018-10-13 16:19:51")
 
-        tag = terraform_config.generate_expire_on_tag(1, _datetime_now=fake_datetime_now)
+        tag = terraform_config.generate_expire_on_tag(1, _datetime_utcnow=fake_datetime_utcnow)
         self.assertEqual(tag, "2018-10-13 15:19:51")
 
-        tag = terraform_config.generate_expire_on_tag(100, _datetime_now=fake_datetime_now)
+        tag = terraform_config.generate_expire_on_tag(100, _datetime_utcnow=fake_datetime_utcnow)
         self.assertEqual(tag, "2018-10-17 18:19:51")
 
     def test_is_placement_group_needed(self):
