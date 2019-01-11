@@ -57,4 +57,3 @@ meta:
   is_replset: true
   secondaries: 1  # Only 1 secondary at start
   mongodb_setup: replica-2node
-  mongodb_url: ${mongodb_setup.authentication.${bootstrap.authentication}.mongodb_url}

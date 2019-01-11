@@ -46,7 +46,6 @@ meta:
   primaries: 2
   secondaries: 1
   mongodb_setup: shard-lite
-  mongodb_url: ${mongodb_setup.authentication.${bootstrap.authentication}.mongodb_url}
 
 # Hosts to run correctness tests on.
 validate:

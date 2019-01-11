@@ -23,7 +23,6 @@ meta:
   is_sharded: false
   is_replset: true
   mongodb_setup: single-replica-snapshot-window
-  mongodb_url: ${mongodb_setup.authentication.${bootstrap.authentication}.mongodb_url}
 
 # Hosts to run correctness tests on.
 validate:

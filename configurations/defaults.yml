@@ -108,8 +108,15 @@ mongodb_setup:
     sigterm_ms: 60000
 
   meta:
+    # A single host, as in "host:port". Use the primary or first mongos
+    hostname: ${mongodb_setup.topology.0.mongos.0.private_ip}
     # The list of hosts that can be used in a mongodb connection string
     hosts: ${mongodb_setup.topology.0.private_ip}:27017
+    # Most clients will use this to connect to the cluster
+    mongodb_url: ${mongodb_setup.authentication.${bootstrap.authentication}.mongodb_url}
+    # We need to provide a separate variable for the shell, because the shell on 3.4 doesn't
+    # support connecting to multiple mongoses and therefore can't use mongodb_url.
+    mongodb_shell_url: ${mongodb_setup.authentication.${bootstrap.authentication}.mongodb_shell_url}
     is_sharded: false
     is_replset: false
     secondary: None
@@ -171,6 +178,7 @@ mongodb_setup:
       password: password
       # Temporarily disable SSL.
       mongodb_url: mongodb://${mongodb_setup.authentication.enabled.username}:${mongodb_setup.authentication.enabled.password}@${mongodb_setup.meta.hosts}/admin?ssl=false
+      mongodb_shell_url: mongodb://${mongodb_setup.authentication.enabled.username}:${mongodb_setup.authentication.enabled.password}@${mongodb_setup.meta.hostname}:27017/admin?ssl=false
       # Get necessary SSL keys.
       pre_cluster_start:
         - on_all_hosts:
@@ -198,6 +206,7 @@ mongodb_setup:
         port: 27017
         bindIp: 0.0.0.0
       mongodb_url: mongodb://${mongodb_setup.meta.hosts}/admin?ssl=false
+      mongodb_shell_url: mongodb://${mongodb_setup.meta.hostname}:27017/admin?ssl=false
       # This is just a placeholder for pre_cluster_start when we are not using SSL.
       pre_cluster_start:
         - on_workload_client:

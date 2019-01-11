@@ -123,6 +123,6 @@ between_tests:
 pre_task:
   - on_workload_client:
       exec_mongo_shell:
-        connection_string: ${mongodb_setup.meta.mongodb_url}
+        connection_string: ${mongodb_setup.meta.mongodb_shell_url}
         # Shard the YCSB cluster if sharding is enabled
         script: ${test_control.ycsb_sharding_script}

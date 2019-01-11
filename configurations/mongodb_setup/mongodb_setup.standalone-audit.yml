@@ -22,7 +22,6 @@ meta:
   is_sharded: false
   is_replset: false
   mongodb_setup: standalone-audit
-  mongodb_url: ${mongodb_setup.authentication.${bootstrap.authentication}.mongodb_url}
 
 # Hosts to run correctness checks on.
 validate:

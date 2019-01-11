@@ -66,4 +66,3 @@ meta:
   primaries: 3
   secondaries: 2
   mongodb_setup: shard-longevity
-  mongodb_url: ${mongodb_setup.authentication.${bootstrap.authentication}.mongodb_url}
