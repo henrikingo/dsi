@@ -12,7 +12,8 @@ import pymongo
 import structlog
 
 import etl_helpers
-import qhat
+from signal_processing.change_points import qhat
+from signal_processing.change_points import weights
 import signal_processing.commands.helpers as helpers
 import signal_processing.commands.jobs as jobs
 from analysis.evergreen import evergreen_client
@@ -398,7 +399,7 @@ class PointsModel(object):
         :return: The number of points for the test, the number of change points found by the QHat
         algorithm, and the time taken for this method to run.
         :rtype: tuple(int, int, float).
-        See 'QHat.DEFAULT_WEIGHTING' for the recommended default value.
+        See 'weights.DEFAULT_WEIGHTING' for the recommended default value.
         """
         # pylint: disable=too-many-locals
         order = self.get_closest_order(test_identifier)
@@ -536,7 +537,7 @@ class DetectChangesDriver(object):
         :type min_points: int or None.
         See 'PointsModel' for more information about the min_points parameter.
         :param float weighting: The weighting value.
-        See 'QHat.DEFAULT_WEIGHTING' for the recommended default value.
+        See 'weights.DEFAULT_WEIGHTING' for the recommended default value.
         :param str mongo_repo: The mongo repo directory.
         :param dict credentials: The github credentials.
         """
@@ -619,7 +620,7 @@ def detect_changes(task_id,
         perf_json,
         mongo_uri,
         min_points=min_points,
-        weighting=qhat.DEFAULT_WEIGHTING,
+        weighting=weights.DEFAULT_WEIGHTING,
         mongo_repo=mongo_repo,
         pool_size=pool_size,
         progressbar=progressbar)

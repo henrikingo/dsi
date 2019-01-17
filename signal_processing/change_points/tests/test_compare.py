@@ -8,7 +8,7 @@ from mock import patch, MagicMock
 
 # pylint: disable=invalid-name
 from signal_processing.change_points import compare
-from signal_processing.qhat import DEFAULT_WEIGHTING
+from signal_processing.change_points.weights import DEFAULT_WEIGHTING
 
 setup_logging(False)
 

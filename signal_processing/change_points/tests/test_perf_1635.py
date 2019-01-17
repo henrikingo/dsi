@@ -6,7 +6,7 @@ import unittest
 
 import os
 import numpy as np
-from signal_processing.qhat import QHat
+from signal_processing.change_points.qhat import QHat
 
 from bin.common.log import setup_logging
 from test_lib.fixture_files import FixtureFiles

@@ -545,8 +545,8 @@ class TestComputeChangePoints(unittest.TestCase):
 
         with patch('pymongo.InsertOne') as mock_insert, \
                 patch('pymongo.DeleteMany') as mock_delete, \
-                patch('signal_processing.qhat.get_githashes_in_range_repo'), \
-                patch('signal_processing.qhat.QHat', autospec=True) as mock_qhat_class, \
+                patch('signal_processing.change_points.qhat.get_githashes_in_range_repo'), \
+                patch('signal_processing.change_points.qhat.QHat', autospec=True) as mock_qhat_class, \
                 patch(
                     'signal_processing.detect_changes.pymongo.MongoClient') as mock_mongo_client:
 

@@ -16,7 +16,7 @@ import structlog
 from scipy import stats
 
 import signal_processing.profiling.compare_algorithms as compare_algorithms
-import signal_processing.qhat
+import signal_processing.change_points.qhat
 import signal_processing.native.qhat
 
 LOG = structlog.getLogger(__name__)
@@ -134,7 +134,7 @@ def runif(execute,
     :parameter np.array(float) tsd: Time Series data.
     :parameter object q_algorithm: The implementation.
     :parameter bool windowed: Run as windowed.
-    :parameter str implementation: Indicate whether the implementation type. 
+    :parameter str implementation: Indicate whether the implementation type.
     Can be 'P' for pure python, 'C' for cython or 'N' for native.
     """
     if execute:
@@ -258,7 +258,8 @@ def cli(qhat, original, optimized_qhat, numpy_qhat, numpy_optimized_qhat, window
                 print("no cython classes, see './README.md#Cython Variant'.")
                 return
 
-        runif(qhat, results, warmup, iterations, series, signal_processing.qhat.QHat({}))
+        runif(qhat, results, warmup, iterations, series,
+              signal_processing.change_points.qhat.QHat({}))
 
         runif(
             windowed_qhat and use_python,

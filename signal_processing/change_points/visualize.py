@@ -12,7 +12,8 @@ import structlog
 
 from signal_processing.commands.helpers import LANDSCAPE_FIGSIZE
 from signal_processing.detect_changes import PointsModel
-from signal_processing.qhat import QHat, DEFAULT_WEIGHTING
+from signal_processing.change_points.qhat import QHat
+from signal_processing.change_points.weights import DEFAULT_WEIGHTING
 
 LOG = structlog.getLogger(__name__)
 

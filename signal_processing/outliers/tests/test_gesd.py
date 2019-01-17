@@ -8,7 +8,7 @@ import unittest
 import numpy as np
 
 from signal_processing.outliers.gesd import gesd
-from signal_processing.qhat import deterministic_random
+from signal_processing.change_points.qhat import deterministic_random
 
 
 class TestGesdInputs(unittest.TestCase):

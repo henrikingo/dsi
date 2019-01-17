@@ -11,7 +11,7 @@ import structlog
 from bin.common.utils import mkdir_p
 from signal_processing.commands.helpers import PORTRAIT_FIGSIZE
 from signal_processing.detect_changes import PointsModel
-from signal_processing.qhat import QHat
+from signal_processing.change_points.qhat import QHat
 
 LOG = structlog.getLogger(__name__)
 
@@ -197,7 +197,7 @@ class ChangePointImpl(object):
         :param str mongo_repo: The github repo.
         :param dict credentials: The github credentials.
 
-        See 'QHat.DEFAULT_WEIGHTING' for the recommended default value.
+        See 'weights.DEFAULT_WEIGHTING' for the recommended default value.
         """
         self.data = data
         self.sig_lvl = sig_lvl
@@ -498,7 +498,7 @@ def compare(test_identifier,
     :param int padding: Pad out the series with an extra padding amount of the last result.
     :param float weighting: The value to use to generate the weightings.
     :return: list(calculations).
-    See 'QHat.DEFAULT_WEIGHTING' for the recommended default value.
+    See 'weights.DEFAULT_WEIGHTING' for the recommended default value.
     """
     credentials = command_config.credentials
     mongo_repo = command_config.mongo_repo

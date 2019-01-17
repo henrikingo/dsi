@@ -15,7 +15,7 @@ from __future__ import print_function
 import numpy as np
 import structlog
 
-import signal_processing.qhat
+import signal_processing.change_points.qhat
 import signal_processing.native.qhat
 
 LOG = structlog.getLogger(__name__)
@@ -48,7 +48,7 @@ class OriginalQHat(object):
             self.average_diff = 1
             return qhat_values
 
-        diffs = signal_processing.qhat.QHat.calculate_diffs(series)
+        diffs = signal_processing.change_points.qhat.QHat.calculate_diffs(series)
 
         # Normalization constants
         self.average_value = np.average(series)
@@ -61,7 +61,8 @@ class OriginalQHat(object):
             term3 = sum(
                 diffs[j][k] for j in range(n, self.window) for k in range(j + 1, self.window))
 
-            qhat_values[n] = signal_processing.qhat.QHat.calculate_q(term1, term2, term3, m, n)
+            qhat_values[n] = signal_processing.change_points.qhat.QHat.calculate_q(
+                term1, term2, term3, m, n)
 
         return qhat_values
 
@@ -91,7 +92,7 @@ class NumpyQHat(object):
             self.average_value = 1
             self.average_diff = 1
             return qhat_values
-        diffs = signal_processing.qhat.QHat.calculate_diffs(series)
+        diffs = signal_processing.change_points.qhat.QHat.calculate_diffs(series)
 
         self.average_value = np.average(series)
         self.average_diff = np.average(diffs)
@@ -103,7 +104,8 @@ class NumpyQHat(object):
             term2 = np.sum(np.triu(diffs[:n, :n], 0))
             term3 = np.sum(np.triu(diffs[n:, n + 1:], 0))
 
-            qhat_values[n] = signal_processing.qhat.QHat.calculate_q(term1, term2, term3, m, n)
+            qhat_values[n] = signal_processing.change_points.qhat.QHat.calculate_q(
+                term1, term2, term3, m, n)
         return qhat_values
 
 
@@ -132,7 +134,7 @@ class OptimizedQHat(object):
             self.average_value = 1
             self.average_diff = 1
             return qhat_values
-        diffs = signal_processing.qhat.QHat.calculate_diffs(series)
+        diffs = signal_processing.change_points.qhat.QHat.calculate_diffs(series)
 
         self.average_value = np.average(series)
         self.average_diff = np.average(diffs)
@@ -144,7 +146,8 @@ class OptimizedQHat(object):
         term2 = sum(diffs[i][k] for i in range(n) for k in range(i + 1, n))
         term3 = sum(diffs[j][k] for j in range(n, self.window) for k in range(j + 1, self.window))
 
-        qhat_values[n] = signal_processing.qhat.QHat.calculate_q(term1, term2, term3, m, n)
+        qhat_values[n] = signal_processing.change_points.qhat.QHat.calculate_q(
+            term1, term2, term3, m, n)
 
         for n in range(3, (self.window - 2)):
             m = self.window - n
@@ -156,7 +159,8 @@ class OptimizedQHat(object):
             term2 = term2 + row_delta
             term3 = term3 - column_delta
 
-            qhat_values[n] = signal_processing.qhat.QHat.calculate_q(term1, term2, term3, m, n)
+            qhat_values[n] = signal_processing.change_points.qhat.QHat.calculate_q(
+                term1, term2, term3, m, n)
 
         return qhat_values
 
@@ -186,7 +190,7 @@ class NumpyOptimizedQHat(object):
             self.average_value = 1
             self.average_diff = 1
             return qhat_values
-        diffs = signal_processing.qhat.QHat.calculate_diffs(series)
+        diffs = signal_processing.change_points.qhat.QHat.calculate_diffs(series)
 
         self.average_value = np.average(series)
         self.average_diff = np.average(diffs)
@@ -198,7 +202,8 @@ class NumpyOptimizedQHat(object):
         term2 = np.sum(np.triu(diffs[:n, :n], 0))
         term3 = np.sum(np.triu(diffs[n:, n + 1:], 0))
 
-        qhat_values[n] = signal_processing.qhat.QHat.calculate_q(term1, term2, term3, m, n)
+        qhat_values[n] = signal_processing.change_points.qhat.QHat.calculate_q(
+            term1, term2, term3, m, n)
 
         for n in range(3, (self.window - 2)):
             m = self.window - n
@@ -209,7 +214,8 @@ class NumpyOptimizedQHat(object):
             term2 = term2 + row_delta
             term3 = term3 - column_delta
 
-            qhat_values[n] = signal_processing.qhat.QHat.calculate_q(term1, term2, term3, m, n)
+            qhat_values[n] = signal_processing.change_points.qhat.QHat.calculate_q(
+                term1, term2, term3, m, n)
 
         return qhat_values
 
@@ -243,7 +249,7 @@ class WindowedQHat(object):
             self.average_diff = 1
             return qhat_values
 
-        diffs = signal_processing.qhat.QHat.calculate_diffs(series)
+        diffs = signal_processing.change_points.qhat.QHat.calculate_diffs(series)
 
         # Normalization constants
         self.average_value = np.average(series)
@@ -261,7 +267,8 @@ class WindowedQHat(object):
                         for j in range(n, min(self.window, n + window + 1))
                         for k in range((j + 1), min(self.window, n + window + 1)))
 
-            qhat_values[n] = signal_processing.qhat.QHat.calculate_q(term1, term2, term3, m, n)
+            qhat_values[n] = signal_processing.change_points.qhat.QHat.calculate_q(
+                term1, term2, term3, m, n)
         return qhat_values
 
 
@@ -294,7 +301,7 @@ class NumpyWindowedQHat(object):
             self.average_value = 1
             self.average_diff = 1
             return qhat_values
-        diffs = signal_processing.qhat.QHat.calculate_diffs(series)
+        diffs = signal_processing.change_points.qhat.QHat.calculate_diffs(series)
 
         self.average_value = np.average(series)
         self.average_diff = np.average(diffs)
@@ -312,7 +319,8 @@ class NumpyWindowedQHat(object):
 
             term3 = np.sum(np.triu(diffs[n:window + n + 1, n:window + n + 1], 1))
 
-            qhat_values[n] = signal_processing.qhat.QHat.calculate_q(term1, term2, term3, m, n)
+            qhat_values[n] = signal_processing.change_points.qhat.QHat.calculate_q(
+                term1, term2, term3, m, n)
         return qhat_values
 
 

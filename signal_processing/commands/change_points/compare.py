@@ -7,8 +7,11 @@ from collections import OrderedDict
 import click
 import structlog
 
-from signal_processing import detect_changes, qhat
-from signal_processing.change_points import compare
+import signal_processing.change_points.qhat
+import signal_processing.change_points.range_finder
+import signal_processing.change_points.weights
+from signal_processing import detect_changes
+from signal_processing.change_points import compare, qhat
 from signal_processing.commands import helpers
 
 LOG = structlog.getLogger(__name__)
@@ -32,7 +35,8 @@ LOG = structlog.getLogger(__name__)
     '--no-older-than',
     default=30,
     help='exclude tasks that have no points newer than this number of days.')
-@click.option('--weighting', 'weighting', default=qhat.DEFAULT_WEIGHTING)
+@click.option(
+    '--weighting', 'weighting', default=signal_processing.change_points.weights.DEFAULT_WEIGHTING)
 @click.argument('project', required=False)
 @click.argument('variant', required=False)
 @click.argument('task', required=False)
