@@ -69,6 +69,29 @@ class TestSimple(unittest.TestCase):
         self.assertEquals([], all_z_scores)
 
 
+class TestTIG1372(unittest.TestCase):
+    """ Test Simple data. """
+
+    def setUp(self):
+        self.series = [-1] * 203 + [-2] + [-1] * 75
+
+    def test_standard(self):
+        """Test gesd on almost flat data."""
+        number_outliers, suspicious_indexes, _, _, _ = gesd(self.series)
+        self.assertEquals(1, number_outliers)
+        self.assertEquals([203], suspicious_indexes)
+
+    def test_mad(self):
+        """Test gesd on almost flat data."""
+        number_outliers, suspicious_indexes, test_statistics, critical_values, all_z_scores =\
+            gesd(self.series, mad=True)
+        self.assertEquals(0, number_outliers)
+        self.assertEquals([], suspicious_indexes)
+        self.assertEquals([], test_statistics)
+        self.assertEquals([], critical_values)
+        self.assertEquals([], all_z_scores)
+
+
 FIRST_OUTLIER = 700
 SECOND_OUTLIER = 100
 THIRD_OUTLIER = 5

@@ -136,7 +136,7 @@ def gesd(data, max_outliers=10, significance_level=0.05, mad=False):
 
     LOG.debug("values calculated", max_z_scores=test_statistics, lambda_values=critical_values)
     if potential_outlier_indices:
-        for number_outliers in range(max_outliers, 0, -1):
+        for number_outliers in range(len(potential_outlier_indices), 0, -1):
             if np.abs(test_statistics[number_outliers - 1]) > critical_values[number_outliers - 1]:
                 LOG.debug(
                     "outliers discovered",

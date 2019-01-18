@@ -175,13 +175,17 @@ def print_outliers(detection_result):
     mad = detection_result.mad
     significance_level = detection_result.significance_level
 
-    outliers = [
-        _make_outlier_dict(mad, detection_result, i)
-        for i in range(len(detection_result.adjusted_indexes))
-    ]
+    if detection_result.adjusted_indexes is not None:
+        outliers = [
+            _make_outlier_dict(mad, detection_result, i)
+            for i in range(len(detection_result.adjusted_indexes))
+        ]
+    else:
+        outliers = []
+
     dump = HUMAN_READABLE_TEMPLATE.stream(
         outliers=outliers,
-        count=gesd_result.count,
+        count=gesd_result.count if gesd_result else 0,
         max_outliers=num_outliers,
         full_series=full_series,
         start=start,

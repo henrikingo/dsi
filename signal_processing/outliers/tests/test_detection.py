@@ -101,3 +101,35 @@ class TestPrintOutliers(unittest.TestCase):
 
         lines = print_outliers(detection_result)
         self.assertIsNotNone(lines)
+
+
+class TestTIG1372(unittest.TestCase):
+    """ Test the print_outliers function. """
+
+    def test_does_not_crash(self):
+
+        detection_result = OutlierDetectionResult(
+            'sys-perf linux-shard-lite change_streams_throughput 15_5c_insert 20', {
+                'task': 'change_streams_throughput',
+                'series': [4924.25984525373],
+                'thread_level': '20',
+                'variant': 'linux-shard-lite',
+                'project': 'sys-perf',
+                'task_ids': ['sys_perfbad5afd612e8fc917fb035d8333cffd7d68a37cc_18_05_23_22_26_42'],
+                'version_ids': ['sys_perf_bad5afd612e8fc917fb035d8333cffd7d68a37cc'],
+                'create_times': ['2018-05-23T22:26:42Z'],
+                'test': '15_5c_insert',
+                'revisions': ['bad5afd612e8fc917fb035d8333cffd7d68a37cc'],
+                'orders': [12365],
+                'size': 1
+            },
+            start=0,
+            end=1,
+            series=[4924.25984525373],
+            mad=False,
+            significance_level=0.05,
+            num_outliers=0,
+            gesd_result=None,
+            adjusted_indexes=None)
+        lines = print_outliers(detection_result)
+        self.assertIsNotNone(lines)
