@@ -6967,6 +6967,32 @@
                 }
             }
         },
+        "core_workloads_MMAPv1":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5219"
+                    ]
+                }
+            }
+        },
+        "core_workloads_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5219"
+                    ]
+                }
+            }
+        },
         "crud_workloads":{
             "threshold":{
                 "NetworkBandwidth":{
@@ -7097,6 +7123,32 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                }
+            }
+        },
+        "industry_benchmarks_MMAPv1":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5219"
+                    ]
+                }
+            }
+        },
+        "industry_benchmarks_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5219"
                     ]
                 }
             }
@@ -7565,6 +7617,32 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                }
+            }
+        },
+        "non_sharded_workloads_MMAPv1":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5219"
+                    ]
+                }
+            }
+        },
+        "non_sharded_workloads_WT":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":0.225,
+                    "threshold":0.15,
+                    "ticket":[
+                        "BF-5219"
                     ]
                 }
             }
