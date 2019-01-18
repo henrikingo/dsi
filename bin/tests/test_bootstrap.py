@@ -160,7 +160,8 @@ class TestBootstrap(unittest.TestCase):
                     'ssh_key_file': 'test_ssh_key_file.pem',
                     'ssh_key_name': 'test_ssh_key_name',
                     'tags': {
-                        'owner': 'testuser'
+                        'owner': 'testuser',
+                        'expire-on-delta': 24
                     }
                 }
             }
@@ -195,7 +196,8 @@ class TestBootstrap(unittest.TestCase):
                     'ssh_key_file': 'test_ssh_key_file1.pem',
                     'ssh_key_name': 'test_ssh_key_name1',
                     'tags': {
-                        'owner': 'testuser1'
+                        'owner': 'testuser1',
+                        'expire-on-delta': 24
                     }
                 }
             }
@@ -208,7 +210,8 @@ class TestBootstrap(unittest.TestCase):
                         'ssh_key_file': 'test_ssh_key_file2.pem',
                         'ssh_key_name': 'test_ssh_key_name2',
                         'tags': {
-                            'owner': 'testuser2'
+                            'owner': 'testuser2',
+                            'expire-on-delta': 48
                         }
                     }
                 }
@@ -244,7 +247,15 @@ class TestBootstrap(unittest.TestCase):
         test_override_path = os.path.dirname(os.path.abspath(__file__))
 
         master_overrides = {}
-        master_overrides.update({'infrastructure_provisioning': {'tfvars': {}}})
+        master_overrides.update({
+            'infrastructure_provisioning': {
+                'tfvars': {
+                    'tags': {
+                        'expire-on-delta': 24
+                    }
+                }
+            }
+        })
         master_override_dict = master_overrides
         test_override_dict = {}
 
@@ -269,7 +280,15 @@ class TestBootstrap(unittest.TestCase):
 
         test_override_path = os.path.dirname(os.path.abspath(__file__))
         master_overrides = {}
-        master_overrides.update({'infrastructure_provisioning': {'tfvars': {}}})
+        master_overrides.update({
+            'infrastructure_provisioning': {
+                'tfvars': {
+                    'tags': {
+                        'expire-on-delta': 24
+                    }
+                }
+            }
+        })
         master_override_dict = master_overrides
         test_override_str = yaml.dump({}, default_flow_style=False)
 
@@ -288,6 +307,28 @@ class TestBootstrap(unittest.TestCase):
 
         # Removing created file
         os.remove(os.path.join(test_override_path, 'overrides.yml'))
+
+    def test_setup_overrides_default_expire_on_delta(self):
+        """
+        Testing setup_overrides fills a expire-on-delta tag when production=False and omits it when
+        production=True.
+        """
+        test_override_path = os.path.dirname(os.path.abspath(__file__))
+
+        for (is_production, tfvars) in ((True, {}), (False, {'tags': {'expire-on-delta': 24}})):
+            config = {'production': is_production}
+            expected_overrides = {'infrastructure_provisioning': {'tfvars': tfvars}}
+
+            # Call to setup_overrides creates 'overrides.yml' in current dir
+            bootstrap.setup_overrides(config, test_override_path)
+
+            with open(os.path.join(test_override_path, 'overrides.yml'), 'r') as test_override_file:
+                actual_overrides = yaml.load(test_override_file)
+
+            self.assertEqual(actual_overrides, expected_overrides)
+
+            # Removing created file
+            os.remove(os.path.join(test_override_path, 'overrides.yml'))
 
     def test_setup_overrides_default_username(self):
         """

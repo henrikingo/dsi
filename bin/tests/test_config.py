@@ -316,7 +316,8 @@ class ConfigDictTestCase(unittest.TestCase):
                     'Variant': 'Linux 3-shard cluster',
                     'expire-on-delta': 2
                 },
-                'configsvr_instance_type': 't1.micro'
+                'configsvr_instance_type': 't1.micro',
+                'expire-on-delta': 24
             })
 
     def test_defaults(self):
@@ -552,15 +553,36 @@ class ConfigDictTestCase(unittest.TestCase):
             'test_control', 'workload_setup', 'runtime_secret', 'bootstrap', 'mongodb_setup',
             'analysis', 'infrastructure_provisioning', 'runtime'
         ])
-        self.assert_equal_lists(self.conf['infrastructure_provisioning']['tfvars'].values(), [
-            'c3.8xlarge', 'us-west-2a', 1, 'us-west-2', 9, 3, 'shard', 3,
-            '~/.ssh/linustorvalds.pem', 'ec2-user', 'c3.8xlarge', 'linus.torvalds', 'c3.8xlarge', {
-                'Project': 'sys-perf',
-                'owner': 'linus.torvalds@10gen.com',
-                'Variant': 'Linux 3-shard cluster',
-                'expire-on-delta': 2
-            }, 't1.micro'
-        ])
+
+        tfvars_dict = dict(
+            zip(self.conf['infrastructure_provisioning']['tfvars'].keys(),
+                self.conf['infrastructure_provisioning']['tfvars'].values()))
+
+        self.assert_equal_dicts(
+            tfvars_dict, {
+                'cluster_name': 'shard',
+                'mongos_instance_type': 'c3.8xlarge',
+                'availability_zone': 'us-west-2a',
+                'workload_instance_count': 1,
+                'region': 'us-west-2',
+                'mongod_instance_count': 9,
+                'configsvr_instance_count': 3,
+                'mongos_instance_count': 3,
+                'ssh_key_file': '~/.ssh/linustorvalds.pem',
+                'ssh_user': 'ec2-user',
+                'mongod_instance_type': 'c3.8xlarge',
+                'ssh_key_name': 'linus.torvalds',
+                'workload_instance_type': 'c3.8xlarge',
+                'tags': {
+                    'Project': 'sys-perf',
+                    'owner': 'linus.torvalds@10gen.com',
+                    'Variant': 'Linux 3-shard cluster',
+                    'expire-on-delta': 2
+                },
+                'configsvr_instance_type': 't1.micro',
+                'expire-on-delta': 24
+            })
+
         self.assert_equal_lists(mycluster['shard'][2]['mongod'][0].values(), [
             '53.1.1.7', 'https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.4.6.tgz', {
                 'replication': {

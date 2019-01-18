@@ -126,7 +126,10 @@ def setup_overrides(config, directory):
             LOGGER.critical("owner is set to your.username. Please update this setting in your "
                             "bootstrap.yml file, and review the other settings in that file.")
             assert False
-        tfvars['tags'] = {'owner': config['owner']}
+        tfvars.setdefault('tags', {})['owner'] = config['owner']
+    if not config.get('production', False):
+        # If DSI is being running locally, then we set the AWS instances to expire after 1 day.
+        tfvars.setdefault('tags', {})['expire-on-delta'] = 24
     if os.path.exists(override_path):
         with open(override_path) as override_file:
             overrides = yaml.load(override_file)
@@ -273,7 +276,7 @@ def main():
     copy_config_files(common.utils.get_dsi_path(), config, directory)
 
     # This writes an overrides.yml with the ssh_key_file, ssh_key_name and owner, if given in
-    # bootstrap.yml.
+    # bootstrap.yml, and with expire-on-delta if running DSI locally.
     setup_overrides(config, directory)
 
     LOGGER.info("Local environment setup", directory=directory)
