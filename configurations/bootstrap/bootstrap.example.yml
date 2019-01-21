@@ -62,7 +62,7 @@ storageEngine: wiredTiger
 
 # Specify the set of tests to be run. See the .yml files located in
 # $DSI_PATH/configurations/test_control for more information about each set of tests.
-test_control: core
+test_control: ycsb.short
 
 # Specify the paths for the repos 'workloads' and 'YCSB'.
 # They are available at https://github.com/10gen/workloads.
