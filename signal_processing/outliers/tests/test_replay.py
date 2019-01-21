@@ -1021,12 +1021,18 @@ class TestGesdReplayControllerKeyEvents(unittest.TestCase):
     def test_space(self):
         """ test space toggles pause."""
         mock_event = MagicMock(name='event', key=' ')
+        self.controller._animator = MagicMock(name='event', key=' ')
 
         self.controller.on_key_press(mock_event)
         self.assertTrue(self.controller.pause)
+        self.controller._animator.event_source.stop.assert_called_once()
+        self.controller._animator.event_source.start.assert_not_called()
 
+        self.controller._animator = MagicMock(name='event', key=' ')
         self.controller.on_key_press(mock_event)
         self.assertFalse(self.controller.pause)
+        self.controller._animator.event_source.stop.assert_not_called()
+        self.controller._animator.event_source.start.assert_called_once()
 
     def _test_direction(self, key='left', pause=True, direction=BACKWARD_DIRECTION):
         """ test controller save mp4."""

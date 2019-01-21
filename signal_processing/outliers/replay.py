@@ -683,6 +683,10 @@ class GesdReplayController(object):
         LOG.debug("on_key_press", click=event)
         if event.key == ' ':
             self.pause ^= True
+            if self.pause:
+                self.animator.event_source.stop()
+            else:
+                self.animator.event_source.start()
             return
         if event.key in ['left', 'right']:
             if event.key == 'left':

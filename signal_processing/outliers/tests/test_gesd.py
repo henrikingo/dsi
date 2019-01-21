@@ -2,10 +2,12 @@
 """
 Unit tests for signal_processing/outliers/gesd.py.
 """
+import os
 import random
 import unittest
 
 import numpy as np
+from test_lib.fixture_files import FixtureFiles
 
 from signal_processing.outliers.gesd import gesd
 from signal_processing.change_points.qhat import deterministic_random
@@ -67,6 +69,47 @@ class TestSimple(unittest.TestCase):
         self.assertEquals([], test_statistics)
         self.assertEquals([], critical_values)
         self.assertEquals([], all_z_scores)
+
+
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
+
+
+class TestReal(unittest.TestCase):
+    """ Test Real data. """
+
+    def _test(self, test_file='standard'):
+        """ test helper."""
+        file_parts = [
+            'sys-perf', 'linux-1-node-replSet', 'bestbuy_query', 'canary_client-cpuloop-10x', '1'
+        ] + ['{}.json'.format(test_file)]
+
+        filename = os.path.join(*file_parts)
+        fixtures = FIXTURE_FILES.load_json_file(filename)
+        start_order = fixtures['data']['start_order']
+        end_order = fixtures['data']['end_order']
+
+        full_series = fixtures['data']['time_series']
+        orders = full_series['orders']
+        series = np.array(
+            full_series['series'][orders.index(start_order):orders.index(end_order)], dtype=float)
+
+        expected = fixtures['expected']
+
+        number_outliers, suspicious_indexes, _, _, _ = \
+            gesd(series, mad=fixtures['data'].get('mad', False))
+
+        self.assertEquals(expected['number_outliers'], number_outliers)
+        self.assertListEqual(expected['suspicious_indexes'], suspicious_indexes)
+
+    def test_standard(self):
+        """Test gesd on real data with standard."""
+
+        self._test()
+
+    def test_mad(self):
+        """Test gesd on real data with Median Absolute Deviation."""
+
+        self._test('mad')
 
 
 class TestTIG1372(unittest.TestCase):
