@@ -23,6 +23,7 @@ A named tuple for the results of the GESD algorithm.
 :type test_statistics: list(float)
 :type critical_values: list(float)
 :type all_z_scores: list(float, float)
+:type series: list(float)
 """
 
 
@@ -65,7 +66,7 @@ def gesd(data, max_outliers=10, significance_level=0.05, mad=False):
     see 'here<https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h3.htm>'
     """
     # pylint: disable=too-many-locals
-    if data is None or not data:
+    if data is None or np.size(data) == 0:
         raise ValueError("No Data ({})".format(data))
     length = len(data)
     if max_outliers < 1:

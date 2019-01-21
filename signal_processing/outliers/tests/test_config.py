@@ -3,6 +3,8 @@ Unit tests for signal_processing/outliers/config.py.
 """
 # pylint: disable=missing-docstring
 from __future__ import print_function
+
+import platform
 import unittest
 
 from mock import MagicMock, patch, mock_open
@@ -11,7 +13,7 @@ import numpy as np
 from signal_processing.outliers.config import normalize_series, \
     standardize_series, mask_outliers, plot_confirmed_outliers, plot_without_confirmed_outliers, \
     plot_without_any_outliers, plot_test_scores, plot_probability, \
-    plot_histogram, plot_gesd, TestGesd, config_gesd
+    plot_histogram, plot_gesd, TestGesd, config_gesd, get_matplotlib
 
 NS = 'signal_processing.outliers.config'
 
@@ -19,6 +21,15 @@ NS = 'signal_processing.outliers.config'
 def ns(relative_name):  # pylint: disable=invalid-name
     """Return a full name from a name relative to the tested module's name space."""
     return NS + '.' + relative_name
+
+
+class TestGetMatplotlib(unittest.TestCase):
+    """ Test get_matplotlib for coverage. """
+
+    @unittest.skipIf('darwin' in platform.system().lower(), "matplotlib missing on Mac")
+    def test(self):
+        """ Test get_matplotlib, """
+        self.assertIsNotNone(get_matplotlib())
 
 
 class TestNormalizeSeries(unittest.TestCase):
@@ -296,7 +307,7 @@ class TestConfigGesd(unittest.TestCase):
 
     def _test_helper(self, visualize=False, save=False):
         # pylint: disable=no-self-use
-        mock_command_config = MagicMock(name='change_point')
+        mock_command_config = MagicMock(name='command_config')
         mock_change_point = MagicMock(name='change_point')
         parameters = TestGesd(
             test_identifier={

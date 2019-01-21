@@ -14,6 +14,12 @@ from scipy.stats import describe
 
 from signal_processing.outliers.gesd import gesd
 
+MAD_Z_SCORE = 'mad'
+"""Use Median Abolute Deviation to calculate the z score."""
+
+STANDARD_Z_SCORE = 'standard'
+"""Use standard z score calculation."""
+
 LOG = structlog.getLogger(__name__)
 
 OutlierDetectionResult = namedtuple('OutlierDetectionResult', [
@@ -82,7 +88,7 @@ def run_outlier_detection(full_series, start, end, series, test_identifier, max_
                                       significance_level, 0, None, None)
 
     LOG.debug('investigating range', start=start, end=end, subseries=series)
-    num_outliers = _check_max_outliers(max_outliers, test_identifier, series)
+    num_outliers = check_max_outliers(max_outliers, test_identifier, series)
 
     gesd_result = gesd(series, num_outliers, significance_level=significance_level, mad=mad)
 
@@ -102,7 +108,7 @@ def run_outlier_detection(full_series, start, end, series, test_identifier, max_
 
 
 # TODO: TIG-1288: Determine the max outliers based on the input data.
-def _check_max_outliers(outliers, test_identifier, series):
+def check_max_outliers(outliers, test_identifier, series):
     """ convert max outliers to a sane value for this series. """
     # pylint: disable=too-many-branches
     if outliers == 0:

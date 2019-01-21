@@ -16,6 +16,7 @@ import structlog
 from bin.common import log
 from signal_processing.commands import helpers
 from signal_processing.commands.outliers.config import config_command
+from signal_processing.commands.outliers.replay import replay_command
 
 LOG = structlog.getLogger(__name__)
 
@@ -55,7 +56,11 @@ CONTEXT_SETTINGS = dict(
 @click.option('-l', '--logfile', default=None, help='The log file to write to, defaults to None.')
 @click.option('-o', '--out', default='/tmp', help='The location to save any files in.')
 @click.option(
-    '-f', '--format', 'file_format', default='png', help='The format to save any files in.')
+    '-f',
+    '--format',
+    'file_format',
+    default='gif',
+    help='The format to save any files in. Defaults to GIF.')
 @click.option(
     '-u',
     '--mongo-uri',
@@ -114,3 +119,4 @@ def help_command(context):
 
 
 cli.add_command(config_command)
+cli.add_command(replay_command)

@@ -36,7 +36,7 @@ class TestOutliersParams(ClickTest):
     def test_requires_params(self):
         """ Test outliers with no parameters. """
 
-        result = self.runner.invoke(cli, ['test'])
+        result = self.runner.invoke(cli, ['config'])
         self.assertEqual(result.exit_code, 2)
 
     def test_help_h_option(self):

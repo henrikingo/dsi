@@ -38,12 +38,8 @@ def get_matplotlib():
     Lazy import of matplotlib.
     :return: matplotlib.pyplot or None
     """
-    try:
-        import matplotlib.pyplot as plt
-        return plt
-    # pylint: disable=bare-except
-    except:
-        return None
+    import matplotlib.pyplot as plt
+    return plt
 
 
 def normalize_series(series):
