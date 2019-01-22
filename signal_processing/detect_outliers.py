@@ -22,7 +22,7 @@ LOG = structlog.getLogger(__name__)
 
 def print_result(job):
     """
-    Print a description of the test and the results from running the QHat algorithm on the
+    Print a description of the test and the results from running the E-Divisive algorithm on the
     points for that test.
 
     :param Job job: The job instance.

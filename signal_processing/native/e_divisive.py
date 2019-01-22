@@ -1,5 +1,5 @@
 """
-Wrap a C library function to calculate qhat values with
+Wrap a C library function to calculate E-Divisive qhat values with
 input using the numpy.ctypeslib.
 """
 
@@ -25,7 +25,7 @@ def qhat_values_wrapper(series, qhat_values, diffs):  # pylint: disable=unused-a
     :param np.array(float) series: The series data.
     :raises: ImportError is always raised by this function.
     """
-    raise ImportError("QHat native failed to load.")
+    raise ImportError("E-Divisive native failed to load.")
 
 
 def qhat_diffs_wrapper(series):  # pylint: disable=unused-argument
@@ -37,9 +37,9 @@ def qhat_diffs_wrapper(series):  # pylint: disable=unused-argument
     :param np.array(float) qhat_values: The array to store the qhat values.
     :return: The calculated qhat values.
     :rtype: np.array(float).
-    :raises: Exception if the native qhat function doesn't return 0.
+    :raises: Exception if the native function doesn't return 0.
     """
-    raise ImportError("QHat native failed to load.")
+    raise ImportError("E-Divisive native failed to load.")
 
 
 try:
@@ -51,15 +51,15 @@ try:
     MATRIX_DOUBLE = npct.ndpointer(dtype=np.double, ndim=2, flags='CONTIGUOUS')
 
     # load the library, using numpy mechanisms
-    LIB_QHAT = npct.load_library("_qhat", so_path)
+    LIB_E_DIVISIVE = npct.load_library("_e_divisive", so_path)
 
     # setup the return types and argument types
-    LIB_QHAT.qhat_values.restype = c_int
-    LIB_QHAT.qhat_values.argtypes = [ARRAY_DOUBLE, MATRIX_DOUBLE, ARRAY_DOUBLE, c_int]
+    LIB_E_DIVISIVE.qhat_values.restype = c_int
+    LIB_E_DIVISIVE.qhat_values.argtypes = [ARRAY_DOUBLE, MATRIX_DOUBLE, ARRAY_DOUBLE, c_int]
 
     # setup the return types and argument types
-    LIB_QHAT.calculate_diffs.restype = c_int
-    LIB_QHAT.calculate_diffs.argtypes = [ARRAY_DOUBLE, MATRIX_DOUBLE, c_int]
+    LIB_E_DIVISIVE.calculate_diffs.restype = c_int
+    LIB_E_DIVISIVE.calculate_diffs.argtypes = [ARRAY_DOUBLE, MATRIX_DOUBLE, c_int]
 
     def qhat_values_wrapper(series, diffs, qhat_values):  # pylint: disable=E0102
         """
@@ -70,12 +70,12 @@ try:
         :param np.array(float) qhat_values: The array to store the qhat values.
         :return: The calculated qhat values.
         :rtype: np.array(float).
-        :raises: Exception if the native qhat function doesn't return 0.
+        :raises: Exception if the native function doesn't return 0.
         """
         size = len(series)
-        result = LIB_QHAT.qhat_values(series, diffs, qhat_values, size)
+        result = LIB_E_DIVISIVE.qhat_values(series, diffs, qhat_values, size)
         if result != 0:
-            raise Exception("Native Qhat returned unexpected value {}".format(result))
+            raise Exception("Native E-Divisive returned unexpected value {}".format(result))
 
         return qhat_values
 
@@ -88,16 +88,16 @@ try:
         :param np.array(float) qhat_values: The array to store the qhat values.
         :return: The calculated qhat values.
         :rtype: np.array(float).
-        :raises: Exception if the native qhat function doesn't return 0.
+        :raises: Exception if the native function doesn't return 0.
         """
         size = len(series)
         diffs = np.zeros((size, size), dtype=np.float)
-        result = LIB_QHAT.calculate_diffs(series, diffs, size)
+        result = LIB_E_DIVISIVE.calculate_diffs(series, diffs, size)
         if result != 0:
-            raise Exception("Native Qhat returned unexpected value {}".format(result))
+            raise Exception("Native E-Divisive returned unexpected value {}".format(result))
 
         return diffs
 
     LOADED = True
 except:  # pylint: disable=bare-except
-    LOG.warn("native QHat", loaded=False, so_path=so_path, exc_info=1)
+    LOG.warn("native E-Divisive", loaded=False, so_path=so_path, exc_info=1)

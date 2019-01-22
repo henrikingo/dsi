@@ -16,8 +16,8 @@ import structlog
 from scipy import stats
 
 import signal_processing.profiling.compare_algorithms as compare_algorithms
-import signal_processing.change_points.qhat
-import signal_processing.native.qhat
+import signal_processing.change_points.e_divisive
+import signal_processing.native.e_divisive
 
 LOG = structlog.getLogger(__name__)
 
@@ -167,33 +167,46 @@ def runif(execute,
 
 
 @click.command(name='cli')
-@click.option('--no-qhat', 'qhat', is_flag=True, default=True, help="Current QHat.")
 @click.option(
-    '--original / --no-original', 'original', is_flag=True, default=True, help="Original QHat.")
+    '--no-e-divisive', 'e_divisive', is_flag=True, default=True, help="Current E-Divisive.")
 @click.option(
-    '--no-optimized-qhat', 'optimized_qhat', is_flag=True, default=True, help="Optimized QHat.")
-@click.option('--no-numpy', 'numpy_qhat', is_flag=True, default=True, help="Numpy QHat.")
-@click.option(
-    '--no-numpy-optimized-qhat',
-    'numpy_optimized_qhat',
+    '--original / --no-original',
+    'original',
     is_flag=True,
     default=True,
-    help="Numpy Optimized QHat.")
+    help="Original E-Divisive.")
+@click.option(
+    '--no-optimized-e-divisive',
+    'optimized_e_divisive',
+    is_flag=True,
+    default=True,
+    help="Optimized E-Divisive.")
+@click.option(
+    '--no-numpy', 'numpy_e_divisive', is_flag=True, default=True, help="Numpy E-Divisive.")
+@click.option(
+    '--no-numpy-optimized-e-divisive',
+    'numpy_optimized_e_divisive',
+    is_flag=True,
+    default=True,
+    help="Numpy Optimized E-Divisive.")
 @click.option(
     '--windowed / --no-windowed',
-    'windowed_qhat',
+    'windowed_e_divisive',
     is_flag=True,
     default=True,
-    help="Windowed QHat.")
+    help="Windowed E-Divisive.")
 @click.option(
     '--warmup / --no-warmup', 'warmup', is_flag=True, default=True, help="Run a warmup iteration")
 @click.option(
     '--iterations',
     'iterations',
     default=10,
-    help="Set the number of iterations. Original QHat is only ever 1.")
+    help="Set the number of iterations. Original E-Divisive is only ever 1.")
 @click.option(
-    '--plot / --no-plot', 'plot', default=False, help="Plot the series and the qhat values.")
+    '--plot / --no-plot',
+    'plot',
+    default=False,
+    help="Plot the series and the E-Divisive qhat values.")
 @click.option(
     '--python / --no-python', 'use_python', default=True, help="Run the pure python version.")
 @click.option('--cython / --no-cython', 'use_cython', default=False, help="Run the cython version.")
@@ -214,12 +227,15 @@ def runif(execute,
     multiple=True,
     help="The default fixture filename.")
 @click.option(
-    '--validate / --no-validate', 'validate', default=True, help="Validate the qhat values.")
+    '--validate / --no-validate',
+    'validate',
+    default=True,
+    help="Validate the E-Divisive qhat values.")
 @click.option(
-    '--atol', 'atol', default=1.e-3, help="The max tolerance when comparing qhat results.")
-def cli(qhat, original, optimized_qhat, numpy_qhat, numpy_optimized_qhat, windowed_qhat, warmup,
-        iterations, plot, use_python, use_cython, short, mutable, native, fixture_file_names,
-        validate, atol):
+    '--atol', 'atol', default=1.e-3, help="The max tolerance when comparing E-Divisive results.")
+def cli(e_divisive, original, optimized_e_divisive, numpy_e_divisive, numpy_optimized_e_divisive,
+        windowed_e_divisive, warmup, iterations, plot, use_python, use_cython, short, mutable,
+        native, fixture_file_names, validate, atol):
     """
     Main driver function.
     """
@@ -235,8 +251,8 @@ def cli(qhat, original, optimized_qhat, numpy_qhat, numpy_optimized_qhat, window
         if not fixture_file_name.endswith('.json'):
             fixture_file_name += '.json'
         fixture_path_name = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), '..', 'tests', 'unittest-files', 'qhat',
-            fixture_file_name)
+            os.path.dirname(os.path.abspath(__file__)), '..', 'change_points', 'tests',
+            'unittest-files', 'e-divisive', fixture_file_name)
 
         fixture = load_json_file(fixture_path_name)
         series = np.array(fixture['series'], dtype=np.float)
@@ -258,47 +274,47 @@ def cli(qhat, original, optimized_qhat, numpy_qhat, numpy_optimized_qhat, window
                 print("no cython classes, see './README.md#Cython Variant'.")
                 return
 
-        runif(qhat, results, warmup, iterations, series,
-              signal_processing.change_points.qhat.QHat({}))
+        runif(e_divisive, results, warmup, iterations, series,
+              signal_processing.change_points.e_divisive.EDivisive({}))
 
         runif(
-            windowed_qhat and use_python,
+            windowed_e_divisive and use_python,
             results,
             warmup,
             1,
             series,
-            compare_algorithms.WindowedQHat(),
+            compare_algorithms.WindowedEDivisive(),
             windowed=True)
 
         runif(
-            windowed_qhat and use_python,
+            windowed_e_divisive and use_python,
             results,
             warmup,
             iterations,
             series,
-            compare_algorithms.NumpyWindowedQHat(),
+            compare_algorithms.NumpyWindowedEDivisive(),
             windowed=True)
 
-        runif(optimized_qhat and use_python, results, warmup, iterations, series,
-              compare_algorithms.OptimizedQHat())
+        runif(optimized_e_divisive and use_python, results, warmup, iterations, series,
+              compare_algorithms.OptimizedEDivisive())
 
-        runif(numpy_optimized_qhat and use_python, results, warmup, iterations, series,
-              compare_algorithms.NumpyOptimizedQHat())
+        runif(numpy_optimized_e_divisive and use_python, results, warmup, iterations, series,
+              compare_algorithms.NumpyOptimizedEDivisive())
 
-        runif(numpy_qhat and use_python, results, warmup, iterations, series,
-              compare_algorithms.NumpyQHat())
+        runif(numpy_e_divisive and use_python, results, warmup, iterations, series,
+              compare_algorithms.NumpyEDivisive())
 
         runif(
-            native and signal_processing.native.qhat.LOADED,
+            native and signal_processing.native.e_divisive.LOADED,
             results,
             warmup,
             iterations,
             series,
-            compare_algorithms.NativeQHat(),
+            compare_algorithms.NativeEDivisive(),
             implementation='N')
 
         runif(original and use_python, results, warmup, 1, series,
-              compare_algorithms.OriginalQHat())
+              compare_algorithms.OriginalEDivisive())
 
         # We need to guard against cython as you could get an Import Error.
         # leaving ```and use_cython``` in the run call in case of cut ad paste.
@@ -306,52 +322,52 @@ def cli(qhat, original, optimized_qhat, numpy_qhat, numpy_optimized_qhat, window
 
             # pylint: disable=E1101, E0611
             runif(
-                windowed_qhat and use_cython,
+                windowed_e_divisive and use_cython,
                 results,
                 warmup,
                 1,
                 series,
-                cython_compare_algorithms.WindowedQHat(),
+                cython_compare_algorithms.WindowedEDivisive(),
                 implementation='C',
                 windowed=True)
 
             # pylint: disable=E1101, E0611
             runif(
-                windowed_qhat and use_cython,
+                windowed_e_divisive and use_cython,
                 results,
                 warmup,
                 iterations,
                 series,
-                cython_compare_algorithms.NumpyWindowedQHat(),
+                cython_compare_algorithms.NumpyWindowedEDivisive(),
                 implementation='C',
                 windowed=True)
 
             # pylint: disable=E1101, E0611
             runif(
-                optimized_qhat and use_cython,
+                optimized_e_divisive and use_cython,
                 results,
                 warmup,
                 iterations,
                 series,
-                cython_compare_algorithms.OptimizedQHat(),
+                cython_compare_algorithms.OptimizedEDivisive(),
                 implementation='C')
 
             runif(
-                numpy_optimized_qhat and use_cython,
+                numpy_optimized_e_divisive and use_cython,
                 results,
                 warmup,
                 iterations,
                 series,
-                cython_compare_algorithms.NumpyOptimizedQHat(),
+                cython_compare_algorithms.NumpyOptimizedEDivisive(),
                 implementation='C')
 
             runif(
-                numpy_qhat and use_cython,
+                numpy_e_divisive and use_cython,
                 results,
                 warmup,
                 iterations,
                 series,
-                cython_compare_algorithms.NumpyQHat(),
+                cython_compare_algorithms.NumpyEDivisive(),
                 implementation='C')
 
             # pylint: disable=E1101, E0611
@@ -361,7 +377,7 @@ def cli(qhat, original, optimized_qhat, numpy_qhat, numpy_optimized_qhat, window
                 warmup,
                 1,
                 series,
-                cython_compare_algorithms.OriginalQHat(),
+                cython_compare_algorithms.OriginalEDivisive(),
                 implementation='C')
 
     if not results:
@@ -378,16 +394,16 @@ def cli(qhat, original, optimized_qhat, numpy_qhat, numpy_optimized_qhat, window
     # min_duration = min(result['duration'] for result in results)
     # min_trimmed = min(result['trimmed'] for result in results)
     results = sorted(results, key=itemgetter('duration'))
-    print("{:>20} {:>10}  {:>10} {:>8} {:>10} {:>8} {:>14}".format("name", "size", "avg", "ratio",
+    print("{:>23} {:>10}  {:>10} {:>8} {:>10} {:>8} {:>14}".format("name", "size", "avg", "ratio",
                                                                    "trimmed", "ratio", "min - max"))
-    print("-" * 80)
+    print("-" * 106)
     for result in results:
         size = result['size']
         result['ratio'] = result['duration'] / min_duration[size]
         result['trimmed_ratio'] = result['trimmed'] / min_trimmed[size]
 
     for result in results:
-        print("{name:>20} "\
+        print("{name:>23} "\
               "{size:10}  {duration:10.6f}  {ratio:8.2f} "\
               "{trimmed:10.6f} {trimmed_ratio:8.2f} "\
               "{min_duration:>10.6f} {max_duration:8.6f} {0:>4} {1:>4}".format(

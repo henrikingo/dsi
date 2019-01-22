@@ -4,9 +4,9 @@ Currently the signal processing is based around the algorithm in the following [
 
 This page is based on the analysis [here](https://docs.google.com/document/d/1A97F7RPY6EtXShEfUym7StLSnpuPR17Uy9BEFC1cuKw/edit#heading=h.qhq8ppmxw123).
 
-## What the Q^ algorithm does
+## What the E-Divisive algorithm does
 
-The Q^ algorithm works as follows:
+The E-Divisive algorithm works as follows:
 
 1. Calculate the Q^ Values for the series (see the next section).
 1. Select the candidate change point candidate is found simply by finding the maximum q value.

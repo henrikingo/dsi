@@ -237,7 +237,7 @@ class TestLocation(unittest.TestCase):
         """
         Helper for location.
         """
-        fixture = FIXTURE_FILES.load_json_file(os.path.join('qhat', filename))
+        fixture = FIXTURE_FILES.load_json_file(os.path.join('e-divisive', filename))
         series = fixture['series']
         tests = fixture['test_data']
 
@@ -380,7 +380,7 @@ class TestStartEnd(unittest.TestCase):
         """
         Util for start end.
         """
-        fixture = FIXTURE_FILES.load_json_file(os.path.join('qhat', filename))
+        fixture = FIXTURE_FILES.load_json_file(os.path.join('e-divisive', filename))
         series = fixture['series']
         tests = fixture['test_data']
 

@@ -1,5 +1,5 @@
 """
-QHat related tests.
+E-Divisive related tests.
 """
 import types
 import unittest
@@ -9,11 +9,11 @@ from mock import patch
 
 from bin.common.log import setup_logging
 from test_lib import math_utils
-from signal_processing.change_points.qhat import QHat, calculate_magnitude
+from signal_processing.change_points.e_divisive import EDivisive, calculate_magnitude
 
 setup_logging(False)
 
-NS = 'signal_processing.change_points.qhat'
+NS = 'signal_processing.change_points.e_divisive'
 
 
 def ns(relative_name):  # pylint: disable=invalid-name
@@ -21,35 +21,35 @@ def ns(relative_name):  # pylint: disable=invalid-name
     return NS + '.' + relative_name
 
 
-class TestQHat(unittest.TestCase):
+class TestEDivisive(unittest.TestCase):
     """
-    Test for QHat class methods.
+    Test for EDivisive class methods.
     """
 
     def test_series_none(self):
         """
         Test that constructor parameters are validated.
         """
-        self.assertEqual(QHat({'series': None}).series.size, 0)
+        self.assertEqual(EDivisive({'series': None}).series.size, 0)
 
     def test_series_string(self):
         """
         Test that constructor parameters are validated.
         """
         with self.assertRaises(ValueError):
-            QHat({'series': "string"})
+            EDivisive({'series': "string"})
 
     def test_series_empty(self):
         """
         Test that constructor parameters are validated.
         """
-        QHat({'series': []})
+        EDivisive({'series': []})
 
-    def test_empty_qhat(self):
+    def test_empty_e_divisive(self):
         """
         Test that constructor parameters are validated.
         """
-        self.assertEqual(QHat({}).qhat_values(np.array([], dtype=np.float)).size, 0)
+        self.assertEqual(EDivisive({}).qhat_values(np.array([], dtype=np.float)).size, 0)
 
 
 class TestPostRunCheck(unittest.TestCase):
@@ -160,7 +160,7 @@ class TestPostRunCheck(unittest.TestCase):
         pvalue = 0.01
         permutations = 100
         mock_git.return_value = ['1', '2']
-        algo = QHat(state, pvalue, permutations)
+        algo = EDivisive(state, pvalue, permutations)
         points = algo.change_points
         self.assertEqual(3, len(points))
 
@@ -176,7 +176,7 @@ class TestPostRunCheck(unittest.TestCase):
             }), math_utils.approx_dict(points[0]))
         self.assertDictContainsSubset(
             math_utils.approx_dict({
-                'name': 'qhat',
+                'name': 'E-Divisive',
                 'index': 40,
                 'window_size': 60,
                 'value_to_avg': 26.9,
@@ -197,7 +197,7 @@ class TestPostRunCheck(unittest.TestCase):
             }), math_utils.approx_dict(points[1]))
         self.assertDictContainsSubset(
             math_utils.approx_dict({
-                'name': 'qhat',
+                'name': 'E-Divisive',
                 'index': 20,
                 'window_size': 40,
                 'value_to_avg': 16.5,
@@ -218,7 +218,7 @@ class TestPostRunCheck(unittest.TestCase):
             }), math_utils.approx_dict(points[2]))
         self.assertDictContainsSubset(
             math_utils.approx_dict({
-                'name': 'qhat',
+                'name': 'E-Divisive',
                 'index': 50,
                 'window_size': 20,
                 'value_to_avg': 0.8,
@@ -259,7 +259,7 @@ class TestPostRunCheck(unittest.TestCase):
         }
         pvalue = 0.01
         permutations = 100
-        algo = QHat(state, pvalue, permutations)
+        algo = EDivisive(state, pvalue, permutations)
         points = algo.change_points
         self.assertEqual(1, len(points))
         self.assertDictContainsSubset({
@@ -286,7 +286,7 @@ class TestPostRunCheck(unittest.TestCase):
         }
         pvalue = 0.01
         permutations = 100
-        algo = QHat(state, pvalue, permutations)
+        algo = EDivisive(state, pvalue, permutations)
         points = algo.change_points
         self.assertEqual(1, len(points))
         self.assertDictContainsSubset({
@@ -314,7 +314,7 @@ class TestPostRunCheck(unittest.TestCase):
         }
         pvalue = 0.01
         permutations = 100
-        algo = QHat(state, pvalue, permutations)
+        algo = EDivisive(state, pvalue, permutations)
         points = algo.change_points
         self.assertEqual(1, len(points))
         self.assertDictContainsSubset({
@@ -356,7 +356,7 @@ class TestPostRunCheck(unittest.TestCase):
         }
         pvalue = 0.01
         permutations = 100
-        algo = QHat(state, pvalue, permutations)
+        algo = EDivisive(state, pvalue, permutations)
         points = algo.change_points
         self.assertEqual(1, len(points))
 
@@ -371,7 +371,7 @@ class TestPostRunCheck(unittest.TestCase):
             }), math_utils.approx_dict(points[0]))
         self.assertDictContainsSubset(
             math_utils.approx_dict({
-                'name': 'qhat',
+                'name': 'E-Divisive',
                 'index': 15,
                 'window_size': 30,
                 'value_to_avg': 7.9,
@@ -416,7 +416,7 @@ class TestPostRunCheck(unittest.TestCase):
         }
         pvalue = 0.01
         permutations = 100
-        algo = QHat(state, pvalue, permutations)
+        algo = EDivisive(state, pvalue, permutations)
         points = sorted(algo.change_points, key=lambda i: i['order'])
         self.assertEqual(2, len(points))
         self.assertDictContainsSubset(
@@ -431,7 +431,7 @@ class TestPostRunCheck(unittest.TestCase):
             }), math_utils.approx_dict(points[0]))
         self.assertDictContainsSubset(
             math_utils.approx_dict({
-                'name': 'qhat',
+                'name': 'E-Divisive',
                 'index': 15,
                 'window_size': 33,
                 'value_to_avg': 7.0,
@@ -452,7 +452,7 @@ class TestPostRunCheck(unittest.TestCase):
             }), math_utils.approx_dict(points[1]))
         self.assertDictContainsSubset(
             math_utils.approx_dict({
-                'name': 'qhat',
+                'name': 'E-Divisive',
                 'index': 33,
                 'window_size': 45,
                 'value_to_avg': 3.0,
@@ -497,7 +497,7 @@ class TestPostRunCheck(unittest.TestCase):
         }
         pvalue = 0.01
         permutations = 100
-        algo = QHat(state, pvalue, permutations)
+        algo = EDivisive(state, pvalue, permutations)
         points = sorted(algo.change_points, key=lambda i: i['order'])
         self.assertEqual(2, len(points))
         self.assertDictContainsSubset(
@@ -511,7 +511,7 @@ class TestPostRunCheck(unittest.TestCase):
             }), math_utils.approx_dict(points[0]))
         self.assertDictContainsSubset(
             math_utils.approx_dict({
-                'name': 'qhat',
+                'name': 'E-Divisive',
                 'index': 15,
                 'window_size': 30,
                 'value_to_avg': 7.9,
@@ -550,7 +550,7 @@ class TestPostRunCheck(unittest.TestCase):
             }), math_utils.approx_dict(points[1]))
         self.assertDictContainsSubset(
             math_utils.approx_dict({
-                'name': 'qhat',
+                'name': 'E-Divisive',
                 'index': 30,
                 'window_size': 45,
                 'value_to_avg': 12.0,
@@ -592,7 +592,7 @@ class TestPostRunCheck(unittest.TestCase):
         }
         pvalue = 0.01
         permutations = 100
-        algo = QHat(state, pvalue, permutations)
+        algo = EDivisive(state, pvalue, permutations)
         points = algo.change_points
         self.assertEqual(0, len(points))
 

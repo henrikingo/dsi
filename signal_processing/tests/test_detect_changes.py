@@ -545,10 +545,9 @@ class TestComputeChangePoints(unittest.TestCase):
 
         with patch('pymongo.InsertOne') as mock_insert, \
                 patch('pymongo.DeleteMany') as mock_delete, \
-                patch('signal_processing.change_points.qhat.get_githashes_in_range_repo'), \
-                patch('signal_processing.change_points.qhat.QHat', autospec=True) as mock_qhat_class, \
-                patch(
-                    'signal_processing.detect_changes.pymongo.MongoClient') as mock_mongo_client:
+                patch('signal_processing.change_points.e_divisive.get_githashes_in_range_repo'), \
+                patch('signal_processing.change_points.e_divisive.EDivisive', autospec=True) as mock_ediv_class, \
+                patch('signal_processing.detect_changes.pymongo.MongoClient') as mock_mongo_client:
 
             mock_db = MagicMock(name='db', autospec=True)
             thread_level = '4'
@@ -600,11 +599,11 @@ class TestComputeChangePoints(unittest.TestCase):
 
             mock_db.points.aggregate.return_value = [thread_level_results]
             mock_db.points.count.return_value = 100
-            mock_qhat = MagicMock(
-                name='qhat',
+            mock_ediv = MagicMock(
+                name='ediv',
                 autospec=True,
                 change_points=list(reversed(change_points)) if reverse else change_points)
-            mock_qhat_class.return_value = mock_qhat
+            mock_ediv_class.return_value = mock_ediv
 
             test_identifier = {
                 'project': self.sysperf_perf_json['project_id'],
@@ -666,7 +665,7 @@ class TestComputeChangePoints(unittest.TestCase):
             if old_change_points:
                 expected_bulk_writes.extend(["InsertOne 1", "InsertOne 2"])
             mock_db.change_points.bulk_write.assert_called_once_with(expected_bulk_writes)
-            mock_qhat_class.assert_called_once_with(
+            mock_ediv_class.assert_called_once_with(
                 thread_level_results,
                 pvalue=None,
                 credentials=None,

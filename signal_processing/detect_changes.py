@@ -1,5 +1,5 @@
 """
-Run the QHat algorithm and store results.
+Run the E-Divisive algorithm and store results.
 """
 import os
 import sys
@@ -12,7 +12,7 @@ import pymongo
 import structlog
 
 import etl_helpers
-from signal_processing.change_points import qhat
+from signal_processing.change_points import e_divisive
 from signal_processing.change_points import weights
 import signal_processing.commands.helpers as helpers
 import signal_processing.commands.jobs as jobs
@@ -45,7 +45,7 @@ find the change point nearest min size.
 
 class PointsModel(object):
     """
-    Model that gathers the point data and runs QHat to find change points.
+    Model that gathers the point data and runs E-Divisive to find change points.
     """
 
     # pylint: disable=invalid-name, too-many-instance-attributes
@@ -87,7 +87,7 @@ class PointsModel(object):
         :param min_points: The minimum number of points to consider when detecting change points.
         None or 0 implies no minimum.
         :type min_points: int or None.
-        :param pvalue: The pvalue for the QHat algorithm.
+        :param pvalue: The pvalue for the E-Divisive algorithm.
         :type pvalue: int, float, None.
         :param mongo_repo: The mongo git location.
         :param credentials: The git credentials.
@@ -391,13 +391,13 @@ class PointsModel(object):
 
     def compute_change_points(self, test_identifier, weighting):
         """
-        Compute the change points for the given test using the QHat algorithm and insert them into
-        the `change_points` collection of the database.
+        Compute the change points for the given test using the E-Divisive algorithm and insert them
+        into the `change_points` collection of the database.
 
         :param dict test_identifier: The project / variant / task / test and thread_level.
         :param float weighting: The weighting for the decay on compute.
-        :return: The number of points for the test, the number of change points found by the QHat
-        algorithm, and the time taken for this method to run.
+        :return: The number of points for the test, the number of change points found by the
+        E-Divisive algorithm, and the time taken for this method to run.
         :rtype: tuple(int, int, float).
         See 'weights.DEFAULT_WEIGHTING' for the recommended default value.
         """
@@ -405,7 +405,7 @@ class PointsModel(object):
         order = self.get_closest_order(test_identifier)
         thread_level_results = self.get_points(test_identifier, order)
 
-        change_points = qhat.QHat(
+        change_points = e_divisive.EDivisive(
             thread_level_results,
             pvalue=self.pvalue,
             weighting=weighting,
@@ -498,7 +498,7 @@ class PointsModel(object):
 
 def print_result(job):
     """
-    Print a description of the test and the results from running the QHat algorithm on the
+    Print a description of the test and the results from running the E-Divisive algorithm on the
     points for that test.
 
     :param Job job: The job instance.

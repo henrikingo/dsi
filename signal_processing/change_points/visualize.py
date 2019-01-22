@@ -12,7 +12,7 @@ import structlog
 
 from signal_processing.commands.helpers import LANDSCAPE_FIGSIZE
 from signal_processing.detect_changes import PointsModel
-from signal_processing.change_points.qhat import QHat
+from signal_processing.change_points.e_divisive import EDivisive
 from signal_processing.change_points.weights import DEFAULT_WEIGHTING
 
 LOG = structlog.getLogger(__name__)
@@ -254,7 +254,7 @@ def on_pick_legend(figure, event, sigma_label=None, artists=None):
     figure.canvas.draw()
 
 
-def plot_qhat_values(qhat,
+def plot_qhat_values(e_divisive,
                      axis,
                      series,
                      xvals,
@@ -268,7 +268,7 @@ def plot_qhat_values(qhat,
     Given a set of precalculated change points, calculate the qhat values for
     each change point range.
 
-    :param QHat qhat: The instance to generate the qhat values.
+    :param EDivisive e_divisive: The instance to generate the qhat values.
     :param matplotlib.axes.Axes axis: Where to draw the lines.
     :param list series: The performance data.
     :param list xvals: The x axis data.
@@ -291,7 +291,7 @@ def plot_qhat_values(qhat,
         if start is None:
             start = 0
 
-        values = qhat.qhat_values(series[start:end])
+        values = e_divisive.qhat_values(series[start:end])
         line, = axis.plot(xvals[start:end], values, '1-', label=label)
         qhat_lines = [line]
 
@@ -303,7 +303,15 @@ def plot_qhat_values(qhat,
             if change_point['order'] < current['order']
         ]
         before_qhat_lines = plot_qhat_values(
-            qhat, axis, series, xvals, revisions, before, label=label, start=start, end=position)
+            e_divisive,
+            axis,
+            series,
+            xvals,
+            revisions,
+            before,
+            label=label,
+            start=start,
+            end=position)
         qhat_lines += before_qhat_lines
 
         after = [
@@ -311,7 +319,7 @@ def plot_qhat_values(qhat,
             if change_point['order'] > current['order']
         ]
         after_qhat_lines = plot_qhat_values(
-            qhat, axis, series, xvals, revisions, after, label=label, start=position, end=end)
+            e_divisive, axis, series, xvals, revisions, after, label=label, start=position, end=end)
         qhat_lines += after_qhat_lines
 
     return qhat_lines
@@ -589,7 +597,7 @@ def plot(result,
         labeled_items[label] = outlier_lines
 
     if change_points and show_qhat:
-        qhat = QHat(
+        e_divisive = EDivisive(
             {
                 'series': series,
                 'revisions': revisions,
@@ -604,7 +612,7 @@ def plot(result,
         label = "qhat values"
         twinx = axis.twinx()
         qhat_lines = plot_qhat_values(
-            qhat,
+            e_divisive,
             twinx,
             series,
             xvals,

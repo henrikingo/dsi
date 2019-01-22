@@ -1,5 +1,5 @@
 """
-Computes the qhat e.divisive means change points.
+Computes the E-Divisive means change points.
 """
 from __future__ import print_function
 
@@ -14,12 +14,12 @@ import numpy as np
 from analysis.evergreen.helpers import get_githashes_in_range_github, get_githashes_in_range_repo
 from signal_processing.change_points.range_finder import generate_start_and_end
 from signal_processing.change_points.range_finder import link_ordered_change_points
-import signal_processing.native.qhat
+import signal_processing.native.e_divisive
 
 LOG = structlog.getLogger(__name__)
 
 
-# QHat's definition requires it to permute change-windows
+# E-Divisive's definition requires it to permute change-windows
 # which leads to non-determinism: we need to always get the
 # same change-point results when running on the same input.
 @contextmanager
@@ -117,9 +117,9 @@ def calculate_magnitude(statistics):
     return magnitude, category
 
 
-class QHatNumpyImp(object):  # pylint: disable=too-many-instance-attributes
+class EDivisiveNumpyImp(object):  # pylint: disable=too-many-instance-attributes
     """
-    Class to compute the qhat e.divisive means change points.
+    Class to compute the E-Divisive means change points.
     """
     KEYS = ('index', 'value', 'value_to_avg', 'value_to_avg_diff', 'average', 'average_diff',
             'window_size', 'probability')
@@ -133,7 +133,7 @@ class QHatNumpyImp(object):  # pylint: disable=too-many-instance-attributes
                  mongo_repo=None,
                  credentials=None):
         """
-        This class implements the QHat e.divisive algorithm in python.
+        This class implements the E-Divisive algorithm in python.
 
         :param dict state: The input data for the calculations. This contains the time series
         performance data ('series') and the meta data (like 'revisions', 'orders', 'create_times',
@@ -208,13 +208,13 @@ class QHatNumpyImp(object):  # pylint: disable=too-many-instance-attributes
         Calculate the q value from the terms and coefficients.
 
         :param float term1: The current cumulative value for the first
-        term in the QHat algorithm. This is the sum of the differences to
+        term in the E-Divisive algorithm. This is the sum of the differences to
         the right of the current location.
         :param float term2: The current cumulative value for the second
-        term in the QHat algorithm. This is the sum of the differences to
+        term in the E-Divisive algorithm. This is the sum of the differences to
         the at the current location.
         :param float term3: The current cumulative value for the third
-        term in the QHat algorithm. This is the sum of the differences to
+        term in the E-Divisive algorithm. This is the sum of the differences to
         the left of the current location.
         :param int m: The current row location.
         :param int n: The current column location.
@@ -287,14 +287,15 @@ class QHatNumpyImp(object):  # pylint: disable=too-many-instance-attributes
 
         # Each line is preceded by the equivalent list comprehension.
 
-        # term1 = sum(diffs[i][j] for i in range(n) for j in range(n, self.window)) # See qhat.md
+        # term1 = sum(diffs[i][j] for i in range(n) for j in range(n, self.window))
+        # See e_divisive.md
         term1 = np.sum(diffs[:n, n:])
 
-        # term2 = sum(diffs[i][k] for i in range(n) for k in range(i + 1, n)) # See qhat.md
+        # term2 = sum(diffs[i][k] for i in range(n) for k in range(i + 1, n)) # See e_divisive.md
         term2 = np.sum(np.triu(diffs[:n, :n], 0))
 
         # term3 = sum(diffs[j][k] for j in range(n, self.window)
-        #                         for k in range(j + 1, self.window)) # See qhat.md
+        #                         for k in range(j + 1, self.window)) # See e_divisive.md
         term3 = np.sum(np.triu(diffs[n:, n + 1:], 0))
 
         qhat_values[n] = self.calculate_q(term1, term2, term3, m, n)
@@ -393,7 +394,8 @@ class QHatNumpyImp(object):  # pylint: disable=too-many-instance-attributes
                 else:
                     change_points.append(list(candidates[len(candidates) - 1]) + [probability])
 
-            self._change_points = self.add_to_change_points(change_points, 'qhat', QHat.KEYS)
+            self._change_points = self.add_to_change_points(change_points, 'E-Divisive',
+                                                            EDivisive.KEYS)
             self._windows = windows
             self._min_change = min_change
             self._max_q = max_q
@@ -483,7 +485,7 @@ class QHatNumpyImp(object):  # pylint: disable=too-many-instance-attributes
             algorithm = OrderedDict([('name', algorithm_name)])
             algorithm.update((key, point[i]) for i, key in enumerate(keys))
 
-            # Get the revision flagged by qhat and add it to the
+            # Get the revision flagged by E-Divisive and add it to the
             # calculations to track.
             algorithm['revision'] = self.revisions[algorithm['index']]
 
@@ -567,34 +569,34 @@ class QHatNumpyImp(object):  # pylint: disable=too-many-instance-attributes
         return self._max_q
 
 
-DSI_DISABLE_NATIVE_QHAT = os.environ.get('DSI_DISABLE_NATIVE_QHAT',
-                                         'false').lower() in ['true', 't']
-if not DSI_DISABLE_NATIVE_QHAT and signal_processing.native.qhat.LOADED:
+DSI_DISABLE_NATIVE_E_DIVISIVE = os.environ.get('DSI_DISABLE_NATIVE_E_DIVISIVE',
+                                               'false').lower() in ['true', 't']
+if not DSI_DISABLE_NATIVE_E_DIVISIVE and signal_processing.native.e_divisive.LOADED:
 
-    class QHatNativeImp(QHatNumpyImp):  #pylint: disable=too-many-instance-attributes
+    class EDivisiveNativeImp(EDivisiveNumpyImp):  #pylint: disable=too-many-instance-attributes
         """
-        Derive a new class and use the native qhat implementation.
+        Derive a new class and use the native E-Divisive implementation.
         """
 
         def calculate_qhat_values(self, series, diffs, qhat_values):  #pylint: disable=too-many-locals,too-many-branches
             # used as the window size in extract_q
-            diffs = signal_processing.native.qhat.qhat_diffs_wrapper(series)
+            diffs = signal_processing.native.e_divisive.qhat_diffs_wrapper(series)
 
             self.average_value = np.average(series)
             self.average_diff = np.average(diffs)
-            signal_processing.native.qhat.qhat_values_wrapper(series, diffs, qhat_values)
+            signal_processing.native.e_divisive.qhat_values_wrapper(series, diffs, qhat_values)
             return qhat_values
 
-    QHat = QHatNativeImp
+    EDivisive = EDivisiveNativeImp
 else:
-    if not signal_processing.native.qhat.LOADED:
+    if not signal_processing.native.e_divisive.LOADED:
         LOG.warn(
-            'falling back to numpy optimized QHat',
-            loaded=signal_processing.native.qhat.LOADED,
-            DSI_DISABLE_NATIVE_QHAT=DSI_DISABLE_NATIVE_QHAT)
+            'falling back to numpy optimized E-Divisive',
+            loaded=signal_processing.native.e_divisive.LOADED,
+            DSI_DISABLE_NATIVE_E_DIVISIVE=DSI_DISABLE_NATIVE_E_DIVISIVE)
     else:
         LOG.info(
-            'falling back to numpy optimized QHat',
-            loaded=signal_processing.native.qhat.LOADED,
-            DSI_DISABLE_NATIVE_QHAT=DSI_DISABLE_NATIVE_QHAT)
-    QHat = QHatNumpyImp
+            'falling back to numpy optimized E-Divisive',
+            loaded=signal_processing.native.e_divisive.LOADED,
+            DSI_DISABLE_NATIVE_E_DIVISIVE=DSI_DISABLE_NATIVE_E_DIVISIVE)
+    EDivisive = EDivisiveNumpyImp

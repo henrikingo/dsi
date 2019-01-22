@@ -28,9 +28,9 @@ See :method:`get_location` for more details.
 
 def _get_location(behind_average, value, ahead_average):
     """
-    The change point reported by qhat is often not going to be the exact commit that introduced the
-    change, in part because we don't run on every commit. We need to search for (and run) the
-    commit that introduced the change.
+    The change point reported by E-Divisive is often not going to be the exact commit that
+    introduced the change, in part because we don't run on every commit. We need to search for
+    (and run) the commit that introduced the change.
 
     This method examines the means (of the behind and ahead ranges) and current value to determine
     the location to search (ahead or behind).
@@ -60,11 +60,11 @@ def _select_start_end(input_series, prev_index, index, next_index, weighting, bo
     """
     To state it simply, we want to find the index that is furthest away from the desired mean line
     (the one that has the greatest difference to value) but which is as close as possible to index
-    (as this point has been chosen by qhat).
+    (as this point has been chosen by E-Divisive).
 
-    The change point reported by qhat is often not going to be the exact commit that introduced
-    the change, in part because we don't run on every commit. We need to search for (and run) the
-    commit that introduced the change. The location refers to the need to search ahead
+    The change point reported by E-Divisive is often not going to be the exact commit that
+    introduced the change, in part because we don't run on every commit. We need to search for
+    (and run) the commit that introduced the change. The location refers to the need to search ahead
     in history from the candidate commit, or behind.
 
     This method selects a start and end index that encompasses the actual change point.
@@ -75,7 +75,8 @@ def _select_start_end(input_series, prev_index, index, next_index, weighting, bo
 
     2) Create a multiplier based on the bounds and the weighting (so as to prefer closer
     points). Growth or decay in the values based the location and the distance from value. The
-    weights are generated to give more consideration to points closer to the chosen qhat index.
+    weights are generated to give more consideration to points closer to the chosen E-Divisive
+    index.
 
     A low bounds is better or the code may select an outlier.
 

@@ -1,3 +1,3 @@
 """
-Native Qhat module.
+Native E-Divisive module.
 """

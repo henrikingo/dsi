@@ -22,7 +22,7 @@ class CustomBuildExt(build_ext):
     """
     Allow C extension building to fail.
 
-    The C extension speeds up QHat calculation, but is not essential.
+    The C extension speeds up E-Divisive calculation, but is not essential.
     """
 
     warning_message = '''
@@ -76,8 +76,8 @@ else:
 
 ext_modules = [
     distutils.core.Extension(
-        'signal_processing.native._qhat',
-        sources=['./signal_processing/native/qhat.c'],
+        'signal_processing.native._e_divisive',
+        sources=['./signal_processing/native/e_divisive.c'],
         extra_compile_args=["-O3"],
         extra_link_args=[] if 'Darwin' in platform.system() else ["-shared"])
 ]

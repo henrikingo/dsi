@@ -2,7 +2,7 @@
 Group of functionality to compare performance of various implementations.
 
 The implementations in this file are fixed. They should be considered old or suspect.
-For the current version, see signal_processing.qhat.QHat.
+For the current version, see signal_processing.change_points.e_divisive.EDivisive.
 
 In addition, they are grouped in a single file so that a cython version can be created by
 simply copying this file to a new file with a pyx extension.
@@ -15,13 +15,13 @@ from __future__ import print_function
 import numpy as np
 import structlog
 
-import signal_processing.change_points.qhat
-import signal_processing.native.qhat
+import signal_processing.change_points.e_divisive
+import signal_processing.native.e_divisive
 
 LOG = structlog.getLogger(__name__)
 
 
-class OriginalQHat(object):
+class OriginalEDivisive(object):
     """
     Original O(n^2) with comprehensions.
     """
@@ -48,7 +48,7 @@ class OriginalQHat(object):
             self.average_diff = 1
             return qhat_values
 
-        diffs = signal_processing.change_points.qhat.QHat.calculate_diffs(series)
+        diffs = signal_processing.change_points.e_divisive.EDivisive.calculate_diffs(series)
 
         # Normalization constants
         self.average_value = np.average(series)
@@ -61,13 +61,13 @@ class OriginalQHat(object):
             term3 = sum(
                 diffs[j][k] for j in range(n, self.window) for k in range(j + 1, self.window))
 
-            qhat_values[n] = signal_processing.change_points.qhat.QHat.calculate_q(
+            qhat_values[n] = signal_processing.change_points.e_divisive.EDivisive.calculate_q(
                 term1, term2, term3, m, n)
 
         return qhat_values
 
 
-class NumpyQHat(object):
+class NumpyEDivisive(object):
     """
     Numpy O(n^2) implementation.
     """
@@ -92,7 +92,7 @@ class NumpyQHat(object):
             self.average_value = 1
             self.average_diff = 1
             return qhat_values
-        diffs = signal_processing.change_points.qhat.QHat.calculate_diffs(series)
+        diffs = signal_processing.change_points.e_divisive.EDivisive.calculate_diffs(series)
 
         self.average_value = np.average(series)
         self.average_diff = np.average(diffs)
@@ -104,12 +104,12 @@ class NumpyQHat(object):
             term2 = np.sum(np.triu(diffs[:n, :n], 0))
             term3 = np.sum(np.triu(diffs[n:, n + 1:], 0))
 
-            qhat_values[n] = signal_processing.change_points.qhat.QHat.calculate_q(
+            qhat_values[n] = signal_processing.change_points.e_divisive.EDivisive.calculate_q(
                 term1, term2, term3, m, n)
         return qhat_values
 
 
-class OptimizedQHat(object):
+class OptimizedEDivisive(object):
     """
     Optimized implementation O(n).
     """
@@ -134,7 +134,7 @@ class OptimizedQHat(object):
             self.average_value = 1
             self.average_diff = 1
             return qhat_values
-        diffs = signal_processing.change_points.qhat.QHat.calculate_diffs(series)
+        diffs = signal_processing.change_points.e_divisive.EDivisive.calculate_diffs(series)
 
         self.average_value = np.average(series)
         self.average_diff = np.average(diffs)
@@ -146,7 +146,7 @@ class OptimizedQHat(object):
         term2 = sum(diffs[i][k] for i in range(n) for k in range(i + 1, n))
         term3 = sum(diffs[j][k] for j in range(n, self.window) for k in range(j + 1, self.window))
 
-        qhat_values[n] = signal_processing.change_points.qhat.QHat.calculate_q(
+        qhat_values[n] = signal_processing.change_points.e_divisive.EDivisive.calculate_q(
             term1, term2, term3, m, n)
 
         for n in range(3, (self.window - 2)):
@@ -159,13 +159,13 @@ class OptimizedQHat(object):
             term2 = term2 + row_delta
             term3 = term3 - column_delta
 
-            qhat_values[n] = signal_processing.change_points.qhat.QHat.calculate_q(
+            qhat_values[n] = signal_processing.change_points.e_divisive.EDivisive.calculate_q(
                 term1, term2, term3, m, n)
 
         return qhat_values
 
 
-class NumpyOptimizedQHat(object):
+class NumpyOptimizedEDivisive(object):
     """
     Optimized calculation in numpy.
     """
@@ -190,7 +190,7 @@ class NumpyOptimizedQHat(object):
             self.average_value = 1
             self.average_diff = 1
             return qhat_values
-        diffs = signal_processing.change_points.qhat.QHat.calculate_diffs(series)
+        diffs = signal_processing.change_points.e_divisive.EDivisive.calculate_diffs(series)
 
         self.average_value = np.average(series)
         self.average_diff = np.average(diffs)
@@ -202,7 +202,7 @@ class NumpyOptimizedQHat(object):
         term2 = np.sum(np.triu(diffs[:n, :n], 0))
         term3 = np.sum(np.triu(diffs[n:, n + 1:], 0))
 
-        qhat_values[n] = signal_processing.change_points.qhat.QHat.calculate_q(
+        qhat_values[n] = signal_processing.change_points.e_divisive.EDivisive.calculate_q(
             term1, term2, term3, m, n)
 
         for n in range(3, (self.window - 2)):
@@ -214,15 +214,15 @@ class NumpyOptimizedQHat(object):
             term2 = term2 + row_delta
             term3 = term3 - column_delta
 
-            qhat_values[n] = signal_processing.change_points.qhat.QHat.calculate_q(
+            qhat_values[n] = signal_processing.change_points.e_divisive.EDivisive.calculate_q(
                 term1, term2, term3, m, n)
 
         return qhat_values
 
 
-class WindowedQHat(object):
+class WindowedEDivisive(object):
     """
-    QHat O(window^2) with implementation.
+    E-Divisive O(window^2) with implementation.
     Implements an un-optimized / un-tested 'straight' python
     version of in PERF-1669.
     """
@@ -249,7 +249,7 @@ class WindowedQHat(object):
             self.average_diff = 1
             return qhat_values
 
-        diffs = signal_processing.change_points.qhat.QHat.calculate_diffs(series)
+        diffs = signal_processing.change_points.e_divisive.EDivisive.calculate_diffs(series)
 
         # Normalization constants
         self.average_value = np.average(series)
@@ -267,14 +267,14 @@ class WindowedQHat(object):
                         for j in range(n, min(self.window, n + window + 1))
                         for k in range((j + 1), min(self.window, n + window + 1)))
 
-            qhat_values[n] = signal_processing.change_points.qhat.QHat.calculate_q(
+            qhat_values[n] = signal_processing.change_points.e_divisive.EDivisive.calculate_q(
                 term1, term2, term3, m, n)
         return qhat_values
 
 
 # The following classes implement an un-optimized / un-tested version described in
 # PERF-1669.
-class NumpyWindowedQHat(object):
+class NumpyWindowedEDivisive(object):
     """
     Numpy O(window^2) implementation.
     Implements an un-optimized / un-tested numpy
@@ -301,7 +301,7 @@ class NumpyWindowedQHat(object):
             self.average_value = 1
             self.average_diff = 1
             return qhat_values
-        diffs = signal_processing.change_points.qhat.QHat.calculate_diffs(series)
+        diffs = signal_processing.change_points.e_divisive.EDivisive.calculate_diffs(series)
 
         self.average_value = np.average(series)
         self.average_diff = np.average(diffs)
@@ -319,14 +319,14 @@ class NumpyWindowedQHat(object):
 
             term3 = np.sum(np.triu(diffs[n:window + n + 1, n:window + n + 1], 1))
 
-            qhat_values[n] = signal_processing.change_points.qhat.QHat.calculate_q(
+            qhat_values[n] = signal_processing.change_points.e_divisive.EDivisive.calculate_q(
                 term1, term2, term3, m, n)
         return qhat_values
 
 
-class NativeQHat(object):
+class NativeEDivisive(object):
     """
-    QHat native optimized implementation.
+    E-Divisive native optimized implementation.
     """
 
     def __init__(self):
@@ -342,7 +342,7 @@ class NativeQHat(object):
         :return:
         """
 
-        diffs = signal_processing.native.qhat.qhat_diffs_wrapper(series)
+        diffs = signal_processing.native.e_divisive.qhat_diffs_wrapper(series)
         qhat_values = np.zeros(len(series), dtype=np.float)
-        signal_processing.native.qhat.qhat_values_wrapper(series, diffs, qhat_values)
+        signal_processing.native.e_divisive.qhat_values_wrapper(series, diffs, qhat_values)
         return qhat_values

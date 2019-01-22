@@ -1,12 +1,12 @@
 """
-QHat related tests.
+E-Divisive related tests.
 """
 from __future__ import print_function
 import unittest
 
 import os
 import numpy as np
-from signal_processing.change_points.qhat import QHat
+from signal_processing.change_points.e_divisive import EDivisive
 
 from bin.common.log import setup_logging
 from test_lib.fixture_files import FixtureFiles
@@ -16,10 +16,10 @@ setup_logging(False)
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
-class CanonicalQHat(object):
+class CanonicalEDivisive(object):
     #pylint: disable=invalid-name, too-many-locals, too-many-branches
     """
-    This is the original O(n^2) Qhat implementation as described in the whitepaper.
+    This is the original O(n^2) E-Divisive implementation as described in the whitepaper.
     It is here for comparison purposes only and to allow the q values to
     be generated if further tests are added.
 
@@ -93,7 +93,7 @@ class TestPerf1635Simple(unittest.TestCase):
         """
         Test to double check slow O(n^2) algorithm. Small data set so this is ok.
         """
-        algorithm = CanonicalQHat()
+        algorithm = CanonicalEDivisive()
         q_values = algorithm.qs(self.series)
         self.assertTrue(all(np.isclose(self.expected, q_values)))
 
@@ -101,7 +101,7 @@ class TestPerf1635Simple(unittest.TestCase):
         """
         Test that the current algorithm generates the same q values as the original.
         """
-        algorithm = QHat({'series': []})
+        algorithm = EDivisive({'series': []})
         q_values = algorithm.qhat_values(self.series)
         self.assertTrue(all(np.isclose(self.expected, q_values)))
 
@@ -115,7 +115,7 @@ class TestPerf1635(unittest.TestCase):
         """
         Common test setup.
         """
-        fixture = FIXTURE_FILES.load_json_file(os.path.join('qhat', 'perf-1635.json'))
+        fixture = FIXTURE_FILES.load_json_file(os.path.join('e-divisive', 'perf-1635.json'))
 
         self.series = np.array(fixture['series'], dtype=np.float)
         self.expected = np.array(fixture['expected'], dtype=np.float)
@@ -124,7 +124,7 @@ class TestPerf1635(unittest.TestCase):
         """
         Test to double check slow O(n^2) algorithm. Small data set so this is ok.
         """
-        algorithm = CanonicalQHat()
+        algorithm = CanonicalEDivisive()
         q_values = algorithm.qs(self.series)
         self.assertTrue(all(np.isclose(self.expected, q_values)))
 
@@ -132,6 +132,6 @@ class TestPerf1635(unittest.TestCase):
         """
         Test that the current algorithm generates the same q values as the original.
         """
-        algorithm = QHat({'series': []})
+        algorithm = EDivisive({'series': []})
         q_values = algorithm.qhat_values(self.series)
         self.assertTrue(all(np.isclose(self.expected, q_values)))

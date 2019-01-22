@@ -11,7 +11,7 @@ import structlog
 from bin.common.utils import mkdir_p
 from signal_processing.commands.helpers import PORTRAIT_FIGSIZE
 from signal_processing.detect_changes import PointsModel
-from signal_processing.change_points.qhat import QHat
+from signal_processing.change_points.e_divisive import EDivisive
 
 LOG = structlog.getLogger(__name__)
 
@@ -147,7 +147,7 @@ def print_result(result, command_config):
     Column 8: r change points.
     Column 9: map of indexes to revisions.
 
-    :param dict result: The QHat and R change point results.
+    :param dict result: The E-Divisive and R change point results.
     :param CommandConfig command_config: The common command configuration.
     """
     # pylint:enable=line-too-long
@@ -314,7 +314,7 @@ class PyChangePoint(ChangePointImpl):
 
         :return: list(int).
         """
-        change_points = QHat(
+        change_points = EDivisive(
             self.data,
             pvalue=self.sig_lvl,
             weighting=self.weighting,

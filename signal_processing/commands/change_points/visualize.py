@@ -24,7 +24,7 @@ LOG = structlog.getLogger(__name__)
     '--qhat/--no-qhat',
     'show_qhat',
     default=False,
-    help="If set to true then display the qhat values for the change points.")
+    help="If set to true then display the E-Divisive qhat values for the change points.")
 @click.option('--exclude', 'excludes', multiple=True)
 @click.option('--sigma', 'sigma', default=1.0)
 @click.option('--filter', 'filter_type', default='butter')
