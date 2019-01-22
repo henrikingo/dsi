@@ -1,17 +1,18 @@
 """
 Command to compare R v Py change point generation.
 """
+from __future__ import print_function
+
 from StringIO import StringIO
 from collections import OrderedDict
 
 import click
 import structlog
 
-import signal_processing.change_points.qhat
 import signal_processing.change_points.range_finder
 import signal_processing.change_points.weights
 from signal_processing import detect_changes
-from signal_processing.change_points import compare, qhat
+from signal_processing.change_points import compare
 from signal_processing.commands import helpers
 
 LOG = structlog.getLogger(__name__)
