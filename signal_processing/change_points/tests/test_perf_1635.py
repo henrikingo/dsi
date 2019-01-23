@@ -28,11 +28,6 @@ class CanonicalEDivisive(object):
     test purposes. It is not efficient and will not be optimized.
     """
 
-    def __init__(self):
-        self.average_value = 0
-        self.average_diff = 0
-        self.t = 0
-
     # Implementing change-point detection algorithm from https://arxiv.org/pdf/1306.4933.pdf
     def qs(self, series):
         """
@@ -44,17 +39,9 @@ class CanonicalEDivisive(object):
         length = len(series)
         qs = np.zeros(length, dtype=np.float)
         if length < 5:
-            # Average value and average diff are used even when there is no data.
-            # This avoids an error.
-            self.average_value = 1
-            self.average_diff = 1
             return qs
 
         diffs = [[abs(series[i] - series[j]) for i in range(length)] for j in range(length)]
-
-        # Normalization constants
-        self.average_value = np.average(series)
-        self.average_diff = np.average(diffs)
 
         for n in range(2, length - 2):
             m = length - n
@@ -101,7 +88,7 @@ class TestPerf1635Simple(unittest.TestCase):
         """
         Test that the current algorithm generates the same q values as the original.
         """
-        algorithm = EDivisive({'series': []})
+        algorithm = EDivisive()
         q_values = algorithm.qhat_values(self.series)
         self.assertTrue(all(np.isclose(self.expected, q_values)))
 

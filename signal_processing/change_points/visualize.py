@@ -11,9 +11,8 @@ import scipy
 import structlog
 
 from signal_processing.commands.helpers import LANDSCAPE_FIGSIZE
-from signal_processing.detect_changes import PointsModel
 from signal_processing.change_points.e_divisive import EDivisive
-from signal_processing.change_points.weights import DEFAULT_WEIGHTING
+from signal_processing.detect_changes import PointsModel
 
 LOG = structlog.getLogger(__name__)
 
@@ -597,17 +596,7 @@ def plot(result,
         labeled_items[label] = outlier_lines
 
     if change_points and show_qhat:
-        e_divisive = EDivisive(
-            {
-                'series': series,
-                'revisions': revisions,
-                'orders': range(len(series)),
-                'create_times': create_times,
-                'testname': result['test'],
-                'thread_level': thread_level
-            },
-            pvalue=.05,
-            weighting=DEFAULT_WEIGHTING)
+        e_divisive = EDivisive(pvalue=.05)
 
         label = "qhat values"
         twinx = axis.twinx()

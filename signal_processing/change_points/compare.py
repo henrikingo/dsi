@@ -11,7 +11,7 @@ import structlog
 from bin.common.utils import mkdir_p
 from signal_processing.commands.helpers import PORTRAIT_FIGSIZE
 from signal_processing.detect_changes import PointsModel
-from signal_processing.change_points.e_divisive import EDivisive
+from signal_processing.change_points.detection import detect_change_points
 
 LOG = structlog.getLogger(__name__)
 
@@ -314,12 +314,12 @@ class PyChangePoint(ChangePointImpl):
 
         :return: list(int).
         """
-        change_points = EDivisive(
+        change_points = detect_change_points(
             self.data,
             pvalue=self.sig_lvl,
             weighting=self.weighting,
             mongo_repo=self.mongo_repo,
-            credentials=self.credentials).change_points
+            github_credentials=self.credentials)
 
         self._points = [
             self.data['revisions'].index(change_point['suspect_revision'])

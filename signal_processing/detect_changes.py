@@ -12,7 +12,7 @@ import pymongo
 import structlog
 
 import etl_helpers
-from signal_processing.change_points import e_divisive
+from signal_processing.change_points import detection
 from signal_processing.change_points import weights
 import signal_processing.commands.helpers as helpers
 import signal_processing.commands.jobs as jobs
@@ -405,12 +405,12 @@ class PointsModel(object):
         order = self.get_closest_order(test_identifier)
         thread_level_results = self.get_points(test_identifier, order)
 
-        change_points = e_divisive.EDivisive(
+        change_points = detection.detect_change_points(
             thread_level_results,
             pvalue=self.pvalue,
             weighting=weighting,
             mongo_repo=self.mongo_repo,
-            credentials=self.credentials).change_points
+            github_credentials=self.credentials)
         change_points = sorted(change_points, key=lambda k: k['order'])
 
         LOG.debug(

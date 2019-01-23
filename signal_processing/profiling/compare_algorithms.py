@@ -15,7 +15,7 @@ from __future__ import print_function
 import numpy as np
 import structlog
 
-import signal_processing.change_points.e_divisive
+from signal_processing.change_points.e_divisive import EDivisive
 import signal_processing.native.e_divisive
 
 LOG = structlog.getLogger(__name__)
@@ -26,11 +26,6 @@ class OriginalEDivisive(object):
     Original O(n^2) with comprehensions.
     """
 
-    def __init__(self):
-        self.average_value = 0
-        self.average_diff = 0
-        self.window = 0
-
     # Implementing change-point detection algorithm from https://arxiv.org/pdf/1306.4933.pdf
     def qhat_values(self, series):
         """
@@ -39,30 +34,20 @@ class OriginalEDivisive(object):
         :param list series: the points to process
         :return:
         """
-        self.window = len(series)
+        length = len(series)
         qhat_values = np.zeros(len(series), dtype=np.float)
-        if self.window < 5:
-            # Average value and average diff are used even when there is no data.
-            # This avoids an error.
-            self.average_value = 1
-            self.average_diff = 1
+        if length < 5:
             return qhat_values
 
-        diffs = signal_processing.change_points.e_divisive.EDivisive.calculate_diffs(series)
+        diffs = EDivisive.calculate_diffs(series)
 
-        # Normalization constants
-        self.average_value = np.average(series)
-        self.average_diff = np.average(diffs)
-
-        for n in range(2, self.window - 2):
-            m = self.window - n
-            term1 = sum(diffs[i][j] for i in range(n) for j in range(n, self.window))
+        for n in range(2, length - 2):
+            m = length - n
+            term1 = sum(diffs[i][j] for i in range(n) for j in range(n, length))
             term2 = sum(diffs[i][k] for i in range(n) for k in range(i + 1, n))
-            term3 = sum(
-                diffs[j][k] for j in range(n, self.window) for k in range(j + 1, self.window))
+            term3 = sum(diffs[j][k] for j in range(n, length) for k in range(j + 1, length))
 
-            qhat_values[n] = signal_processing.change_points.e_divisive.EDivisive.calculate_q(
-                term1, term2, term3, m, n)
+            qhat_values[n] = EDivisive.calculate_q(term1, term2, term3, m, n)
 
         return qhat_values
 
@@ -72,11 +57,6 @@ class NumpyEDivisive(object):
     Numpy O(n^2) implementation.
     """
 
-    def __init__(self):
-        self.average_value = 0
-        self.average_diff = 0
-        self.window = 0
-
     def qhat_values(self, series):
         """
         Find Q-Hat values for all candidate change points
@@ -84,28 +64,20 @@ class NumpyEDivisive(object):
         :param list series: the points to process
         :return:
         """
-        self.window = len(series)
+        length = len(series)
         qhat_values = np.zeros(len(series), dtype=np.float)
-        if self.window < 5:
-            # Average value and average diff are used even when there is no data.
-            # This avoids an error.
-            self.average_value = 1
-            self.average_diff = 1
+        if length < 5:
             return qhat_values
-        diffs = signal_processing.change_points.e_divisive.EDivisive.calculate_diffs(series)
+        diffs = EDivisive.calculate_diffs(series)
 
-        self.average_value = np.average(series)
-        self.average_diff = np.average(diffs)
-
-        for n in range(2, self.window - 2):
-            m = self.window - n
+        for n in range(2, length - 2):
+            m = length - n
 
             term1 = np.sum(diffs[:n, n:])
             term2 = np.sum(np.triu(diffs[:n, :n], 0))
             term3 = np.sum(np.triu(diffs[n:, n + 1:], 0))
 
-            qhat_values[n] = signal_processing.change_points.e_divisive.EDivisive.calculate_q(
-                term1, term2, term3, m, n)
+            qhat_values[n] = EDivisive.calculate_q(term1, term2, term3, m, n)
         return qhat_values
 
 
@@ -114,11 +86,6 @@ class OptimizedEDivisive(object):
     Optimized implementation O(n).
     """
 
-    def __init__(self):
-        self.average_value = 0
-        self.average_diff = 0
-        self.window = 0
-
     def qhat_values(self, series):
         """
         Find Q-Hat values for all candidate change points
@@ -126,41 +93,32 @@ class OptimizedEDivisive(object):
         :param list series: the points to process
         :return:
         """
-        self.window = len(series)
-        qhat_values = np.zeros(self.window, dtype=np.float)
-        if self.window < 5:
-            # Average value and average diff are used even when there is no data.
-            # This avoids an error.
-            self.average_value = 1
-            self.average_diff = 1
+        length = len(series)
+        qhat_values = np.zeros(length, dtype=np.float)
+        if length < 5:
             return qhat_values
-        diffs = signal_processing.change_points.e_divisive.EDivisive.calculate_diffs(series)
-
-        self.average_value = np.average(series)
-        self.average_diff = np.average(diffs)
+        diffs = EDivisive.calculate_diffs(series)
 
         n = 2
-        m = self.window - n
+        m = length - n
 
-        term1 = sum(diffs[i][j] for i in range(n) for j in range(n, self.window))
+        term1 = sum(diffs[i][j] for i in range(n) for j in range(n, length))
         term2 = sum(diffs[i][k] for i in range(n) for k in range(i + 1, n))
-        term3 = sum(diffs[j][k] for j in range(n, self.window) for k in range(j + 1, self.window))
+        term3 = sum(diffs[j][k] for j in range(n, length) for k in range(j + 1, length))
 
-        qhat_values[n] = signal_processing.change_points.e_divisive.EDivisive.calculate_q(
-            term1, term2, term3, m, n)
+        qhat_values[n] = EDivisive.calculate_q(term1, term2, term3, m, n)
 
-        for n in range(3, (self.window - 2)):
-            m = self.window - n
+        for n in range(3, (length - 2)):
+            m = length - n
             # update term 1
             row_delta = sum(diffs[n - 1][y] for y in range(n - 1))
-            column_delta = sum(diffs[y][n - 1] for y in range(n, self.window))
+            column_delta = sum(diffs[y][n - 1] for y in range(n, length))
 
             term1 = term1 - row_delta + column_delta
             term2 = term2 + row_delta
             term3 = term3 - column_delta
 
-            qhat_values[n] = signal_processing.change_points.e_divisive.EDivisive.calculate_q(
-                term1, term2, term3, m, n)
+            qhat_values[n] = EDivisive.calculate_q(term1, term2, term3, m, n)
 
         return qhat_values
 
@@ -170,11 +128,6 @@ class NumpyOptimizedEDivisive(object):
     Optimized calculation in numpy.
     """
 
-    def __init__(self):
-        self.average_value = 0
-        self.average_diff = 0
-        self.window = 0
-
     def qhat_values(self, series):
         """
         Find Q-Hat values for all candidate change points
@@ -182,31 +135,23 @@ class NumpyOptimizedEDivisive(object):
         :param list series: the points to process
         :return:
         """
-        self.window = len(series)
-        qhat_values = np.zeros(self.window, dtype=np.float)
-        if self.window < 5:
-            # Average value and average diff are used even when there is no data.
-            # This avoids an error.
-            self.average_value = 1
-            self.average_diff = 1
+        length = len(series)
+        qhat_values = np.zeros(length, dtype=np.float)
+        if length < 5:
             return qhat_values
-        diffs = signal_processing.change_points.e_divisive.EDivisive.calculate_diffs(series)
-
-        self.average_value = np.average(series)
-        self.average_diff = np.average(diffs)
+        diffs = EDivisive.calculate_diffs(series)
 
         n = 2
-        m = self.window - n
+        m = length - n
 
         term1 = np.sum(diffs[:n, n:])
         term2 = np.sum(np.triu(diffs[:n, :n], 0))
         term3 = np.sum(np.triu(diffs[n:, n + 1:], 0))
 
-        qhat_values[n] = signal_processing.change_points.e_divisive.EDivisive.calculate_q(
-            term1, term2, term3, m, n)
+        qhat_values[n] = EDivisive.calculate_q(term1, term2, term3, m, n)
 
-        for n in range(3, (self.window - 2)):
-            m = self.window - n
+        for n in range(3, (length - 2)):
+            m = length - n
             row_delta = np.sum(diffs[n - 1, :n - 1])
             column_delta = np.sum(diffs[n:, n - 1])
 
@@ -214,8 +159,7 @@ class NumpyOptimizedEDivisive(object):
             term2 = term2 + row_delta
             term3 = term3 - column_delta
 
-            qhat_values[n] = signal_processing.change_points.e_divisive.EDivisive.calculate_q(
-                term1, term2, term3, m, n)
+            qhat_values[n] = EDivisive.calculate_q(term1, term2, term3, m, n)
 
         return qhat_values
 
@@ -227,11 +171,6 @@ class WindowedEDivisive(object):
     version of in PERF-1669.
     """
 
-    def __init__(self):
-        self.average_value = 0
-        self.average_diff = 0
-        self.window = 0
-
     # Implementing change-point detection algorithm from https://arxiv.org/pdf/1306.4933.pdf
     def qhat_values(self, series, window):
         """
@@ -240,35 +179,26 @@ class WindowedEDivisive(object):
         :param list series: the points to process
         :return:
         """
-        self.window = len(series)
+        length = len(series)
         qhat_values = np.zeros(len(series), dtype=np.float)
-        if self.window < 5:
-            # Average value and average diff are used even when there is no data.
-            # This avoids an error.
-            self.average_value = 1
-            self.average_diff = 1
+        if length < 5:
             return qhat_values
 
-        diffs = signal_processing.change_points.e_divisive.EDivisive.calculate_diffs(series)
+        diffs = EDivisive.calculate_diffs(series)
 
-        # Normalization constants
-        self.average_value = np.average(series)
-        self.average_diff = np.average(diffs)
-
-        for n in range(2, self.window - 2):
-            m = self.window - n
+        for n in range(2, length - 2):
+            m = length - n
 
             term1 = sum(diffs[i][j]
                         for i in range(max(0, n - window + 1), n)
-                        for j in range(n, min(self.window, n + window)))
+                        for j in range(n, min(length, n + window)))
             term2 = sum(
                 diffs[i][k] for i in range(max(0, n - window + 1), n) for k in range((i + 1), n))
             term3 = sum(diffs[j][k]
-                        for j in range(n, min(self.window, n + window + 1))
-                        for k in range((j + 1), min(self.window, n + window + 1)))
+                        for j in range(n, min(length, n + window + 1))
+                        for k in range((j + 1), min(length, n + window + 1)))
 
-            qhat_values[n] = signal_processing.change_points.e_divisive.EDivisive.calculate_q(
-                term1, term2, term3, m, n)
+            qhat_values[n] = EDivisive.calculate_q(term1, term2, term3, m, n)
         return qhat_values
 
 
@@ -281,11 +211,6 @@ class NumpyWindowedEDivisive(object):
     version of in PERF-1669.
     """
 
-    def __init__(self):
-        self.average_value = 0
-        self.average_diff = 0
-        self.window = 0
-
     def qhat_values(self, series, window):
         """
         Find Q-Hat values for all candidate change points
@@ -293,25 +218,18 @@ class NumpyWindowedEDivisive(object):
         :param list series: the points to process
         :return:
         """
-        self.window = len(series)
+        length = len(series)
         qhat_values = np.zeros(len(series), dtype=np.float)
-        if self.window < 5:
-            # Average value and average diff are used even when there is no data.
-            # This avoids an error.
-            self.average_value = 1
-            self.average_diff = 1
+        if length < 5:
             return qhat_values
-        diffs = signal_processing.change_points.e_divisive.EDivisive.calculate_diffs(series)
+        diffs = EDivisive.calculate_diffs(series)
 
-        self.average_value = np.average(series)
-        self.average_diff = np.average(diffs)
+        window = int(round(length / 2))
 
-        window = int(round(self.window / 2))
+        for n in range(2, length - 2):
+            m = length - n
 
-        for n in range(2, self.window - 2):
-            m = self.window - n
-
-            term1 = np.sum(diffs[max(0, n - window + 1):n, n:min(self.window, n + window)])
+            term1 = np.sum(diffs[max(0, n - window + 1):n, n:min(length, n + window)])
 
             row = max(n - window + 1, 0)
             column = row + min(window - 2 + 1, n)
@@ -319,8 +237,7 @@ class NumpyWindowedEDivisive(object):
 
             term3 = np.sum(np.triu(diffs[n:window + n + 1, n:window + n + 1], 1))
 
-            qhat_values[n] = signal_processing.change_points.e_divisive.EDivisive.calculate_q(
-                term1, term2, term3, m, n)
+            qhat_values[n] = EDivisive.calculate_q(term1, term2, term3, m, n)
         return qhat_values
 
 
@@ -328,11 +245,6 @@ class NativeEDivisive(object):
     """
     E-Divisive native optimized implementation.
     """
-
-    def __init__(self):
-        self.average_value = 0
-        self.average_diff = 0
-        self.window = 0
 
     def qhat_values(self, series):
         """

@@ -275,7 +275,7 @@ def cli(e_divisive, original, optimized_e_divisive, numpy_e_divisive, numpy_opti
                 return
 
         runif(e_divisive, results, warmup, iterations, series,
-              signal_processing.change_points.e_divisive.EDivisive({}))
+              signal_processing.change_points.e_divisive.EDivisive())
 
         runif(
             windowed_e_divisive and use_python,
