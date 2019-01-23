@@ -30,6 +30,9 @@
 # Indirectly used from mongodb_setup.yml via ${variable.references}
 mongodb_binary_archive: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.4.6.tgz
 
+# Indirectly used from workload_setup via ${variable.references}
+genny_custom_url: 'https://s3.amazonaws.com/mciuploads/genny/patches/genny_amazon2_e24bca65dcc8a052c00d54fa0346cd898d75a560_19_01_18_16_42_32/genny.tgz'
+
 # Manual run helpers
 
 # Personal information (REQUIRED).

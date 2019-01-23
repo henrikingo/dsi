@@ -24,15 +24,33 @@ genny:
 
         cd genny
 
-        # Grab the genny tarball
         genny_revision="$(git rev-parse HEAD)"
-        genny_url="https://s3.amazonaws.com/mciuploads/genny/genny/genny-amazon2-$genny_revision.tgz"
-        curl -Lo genny.tgz "$genny_url"
-        tar -zxvf genny.tgz
+        genny_revision_url="https://s3.amazonaws.com/mciuploads/genny/genny/genny-amazon2-$genny_revision.tgz"
+        genny_default_url="https://s3.amazonaws.com/mciuploads/genny/genny/genny-amazon2.tgz"
+        genny_custom_url="${bootstrap.genny_custom_url}"
 
-        # Make sure the genny executable is reasonable
-        ldd ./bin/genny
-        ./bin/genny --list-actors
+        # Prefer to grab a specific binary archive if we have one
+        # Otherwise, attempt to grab the archive for the current revision
+        # Finally, fallback to the default archive
+        if [[ -n $genny_custom_url ]]; then
+            curl -fLSs -o genny.tgz "$genny_custom_url"
+            echo "Got custom archive from '$genny_custom_url'"
+        elif curl -fLSs -o genny.tgz "$genny_revision_url"; then
+            echo "Got revision archive from '$genny_revision_url'"
+        else curl -fLSs -o genny.tgz "$genny_default_url"
+            echo "Failed to get revision archive, got archive from '$genny_default_url'"
+        fi
+
+        tar -zxf genny.tgz
+        rm -f genny.tgz
+
+  # Make sure the genny executable is reasonable
+  - on_workload_client:
+      exec: |
+        set -eou pipefail
+
+        ldd genny/bin/genny
+        genny/bin/genny --list-actors
 
   # Build Genny's Python Component
   - on_workload_client:

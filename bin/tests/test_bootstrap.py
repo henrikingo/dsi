@@ -607,6 +607,7 @@ class TestBootstrap(unittest.TestCase):
             'workload_setup': 'common',
             'infrastructure_provisioning': 'single',
             'mongodb_binary_archive': mongodb_url,
+            'genny_custom_url': '',
             'mongodb_setup': 'standalone',
             'platform': 'linux',
             'production': False,

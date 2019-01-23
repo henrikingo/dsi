@@ -13,6 +13,7 @@ bootstrap:
   # string "" in bootstrap.yml
   # This URL is r4.0.2. We use the sys-perf build instead of official release to include the jstests/ directory that we copy in our compile task.
   mongodb_binary_archive: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_4.0_fc1573ba18aee42f97a3bb13b67af7d837826b47/fc1573ba18aee42f97a3bb13b67af7d837826b47/linux/mongodb-sys_perf_4.0_fc1573ba18aee42f97a3bb13b67af7d837826b47.tar.gz
+  genny_custom_url: ''
   workloads_dir: ./workloads
   ycsb_dir: ./YCSB
   linkbench_dir: ./linkbench
