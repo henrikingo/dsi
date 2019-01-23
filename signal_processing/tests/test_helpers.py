@@ -847,7 +847,7 @@ class TestGenerateTests(unittest.TestCase):
         self.assertEqual(expected, actual)
 
 
-class TestValidate(unittest.TestCase):
+class TestValidateIntNone(unittest.TestCase):
     """
     Test validate_int_none_options.
     """
@@ -876,3 +876,58 @@ class TestValidate(unittest.TestCase):
     def test_int_value(self):
         """ Test int value."""
         self.assertEquals(1, helpers.validate_int_none_options(None, None, 1))
+
+
+class TestValidateOutlierPercentage(unittest.TestCase):
+    """
+    Test validate_outlier_percentage.
+    """
+
+    def test_invalid_string(self):
+        """ Test string."""
+        self.assertRaisesRegexp(click.BadParameter, 'twelve is not a valid outlier percentage',
+                                helpers.validate_outlier_percentage, None, None, 'twelve')
+
+    def test_too_large(self):
+        """ Test gt 1."""
+        self.assertRaisesRegexp(click.BadParameter, '1.1 is not a valid outlier percentage',
+                                helpers.validate_outlier_percentage, None, None, 1.1)
+
+    def test_negative(self):
+        """ Test lt 0."""
+        self.assertRaisesRegexp(click.BadParameter, '-0.1 is not a valid outlier percentage',
+                                helpers.validate_outlier_percentage, None, None, -0.1)
+
+    def test_valid(self):
+        """ Test valid."""
+        self.assertEquals(0, helpers.validate_outlier_percentage(None, None, 0))
+        self.assertEquals(0.0, helpers.validate_outlier_percentage(None, None, 0.0))
+        self.assertEquals(0.5, helpers.validate_outlier_percentage(None, None, 0.5))
+        self.assertEquals(1, helpers.validate_outlier_percentage(None, None, 1))
+        self.assertEquals(1.0, helpers.validate_outlier_percentage(None, None, 1.0))
+
+
+class TestValidateOutlierPercentages(unittest.TestCase):
+    """
+    Test validate_outlier_percentages.
+    """
+
+    def test_invalid_string(self):
+        """ Test string."""
+        self.assertRaisesRegexp(click.BadParameter, 'are not valid outlier percentages',
+                                helpers.validate_outlier_percentages, None, None, [0.0, 'twelve'])
+
+    def test_too_large(self):
+        """ Test gt 1."""
+        self.assertRaisesRegexp(click.BadParameter, 'are not valid outlier percentages',
+                                helpers.validate_outlier_percentages, None, None, [0.0, 1.1])
+
+    def test_negative(self):
+        """ Test lt 0."""
+        self.assertRaisesRegexp(click.BadParameter, 'are not valid outlier percentages',
+                                helpers.validate_outlier_percentages, None, None, [0.0, -0.1])
+
+    def test_valid(self):
+        """ Test all valid."""
+        self.assertEquals([0, 0.0, 0.5, 1, 1.0],
+                          helpers.validate_outlier_percentages(None, None, [0, 0.0, 0.5, 1, 1.0]))

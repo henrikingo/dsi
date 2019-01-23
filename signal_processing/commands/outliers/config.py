@@ -32,11 +32,13 @@ LOG = structlog.getLogger(__name__)
 @click.option(
     '--max-outliers',
     '-m',
-    'max_outliers',
-    type=int,
-    default=[0],
+    type=float,
+    default=[0.0],
+    callback=helpers.validate_outlier_percentages,
     multiple=True,
-    help='Max outliers.')
+    help="""The Max outliers as a float percentage. 0 implies use the default (20%). Valid range is
+from 0.0 to 1.0. Multiple values are allowed. It is not recommended to use a value > 20 in
+production. Values greater than 20% are really only for test and validation purposes.""")
 @click.option(
     '--mad/--no-mad', 'mad', is_flag=True, default=False, help='Use Median Absolute Deviation.')
 @click.option(

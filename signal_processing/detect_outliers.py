@@ -45,7 +45,7 @@ class DetectOutliersDriver(object):
     def __init__(self,
                  perf_json,
                  mongo_uri,
-                 max_outliers,
+                 outliers_percentage,
                  mad,
                  significance_level,
                  pool_size=None,
@@ -53,7 +53,7 @@ class DetectOutliersDriver(object):
         """
         :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
         :param str mongo_uri: The uri to connect to the cluster.
-        :param int max_outliers: The max outliers input value for the GESD algorithm.
+        :param int outliers_percentage: The max outliers % input value for the GESD algorithm.
         :param bool mad: Whether to use Median Absolute Deviation in the GESD algorithm.
         :param float significance_level: The significance level input value for the GESD algorithm.
         :param int pool_size: The size of the process pool size.
@@ -62,7 +62,7 @@ class DetectOutliersDriver(object):
         self.perf_json = perf_json
         self.mongo_uri = mongo_uri
 
-        self.max_outliers = max_outliers
+        self.outliers_percentage = outliers_percentage
         self.mad = mad
         self.significance_level = significance_level
 
@@ -96,7 +96,7 @@ class DetectOutliersDriver(object):
         job_list = [
             jobs.Job(
                 _get_data_and_run_detection,
-                arguments=(model, test_identifier, order, self.max_outliers, self.mad,
+                arguments=(model, test_identifier, order, self.outliers_percentage, self.mad,
                            self.significance_level),
                 identifier=test_identifier) for test_identifier in test_identifiers
         ]
@@ -154,7 +154,7 @@ def get_change_point_range(points_model, test_identifier, full_series, order):
 
 
 # pylint: disable=too-many-arguments
-def _get_data_and_run_detection(points_model, test_identifier, order, max_outliers, mad,
+def _get_data_and_run_detection(points_model, test_identifier, order, outliers_percentage, mad,
                                 significance_level):
     """
     Retrieve the time series data and run the outliers detection algorithm.
@@ -163,12 +163,12 @@ def _get_data_and_run_detection(points_model, test_identifier, order, max_outlie
     start, end, series = get_change_point_range(points_model, test_identifier, full_series, order)
 
     return detection.run_outlier_detection(full_series, start, end, series, test_identifier,
-                                           max_outliers, mad, significance_level)
+                                           outliers_percentage, mad, significance_level)
 
 
 def detect_outliers(task_id,
                     mongo_uri,
-                    max_outliers,
+                    outliers_percentage,
                     mad,
                     significance_level,
                     pool_size,
@@ -182,7 +182,7 @@ def detect_outliers(task_id,
     outliers_driver = DetectOutliersDriver(
         perf_json,
         mongo_uri,
-        max_outliers,
+        outliers_percentage,
         mad,
         significance_level,
         pool_size=pool_size,
@@ -193,10 +193,12 @@ def detect_outliers(task_id,
 @click.command()
 @click.pass_context
 @click.option(
-    '--max_outliers',
-    type=int,
-    default=0,
-    help='The max number of outliers number to use in the GESD algorithm.')
+    '--max-outliers',
+    type=float,
+    default=0.0,
+    callback=helpers.validate_outlier_percentage,
+    help="""The max number of outliers as a percentage of the series length.
+0 means use the default. Valid values are 0.0 to 1.0. """)
 @click.option(
     '--mad/--no-mad', 'mad', is_flag=True, default=False, help='Use Median Absolute Deviation')
 @click.option(

@@ -19,7 +19,7 @@ from bin.common.utils import mkdir_p
 from signal_processing.commands.helpers import PORTRAIT_FIGSIZE
 from signal_processing.detect_changes import PointsModel
 from signal_processing.outliers.config import get_matplotlib
-from signal_processing.outliers.detection import check_max_outliers, STANDARD_Z_SCORE
+from signal_processing.outliers.detection import STANDARD_Z_SCORE, compute_max_outliers
 from signal_processing.outliers.gesd import gesd
 
 MAD_SCALE = 1.4826
@@ -79,7 +79,8 @@ class GesdReplayModel(object):
         self.test_identifier = command_params.test_identifier
         self.start_order = command_params.start_order
         self.end_order = command_params.end_order
-        self.max_outliers = command_params.outliers
+        self.outliers_percentage = command_params.outliers
+
         self.significance_level = command_params.significance
         self.mad = command_params.z_score != STANDARD_Z_SCORE
 
@@ -108,17 +109,8 @@ class GesdReplayModel(object):
             series = self.series[:item + 1]
             orders = self.orders[:item + 1]
             if item > 5:
-                if self.max_outliers == 0:
-                    num_outliers = check_max_outliers(self.max_outliers, self.test_identifier,
-                                                      series)
-                else:
-                    # calculate the number of outliers from the percentage.
-                    num_outliers = int(len(series) * (self.max_outliers / 100.0))
-
-                if num_outliers == 0:
-                    num_outliers = 1
-                elif num_outliers >= len(series):
-                    num_outliers -= 1
+                num_outliers = compute_max_outliers(self.outliers_percentage, self.test_identifier,
+                                                    series)
 
                 gesd_result = gesd(
                     series, num_outliers, significance_level=self.significance_level, mad=self.mad)
@@ -582,7 +574,10 @@ class GesdReplayController(object):
                 self.gesd_view.fig,
                 animate,
                 init_func=self.gesd_view.init_view,
-                fargs=(iter(self.gesd_view), ),
+                fargs=(
+                    self,
+                    iter(self.gesd_view),
+                ),
                 frames=frames,
                 interval=self.interval,
                 blit=self.blit,
@@ -695,6 +690,7 @@ class GesdReplayController(object):
                 direction = FORWARD_DIRECTION
 
             if self.pause:
+                self.animator.event_source.start()
                 self.gesd_view.step += direction
             else:
                 self.gesd_view.direction = direction
@@ -732,16 +728,23 @@ class GesdReplayController(object):
             self.fig.canvas.draw()
 
 
-def animate(i, iterator):
+def animate(i, controller, iterator):
     """
     Adapter function to map animation parameters.
 
     :param int i: The element from animator. It is ignored in this case.
+    :param GesdReplayController controller: The GesdReplayController instance for pause handling.
     :param iterable iterator: An iterable instance for the frames (A GesdReplayMode instance).
     :return: The matplotlib artists.
     :rtype: list(matplotlib.Artist).
     """
     LOG.debug("animate", i=i, iterator=iterator)
+
+    # on_key_press left / right may start the animator while we are still paused.
+    # But we should stop the animator after each event in this case.
+    if controller.pause:
+        controller.animator.event_source.stop()
+
     return next(iterator)
 
 
@@ -783,7 +786,7 @@ def replay_gesd(command_params,
     with get_matplotlib().style.context(command_config.style):
         controller = None
         try:
-            LOG.debug('replay_gesd', test_identifier=command_params.test_identifier)
+            LOG.info('replay_gesd', test_identifier=command_params.test_identifier)
 
             controller = GesdReplayController(command_params, standardize, command_config)
             controller.identifier_str = identifier_str

@@ -135,13 +135,13 @@ reject the null hypothesis.""")
 @click.option(
     '--max-outliers',
     '-m',
-    'max_outliers',
-    type=click.IntRange(0, 99),
-    default=[20],
+    type=float,
+    default=[0.0],
+    callback=helpers.validate_outlier_percentages,
     multiple=True,
-    help="""Max outliers percentage. If then check_max_outliers is used. The default is 20%.
-This can be provided multiple times. It is not recommended to use a value > 20 in production.
-Values greater than 20% are really only for test and validation purposes.""")
+    help="""The Max outliers as a float percentage. 0 implies use the default (20%). Valid range is
+from 0.0 to 1.0. Multiple values are allowed. It is not recommended to use a value > 20 in
+production. Values greater than 20% are really only for test and validation purposes.""")
 @click.option(
     '--z-score',
     'z_scores',
@@ -251,7 +251,7 @@ Examples:
     # Same as the original command but replay with specific max outlier percentages, these are
     # replayed separately.
     $> outliers replay sys-perf linux-standalone bestbuy_agg canary_client-cpuloop-10x 1 \\
-       --max-outliers 10 --max-outliers 20
+       --max-outliers .1 --max-outliers .2
 \b
     # Same as the original command but don't render the output visually (there will be output to
     # the console).

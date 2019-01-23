@@ -3,12 +3,14 @@ Unit tests for signal_processing/outliers/detection.py
 """
 # pylint: disable=missing-docstring
 from __future__ import print_function
+
 import unittest
 
+import numpy as np
 from mock import MagicMock, patch
 
 from signal_processing.outliers.detection import run_outlier_detection, OutlierDetectionResult, \
-    print_outliers
+    print_outliers, compute_max_outliers
 from signal_processing.outliers.gesd import GesdResult
 
 NS = 'signal_processing.outliers.detection'
@@ -133,3 +135,46 @@ class TestTIG1372(unittest.TestCase):
             adjusted_indexes=None)
         lines = print_outliers(detection_result)
         self.assertIsNotNone(lines)
+
+
+class TestComputeMaxOutliers(unittest.TestCase):
+    """ Test compute_max_outliers. """
+
+    def test_empty(self):
+        self.assertEquals(0, compute_max_outliers(1, dict(project='project'), []))
+
+    def test_empty_np_array(self):
+        self.assertEquals(0, compute_max_outliers(1, dict(project='project'), np.array([])))
+
+    def test_negative(self):
+        self.assertRaises(AssertionError, compute_max_outliers, -1, dict(project='project'), [])
+
+    def test_too_large(self):
+        self.assertRaises(AssertionError, compute_max_outliers, 1.01, dict(project='project'), [])
+
+    def test_0_implies_default(self):
+        self.assertEquals(20, compute_max_outliers(0, dict(project='project'), range(100)))
+
+    def test_compute_20(self):
+        self.assertEquals(20,
+                          compute_max_outliers(
+                              .2, dict(project='project'), np.array(range(100), dtype=int)))
+
+    def test_compute_50(self):
+        self.assertEquals(50,
+                          compute_max_outliers(
+                              .5, dict(project='project'), np.array(range(100), dtype=int)))
+
+    def test_compute_max_np(self):
+        self.assertEquals(99,
+                          compute_max_outliers(
+                              1, dict(project='project'), np.array(range(100), dtype=int)))
+
+    def test_compute_max_outliers(self):
+        self.assertEquals(1, compute_max_outliers(.01, dict(project='project'), range(100)))
+
+    def test_99_and_100(self):
+        for max_outlier in [.99, 1.0]:
+            self.assertEquals(99,
+                              compute_max_outliers(
+                                  max_outlier, dict(project='project'), range(100)))

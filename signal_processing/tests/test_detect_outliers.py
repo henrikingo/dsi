@@ -181,7 +181,7 @@ class TestMain(unittest.TestCase):
         mock_config.__getitem__.side_effect = self.config.__getitem__
 
         result = self.runner.invoke(main, [
-            '-l', 'logfile', '--pool-size', '1', '--max_outliers', '7000', '--mad',
+            '-l', 'logfile', '--pool-size', '1', '--max-outliers', '0.40', '--mad',
             '--significance', '0.20', '--progressbar', '-v'
         ])
         self.assertEqual(result.exit_code, 0)
@@ -190,7 +190,64 @@ class TestMain(unittest.TestCase):
         mock_config.load.assert_called_once()
         mock_logging.assert_called_once_with(True, filename='logfile')
         mock_detect_outliers.assert_called_once_with(
-            'tid', 'muri', 7000, True, 0.2, 1, progressbar=True)
+            'tid', 'muri', 0.40, True, 0.2, 1, progressbar=True)
+
+    @patch(ns('detect_outliers'), autospec=True)
+    @patch(ns('config.ConfigDict'), autospec=True)
+    @patch(ns('log.setup_logging'), autospec=True)
+    def test_outliers_0(self, mock_logging, mock_config_dict, mock_detect_outliers):
+        """
+        Test main with params.
+        """
+        mock_detect_outliers.return_value = None
+        mock_config = mock_config_dict.return_value
+        mock_config.__getitem__.side_effect = self.config.__getitem__
+
+        result = self.runner.invoke(main, [
+            '-l', 'logfile', '--pool-size', '1', '--max-outliers', '0', '--mad', '--significance',
+            '0.20', '--progressbar', '-v'
+        ])
+        self.assertEqual(result.exit_code, 0)
+
+        mock_config_dict.assert_called_once()
+        mock_config.load.assert_called_once()
+        mock_logging.assert_called_once_with(True, filename='logfile')
+        mock_detect_outliers.assert_called_once_with(
+            'tid', 'muri', .0, True, 0.2, 1, progressbar=True)
+
+    @patch(ns('detect_outliers'), autospec=True)
+    @patch(ns('config.ConfigDict'), autospec=True)
+    @patch(ns('log.setup_logging'), autospec=True)
+    def test_outliers_too_large(self, mock_logging, mock_config_dict, mock_detect_outliers):
+        """
+        Test main with outliers gt 1.
+        """
+        mock_detect_outliers.return_value = None
+        mock_config = mock_config_dict.return_value
+        mock_config.__getitem__.side_effect = self.config.__getitem__
+
+        result = self.runner.invoke(main, [
+            '-l', 'logfile', '--pool-size', '1', '--max-outliers', '1.40', '--mad',
+            '--significance', '0.20', '--progressbar', '-v'
+        ])
+        self.assertEqual(result.exit_code, 2)
+
+    @patch(ns('detect_outliers'), autospec=True)
+    @patch(ns('config.ConfigDict'), autospec=True)
+    @patch(ns('log.setup_logging'), autospec=True)
+    def test_outliers_too_small(self, mock_logging, mock_config_dict, mock_detect_outliers):
+        """
+        Test main with outliers lt 0.
+        """
+        mock_detect_outliers.return_value = None
+        mock_config = mock_config_dict.return_value
+        mock_config.__getitem__.side_effect = self.config.__getitem__
+
+        result = self.runner.invoke(main, [
+            '-l', 'logfile', '--pool-size', '1', '--max-outliers', '-1.40', '--mad',
+            '--significance', '0.20', '--progressbar', '-v'
+        ])
+        self.assertEqual(result.exit_code, 2)
 
     @patch(ns('detect_outliers'), autospec=True)
     @patch(ns('config.ConfigDict'), autospec=True)

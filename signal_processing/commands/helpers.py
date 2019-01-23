@@ -8,6 +8,7 @@ import re
 from collections import OrderedDict
 
 # pylint: disable=too-many-instance-attributes,too-many-arguments,too-few-public-methods
+# pylint: disable=too-many-lines
 from datetime import datetime, timedelta
 
 import structlog
@@ -888,7 +889,7 @@ def validate_int_none_options(context, param, value):
     Validate that the limit value is either an integer or 'None'.
 
     :param object context: The click context object.
-    :param object param: The click parmater deinition.
+    :param object param: The click parameter definition.
     :param str value: The value for the --limit option.
     :return: The validated limit value. Either an integer or None for no limit.
     :rtype: int or None.
@@ -902,6 +903,59 @@ def validate_int_none_options(context, param, value):
     except ValueError:
         pass
     raise click.BadParameter('{} is not a valid integer or None.'.format(value))
+
+
+def _assert_valid_outlier_percentage(percentage):
+    """
+    Validate that percentage is a valid numeric type between 0 and 1 (inclusive).
+
+    :raises: ValueError if percentage is invalid.
+    """
+    if not isinstance(percentage, (float, int)) or percentage < 0 or percentage > 1.0:
+        raise ValueError()
+
+
+def validate_outlier_percentage(context, param, value):
+    """
+    Validate that the value is between 0 and 1 (inclusive).
+
+    :param object context: The click context object.
+    :param object param: The click parameter definition.
+    :param str value: The value for the --limit option.
+    :return: The validated limit value.
+    :rtype: float.
+    :raises: click.BadParameter if the parameter is not valid.
+    """
+    #pylint: disable=unused-argument
+    try:
+        _assert_valid_outlier_percentage(value)
+        return value
+    except ValueError:
+        pass
+    raise click.BadParameter(
+        '{} is not a valid outlier percentage (between 0 and 1.0).'.format(value))
+
+
+def validate_outlier_percentages(context, param, value):
+    """
+    Validate that all the floats in value are between 0 and 1 (inclusive).
+
+    :param object context: The click context object.
+    :param object param: The click parameter definition.
+    :param str value: The value for the --limit option.
+    :return: The validated limit value.
+    :rtype: float.
+    :raises: click.BadParameter if the parameter is not valid.
+    """
+    #pylint: disable=unused-argument
+    try:
+        for percentage in value:
+            _assert_valid_outlier_percentage(percentage)
+        return value
+    except ValueError:
+        pass
+    raise click.BadParameter(
+        '{} are not valid outlier percentages (between 0 and 1.0).'.format(value))
 
 
 def extract_test_identifiers(perf_json):

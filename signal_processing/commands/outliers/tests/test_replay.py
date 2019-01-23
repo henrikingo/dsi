@@ -88,10 +88,41 @@ class TestReplayParams(ClickTest):
 
         result = self.runner.invoke(cli, [
             'replay', 'sys-perf', 'linux-standalone', 'industry_benchmarks', 'ycsb_load', '1', '-m',
-            '100'
+            '1.1'
         ])
         self.assertEqual(result.exit_code, 2)
-        self.assertIn('100 is not in the valid range of 0 to 99', result.output)
+        self.assertIn('are not valid outlier percentages', result.output)
+
+    @patch(ns('helpers.process_params'), autospec=True)
+    @patch('signal_processing.commands.helpers.CommandConfiguration', autospec=True)
+    def test_invalid_negative_max_outliers(self, mock_config, mock_process_params):
+        """ Test invalid max outliers fails. """
+        expected_query = {'find': 'me'}
+        mock_process_params.return_value = expected_query
+        expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
+        mock_config.return_value = expected_config
+
+        result = self.runner.invoke(cli, [
+            'replay', 'sys-perf', 'linux-standalone', 'industry_benchmarks', 'ycsb_load', '1', '-m',
+            '-1.1'
+        ])
+        self.assertEqual(result.exit_code, 2)
+        self.assertIn('are not valid outlier percentages', result.output)
+
+    @patch(ns('helpers.process_params'), autospec=True)
+    @patch('signal_processing.commands.helpers.CommandConfiguration', autospec=True)
+    def test_valid_max_outliers(self, mock_config, mock_process_params):
+        """ Test invalid max outliers fails. """
+        expected_query = {'find': 'me'}
+        mock_process_params.return_value = expected_query
+        expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
+        mock_config.return_value = expected_config
+
+        result = self.runner.invoke(cli, [
+            'replay', 'sys-perf', 'linux-standalone', 'industry_benchmarks', 'ycsb_load', '1', '-m',
+            '0'
+        ])
+        self.assertEqual(result.exit_code, 0)
 
 
 # pylint: disable=invalid-name

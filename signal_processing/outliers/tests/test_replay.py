@@ -96,34 +96,30 @@ def create_model(outliers=0, length=12):
 class TestGesdReplayModelGetItem(unittest.TestCase):
     """ Test GesdReplayModel array access. """
 
-    def _test_array_access(self, outliers=True, length=12):
+    def _test_array_access(self, num_outliers=0, length=12):
         """ test array access."""
-        model = create_model(outliers=0 if outliers else 20, length=length)
+        model = create_model(outliers=num_outliers, length=length)
         for i in range(len(model.series)):
             with patch(ns('gesd')) as mock_gesd, \
                     patch(ns('ReplayGesdResult')) as mock_clazz, \
-                    patch(ns('check_max_outliers')) as mock_check_max_outliers:
+                    patch(ns('compute_max_outliers')) as mock_compute_max_outliers:
+                mock_compute_max_outliers.return_value = -1
                 result = model[i]
                 result1 = model[i]
                 self.assertEquals(result, result1)
                 mock_clazz.assert_called_once()
-                if i <= 5 or not outliers:
-                    mock_check_max_outliers.assert_not_called()
+                if i <= 5:
+                    mock_compute_max_outliers.assert_not_called()
                 else:
-                    mock_check_max_outliers.assert_called_once()
+                    mock_compute_max_outliers.assert_called_once()
 
                 if i <= 5:
                     mock_gesd.assert_not_called()
                 else:
-                    if outliers == 0:
+                    if num_outliers == 0:
                         mock_gesd.assert_called_once()
                     else:
-                        if outliers:
-                            mock_gesd.assert_called_once()
-                        else:
-                            num_outliers = i / 5
-                            mock_gesd.assert_called_once_with(
-                                ANY, num_outliers, significance_level=ANY, mad=ANY)
+                        mock_gesd.assert_called_once_with(ANY, -1, significance_level=ANY, mad=ANY)
 
     def test_array_access(self):
         """ test array access."""
@@ -131,32 +127,32 @@ class TestGesdReplayModelGetItem(unittest.TestCase):
 
     def test_array_access_20(self):
         """ test array access."""
-        self._test_array_access(outliers=False)
+        self._test_array_access(num_outliers=20)
 
     def test_array_99(self):
         """ test array access."""
-        outliers = False
         length = 12
         model = create_model(outliers=99, length=length)
         for i in range(len(model.series)):
             with patch(ns('gesd')) as mock_gesd, \
                     patch(ns('ReplayGesdResult')) as mock_clazz, \
-                    patch(ns('check_max_outliers')) as mock_check_max_outliers:
+                    patch(ns('compute_max_outliers')) \
+                            as mock_compute_max_outliers:
+                mock_compute_max_outliers.return_value = -1
                 result = model[i]
                 result1 = model[i]
                 self.assertEquals(result, result1)
                 mock_clazz.assert_called_once()
-                if i <= 5 or not outliers:
-                    mock_check_max_outliers.assert_not_called()
+                print(i)
+                if i <= 5:
+                    mock_compute_max_outliers.assert_not_called()
                 else:
-                    mock_check_max_outliers.assert_called_once()
+                    mock_compute_max_outliers.assert_called_once()
 
                 if i <= 5:
                     mock_gesd.assert_not_called()
                 else:
-                    num_outliers = i
-                    mock_gesd.assert_called_once_with(
-                        ANY, num_outliers, significance_level=ANY, mad=ANY)
+                    mock_gesd.assert_called_once_with(ANY, -1, significance_level=ANY, mad=ANY)
 
 
 class TestGesdReplayModelArray(unittest.TestCase):
@@ -177,7 +173,7 @@ class TestGesdReplayModelArray(unittest.TestCase):
         expected = list(range(len(self.model.series)))
         with patch(ns('gesd')), \
                 patch(ns('ReplayGesdResult')) as mock_clazz, \
-                patch(ns('check_max_outliers')):
+                patch(ns('compute_max_outliers')):
             mock_clazz.side_effect = expected
             for _ in range(len(self.model.series)):
                 results = list(iter(self.model))
@@ -1038,13 +1034,16 @@ class TestGesdReplayControllerKeyEvents(unittest.TestCase):
         """ test controller save mp4."""
         mock_event = MagicMock(name='event', key=key)
 
+        self.controller._animator = MagicMock(name='animator')
         self.controller.pause = pause
         self.controller.on_key_press(mock_event)
 
         if pause:
             self.mock_step.__iadd__.assert_called_once_with(direction)
+            self.controller._animator.event_source.start.assert_called_once()
         else:
             self.mock_direction.assert_called_once_with(direction)
+            self.controller._animator.event_source.start.assert_not_called()
 
     def test_left_paused(self):
         """ test left paused."""
@@ -1184,12 +1183,24 @@ class TestGesdReplayControllerPickEvents(unittest.TestCase):
 class TestAnimate(unittest.TestCase):
     """ Test animate. """
 
-    def test(self):
-        """ test animate."""
+    def _test(self, paused=True):
+        """ test animate paused. """
         expected = list(reversed(range(10)))
         iterable = iter(expected)
-        results = [animate(i * 2, iterable) for i in range(10)]
+
+        mock_controller = MagicMock(name='controller', pause=paused)
+        results = [animate(i * 2, mock_controller, iterable) for i in range(10)]
         self.assertListEqual(expected, results)
+        if paused:
+            mock_controller.animator.event_source.stop.assert_called()
+        else:
+            mock_controller.animator.event_source.stop.assert_not_called()
+
+    def test_paused(self):
+        self._test()
+
+    def test_running(self):
+        self._test(paused=False)
 
 
 class TestReplayGesd(unittest.TestCase):

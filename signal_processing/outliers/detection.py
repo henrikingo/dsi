@@ -20,6 +20,9 @@ MAD_Z_SCORE = 'mad'
 STANDARD_Z_SCORE = 'standard'
 """Use standard z score calculation."""
 
+DEFAULT_MAX_OUTLIERS_PERCENTAGE = 0.20
+""" The default max number of outliers to use in detection. 20% in this case. """
+
 LOG = structlog.getLogger(__name__)
 
 OutlierDetectionResult = namedtuple('OutlierDetectionResult', [
@@ -65,8 +68,8 @@ ENVIRONMENT.globals.update({
 HUMAN_READABLE_TEMPLATE = ENVIRONMENT.from_string(HUMAN_READABLE_TEMPLATE_STR)
 
 
-def run_outlier_detection(full_series, start, end, series, test_identifier, max_outliers, mad,
-                          significance_level):
+def run_outlier_detection(full_series, start, end, series, test_identifier, outliers_percentage,
+                          mad, significance_level):
     """
     Find the outliers for the given test.
 
@@ -75,8 +78,7 @@ def run_outlier_detection(full_series, start, end, series, test_identifier, max_
     :param int end: The end index within the full series.
     :param list(float) series: The time series data.
     :param dict test_identifier: The test identifier.
-    :param int max_outliers: The max outliers value to use with GESD. If the value will be computed
-    from the data.
+    :param int outliers_percentage: The max outliers % value to use with GESD.
     :param bool mad: Whether the algorithm used the Median Absolute Deviation.
     :param float significance_level: The significance level used for the algorithm.
     """
@@ -88,7 +90,7 @@ def run_outlier_detection(full_series, start, end, series, test_identifier, max_
                                       significance_level, 0, None, None)
 
     LOG.debug('investigating range', start=start, end=end, subseries=series)
-    num_outliers = check_max_outliers(max_outliers, test_identifier, series)
+    num_outliers = compute_max_outliers(outliers_percentage, test_identifier, series)
 
     gesd_result = gesd(series, num_outliers, significance_level=significance_level, mad=mad)
 
@@ -107,59 +109,39 @@ def run_outlier_detection(full_series, start, end, series, test_identifier, max_
                                   significance_level, num_outliers, gesd_result, adjusted_indexes)
 
 
-# TODO: TIG-1288: Determine the max outliers based on the input data.
-def check_max_outliers(outliers, test_identifier, series):
-    """ convert max outliers to a sane value for this series. """
-    # pylint: disable=too-many-branches
-    if outliers == 0:
-        if test_identifier['test'] == 'fio_streaming_bandwidth_test_write_iops':
-            if len(series) <= 10:
-                num_outliers = 2
-            elif 10 < len(series) <= 15:
-                num_outliers = 3
-            elif 15 < len(series) <= 25:
-                num_outliers = 5
-            elif 25 < len(series) <= 40:
-                num_outliers = 7
-            elif 40 < len(series) <= 100:
-                num_outliers = int(len(series) / 2)
-            elif 100 < len(series) <= 300:
-                num_outliers = int(len(series) / 2)
-            else:
-                num_outliers = int(len(series) / 2)
-        elif test_identifier['test'] == 'fio_streaming_bandwidth_test_read_iops':
-            if len(series) <= 10:
-                num_outliers = 2
-            elif 10 < len(series) <= 15:
-                num_outliers = 3
-            elif 15 < len(series) <= 25:
-                num_outliers = 5 * 2
-            elif 25 < len(series) <= 40:
-                num_outliers = 7 * 2
-            elif 40 < len(series) <= 100:
-                # num_outliers = 10 * 2
-                num_outliers = int(len(series) / 2)
-            elif 100 < len(series) <= 300:
-                num_outliers = int(len(series) / 2)
-            else:
-                num_outliers = int(len(series) / 2)
-        else:
-            if len(series) <= 10:
-                num_outliers = 2
-            elif 10 < len(series) <= 15:
-                num_outliers = 3
-            elif 15 < len(series) <= 25:
-                num_outliers = 5
-            elif 25 < len(series) <= 40:
-                num_outliers = 7
-            elif 40 < len(series) <= 100:
-                num_outliers = 10
-            elif 100 < len(series) <= 300:
-                num_outliers = 25
-            else:
-                num_outliers = 30
+def compute_max_outliers(outliers_percentage, test_identifier, series):
+    """
+    Compute outliers from percentage and series.
+
+    :param float outliers_percentage: The percentage of outliers. The value must be greater than or
+    equal to 0 and less than or equal to 1. 0 implies use the default value.
+    :param dict test_identifier: The test identifier.
+    :param list(float) series: The time series data.
+    :return: The number of outliers.
+    :rtype: int
+    :see DEFAULT_MAX_OUTLIERS_PERCENTAGE
+    :raises: AssertionError if outliers_percentage < 0 or outliers_percentage > 1.
+    """
+    assert 0 <= outliers_percentage <= 1.0, 'Outliers Percentage can only be between 0 and 100.'
+    if outliers_percentage == 0:
+        outliers_percentage = DEFAULT_MAX_OUTLIERS_PERCENTAGE
+
+    if series is not None and np.size(series) > 0:
+        num_outliers = int(len(series) * outliers_percentage)
+        if num_outliers == 0:
+            num_outliers = 1
+        elif num_outliers >= len(series):
+            num_outliers = len(series) - 1
     else:
-        num_outliers = outliers
+        num_outliers = 0
+
+    LOG.info(
+        'compute_max_outliers',
+        test_identifier=test_identifier,
+        outliers_percentage=outliers_percentage,
+        num_outliers=num_outliers,
+        defaulted=outliers_percentage == 0,
+        size_series=len(series))
     return num_outliers
 
 
