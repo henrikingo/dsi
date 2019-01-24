@@ -25,8 +25,6 @@ run:
               thread_levels: ${test_control.thread_levels.insert_vector.${mongodb_setup.meta.mongodb_setup}.${mongodb_setup.meta.storageEngine}}
           - index_build:
               build_in_background: false
-          - index_build:
-              build_in_background: true
           - update_large_documents:
               doc_counts: [2]
               doc_sizes_mb: [10]
