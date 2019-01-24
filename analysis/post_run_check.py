@@ -511,7 +511,8 @@ def main(args):  # pylint: disable=too-many-locals,too-many-statements,too-many-
         results = check_core_file_exists(args.reports_analysis)
         report['results'].extend(results)
 
-        log_analysis_results, _ = log_analysis.analyze_logs(args.reports_analysis, args.perf_file)
+        log_analysis_results, _ = \
+            log_analysis.analyze_logs(args.reports_analysis, args.perf_file, args.task)
         report['results'].extend(log_analysis_results)
         # are there resource rules to check for this project?
         if (args.project_id in ftdc_analysis.RESOURCE_RULES_FTDC_FILE

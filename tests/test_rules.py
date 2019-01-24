@@ -499,6 +499,22 @@ class TestLogAnalysisRules(unittest.TestCase):
         for line in good_lines:
             self.assertFalse(rules.is_log_line_bad(line))
 
+    def test_is_log_line_bad_task(self):
+        """Test `_is_log_line_bad()` for specific tasks."""
+
+        sometimes_bad_line = "2016-07-14T01:00:04.000+0000 D err-type transition TO PRIMARY"
+        always_bad_line = "2016-07-14T01:00:04.000+0000 I err-type PosIx_FallocaTE FailEd"
+
+        self.assertTrue(rules.is_log_line_bad(sometimes_bad_line))
+        self.assertTrue(rules.is_log_line_bad(always_bad_line, task="industry_benchmarks"))
+        self.assertFalse(
+            rules.is_log_line_bad(sometimes_bad_line, task="service_architecture_workloads"))
+
+        self.assertTrue(rules.is_log_line_bad(always_bad_line))
+        self.assertTrue(rules.is_log_line_bad(always_bad_line, task="industry_benchmarks"))
+        self.assertTrue(
+            rules.is_log_line_bad(always_bad_line, task="service_architecture_workloads"))
+
     def test_is_log_line_bad_time(self):
         """Test `_is_log_line_bad()` when test times are specified."""
 

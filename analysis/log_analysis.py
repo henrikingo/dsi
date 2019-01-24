@@ -16,7 +16,7 @@ LOGGER = logging.getLogger(__name__)
 KEEPALIVE_TIME = time.time()
 
 
-def analyze_logs(reports_dir_path, perf_file_path=None):
+def analyze_logs(reports_dir_path, perf_file_path=None, task=None):
     """
     Analyze all the "mongod.log" logs in the directory tree rooted at `reports_dir_path`,
     and return a list of test-result dictionaries ready to be placed in the report JSON generated
@@ -38,7 +38,7 @@ def analyze_logs(reports_dir_path, perf_file_path=None):
         except IOError:
             LOGGER.error("Failed to read file `%s`", perf_file_path)
 
-    bad_logs = _get_bad_log_lines(reports_dir_path, test_times)
+    bad_logs = _get_bad_log_lines(reports_dir_path, test_times, task)
 
     for _, (log_path, bad_lines) in enumerate(bad_logs):
         result = {
@@ -69,7 +69,7 @@ def _format_log_raw(path, bad_lines):
     return msg_path_header + msg_body
 
 
-def _get_bad_log_lines(reports_dir_path, test_times=None):
+def _get_bad_log_lines(reports_dir_path, test_times=None, task=None):
     """
     Recursively search the directory `reports_dir_path` for files called "mongod.log" and identify
     bad messages in each. `test_times` is a list of `(start, end)` `datetime` tuples specifying the
@@ -85,7 +85,7 @@ def _get_bad_log_lines(reports_dir_path, test_times=None):
         with open(path) as log_file:
             # Not using list comprehension due to the need to call _print_keepalive_msg()
             for line in log_file:
-                if line != "\n" and rules.is_log_line_bad(line, test_times):
+                if line != "\n" and rules.is_log_line_bad(line, test_times, task):
                     bad_messages.append(line)
                 _print_keepalive_msg(path)
         bad_messages_per_log.append((path, bad_messages))

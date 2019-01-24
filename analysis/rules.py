@@ -48,6 +48,21 @@ BAD_MESSAGES = [
         "posix_fallocate failed"
     ]
 ]
+
+
+def get_bad_messages(task):
+    """
+    Get the bad messages for a certain task.
+
+    :param task: the name of the task
+    :return: a list of signatures of bad messages.
+    """
+    if task == "service_architecture_workloads":
+        return ["posix_fallocate failed"]
+
+    return BAD_MESSAGES
+
+
 # Whitelisting message "Not starting an election": BF-4019
 # Whitelisting message "older than oldest timestamp" until SERVER-38871 is done (TODO: TIG-1357)
 MESSAGE_WHITELIST = [
@@ -91,7 +106,7 @@ REPL_MEMBER_LAG_THRESHOLD_MS = REPL_MEMBER_LAG_THRESHOLD_S * MS
 REPL_MEMBER_LAG_RESET_MS = REPL_MEMBER_LAG_RESET_S * MS
 
 
-def is_log_line_bad(log_line, test_times=None):
+def is_log_line_bad(log_line, test_times=None, task=None):
     """
     Return whether or not `log_line`, a line from a log file, is suspect (see `BAD_LOG_TYPES` and
     `BAD_MESSAGES`). Only messages that were printed during the time a test was run (as specified in
@@ -122,7 +137,8 @@ def is_log_line_bad(log_line, test_times=None):
     if any(whitelist_msg in log_msg for whitelist_msg in MESSAGE_WHITELIST):
         return False
 
-    return err_type_char in ["F", "E"] or any(bad_msg in log_msg for bad_msg in BAD_MESSAGES)
+    return err_type_char in ["F", "E"] or any(
+        bad_msg in log_msg for bad_msg in get_bad_messages(task))
 
 
 def ftdc_date_parse(time_in_s):
