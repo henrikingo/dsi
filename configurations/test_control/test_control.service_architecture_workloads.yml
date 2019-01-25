@@ -1,0 +1,46 @@
+task_name: service_architecture_workloads
+run:
+  - id: fio
+    type: fio
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
+    config_filename: fio.ini
+    output_files:
+      - fio.json
+      - fio_results.tgz
+    workload_config: ${test_control.common_fio_config}
+    skip_validate: true
+
+  - id: iperf
+    type: iperf
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    output_files:
+      - iperf.json
+    skip_validate: true
+
+  - id: PrimaryRequiredReads
+    type: genny
+    cmd: |
+      set -eou pipefail
+
+      workload_path="./genny/etc/genny/workloads/service-architecture/PrimaryRequiredReads.yml"
+      results_path="./genny-results/genny-perf.csv"
+
+      # Note that read preference workloads such as this one only have meaning
+      # when run against replica sets
+      mongo_uri="${mongodb_setup.meta.mongodb_url}&replicaSet=rs0"
+
+      ./genny/bin/genny "$workload_path" -u "$mongo_uri" -m csv -o "$results_path"
+      genny-metrics-to-perf-json < "$results_path" > ./genny-perf.json
+
+    output_files:
+      # Genny output-parser only parses the first file (must be the json)
+      # but we want to retrieve the .csv for the reports dir.
+      - genny-perf.json
+      - genny-results/prireq-perf.csv
+
+pre_task:
+  # remove existing output files (if any) since genny appends
+  - on_workload_client:
+      exec: |
+        rm -rf ./genny-results
+        mkdir -p genny-results
