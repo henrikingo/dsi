@@ -16,6 +16,25 @@ def ns(relative_name):  # pylint: disable=invalid-name
     return NS + '.' + relative_name
 
 
+def generate_mock_bf(index):
+    return {
+        '_id': 'BF-' + index,
+        'summary': 'summary ' + index,
+        'revision': 'revision ' + index,
+        'first_failing_revision': 'first failing revision ' + index,
+    }
+
+
+def generate_mock_bfs(count):
+    """
+    Generate the specified number of mock BFs.
+
+    :param count: Number of bfs to generate.
+    :return: a list of mock BFs.
+    """
+    return [generate_mock_bf(str(index)) for index in range(count)]
+
+
 class TestListBuildFailures(unittest.TestCase):
     """
     Test suite for list_build_failures method.
@@ -74,36 +93,17 @@ class TestListBuildFailures(unittest.TestCase):
         list_build_failures.list_build_failures(query, human_readable, mock_config)
         mock_stringify_json.assert_called_once_with(mock_find.return_value[0], mock_config.compact)
 
-    @patch(ns('stringify_json'), autospec=True)
-    @patch(ns('_print_human_readable'), autospec=True)
-    def test_list_build_failures_human_readable(self, mock__print_human_readable,
-                                                mock_stringify_json):
+    def test_list_build_failures_human_readable(self):
         """ Test that list_build_failures works with the `human_readable` option."""
+        human_readable = list_build_failures.render_human_readable_bfs([])
+        self.assertEqual(1, len(human_readable.strip().split('\n')))
 
-        mock_find = MagicMock(name='find', return_value=[{}])
-        mock_linked_build_failures = MagicMock(name='linked_build_failures', find=mock_find)
-        mock_database = MagicMock(name='database', linked_build_failures=mock_linked_build_failures)
-        query = {'find': 'me'}
-        human_readable = True
-        mock_config = MagicMock(name='config', database=mock_database, compact=False)
-        list_build_failures.list_build_failures(query, human_readable, mock_config)
-        mock__print_human_readable.assert_called_once_with(mock_find.return_value[0])
-
-    # TODO: Add autospec=True to patch below once we upgrade to Python3 (PERF-1254). Cannot call
-    # `assert_not_called` with autospeccing due to https://bugs.python.org/issue28380. This bug has
-    # a fix for Python3 only.
-    @patch(ns('stringify_json'))
-    @patch(ns('_print_human_readable'), autospec=True)
-    def test_list_build_failures_human_readable_and_expanded(self, mock__print_human_readable,
-                                                             mock_stringify_json):
+    def test_list_build_failures_human_readable_and_expanded(self):
         """ Test that even if `expanded` option set, `human_readable` takes precedence."""
+        n_bfs = 5
+        mock_bfs = generate_mock_bfs(n_bfs)
+        human_readable = list_build_failures.render_human_readable_bfs(mock_bfs)
+        self.assertEqual(n_bfs * 12, len(human_readable.strip().split('\n')))
 
-        mock_find = MagicMock(name='find', return_value=[{}])
-        mock_linked_build_failures = MagicMock(name='linked_build_failures', find=mock_find)
-        mock_database = MagicMock(name='database', linked_build_failures=mock_linked_build_failures)
-        query = {'find': 'me'}
-        human_readable = True
-        mock_config = MagicMock(name='config', database=mock_database, compact=True)
-        list_build_failures.list_build_failures(query, human_readable, mock_config)
-        mock__print_human_readable.assert_called_once_with(mock_find.return_value[0])
-        mock_stringify_json.assert_not_called()
+        for mock_bf in mock_bfs:
+            self.assertIn(list_build_failures.JIRA_LINK_PREFIX + mock_bf['_id'], human_readable)
