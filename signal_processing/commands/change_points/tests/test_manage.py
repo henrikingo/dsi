@@ -33,4 +33,39 @@ class TestManage(unittest.TestCase):
 
         result = self.runner.invoke(cli, ['manage'])
         self.assertEqual(result.exit_code, 0)
-        mock_manage.assert_called_once_with(expected_config)
+        mock_manage.assert_called_once_with(expected_config, (), False, False)
+
+    @patch(ns('manage.manage'), autospec=True)
+    @patch('signal_processing.commands.helpers.CommandConfiguration', autospec=True)
+    def test_manage_with_collections(self, mock_config, mock_manage):
+        """ Test manage. """
+        expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
+        mock_config.return_value = expected_config
+
+        result = self.runner.invoke(cli,
+                                    ['manage', '--index', 'change_points', '--index', 'points'])
+        self.assertEqual(result.exit_code, 0)
+        mock_manage.assert_called_once_with(expected_config, ('change_points', 'points'), False,
+                                            False)
+
+    @patch(ns('manage.manage'), autospec=True)
+    @patch('signal_processing.commands.helpers.CommandConfiguration', autospec=True)
+    def test_manage_with_drop(self, mock_config, mock_manage):
+        """ Test manage. """
+        expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
+        mock_config.return_value = expected_config
+
+        result = self.runner.invoke(cli, ['manage', '--drop'])
+        self.assertEqual(result.exit_code, 0)
+        mock_manage.assert_called_once_with(expected_config, (), True, False)
+
+    @patch(ns('manage.manage'), autospec=True)
+    @patch('signal_processing.commands.helpers.CommandConfiguration', autospec=True)
+    def test_manage_with_force(self, mock_config, mock_manage):
+        """ Test manage. """
+        expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
+        mock_config.return_value = expected_config
+
+        result = self.runner.invoke(cli, ['manage', '--force'])
+        self.assertEqual(result.exit_code, 0)
+        mock_manage.assert_called_once_with(expected_config, (), False, True)

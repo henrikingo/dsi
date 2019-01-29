@@ -3,8 +3,11 @@ Functionality to create or recreate the unprocessed change points view.
 """
 from collections import OrderedDict
 
+import click
 import pymongo
 import structlog
+
+import signal_processing.commands.helpers as helpers
 
 LOG = structlog.getLogger(__name__)
 
@@ -20,6 +23,18 @@ def _create_indexes(collection, indexes):
     for index in indexes:
         options = index['options'] if 'options' in index else {}
         collection.create_index(index['keys'], **options)
+
+
+def _drop_indexes(collection, indexes):
+    """
+    Drop indexes on a given collection.
+
+    :param pymongo.Collection collection: The target collection.
+    :param list(dict) indexes: The indexes to drop.
+    """
+    LOG.debug('drop indexes', collection=collection, indexes=indexes)
+    for index in indexes:
+        collection.drop_index(index['keys'])
 
 
 def _create_validator(collection, validator, action='error'):
@@ -39,41 +54,55 @@ def _create_validator(collection, validator, action='error'):
         'collMod',
         collection.name,
         validator=validator,
-        validationAction=action) # yapf: disable
+        validationAction=action)  # yapf: disable
 
 
-def create_points_indexes(command_config):
+def _create_collection_map(command_config):
     """
-    Create indexes for the points collections.
+    Create a map to access various collections.
 
-    :param CommandConfig command_config: Common configuration.
+    :param CommandConfig command_config: Command configuration.
+    :return: Dictionary of collections names to collection objects.
     """
-    # pylint: disable=invalid-name
-    LOG.debug('create points indexes')
-    _create_indexes(command_config.points, [{
-        'keys': [("project", pymongo.ASCENDING), ("variant", pymongo.ASCENDING),
-                 ("task", pymongo.ASCENDING), ("test", pymongo.ASCENDING),
-                 ("order", pymongo.ASCENDING)]
-    }, {
-        'keys': [("project", pymongo.ASCENDING), ("variant", pymongo.ASCENDING),
-                 ("task", pymongo.ASCENDING), ("order", pymongo.ASCENDING)]
-    }])
+    return {
+        helpers.POINTS: command_config.points,
+        helpers.CHANGE_POINTS: command_config.change_points,
+        helpers.PROCESSED_CHANGE_POINTS: command_config.processed_change_points,
+    }
 
 
-def create_change_points_indexes(command_config):
-    """
-    Create indexes for the change_points collections.
+INDEXES_TO_CREATE = {
+    helpers.POINTS: [
+        {
+            'keys': [("project", pymongo.ASCENDING), ("variant", pymongo.ASCENDING),
+                     ("task", pymongo.ASCENDING), ("test", pymongo.ASCENDING), ("order",
+                                                                                pymongo.ASCENDING)]
+        },
+        {
+            'keys': [("project", pymongo.ASCENDING), ("variant", pymongo.ASCENDING),
+                     ("task", pymongo.ASCENDING), ("order", pymongo.ASCENDING)]
+        },
+    ],
+    helpers.CHANGE_POINTS: [
+        {
+            'keys': [("project", pymongo.ASCENDING), ("variant", pymongo.ASCENDING),
+                     ("task", pymongo.ASCENDING), ("test", pymongo.ASCENDING)]
+        },
+        {
+            'keys': [("create_time", pymongo.ASCENDING)],
+        },
+    ],
+    helpers.PROCESSED_CHANGE_POINTS: [{
+        'keys': [("suspect_revision", pymongo.ASCENDING), ("project", pymongo.ASCENDING),
+                 ("variant", pymongo.ASCENDING), ("task", pymongo.ASCENDING),
+                 ("test", pymongo.ASCENDING), ("thread_level", pymongo.ASCENDING)],
+        'options': {
+            'unique': True
+        }
+    }],
+}
 
-    :param CommandConfig command_config: Common configuration.
-    """
-    # pylint: disable=invalid-name
-    LOG.debug('create change points indexes')
-    _create_indexes(command_config.change_points, [{
-        'keys': [("project", pymongo.ASCENDING), ("variant", pymongo.ASCENDING),
-                 ("task", pymongo.ASCENDING), ("test", pymongo.ASCENDING)]
-    }, {
-        'keys': [("create_time", pymongo.ASCENDING)]
-    }])
+COLLECTIONS_TO_INDEX = INDEXES_TO_CREATE.keys()
 
 
 # TODO: TIG-1173 Add more validation to signal processing collections
@@ -115,24 +144,6 @@ def create_change_points_validators(command_config):
     LOG.debug('create change_points validation rules')
     _create_common_change_points_validator(command_config, command_config.change_points)
     _create_common_change_points_validator(command_config, command_config.processed_change_points)
-
-
-def create_processed_change_points_indexes(command_config):
-    """
-    Create indexes for the processed change_points collections.
-
-    :param CommandConfig command_config: Common configuration.
-    """
-    # pylint: disable=invalid-name
-    LOG.debug('create processed change points indexes')
-    _create_indexes(command_config.processed_change_points, [{
-        'keys': [("suspect_revision", pymongo.ASCENDING), ("project", pymongo.ASCENDING),
-                 ("variant", pymongo.ASCENDING), ("task", pymongo.ASCENDING),
-                 ("test", pymongo.ASCENDING), ("thread_level", pymongo.ASCENDING)],
-        'options': {
-            'unique': True
-        }
-    }])
 
 
 def create_linked_build_failures_view(command_config):
@@ -304,14 +315,14 @@ def create_change_points_with_attachments_view(command_config):
                 'as': 'build_failures'
             }
         },
-    ] # yapf:disable
+    ]  # yapf:disable
 
     view_name = 'change_points_with_attachments'
     source_collection_name = 'change_points'
     database.drop_collection(view_name)
     database.command(OrderedDict([('create', view_name),
                                   ('pipeline', pipeline),
-                                  ('viewOn', source_collection_name)])) # yapf: disable
+                                  ('viewOn', source_collection_name)]))  # yapf: disable
 
 
 def create_unprocessed_change_points_view(command_config):
@@ -348,27 +359,47 @@ def create_unprocessed_change_points_view(command_config):
 
         # Project a clean document without the empty build_failures.
         {'$project': {'processed_change_points': False, 'build_failures': False}}
-    ] # yapf:disable
+    ]  # yapf:disable
 
     view_name = 'unprocessed_change_points'
     source_collection_name = 'change_points_with_attachments'
     database.drop_collection(view_name)
     database.command(OrderedDict([('create', view_name),
                                   ('pipeline', pipeline),
-                                  ('viewOn', source_collection_name)])) # yapf: disable
+                                  ('viewOn', source_collection_name)]))  # yapf: disable
 
 
-def manage(command_config):
+def create_indexes(collection_map, collections, drop=False, force=False):
     """
-    Manage the database. At the moment, this comand contains code to
+    Create indexes on the specified collections.
+
+    :param dict collection_map: Map of collection names to collection objects.
+    :param list(str) collections: collections to index.
+    :param boolean drop: Indexes be dropped before creating.
+    :param boolean force: Don't prompt user before dropping indexes.
+    :return:
+    """
+    for collection in collections:
+        if drop:
+            msg = 'Are you sure you want to drop indexes on {0}'.format(collection)
+            if force or click.confirm(msg):
+                _drop_indexes(collection_map[collection], INDEXES_TO_CREATE[collection])
+
+        _create_indexes(collection_map[collection], INDEXES_TO_CREATE[collection])
+
+
+def manage(command_config, collections, drop=False, force=False):
+    """
+    Manage the database. At the moment, this command contains code to
     recreate the indexes, unprocessed change points view and linked build failures view.
 
     :param CommandConfig command_config: Common configuration.
+    :param list(str) collections: collections to index.
+    :param boolean drop: Indexes be dropped before creating.
+    :param boolean force: Don't prompt user before dropping indexes.
     """
 
-    create_processed_change_points_indexes(command_config)
-    create_points_indexes(command_config)
-    create_change_points_indexes(command_config)
+    create_indexes(_create_collection_map(command_config), collections, drop, force)
 
     create_change_points_with_attachments_view(command_config)
     create_unprocessed_change_points_view(command_config)

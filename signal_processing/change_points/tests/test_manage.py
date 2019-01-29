@@ -25,75 +25,58 @@ class TestManage(unittest.TestCase):
     @patch(ns('create_change_points_validators'))
     @patch(ns('create_linked_build_failures_view'))
     @patch(ns('create_unprocessed_change_points_view'))
-    @patch(ns('create_points_indexes'))
-    @patch(ns('create_change_points_indexes'))
-    @patch(ns('create_processed_change_points_indexes'))
-    def test_manage(self, mock_processed_indexes, mock_change_points_indexes, mock_points_indexes,
-                    mock_create_change_points_view, mock_create_build_failures_view,
-                    mock_change_points_validators, mock_change_points_with_attachments_view):
+    @patch(ns('create_indexes'))
+    def test_manage(self, mock_create_indexes, mock_create_change_points_view,
+                    mock_create_build_failures_view, mock_change_points_validators,
+                    mock_change_points_with_attachments_view):
         # pylint: disable=invalid-name
         """ Test that manage calls the view and index functions. """
         mock_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
 
-        manage.manage(mock_config)
-        mock_points_indexes.assert_called_once()
-        mock_change_points_indexes.assert_called_once()
+        manage.manage(mock_config, False, False, [])
+        mock_create_indexes.assert_called_once()
         mock_create_change_points_view.assert_called_once()
         mock_create_build_failures_view.assert_called_once()
-        mock_processed_indexes.assert_called_once()
         mock_change_points_with_attachments_view.assert_called_once()
         mock_change_points_validators.assert_called_once()
 
 
-class TestCreatePointsIndex(unittest.TestCase):
+class TestCreateIndexes(unittest.TestCase):
     """
-    Test manage.create_points_indexes function.
+    Test manage.create_indexes function.
     """
 
     def test_create_points_indexes(self):
         """ Test create_points_indexes. """
-        mock_points = MagicMock(name='point')
-        mock_config = MagicMock(name='config', points=mock_points)
+        mock_collection = MagicMock()
 
-        manage.create_points_indexes(mock_config)
+        manage.create_indexes({'points': mock_collection}, ['points'])
         calls = [
             call([('project', 1), ('variant', 1), ('task', 1), ('test', 1), ('order', 1)]),
             call([('project', 1), ('variant', 1), ('task', 1), ('order', 1)])
         ]
 
-        mock_points.create_index.assert_has_calls(calls)
-
-
-class TestCreateChangePointsIndex(unittest.TestCase):
-    """
-    Test manage.create_change_points_indexes function.
-    """
+        mock_collection.create_index.assert_has_calls(calls)
 
     def test_change_points_indexes(self):
         """ Test create_change_points_indexes. """
-        mock_change_points = MagicMock(name='change_points')
-        mock_config = MagicMock(name='config', change_points=mock_change_points)
+        mock_collection = MagicMock()
 
-        manage.create_change_points_indexes(mock_config)
+        manage.create_indexes({'change_points': mock_collection}, ['change_points'])
         calls = [
             call([('project', 1), ('variant', 1), ('task', 1), ('test', 1)]),
             call([('create_time', 1)])
         ]
 
-        mock_change_points.create_index.assert_has_calls(calls)
-
-
-class TestCreateProcessedChangePointsIndex(unittest.TestCase):
-    """
-    Test manage.create_change_points_indexes function.
-    """
+        mock_collection.create_index.assert_has_calls(calls)
 
     def test_create_indexes(self):
         """ Test create_processed_change_points_indexes. """
-        mock_processed_change_points = MagicMock(name='processed_change_points')
-        mock_config = MagicMock(name='config', processed_change_points=mock_processed_change_points)
+        mock_collection = MagicMock()
 
-        manage.create_processed_change_points_indexes(mock_config)
+        manage.create_indexes({
+            'processed_change_points': mock_collection
+        }, ['processed_change_points'])
         calls = [
             call(
                 [('suspect_revision', 1), ('project', 1), ('variant', 1), ('task', 1), ('test', 1),
@@ -101,7 +84,49 @@ class TestCreateProcessedChangePointsIndex(unittest.TestCase):
                 unique=True)
         ]
 
-        mock_processed_change_points.create_index.assert_has_calls(calls)
+        mock_collection.create_index.assert_has_calls(calls)
+
+    def test_drop_with_force(self):
+        mock_collection = MagicMock()
+
+        manage.create_indexes({
+            'processed_change_points': mock_collection
+        }, ['processed_change_points'], True, True)
+        calls = [
+            call(
+                [('suspect_revision', 1), ('project', 1), ('variant', 1), ('task', 1), ('test', 1),
+                 ('thread_level', 1)],
+                unique=True)
+        ]
+
+        mock_collection.create_index.assert_has_calls(calls)
+        calls = [
+            call([('suspect_revision', 1), ('project', 1), ('variant', 1), ('task', 1), ('test', 1),
+                  ('thread_level', 1)])
+        ]
+        mock_collection.drop_index.assert_has_calls(calls)
+
+    def test_multiple_collections(self):
+        mock_collection = MagicMock()
+        mock_collection_cp = MagicMock()
+
+        collections_map = {
+            'points': mock_collection,
+            'change_points': mock_collection_cp,
+        }
+        manage.create_indexes(collections_map, ['points', 'change_points'])
+        calls = [
+            call([('project', 1), ('variant', 1), ('task', 1), ('test', 1), ('order', 1)]),
+            call([('project', 1), ('variant', 1), ('task', 1), ('order', 1)])
+        ]
+        mock_collection.create_index.assert_has_calls(calls)
+
+        calls_cp = [
+            call([('project', 1), ('variant', 1), ('task', 1), ('test', 1)]),
+            call([('create_time', 1)])
+        ]
+
+        mock_collection_cp.create_index.assert_has_calls(calls_cp)
 
 
 class TestCreateBFView(unittest.TestCase):

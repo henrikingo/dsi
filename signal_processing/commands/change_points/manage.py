@@ -12,7 +12,15 @@ LOG = structlog.getLogger(__name__)
 
 @click.command(name='manage')
 @click.pass_obj
-def manage_command(command_config):
+@click.option('--drop', 'drop', is_flag=True, help='Drop indexes before creating them.')
+@click.option('--force', 'force', is_flag=True, help='Do not prompt before dropping indexes.')
+@click.option(
+    '--index',
+    'indexes',
+    multiple=True,
+    type=click.Choice(manage.COLLECTIONS_TO_INDEX),
+    help='Collections to create indexes on.')
+def manage_command(command_config, drop, force, indexes):
     """
 Manage the infrastructural elements of the performance database. That is, indexes,
 views etc.
@@ -24,4 +32,4 @@ At the moment, it supports:
         3. The indexes for the point collection.
 """
     LOG.debug('starting')
-    manage.manage(command_config)
+    manage.manage(command_config, indexes, drop, force)
