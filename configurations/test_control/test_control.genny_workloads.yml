@@ -4,7 +4,7 @@ run:
     type: genny
     cmd: |
       set -eou pipefail
-      ./genny/bin/genny ./genny/etc/genny/workloads/InsertRemove.yml -u "${mongodb_setup.meta.mongodb_url}" -m csv -o ./genny-perf.csv
+      ./genny/bin/genny ./genny/etc/genny/workloads/scale/InsertRemove.yml -u "${mongodb_setup.meta.mongodb_url}" -m csv -o ./genny-perf.csv
       genny-metrics-to-perf-json < ./genny-perf.csv > ./genny-perf.json
     output_files:
       # Genny output-parser only parses the first file (must be the json)

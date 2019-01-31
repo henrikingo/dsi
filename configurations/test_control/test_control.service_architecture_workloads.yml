@@ -22,7 +22,7 @@ run:
     cmd: |
       set -eou pipefail
 
-      workload_path="./genny/etc/genny/workloads/service-architecture/PrimaryRequiredReads.yml"
+      workload_path="./genny/etc/genny/workloads/networking/PrimaryRequiredReads.yml"
       results_path="./genny-results/genny-perf.csv"
 
       # Note that read preference workloads such as this one only have meaning

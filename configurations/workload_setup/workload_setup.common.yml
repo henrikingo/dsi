@@ -1,7 +1,7 @@
 genny:
   - on_localhost:
       checkout_repos:
-        - source: git@github.com:10gen/genny.git
+        - source: git@github.com:mongodb/genny.git
           target: ${bootstrap.genny_dir}
           branch: master
   - on_workload_client:
