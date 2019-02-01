@@ -1,4 +1,4 @@
-task_name: genny_workloads
+task_name: insert_remove
 run:
   - id: InsertRemove
     type: genny
