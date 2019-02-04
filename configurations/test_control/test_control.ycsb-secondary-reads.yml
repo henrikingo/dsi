@@ -9,7 +9,7 @@ run:
       -threads ${test_control.thread_levels.load};
     config_filename: workloadEvergreen
     workload_config: |
-      mongodb.url=${mongodb_setup.meta.mongodb_url}&replicaSet=rs0&readPreference=secondary
+      mongodb.url=${mongodb_setup.meta.mongodb_url}&readPreference=secondary
       // This way to set readPreference is deprecated in Java driver but in case YCSB uses an older version
       mongodb.readPreference=secondary
       recordcount=5000000
@@ -31,7 +31,7 @@ run:
       -threads ${test_control.thread_levels.level100-0};
     config_filename: workloadEvergreen_100read
     workload_config: |
-      mongodb.url=${mongodb_setup.meta.mongodb_url}&replicaSet=rs0&readPreference=secondary
+      mongodb.url=${mongodb_setup.meta.mongodb_url}&readPreference=secondary
       // This way to set readPreference is deprecated in Java driver but in case YCSB uses an older version
       mongodb.readPreference=secondary
       recordcount=5000000
@@ -54,7 +54,7 @@ run:
       -threads ${test_control.thread_levels.level95-5};
     config_filename: workloadEvergreen_95read5update
     workload_config: |
-      mongodb.url=${mongodb_setup.meta.mongodb_url}&replicaSet=rs0&readPreference=secondary
+      mongodb.url=${mongodb_setup.meta.mongodb_url}&readPreference=secondary
       // This way to set readPreference is deprecated in Java driver but in case YCSB uses an older version
       mongodb.readPreference=secondary
       recordcount=5000000
@@ -77,7 +77,7 @@ run:
       -threads ${test_control.thread_levels.level50-50};
     config_filename: workloadEvergreen_50read50update
     workload_config: |
-      mongodb.url=${mongodb_setup.meta.mongodb_url}&replicaSet=rs0&readPreference=secondary
+      mongodb.url=${mongodb_setup.meta.mongodb_url}&readPreference=secondary
       // This way to set readPreference is deprecated in Java driver but in case YCSB uses an older version
       mongodb.readPreference=secondary
       recordcount=5000000

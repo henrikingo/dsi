@@ -6,11 +6,25 @@ run:
     cmd: |
       cd tpcc/pytpcc
       rm -f results.log
-      python ./tpcc.py --print-config mongodb > mongodb.config
-      sed -i "s/localhost/${mongodb_setup.meta.hostname}/g" mongodb.config
-      sed -i "s/27017/${mongodb_setup.meta.port}/g" mongodb.config
-      sed -i "s/replset/rs0/g" mongodb.config
-      python ./tpcc.py --reset --clients=10 --warehouses=4 --duration=360 --config=mongodb.config mongodb
+      python ./tpcc.py --reset --clients=10 --warehouses=4 --duration=360 --config=../../mongodb.config mongodb
+    config_filename: mongodb.config
+    workload_config: |
+      # MongodbDriver Configuration File
+      # Created 2019-01-30 16:57:51.552892
+      [mongodb]
+      # Database name
+      name                 = tpcc
+      # The mongodb connection string or URI
+      uri                  = ${mongodb_setup.meta.mongodb_url}
+      # If true, all things to update will be fetched via findAndModify
+      findandmodify        = True
+      # If true, we will perform causal reads against nearest if possible
+      secondary_reads      = True
+      # If true, data will be denormalized using MongoDB schema design best practices
+      denormalize          = True
+      # If true, transactions will not be used (benchmarking only)
+      notransactions       = False
+
     output_files:
       - tpcc/pytpcc/results.log
 

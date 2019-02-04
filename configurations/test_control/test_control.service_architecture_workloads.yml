@@ -25,11 +25,7 @@ run:
       workload_path="./genny/etc/genny/workloads/networking/PrimaryRequiredReads.yml"
       results_path="./genny-results/genny-perf.csv"
 
-      # Note that read preference workloads such as this one only have meaning
-      # when run against replica sets
-      mongo_uri="${mongodb_setup.meta.mongodb_url}&replicaSet=rs0"
-
-      ./genny/bin/genny "$workload_path" -u "$mongo_uri" -m csv -o "$results_path"
+      ./genny/bin/genny "$workload_path" -u "${mongodb_setup.meta.mongodb_url}" -m csv -o "$results_path"
       genny-metrics-to-perf-json < "$results_path" > ./genny-perf.json
 
     output_files:

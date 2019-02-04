@@ -20,9 +20,9 @@ run:
     # the url is set to a connection to mongos if in a sharded cluster, otherwise it is set
     # to a connection to a replica set. Until the java driver supports pinning mongos (JAVA-3069),
     # set to a connection to a specific mongos. Once this is done, this can be changed to
-    # `${mongodb_setup.meta.mongodb_url}&replicaSet=${mongodb_setup.topology.0.id}`.
+    # `${mongodb_setup.meta.mongodb_url}`.
     workload_config: &linkbench_config |
-      url=mongodb://${mongodb_setup.meta.hostname}/test?retryWrites=true${test_control.connection_options.${mongodb_setup.meta.is_replset}}
+      url=${test_control.url.${mongodb_setup.meta.is_sharded}}
       data_file = config/Distribution.dat
       startid1 = 1
       # 10e6 ids is approx 7.5gb of data
@@ -145,7 +145,7 @@ run:
 pre_task:
   - on_workload_client:
       exec_mongo_shell:
-        connection_string: "${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}"
+        connection_string: "${mongodb_setup.meta.mongodb_shell_url}"
         script: |
           db = db.getSiblingDB('linkdb0');
 
@@ -169,7 +169,11 @@ between_tests:
       clean_logs: true
       clean_db_dir: false
 
-# This is just a lookup table. Each test may reference some leaf node here from a test parameter.
-connection_options:
-  "True": "&replicaSet=${mongodb_setup.topology.0.id}"
-  "False": ""
+# URL to use based on whether the test is sharded or not and used above.
+# the url is set to a connection to mongos if in a sharded cluster, otherwise it is set
+# to a connection to a replica set. Until the java driver supports pinning mongos (JAVA-3069),
+# set to a connection to a specific mongos. Once this is done, this can be changed to
+# `${mongodb_setup.meta.mongodb_url}`.
+url:
+  "False": "${mongodb_setup.meta.mongodb_url}&retryWrites=true"
+  "True": "mongodb://${mongodb_setup.meta.hostname}/test?retryWrites=true"

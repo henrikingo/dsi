@@ -58,6 +58,7 @@ functions:
         directory: src
         revisions: # for each module include revision as <module_name> : ${<module_name>_rev}
           workloads: ${workloads_rev}
+          genny: ${genny_rev}
           linkbench: ${linkbench_rev}
     - command: shell.exec
       params:
@@ -72,6 +73,7 @@ functions:
           production: true
           workloads_dir: ../src/workloads/workloads
           ycsb_dir: ../src/YCSB/YCSB
+          genny_dir: ../src/genny/genny
           linkbench_dir: ../src/linkbench/linkbench
           EOF
 
@@ -192,7 +194,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "linkbench"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -203,7 +204,36 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "tpcc"
-        authentication: disabled
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: insert_remove
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "insert_remove"
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: service_architecture_workloads
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "service_architecture_workloads"
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
+- name: big_update
+  priority: 5
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "big_update"
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -250,7 +280,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "crud_workloads"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -261,7 +290,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "mixed_workloads"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -272,7 +300,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "misc_workloads"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -283,7 +310,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "map_reduce_workloads"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -294,7 +320,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "short"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -305,7 +330,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "retryable_writes"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -316,7 +340,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "snapshot_reads"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -327,7 +350,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "secondary_reads"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -338,7 +360,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "bestbuy_agg"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -349,7 +370,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "bestbuy_query"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -360,7 +380,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "non_sharded"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -371,7 +390,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "mongos"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -382,7 +400,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "move_chunk"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -393,7 +410,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "move_chunk_waiting"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -406,7 +422,6 @@ tasks:
         # Unfortunately the dash/underscore style is different for mongodb_setup and test_control
         test: "secondary_performance"
         setup: "secondary-performance"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -438,7 +453,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "change_streams_throughput"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -449,7 +463,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "change_streams_latency"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -460,7 +473,6 @@ tasks:
     - func: "prepare environment"
       vars:
         test: "change_streams_multi_mongos"
-        authentication: disabled
     - func: "deploy cluster"
     - func: "run test"
     - func: "analyze"
@@ -474,6 +486,11 @@ modules:
 - name: workloads
   repo: git@github.com:10gen/workloads.git
   prefix: workloads
+  branch: master
+
+- name: genny
+  repo: git@github.com:mongodb/genny.git
+  prefix: genny
   branch: master
 
 - name: linkbench
@@ -492,7 +509,7 @@ buildvariant_templates:  # Dummy key that evergreen ignores
   # 10 years. The intent is to only schedule Atlas tests manually when needed.
   batchtime: 5256000
   modules: &modules
-    - dsi
+    - genny
     - workloads
     - linkbench
   expansions:
@@ -501,7 +518,7 @@ buildvariant_templates:  # Dummy key that evergreen ignores
       - "rhel70-perf-atlas"
   tasks: &3nodetasks
     - name: industry_benchmarks
-#    - name: industry_benchmarks_secondary_reads
+    - name: industry_benchmarks_secondary_reads
 #    - name: crud_workloads
 #    - name: mixed_workloads
 #    - name: misc_workloads
@@ -517,7 +534,11 @@ buildvariant_templates:  # Dummy key that evergreen ignores
 #    - name: change_streams_latency
 #    - name: snapshot_reads
 #    - name: secondary_reads
-#    - name: linkbench
+    - name: linkbench
+    - name: insert_remove
+    - name: big_update
+    - name: tpcc
+    - name: service_architecture_workloads
 
 
 
