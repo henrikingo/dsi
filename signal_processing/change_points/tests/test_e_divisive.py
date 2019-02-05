@@ -14,6 +14,20 @@ setup_logging(False)
 EMPTY_NP_ARRAY = np.array([], dtype=np.float)
 
 
+class TestEDivisiveTIG1423(unittest.TestCase):
+    """
+    Test for TIG-1423.
+    """
+
+    def test_ctor_defaults(self):
+        """
+        Test that EDivisive applies defaults for None.
+        """
+        e_divisive = EDivisive(pvalue=None, permutations=None)
+        self.assertIsNotNone(e_divisive.pvalue)
+        self.assertIsNotNone(e_divisive.permutations)
+
+
 class TestEDivisive(unittest.TestCase):
     """
     Test for EDivisive class methods.

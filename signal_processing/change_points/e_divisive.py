@@ -76,8 +76,8 @@ class EDivisiveNumpyImp(object):  # pylint: disable=too-many-instance-attributes
         :param int permutations: The max number of permutations to perform when evaluating the
         pvalue significance testing.
         """
-        self.pvalue = pvalue
-        self.permutations = permutations
+        self.pvalue = 0.05 if pvalue is None else pvalue
+        self.permutations = 100 if permutations is None else permutations
 
     @staticmethod
     def _extract_q(qhat_values):
