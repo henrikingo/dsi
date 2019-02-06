@@ -162,7 +162,7 @@ class AtlasSetup(object):
                 if key == "mongoURI":
                     new_object["hosts"] = response[key][prefix:]
 
-        LOG.debug(new_object)
+        LOG.debug("_save_create_response", new_cluster=new_object)
         # While this is a list, we actually lookup by cluster name.
         # An alternative design would have been for mongodb_setup.out.atlas.clusters to be a dict
         # keyed on name. That is really what this code is doing. But I wanted to keep it a list so
