@@ -78,6 +78,9 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
                     'storage': {
                         'engine': 'wiredTiger'
                     }
+                },
+                'meta': {
+                    'is_atlas': False
                 }
             }
         } # yapf: disable
@@ -94,7 +97,22 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
             os.remove(self.perf_json_path)
 
     def test_generate_perf_json(self):
-        """Generates a perf.new.json file from a "test results" that combines all 4 test types."""
+        """Generates a perf.json file from a "test results" that combines all 4 test types."""
+        for test in self.tests:
+            LOG.debug("Parsing results for test %s", test['id'])
+            parse_test_results(test, self.config, self.timer)
+
+        # Verify output file
+        FIXTURE_FILES.assert_json_files_equal(
+            self, expect="{}.ok".format(self.perf_json_path), actual=self.perf_json_path)
+
+    def test_atlas_perf_json(self):
+        """Generates a perf.json file but omitting fio and iperf."""
+        self.config['mongodb_setup']['meta']['is_atlas'] = True
+        path = FIXTURE_FILES.fixture_file_path('perf.atlas.json')
+        self.config['test_control']['perf_json']['path'] = path
+        self.perf_json_path = path
+
         for test in self.tests:
             LOG.debug("Parsing results for test %s", test['id'])
             parse_test_results(test, self.config, self.timer)

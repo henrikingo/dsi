@@ -69,8 +69,9 @@ def destroy_atlas_resources():
     try:
         import common.config
         import common.atlas_setup as atlas_setup
-    except ImportError:
-        LOG.info("Cannot import ConfigDict. Skipping Atlas teardown.")
+    except ImportError as error:
+        LOG.info(error)
+        LOG.info("Cannot import ConfigDict or AtlasSetup. Skipping Atlas teardown.")
         LOG.info("(This is benign inside evergreen teardown hook.)")
         return True
 

@@ -81,7 +81,7 @@ class AtlasSetup(object):
                 LOG.error("Trying to start Atlas Clusters, but self.atlas_client not initialized")
                 raise (UserWarning(
                     "Atlas_setup trying to start clusters, but self.atlas_client not initialized\n"
-                    "Do you have a runtime_secret.yml file with atlas api information?\n See"
+                    "Do you have a runtime_secret.yml file with atlas api information?\n See "
                     "https://github.com/10gen/dsi/blob/master/docs/config-specs/runtime_secret.yml")
                       ) #yapf: disable
             return all(

@@ -473,8 +473,11 @@ class FioParser(ResultParser):
 
     def _parse(self):
         """Parse fio.json"""
-        fio_output = json.loads(self.load_input_log())
+        if self.config['mongodb_setup']['meta']['is_atlas']:
+            LOG.info("No fio results for an Atlas cluster, skipping...")
+            return
 
+        fio_output = json.loads(self.load_input_log())
         # Iterate over the fio jobs
         for job in fio_output['jobs']:
             for write_or_read in ['write', 'read']:
@@ -510,6 +513,11 @@ class IperfParser(ResultParser):
 
     def _parse(self):
         """Parse iperf.json"""
+        # On Atlas clusters, we skip fio and iperf, so there is no results file.
+        if self.config['mongodb_setup']['meta']['is_atlas']:
+            LOG.info("No iperf3 results for an Atlas cluster, skipping...")
+            return
+
         iperf_output = json.loads(self.load_input_log())
         result = iperf_output['end']['sum_sent']['bits_per_second']
         self.add_result("NetworkBandwidth", result)

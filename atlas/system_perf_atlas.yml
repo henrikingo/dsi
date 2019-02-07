@@ -42,7 +42,7 @@ post:
         working_dir: work
         script: |
           source ./dsienv.sh
-          infrastructure_teardown.py
+          ../src/run-dsi infrastructure_teardown.py
 
 functions:
   "prepare environment":

@@ -121,7 +121,7 @@ mongodb_setup:
     is_sharded: false
     is_replset: false
     secondary: None
-
+    is_atlas: false
     # Meta-data used to determine scale_factor for a cluster
     storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
     # Number of primaries in the cluster. For non-sharded this
