@@ -26,6 +26,10 @@ variable "amis" {
         "us-west-2c" = "ami-6cd6f714"
         "us-west-2d" = "ami-6cd6f714"
 
+        "us-west-1a" = "ami-0799ad445b5727125"
+        "us-west-1b" = "ami-0799ad445b5727125"
+        "us-west-1c" = "ami-0799ad445b5727125"
+
         "us-east-1a" = "ami-04681a1dbd79675a5"
 
         "eu-west-1a" = "ami-0bdb1d6c15a40392c"

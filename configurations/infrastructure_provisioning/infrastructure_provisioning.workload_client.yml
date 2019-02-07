@@ -13,5 +13,6 @@ tfvars:
   workload_instance_count: 1
   workload_instance_type: c3.8xlarge
 
-  region: us-west-2
-  availability_zone: us-west-2a
+  # Using US-WEST-1 because Atlas Cloud Dev has the most capacity in that region and US-EAST-1.
+  region: us-west-1
+  availability_zone: us-west-1a

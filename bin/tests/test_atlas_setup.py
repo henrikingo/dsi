@@ -114,7 +114,7 @@ class TestAtlasSetup(unittest.TestCase):
             config = load_config_dict('mongodb_setup')
             atlas = atlas_setup.AtlasSetup(config)
             name = atlas._generate_unique_name(atlas_cluster)
-        # Generated name looks like: dsi-REPLSET-M99-abcdefg
+        # Generated name looks like: dsi-M99-abcdefg
         # (The last part is random, but fixed length.)
-        self.assertRegexpMatches(name, 'dsi-REPLSET-M99-')
-        self.assertEquals(len(name), 23)
+        self.assertRegexpMatches(name, 'dsi-M99-')
+        self.assertEquals(len(name), 15)

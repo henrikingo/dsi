@@ -145,8 +145,8 @@ class AtlasSetup(object):
     def _generate_unique_name(atlas_cluster):
         chars = "abcdefghijklmnopqrstuvwxyz"
         unique = ''.join([random.choice(chars) for _ in range(7)])
-        return "dsi-{}-{}-{}".format(atlas_cluster["clusterType"],
-                                     atlas_cluster["providerSettings"]["instanceSizeName"], unique)
+        return "dsi-{}-{}".format(atlas_cluster["providerSettings"]["instanceSizeName"].replace(
+            '_', ''), unique)
 
     def _save_create_response(self, response):
         new_object = {}

@@ -550,10 +550,28 @@ buildvariants:
     atlas_setup: M10-repl
 
 - <<: *buildvariant_template
+  name: M20-atlas-repl
+  display_name: M20 Atlas ReplSet
+  expansions:
+    atlas_setup: M20-repl
+
+- <<: *buildvariant_template
   name: M30-atlas-repl
   display_name: M30 Atlas ReplSet
   expansions:
     atlas_setup: M30-repl
+
+- <<: *buildvariant_template
+  name: M40-atlas-repl
+  display_name: M40 Atlas ReplSet
+  expansions:
+    atlas_setup: M40-repl
+
+- <<: *buildvariant_template
+  name: M50-atlas-repl
+  display_name: M50 Atlas ReplSet
+  expansions:
+    atlas_setup: M50-repl
 
 - <<: *buildvariant_template
   name: M60-atlas-repl
@@ -567,14 +585,111 @@ buildvariants:
   expansions:
     atlas_setup: M100-repl
 
+# - <<: *buildvariant_template
+#   name: M140-atlas-repl
+#   display_name: M140 Atlas ReplSet
+#   expansions:
+#     atlas_setup: M140-repl
+
 - <<: *buildvariant_template
   name: M200-atlas-repl
   display_name: M200 Atlas ReplSet
   expansions:
     atlas_setup: M200-repl
 
+# - <<: *buildvariant_template
+#   name: M300-atlas-repl
+#   display_name: M300 Atlas ReplSet
+#   expansions:
+#     atlas_setup: M300-repl
+
 - <<: *buildvariant_template
   name: M400-atlas-repl
   display_name: M400 Atlas ReplSet
   expansions:
     atlas_setup: M400-repl
+
+
+- <<: *buildvariant_template
+  name: R40-atlas-repl
+  display_name: R40 Atlas ReplSet
+  expansions:
+    atlas_setup: R40-repl
+
+- <<: *buildvariant_template
+  name: R50-atlas-repl
+  display_name: R50 Atlas ReplSet
+  expansions:
+    atlas_setup: R50-repl
+
+- <<: *buildvariant_template
+  name: R60-atlas-repl
+  display_name: R60 Atlas ReplSet
+  expansions:
+    atlas_setup: R60-repl
+
+- <<: *buildvariant_template
+  name: R80-atlas-repl
+  display_name: R80 Atlas ReplSet
+  expansions:
+    atlas_setup: R80-repl
+
+- <<: *buildvariant_template
+  name: R200-atlas-repl
+  display_name: R200 Atlas ReplSet
+  expansions:
+    atlas_setup: R200-repl
+
+# - <<: *buildvariant_template
+#   name: R300-atlas-repl
+#   display_name: R300 Atlas ReplSet
+#   expansions:
+#     atlas_setup: R300-repl
+
+- <<: *buildvariant_template
+  name: R400-atlas-repl
+  display_name: R400 Atlas ReplSet
+  expansions:
+    atlas_setup: R400-repl
+
+# - <<: *buildvariant_template
+#   name: R700-atlas-repl
+#   display_name: R700 Atlas ReplSet
+#   expansions:
+#     atlas_setup: R700-repl
+
+- <<: *buildvariant_template
+  name: M40-nvme-atlas-repl
+  display_name: M40 Atlas NVME ReplSet
+  expansions:
+    atlas_setup: M40_NVME-repl
+
+- <<: *buildvariant_template
+  name: M50-nvme-atlas-repl
+  display_name: M50 NVMe Atlas ReplSet
+  expansions:
+    atlas_setup: M50_NVME-repl
+
+- <<: *buildvariant_template
+  name: M60-atlas-NVME-repl
+  display_name: M60 NVMe Atlas ReplSet
+  expansions:
+    atlas_setup: M60_NVME-repl
+
+- <<: *buildvariant_template
+  name: M80-atlas-NVME-repl
+  display_name: M80 NVMe Atlas ReplSet
+  expansions:
+    atlas_setup: M80_NVME-repl
+
+- <<: *buildvariant_template
+  name: M200-atlas-NVME-repl
+  display_name: M200 NVMe Atlas ReplSet
+  expansions:
+    atlas_setup: M200_NVME-repl
+
+# - <<: *buildvariant_template
+#   name: M400-atlas-NVME-repl
+#   display_name: M400 NVMe Atlas ReplSet
+#   expansions:
+#     atlas_setup: M400_NVME-repl

@@ -110,14 +110,20 @@ class AtlasClient(object):
         :return: The Atlas response, which contains state and meta-data about the cluster.
         """
         while True:
-            cluster = self.get_one_cluster(cluster_name)
-            LOG.info(
-                "Await state",
-                cluster_name=cluster_name,
-                status=cluster["stateName"],
-                target_state=target_state)
-            if cluster["stateName"] == target_state:
-                return cluster
+            # The await state occassionaly fails it's query, particularly in cluster types that take
+            # longer to spawn (e.g., NVMe).
+            try:
+                cluster = self.get_one_cluster(cluster_name)
+                LOG.info(
+                    "Await state",
+                    cluster_name=cluster_name,
+                    status=cluster["stateName"],
+                    target_state=target_state)
+                if cluster["stateName"] == target_state:
+                    return cluster
+            except requests.exceptions.HTTPError:
+                LOG.exception(
+                    "In await state and self.get_one_cluster threw. Catching and moving on")
             time.sleep(30)
 
     def delete_cluster(self, cluster_name):

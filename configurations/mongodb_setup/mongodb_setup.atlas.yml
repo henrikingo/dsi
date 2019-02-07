@@ -29,6 +29,18 @@ meta:
 # The keys in this lookup table map to atlas-setup expansion in system_perf_atlas.yml
 atlas_types:
   just_a_template:
+    - &repl_base_template
+      autoScaling:
+        diskGBEnabled: false
+      clusterType: REPLICASET
+      mongoDBMajorVersion: 4.0
+      numShards: 1
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_1
+        instanceSizeName: REPLACE
+
+  more_detailed_template:
     - &repl_template
       autoScaling:
         diskGBEnabled: false
@@ -37,26 +49,54 @@ atlas_types:
       numShards: 1
       providerSettings:
         providerName: AWS
-        regionName: US_WEST_2
+        regionName: US_WEST_1
         instanceSizeName: REPLACE
         diskIOPS: REPLACE
       diskSizeGB: REPLACE
 
+  # M Class
   M10-repl:
     - <<: *repl_template
       providerSettings:
         providerName: AWS
-        regionName: US_WEST_2
+        regionName: US_WEST_1
         instanceSizeName: M10
         diskIOPS: 300
       diskSizeGB: 100
+
+  M20-repl:
+    - <<: *repl_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_1
+        instanceSizeName: M20
+        diskIOPS: 600
+      diskSizeGB: 200
 
   M30-repl:
     - <<: *repl_template
       providerSettings:
         providerName: AWS
-        regionName: US_WEST_2
+        regionName: US_WEST_1
         instanceSizeName: M30
+        diskIOPS: 3600
+      diskSizeGB: 320
+
+  M40-repl:
+    - <<: *repl_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_1
+        instanceSizeName: M40
+        diskIOPS: 3600
+      diskSizeGB: 320
+
+  M50-repl:
+    - <<: *repl_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_1
+        instanceSizeName: M50
         diskIOPS: 3600
       diskSizeGB: 320
 
@@ -65,36 +105,171 @@ atlas_types:
     - <<: *repl_template
       providerSettings:
         providerName: AWS
-        regionName: US_WEST_2
+        regionName: US_WEST_1
         instanceSizeName: M60  # M60 roughly corresponds to c3.8xlarge
         diskIOPS: 5280  # sys-perf uses 5500
       diskSizeGB: 320  # sys-perf uses 320
-
-
 
   M100-repl:
     - <<: *repl_template
       providerSettings:
         providerName: AWS
-        regionName: US_WEST_2
+        regionName: US_WEST_1
         instanceSizeName: M100
         diskIOPS: 8448
       diskSizeGB: 512
+
+  # Only available in 2 EU regions.
+  # M140-repl:
+  #   - <<: *repl_template
+  #     providerSettings:
+  #       providerName: AWS
+  #       regionName: US_WEST_1
+  #       instanceSizeName: M140
+  #       diskIOPS: 8448
+  #     diskSizeGB: 512
 
   M200-repl:
     - <<: *repl_template
       providerSettings:
         providerName: AWS
-        regionName: US_WEST_2
+        regionName: US_WEST_1
         instanceSizeName: M200
         diskIOPS: 8448
       diskSizeGB: 512
 
-  M400-repl:
+  # Only available in 2 EU regions.
+  # M300-repl:
+  #   - <<: *repl_template
+  #     providerSettings:
+  #       providerName: AWS
+  #       regionName: US_WEST_1
+  #       instanceSizeName: M300
+  #       diskIOPS: 8448
+  #     diskSizeGB: 512
+
+  # R Class
+  R40-repl:
     - <<: *repl_template
       providerSettings:
         providerName: AWS
-        regionName: US_WEST_2
-        instanceSizeName: M400
-        diskIOPS: 8448
-      diskSizeGB: 512
+        regionName: US_WEST_1
+        instanceSizeName: R40
+        diskIOPS: 3000
+      diskSizeGB: 320
+
+  R50-repl:
+    - <<: *repl_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_1
+        instanceSizeName: R50
+        diskIOPS: 5280  # sys-perf uses 5500
+      diskSizeGB: 320  # sys-perf uses 320
+
+  R60-repl:
+    - <<: *repl_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_1
+        instanceSizeName: R60
+        diskIOPS: 5280  # sys-perf uses 5500
+      diskSizeGB: 320  # sys-perf uses 320
+
+  R80-repl:
+    - <<: *repl_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_1
+        instanceSizeName: R80
+        diskIOPS: 5280  # sys-perf uses 5500
+      diskSizeGB: 320  # sys-perf uses 320
+
+  R200-repl:
+    - <<: *repl_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_1
+        instanceSizeName: R200
+        diskIOPS: 5280  # sys-perf uses 5500
+      diskSizeGB: 320  # sys-perf uses 320
+
+  # Only supported in one region in EU
+  # R300-repl:
+  #   - <<: *repl_template
+  #     providerSettings:
+  #       providerName: AWS
+  #       regionName: US_WEST_1
+  #       instanceSizeName: R300
+  #       diskIOPS: 5280  # sys-perf uses 5500
+  #     diskSizeGB: 320  # sys-perf uses 320
+
+  R400-repl:
+    - <<: *repl_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_1
+        instanceSizeName: R400
+        diskIOPS: 5280  # sys-perf uses 5500
+      diskSizeGB: 320  # sys-perf uses 320
+
+  # Only supported in one region in EU.
+  # R700-repl:
+  #   - <<: *repl_template
+  #     providerSettings:
+  #       providerName: AWS
+  #       regionName: US_WEST_1
+  #       instanceSizeName: R700
+  #       diskIOPS: 5280  # sys-perf uses 5500
+  #     diskSizeGB: 320  # sys-perf uses 320
+
+  # M NVME class
+  M40_NVME-repl:
+    - <<: *repl_base_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_1
+        instanceSizeName: M40_NVME
+      providerBackupEnabled: "True"
+
+  M50_NVME-repl:
+    - <<: *repl_base_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_1
+        instanceSizeName: M50_NVME
+      providerBackupEnabled: "True"
+
+  M60_NVME-repl:
+    - <<: *repl_base_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_1
+        instanceSizeName: M60_NVME
+      providerBackupEnabled: "True"
+
+  M80_NVME-repl:
+    - <<: *repl_base_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_1
+        instanceSizeName: M80_NVME
+      providerBackupEnabled: "True"
+
+  # Not available in US_WEST_1. It is available in US WEST 2 and US EAST 1 and 2.
+  # M400_NVME-repl:
+  #   - <<: *repl_base_template
+  #     providerSettings:
+  #       providerName: AWS
+  #       regionName: US_WEST_1
+  #       instanceSizeName: M400_NVME
+  #     providerBackupEnabled: "True"
+
+  M200_NVME-repl:
+    - <<: *repl_base_template
+      providerSettings:
+        providerName: AWS
+        regionName: US_WEST_1
+        instanceSizeName: M200_NVME
+      providerBackupEnabled: "True"
+
