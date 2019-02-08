@@ -17,6 +17,7 @@ from bin.common import log
 from signal_processing.commands import helpers
 from signal_processing.commands.outliers.config import config_command
 from signal_processing.commands.outliers.replay import replay_command
+from signal_processing.commands.outliers.manage_outliers import manage_outliers_command
 
 LOG = structlog.getLogger(__name__)
 
@@ -120,3 +121,4 @@ def help_command(context):
 
 cli.add_command(config_command)
 cli.add_command(replay_command)
+cli.add_command(manage_outliers_command)

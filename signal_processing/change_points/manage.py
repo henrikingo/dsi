@@ -8,53 +8,9 @@ import pymongo
 import structlog
 
 import signal_processing.commands.helpers as helpers
+import signal_processing.util.mongo_util as mongo_util
 
 LOG = structlog.getLogger(__name__)
-
-
-def _create_indexes(collection, indexes):
-    """
-    Create indexes for a given collections.
-
-    :param pymongo.Collection collection: The target collection.
-    :param list(dict) indexes: The indexes to create.
-    """
-    LOG.debug('create indexes', collection=collection, indexes=indexes)
-    for index in indexes:
-        options = index['options'] if 'options' in index else {}
-        collection.create_index(index['keys'], **options)
-
-
-def _drop_indexes(collection, indexes):
-    """
-    Drop indexes on a given collection.
-
-    :param pymongo.Collection collection: The target collection.
-    :param list(dict) indexes: The indexes to drop.
-    """
-    LOG.debug('drop indexes', collection=collection, indexes=indexes)
-    for index in indexes:
-        collection.drop_index(index['keys'])
-
-
-def _create_validator(collection, validator, action='error'):
-    """
-    Modify a collection to apply validation rules to a collection.
-
-    :param pymongo.Collection collection: The target collection.
-    :param dict validator: The validation rules.
-    :param str action: The validation action. This controls the response to a
-    validation issue. The default is error.
-
-    See `schema-validation <https://docs.mongodb.com/manual/core/schema-validation/>`_
-    See `json-schema <http://json-schema.org/>`_
-    """
-    LOG.debug('_create_validator', collection=collection, validator=validator)
-    collection.database.command(
-        'collMod',
-        collection.name,
-        validator=validator,
-        validationAction=action)  # yapf: disable
 
 
 def _create_collection_map(command_config):
@@ -115,7 +71,7 @@ def _create_common_change_points_validator(command_config, collection):
     """
     # pylint: disable=invalid-name, unused-argument
     LOG.debug('create common change points validation rules', collection=collection.name)
-    _create_validator(
+    mongo_util.create_validator(
         collection, {
             '$jsonSchema': {
                 'bsonType': 'object',
@@ -383,9 +339,9 @@ def create_indexes(collection_map, collections, drop=False, force=False):
         if drop:
             msg = 'Are you sure you want to drop indexes on {0}'.format(collection)
             if force or click.confirm(msg):
-                _drop_indexes(collection_map[collection], INDEXES_TO_CREATE[collection])
+                mongo_util.drop_indexes(collection_map[collection], INDEXES_TO_CREATE[collection])
 
-        _create_indexes(collection_map[collection], INDEXES_TO_CREATE[collection])
+        mongo_util.create_indexes(collection_map[collection], INDEXES_TO_CREATE[collection])
 
 
 def manage(command_config, collections, drop=False, force=False):
