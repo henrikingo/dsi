@@ -52,10 +52,10 @@ HUMAN_READABLE_TEMPLATE_STR = '''
 ##        skewness={{ stats.skewness }},
 ##        kurtosis={{ stats.kurtosis }})
 
-|  pos  | Index |   Z-Score  |  %change   | critical |   match  | accepted | revision |       Time       | {{ "%102s" | format(" ",) }} |
+|  Pos  | Index |  Detected  |  %Change   |  Z-Score | Critical |   Match  | Revision |       Time       | Version Id {{ "%91s" | format(" ",) }} |
 | ----- | ----- | ---------- | ---------- | -------- | -------- | -------- | -------- | ---------------- | {{ '-' * 102 }} |
 {% for outlier in outliers -%}
-| {{ "% -5s" | format(loop.index,) }} | {{ "% -5s" | format(outlier.index,) }} | {{ "% -9.3f" | format(outlier.z_score,) }} {{'M' if mad}} | {{ "% -9.3f" | format( 100 * ( full_series.series[outlier.index] - mean) / mean,) }}  | {{ "%-7.3f" | format(outlier.critical,) }}  |    {{ '(/)' if abs(outlier.z_score) > outlier.critical else '(x)' }}   |  {{ "%-5s" | format(loop.index <= count,) }}   | {{ full_series.revisions[outlier.index][0:8] }} | {{ full_series.create_times[outlier.index][:-4] }} | <{{outlier.version_id}}> |
+| {{ "% -5s" | format(loop.index,) }} | {{ "% -5s" | format(outlier.index,) }} |   {{ "%-5s" | format(loop.index <= count,) }}    | {{ "% -9.3f" | format( 100 * ( full_series.series[outlier.index] - mean) / mean,) }}  | {{ "% -7.3f" | format(outlier.z_score,) }} {{'M' if mad}} | {{ "%-7.3f" | format(outlier.critical,) }}  |    {{ '(/)' if abs(outlier.z_score) > outlier.critical else '(x)' }}   | {{ full_series.revisions[outlier.index][0:8] }} | {{ full_series.create_times[outlier.index][:-4] }} | <{{outlier.version_id}}> |
 {% endfor %}
 '''
 
@@ -78,7 +78,8 @@ def run_outlier_detection(full_series, start, end, series, test_identifier, outl
     :param int end: The end index within the full series.
     :param list(float) series: The time series data.
     :param dict test_identifier: The test identifier.
-    :param int outliers_percentage: The max outliers % value to use with GESD.
+    :param float outliers_percentage: The max outliers % value to use with GESD (must be between
+    0.0 and 1.0).
     :param bool mad: Whether the algorithm used the Median Absolute Deviation.
     :param float significance_level: The significance level used for the algorithm.
     """

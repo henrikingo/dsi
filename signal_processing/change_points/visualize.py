@@ -8,6 +8,7 @@ import json
 import numpy as np
 import pymongo
 import scipy
+import scipy.signal
 import structlog
 
 from signal_processing.commands.helpers import LANDSCAPE_FIGSIZE
