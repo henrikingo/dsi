@@ -138,6 +138,7 @@ setup(
               'signal_processing.native',
               'signal_processing.outliers',
               'signal_processing.profiling',
+              'signal_processing.util',
               'analysis',
               'analysis.evergreen'],
     install_requires=install_requirements,
