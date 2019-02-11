@@ -601,7 +601,7 @@ class TestBootstrap(unittest.TestCase):
         """
         Testing that load_bootstrap loads defaults without bootstrap.yml
         """
-        mongodb_url = 'https://s3.amazonaws.com/mciuploads/dsi/sys_perf_4.0_fc1573ba18aee42f97a3bb13b67af7d837826b47/fc1573ba18aee42f97a3bb13b67af7d837826b47/linux/mongodb-sys_perf_4.0_fc1573ba18aee42f97a3bb13b67af7d837826b47.tar.gz'  # pylint: disable=line-too-long
+        mongodb_url = 'https://s3.amazonaws.com/mciuploads/dsi/sys_perf_4.0_caa42a1f75a56c7643d0b68d3880444375ec42e3/caa42a1f75a56c7643d0b68d3880444375ec42e3/linux/mongodb-sys_perf_4.0_caa42a1f75a56c7643d0b68d3880444375ec42e3.tar.gz'  # pylint: disable=line-too-long
         master_config = {
             'analysis': 'common',
             'workload_setup': 'common',

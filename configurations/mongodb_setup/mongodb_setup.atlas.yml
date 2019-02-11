@@ -23,7 +23,7 @@ meta:
   mongodb_shell_url: ${mongodb_setup.meta.mongodb_url}
   hostname: This.is.an.Atlas.cluster.SSH.not.supported
 
-# No correctness checks can be run, since we don't have the log file and diagnostic.data.
+# Correctness checks cause permission denied on Atlas, so there are none.
 # validate:
 
 
