@@ -31,11 +31,6 @@ import signal_processing.commands.change_points.update as update
 import signal_processing.commands.change_points.visualize as visualize
 from bin.common import log
 
-PROCESSED_CHANGE_POINTS = 'processed_change_points'
-CHANGE_POINTS = 'change_points'
-POINTS = 'points'
-BUILD_FAILURES = 'build_failures'
-
 LOG = structlog.getLogger(__name__)
 
 APP_NAME = os.environ.get('DSI_APP_NAME', 'change-points')

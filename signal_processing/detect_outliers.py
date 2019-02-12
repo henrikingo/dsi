@@ -10,7 +10,6 @@ import pymongo
 import structlog
 
 import etl_helpers
-import signal_processing.change_points_cli as change_points_cli
 import signal_processing.commands.helpers as helpers
 import signal_processing.commands.jobs as jobs
 import signal_processing.detect_changes as detect_changes
@@ -147,7 +146,7 @@ class DetectOutliersDriver(object):
 
 def get_change_point_range(points_model, test_identifier, full_series, order):
     """Calculate the change point range for a given revision (order)."""
-    change_points_col = points_model.db.get_collection(change_points_cli.CHANGE_POINTS)
+    change_points_col = points_model.db.get_collection(helpers.CHANGE_POINTS)
     change_points = list(
         change_points_col.find(test_identifier).sort([('order', pymongo.DESCENDING)]))
 

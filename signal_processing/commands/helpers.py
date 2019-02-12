@@ -68,6 +68,7 @@ UNPROCESSED_CHANGE_POINTS = 'unprocessed_change_points'
 CHANGE_POINTS = 'change_points'
 POINTS = 'points'
 BUILD_FAILURES = 'build_failures'
+MUTE_OUTLIERS = 'mute_outliers'
 
 DEFAULT_MONGO_URI = 'mongodb+srv://performancedata-g6tsc.mongodb.net/perf'
 
@@ -140,6 +141,7 @@ class CommandConfiguration(object):
                  processed_change_points=PROCESSED_CHANGE_POINTS,
                  unprocessed_change_points=UNPROCESSED_CHANGE_POINTS,
                  build_failures=BUILD_FAILURES,
+                 mute_outliers=MUTE_OUTLIERS,
                  auth_mode=None,
                  mongo_username=None,
                  mongo_password=None):
@@ -164,6 +166,7 @@ class CommandConfiguration(object):
         :param str processed_change_points: The processed change points collection name.
         :param str unprocessed_change_points: The unprocessed change points collection name.
         :param str build_failures: The build failures collection name.
+        :param str mute_outliers: The mute_outliers collection name.
         :param str auth_mode: How mongo db credentials are obtained.
         :param str mongo_username: The mongo db username.
         :param str mongo_password: The mongo db password.
@@ -190,6 +193,7 @@ class CommandConfiguration(object):
             'processed_change_points': processed_change_points,
             'unprocessed_change_points': unprocessed_change_points,
             'build_failures': build_failures,
+            'mute_outliers': mute_outliers,
         })
 
     # pylint: disable=attribute-defined-outside-init
@@ -311,6 +315,19 @@ class CommandConfiguration(object):
                 self.database.get_collection(self.build_failures_name)
         return self._build_failures
 
+    # pylint disable=attribute-defined-outside-init
+    @property
+    def mute_outliers(self):
+        """
+        Get the collection instance for self.database_name / self.mute_outliers_name.
+
+        :return: collection.
+        """
+        if self._mute_outliers is None:
+            self._mute_outliers = \
+                self.database.get_collection(self.mute_outliers_name)
+        return self._mute_outliers
+
     def __getstate__(self):
         """
         Get state for pickle support.
@@ -386,6 +403,10 @@ class CommandConfiguration(object):
 
         self._build_failures = None
         self.build_failures_name = state['build_failures']
+
+        self._mute_outliers = None
+        self.mute_outliers_name = state['mute_outliers']
+
         self.style = state['style']
         self._mongo_repo = state['mongo_repo']
         self._credentials = None
@@ -1045,3 +1066,29 @@ def is_max_thread_level(test_identifier):
     :return: true if thread_level is set and equal to MAX_THREAD_LEVEL.
     """
     return test_identifier.get('thread_level', None) == MAX_THREAD_LEVEL
+
+
+def validate_outlier_param(context, param, value):
+    """
+    Validate that the value is not a regex.
+
+    :param object context: The click context object.
+    :param object param: The click parameter definition.
+    :param str value: The value for the --limit option.
+    :return: The validated limit value. Either an integer or None for no limit.
+    :rtype: int or None.
+    :raises: click.BadParameter if the parameter is not valid.
+    """
+    #pylint: disable=unused-argument
+    if value[0] == '/':
+        raise click.BadParameter('{}: regex is not allowed.'.format(value))
+    return value
+
+
+def get_query_for_mutes(test_identifier):
+    """ Create a points query from a test identifier.
+     :param dict test_identifier: The project / variant / task / test and thread level values.
+     :return: A query to get the points for this identifier.
+    :rtype: dict
+    """
+    return test_identifier.copy()

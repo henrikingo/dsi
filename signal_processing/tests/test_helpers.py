@@ -931,3 +931,29 @@ class TestValidateOutlierPercentages(unittest.TestCase):
         """ Test all valid."""
         self.assertEquals([0, 0.0, 0.5, 1, 1.0],
                           helpers.validate_outlier_percentages(None, None, [0, 0.0, 0.5, 1, 1.0]))
+
+
+class TestValidateOutlierParam(unittest.TestCase):
+    """
+    Test validate_outlier_param.
+    """
+
+    def test_invalid_value(self):
+        """ Test invalid regex."""
+        self.assertRaisesRegexp(click.BadParameter, 'regex is not allowed.',
+                                helpers.validate_outlier_param, None, None, '/')
+
+    def test_valid(self):
+        """ Test valid."""
+        self.assertEquals('bestbuy_agg', helpers.validate_outlier_param(None, None, 'bestbuy_agg'))
+
+
+class TestGetQueryForMutes(unittest.TestCase):
+    """
+    Test get_query_for_mutes.
+    """
+
+    def test_invalid_value(self):
+        """ Test invalid regex."""
+        test_identifier = {'project': 'sys-perf', 'variant': 'linux-standalone'}
+        self.assertDictEqual(test_identifier, helpers.get_query_for_mutes(test_identifier))

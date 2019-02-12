@@ -11,6 +11,8 @@ import pymongo
 from mock import ANY, MagicMock, call, patch
 
 import signal_processing.detect_changes as detect_changes
+from signal_processing.change_points.detection import ChangePointsDetection
+from signal_processing.change_points.weights import DEFAULT_WEIGHTING
 from signal_processing.commands import jobs
 from signal_processing.detect_changes import main
 from test_lib.fixture_files import FixtureFiles
@@ -26,6 +28,83 @@ def statistics(i):
     :return: A stats dict().
     """
     return {'next': i * 10, 'previous': (i * 10) + 1}
+
+
+NS = 'signal_processing.detect_changes'
+
+
+def ns(relative_name):  # pylint: disable=invalid-name
+    """Return a full name from a name relative to the tested module's name space."""
+    return NS + '.' + relative_name
+
+
+class TestTig1423(unittest.TestCase):
+    """
+    Test TIG-1423.
+    """
+
+    def setUp(self):
+        file_parts = [
+            'sys-perf', 'linux-1-node-replSet', 'bestbuy_query', 'canary_client-cpuloop-10x', '1'
+        ] + ['{}.json'.format('standard')]
+
+        filename = os.path.join(*file_parts)
+        self.fixture = FIXTURE_FILES.load_json_file(filename)
+        self.expected = self.fixture['expected']
+        self.data = self.fixture['data']
+
+        self.mongo_uri = 'mongodb+srv://fake@dummy-server.mongodb.net/perf'
+        self.sysperf_perf_json = FIXTURE_FILES.load_json_file('sysperf_perf.json')
+
+    def test_detect_changes(self):
+        """ test detect changes with real data.
+
+        This is more of a system test, the data base and github access are stubbed.
+        """
+        with patch(ns('pymongo.MongoClient'), autospec=True),\
+             patch(ns('helpers.generate_thread_levels'), autospec=True) as mock_generate_thread_levels,\
+             patch.object(detect_changes.PointsModel, 'get_closest_order', autospec=True) as mock_get_closest_order, \
+             patch.object(detect_changes.PointsModel, 'get_points', autospec=True) as mock_get_points,\
+             patch.object(ChangePointsDetection, '_get_git_hashes', autospec=True) as mock_get_git_hashes,\
+             patch(ns('pymongo.InsertOne')) as mock_insert:
+            series = self.data['time_series']
+
+            perf_json = {
+                'project_id': series['project'],
+                'variant': series['variant'],
+                'task_name': series['task'],
+                'data': {
+                    'results': [{
+                        'name': series['test']
+                    }]
+                },
+                'thread_level': series['thread_level'],
+            }
+            mock_generate_thread_levels.return_value = [{
+                'project': series['project'],
+                'variant': series['variant'],
+                'task': series['task'],
+                'test': series['test'],
+                'thread_level': series['thread_level'],
+            }]
+
+            change_points = self.data['change_points']
+
+            mock_get_closest_order.return_value = self.data['start_order']
+            mock_get_points.return_value = self.data['time_series']
+            mock_get_git_hashes.side_effect = self.data['all_suspect_revisions']
+            test_driver = detect_changes.DetectChangesDriver(
+                perf_json, self.mongo_uri, DEFAULT_WEIGHTING, 0.001, 'mongo_repo', pool_size=0)
+
+            test_driver.run()
+            mock_insert.assert_has_calls([call(ANY) for _ in range(2)])
+            # spot check the important values
+            for i, calls in enumerate(mock_insert.call_args_list):
+                args, _ = calls
+                self.assertEqual(change_points[i]['order'], args[0]['order'])
+                self.assertEqual(change_points[i]['order_of_change_point'],
+                                 args[0]['order_of_change_point'])
+                self.assertDictEqual(change_points[i]['algorithm'], args[0]['algorithm'])
 
 
 # pylint: disable=invalid-name
