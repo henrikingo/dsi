@@ -16,34 +16,14 @@ genny:
         # https://aws.amazon.com/premiumsupport/knowledge-center/ec2-enable-epel/
         sudo yum install -y https://s3-us-west-2.amazonaws.com/dsi-donot-remove/genny/epel-release-latest-7.noarch.rpm  || true > ./yum-epel-repo.log 2>&1
         sudo yum-config-manager --enable epel > ./yum-epel.log 2>&1
-        sudo yum install -y gcc gcc-c++ openssl-devel python36 python3-pip > ./yum-install.log 2>&1
-        ${workload_setup.install_toolchain}
+        sudo yum install -y gcc gcc-c++ python3 python3-pip > ./yum-install.log 2>&1
   # Get Genny's distribution
   - on_workload_client:
       exec: |
         set -eou pipefail
 
         cd genny
-
-        genny_revision="$(git rev-parse HEAD)"
-        genny_revision_url="https://s3.amazonaws.com/mciuploads/genny/genny/genny-amazon2-$genny_revision.tgz"
-        genny_default_url="https://s3.amazonaws.com/mciuploads/genny/genny/genny-amazon2.tgz"
-        genny_custom_url="${bootstrap.genny_custom_url}"
-
-        # Prefer to grab a specific binary archive if we have one
-        # Otherwise, attempt to grab the archive for the current revision
-        # Finally, fallback to the default archive
-        if [[ -n $genny_custom_url ]]; then
-            curl -fLSs -o genny.tgz "$genny_custom_url"
-            echo "Got custom archive from '$genny_custom_url'"
-        elif curl -fLSs -o genny.tgz "$genny_revision_url"; then
-            echo "Got revision archive from '$genny_revision_url'"
-        else curl -fLSs -o genny.tgz "$genny_default_url"
-            echo "Failed to get revision archive, got archive from '$genny_default_url'"
-        fi
-
-        tar -zxf genny.tgz
-        rm -f genny.tgz
+        python3 lamp.py --linux-distro amazon2 -DGENNY_INSTALL_DIR=$PWD
 
   # Make sure the genny executable is reasonable
   - on_workload_client:
@@ -175,15 +155,3 @@ install_java: |
     https://s3-us-west-2.amazonaws.com/dsi-donot-remove/java/jdk-8u162-linux-x64.rpm
   sudo rpm -i jdk-8u162-linux-x64.rpm
   sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.8.0_162/bin/java 20000
-
-# This installs mongodb_toolchain in opt. This is a stopgap that should be removed. It's needed for
-# now to pick up the certs from the toolchain openssl. This assumes /media/emphemeral0 exists. It
-# will skip out if it doesn't.
-install_toolchain: |
-  if [ -d  /media/ephemeral0 ]; then
-    cd /media/ephemeral0
-    curl -O --retry 10 -fsS \
-    https://s3.amazonaws.com/mciuploads/toolchain-builder/amazon2/d526c32ddcbcc2705d52b5865f8496f7190d3af2/toolchain_builder_amazon2_d526c32ddcbcc2705d52b5865f8496f7190d3af2_19_01_30_19_16_02.tar.gz
-    tar -zxvf toolchain_builder_amazon2_d526c32ddcbcc2705d52b5865f8496f7190d3af2_19_01_30_19_16_02.tar.gz
-    sudo ln -s /media/ephemeral0/mongodbtoolchain /opt/mongodbtoolchain
-  fi
