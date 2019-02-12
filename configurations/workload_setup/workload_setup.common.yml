@@ -23,7 +23,7 @@ genny:
         set -eou pipefail
 
         cd genny
-        python3 lamp.py --linux-distro amazon2 -DGENNY_INSTALL_DIR=$PWD
+        ./scripts/lamp --linux-distro amazon2 -DGENNY_INSTALL_DIR=$PWD
 
   # Make sure the genny executable is reasonable
   - on_workload_client:
