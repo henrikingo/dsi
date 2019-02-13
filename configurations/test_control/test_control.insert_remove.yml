@@ -4,6 +4,10 @@ run:
     type: genny
     cmd: |
       set -eou pipefail
+
+      # Write the output of genny to the ephemeral drive to ensure it has enough disk space.
+      cd ./data
+
       ./genny/bin/genny ./genny/etc/genny/workloads/scale/InsertRemove.yml -u "${mongodb_setup.meta.mongodb_url}" -m csv -o ./genny-perf.csv
       genny-metrics-to-perf-json < ./genny-perf.csv > ./genny-perf.json
     output_files:

@@ -22,6 +22,9 @@ run:
     cmd: |
       set -eou pipefail
 
+      # Write the output of genny to the ephemeral drive to ensure it has enough disk space.
+      cd ./data
+
       workload_path="./genny/etc/genny/workloads/networking/PrimaryRequiredReads.yml"
       results_path="./genny-results/genny-perf.csv"
 

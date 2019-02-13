@@ -13,12 +13,11 @@ bootstrap:
   # string "" in bootstrap.yml
   # This URL is 4.0.6. We use the sys-perf build instead of official release to include the jstests/ directory that we copy in our compile task.
   mongodb_binary_archive: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_4.0_caa42a1f75a56c7643d0b68d3880444375ec42e3/caa42a1f75a56c7643d0b68d3880444375ec42e3/linux/mongodb-sys_perf_4.0_caa42a1f75a56c7643d0b68d3880444375ec42e3.tar.gz
-  genny_custom_url: ''
   workloads_dir: ./workloads
   ycsb_dir: ./YCSB
   linkbench_dir: ./linkbench
   tpcc_dir: ./tpcc
-  genny_dir: ./genny
+  genny_dir: ./data/genny  # Put genny on the ephemeral drive to give it more space.
   authentication: disabled
 
 infrastructure_provisioning:

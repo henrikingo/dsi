@@ -7,7 +7,7 @@ genny:
   - on_workload_client:
       upload_files:
         - source: ${bootstrap.genny_dir}
-          target: ./genny
+          target: ./data/genny
   # System Setup
   - on_workload_client:
       exec: |
@@ -22,7 +22,12 @@ genny:
       exec: |
         set -eou pipefail
 
-        cd genny
+        # Create /data/mci for gennytoolchain and put it on the ephemeral drive.
+        mkdir -p ./data/mci
+        sudo mkdir -p /data
+        sudo ln -s $PWD/data/mci /data/mci
+
+        cd ./data/genny
         ./scripts/lamp --linux-distro amazon2 -DGENNY_INSTALL_DIR=$PWD
 
   # Make sure the genny executable is reasonable
@@ -30,13 +35,15 @@ genny:
       exec: |
         set -eou pipefail
 
+        cd ./data
+
         ldd genny/bin/genny
         genny/bin/genny --list-actors
 
   # Build Genny's Python Component
   - on_workload_client:
       exec: |
-        cd genny/src/python
+        cd ./data/genny/src/python
         sudo pip3 install .
 
 mongoshell:
