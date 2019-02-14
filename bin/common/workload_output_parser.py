@@ -284,7 +284,7 @@ class GennyResultsParser(ResultParser):
         if output_files and len(output_files) > 1:
             LOG.info("Got files %s but will only report on first one", output_files)
 
-        self.genny_results_path = os.path.join(input_dir, output_files[0])
+        self.genny_results_path = os.path.join(input_dir, os.path.basename(output_files[0]))
 
     def _parse(self):
         with open(self.genny_results_path) as file_handle:

@@ -13,13 +13,7 @@ run:
     output_files:
       # Genny output-parser only parses the first file (must be the json)
       # but we want to retrieve the .csv for the reports dir.
-      - genny-perf.json
-      - genny-perf.csv
-
-pre_task:
-  # remove existing output file (if any) since genny appends
-  - on_workload_client:
-      exec: |
-       rm -f ./genny-perf.csv ./genny-perf.json
+      - data/genny-perf.json
+      - data/genny-perf.csv
 
 spawn_using: jasper
