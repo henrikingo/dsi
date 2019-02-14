@@ -255,30 +255,3 @@ class TestMagnitudeToPercent(unittest.TestCase):
         self.assertEquals('-9.52%', list_change_points.magnitude_to_percent(-0.1, '%+5.2f%%'))
         self.assertEquals('+171.83%', list_change_points.magnitude_to_percent(1.0, '%+5.2f%%'))
         self.assertEquals('-63.21%', list_change_points.magnitude_to_percent(-1.0, '%+5.2f%%'))
-
-
-class TestToLink(unittest.TestCase):
-    """
-    Test suite for to_link.
-    """
-
-    def test_to_link(self):
-        """ test basic operation."""
-        self.assertEquals('EVG/version/PROJECT_REVISION',
-                          list_change_points.to_link({
-                              'project': 'PROJECT',
-                              'suspect_revision': 'REVISION'
-                          }, 'EVG'))
-
-
-class TestToTaskLink(unittest.TestCase):
-    """
-    Test suite for to_task_link.
-    """
-
-    def test_to_task_link(self):
-        """ test basic operation."""
-        self.assertEquals('EVG/task/TASK_ID',
-                          list_change_points.to_task_link({
-                              'task_id': 'TASK_ID'
-                          }, 'EVG'))

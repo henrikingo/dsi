@@ -14,11 +14,9 @@ import structlog
 
 from analysis.evergreen import evergreen_client
 from signal_processing.commands.helpers import stringify_json
+from signal_processing.util.format_util import to_task_link, to_project_link
 
 LOG = structlog.getLogger(__name__)
-
-DEFAULT_EVERGREEN_URL = 'https://evergreen.mongodb.com'
-"""The default Evergreen URL."""
 
 HUMAN_READABLE_TEMPLATE_STR = '''
 [ {{ now() }} ] Running: `{{ command_line }}`
@@ -38,29 +36,6 @@ HUMAN_READABLE_TEMPLATE_STR = '''
 {% endfor -%}
 {% endfor -%}
 '''
-
-
-def to_link(task, evergreen):
-    """
-    Get the evergreen project link for this task. This function
-    is passed to the Jinja2 environment.
-
-    :param dict task: The task data.
-    :return: A string url.
-    """
-    return "{evergreen}/waterfall/{project_id}".format(
-        project_id=task['project_id'], evergreen=evergreen)
-
-
-def to_task_link(task, evergreen):
-    """
-    Get the evergreen link for this task. This function is passed to
-    the Jinja2 environment.
-
-    :param dict test: The test data.
-    :return: A string url.
-    """
-    return "{evergreen}/task/{task_id}".format(task_id=task['task_id'], evergreen=evergreen)
 
 
 def group_sort(tasks, reverse=False):
@@ -105,13 +80,17 @@ def group_sort(tasks, reverse=False):
 
 ENVIRONMENT = jinja2.Environment()
 ENVIRONMENT.globals.update({
-    'evergreen': DEFAULT_EVERGREEN_URL,
+    'evergreen': evergreen_client.DEFAULT_EVERGREEN_URL,
     'command_line': " ".join([value if value else "''" for value in sys.argv]),
     'now': datetime.utcnow,
     'task_link': to_task_link,
-    'link': to_link,
+    'link': to_project_link,
 })
-ENVIRONMENT.filters.update({'link': to_link, 'task_link': to_task_link, 'group_sort': group_sort})
+ENVIRONMENT.filters.update({
+    'link': to_project_link,
+    'task_link': to_task_link,
+    'group_sort': group_sort
+})
 HUMAN_READABLE_TEMPLATE = ENVIRONMENT.from_string(HUMAN_READABLE_TEMPLATE_STR)
 
 

@@ -4,10 +4,10 @@ Functionality to list change points.
 """
 from __future__ import print_function
 
+import operator
 from collections import OrderedDict
 from datetime import date, datetime, timedelta
 import math
-import operator
 import re
 import sys
 
@@ -15,7 +15,10 @@ import jinja2
 import pymongo
 import structlog
 
+from analysis.evergreen import evergreen_client
 from signal_processing.commands.helpers import filter_excludes, stringify_json
+from signal_processing.util.format_util import format_no_older_than, format_limit, \
+    magnitude_to_percent, to_task_link, to_version_link, to_change_point_query
 
 LOG = structlog.getLogger(__name__)
 
@@ -25,84 +28,6 @@ CHANGE_POINT_TYPE_RAW = 'raw'
 VALID_CHANGE_POINT_TYPES = [
     CHANGE_POINT_TYPE_PROCESSED, CHANGE_POINT_TYPE_UNPROCESSED, CHANGE_POINT_TYPE_RAW
 ]
-DEFAULT_EVERGREEN_URL = 'https://evergreen.mongodb.com'
-"""The default Evergreen URL."""
-
-
-def format_no_older_than(no_older_than):
-    """
-    Jinja2 helper to format no_older_than.
-
-    :param no_older_than: The format_no_older_than value.
-    :type no_older_than: int or None.
-    :return: A string representing the no older than value.
-    """
-    if no_older_than is None:
-        return 'All'
-    return "Last {} days".format(no_older_than)
-
-
-def magnitude_to_percent(magnitude, format_string='%+3.0f%%'):
-    """
-    Jinja2 helper to convert magnitude to percentage change.
-
-    :param magnitude: The magnitude value is only valid as a float.
-    :type magnitude: float or jinja2.runtime.Undefined or None.
-    :return: A string representing the percentage change.
-    """
-    if magnitude is None or isinstance(magnitude, jinja2.runtime.Undefined):
-        return 'Nan'
-    return format_string % (math.exp(magnitude) * 100.0 - 100.0)
-
-
-def format_limit(limit):
-    """
-    Jinja2 helper to format limit.
-
-    :param limit: The limit value.
-    :type limit: int or None.
-    :return: A string representing the limit value.
-    """
-    if limit is None:
-        return 'All'
-    return "UpTo {}".format(limit)
-
-
-def to_link(test, evergreen):
-    """
-    Jinja2 helper to get an evergreen link for a test.
-
-    :param dict test: The test data.
-    :return: A string url.
-    """
-    return "{evergreen}/version/{project}_{suspect_revision}".format(
-        suspect_revision=test['suspect_revision'],
-        project=test['project'].replace("-", "_"),
-        evergreen=evergreen)
-
-
-def to_task_link(test, evergreen):
-    """
-    Jinja2 helper to get an evergreen link for a task.
-
-    :param dict test: The test data.
-    :return: A string url.
-    """
-    return "{evergreen}/task/{task_id}".format(task_id=test['task_id'], evergreen=evergreen)
-
-
-def to_query(test, collection):
-    """
-    Jinja2 helper to get an atlas query for a test.
-
-    :param dict test: The test data.
-    :return: A query.
-    """
-    return "db.{collection}.find({{project: '{project}', "\
-           "suspect_revision: '{suspect_revision}'}})".format(
-               collection=collection.name,
-               project=test['project'],
-               suspect_revision=test['suspect_revision'])
 
 
 def group_sort(tests, reverse=False):
@@ -140,7 +65,7 @@ HUMAN_READABLE_TEMPLATE_STR = '''
 ENVIRONMENT = jinja2.Environment()
 
 ENVIRONMENT.globals.update({
-    'evergreen': DEFAULT_EVERGREEN_URL,
+    'evergreen': evergreen_client.DEFAULT_EVERGREEN_URL,
     'command_line': " ".join([value if value else "''" for value in sys.argv]),
     'now': datetime.utcnow,
     'format_no_older_than': format_no_older_than,
@@ -148,12 +73,12 @@ ENVIRONMENT.globals.update({
     'isnan': math.isnan,
     'magnitude_to_percent': magnitude_to_percent,
     'task_link': to_task_link,
-    'link': to_link,
+    'link': to_version_link,
 })
 ENVIRONMENT.filters.update({
-    'link': to_link,
+    'link': to_version_link,
     'task_link': to_task_link,
-    'query': to_query,
+    'query': to_change_point_query,
     'group_sort': group_sort
 })
 HUMAN_READABLE_TEMPLATE = ENVIRONMENT.from_string(HUMAN_READABLE_TEMPLATE_STR)
@@ -247,6 +172,9 @@ def create_pipeline(query, limit, hide_canaries, hide_wtdevelop, no_older_than):
                 },
                 'change_points': {
                     '$push': '$$ROOT'
+                },
+                'version_id': {
+                    '$first': '$$ROOT.version_id'
                 }
             }
         },
@@ -254,6 +182,7 @@ def create_pipeline(query, limit, hide_canaries, hide_wtdevelop, no_older_than):
             '$project': {
                 'project': '$_id.project',
                 'suspect_revision': '$_id.suspect_revision',
+                'version_id': '$version_id',
                 'change_points': 1,
                 'start': 1,
                 'create_time': 1,

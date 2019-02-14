@@ -17,6 +17,7 @@ from bin.common import log
 from signal_processing.commands import helpers
 from signal_processing.commands.outliers.config import config_command
 from signal_processing.commands.outliers.replay import replay_command
+from signal_processing.commands.outliers.list_mutes import list_mutes_command
 from signal_processing.commands.outliers.manage_outliers import manage_outliers_command
 from signal_processing.commands.outliers.mute_outliers import mute_outliers_command,\
     unmute_outliers_command
@@ -115,6 +116,7 @@ def help_command(context):
 
 cli.add_command(config_command)
 cli.add_command(replay_command)
+cli.add_command(list_mutes_command)
 cli.add_command(manage_outliers_command)
 cli.add_command(mute_outliers_command)
 cli.add_command(unmute_outliers_command)
