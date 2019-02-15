@@ -42,6 +42,7 @@ def mark_change_points(processed_type, query, exclude_patterns, command_config):
         del point['_id']
         LOG.info("matched %s\n", stringify_json(point, compact=command_config.compact))
         if not command_config.dry_run:
+            update = {'$currentDate': {'last_updated_at': True}, '$set': point}
             result = command_config.processed_change_points.update(
-                get_identifier(point), {"$set": point}, upsert=True)
+                get_identifier(point), update, upsert=True)
             LOG.debug('mark points', result=result)

@@ -26,12 +26,15 @@ class TestMarkChangePoints(unittest.TestCase):
     def test_dry_run(self):
         """ Test dry run."""
         mock_find = MagicMock(
-            name='find', return_value=[{
+            name='find',
+            return_value=[{
                 '_id': 1,
-                'first': 'point'
+                'first': 'point',
+                'last_updated_at': 1
             }, {
                 '_id': 2,
-                'second': 'point'
+                'second': 'point',
+                'last_updated_at': 2
             }])
         mock_insert = MagicMock(name='insert')
 
@@ -56,6 +59,7 @@ class TestMarkChangePoints(unittest.TestCase):
             name='find',
             return_value=[{
                 '_id': 1,
+                'last_updated_at': 1,
                 'first': 'point',
                 'suspect_revision': 'suspect_revision 1',
                 'project': 'project 1',
@@ -65,6 +69,7 @@ class TestMarkChangePoints(unittest.TestCase):
                 'thread_level': 'thread_level 1'
             }, {
                 '_id': 2,
+                'last_updated_at': 2,
                 'second': 'point',
                 'suspect_revision': 'suspect_revision 2',
                 'project': 'project 2',
@@ -98,7 +103,11 @@ class TestMarkChangePoints(unittest.TestCase):
                     'test': 'test 1',
                     'suspect_revision': 'suspect_revision 1'
                 }, {
+                    '$currentDate': {
+                        'last_updated_at': True
+                    },
                     '$set': {
+                        'last_updated_at': 1,
                         'project': 'project 1',
                         'task': 'task 1',
                         'thread_level': 'thread_level 1',
@@ -119,7 +128,11 @@ class TestMarkChangePoints(unittest.TestCase):
                     'test': 'test 2',
                     'suspect_revision': 'suspect_revision 2'
                 }, {
+                    '$currentDate': {
+                        'last_updated_at': True
+                    },
                     '$set': {
+                        'last_updated_at': 2,
                         'project': 'project 2',
                         'second': 'point',
                         'task': 'task 2',

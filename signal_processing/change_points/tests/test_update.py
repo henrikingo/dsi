@@ -19,11 +19,14 @@ class TestUpdateChangePoints(unittest.TestCase):
     def test_dry_run(self):
         """ Test dry run."""
         mock_find = MagicMock(
-            name='find', return_value=[{
+            name='find',
+            return_value=[{
                 '_id': 1,
+                'last_updated_at': 1,
                 'first': 'point'
             }, {
                 '_id': 2,
+                'last_updated_at': 2,
                 'second': 'point'
             }])
         mock_update_one = MagicMock(name='update_one')
@@ -43,11 +46,14 @@ class TestUpdateChangePoints(unittest.TestCase):
     def test_update(self):
         """ Test update."""
         mock_find = MagicMock(
-            name='find', return_value=[{
+            name='find',
+            return_value=[{
                 '_id': 1,
+                'last_updated_at': 1,
                 'first': 'point'
             }, {
                 '_id': 2,
+                'last_updated_at': 2,
                 'second': 'point'
             }])
         mock_update_one = MagicMock(name='update_one')
@@ -66,6 +72,9 @@ class TestUpdateChangePoints(unittest.TestCase):
             call({
                 '_id': 1
             }, {
+                '$currentDate': {
+                    'last_updated_at': True
+                },
                 '$set': {
                     'processed_type': 'type'
                 }
@@ -73,6 +82,9 @@ class TestUpdateChangePoints(unittest.TestCase):
             call({
                 '_id': 2
             }, {
+                '$currentDate': {
+                    'last_updated_at': True
+                },
                 '$set': {
                     'processed_type': 'type'
                 }
