@@ -69,6 +69,8 @@ CHANGE_POINTS = 'change_points'
 POINTS = 'points'
 BUILD_FAILURES = 'build_failures'
 MUTE_OUTLIERS = 'mute_outliers'
+OUTLIERS = 'outliers'
+MARKED_OUTLIERS = 'marked_outliers'
 
 DEFAULT_MONGO_URI = 'mongodb+srv://performancedata-g6tsc.mongodb.net/perf'
 
@@ -142,6 +144,8 @@ class CommandConfiguration(object):
                  unprocessed_change_points=UNPROCESSED_CHANGE_POINTS,
                  build_failures=BUILD_FAILURES,
                  mute_outliers=MUTE_OUTLIERS,
+                 outliers=OUTLIERS,
+                 marked_outliers=MARKED_OUTLIERS,
                  auth_mode=None,
                  mongo_username=None,
                  mongo_password=None):
@@ -167,6 +171,8 @@ class CommandConfiguration(object):
         :param str unprocessed_change_points: The unprocessed change points collection name.
         :param str build_failures: The build failures collection name.
         :param str mute_outliers: The mute_outliers collection name.
+        :param str outliers: The outliers collection name.
+        :param str marked_outliers: The marked_outliers collection name.
         :param str auth_mode: How mongo db credentials are obtained.
         :param str mongo_username: The mongo db username.
         :param str mongo_password: The mongo db password.
@@ -194,6 +200,8 @@ class CommandConfiguration(object):
             'unprocessed_change_points': unprocessed_change_points,
             'build_failures': build_failures,
             'mute_outliers': mute_outliers,
+            'outliers': outliers,
+            'marked_outliers': marked_outliers,
         })
 
     # pylint: disable=attribute-defined-outside-init
@@ -328,6 +336,32 @@ class CommandConfiguration(object):
                 self.database.get_collection(self.mute_outliers_name)
         return self._mute_outliers
 
+    # pylint disable=attribute-defined-outside-init
+    @property
+    def outliers(self):
+        """
+        Get the collection instance for self.database_name / self.outliers_name.
+
+        :return: collection.
+        """
+        if self._outliers is None:
+            self._outliers = \
+                self.database.get_collection(self.outliers_name)
+        return self._outliers
+
+    # pylint disable=attribute-defined-outside-init
+    @property
+    def marked_outliers(self):
+        """
+        Get the collection instance for self.database_name / self.marked_outliers_name.
+
+        :return: collection.
+        """
+        if self._marked_outliers is None:
+            self._marked_outliers = \
+                self.database.get_collection(self.marked_outliers_name)
+        return self._marked_outliers
+
     def __getstate__(self):
         """
         Get state for pickle support.
@@ -407,6 +441,12 @@ class CommandConfiguration(object):
 
         self._mute_outliers = None
         self.mute_outliers_name = state['mute_outliers']
+
+        self._outliers = None
+        self.outliers_name = state['outliers']
+
+        self._marked_outliers = None
+        self.marked_outliers_name = state['marked_outliers']
 
         self.style = state['style']
         self._mongo_repo = state['mongo_repo']
