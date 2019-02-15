@@ -256,40 +256,41 @@ def _translate_outliers(gesd_result, test_identifier, start, mad, significance_l
     :return: The GESD outlier results.
     :rtype: list[Outlier].
     """
-    count = gesd_result.count
     outliers = []
-    change_point_order = full_series['orders'][start]
-    change_point_revision = full_series['revisions'][start]
+    if gesd_result is not None and gesd_result.count:
+        count = gesd_result.count
+        change_point_order = full_series['orders'][start]
+        change_point_revision = full_series['revisions'][start]
 
-    for pos, index in enumerate(gesd_result.suspicious_indexes):
-        order = full_series['orders'][index + start]
-        revision = full_series['revisions'][index + start]
-        create_time = full_series['create_times'][index + start]
-        task_id = full_series['task_ids'][index + start]
-        version_id = full_series['version_ids'][index + start]
-        critical_value = gesd_result.critical_values[pos]
-        z_score = gesd_result.test_statistics[pos]
-        outliers.append(
-            Outlier(
-                type=DETECTED_TYPE if pos < count else SUSPICIOUS_TYPE,
-                project=test_identifier['project'],
-                variant=test_identifier['variant'],
-                task=test_identifier['task'],
-                test=test_identifier['test'],
-                thread_level=test_identifier['thread_level'],
-                revision=revision,
-                task_id=task_id,
-                version_id=version_id,
-                order=order,
-                create_time=create_time,
-                change_point_revision=change_point_revision,
-                change_point_order=change_point_order,
-                order_of_outlier=pos,
-                z_score=z_score,
-                critical_value=critical_value,
-                mad=mad,
-                significance_level=significance_level,
-                num_outliers=num_outliers))
+        for pos, index in enumerate(gesd_result.suspicious_indexes):
+            order = full_series['orders'][index + start]
+            revision = full_series['revisions'][index + start]
+            create_time = full_series['create_times'][index + start]
+            task_id = full_series['task_ids'][index + start]
+            version_id = full_series['version_ids'][index + start]
+            critical_value = gesd_result.critical_values[pos]
+            z_score = gesd_result.test_statistics[pos]
+            outliers.append(
+                Outlier(
+                    type=DETECTED_TYPE if pos < count else SUSPICIOUS_TYPE,
+                    project=test_identifier['project'],
+                    variant=test_identifier['variant'],
+                    task=test_identifier['task'],
+                    test=test_identifier['test'],
+                    thread_level=test_identifier['thread_level'],
+                    revision=revision,
+                    task_id=task_id,
+                    version_id=version_id,
+                    order=order,
+                    create_time=create_time,
+                    change_point_revision=change_point_revision,
+                    change_point_order=change_point_order,
+                    order_of_outlier=pos,
+                    z_score=z_score,
+                    critical_value=critical_value,
+                    mad=mad,
+                    significance_level=significance_level,
+                    num_outliers=num_outliers))
 
     return outliers
 

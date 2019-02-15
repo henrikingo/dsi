@@ -11,7 +11,7 @@ from mock import MagicMock, call, patch, ANY
 import signal_processing.detect_outliers as detect_outliers
 from signal_processing.detect_outliers import DETECTED_TYPE, SUSPICIOUS_TYPE
 from signal_processing.commands import jobs
-from signal_processing.detect_outliers import main
+from signal_processing.detect_outliers import main, _translate_outliers
 from test_lib.fixture_files import FixtureFiles
 from click.testing import CliRunner
 
@@ -243,6 +243,21 @@ class TestRunDetection(unittest.TestCase):
                     significance_level=ANY,
                     num_outliers=ANY) for pos, _ in enumerate(expected_suspicious_indexes)
             ])
+
+
+class TestTranslateOutliers(unittest.TestCase):
+    """
+    Test suite for the _save_outliers function
+    """
+
+    def test_no_gesd_results(self):
+        outliers = _translate_outliers(None, {}, 0, False, 0.1, 5, {})
+        self.assertEqual(0, len(outliers))
+
+    def test_gesd_count_of_zero(self):
+        gesd_results = MagicMock(count=0)
+        outliers = _translate_outliers(gesd_results, {}, 0, False, 0.1, 5, {})
+        self.assertEqual(0, len(outliers))
 
 
 class TestMain(unittest.TestCase):
