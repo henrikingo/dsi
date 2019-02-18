@@ -4,7 +4,7 @@
             "end":2.002,
             "name":"genny-unittest.dummy_inserts",
             "results":{
-                "1":{
+                "4":{
                     "ops_per_sec":10780115,
                     "ops_per_sec_values":[
                         10780115
