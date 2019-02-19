@@ -26,13 +26,14 @@ run:
       cd ./data
 
       workload_path="./genny/etc/genny/workloads/networking/PrimaryRequiredReads.yml"
-      results_path="./genny-results/genny-perf.csv"
+      results_path="./genny-perf.csv"
 
-      ./genny/bin/genny "$workload_path" -u "${mongodb_setup.meta.mongodb_url}" -m csv -o "$results_path"
+      ./genny/bin/genny "$workload_path" -u "${mongodb_setup.meta.mongodb_url}" -m csv -o "$results_path" > ./genny-log.log 2>&1
       genny-metrics-to-perf-json < "$results_path" > ./genny-perf.json
 
     output_files:
       # Genny output-parser only parses the first file (must be the json)
       # but we want to retrieve the .csv for the reports dir.
       - data/genny-perf.json
-      - data/genny-results/prireq-perf.csv
+      - data/genny-perf.csv
+      - data/genny-log.log
