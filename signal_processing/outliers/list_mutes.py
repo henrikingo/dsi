@@ -13,15 +13,138 @@ import jinja2
 import structlog
 
 from analysis.evergreen import evergreen_client
-from signal_processing.commands.helpers import stringify_json, get_query_for_points
-from signal_processing.outliers.mute import get_identifier
+from signal_processing.commands.helpers import stringify_json
 from signal_processing.util.format_util import format_no_older_than, format_limit, \
     format_datetime, to_task_link, to_version_link, to_point_query
 
 LOG = structlog.getLogger(__name__)
 
 CONSECUTIVE_EXPIRED_LIMIT = 15
-""" When there are more than 5 consecutive results, a mute is considered expired. """
+""" When there are more than 15 consecutive results, a mute is considered expired. """
+
+
+def mute_expired_pipeline(mute, consecutive_expired_limit=CONSECUTIVE_EXPIRED_LIMIT):
+    """ Create a pipeline for expiry calculation.
+
+    :param dict mute: The database objet.
+    :param int consecutive_expired_limit: Set expired True if the total consecutive tasks is
+    greater or equal this value.
+    :return: An aggregation pipeline for expiry calculation.
+    """
+    thread_level = mute['thread_level']
+    order = mute['order']
+    start = mute['start']
+    project = mute['project']
+    variant = mute['variant']
+    task = mute['task']
+    test = mute['test']
+
+    pipeline = []
+
+    # match project / variant / task / test / thread_level and order
+    query = OrderedDict([
+        ('project', project),
+        ('variant', variant),
+        ('task', task),
+        ('test', test),
+        ('results.thread_level', thread_level),
+    ])  # yapf: disable
+
+    match = OrderedDict([('$match', query)])
+    pipeline.append(match)
+
+    # filter out results array
+    project = OrderedDict([('$project', {'results': 0})])
+    pipeline.append(project)
+
+    # sort by order (to ensure that the pushes are in order)
+    sort = OrderedDict([('$sort', {'order': -1})])
+    pipeline.append(sort)
+
+    # group by
+    #   project / variant / task / test / thread_level and order
+    #   AND gather all records into before and after
+    group = OrderedDict([
+        ('$group', OrderedDict([
+            ('_id', OrderedDict([
+                ('project', '$project'),
+                ('variant', '$variant'),
+                ('task', '$task'),
+                ('test', '$test'),
+                ('thread_level', thread_level),
+                ('order', {'$literal': order}),
+                ('start', {'$literal': start})])),
+            ('before_points', OrderedDict([
+                ('$push', OrderedDict([
+                    ('start', '$start'),
+                    ('order', '$order'),
+                    ('start_after', {'$gt': ['$$CURRENT.start', start]}),
+                    ('order_before', {'$lt': ['$$CURRENT.order', order]})]))])),
+            ('after_points', OrderedDict([
+                ('$push', OrderedDict([
+                    ('start', '$start'),
+                    ('order', '$order'),
+                    ('order_after', {'$gt': ['$$CURRENT.order', order]})]))]))
+        ]))
+    ])  # yapf: disable
+    pipeline.append(group)
+
+    # project before / after to filter incorrect elements
+    project = OrderedDict([
+        ('$project', OrderedDict([
+            ('_id', 1),
+            ('before', OrderedDict([
+                ('$filter', OrderedDict([
+                    ('input', '$before_points'),
+                    ('as', 'point'),
+                    ('cond', OrderedDict([('$eq', ["$$point.order_before", True])]))]))
+            ])),
+            ('after', OrderedDict([
+                ('$filter', OrderedDict([
+                    ('input', '$after_points'),
+                    ('as', 'point'),
+                    ('cond', OrderedDict([('$eq', ["$$point.order_after", True])]))]))
+            ]))
+        ]))
+    ])  # yapf: disable
+    pipeline.append(project)
+
+    # Project new fields
+    #   start_index contains the index of the last before element that was run after.
+    #   deltas contains the differences between subsequent elements
+    project = OrderedDict([
+        ('$project', OrderedDict([
+            ('_id', 1),
+            ('before', OrderedDict([
+                ('$let', OrderedDict([
+                    ('vars', OrderedDict([
+                        ('position', OrderedDict([('$indexOfArray',
+                                                   ['$before.start_after', False])]))])),
+                    ('in', OrderedDict([
+                        ('$cond', [
+                            OrderedDict([('$eq', ['$$position', -1])]),
+                            OrderedDict([('$size', '$before')]),
+                            '$$position'])]))
+                ]))
+            ])),
+            ('after', OrderedDict([('$size', '$after')]))
+        ]))
+    ])  # yapf: disable
+    pipeline.append(project)
+
+    # The before and after fields don't include the current point so add an extra 1.
+    sum_total = OrderedDict([('$sum', ['$after', '$before', 1])])
+    project = OrderedDict([
+        ('$project', OrderedDict([
+            ('_id', 1),
+            ('before', 1),
+            ('after', 1),
+            ('total', sum_total),
+            ('expired', OrderedDict([('$gte', [sum_total, consecutive_expired_limit])]))]))
+    ])  # yapf: disable
+    pipeline.append(project)
+
+    return pipeline
 
 
 def mute_expired(mute, points_collection):
@@ -36,47 +159,15 @@ def mute_expired(mute, points_collection):
 
     :param dict mute: The mute document.
     :param pymongo.collection points_collection: The point collection
-    :return: True if the mute has expired.
+    :return: The expired aggregation result. The expired state is in 'expired'.
+    :rtype: A tuple of (expired, raw)
     """
-    test_identifier = get_identifier(mute)
+    LOG.debug('mute_expired', mute=mute, points=points_collection)
+    pipeline = mute_expired_pipeline(mute)
 
-    if not mute['enabled'] or mute.get('expired', False):
-        LOG.debug(
-            'mute_expired: expired or disabled.', enabled=mute['enabled'], expired=mute['expired'])
-        return True
-
-    # find point matching the identifier
-    after = get_query_for_points(test_identifier)
-    del after['revision']
-    after['order'] = {'$gte': mute['order']}
-
-    points_after = list(points_collection.find(after))
-    length = len(points_after)
-
-    # If there are more than 15 points (including this one) after this one, then return expired.
-    if length > CONSECUTIVE_EXPIRED_LIMIT:
-        return True
-
-    # Get 15 points less than this.
-    before = get_query_for_points(test_identifier)
-    del before['revision']
-    before['order'] = {'$lt': mute['order']}
-
-    points_before = list(
-        points_collection.find(before).limit(15).sort([('order', pymongo.DESCENDING)]))
-    start = mute['start']
-
-    # Convert to True if point start is greater than mute start.
-    # In this case the point was run after the mute.
-    points_before_run_after = [point['start'] > start for point in points_before]
-
-    # The index of the first False is the length.
-    before_length = points_before_run_after.index(False)
-
-    # Mute has expired if there were more than 15 consecutive, contiguous points.
-    expired = length + before_length > 15
-    LOG.debug('mute_expired', length=length, before_length=before_length, expired=expired)
-    return expired
+    LOG.debug('mute_expired', pipeline=pipeline)
+    result = next(points_collection.aggregate(pipeline), None)
+    return result
 
 
 HUMAN_READABLE_TEMPLATE_STR = '''
@@ -169,8 +260,6 @@ def create_pipeline(query, limit, no_older_than):
         1. Limit the results if limit param is not None.
 
     :param dict query: The query to match against.
-    :param bool marked: True if the pipeline is for marked outliers.
-    :param list(str) types: The non-marked outlier types.
     :param limit: The max number of points to match. None means all.
     :type limit: int or None.
     :param no_older_than: Exclude points with start fields older that this datetime.

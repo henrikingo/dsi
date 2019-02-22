@@ -4,15 +4,17 @@ Unit tests for signal_processing/outliers/mute.py.
 # pylint: disable=missing-docstring
 from __future__ import print_function
 
-from StringIO import StringIO
 import unittest
+from StringIO import StringIO
 
+import structlog
 from mock import MagicMock, patch, call
 
 from signal_processing.outliers.list_mutes import list_mutes, create_pipeline, \
     stream_human_readable
 
 NS = 'signal_processing.outliers'
+LOG = structlog.getLogger(__name__)
 
 
 def ns(relative_name):  # pylint: disable=invalid-name
@@ -23,6 +25,7 @@ def ns(relative_name):  # pylint: disable=invalid-name
 class TestStreamHumanReadable(unittest.TestCase):
     """ Test stream_human_readable. """
 
+    # pylint: disable=no-self-use
     def test_stream_human_readable(self):
         """ test stream_human_readable. """
         with patch(ns('list_mutes.HUMAN_READABLE_TEMPLATE')) as mock_stream:
@@ -74,19 +77,19 @@ class TestCreatePipeline(unittest.TestCase):
             self.assertIn('$limit', stage)
         self.assertTrue(pipeline == [])
 
-    def test_create_pipeline(self):
+    def test(self):
         """ Test create_pipeline, """
         self._test_create_pipeline()
 
-    def test_create_pipeline_limit(self):
+    def test_limit(self):
         """ Test create_pipeline, """
         self._test_create_pipeline(limit=1)
 
-    def test_create_pipeline_older(self):
+    def test_older(self):
         """ Test create_pipeline, """
         self._test_create_pipeline(no_older_than=1)
 
-    def test_create_pipeline_limit_and_older(self):
+    def test_limit_and_older(self):
         """ Test create_pipeline, """
         self._test_create_pipeline(limit=1, no_older_than=1)
 
@@ -94,8 +97,9 @@ class TestCreatePipeline(unittest.TestCase):
 class TestListMutes(unittest.TestCase):
     """ Test list_mutes. """
 
+    # pylint: disable=no-self-use
     def test_no_mutes(self):
-        """ Test list_mutes, """
+        """ Test no mutes. """
 
         with patch(ns('list_mutes.stream_human_readable')) as mock_stream_human_readable,\
              patch(ns('list_mutes.create_pipeline')) as mock_create_pipeline:

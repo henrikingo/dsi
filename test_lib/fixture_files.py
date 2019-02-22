@@ -14,19 +14,21 @@ class FixtureFiles(object):
     Convenience methods utilizing the fixture directory.
     """
 
-    def __init__(self, dir_name=None, subdir_name=None):
+    def __init__(self, dir_name=None, subdir_name=None, is_unittest=True):
         """
         :param directory_name: The name of the test directory. Defaults to 'tests'.
         :type directory_name: str, None.
         :param subdir_path: If the fixture files directory of interest is directory within the
         unittest-files directory, then provide the relative path.
         :type subdir_path: str, None.
+        :param bool is_unittest: If true use 'unittest-files' else 'systest-files'.
         """
         dir_name = dir_name if dir_name != None else 'tests'
         subdir_name = subdir_name if subdir_name != None else ''
         self.repo_root_dir = os.path.dirname(os.path.dirname(__file__))
         self.tests_root_dir = os.path.abspath(dir_name)
-        self.fixture_dir_path = os.path.join(self.tests_root_dir, 'unittest-files', subdir_name)
+        file_path = 'unittest-files' if is_unittest else 'systest-files'
+        self.fixture_dir_path = os.path.join(self.tests_root_dir, file_path, subdir_name)
 
     def repo_root_file_path(self, file_path):
         """

@@ -14,4 +14,5 @@ done
 # add an export to ensure we don't pickup an env
 export DSI_APP_NAME=test-change-points
 # TODO: `PERF-1505: Make imports work with matplotlib`.
-PYTHONPATH=analysis:bin nosetests -v --ignore-files multi_graphs.py --ignore-files visualize.py --exe $COVERAGE --logging-clear-handlers $@
+# use NOSE_NOCAPTURE=1 or --nocapture to view standard out
+PYTHONPATH=analysis:bin nosetests  -v --ignore-files multi_graphs.py --ignore-files visualize.py --exe $COVERAGE --logging-clear-handlers $@

@@ -1,0 +1,133 @@
+{
+    "Description": "Mute and Point, 1 newer points.",
+    "Commands": [
+        "query = { project: 'sys-perf', variant: 'linux-1-node-replSet', task: 'bestbuy_query', test: 'canary_client-cpuloop-10x', order: { $gte: 14439} }",
+        "db.points.find(query).sort({order:1}).limit(1).toArray().reverse()",
+        "db.mutes.findOne({revision: '322fcf0ee10ea6e27360cf6699e9ff98fb907ef6')"
+    ],
+    "expected": {
+        "expired":  false,
+        "after":  1,
+        "before":  0,
+        "total":  2
+    },
+    "mutes": {
+        "current": {
+            "_id": "5bfcd2bb062b91e6c9373e1e",
+            "revision": "322fcf0ee10ea6e27360cf6699e9ff98fb907ef6",
+            "project": "sys-perf",
+            "variant": "linux-1-node-replSet",
+            "task": "bestbuy_query",
+            "test": "canary_client-cpuloop-10x",
+            "thread_level": "4",
+            "create_time": "2018-11-27T01:05:07Z",
+            "enabled": true,
+            "end": 1543294708.657661,
+            "last_updated_at": "2019-02-18T15:03:17.112Z",
+            "max_ops_per_sec": 122847.68986695619,
+            "max_thread_level": 16,
+            "order": 14439,
+            "start": 1543292351.089765,
+            "task_id": "sys_perf_linux_1_node_replSet_bestbuy_query_322fcf0ee10ea6e27360cf6699e9ff98fb907ef6_18_11_27_01_05_07",
+            "version_id": "sys_perf_322fcf0ee10ea6e27360cf6699e9ff98fb907ef6",
+            "workload": "mongoshell"
+        }
+    },
+    "points": {
+        "current": {
+            "_id" : "5bfcd2bb062b91e6c9373e1e",
+            "revision" : "322fcf0ee10ea6e27360cf6699e9ff98fb907ef6",
+            "project" : "sys-perf",
+            "task" : "bestbuy_query",
+            "test" : "canary_client-cpuloop-10x",
+            "variant" : "linux-1-node-replSet",
+            "version_id" : "sys_perf_322fcf0ee10ea6e27360cf6699e9ff98fb907ef6",
+            "create_time" : "2018-11-27T01:05:07Z",
+            "start" : 1543292351.089765,
+            "end" : 1543294708.657661,
+            "max_ops_per_sec" : 122847.68986695619,
+            "max_thread_level" : 16,
+            "order" : 14439,
+            "results" : [
+                {
+                    "thread_level" : "1",
+                    "ops_per_sec" : 15008.76663004821,
+                    "ops_per_sec_values" : [
+                        15008.76663004821
+                    ]
+                },
+                {
+                    "thread_level" : "16",
+                    "ops_per_sec" : 122847.68986695619,
+                    "ops_per_sec_values" : [
+                        122847.68986695619
+                    ]
+                },
+                {
+                    "thread_level" : "4",
+                    "ops_per_sec" : 59985.11456713499,
+                    "ops_per_sec_values" : [
+                        59985.11456713499
+                    ]
+                },
+                {
+                    "thread_level" : "8",
+                    "ops_per_sec" : 119843.67716051839,
+                    "ops_per_sec_values" : [
+                        119843.67716051839
+                    ]
+                }
+            ],
+            "task_id" : "sys_perf_linux_1_node_replSet_bestbuy_query_322fcf0ee10ea6e27360cf6699e9ff98fb907ef6_18_11_27_01_05_07",
+            "workload" : "mongoshell"
+        },
+        "before":[],
+        "after":[
+            {
+                "_id" : "5bfe23a2062b91e6c95f2f97",
+                "project" : "sys-perf",
+                "revision" : "6efa4ed0820b6f6e3a2615dc5f42e13ce3415ad8",
+                "task" : "bestbuy_query",
+                "test" : "canary_client-cpuloop-10x",
+                "variant" : "linux-1-node-replSet",
+                "version_id" : "sys_perf_6efa4ed0820b6f6e3a2615dc5f42e13ce3415ad8",
+                "create_time" : "2018-11-27T22:12:22Z",
+                "end" : 1543380957.708262,
+                "max_ops_per_sec" : 122731.57015587416,
+                "max_thread_level" : 16,
+                "order" : 14450,
+                "results" : [
+                    {
+                        "thread_level" : "1",
+                        "ops_per_sec" : 14965.977415339523,
+                        "ops_per_sec_values" : [
+                            14965.977415339523
+                        ]
+                    },
+                    {
+                        "thread_level" : "16",
+                        "ops_per_sec" : 122731.57015587416,
+                        "ops_per_sec_values" : [
+                            122731.57015587416
+                        ]
+                    },
+                    {
+                        "thread_level" : "4",
+                        "ops_per_sec" : 59849.050430451665,
+                        "ops_per_sec_values" : [
+                            59849.050430451665
+                        ]
+                    },
+                    {
+                        "thread_level" : "8",
+                        "ops_per_sec" : 119565.377166132,
+                        "ops_per_sec_values" : [
+                            119565.377166132
+                        ]
+                    }
+                ],
+                "start" : 1543378603.923408,
+                "task_id" : "sys_perf_linux_1_node_replSet_bestbuy_query_6efa4ed0820b6f6e3a2615dc5f42e13ce3415ad8_18_11_27_22_12_22",
+                "workload" : "mongoshell"
+            }
+        ]}}

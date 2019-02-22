@@ -10,11 +10,41 @@ pip install -r requirements-dev.txt
 
 ## testing
 The repo's tests are all packaged into `/testscripts/runtests.sh`, which must be run from the repo
-root and requires a `/config.yml` file (see `/example_config.yml`).
-
-  - *Evergreen credentials*: found in your local `~/.evergreen.yml` file. 
+root and it requires:
+ 
+  - a `/config.yml` file (see `/example_config.yml`).
+    - *Evergreen credentials*: found in your local `~/.evergreen.yml` file. 
 (Instructions [here](http://evergreen.mongodb.com/settings) if you are missing this file.)
-  - *Github authentication token*:
+    - *Github authentication token*:
 `curl -i -u <USERNAME> -H 'X-GitHub-OTP: <2FA 6-DIGIT CODE>' -d '{"scopes": ["repo"], "note": 
 "get full git hash"}' https://api.github.com/authorizations`
     - (You only need `-H 'X-GitHub-OTP: <2FA 6-DIGIT CODE>` if you have 2-factor authentication on.) 
+  - Python 2.7 *ONLY*.
+  - The correct packages. It is recommended that you use some python package manager.
+    - `$ pip install -r ./requirements-dev.txt             
+`
+
+### Testing Examples
+
+Run all the unit tests:
+
+    $ testscripts/run-nosetest.sh
+
+Run all the tests including system tests:
+
+    $ DSI_SYSTEM_TEST=true testscripts/run-nosetest.sh
+
+Run only the system tests:
+
+    $ DSI_SYSTEM_TEST=true testscripts/run-nosetest.sh -a system-test
+
+Run a specific test:
+
+    $ testscripts/run-nosetest.sh  signal_processing/outliers/tests/test_config.py 
+
+Run all tests in a module:
+
+    $ testscripts/run-nosetest.sh signal_processing/outliers/tests/test_*.py 
+
+Note: the `.py`, using `signal_processing/outliers/tests/test_*` may run all the tests twice if
+there are py and pyc files. 
