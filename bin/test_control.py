@@ -26,7 +26,6 @@ from common.host import INFO_ADAPTER
 from common.jstests import run_validate
 import common.log
 from common.workload_output_parser import parse_test_results, validate_config
-from workload_setup import WorkloadSetupRunner
 
 LOG = logging.getLogger(__name__)
 
@@ -330,28 +329,6 @@ def run_tests(config):
     return all(statuses)
 
 
-def call_workload_setup():
-    """
-    This ensures we call workload_setup.py before the real logic of
-    test_control.py.
-
-    Older revisions of the `mongo` repo don't call `workload_setup.py`
-    in their evergreen config. We call it here for
-    backward-compatibility with such commits.
-
-    PERF-1250: After SERVER-32260 and its backports, sys-perf will
-    call workload_setup explicitly, obviating the need for this call.
-    This call and matching function should be deleted a respectful
-    period of time after that work is done.
-    """
-    workload_setup_config = ConfigDict('workload_setup')
-    workload_setup_config.load()
-    setup = WorkloadSetupRunner(workload_setup_config)
-    if not setup.already_done():
-        setup.setup_workloads()
-    workload_setup_config.save()
-
-
 def main(argv):
     """ Main function. Parse command line options, and run tests.
 
@@ -369,11 +346,15 @@ def main(argv):
     args = parser.parse_args(argv)
     common.log.setup_logging(args.debug, args.log_file)
 
-    # See comment on call_workload_setup
-    call_workload_setup()
-
     config = ConfigDict('test_control')
     config.load()
+
+    if 'workload_setup' not in config or \
+        'out' not in config['workload_setup'] or \
+        'done' not in config['workload_setup']['out'] or \
+        not config['workload_setup']['out']['done']:
+        raise RuntimeError('Must run workload_setup prior to test_control')
+
     error = run_tests(config)
     return 0 if not error else 1
 
