@@ -435,7 +435,7 @@ def main(args):  # pylint: disable=too-many-locals,too-many-statements,too-many-
     # are accessed across many rules.
     global history, tag_history, overrides, replica_lag_line  # pylint: disable=invalid-name,global-statement
     (history, tag_history, overrides) = read_histories(args.variant, args.task, ofile=args.ofile)
-    task_max_thread_level = 0
+    task_max_thread_sum = 0
 
     # replication lag table lines
     replica_lag_line = []
@@ -473,8 +473,9 @@ def main(args):  # pylint: disable=too-many-locals,too-many-statements,too-many-
 
                     # what is the maximum thread level for this test?
                     test_max_thread_level = max(int(x) for x in to_test['results'].keys())
-                    # update the maximum thread level of the entire task as necessary
-                    task_max_thread_level = max(test_max_thread_level, task_max_thread_level)
+                    # Different tests within a task may be running concurrently,
+                    # so we need to sum up the max thread levels for all the tests in the task.
+                    task_max_thread_sum += test_max_thread_level
 
                     if args.out_file is None:
                         print(result['log_raw'])
@@ -522,7 +523,7 @@ def main(args):  # pylint: disable=too-many-locals,too-many-statements,too-many-
             max_thread_level = _lookup_constant_value(args.project_id, args.variant,
                                                       'max_thread_level')
             if not max_thread_level:
-                max_thread_level = task_max_thread_level
+                max_thread_level = task_max_thread_sum
             resource_constant_values = {'max_thread_level': max_thread_level}
             resource_rule_outcome = ftdc_analysis.resource_rules(
                 args.reports_analysis, args.project_id, args.variant, resource_constant_values,

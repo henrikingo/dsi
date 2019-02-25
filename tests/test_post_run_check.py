@@ -86,6 +86,42 @@ class TestPostRunCheck(unittest.TestCase):
     @patch('util._get_history', autospec=True)
     @patch('util._get_tag_history', autospec=True)
     @patch('util.get_task_id', autospec=True)
+    @patch('ftdc_analysis.resource_rules', autospec=True)
+    def test_max_thread_level(self, mock_resource_rules, mock_task_id, mock_tag, mock_history):
+        """
+        Checks that the max_thread_level is calculated correctly,
+        by summing up the max_thread_levels for all tests in the task.
+        """
+
+        mock_task_id.return_value = 'sys_perf_linux_standalone_core_workloads_WT_0ff97139df609ae1847da9bfb25c35d209e0936e_16_03_17_21_32_43'  #  pylint: disable=line-too-long
+        mock_tag.return_value = self._get_tag_history()
+        mock_history.return_value = self._get_history()
+        mock_resource_rules.return_value = {
+            'status': 'pass',
+            'end': 1,
+            'log_raw': '\nPassed resource sanity checks.',
+            'exit_code': 0,
+            'start': 0,
+            'test_file': 'resource_sanity_checks'
+        }
+
+        arg_string = \
+            "--rev 0ff97139df609ae1847da9bfb25c35d209e0936e " \
+            "--refTag 3.2.1-Baseline " \
+            "--overrideFile {0}/system_perf_override.json " \
+            "--reports-analysis {0}/core_workloads_reports " \
+            "--project_id sys-perf --task_name core_workloads_WT --variant linux-standalone " \
+            "--report-file {0}/report_ftdc.json --out-file /dev/null".format(
+                FIXTURE_FILES.fixture_dir_path)
+        post_run_check.main(arg_string.split(" "))
+        mock_resource_rules.assert_called_once_with("{}/core_workloads_reports".format(
+            FIXTURE_FILES.fixture_dir_path), 'sys-perf', 'linux-standalone',
+                                                    {'max_thread_level': 419}, None)
+        os.remove(FIXTURE_FILES.fixture_file_path("report_ftdc.json"))
+
+    @patch('util._get_history', autospec=True)
+    @patch('util._get_tag_history', autospec=True)
+    @patch('util.get_task_id', autospec=True)
     def test_post_run_check_core_fail(self, mock_task_id, mock_tag, mock_history):
         """
         Runs the full post run check with FTDC resource and core file failure checks.
