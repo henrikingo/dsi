@@ -30,3 +30,6 @@ detect_changes.log
 /build
 /dist
 _e_divisive.so
+
+# Mac specific
+/tests/.DS_Store
