@@ -8,6 +8,7 @@ import unittest
 from collections import OrderedDict, defaultdict
 
 import pymongo
+from click.testing import CliRunner
 from mock import ANY, MagicMock, call, patch
 
 import signal_processing.detect_changes as detect_changes
@@ -16,7 +17,7 @@ from signal_processing.change_points.weights import DEFAULT_WEIGHTING
 from signal_processing.commands import jobs
 from signal_processing.detect_changes import main
 from test_lib.fixture_files import FixtureFiles
-from click.testing import CliRunner
+import test_lib.structlog_for_test as structlog_for_test
 
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
@@ -55,7 +56,9 @@ class TestTig1423(unittest.TestCase):
 
         self.mongo_uri = 'mongodb+srv://fake@dummy-server.mongodb.net/perf'
         self.sysperf_perf_json = FIXTURE_FILES.load_json_file('sysperf_perf.json')
+        structlog_for_test.setup_logging()
 
+    # pylint: disable=too-many-locals
     def test_detect_changes(self):
         """ test detect changes with real data.
 
@@ -104,7 +107,14 @@ class TestTig1423(unittest.TestCase):
                 self.assertEqual(change_points[i]['order'], args[0]['order'])
                 self.assertEqual(change_points[i]['order_of_change_point'],
                                  args[0]['order_of_change_point'])
-                self.assertDictEqual(change_points[i]['algorithm'], args[0]['algorithm'])
+                subset = {}
+                for key, value in change_points[i]['algorithm'].items():
+                    if isinstance(value, float):
+                        self.assertAlmostEqual(change_points[i]['algorithm'][key],
+                                               args[0]['algorithm'][key])
+                    else:
+                        subset[key] = value
+                self.assertDictContainsSubset(subset, args[0]['algorithm'])
 
 
 # pylint: disable=invalid-name
