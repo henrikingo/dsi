@@ -114,8 +114,6 @@ tpcc:
 linkbench:
   - on_workload_client:
       exec: |
-        ${workload_setup.install_java}
-
         mkdir -p data/tmp; pushd data/tmp
         curl --retry 10 -fsS  \
           https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash
@@ -145,8 +143,6 @@ linkbench:
 ycsb:
   - on_workload_client:
       exec: |
-        ${workload_setup.install_java}
-
         mkdir -p data/tmp; pushd data/tmp
         curl --retry 10 -fsS \
           https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash
@@ -167,11 +163,3 @@ ycsb:
       exec: |
         export JAVA_HOME="/usr/java/jdk1.8.0_162/jre"
         source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && mvn -Dmongo.version=3.8.1 --quiet clean package
-
-install_java: |
-  mkdir -p data/tmp; pushd data/tmp
-  curl -O --retry 10 -fsS \
-    https://s3-us-west-2.amazonaws.com/dsi-donot-remove/java/jdk-8u162-linux-x64.rpm
-  sudo rpm -i jdk-8u162-linux-x64.rpm
-  sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.8.0_162/bin/java 20000
-  popd

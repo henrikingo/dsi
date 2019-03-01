@@ -14,9 +14,6 @@ import mongodb_setup
 mongodb_setup.RemoteHost = mock.MagicMock()
 
 DEFAULT_CONFIG = {
-    'bootstrap': {
-        'authentication': 'disabled'
-    },
     'infrastructure_provisioning': {
         'tfvars': {
             'ssh_user': 'ec2-user',
@@ -53,11 +50,10 @@ DEFAULT_CONFIG = {
             }
         }],
         'authentication': {
-            'enabled': {
-                'username': 'username',
-                'password': 'password'
-            }
-        }
+            'enabled': True,
+            'username': 'username',
+            'password': 'password',
+        },
     },
     'test_control': {}
 }
@@ -102,7 +98,7 @@ class TestMongodbSetup(unittest.TestCase):
             mock_run_threads.return_value = [True]
             self.assertTrue(setup.restart())
             setup.destroy.assert_called_once_with(60000)
-            setup.shutdown.assert_called_once_with(540000, False)
+            setup.shutdown.assert_called_once_with(540000, True)
             setup.downloader.download_and_extract.assert_not_called()
             mock_run_threads.assert_called_once()
 
@@ -177,14 +173,13 @@ class TestMongodbSetup(unittest.TestCase):
                 setup._start.assert_called_once_with(
                     is_restart=True, restart_clean_db_dir=None, restart_clean_logs=None)
             setup.destroy.assert_called_once_with(60000)
-            setup.shutdown.assert_called_once_with(540000, False)
+            setup.shutdown.assert_called_once_with(540000, True)
 
         _test_restart()
         _test_restart(shutdown=False)
 
     def test_restart_auth_enabled(self):
         """ Test restart when auth is enabled. Make sure shutdown is called with auth enabled. """
-        self.config['bootstrap']['authentication'] = 'enabled'
         setup = mongodb_setup.MongodbSetup(config=self.config)
 
         setup._start = mock.MagicMock(name='_start')
@@ -195,51 +190,56 @@ class TestMongodbSetup(unittest.TestCase):
         setup.restart()
         setup.shutdown.assert_called_once_with(setup.shutdown_ms, True)
 
-    def test__start(self):
-        """Restarting fails when shutdown fails"""
+    def _test__start(self, run_threads, success=True):
+        setup = mongodb_setup.MongodbSetup(config=self.config)
+        setup.downloader = mock.MagicMock()
+        setup.downloader.download_and_extract.return_value = False
+        common.mongodb_cluster.MongoNode.wait_until_up = mock.MagicMock()
+        setup.destroy = mock.MagicMock(name='destroy')
+        setup.shutdown = mock.MagicMock(name='shutdown')
+        setup.shutdown.return_value = False
 
-        def _test__start(run_threads, success=True):
+        with mock.patch('mongodb_setup.run_threads') as mock_run_threads,\
+             mock.patch('mongodb_setup.partial') as mock_partial, \
+             mock.patch('common.mongodb_cluster.MongoNode.run_mongo_shell'):
+            mock_run_threads.return_value = run_threads
+            mock_partial.return_value = 'threads'
 
-            setup = mongodb_setup.MongodbSetup(config=self.config)
+            self.assertEquals(setup._start(), success)
+            calls = [
+                mock.call(
+                    setup.start_cluster,
+                    cluster=setup.clusters[0],
+                    is_restart=False,
+                    restart_clean_db_dir=None,
+                    restart_clean_logs=None,
+                    enable_auth=False)
+            ]
+            mock_partial.assert_has_calls(calls)
+            setup.destroy.assert_not_called()
+            if success:
+                setup.shutdown.assert_has_calls([mock.call(540000)])  # shutdown for setup
+            else:
+                setup.shutdown.assert_has_calls(
+                    [mock.call(540000), mock.call(540000),
+                     mock.call(540000)])
+            setup.downloader.download_and_extract.assert_not_called()
+            mock_run_threads.assert_has_calls([mock.call(['threads'], daemon=True)])
 
-            setup.downloader = mock.MagicMock()
-            setup.downloader.download_and_extract.return_value = False
-            common.mongodb_cluster.MongoNode.wait_until_up = mock.MagicMock()
-            setup.destroy = mock.MagicMock(name='destroy')
-            setup.shutdown = mock.MagicMock(name='shutdown')
-            setup.shutdown.return_value = False
+    def test__start_1(self):
+        self._test__start([True])
 
-            with mock.patch('mongodb_setup.run_threads') as mock_run_threads,\
-                 mock.patch('mongodb_setup.partial') as mock_partial:
-                mock_run_threads.return_value = run_threads
-                mock_partial.return_value = 'threads'
+    def test__start_2(self):
+        self._test__start([True])
 
-                self.assertEquals(setup._start(), success)
-                calls = [
-                    mock.call(
-                        setup.start_cluster,
-                        cluster=setup.clusters[0],
-                        is_restart=False,
-                        restart_clean_db_dir=None,
-                        restart_clean_logs=None,
-                        enable_auth=False)
-                ]
-                mock_partial.assert_has_calls(calls)
-                setup.destroy.assert_not_called()
-                if success:
-                    setup.shutdown.assert_not_called()
-                else:
-                    setup.shutdown.assert_called_once_with(540000)
-                setup.downloader.download_and_extract.assert_not_called()
-                mock_run_threads.assert_called_once_with(['threads'], daemon=True)
+    def test__start_3(self):
+        self._test__start([True, True])
 
-        _test__start([True])
-        _test__start([True, True])
-        _test__start([True, False], success=False)
+    def test__start_4(self):
+        self._test__start([True, False], success=False)
 
     def test__start_with_auth1(self):
         """ Test _start with auth enabled for is_restart=False """
-        self.config['bootstrap']['authentication'] = 'enabled'
         setup = mongodb_setup.MongodbSetup(config=self.config)
 
         mock_add_default_users = mock.MagicMock(name='add_default_users')
@@ -272,7 +272,6 @@ class TestMongodbSetup(unittest.TestCase):
 
     def test__start_with_auth2(self):
         """ Test _start with auth enabled for is_restart=True, and clean_db_dir=True"""
-        self.config['bootstrap']['authentication'] = 'enabled'
         setup = mongodb_setup.MongodbSetup(config=self.config)
 
         mock_add_default_users = mock.MagicMock(name='add_default_users')
@@ -307,7 +306,6 @@ class TestMongodbSetup(unittest.TestCase):
 
     def test__start_with_auth3(self):
         """ Test _start with auth enabled for is_restart=True and clean_db_dir=False."""
-        self.config['bootstrap']['authentication'] = 'enabled'
         setup = mongodb_setup.MongodbSetup(config=self.config)
 
         mock_add_default_users = mock.MagicMock(name='add_default_users')
@@ -321,7 +319,7 @@ class TestMongodbSetup(unittest.TestCase):
             self.assertEquals(
                 setup._start(is_restart=True, restart_clean_db_dir=False, restart_clean_logs=True),
                 True)
-            mock_shutdown.assert_not_called()
+            setup.shutdown.assert_not_called()
             mock_partial.assert_has_calls([
                 mock.call(
                     setup.start_cluster,
@@ -329,7 +327,7 @@ class TestMongodbSetup(unittest.TestCase):
                     is_restart=True,
                     restart_clean_db_dir=False,
                     restart_clean_logs=True,
-                    enable_auth=True)
+                    enable_auth=True),
             ])
         mock_add_default_users.assert_not_called()
 

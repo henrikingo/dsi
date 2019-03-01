@@ -98,6 +98,13 @@ cd ~/data
 mkdir tmp
 cd tmp
 
+# <install-java>
+curl -O --retry 10 -fsS \
+  https://s3-us-west-2.amazonaws.com/dsi-donot-remove/java/jdk-8u162-linux-x64.rpm
+sudo rpm -i jdk-8u162-linux-x64.rpm
+sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.8.0_162/bin/java 20000
+# </install-java>
+
 # Please refer to README.md in jasper.proto's directory on steps for updating jasper.proto and the
 # curator binary.
 curl -o curator.tar.gz --retry 10 -LsS https://s3.amazonaws.com/mciuploads/curator/curator_rhel70_245ae90412200d1245cadac38d18025bb678c066_18_11_08_19_22_23-rhel70/curator-dist-245ae90412200d1245cadac38d18025bb678c066.tar.gz

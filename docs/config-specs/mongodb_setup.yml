@@ -12,7 +12,14 @@ mongod_config_file:  # This section is literally a mongod config file
     replSetName: myrs0  # We will use this and completely cease using command line options
   storage:  # A test can specify any option supported by mongod, including undocumented ones
     engine: wiredTiger
-  net: ${mongodb_setup.authentication.${bootstrap.authentication}.net}  # With SSL or without.
+  net:
+    port: 27017
+    bindIp: 0.0.0.0
+
+authentication:
+  enabled: true
+  username: username
+  password: password
 
 # etc...
 rs_conf:  # The top level settings for rs.conf() / rs.initiate()
@@ -183,10 +190,8 @@ meta:
   is_sharded: true
   is_replset: false
   storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
-  # Same name as used in bootstrap.mongodb_setup, but out of convention, we avoid referencing
-  # bootstrap.yml from elsewhere, as it's not a required file
   mongodb_setup: standalone
-  mongodb_url: ${mongodb_setup.authentication.${bootstrap.authentication}.mongodb_url}
+  mongodb_url: mongodb://${mongodb_setup.authentication.username}:${mongodb_setup.authentication.password}@${mongodb_setup.meta.hosts}/admin?ssl=false
 
 # Hosts to run correctness tests on
 validate:
@@ -213,31 +218,6 @@ shutdown_options:
 timeouts:
   shutdown_ms: 540000
   sigterm_ms: 60000
-
-# Enabled and disabled authentication and SSL settings.
-# Note: this is in defaults.yml with the SSL mode set to preferSSL. To use a different mode copy and
-# paste this into the relevant mongodb_setup config file and keep all lines unless notified
-# otherwise.
-authentication:
-  enabled:
-    net:
-      port: 27017
-      bindIp: 0.0.0.0
-      ssl:
-        mode: SSLmode  # preferSSL, allowSSL, requireSSL.
-        # Depending on the SSL mode chosen, these lines may or may not be needed.
-        PEMKeyFile: path_to_pem_key_file
-        PEMKeyPassword: password
-        CAFile: path_to_ca_file
-    username: username
-    password: password
-    mongodb_url: mongodb://${mongodb_setup.authentication.enabled.username}:${mongodb_setup.authentication.enabled.password}@${mongodb_setup.meta.hosts}/admin?ssl=true
-  # This does not change.
-  disabled:
-    net:
-      port: 27017
-      bindIp: 0.0.0.0
-    mongodb_url: mongodb://${mongodb_setup.meta.hosts}/admin
 
 # defaults.yml contains the following but it can be over-ridden
 upon_error:

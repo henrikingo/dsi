@@ -15,7 +15,7 @@ meta:
   is_sharded: false
   is_replset: true
   is_atlas: true
-  mongodb_url: mongodb://${mongodb_setup.meta.username}:${mongodb_setup.meta.password}@${mongodb_setup.out.atlas.clusters.0.mongodb_url}
+  mongodb_url: mongodb://${mongodb_setup.authentication.username}:${mongodb_setup.authentication.password}@${mongodb_setup.out.atlas.clusters.0.mongodb_url}
   # We need to provide a separate variable for the shell, because the shell on 3.4 doesn't support
   # connecting to multiple mongoses.
   # Since Atlas clusters are >=3.6, this is just the same as mongodb_url.

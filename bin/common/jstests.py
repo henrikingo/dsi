@@ -40,8 +40,7 @@ def jstest_one_host(config, mongo_uri, reports_dir, current_test_id, name):
     script_path = os.path.join(config['test_control']['jstests_dir'], SCRIPT_NAMES[name])
 
     with open(filename, 'wb+', 0) as out:
-        if name == 'db-hash-check' and config['bootstrap']['authentication'] == 'enabled':
-            enabled = config['mongodb_setup']['authentication']['enabled']
+        if name == 'db-hash-check' and config['mongodb_setup']['authentication']['enabled']:
             # Temporarily disable SSL.
             #mongo_uri += ' --ssl --sslPEMKeyFile {} --sslPEMKeyPassword {} --sslCAFile {}'.format(
             #    enabled['net']['ssl']['PEMKeyFile'], enabled['net']['ssl']['PEMKeyPassword'],
@@ -56,8 +55,8 @@ def jstest_one_host(config, mongo_uri, reports_dir, current_test_id, name):
                 load({{jstests_script_file|tojson}});
                 ''')
             jstests_script = script_template.render(
-                user=enabled['username'],
-                password=enabled['password'],
+                user=config['mongodb_setup']['authentication']['username'],
+                password=config['mongodb_setup']['authentication']['password'],
                 jstests_script_file=script_path)
             error = client_host.exec_mongo_command(
                 script=jstests_script,

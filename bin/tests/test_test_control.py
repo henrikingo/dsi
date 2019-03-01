@@ -267,16 +267,19 @@ class RunTestsTestCase(unittest.TestCase):
         argument into the function
         """
         mock_config = {
-            'bootstrap': {
-                'authentication': 'disabled'
-            },
             'infrastructure_provisioning': {
                 'tfvars': {
                     'ssh_user': 'mock_ssh_user',
                     'ssh_key_file': 'mock_ssh_key'
                 }
             },
-            'mongodb_setup': {}
+            'mongodb_setup': {
+                'authentication': {
+                    'enabled': True,
+                    'username': 'username',
+                    'password': 'password',
+                },
+            },
         }
         with LogCapture(level=logging.ERROR) as log_capture:
             # LogCapture captures all log output into the object log_capture. level specifies which
@@ -359,7 +362,7 @@ class RunTestsTestCase(unittest.TestCase):
                         'script': 'mock script'
                     }
                 }
-            }]
+            }],
         }, {}]
         self.help_trace_function(mock_create_file, mock_command_dicts)
 

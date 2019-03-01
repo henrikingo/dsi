@@ -19,7 +19,6 @@ bootstrap:
   linkbench_dir: ./linkbench
   tpcc_dir: ./tpcc
   genny_dir: ./data/genny  # Put genny on the ephemeral drive to give it more space.
-  authentication: disabled
 
 infrastructure_provisioning:
   tfvars:
@@ -55,8 +54,18 @@ mongodb_setup:
   clean_db_dir: true
   spawn_using: ssh
   mongodb_binary_archive: ${bootstrap.mongodb_binary_archive}
+
   mongod_config_file:  # Note these defaults can be overridden by user, but not unset.
-    net: ${mongodb_setup.authentication.${bootstrap.authentication}.net}
+    net:
+      port: 27017
+      bindIp: 0.0.0.0
+      # Due to the state of regressions when SSL is enabled, we are turning off SSL until after
+      # 4.0 is released.
+      # ssl:
+      #   mode: preferSSL
+      #   PEMKeyFile: ${mongodb_setup.mongo_dir}/member.pem
+      #   PEMKeyPassword: server-perf
+      #   CAFile: ${mongodb_setup.mongo_dir}/root.crt
     processManagement:
       fork: true
     replication:
@@ -70,8 +79,38 @@ mongodb_setup:
       destination: file
       path: data/logs/mongod.log
 
+  authentication:
+    enabled: true
+    username: username
+    password: password
+
+  # Get necessary SSL keys (not used yet but no harm in uploading them)
+  pre_cluster_start:
+    - on_all_hosts:
+        upload_repo_files:
+          - source: configurations/mongodb_setup/ssl/member.pem
+            target: ${mongodb_setup.mongo_dir}/member.pem
+          - source: configurations/mongodb_setup/ssl/root.crt
+            target: ${mongodb_setup.mongo_dir}/root.crt
+    - on_workload_client:
+        upload_repo_files:
+          - source: configurations/mongodb_setup/ssl/client.crt
+            target: ${mongodb_setup.mongo_dir}/client.crt
+          - source: configurations/mongodb_setup/ssl/client.key
+            target: ${mongodb_setup.mongo_dir}/client.key
+          - source: configurations/mongodb_setup/ssl/keystore.jks
+            target: ${mongodb_setup.mongo_dir}/keystore.jks
+          - source: configurations/mongodb_setup/ssl/root.crt
+            target: ${mongodb_setup.mongo_dir}/root.crt
+    - on_workload_client:
+        exec: |
+          export JAVA_HOME="/usr/java/jdk1.8.0_162"
+          sudo $JAVA_HOME/bin/keytool -importcert -trustcacerts -file ${mongodb_setup.mongo_dir}/root.crt -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -noprompt || true
+
+
+
   mongos_config_file:
-    net: ${mongodb_setup.authentication.${bootstrap.authentication}.net}
+    net: ${mongodb_setup.mongod_config_file.net}
     processManagement:
       fork: true
     setParameter:
@@ -85,7 +124,7 @@ mongodb_setup:
       chainingAllowed: false
 
   configsvr_config_file:
-    net: ${mongodb_setup.authentication.${bootstrap.authentication}.net}
+    net: ${mongodb_setup.mongod_config_file.net}
     processManagement:
       fork: true
     setParameter:
@@ -114,10 +153,10 @@ mongodb_setup:
     # The list of hosts that can be used in a mongodb connection string
     hosts: ${mongodb_setup.topology.0.private_ip}:27017
     # Most clients will use this to connect to the cluster
-    mongodb_url: ${mongodb_setup.authentication.${bootstrap.authentication}.mongodb_url}
+    mongodb_url: "mongodb://${mongodb_setup.authentication.username}:${mongodb_setup.authentication.password}@${mongodb_setup.meta.hosts}/admin?ssl=false"
     # We need to provide a separate variable for the shell, because the shell on 3.4 doesn't
     # support connecting to multiple mongoses and therefore can't use mongodb_url.
-    mongodb_shell_url: ${mongodb_setup.authentication.${bootstrap.authentication}.mongodb_shell_url}
+    mongodb_shell_url: "mongodb://${mongodb_setup.authentication.username}:${mongodb_setup.authentication.password}@${mongodb_setup.meta.hostname}:27017/admin?ssl=false"
     is_sharded: false
     is_replset: false
     secondary: None
@@ -142,6 +181,7 @@ mongodb_setup:
         retrieve_files:
           - source: data/dbs/diagnostic.data
             target: ./diagnostic.data
+
   post_task:
     - on_all_servers:
         exec: |
@@ -161,61 +201,6 @@ mongodb_setup:
         retrieve_files:
           - source: mdiag/
             target: ./
-
-  # Enabled and disabled authentication and SSL settings.
-  authentication:
-    enabled:
-      net:
-        port: 27017
-        bindIp: 0.0.0.0
-        # Due to the state of regressions when SSL is enabled, we are turning off SSL until after
-        # 4.0 is released.
-        # ssl:
-        #   mode: preferSSL
-        #   PEMKeyFile: ${mongodb_setup.mongo_dir}/member.pem
-        #   PEMKeyPassword: server-perf
-        #   CAFile: ${mongodb_setup.mongo_dir}/root.crt
-      username: username
-      password: password
-      # Temporarily disable SSL.
-      mongodb_url: mongodb://${mongodb_setup.authentication.enabled.username}:${mongodb_setup.authentication.enabled.password}@${mongodb_setup.meta.hosts}/admin?ssl=false
-      mongodb_shell_url: mongodb://${mongodb_setup.authentication.enabled.username}:${mongodb_setup.authentication.enabled.password}@${mongodb_setup.meta.hostname}:27017/admin?ssl=false
-      # Get necessary SSL keys.
-      pre_cluster_start:
-        - on_all_hosts:
-            upload_repo_files:
-              - source: configurations/mongodb_setup/ssl/member.pem
-                target: ${mongodb_setup.mongo_dir}/member.pem
-              - source: configurations/mongodb_setup/ssl/root.crt
-                target: ${mongodb_setup.mongo_dir}/root.crt
-        - on_workload_client:
-            upload_repo_files:
-              - source: configurations/mongodb_setup/ssl/client.crt
-                target: ${mongodb_setup.mongo_dir}/client.crt
-              - source: configurations/mongodb_setup/ssl/client.key
-                target: ${mongodb_setup.mongo_dir}/client.key
-              - source: configurations/mongodb_setup/ssl/keystore.jks
-                target: ${mongodb_setup.mongo_dir}/keystore.jks
-              - source: configurations/mongodb_setup/ssl/root.crt
-                target: ${mongodb_setup.mongo_dir}/root.crt
-        - on_workload_client:
-            exec: |
-              export JAVA_HOME="/usr/java/jdk1.8.0_162"
-              sudo $JAVA_HOME/bin/keytool -importcert -trustcacerts -file ${mongodb_setup.mongo_dir}/root.crt -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -noprompt || true
-
-    disabled:
-      net:
-        port: 27017
-        bindIp: 0.0.0.0
-      mongodb_url: mongodb://${mongodb_setup.meta.hosts}/admin?ssl=false
-      mongodb_shell_url: mongodb://${mongodb_setup.meta.hostname}:27017/admin?ssl=false
-      # This is just a placeholder for pre_cluster_start when we are not using SSL.
-      pre_cluster_start:
-        - on_workload_client:
-            exec: |
-              ls
-
-  pre_cluster_start: ${mongodb_setup.authentication.${bootstrap.authentication}.pre_cluster_start}
 
   upon_error:
     - on_all_servers:

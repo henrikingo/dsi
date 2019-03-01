@@ -20,12 +20,7 @@ def mongodb_auth_configured(config):
     :rtype: boolean.
     """
 
-    if config['bootstrap']['authentication'] == 'disabled':
-        return False
-    auth_config = config['mongodb_setup']['authentication']['enabled']
-    assert 'username' in auth_config, 'both username and password MUST be set'
-    assert 'password' in auth_config, 'both username and password MUST be set'
-    return True
+    return config['mongodb_setup']['authentication']['enabled']
 
 
 def mongodb_auth_settings(config):
@@ -34,13 +29,13 @@ def mongodb_auth_settings(config):
 
     :param ConfigDict config: The configuration.
     :returns: The mongo user and password information.
-    :rtype: None or namedtuple.
+    :rtype: MongoDBAuthSettings.
     """
 
     if not mongodb_auth_configured(config):
         return None
-    return MongoDBAuthSettings(config['mongodb_setup']['authentication']['enabled']['username'],
-                               config['mongodb_setup']['authentication']['enabled']['password'])
+    return MongoDBAuthSettings(config['mongodb_setup']['authentication']['username'],
+                               config['mongodb_setup']['authentication']['password'])
 
 
 def add_user(cluster, config, write_concern=1):
@@ -65,8 +60,8 @@ def add_user(cluster, config, write_concern=1):
           });''')
 
     add_user_script = script_template.render(
-        user=config['mongodb_setup']['authentication']['enabled']['username'],
-        password=config['mongodb_setup']['authentication']['enabled']['password'],
+        user=config['mongodb_setup']['authentication']['username'],
+        password=config['mongodb_setup']['authentication']['password'],
         wc=write_concern)
     cluster.run_mongo_shell(add_user_script)
 

@@ -619,7 +619,6 @@ class TestBootstrap(unittest.TestCase):
             'ycsb_dir': './YCSB',
             'linkbench_dir': './linkbench',
             'tpcc_dir': './tpcc',
-            'authentication': 'disabled',
         }
         test_config = {}
         bootstrap.load_bootstrap(test_config, '.')
