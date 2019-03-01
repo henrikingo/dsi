@@ -16,6 +16,7 @@ variable "runner"               {}
 variable "runner_instance_id"   {}
 variable "status"               {}
 variable "task_id"              {}
+variable "with_hyperthreading"  { default = "false" }
 
 # AWS instance with placement group for mongod
 resource "aws_instance" "member" {
@@ -78,7 +79,7 @@ resource "aws_instance" "member" {
         }
         inline = [
             "chmod +x /tmp/provision.sh",
-            "/tmp/provision.sh ${var.type} false"
+            "/tmp/provision.sh false ${var.with_hyperthreading}"
         ]
     }
 }

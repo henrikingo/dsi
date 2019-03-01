@@ -4,6 +4,7 @@ bootstrap:
   infrastructure_provisioning: single
   platform: linux
   mongodb_setup: standalone
+  atlas_setup: not_atlas
   workload_setup: common
   analysis: common
   storageEngine: wiredTiger

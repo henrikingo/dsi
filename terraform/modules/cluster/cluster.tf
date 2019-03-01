@@ -45,6 +45,7 @@ variable mongod_ebs_iops                       { default = 1500 }
 # variable for seeded_ebs
 variable mongod_seeded_ebs_snapshot_id         { default = "" }
 variable mongod_seeded_ebs_iops                { default = 1500 }
+variable with_hyperthreading                   { default = "false" }
 
 # define VPC and related network resources
 module "VPC" {
@@ -69,6 +70,7 @@ module "mongod_instance" {
     # parameters for module
     instance_type       = "${var.mongod_instance_type}"
     count               = "${var.mongod_instance_count}"
+    with_hyperthreading = "${var.with_hyperthreading}"
     subnet_id           = "${module.VPC.aws_subnet_id}"
     key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"
@@ -93,6 +95,7 @@ module "mongod_ebs_instance" {
     # parameters for module
     instance_type       = "${var.mongod_ebs_instance_type}"
     count               = "${var.mongod_ebs_instance_count}"
+    with_hyperthreading = "${var.with_hyperthreading}"
     subnet_id           = "${module.VPC.aws_subnet_id}"
     key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"
@@ -119,6 +122,7 @@ module "mongod_seeded_ebs_instance" {
     # parameters for module
     instance_type           = "${var.mongod_seeded_ebs_instance_type}"
     count                   = "${var.mongod_seeded_ebs_instance_count}"
+    with_hyperthreading     = "${var.with_hyperthreading}"
     subnet_id               = "${module.VPC.aws_subnet_id}"
     key_file                = "${var.key_file}"
     security_groups         = "${module.VPC.aws_security_group_id}"
@@ -147,6 +151,7 @@ module "mongos_instance" {
     # parameters for module
     instance_type       = "${var.mongos_instance_type}"
     count               = "${var.mongos_instance_count}"
+    with_hyperthreading = "${var.with_hyperthreading}"
     subnet_id           = "${module.VPC.aws_subnet_id}"
     key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"
@@ -195,6 +200,7 @@ module "workload_instance" {
     # parameters for module
     instance_type       = "${var.workload_instance_type}"
     count               = "${var.workload_instance_count}"
+    with_hyperthreading = "${var.with_hyperthreading}"
     subnet_id           = "${module.VPC.aws_subnet_id}"
     key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"

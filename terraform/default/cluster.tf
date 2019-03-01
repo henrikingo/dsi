@@ -14,6 +14,8 @@ variable mongod_seeded_ebs_instance_type        { default = "c3.8xlarge" }
 variable mongos_instance_type                   { default = "c3.8xlarge" }
 variable configsvr_instance_type                { default = "m5.xlarge" }
 
+variable with_hyperthreading                    { default = "false" }
+
 # This is the value used to create the placement group itself
 variable placement_group                        { default = "" }
 # This is the same value (or empty string) for each node type
@@ -68,7 +70,7 @@ module "cluster" {
     configsvr_instance_type     = "${var.configsvr_instance_type}"
     configsvr_instance_count    = "${var.configsvr_instance_count}"
 
-# Seeded EBS instance support
+    # Instances with 2 EBS disks attached
     mongod_ebs_instance_type    = "${var.mongod_ebs_instance_type}"
     mongod_ebs_instance_count   = "${var.mongod_ebs_instance_count}"
     mongod_ebs_iops             = "${var.mongod_ebs_iops}"
@@ -105,4 +107,6 @@ module "cluster" {
     runner_instance_id  = "${var.runner_instance_id}"
     status              = "${var.status}"
     task_id             = "${var.task_id}"
+
+    with_hyperthreading = "${var.with_hyperthreading}"
 }

@@ -608,6 +608,7 @@ class TestBootstrap(unittest.TestCase):
             'infrastructure_provisioning': 'single',
             'mongodb_binary_archive': mongodb_url,
             'mongodb_setup': 'standalone',
+            'atlas_setup': 'not_atlas',
             'platform': 'linux',
             'production': False,
             'storageEngine': 'wiredTiger',

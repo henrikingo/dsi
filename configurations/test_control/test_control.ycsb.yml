@@ -6,7 +6,7 @@ run:
       cd YCSB/ycsb-mongodb;
       ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb load mongodb -s
       -P ../../workloadEvergreen
-      -threads ${test_control.thread_levels.load.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}};
+      -threads ${test_control.thread_levels.${mongodb_setup.meta.is_atlas}.load.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}};
     config_filename: workloadEvergreen
     workload_config: |
       mongodb.url=${mongodb_setup.meta.mongodb_url}
@@ -24,7 +24,7 @@ run:
     type: ycsb
     cmd: >
       cd YCSB/ycsb-mongodb;
-      for level in ${test_control.thread_levels.level100r.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}; do
+      for level in ${test_control.thread_levels.${mongodb_setup.meta.is_atlas}.level100r.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}; do
         ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s \
         -P ../../workloadEvergreen_100read \
         -threads $level;
@@ -34,7 +34,7 @@ run:
       mongodb.url=${mongodb_setup.meta.mongodb_url}
       recordcount=5000000
       operationcount=20000000
-      maxexecutiontime=1200
+      maxexecutiontime=240
       workload=com.yahoo.ycsb.workloads.CoreWorkload
       readallfields=true
       readproportion=1.0
@@ -47,7 +47,7 @@ run:
     type: ycsb
     cmd: >
       cd YCSB/ycsb-mongodb;
-      for level in ${test_control.thread_levels.level95-5.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}; do
+      for level in ${test_control.thread_levels.${mongodb_setup.meta.is_atlas}.level95-5.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}; do
         ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s \
         -P ../../workloadEvergreen_95read5update \
         -threads $level;
@@ -57,7 +57,7 @@ run:
       mongodb.url=${mongodb_setup.meta.mongodb_url}
       recordcount=5000000
       operationcount=20000000
-      maxexecutiontime=1200
+      maxexecutiontime=240
       workload=com.yahoo.ycsb.workloads.CoreWorkload
       readallfields=true
       readproportion=0.95
@@ -70,7 +70,7 @@ run:
     type: ycsb
     cmd: >
       cd YCSB/ycsb-mongodb;
-      for level in ${test_control.thread_levels.level100u.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}; do
+      for level in ${test_control.thread_levels.${mongodb_setup.meta.is_atlas}.level100u.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}; do
         ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s \
         -P ../../workloadEvergreen_100update \
         -threads $level;
@@ -80,7 +80,7 @@ run:
       mongodb.url=${mongodb_setup.meta.mongodb_url}
       recordcount=5000000
       operationcount=20000000
-      maxexecutiontime=1200
+      maxexecutiontime=240
       workload=com.yahoo.ycsb.workloads.CoreWorkload
       readallfields=true
       readproportion=0
@@ -93,7 +93,7 @@ run:
     type: ycsb
     cmd: >
       cd YCSB/ycsb-mongodb;
-      for level in ${test_control.thread_levels.level50-50.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}; do
+      for level in ${test_control.thread_levels.${mongodb_setup.meta.is_atlas}.level50-50.${mongodb_setup.meta.is_sharded}.${mongodb_setup.meta.storageEngine}}; do
         ${infrastructure_provisioning.numactl_prefix} ./bin/ycsb run mongodb -s \
         -P ../../workloadEvergreen_50read50update \
         -threads $level;
@@ -103,7 +103,7 @@ run:
       mongodb.url=${mongodb_setup.meta.mongodb_url}
       recordcount=5000000
       operationcount=20000000
-      maxexecutiontime=1200
+      maxexecutiontime=240
       workload=com.yahoo.ycsb.workloads.CoreWorkload
       readallfields=true
       readproportion=0.5
@@ -136,42 +136,61 @@ run:
 # can be used.
 # Note: the load test is not run in a loop and only supports a single thread level.
 thread_levels:
-  load:
-    "True":  # Sharded
-      mmapv1: 16
-      wiredTiger: 64
-    "False":  # Not Sharded
-      mmapv1: 8
-      wiredTiger: 32
-  level100r:
-    "True":  # Sharded
-      mmapv1: "64"
-      wiredTiger: "32 64"
-    "False":  # Not Sharded
-      mmapv1: "32"
-      wiredTiger: "64"
-  level95-5:
-    "True":  # Sharded
-      mmapv1: "64"
-      wiredTiger: "32 64"
-    "False":  # Not Sharded
-      mmapv1: "32"
-      wiredTiger: "32"
-  level100u:
-    "True":  # Sharded
-      mmapv1: "16"
-      wiredTiger: "16 32"
-    "False":  # Not Sharded
-      mmapv1: "32"
-      wiredTiger: "64"
-  level50-50:
-    "True":  # Sharded
-      mmapv1: "64"
-      wiredTiger: "32 16"
-    "False":  # Not Sharded
-      mmapv1: "64"
-      wiredTiger: "64"
+  "False":  # is_atlas
+    load:
+      "True":  # Sharded
+        mmapv1: 16
+        wiredTiger: 64
+      "False":  # Not Sharded
+        mmapv1: 8
+        wiredTiger: 32
+    level100r:
+      "True":  # Sharded
+        mmapv1: "64"
+        wiredTiger: "32 64"
+      "False":  # Not Sharded
+        mmapv1: "32"
+        wiredTiger: "64"
+    level95-5:
+      "True":  # Sharded
+        mmapv1: "64"
+        wiredTiger: "32 64"
+      "False":  # Not Sharded
+        mmapv1: "32"
+        wiredTiger: "32"
+    level100u:
+      "True":  # Sharded
+        mmapv1: "16"
+        wiredTiger: "16 32"
+      "False":  # Not Sharded
+        mmapv1: "32"
+        wiredTiger: "64"
+    level50-50:
+      "True":  # Sharded
+        mmapv1: "64"
+        wiredTiger: "32 16"
+      "False":  # Not Sharded
+        mmapv1: "64"
+        wiredTiger: "64"
 
+  # For Atlas we don't even try to hit the right thread level for each cluster size.
+  # Instead we run all the thread levels, one of them will be the peak.
+  "True":  # is_atlas
+    load:
+      "False":  # Not Sharded
+        wiredTiger: 32
+    level100r:
+      "False":  # Not Sharded
+        wiredTiger: "8 16 32 64 128"
+    level95-5:
+      "False":  # Not Sharded
+        wiredTiger: "8 16 32 64 128"
+    level100u:
+      "False":  # Not Sharded
+        wiredTiger: "8 16 32 64 128"
+    level50-50:
+      "False":  # Not Sharded
+        wiredTiger: "8 16 32 64 128"
 
 between_tests:
   - restart_mongodb:

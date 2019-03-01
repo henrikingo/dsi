@@ -25,6 +25,8 @@ variable "ebs_type"                    { default = "io1" }
 variable "ebs_iops"                    { default = "10000" }
 variable "ebs_size"                    { default = 100 }
 
+variable "with_hyperthreading"         { default = "false" }
+
 # AWS instance with placement group for mongod
 resource "aws_instance" "seeded_ebs_member" {
     ami                 = "${lookup(var.amis, var.availability_zone)}"
@@ -102,7 +104,7 @@ resource "aws_instance" "seeded_ebs_member" {
         }
         inline = [
             "chmod +x /tmp/provision.sh",
-            "/tmp/provision.sh with_seeded_ebs"
+            "/tmp/provision.sh with_seeded_ebs ${var.with_hyperthreading}"
         ]
     }
 }

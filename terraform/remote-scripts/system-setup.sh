@@ -2,29 +2,33 @@
 #
 # System setup script (run on each instance after launch by terraform)
 #
-# ./system-setup.sh [WITH_EBS]
+# ./system-setup.sh [WITH_EBS] [WITH_HT]
 #
-# INSTANCE_TYPE:  mongod, mongos, configsvr or workloadclient
 # WITH_EBS:       "with_ebs" or "with_seeded_ebs" to add EBS partition
+# WITH_HT:        "yes" to leave hyper-threaded cores online. Default is to disable ht.
 #
 WITH_EBS="${1:-false}"
+WITH_HT="${2:-false}"
 
 sudo yum -y -q install tmux git wget sysstat dstat perf fio xfsprogs krb5-libs openldap-devel cyrus-sasl cyrus-sasl-devel cyrus-sasl-gssapi cyrus-sasl-lib cyrus-sasl-md5 net-snmp net-snmp-devel net-snmp-libs net-snmp-utils python2-pip numactl
 
-# Disable hyperthreading.
-#
-# This involves turning off cpus tied to extra threads.  Cores is the
-# total number of real cores per socket in the system. Cpus is the
-# number of cpus linux thinks it has. We want to leave on one cpu per
-# real core.  On existing systems, cpus 0 through $total_cores all map
-# to different physical cores. We are turning off all cpus beyond
-# that.
 
-cores=$(lscpu | egrep Core | egrep socket | cut -d : -f 2)
-sockets=$(lscpu | egrep Socket |  cut -d : -f 2)
-cpus=$(lscpu | egrep "CPU\(s\)" | head -1 | cut -d : -f 2)
-total_cores=$(($cores*$sockets))
-for i in `seq $total_cores $cpus`; do echo 0 | sudo tee /sys/devices/system/cpu/cpu$i/online; done
+if [ "${WITH_HT}" != "yes" ]; then
+    # Disable hyperthreading.
+    #
+    # This involves turning off cpus tied to extra threads.  Cores is the
+    # total number of real cores per socket in the system. Cpus is the
+    # number of cpus linux thinks it has. We want to leave on one cpu per
+    # real core.  On existing systems, cpus 0 through $total_cores all map
+    # to different physical cores. We are turning off all cpus beyond
+    # that.
+
+    cores=$(lscpu | egrep Core | egrep socket | cut -d : -f 2)
+    sockets=$(lscpu | egrep Socket |  cut -d : -f 2)
+    cpus=$(lscpu | egrep "CPU\(s\)" | head -1 | cut -d : -f 2)
+    total_cores=$(($cores*$sockets))
+    for i in `seq $total_cores $cpus`; do echo 0 | sudo tee /sys/devices/system/cpu/cpu$i/online; done
+fi
 
 dev=/dev/xvdc; sudo umount $dev; sudo mkfs.xfs -f $dev; sudo mount $dev
 sudo chmod 777 /media/ephemeral0
@@ -86,7 +90,8 @@ echo "/home/ec2-user/data/logs/core.%e.%p.%h.%t" |sudo tee -a  /proc/sys/kernel/
 
 echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCmHUZLsuGvNUlCiaZ83jS9f49S0plAtCH19Z2iATOYPH1XE2T8ULcHdFX2GkYiaEqI+fCf1J1opif45sW/5yeDtIp4BfRAdOu2tOvkKvzlnGZndnLzFKuFfBPcysKyrGxkqBvdupOdUROiSIMwPcFgEzyLHk3pQ8lzURiJNtplQ82g3aDi4wneLDK+zuIVCl+QdP/jCc0kpYyrsWKSbxi0YrdpG3E25Q4Rn9uom58c66/3h6MVlk22w7/lMYXWc5fXmyMLwyv4KndH2u3lV45UAb6cuJ6vn6wowiD9N9J1GS57m8jAKaQC1ZVgcZBbDXMR8fbGdc9AH044JVtXe3lT shardtest@test.mongo' | tee -a ~/.ssh/authorized_keys
 
-cd /data
+# Install jasper
+cd ~/data
 mkdir tmp
 cd tmp
 
