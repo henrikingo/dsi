@@ -74,6 +74,9 @@ else
     ln -s /media/ephemeral0 data
 fi
 
+# ~/mongodb is a symlink into data
+ln -s data/mongodb mongodb
+
 # mongodb production recommended configuration
 echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled
 echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag
