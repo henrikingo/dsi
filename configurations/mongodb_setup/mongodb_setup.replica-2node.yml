@@ -37,7 +37,7 @@ meta:
   mongodb_setup: replica-2node
   # This appends the replicaset information to the end of the default mongodb_url and ends up
   # looking like "mongodb://username:password@10.2.0.200:27017/admin?ssl=false&replicaSet=rs0"
-  mongodb_url: ${mongodb_setup.meta.mongodb_url}&replicaSet=${mongodb_setup.topology.0.id}
+  mongodb_url: ${mongodb_setup.meta.mongodb_url_base}&replicaSet=${mongodb_setup.topology.0.id}
 
 # Hosts to run correctness tests on.
 # It is expected that the second standalone cluster will be part of the replica set at the end of

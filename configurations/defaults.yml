@@ -152,8 +152,12 @@ mongodb_setup:
     hostname: ${mongodb_setup.topology.0.mongos.0.private_ip}
     # The list of hosts that can be used in a mongodb connection string
     hosts: ${mongodb_setup.topology.0.private_ip}:27017
+    # This lets you easily append &replicaSet=foo or other url params
+    # but still keep the base url with authentication etc.
+    # This param in general shouldn't be overwritten.
+    mongodb_url_base: "mongodb://${mongodb_setup.authentication.username}:${mongodb_setup.authentication.password}@${mongodb_setup.meta.hosts}/admin?ssl=false"
     # Most clients will use this to connect to the cluster
-    mongodb_url: "mongodb://${mongodb_setup.authentication.username}:${mongodb_setup.authentication.password}@${mongodb_setup.meta.hosts}/admin?ssl=false"
+    mongodb_url: "${mongodb_setup.meta.mongodb_url_base}"
     # We need to provide a separate variable for the shell, because the shell on 3.4 doesn't
     # support connecting to multiple mongoses and therefore can't use mongodb_url.
     mongodb_shell_url: "mongodb://${mongodb_setup.authentication.username}:${mongodb_setup.authentication.password}@${mongodb_setup.meta.hostname}:27017/admin?ssl=false"
