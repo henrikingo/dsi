@@ -10,9 +10,10 @@ import shutil
 import subprocess
 import unittest
 
-from mock import patch, mock_open, Mock, call
+from mock import patch, mock_open, MagicMock, Mock, call
 from testfixtures import LogCapture
 
+import common.cedar
 import common.host_utils
 from common.command_runner import EXCEPTION_BEHAVIOR
 from common.command_runner import print_trace
@@ -85,6 +86,9 @@ class RunTestsTestCase(unittest.TestCase):
                         'engine': 'wiredTiger'
                     }
                 }
+            },
+            'runtime': {
+                'task_id': 'STAY IN YOUR VEHICLE CITIZEN'
             },
             'test_control': {
                 'task_name': 'test_config',
@@ -551,6 +555,7 @@ class RunTestsTestCase(unittest.TestCase):
             'then': ExitStatus(2, "process Hello World")
         })
 
+    @patch('common.cedar.Report')
     @patch('test_control.parse_test_results')
     @patch('test_control.prepare_reports_dir')
     @patch('subprocess.check_call')
@@ -559,9 +564,12 @@ class RunTestsTestCase(unittest.TestCase):
     @patch('test_control.legacy_copy_perf_output')
     @patch('test_control.run_pre_post_commands')
     def test_run_tests(self, mock_pre_post, mock_copy_perf, mock_run, mock_run_validate,
-                       mock_check_call, mock_prepare_reports, mock_parse_test_results):
+                       mock_check_call, mock_prepare_reports, mock_parse_test_results,
+                       mock_cedar_report):
         """Test run_tests (the top level workhorse for test_control)"""
 
+        mock_cedar_test = MagicMock()
+        mock_parse_test_results.return_value = (True, mock_cedar_test)
         run_tests(self.config)
 
         # We will check that the calls to run_pre_post_commands() happened in expected order
@@ -581,6 +589,14 @@ class RunTestsTestCase(unittest.TestCase):
         mock_prepare_reports.assert_called()
         mock_run_validate.assert_called_once_with(self.config, 'benchRun')
         mock_parse_test_results.assert_called()
+
+        mock_cedar_report.assert_called_once_with({'task_id': 'STAY IN YOUR VEHICLE CITIZEN'})
+        mock_cedar_report().add_test.assert_has_calls([
+            call(mock_cedar_test),
+            call(mock_cedar_test),
+            call(mock_cedar_test),
+        ])
+        mock_cedar_report().write_report.assert_called_once_with()
 
 
 if __name__ == '__main__':

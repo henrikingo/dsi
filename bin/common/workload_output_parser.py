@@ -12,6 +12,8 @@ import re
 
 from nose.tools import nottest
 
+import cedar
+
 LOG = logging.getLogger(__name__)
 
 SUPPORTED_TYPES = {'shell', 'mongoshell', 'ycsb', 'fio', 'iperf', 'linkbench', 'tpcc', 'genny'}
@@ -201,6 +203,15 @@ class ResultParser(object):
         self.timer = timer
         self.input_log = None
 
+        # cedar reporting
+        self.cedar_test = cedar.CedarTest(
+            name=self.test_id, created=self.timer['start'], completed=self.timer['end'])
+
+        # add tags for branch_name and constant 'sys-perf'
+        if 'runtime' in config and 'branch_name' in config['runtime']:
+            self.cedar_test.add_tag(config['runtime']['branch_name'])
+        self.cedar_test.add_tag('sys-perf')
+
     def load_input_log(self):
         """Load self.input_log and return it"""
         if self.input_log is None:
@@ -214,11 +225,11 @@ class ResultParser(object):
     def parse_and_save(self):
         """Parse self.input_log and merge it into self.perf_json.
 
-        :return: bool True on success else False
+        :return: (bool True on success else False, CedarTest)
         """
         passed = self.parse()
         self.results.save()
-        return passed
+        return passed, self.cedar_test
 
     def add_result(self, name, result, threads="1", metric_type="ops_per_sec"):
         """
@@ -416,30 +427,51 @@ class YcsbParser(ResultParser):
                 for index, part in enumerate(parts):
                     if part == "-threads":
                         self.threads = str(parts[index + 1])  # In perf.json threads is a string
+                        self.cedar_test.set_thread_level(int(self.threads))
                 continue
             if line.startswith("[OVERALL], Throughput(ops/sec), "):
                 parts = line.rstrip().split(", ")
                 result = float(parts[2])
                 name = self.test_id
                 self.add_result(name, result, self.threads, "ops_per_sec")
+                self.cedar_test.add_metric(
+                    name="ops_per_sec",
+                    rollup_type='THROUGHPUT',
+                    value=result,
+                )
 
             if line.startswith("[READ], 95thPercentileLatency(us), "):
                 parts = line.rstrip().split(", ")
                 result = float(parts[2])
                 name = self.test_id
                 self.add_result(name, result, self.threads, "95th_read_latency_us")
+                self.cedar_test.add_metric(
+                    name="95th_read_latency_us",
+                    rollup_type='PERCENTILE_95TH',
+                    value=result,
+                )
 
             if line.startswith("[READ], 99thPercentileLatency(us), "):
                 parts = line.rstrip().split(", ")
                 result = float(parts[2])
                 name = self.test_id
                 self.add_result(name, result, self.threads, "99th_read_latency_us")
+                self.cedar_test.add_metric(
+                    name="99th_read_latency_us",
+                    rollup_type='PERCENTILE_99TH',
+                    value=result,
+                )
 
             if line.startswith("[READ], AverageLatency(us), "):
                 parts = line.rstrip().split(", ")
                 result = float(parts[2])
                 name = self.test_id
                 self.add_result(name, result, self.threads, "average_read_latency_us")
+                self.cedar_test.add_metric(
+                    name="average_read_latency_us",
+                    rollup_type='MEAN',
+                    value=result,
+                )
 
 
 class FioParser(ResultParser):

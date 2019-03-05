@@ -107,7 +107,7 @@ sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.8.0_162/
 
 # Please refer to README.md in jasper.proto's directory on steps for updating jasper.proto and the
 # curator binary.
-curl -o curator.tar.gz --retry 10 -LsS https://s3.amazonaws.com/mciuploads/curator/curator_rhel70_245ae90412200d1245cadac38d18025bb678c066_18_11_08_19_22_23-rhel70/curator-dist-245ae90412200d1245cadac38d18025bb678c066.tar.gz
+curl -o curator.tar.gz --retry 10 -LsS https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-56c62cdb00a6d347151bc525c7524cdfd22a5cc8.tar.gz
 tar xvf curator.tar.gz
 
 sudo cp ./curator /usr/local/bin/curator

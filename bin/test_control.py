@@ -25,6 +25,7 @@ from common.host_factory import make_host
 from common.host import INFO_ADAPTER
 from common.jstests import run_validate
 import common.log
+import common.cedar as cedar
 from common.workload_output_parser import parse_test_results, validate_config
 
 LOG = logging.getLogger(__name__)
@@ -262,6 +263,9 @@ def run_tests(config):
     # array containing the status of each test
     statuses = []
 
+    # cedar reporting
+    report = cedar.Report(config.get('runtime'))
+
     try:
         if os.path.exists('perf.json'):
             os.remove('perf.json')
@@ -314,9 +318,11 @@ def run_tests(config):
                 LOG.warn("Unsuccessful test run for test %s. Parsing results now", test['id'])
             else:
                 LOG.info("Successful test run for test %s. Parsing results now", test['id'])
-            parse_test_results(test, config, timer)
+            _, cedar_test = parse_test_results(test, config, timer)
+            report.add_test(cedar_test)
 
     finally:
+        report.write_report()
         run_pre_post_commands('post_task', [test_control_config, mongodb_setup_config], config,
                               EXCEPTION_BEHAVIOR.CONTINUE)
         # Set perf.json to 555

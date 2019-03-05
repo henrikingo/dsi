@@ -19,6 +19,7 @@ bootstrap:
   linkbench_dir: ./linkbench
   tpcc_dir: ./tpcc
   genny_dir: ./data/genny  # Put genny on the ephemeral drive to give it more space.
+  curator_url: "https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-56c62cdb00a6d347151bc525c7524cdfd22a5cc8.tar.gz"
 
 infrastructure_provisioning:
   tfvars:

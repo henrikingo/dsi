@@ -12,6 +12,7 @@ from enum import Enum
 from functools import partial
 from dateutil import tz
 
+import common.cedar
 import common.host_factory
 import common.host_utils
 import common.utils
@@ -43,16 +44,15 @@ def prepare_reports_dir(reports_dir='reports'):
     os.symlink(real_reports_dir, reports_dir)
 
 
-def make_host_runner(host_info, command, prefix, mongodb_auth_settings=None):
+def make_host_runner(host_info, command, prefix, config, mongodb_auth_settings=None):
     """
     For the host, make an appropriate RemoteHost or LocalHost Object and run the set of commands.
 
-    :param HostInfo host_info
-    :param str ssh_user: The user id to use
-    :param str ssh_key_file: The keyfile to use
+    :param host_info HostInfo
     :param command: The command to execute. If str, run that command. If dict, type is one of
-    upload_repo_files, upload_files, retrieve_files, exec, or exec_mongo_shell.
+    upload_repo_files, upload_files, retrieve_files, exec, run_curator, or exec_mongo_shell.
     :type command: str, dict
+    :param config: top-level configdict
     :param str prefix: The id for the test related to the current command. If there
     is not a specific test related to the current command, the value of prefix should reflect the
     hook that the command belongs to, such as between_tests, post_task, and so on.
@@ -66,7 +66,7 @@ def make_host_runner(host_info, command, prefix, mongodb_auth_settings=None):
 
         # If command is a dictionary, parse it
         elif isinstance(command, MutableMapping):
-            _run_host_command_map(target_host, command, prefix)
+            _run_host_command_map(target_host, command, prefix, config)
     finally:
         target_host.close()
 
@@ -78,7 +78,7 @@ def _run_host_command(host_list, command, config, prefix):
 
     :param list host_list: List of ip addresses to connect to
     :param command: The command to execute. If str, run that command. If dict, type is one of
-    upload_repo_files, upload_files, retrieve_files, exec, or exec_mongo_shell.
+    upload_repo_files, upload_files, retrieve_files, exec, run_curator, or exec_mongo_shell.
     :type command: str, dict
     :param ConfigDict config: The system configuration
     :param str prefix: The id for the test related to the current command. If there
@@ -93,17 +93,17 @@ def _run_host_command(host_list, command, config, prefix):
     thread_commands = []
     for host_info in host_list:
         thread_commands.append(
-            partial(make_host_runner, host_info, command, prefix, mongodb_auth_settings))
+            partial(make_host_runner, host_info, command, prefix, config, mongodb_auth_settings))
 
     run_threads(thread_commands, daemon=True)
 
 
-def _run_host_command_map(target_host, command, prefix):
+def _run_host_command_map(target_host, command, prefix, config):
     """
     Run one command against a target host if the command is a mapping.
 
     :param Host target_host: The host to send the command to
-    :param dict command: The command to execute
+    :param MutableMapping command: The command to execute
     :param str prefix: The id for the test related to the current command. If there
     is not a specific test related to the current command, the value of prefix should reflect the
     hook that the command belongs to, such as between_tests, post_task, and so on.
@@ -139,6 +139,9 @@ def _run_host_command_map(target_host, command, prefix):
             LOG.debug('Executing command %s', value)
             success = target_host.run(value)
             common.host_utils.raise_if_not_success(success, value)
+        elif key == "run_curator":
+            LOG.info('Executing curator in ' + os.getcwd())
+            common.cedar.run_curator(value, target_host, config)
         elif key == "exec_mongo_shell":
             LOG.debug('Executing command %s in mongo shell', value)
             connection_string = value.get('connection_string', "")

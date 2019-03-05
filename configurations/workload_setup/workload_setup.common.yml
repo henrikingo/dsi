@@ -141,6 +141,9 @@ linkbench:
         mvn --quiet clean package -DskipTests
 
 ycsb:
+  - on_localhost:
+      exec: |
+        ${workload_setup.install_curator}
   - on_workload_client:
       exec: |
         mkdir -p data/tmp; pushd data/tmp
@@ -163,3 +166,8 @@ ycsb:
       exec: |
         export JAVA_HOME="/usr/java/jdk1.8.0_162/jre"
         source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && mvn -Dmongo.version=3.8.1 --quiet clean package
+
+install_curator: |
+  curl -o curator.tar.gz --retry 10 -LsS "${bootstrap.curator_url}"
+  tar xvf curator.tar.gz
+  ./curator --version

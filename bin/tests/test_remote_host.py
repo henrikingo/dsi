@@ -87,7 +87,7 @@ class RemoteHostTestCase(unittest.TestCase):
             remote._upload_single_file = MagicMock(name='_upload_single_file')
             remote._upload_single_file.side_effect = common.host_utils.HostException(
                 "wrapped exception")
-            common.command_runner._run_host_command_map(remote, command, "test_id")
+            common.command_runner._run_host_command_map(remote, command, "test_id", {})
 
     @patch('paramiko.SSHClient')
     def test__upload_files_wrapped_ex(self, ssh_client):
@@ -103,7 +103,7 @@ class RemoteHostTestCase(unittest.TestCase):
             remote._upload_single_file = MagicMock(name='_upload_single_file')
             remote._upload_single_file.side_effect = paramiko.ssh_exception.SSHException(
                 "wrapped exception")
-            common.command_runner._run_host_command_map(remote, command, "test_id")
+            common.command_runner._run_host_command_map(remote, command, "test_id", {})
 
     @patch('paramiko.SSHClient')
     def test_remote_host_isdir(self, mock_ssh):

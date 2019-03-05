@@ -78,3 +78,9 @@ test_control: ycsb.short
 # containing it.) This will take precedence over a terraform found in your PATH.
 #
 # terraform: ~/path/to/terraform
+
+# If running on a mac or if you want a custom version of curator, put the url to the tgz here
+#   For mac, use: https://s3.amazonaws.com/mciuploads/curator/curator_macos_94b7400131699cb79429893d43995b02630c5aa3_19_03_01_22_34_56-macos/curator-dist-94b7400131699cb79429893d43995b02630c5aa3.tar.gz
+# Find more here: https://evergreen.mongodb.com/waterfall/curator
+#   Select build-variant you want and navigate to 'build' task and grab the url for the dist.tar.gz artifact
+# curator_url: http://...
