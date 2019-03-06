@@ -8,8 +8,6 @@ atlas:
 # Meta data about this mongodb setup
 meta:
   mongodb_setup: atlas
-  username: ${runtime_secret.atlas_database_user}
-  password: ${runtime_secret.atlas_database_password}
   # The list of hosts that can be used in a mongodb connection string
   hosts: ${mongodb_setup.out.atlas.clusters.0.hosts}
   is_sharded: false
@@ -26,6 +24,10 @@ meta:
 # Correctness checks cause permission denied on Atlas, so there are none.
 # validate:
 
+authentication:
+  enabled: true
+  username: ${runtime_secret.atlas_database_user}
+  password: ${runtime_secret.atlas_database_password}
 
 # The keys in this lookup table map to atlas-setup expansion in system_perf_atlas.yml
 atlas_types:
