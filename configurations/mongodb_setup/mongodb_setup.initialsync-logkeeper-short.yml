@@ -12,6 +12,9 @@ mongod_config_file:
     # Default is true (i.e. exhaust cursor support is enabled) since MongoDB 4.1.4.
     # collectionClonerUsesExhaust: true
 
+authentication:
+  enabled: false
+
 pre_cluster_start:
   # Load logkeeper data on all mongod nodes except an empty data bearing node that will
   # sync data from its primary.

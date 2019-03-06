@@ -14,6 +14,9 @@ mongod_config_file:
     # Default is true (i.e. exhaust cursor support is enabled) since MongoDB 4.1.4.
     # collectionClonerUsesExhaust: true
 
+authentication:
+  enabled: false
+
 topology:
   - id: logkeeper-rs0
     cluster_type: replset
