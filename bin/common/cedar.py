@@ -41,7 +41,8 @@ class Report(object):
         self.task_name = runtime.get('task_name')
         self.task_id = runtime.get('task_id')
         self.execution_number = runtime.get('execution')
-        self.mainline = not runtime['is_patch'] if 'is_patch' in runtime else False
+        # @TODO PERF-1807 work around
+        self.mainline = not runtime.get('is_patch', False)
 
         self.tests = []
         self.bucket = BucketConfiguration()
