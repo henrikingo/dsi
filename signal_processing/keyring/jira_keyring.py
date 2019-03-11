@@ -55,7 +55,8 @@ def jira_keyring(jira_user=None, jira_password=None, use_keyring=True):
         if use_keyring and jira_user is None and jira_password is None:
             initial_credentials = Credentials.decode(keyring_impl.read(KEYRING_PROPERTY_NAME))
         LOG.debug('jira_keyring_helper: input', jira_credentials=initial_credentials)
-        jira, used_credentials = new_jira_client(initial_credentials)
+        jira, used_credentials = new_jira_client(initial_credentials.username,
+                                                 initial_credentials.password)
         yield jira
 
     except JIRAError as e:

@@ -65,7 +65,7 @@ class TestJiraKeyring(unittest.TestCase):
                 with jira_keyring():
                     pass
         mock_keyring.read.assert_called_once_with(KEYRING_PROPERTY_NAME)
-        mock_new_jira_client.assert_called_once_with(Credentials('username', 'password'))
+        mock_new_jira_client.assert_called_once_with('username', 'password')
         self.assertIn('boom', context.exception)
 
     def test_jira_exception_in_jira(self):
@@ -80,7 +80,7 @@ class TestJiraKeyring(unittest.TestCase):
                 with jira_keyring():
                     pass
         mock_keyring.read.assert_called_once_with(KEYRING_PROPERTY_NAME)
-        mock_new_jira_client.assert_called_once_with(Credentials('username', 'password'))
+        mock_new_jira_client.assert_called_once_with('username', 'password')
         self.assertIn('boom', context.exception.text)
 
     def test_captcha_exception(self):
@@ -95,7 +95,7 @@ class TestJiraKeyring(unittest.TestCase):
                 with jira_keyring():
                     pass
         mock_keyring.read.assert_called_once_with(KEYRING_PROPERTY_NAME)
-        mock_new_jira_client.assert_called_once_with(Credentials('username', 'password'))
+        mock_new_jira_client.assert_called_once_with('username', 'password')
         self.assertIn('Captcha verification has been triggered by', str(context.exception))
 
     def test_codesign_exception(self):
@@ -112,7 +112,7 @@ class TestJiraKeyring(unittest.TestCase):
                 with jira_keyring():
                     pass
         mock_keyring.read.assert_called_once_with(KEYRING_PROPERTY_NAME)
-        mock_new_jira_client.assert_called_once_with(Credentials('username', 'password'))
+        mock_new_jira_client.assert_called_once_with('username', 'password')
         self.assertIn('Can\'t store password on keychain', str(context.exception))
         self.assertIn('refer to signal_processing/README.md', str(context.exception))
 
@@ -127,7 +127,7 @@ class TestJiraKeyring(unittest.TestCase):
             with jira_keyring(use_keyring=False):
                 pass
 
-        mock_new_jira_client.assert_called_once_with(Credentials(None, None))
+        mock_new_jira_client.assert_called_once_with(None, None)
 
         mock_keyring.read.assert_not_called()
         mock_keyring.write.assert_not_called()
@@ -145,7 +145,7 @@ class TestJiraKeyring(unittest.TestCase):
             with jira_keyring(jira_password='password'):
                 pass
 
-        mock_new_jira_client.assert_called_once_with(Credentials(None, 'password'))
+        mock_new_jira_client.assert_called_once_with(None, 'password')
         mock_keyring.read.assert_not_called()
         mock_keyring.write.assert_called_once_with(KEYRING_PROPERTY_NAME,
                                                    "['username', 'password']")
@@ -163,7 +163,7 @@ class TestJiraKeyring(unittest.TestCase):
             with jira_keyring():
                 pass
 
-        mock_new_jira_client.assert_called_once_with(Credentials(None, None))
+        mock_new_jira_client.assert_called_once_with(None, None)
         mock_keyring.read.assert_called_once_with(KEYRING_PROPERTY_NAME)
         mock_keyring.write.assert_called_once_with(KEYRING_PROPERTY_NAME,
                                                    "['username', 'password']")
