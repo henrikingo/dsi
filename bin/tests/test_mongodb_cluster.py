@@ -52,6 +52,9 @@ DEFAULT_CONFIG = {
         },
         'journal_dir':
             '/data/journal',
+        'meta': {
+            'net': {},
+        },
         'topology': [{
             'cluster_type': 'standalone',
             'id': 'myid1',

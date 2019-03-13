@@ -7,6 +7,7 @@ import os
 
 import jinja2
 
+from mongodb_setup_helpers import mongodb_tls_configured
 from command_runner import make_workload_runner_host
 from host_factory import make_host
 from host_utils import extract_hosts
@@ -22,7 +23,7 @@ SCRIPT_NAMES = {
 
 
 def jstest_one_host(config, mongo_uri, reports_dir, current_test_id, name):
-    '''
+    """
     Run a jstest against one host.
 
     :param dict(ConfigDict) config: The system configuration.
@@ -31,7 +32,7 @@ def jstest_one_host(config, mongo_uri, reports_dir, current_test_id, name):
     :param string current_test_id: The identifier for this test.
     :param string name: The name of the jstest to run.
     Valid names are the keys from SCRIPT_NAMES.
-    '''
+    """
 
     directory = os.path.join(reports_dir, current_test_id, 'db-correctness', name)
     filename = os.path.join(directory, mongo_uri)
@@ -40,18 +41,14 @@ def jstest_one_host(config, mongo_uri, reports_dir, current_test_id, name):
     script_path = os.path.join(config['test_control']['jstests_dir'], SCRIPT_NAMES[name])
 
     with open(filename, 'wb+', 0) as out:
-        if name == 'db-hash-check' and config['mongodb_setup']['authentication']['enabled']:
-            # Temporarily disable SSL.
-            #mongo_uri += ' --ssl --sslPEMKeyFile {} --sslPEMKeyPassword {} --sslCAFile {}'.format(
-            #    enabled['net']['ssl']['PEMKeyFile'], enabled['net']['ssl']['PEMKeyPassword'],
-            #    enabled['net']['ssl']['CAFile'])
+        if name == 'db-hash-check' and mongodb_tls_configured(config['mongodb_setup']['meta']):
             script_template = jinja2.Template('''
                 TestData = new Object();
-                //TestData.clusterAuthMode = "x509";
-                //TestData.auth = true;
-                //TestData.keyFile = "dummyKeyFile";
-                //TestData.authUser = {{user|tojson}};
-                //TestData.keyFileData = {{password|tojson}};
+                TestData.clusterAuthMode = "x509";
+                TestData.auth = true;
+                TestData.keyFile = "dummyKeyFile";
+                TestData.authUser = {{user|tojson}};
+                TestData.keyFileData = {{password|tojson}};
                 load({{jstests_script_file|tojson}});
                 ''')
             jstests_script = script_template.render(

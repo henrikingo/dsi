@@ -657,6 +657,7 @@ class ConfigDictTestCase(unittest.TestCase):
         dict1keys = dict1.keys()
         dict2keys = dict2.keys()
         self.assertEqual(len(dict1keys), len(dict2keys))
+        self.assertEqual(set(dict1keys), set(dict2keys))
         for dict1key in dict1keys:
             # Pop the corresponding key from dict2, note that they won't be in the same order.
             dict2key = dict2keys.pop(dict2keys.index(dict1key))

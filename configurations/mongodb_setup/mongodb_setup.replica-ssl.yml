@@ -5,6 +5,19 @@ mongod_config_file:
     engine: ${bootstrap.storageEngine}
   replication:
     replSetName: rs0
+  setParameter:
+    enableTestCommands: 1
+    opensslCipherConfig: "HIGH:!EXPORT:!aNULL:-AESGCM"
+  net:
+    port: 27017
+    bindIp: 0.0.0.0
+    ssl:
+      mode: preferSSL
+      PEMKeyFile: ${mongodb_setup.mongo_dir}/member.pem
+      PEMKeyPassword: server-perf
+      CAFile: ${mongodb_setup.mongo_dir}/root.crt
+      allowInvalidHostnames: true
+      allowConnectionsWithoutCertificates: true
 
 topology:
   - cluster_type: replset
@@ -27,12 +40,14 @@ meta:
   is_sharded: false
   is_replset: true
   secondaries: 2
-  mongodb_setup: replica
+  mongodb_setup: replica-ssl
   # This appends the replicaset information to the end of the default mongodb_url and ends up
-  # looking like "mongodb://username:password@10.2.0.200:27017/admin?ssl=false&replicaSet=rs0"
-  mongodb_url: ${mongodb_setup.meta.mongodb_url_base}?replicaSet=${mongodb_setup.topology.0.id}
+  # looking like "mongodb://username:password@10.2.0.200:27017/admin?replicaSet=rs0&ssl=true'
+  mongodb_url: ${mongodb_setup.meta.mongodb_url_base}?replicaSet=${mongodb_setup.topology.0.id}&ssl=true
+  # For replset with ssl this is just fine ™
+  mongodb_shell_url: ${mongodb_setup.meta.mongodb_url}
 
+# Validation is currently broken with SSL (SERVER-7914)
 # Hosts to run correctness tests on.
 validate:
-  primaries:
-    - ${mongodb_setup.topology.0.mongod.0.private_ip}:27017
+  primaries: []

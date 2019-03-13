@@ -24,13 +24,19 @@ class RemoteHost(common.host.Host):
     Represents a remote host
     """
 
-    def __init__(self, hostname, username, pem_file, mongodb_auth_settings=None):
+    # pylint: disable=too-many-arguments
+    def __init__(self,
+                 hostname,
+                 username,
+                 pem_file,
+                 mongodb_auth_settings=None,
+                 mongodb_tls_settings=None):
         """
         :param hostname: hostname
         :param username: username
         :param pem_file: ssh pem file
         """
-        super(RemoteHost, self).__init__(hostname, mongodb_auth_settings)
+        super(RemoteHost, self).__init__(hostname, mongodb_auth_settings, mongodb_tls_settings)
         LOG.debug('hostname: %s, username: %s, pem_file: %s', hostname, username, pem_file)
         try:
             ssh, ftp = self.connected_ssh(hostname, username, pem_file)

@@ -27,10 +27,11 @@ class Host(object):
     Base class for hosts
     """
 
-    def __init__(self, hostname, mongodb_auth_settings=None):
+    def __init__(self, hostname, mongodb_auth_settings=None, mongodb_tls_settings=None):
         self._alias = None
         self.hostname = hostname
         self.mongodb_auth_settings = mongodb_auth_settings
+        self.mongodb_tls_settings = mongodb_tls_settings
 
     @property
     def alias(self):
@@ -186,6 +187,14 @@ class Host(object):
             argv.extend([
                 '-u', self.mongodb_auth_settings.mongo_user, '-p',
                 self.mongodb_auth_settings.mongo_password, '--authenticationDatabase', 'admin'
+            ])
+
+        # TODO: This probably works with just `--ssl --sslAllowInvalidHostnames` and no files?
+        if self.mongodb_tls_settings:
+            argv.extend([
+                '--ssl', '--sslAllowInvalidHostnames', '--sslCAFile',
+                self.mongodb_tls_settings.ca_file, '--sslPEMKeyFile',
+                self.mongodb_tls_settings.pem_key_file
             ])
 
         # connection_string can contain ampersands, escape them.

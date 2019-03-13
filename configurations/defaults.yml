@@ -60,13 +60,6 @@ mongodb_setup:
     net:
       port: 27017
       bindIp: 0.0.0.0
-      # Due to the state of regressions when SSL is enabled, we are turning off SSL until after
-      # 4.0 is released.
-      # ssl:
-      #   mode: preferSSL
-      #   PEMKeyFile: ${mongodb_setup.mongo_dir}/member.pem
-      #   PEMKeyPassword: server-perf
-      #   CAFile: ${mongodb_setup.mongo_dir}/root.crt
     processManagement:
       fork: true
     replication:
@@ -156,9 +149,10 @@ mongodb_setup:
     # This lets you easily append &replicaSet=foo or other url params
     # but still keep the base url with authentication etc.
     # This param in general shouldn't be overwritten.
-    mongodb_url_base: "mongodb://${mongodb_setup.authentication.username}:${mongodb_setup.authentication.password}@${mongodb_setup.meta.hosts}/admin?ssl=false"
+    # This should *not* have any query-string parts in it - downstream is expecting to be the first to add on a ?
+    mongodb_url_base: "mongodb://${mongodb_setup.authentication.username}:${mongodb_setup.authentication.password}@${mongodb_setup.meta.hosts}/admin"
     # Most clients will use this to connect to the cluster
-    mongodb_url: "${mongodb_setup.meta.mongodb_url_base}"
+    mongodb_url: "${mongodb_setup.meta.mongodb_url_base}?ssl=false"
     # We need to provide a separate variable for the shell, because the shell on 3.4 doesn't
     # support connecting to multiple mongoses and therefore can't use mongodb_url.
     mongodb_shell_url: "mongodb://${mongodb_setup.authentication.username}:${mongodb_setup.authentication.password}@${mongodb_setup.meta.hostname}:27017/admin?ssl=false"
@@ -166,6 +160,9 @@ mongodb_setup:
     is_replset: false
     secondary: None
     is_atlas: false
+    # Clients (e.g. test_control) should use this to pick up net.ssl settings. Since there are
+    # several of them, we just pull the entire net.ssl here.
+    net: ${mongodb_setup.mongod_config_file.net}
     # Meta-data used to determine scale_factor for a cluster
     storageEngine: ${mongodb_setup.mongod_config_file.storage.engine}
     # Number of primaries in the cluster. For non-sharded this

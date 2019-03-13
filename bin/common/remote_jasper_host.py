@@ -31,7 +31,13 @@ class RemoteJasperHost(common.remote_host.RemoteHost):
     """
     has_run_protoc = False
 
-    def __init__(self, hostname, username, pem_file, mongodb_auth_settings=None):
+    # pylint: disable=too-many-arguments,unused-argument
+    def __init__(self,
+                 hostname,
+                 username,
+                 pem_file,
+                 mongodb_auth_settings=None,
+                 mongodb_tls_settings=None):
         super(RemoteJasperHost, self).__init__(hostname, username, pem_file, mongodb_auth_settings)
 
         if not self.has_run_protoc:

@@ -278,6 +278,9 @@ class RunTestsTestCase(unittest.TestCase):
                 }
             },
             'mongodb_setup': {
+                'meta': {
+                    'net': {},
+                },
                 'authentication': {
                     'enabled': True,
                     'username': 'username',

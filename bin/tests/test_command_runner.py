@@ -60,7 +60,7 @@ class CommandRunnerTestCase(unittest.TestCase):
             dummy_host_info = HostInfo("host_info")
 
             common.command_runner.make_host_runner(dummy_host_info, "command", "test_id", {})
-            mock_make_host.assert_called_once_with(dummy_host_info, None)
+            mock_make_host.assert_called_once_with(dummy_host_info, None, None)
             mock_target_host.run.assert_called_once_with('command')
             mock_target_host.close.assert_called_once()
 
@@ -77,7 +77,7 @@ class CommandRunnerTestCase(unittest.TestCase):
 
             common.command_runner.make_host_runner(dummy_host_info, command, "test_id", {})
 
-            mock_make_host.assert_called_once_with(dummy_host_info, None)
+            mock_make_host.assert_called_once_with(dummy_host_info, None, None)
 
             mock_run_host_command_map.assert_called_once_with(mock_target_host, command, 'test_id',
                                                               {})

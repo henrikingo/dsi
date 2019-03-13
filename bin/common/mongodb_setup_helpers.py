@@ -9,6 +9,7 @@ import jinja2
 from config import copy_obj
 
 MongoDBAuthSettings = namedtuple('MongoDBAuthSettings', ['mongo_user', 'mongo_password'])
+MongoDBTLSSettings = namedtuple('MongoDBTLSSettings', ['ca_file', 'pem_key_file'])
 
 
 def mongodb_auth_configured(config):
@@ -36,6 +37,41 @@ def mongodb_auth_settings(config):
         return None
     return MongoDBAuthSettings(config['mongodb_setup']['authentication']['username'],
                                config['mongodb_setup']['authentication']['password'])
+
+
+def mongodb_tls_configured(config_file):
+    """
+    Is TLS configured in the mongo node config file.
+
+    The common case is for the argument to be a mongo node config file from mongodb_setup.topology.
+    However, as the fields under mongodb_setup.meta.net usually follow the same structure
+    (net.ssl.mode) this function can also take that as an argument.
+
+    :param config_file: ConfigDict key mongodb_setup.topology.*.config_file or equivalent structure
+    :return: if tls is enabled
+    """
+    if 'net' in config_file:
+        net = config_file['net']
+        return 'ssl' in net and net['ssl']['mode'] in {'requireSSL', 'allowSSL', 'preferSSL'}
+    return False
+
+
+def mongodb_tls_settings(config_file):
+    """
+    Parse TLS settings from a mongo node config file.
+
+    The common case is for the argument to be a mongo node config file from mongodb_setup.topology.
+    However, as the fields under mongodb_setup.meta.net usually follow the same structure
+    (net.ssl.mode) this function can also take that as an argument.
+
+    :param config_file: ConfigDict key mongodb_setup.topology.*.config_file or equivalent structure
+    :return: None if not configured for ssl else MongoDBTLSSettings
+    """
+    if not mongodb_tls_configured(config_file):
+        return None
+
+    ssl = config_file['net']['ssl']
+    return MongoDBTLSSettings(ssl['CAFile'], ssl['PEMKeyFile'])
 
 
 def add_user(cluster, config, write_concern=1):

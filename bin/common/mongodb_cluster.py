@@ -143,10 +143,11 @@ class MongoNode(MongoCluster):
         self.public_ip = topology['public_ip']
         self.private_ip = topology.get('private_ip', self.public_ip)
         self.bin_dir = os.path.join(topology.get('mongo_dir', DEFAULT_MONGO_DIR), 'bin')
+        self.tls_settings = mongodb_setup_helpers.mongodb_tls_settings(topology['config_file'])
 
         setup = self.config['mongodb_setup']
         # NB: we could specify these defaults in default.yml if not already!
-        # TODO: https://jira.mongodb.org/browse/PERF-1246 For the next 2 configs, ConfigDict does
+        # TODO: https://jira.mongodb.org/browse/PERF-1246 For the next 3 configs, ConfigDict does
         #       not "magically" combine the common setting with the node specific one (topology vs
         #       mongodb_setup). We should add that to ConfigDict to make these lines as simple as
         #       the rest.
@@ -190,7 +191,8 @@ class MongoNode(MongoCluster):
         """Access to remote or local host."""
         if self._host is None:
             host_info = self._compute_host_info()
-            self._host = host_factory.make_host(host_info, spawn_using=self.spawn_using)
+            self._host = host_factory.make_host(
+                host_info, mongodb_tls_settings=self.tls_settings, spawn_using=self.spawn_using)
         return self._host
 
     def _compute_host_info(self):
@@ -289,6 +291,7 @@ class MongoNode(MongoCluster):
         commands.append(['ls', '-la'])
         return commands
 
+    # pylint: disable=unused-argument
     def launch_cmd(self, use_numactl=True, enable_auth=False):
         """Returns the command to start this node."""
         remote_file_name = '/tmp/mongo_port_{0}.conf'.format(self.port)
@@ -297,11 +300,6 @@ class MongoNode(MongoCluster):
         self.host.run(['cat', remote_file_name])
 
         cmd = [os.path.join(self.bin_dir, self.mongo_program), "--config", remote_file_name]
-
-        if enable_auth:
-            # Temporarily disable SSL.
-            # cmd.extend(['--clusterAuthMode', 'x509'])
-            pass
 
         if use_numactl and self.numactl_prefix:
             if not isinstance(self.numactl_prefix, list):
@@ -338,11 +336,14 @@ class MongoNode(MongoCluster):
         :return: True if the mongo shell exits successfully
         """
         remote_file_name = '/tmp/mongo_port_{0}.js'.format(self.port)
+        # Value of auth_enabled changes during the lifetime of a MongoNode, so we have to tell
+        # the host about auth settings on a case by case basis.
         if self.auth_enabled:
             self.host.mongodb_auth_settings = mongodb_setup_helpers.mongodb_auth_settings(
                 self.config)
         else:
             self.host.mongodb_auth_settings = None
+
         if self.host.exec_mongo_command(
                 js_string,
                 remote_file_name=remote_file_name,
