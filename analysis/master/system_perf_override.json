@@ -117,6 +117,26 @@
                 }
             }
         },
+        "bestbuy_agg_out":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5219"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5219"
+                    ]
+                }
+            }
+        },
         "bestbuy_query":{
             "threshold":{
                 "NetworkBandwidth":{
@@ -1548,6 +1568,26 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                }
+            }
+        },
+        "bestbuy_agg_out":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5219"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5219"
                     ]
                 }
             }
@@ -5491,6 +5531,26 @@
                 }
             }
         },
+        "bestbuy_agg_out":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5219"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5219"
+                    ]
+                }
+            }
+        },
         "bestbuy_query":{
             "threshold":{
                 "NetworkBandwidth":{
@@ -6759,6 +6819,26 @@
                 }
             }
         },
+        "bestbuy_agg_out":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5219"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5219"
+                    ]
+                }
+            }
+        },
         "bestbuy_query":{
             "threshold":{
                 "NetworkBandwidth":{
@@ -7733,6 +7813,26 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                }
+            }
+        },
+        "bestbuy_agg_out":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5219"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5219"
                     ]
                 }
             }
@@ -9186,6 +9286,26 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                }
+            }
+        },
+        "bestbuy_agg_out":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5219"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5219"
                     ]
                 }
             }
@@ -11883,6 +12003,26 @@
                     "threshold":1.0,
                     "ticket":[
                         "PERF-873"
+                    ]
+                }
+            }
+        },
+        "bestbuy_agg_out":{
+            "ndays":{},
+            "reference":{},
+            "threshold":{
+                "fio_latency_test_read_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5219"
+                    ]
+                },
+                "fio_latency_test_write_clat_mean":{
+                    "thread_threshold":2.0,
+                    "threshold":1.0,
+                    "ticket":[
+                        "BF-5219"
                     ]
                 }
             }
