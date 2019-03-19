@@ -126,7 +126,9 @@ class AwsCleanup(object):
             for group in groups['PlacementGroups'] if groups['PlacementGroups']
         ]
 
-    def find_stranded_vpcs_tagged(self, tag_key='owner', tag_value='serverteam-perf@10gen.com'):
+    def find_stranded_vpcs_tagged(self,
+                                  tag_key='owner',
+                                  tag_value='perf-terraform-alerts@10gen.com'):
         """
         Find stranded vpcs. A vpc is stranded if it exists, but is not associated with any
         instances.

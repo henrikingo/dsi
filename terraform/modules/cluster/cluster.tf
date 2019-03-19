@@ -1,4 +1,4 @@
-variable owner                          { default = "serverteam-perf@10gen.com" }
+variable owner                          { default = "perf-terraform-alerts@10gen.com" }
 variable topology                       {}
 variable runner_hostname                { default = "missing" } # Hostname of the machine using DSI
 variable runner_ip                      { default = "none" } # IP of the machine using DSI
