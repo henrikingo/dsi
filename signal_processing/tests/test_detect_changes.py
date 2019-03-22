@@ -14,7 +14,7 @@ from mock import ANY, MagicMock, call, patch
 import signal_processing.detect_changes as detect_changes
 from signal_processing.change_points.detection import ChangePointsDetection
 from signal_processing.change_points.weights import DEFAULT_WEIGHTING
-from signal_processing.commands import jobs
+from signal_processing.commands import jobs, helpers
 from signal_processing.detect_changes import main
 from test_lib.fixture_files import FixtureFiles
 import test_lib.structlog_for_test as structlog_for_test
@@ -115,6 +115,150 @@ class TestTig1423(unittest.TestCase):
                     else:
                         subset[key] = value
                 self.assertDictContainsSubset(subset, args[0]['algorithm'])
+
+
+def create_test_identifier(project=None, variant=None, task=None, test=None, thread_level=None):
+    return {
+        'project': 'sys-perf' if project is None else project,
+        'variant': 'linux-1-node-replSet' if variant is None else variant,
+        'task': 'linux-1-node-replSet' if task is None else task,
+        'test': '15_5c_update' if test is None else test,
+        'thread_level': '60' if thread_level is None else thread_level
+    }
+
+
+class TestGetPointsAggregation(unittest.TestCase):
+    """
+    Test suite for the get_points_aggregation.
+    """
+
+    def _test(self, level=None, min_order=None):
+        """ test run with min_points. """
+        test_identifier = create_test_identifier(thread_level=level)
+        pipeline = detect_changes.get_points_aggregation(test_identifier, min_order)
+        stage = pipeline.pop(0)
+        query = helpers.get_query_for_points(test_identifier)
+        self.assertIn('$match', stage)
+        self.assertDictContainsSubset(query, stage['$match'])
+        if min_order is not None:
+            self.assertIn('order', stage['$match'])
+            self.assertDictEqual(stage['$match']['order'], {'$gt': min_order})
+        else:
+            self.assertNotIn('order', stage['$match'])
+
+        stage = pipeline.pop(0)
+        self.assertIn('$match', stage)
+
+        stage = pipeline.pop(0)
+        self.assertIn('$sort', stage)
+        self.assertDictEqual(stage['$sort'], {'order': pymongo.ASCENDING})
+
+        stage = pipeline.pop(0)
+        self.assertIn('$project', stage)
+        expected = {
+            'project': 1,
+            'revision': 1,
+            'variant': 1,
+            'task': 1,
+            'test': 1,
+            'order': 1,
+            'create_time': 1,
+            'task_id': 1,
+            'version_id': 1,
+            'test_identifier': test_identifier
+        }
+        self.assertDictContainsSubset(expected, stage['$project'])
+        if level == 'max':
+            # The max_ops_per_sec is the correct value.
+            expected = {
+                'max_ops_per_sec': 1,
+                'rejected': {
+                    '$ifNull': ['$rejected', None]
+                },
+                'outlier': {
+                    '$ifNull': ['$outlier', None]
+                }
+            }
+        else:
+            expected = {
+                'results': {
+                    '$filter': {
+                        'input': '$results',
+                        'as': 'result',
+                        'cond': {
+                            '$eq': ['$$result.thread_level', test_identifier['thread_level']]
+                        }
+                    }
+                }
+            }
+        self.assertDictContainsSubset(expected, stage['$project'])
+
+        stage = pipeline.pop(0)
+        self.assertIn('$group', stage)
+
+        expected = {
+            '_id': None,
+            "test_identifier": {
+                "$first": "$test_identifier"
+            },
+            'size': {
+                '$sum': 1
+            },
+            'revisions': {
+                '$push': '$revision'
+            },
+            'orders': {
+                '$push': '$order'
+            },
+            'create_times': {
+                '$push': '$create_time'
+            },
+            'task_ids': {
+                '$push': '$task_id'
+            },
+            'version_ids': {
+                '$push': '$version_id'
+            },
+            'series': {
+                '$push':
+                    '$max_ops_per_sec' if level == 'max' else {
+                        '$arrayElemAt': ['$results.ops_per_sec', 0]
+                    }
+            },
+            'rejected': {
+                '$push':
+                    '$rejected' if level == 'max' else {
+                        '$ifNull': [{
+                            '$arrayElemAt': ['$results.rejected', 0]
+                        }, None]
+                    }
+            },
+            'outlier': {
+                '$push':
+                    '$outlier' if level == 'max' else {
+                        '$ifNull': [{
+                            '$arrayElemAt': ['$results.outlier', 0]
+                        }, None]
+                    }
+            }
+        }
+        self.assertDictEqual(stage['$group'], expected)
+
+    def test_min_order_none(self):
+        """ test thread_level not max and no order. """
+        self._test()
+
+    def test_min_order(self):
+        """ test thread_level not max and order. """
+        self._test(min_order=100)
+
+    def test_thread_level_max_min_order_none(self):
+        """ test thread_level max and no order. """
+        self._test(level='max')
+
+    def test_thread_level_max_min_order(self):
+        """ test thread_level max and order. """
+        self._test(level='max', min_order=100)
 
 
 # pylint: disable=invalid-name

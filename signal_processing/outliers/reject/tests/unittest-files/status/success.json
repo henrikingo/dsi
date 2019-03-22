@@ -1,0 +1,307 @@
+{
+  "task_id": "sys_perf_linux_1_node_replSet_bestbuy_agg_c13f0de07a8ad9523683db5569e7f8e6b60bd67d_19_03_14_13_50_51",
+  "task_name": "bestbuy_agg",
+  "status": {
+    "failures": 0,
+    "results": [
+      {
+        "status": "pass",
+        "start": 1552577389.708536,
+        "PreviousCompare": "pass",
+        "end": 1552579253.358361,
+        "test_file": "distinct_types_with_in_predicate-useAgg",
+        "log_raw": "\nTest: distinct_types_with_in_predicate-useAgg\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |    1495.22|    1501.44|      0.42%|t    15.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552579479.249994,
+        "PreviousCompare": "pass",
+        "end": 1552579938.009939,
+        "test_file": "fio_latency_test_write_clat_mean",
+        "log_raw": "\nTest: fio_latency_test_write_clat_mean\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |     489.54|     525.18|      7.28%|t   100.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552579479.249994,
+        "PreviousCompare": "pass",
+        "end": 1552579938.009939,
+        "test_file": "fio_latency_test_read_clat_mean",
+        "log_raw": "\nTest: fio_latency_test_read_clat_mean\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |     489.44|     524.11|      7.08%|t   100.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552577389.708536,
+        "PreviousCompare": "pass",
+        "end": 1552579253.358361,
+        "test_file": "count_no_predicate-useAgg",
+        "log_raw": "\nTest: count_no_predicate-useAgg\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |       1.15|       1.16|      1.05%|t    30.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552577389.708536,
+        "PreviousCompare": "pass",
+        "end": 1552579253.358361,
+        "test_file": "distinct_types_no_predicate-useAgg",
+        "log_raw": "\nTest: distinct_types_no_predicate-useAgg\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |    1552.44|    1572.31|      1.28%|t    30.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552577389.708536,
+        "PreviousCompare": "pass",
+        "end": 1552579253.358361,
+        "test_file": "find_project-useAgg",
+        "log_raw": "\nTest: find_project-useAgg\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |       0.02|       0.02|      1.05%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552577389.708536,
+        "PreviousCompare": "pass",
+        "end": 1552579253.358361,
+        "test_file": "canary_server-sleep-10ms",
+        "log_raw": "\nTest: canary_server-sleep-10ms\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |    1544.10|    1544.10|     -0.00%|t   100.00%|\n Previous |  Passed  |    c17fd27    |   1   |      96.49|      96.54|      0.05%|t   200.00%|\n Previous |  Passed  |    c17fd27    |   8   |     772.06|     772.04|     -0.00%|t   200.00%|\n Previous |  Passed  |    c17fd27    |   4   |     385.78|     386.03|      0.07%|t   200.00%|\n Previous |  Passed  |    c17fd27    |  16   |    1544.10|    1544.10|     -0.00%|t   200.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552577389.708536,
+        "PreviousCompare": "pass",
+        "end": 1552579253.358361,
+        "test_file": "find-useAgg",
+        "log_raw": "\nTest: find-useAgg\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |       0.02|       0.02|     -1.28%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552577389.708536,
+        "PreviousCompare": "pass",
+        "end": 1552579253.358361,
+        "test_file": "canary_server-cpuloop-10x",
+        "log_raw": "\nTest: canary_server-cpuloop-10x\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |   68981.11|   72579.32|      5.22%|t   100.00%|\n Previous |  Passed  |    c17fd27    |   1   |    5155.60|    5132.36|     -0.45%|t   200.00%|\n Previous |  Passed  |    c17fd27    |   8   |   38442.37|   38622.14|      0.47%|t   200.00%|\n Previous |  Passed  |    c17fd27    |   4   |   20229.27|   20057.42|     -0.85%|t   200.00%|\n Previous |  Passed  |    c17fd27    |  16   |   68981.11|   72579.32|      5.22%|t   200.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552577389.708536,
+        "PreviousCompare": "pass",
+        "end": 1552579253.358361,
+        "test_file": "canary_client-cpuloop-10x",
+        "log_raw": "\nTest: canary_client-cpuloop-10x\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |  122833.73|  122706.67|     -0.10%|t   100.00%|\n Previous |  Passed  |    c17fd27    |   1   |   15001.63|   14975.68|     -0.17%|t   200.00%|\n Previous |  Passed  |    c17fd27    |   8   |  119589.05|  119549.93|     -0.03%|t   200.00%|\n Previous |  Passed  |    c17fd27    |   4   |   59924.00|   59862.73|     -0.10%|t   200.00%|\n Previous |  Passed  |    c17fd27    |  16   |  122833.73|  122706.67|     -0.10%|t   200.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552577389.708536,
+        "PreviousCompare": "pass",
+        "end": 1552579253.358361,
+        "test_file": "find_limit-useAgg",
+        "log_raw": "\nTest: find_limit-useAgg\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |     180.31|     187.54|      4.01%|t    15.00%|\n Previous |  Passed  |    c17fd27    |   1   |      36.21|      36.46|      0.68%|t    22.50%|\n Previous |  Passed  |    c17fd27    |   8   |     180.31|     187.54|      4.01%|t    22.50%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552579479.249994,
+        "PreviousCompare": "pass",
+        "end": 1552579938.009939,
+        "test_file": "fio_streaming_bandwidth_test_read_iops",
+        "log_raw": "\nTest: fio_streaming_bandwidth_test_read_iops\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |    2736.78|    2734.62|     -0.08%|t   100.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552577389.708536,
+        "PreviousCompare": "pass",
+        "end": 1552579253.358361,
+        "test_file": "count_with_and_predicate-useAgg",
+        "log_raw": "\nTest: count_with_and_predicate-useAgg\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |      30.93|      29.86|     -3.46%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552577389.708536,
+        "PreviousCompare": "pass",
+        "end": 1552579253.358361,
+        "test_file": "find_project_6_sort_unindexed_skip_limit_1-useAgg",
+        "log_raw": "\nTest: find_project_6_sort_unindexed_skip_limit_1-useAgg\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |       0.34|       0.38|     11.83%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552577389.708536,
+        "PreviousCompare": "pass",
+        "end": 1552579253.358361,
+        "test_file": "find_skip_limit_1-useAgg",
+        "log_raw": "\nTest: find_skip_limit_1-useAgg\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |     269.31|     274.58|      1.96%|     20.00%|\n Previous |  Passed  |    c17fd27    |   1   |      42.95|      43.86|      2.11%|     30.00%|\n Previous |  Passed  |    c17fd27    |   8   |     269.31|     274.58|      1.96%|     30.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552579479.249994,
+        "PreviousCompare": "pass",
+        "end": 1552579938.009939,
+        "test_file": "fio_streaming_bandwidth_test_write_iops",
+        "log_raw": "\nTest: fio_streaming_bandwidth_test_write_iops\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |    2723.97|    2721.82|     -0.08%|t   100.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552577389.708536,
+        "PreviousCompare": "pass",
+        "end": 1552579253.358361,
+        "test_file": "canary_client-cpuloop-1x",
+        "log_raw": "\nTest: canary_client-cpuloop-1x\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  | 1183809.17| 1183539.86|     -0.02%|t   100.00%|\n Previous |  Passed  |    c17fd27    |   1   |  119270.84|  119135.14|     -0.11%|t   200.00%|\n Previous |  Passed  |    c17fd27    |   8   |  942807.33|  941956.26|     -0.09%|t   200.00%|\n Previous |  Passed  |    c17fd27    |   4   |  474376.52|  475701.25|      0.28%|t   200.00%|\n Previous |  Passed  |    c17fd27    |  16   | 1183809.17| 1183539.86|     -0.02%|t   200.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552577389.708536,
+        "PreviousCompare": "pass",
+        "end": 1552579253.358361,
+        "test_file": "count_with_type_predicate-useAgg",
+        "log_raw": "\nTest: count_with_type_predicate-useAgg\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |       2.26|       2.11|     -6.89%|t    35.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552579479.249994,
+        "PreviousCompare": "pass",
+        "end": 1552579938.009939,
+        "test_file": "fio_iops_test_read_iops",
+        "log_raw": "\nTest: fio_iops_test_read_iops\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |    2756.92|    2774.71|      0.65%|t   100.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552579479.249994,
+        "PreviousCompare": "pass",
+        "end": 1552579938.009939,
+        "test_file": "fio_iops_test_write_iops",
+        "log_raw": "\nTest: fio_iops_test_write_iops\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |    2760.55|    2778.32|      0.64%|t   100.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552577389.708536,
+        "PreviousCompare": "pass",
+        "end": 1552579253.358361,
+        "test_file": "find_project_skip_limit-useAgg",
+        "log_raw": "\nTest: find_project_skip_limit-useAgg\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |      15.17|      15.18|      0.07%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552577389.708536,
+        "PreviousCompare": "pass",
+        "end": 1552579253.358361,
+        "test_file": "find_project_6_sort_indexed_skip_limit_1-useAgg",
+        "log_raw": "\nTest: find_project_6_sort_indexed_skip_limit_1-useAgg\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |       0.34|       0.38|     11.99%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552580032.600022,
+        "PreviousCompare": "pass",
+        "end": 1552580098.225097,
+        "test_file": "NetworkBandwidth",
+        "log_raw": "\nTest: NetworkBandwidth\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    c17fd27    |  max  |9376919825.00|9017451676.18|     -3.83%|t   100.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "Command Succeeded: status=0 message='cd workloads && numactl --interleave=all --cpunodebind=1 ./run_workloads.py -c ../workloads.yml'\n",
+        "test_file": "benchRun test_output.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "Command Succeeded: status=0 message='numactl --interleave=all --cpunodebind=1 ./fio-test.sh 10.2.0.200'\n",
+        "test_file": "fio test_output.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "Command Succeeded: status=0 message='numactl --interleave=all --cpunodebind=1 ./iperf-test.sh 10.2.0.200'\n",
+        "test_file": "iperf test_output.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.benchRun.mongod.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.fio.mongod.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.iperf.mongod.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.post_task.mongod.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/benchRun/mongod.0/mongod.log\nNo bad messages found",
+        "test_file": "benchRun/mongod.0/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/fio/mongod.0/mongod.log\nNo bad messages found",
+        "test_file": "fio/mongod.0/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/iperf/mongod.0/mongod.log\nNo bad messages found",
+        "test_file": "iperf/mongod.0/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo FTDC metrics files found. Skipping resource sanity checks.",
+        "end": 1,
+        "test_file": "resource_sanity_checks"
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nPassed db-hash-check.benchRun JS test.",
+        "test_file": "db-hash-check.benchRun",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nPassed validate-indexes-and-collections.benchRun JS test.",
+        "test_file": "validate-indexes-and-collections.benchRun",
+        "exit_code": 0
+      }
+    ]
+  }
+}

@@ -11,7 +11,7 @@ from mock import MagicMock, patch, mock_open
 import numpy as np
 
 from signal_processing.outliers.config import normalize_series, \
-    standardize_series, mask_outliers, plot_confirmed_outliers, plot_without_confirmed_outliers, \
+    standardize_series, mask_outliers, plot_outliers, plot_without_outliers, \
     plot_without_any_outliers, plot_test_scores, plot_probability, \
     plot_histogram, plot_gesd, TestGesd, config_gesd, get_matplotlib
 
@@ -78,7 +78,7 @@ class TestPlotConfirmedOutliers(unittest.TestCase):
         mock_ax = MagicMock(name='ax')
         mock_plt = MagicMock(name='matplotlib')
         mock_plt.subplot.return_value = mock_ax
-        pos = plot_confirmed_outliers(
+        pos = plot_outliers(
             mock_plt,
             1,
             1,
@@ -113,7 +113,7 @@ class TestPlotWithoutConfirmedOutliers(unittest.TestCase):
         mock_ax = MagicMock(name='ax')
         mock_plt = MagicMock(name='matplotlib')
         mock_plt.subplot.return_value = mock_ax
-        pos = plot_without_confirmed_outliers(
+        pos = plot_without_outliers(
             mock_plt,
             1,
             1,
@@ -281,8 +281,8 @@ class TestPlotGesd(unittest.TestCase):
 
         # pylint: disable=line-too-long
         with patch(ns('get_matplotlib')), \
-             patch(ns('plot_confirmed_outliers')), \
-             patch(ns('plot_without_confirmed_outliers')), \
+             patch(ns('plot_outliers')), \
+             patch(ns('plot_without_outliers')), \
              patch(ns('plot_probability')), \
              patch(ns('plot_histogram')):
 

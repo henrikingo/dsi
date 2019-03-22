@@ -137,6 +137,7 @@ setup(
               'signal_processing.keyring',
               'signal_processing.native',
               'signal_processing.outliers',
+              'signal_processing.outliers.reject',
               'signal_processing.profiling',
               'signal_processing.util',
               'analysis',

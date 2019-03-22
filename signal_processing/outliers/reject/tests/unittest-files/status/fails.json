@@ -1,0 +1,262 @@
+{
+  "task_id": "sys_perf_linux_1_node_replSet_misc_workloads_c17fd2793077ce8c5e2aff8c373b2ae80c087214_19_03_13_14_24_52",
+  "task_name": "misc_workloads",
+  "status": {
+    "failures": 1,
+    "results": [
+      {
+        "status": "pass",
+        "start": 1552489936.311751,
+        "PreviousCompare": "pass",
+        "end": 1552492616.06355,
+        "test_file": "canary_client-cpuloop-1x",
+        "log_raw": "\nTest: canary_client-cpuloop-1x\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    83fa6e3    |  max  | 1186117.58| 1181662.73|     -0.38%|t   100.00%|\n Previous |  Passed  |    83fa6e3    |   1   |  119345.40|  118910.56|     -0.36%|t   200.00%|\n Previous |  Passed  |    83fa6e3    |   8   |  944296.15|  943577.05|     -0.08%|t   200.00%|\n Previous |  Passed  |    83fa6e3    |   4   |  475997.86|  474132.74|     -0.39%|t   200.00%|\n Previous |  Passed  |    83fa6e3    |  16   | 1186117.58| 1181662.73|     -0.38%|t   200.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "fail",
+        "start": 1552489936.311751,
+        "PreviousCompare": "fail",
+        "end": 1552492616.06355,
+        "test_file": "xldoc_2docs_10MB",
+        "log_raw": "\nTest: xldoc_2docs_10MB\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Failed  |    83fa6e3    |  max  |      94.45|      60.65|    -35.79%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552489936.311751,
+        "PreviousCompare": "pass",
+        "end": 1552492616.06355,
+        "test_file": "insert_vector_primary",
+        "log_raw": "\nTest: insert_vector_primary\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    83fa6e3    |  max  |  456280.45|  453306.99|     -0.65%|t    50.00%|\n Previous |  Passed  |    83fa6e3    |   1   |   95647.34|   92396.04|     -3.40%|t    75.00%|\n Previous |  Passed  |    83fa6e3    |   8   |  444776.99|  436895.86|     -1.77%|t    75.00%|\n Previous |  Passed  |    83fa6e3    |  16   |  456280.45|  453306.99|     -0.65%|t    75.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552489936.311751,
+        "PreviousCompare": "pass",
+        "end": 1552492616.06355,
+        "test_file": "index_build",
+        "log_raw": "\nTest: index_build\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    83fa6e3    |  max  |  222494.16|  206394.09|     -7.24%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552492729.221983,
+        "PreviousCompare": "pass",
+        "end": 1552493180.308419,
+        "test_file": "fio_iops_test_read_iops",
+        "log_raw": "\nTest: fio_iops_test_read_iops\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    83fa6e3    |  max  |    2759.58|    2772.68|      0.47%|t   100.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552489936.311751,
+        "PreviousCompare": "pass",
+        "end": 1552492616.06355,
+        "test_file": "contended_update",
+        "log_raw": "\nTest: contended_update\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    83fa6e3    |  max  |   12092.79|   12244.77|      1.26%|t    30.00%|\n Previous |  Passed  |    83fa6e3    |   1   |    3373.98|    3341.67|     -0.96%|t    45.00%|\n Previous |  Passed  |    83fa6e3    |  32   |   12092.79|   12244.77|      1.26%|t    45.00%|\n Previous |  Passed  |    83fa6e3    |  64   |   11696.33|   11702.32|      0.05%|t    45.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552489936.311751,
+        "PreviousCompare": "pass",
+        "end": 1552492616.06355,
+        "test_file": "insert_vector_secondary_overall",
+        "log_raw": "\nTest: insert_vector_secondary_overall\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    83fa6e3    |  max  |  456262.71|  453289.36|     -0.65%|t    50.00%|\n Previous |  Passed  |    83fa6e3    |   1   |   95643.62|   92390.40|     -3.40%|t    75.00%|\n Previous |  Passed  |    83fa6e3    |   8   |  444754.75|  436871.59|     -1.77%|t    75.00%|\n Previous |  Passed  |    83fa6e3    |  16   |  456262.71|  453289.36|     -0.65%|t    75.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552489936.311751,
+        "PreviousCompare": "pass",
+        "end": 1552492616.06355,
+        "test_file": "canary_server-sleep-10ms",
+        "log_raw": "\nTest: canary_server-sleep-10ms\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    83fa6e3    |  max  |    1544.36|    1544.27|     -0.01%|t   100.00%|\n Previous |  Passed  |    83fa6e3    |   1   |      96.48|      96.51|      0.03%|t   200.00%|\n Previous |  Passed  |    83fa6e3    |   8   |     772.01|     772.29|      0.04%|t   200.00%|\n Previous |  Passed  |    83fa6e3    |   4   |     385.81|     386.07|      0.07%|t   200.00%|\n Previous |  Passed  |    83fa6e3    |  16   |    1544.36|    1544.27|     -0.01%|t   200.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552492729.221983,
+        "PreviousCompare": "pass",
+        "end": 1552493180.308419,
+        "test_file": "fio_latency_test_write_clat_mean",
+        "log_raw": "\nTest: fio_latency_test_write_clat_mean\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    83fa6e3    |  max  |     490.49|     510.23|      4.03%|t   100.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552489936.311751,
+        "PreviousCompare": "pass",
+        "end": 1552492616.06355,
+        "test_file": "canary_client-cpuloop-10x",
+        "log_raw": "\nTest: canary_client-cpuloop-10x\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    83fa6e3    |  max  |  122996.89|  122531.20|     -0.38%|t   100.00%|\n Previous |  Passed  |    83fa6e3    |   1   |   15012.42|   14964.87|     -0.32%|t   200.00%|\n Previous |  Passed  |    83fa6e3    |   8   |  119828.36|  119431.90|     -0.33%|t   200.00%|\n Previous |  Passed  |    83fa6e3    |   4   |   60009.01|   59843.09|     -0.28%|t   200.00%|\n Previous |  Passed  |    83fa6e3    |  16   |  122996.89|  122531.20|     -0.38%|t   200.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552489936.311751,
+        "PreviousCompare": "pass",
+        "end": 1552492616.06355,
+        "test_file": "canary_server-cpuloop-10x",
+        "log_raw": "\nTest: canary_server-cpuloop-10x\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    83fa6e3    |  max  |   71271.48|   72343.97|      1.50%|t   100.00%|\n Previous |  Passed  |    83fa6e3    |   1   |    5201.27|    5242.08|      0.78%|t   200.00%|\n Previous |  Passed  |    83fa6e3    |   8   |   38757.87|   38506.35|     -0.65%|t   200.00%|\n Previous |  Passed  |    83fa6e3    |   4   |   20270.23|   20140.07|     -0.64%|t   200.00%|\n Previous |  Passed  |    83fa6e3    |  16   |   71271.48|   72343.97|      1.50%|t   200.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552493273.697809,
+        "PreviousCompare": "pass",
+        "end": 1552493339.284362,
+        "test_file": "NetworkBandwidth",
+        "log_raw": "\nTest: NetworkBandwidth\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    83fa6e3    |  max  |9062862994.39|9351205201.09|      3.18%|t   100.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552492729.221983,
+        "PreviousCompare": "pass",
+        "end": 1552493180.308419,
+        "test_file": "fio_latency_test_read_clat_mean",
+        "log_raw": "\nTest: fio_latency_test_read_clat_mean\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    83fa6e3    |  max  |     484.01|     508.05|      4.97%|t   100.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552492729.221983,
+        "PreviousCompare": "pass",
+        "end": 1552493180.308419,
+        "test_file": "fio_iops_test_write_iops",
+        "log_raw": "\nTest: fio_iops_test_write_iops\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    83fa6e3    |  max  |    2763.25|    2776.83|      0.49%|t   100.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552489936.311751,
+        "PreviousCompare": "pass",
+        "end": 1552492616.06355,
+        "test_file": "insert_vector_secondary_load_phase",
+        "log_raw": "\nTest: insert_vector_secondary_load_phase\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    83fa6e3    |  max  |  456280.45|  453306.99|     -0.65%|t    50.00%|\n Previous |  Passed  |    83fa6e3    |   1   |   95647.34|   92396.04|     -3.40%|t    75.00%|\n Previous |  Passed  |    83fa6e3    |   8   |  444776.99|  436895.86|     -1.77%|t    75.00%|\n Previous |  Passed  |    83fa6e3    |  16   |  456280.45|  453306.99|     -0.65%|t    75.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552489936.311751,
+        "PreviousCompare": "pass",
+        "end": 1552492616.06355,
+        "test_file": "insert_ttl",
+        "log_raw": "\nTest: insert_ttl\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    83fa6e3    |  max  |  312281.87|  303502.62|     -2.81%|t    10.00%|\n Previous |  Passed  |    83fa6e3    |   1   |   64579.31|   62683.59|     -2.94%|t    30.00%|\n Previous |  Passed  |    83fa6e3    |  32   |  309293.61|  303502.62|     -1.87%|t    30.00%|\n Previous |  Passed  |    83fa6e3    |  16   |  312281.87|  300361.07|     -3.82%|t    30.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552492729.221983,
+        "PreviousCompare": "pass",
+        "end": 1552493180.308419,
+        "test_file": "fio_streaming_bandwidth_test_write_iops",
+        "log_raw": "\nTest: fio_streaming_bandwidth_test_write_iops\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    83fa6e3    |  max  |    2810.10|    2807.80|     -0.08%|t   100.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1552492729.221983,
+        "PreviousCompare": "pass",
+        "end": 1552493180.308419,
+        "test_file": "fio_streaming_bandwidth_test_read_iops",
+        "log_raw": "\nTest: fio_streaming_bandwidth_test_read_iops\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    83fa6e3    |  max  |    2821.09|    2818.95|     -0.08%|t   100.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "Command Succeeded: status=0 message='cd workloads && numactl --interleave=all --cpunodebind=1 ./run_workloads.py -c ../workloads.yml'\n",
+        "test_file": "benchRun test_output.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "Command Succeeded: status=0 message='numactl --interleave=all --cpunodebind=1 ./fio-test.sh 10.2.0.200'\n",
+        "test_file": "fio test_output.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "Command Succeeded: status=0 message='numactl --interleave=all --cpunodebind=1 ./iperf-test.sh 10.2.0.200'\n",
+        "test_file": "iperf test_output.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.benchRun.mongod.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.fio.mongod.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.iperf.mongod.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.post_task.mongod.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/benchRun/mongod.0/mongod.log\nNo bad messages found",
+        "test_file": "benchRun/mongod.0/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/fio/mongod.0/mongod.log\nNo bad messages found",
+        "test_file": "fio/mongod.0/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/iperf/mongod.0/mongod.log\nNo bad messages found",
+        "test_file": "iperf/mongod.0/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo FTDC metrics files found. Skipping resource sanity checks.",
+        "end": 1,
+        "test_file": "resource_sanity_checks"
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nPassed db-hash-check.benchRun JS test.",
+        "test_file": "db-hash-check.benchRun",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nPassed validate-indexes-and-collections.benchRun JS test.",
+        "test_file": "validate-indexes-and-collections.benchRun",
+        "exit_code": 0
+      }
+    ]
+  }
+}

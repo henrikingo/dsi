@@ -18,6 +18,9 @@ GesdResult = collections.namedtuple(
 """
 A named tuple for the results of the GESD algorithm.
 
+The outliers are in suspicious_indexes[count:].
+The low confidence outliers are in suspicious_indexes[:count].
+
 :type count: int,
 :type suspicious_indexes: list(int)
 :type test_statistics: list(float)
@@ -42,10 +45,10 @@ def gesd(data, max_outliers=10, significance_level=0.05, mad=False):
             mad=True)
 
         count = gesd_result.count
-        suspicious_indexes = gesd_result.suspicious_indexes
+        indexes = gesd_result.suspicious_indexes
 
-        print("confirmed outliers indexes {}".format(suspicious_indexes[:count])
-        print("potential outliers indexes {}".format(suspicious_indexes[count:])
+        print("outliers indexes {}".format(indexes[:count])
+        print("low confidence outliers indexes {}".format(indexes[count:])
 
 
     If the standard deviation of the series data is zero then the outlier detection will bail out.

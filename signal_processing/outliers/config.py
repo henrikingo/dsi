@@ -60,8 +60,7 @@ def mask_outliers(series, outliers):
     return np.ma.array(series, mask=mask)
 
 
-def plot_confirmed_outliers(plt, rows, cols, pos, x_values, series, outliers, suspicious,
-                            axis=None):
+def plot_outliers(plt, rows, cols, pos, x_values, series, outliers, suspicious, axis=None):
     """
 
     Plot Outlier data.
@@ -99,15 +98,7 @@ def plot_confirmed_outliers(plt, rows, cols, pos, x_values, series, outliers, su
     return pos
 
 
-def plot_without_confirmed_outliers(plt,
-                                    rows,
-                                    cols,
-                                    pos,
-                                    x_values,
-                                    series,
-                                    outliers,
-                                    suspicious,
-                                    axis=None):
+def plot_without_outliers(plt, rows, cols, pos, x_values, series, outliers, suspicious, axis=None):
     """
 
     Plot Outlier data.
@@ -144,7 +135,7 @@ def plot_without_any_outliers(plt,
                               x_values,
                               series,
                               outliers,
-                              suspicious,
+                              low_confidence_outliers,
                               axis=None):
     """
 
@@ -155,8 +146,8 @@ def plot_without_any_outliers(plt,
     :param int pos: The current plot.
     :param list() x_values: The x axis data.
     :param list() series: The time series data.
-    :param list() outliers: The confirmed outliers.
-    :param list() suspicious: The suspicious outliers.
+    :param list() outliers: The outliers.
+    :param list() low_confidence_outliers: The low confidence outliers.
     :param matplotlib axis: The axes to plot the data on.
     """
     # pylint: disable=too-many-arguments
@@ -164,7 +155,7 @@ def plot_without_any_outliers(plt,
         pos += 1
         axis = plt.subplot(rows, cols, pos)
 
-    all_masked_series = mask_outliers(series, outliers + suspicious)
+    all_masked_series = mask_outliers(series, outliers + low_confidence_outliers)
     axis.xaxis.set_major_locator(MaxNLocator(integer=True))
     axis.set_title("All Outliers Removed")
     axis.plot(x_values, all_masked_series, 'bo-')
@@ -264,7 +255,7 @@ def plot_histogram(plt, rows, cols, pos, series, title=None, axis=None):
 def plot_gesd(test_identifier,
               series,
               outliers,
-              suspicious,
+              low_confidence_outliers,
               test_statistics,
               critical_values,
               all_z_scores,
@@ -280,8 +271,8 @@ def plot_gesd(test_identifier,
 
     :param dict() test_identifier: The dict of project / variant / task / test / thread level.
     :param list(float) series: The time series data.
-    :param list(int) outliers: The indexes of confirmed outliers.
-    :param list(int) suspicious: The indexes of suspicious points.
+    :param list(int) outliers: The indexes of outliers.
+    :param list(int) low_confidence_outliers: The indexes of low confidence outliers.
     :param list(float) test_statistics: The max z score / iteration.
     :param list(float) critical_values: The critical value / iteration.
     :param list(float, float) all_z_scores: A matrix of z scores for each iteration.
@@ -301,7 +292,7 @@ def plot_gesd(test_identifier,
         test_identifier=test_identifier,
         series=series,
         outliers=outliers,
-        suspicious=suspicious,
+        suspicious=low_confidence_outliers,
         test_statistics=test_statistics,
         critical_values=critical_values,
         all_z_scores=all_z_scores,
@@ -324,12 +315,13 @@ def plot_gesd(test_identifier,
         if plot_critical:
             rows += 1
 
-        pos = plot_confirmed_outliers(plt, rows, cols, pos, x_values, series, outliers, suspicious)
-        pos = plot_without_confirmed_outliers(plt, rows, cols, pos, x_values, series, outliers,
-                                              suspicious)
+        pos = plot_outliers(plt, rows, cols, pos, x_values, series, outliers,
+                            low_confidence_outliers)
+        pos = plot_without_outliers(plt, rows, cols, pos, x_values, series, outliers,
+                                    low_confidence_outliers)
         if plot_critical:
             pos = plot_test_scores(plt, rows, cols, pos, test_statistics, critical_values, outliers,
-                                   suspicious)
+                                   low_confidence_outliers)
 
         pos = plot_probability(plt, rows, cols, pos, series, 'All Data')
         pos = plot_probability(plt, rows, cols, pos,

@@ -328,24 +328,24 @@ class GesdReplayView(object):
             self.automatic_indexes = set()
 
         outliers = []
-        suspicious = []
+        low_confidence_outliers = []
         replay_result = self.model[frame]
 
         gesd_result = replay_result.gesd_result
         if gesd_result is not None:
-            suspicious_indexes = gesd_result.suspicious_indexes
+            indexes = gesd_result.suspicious_indexes
             count = gesd_result.count
-            outliers = suspicious_indexes[:count]
-            suspicious = suspicious_indexes[count:]
+            outliers = indexes[:count]
+            low_confidence_outliers = indexes[count:]
 
         if outliers:
             self.outliers.set_data(replay_result.orders[outliers], replay_result.series[outliers])
         else:
             self.outliers.set_data([], [])
 
-        if suspicious:
-            self.suspicious.set_data(replay_result.orders[suspicious],
-                                     replay_result.series[suspicious])
+        if low_confidence_outliers:
+            self.suspicious.set_data(replay_result.orders[low_confidence_outliers],
+                                     replay_result.series[low_confidence_outliers])
         else:
             self.suspicious.set_data([], [])
 

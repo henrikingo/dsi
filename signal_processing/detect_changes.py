@@ -43,6 +43,122 @@ find the change point nearest min size.
 """
 
 
+def get_points_aggregation(test_identifier, min_order):
+    """
+    Get the aggregation pipeline required to get the points data.
+
+    :param dict test_identifier: The project / variant / task / test and thread_level.
+    :param int min_order: If given then get all data greater than this value. Otherwise get
+    all data.
+    :type min_order: int or None.
+    :return: The number of points (and thus the length of the lists), the query used to
+    retrieve the points and a dict of lists for the metrics for each point (ops/s, revisions,
+    orders, create_times, task_ids).
+    :rtype: tuple(int, OrderedDict, dict).
+    """
+
+    max_thread_level = helpers.is_max_thread_level(test_identifier)
+    pipeline = []
+
+    # Step 1: Match test identifier and correct thread level.
+    query = helpers.get_query_for_points(test_identifier)
+    # If order was given, only get points after that point.
+    if min_order is not None:
+        query['order'] = {'$gt': min_order}
+
+    pipeline.append({'$match': query})
+
+    # Step 2: A valid document must contain values for REQUIRED_KEYS.
+    pipeline.append({'$match': {'$and': [{key: {'$ne': None}} for key in REQUIRED_KEYS]}})
+
+    # Step 3: Sort by order.
+    pipeline.append({'$sort': {'order': pymongo.ASCENDING}})
+
+    # Step 4: Project fields to ensure we only have the required fields.
+    # For non-max thread level, this removes results that don't match the correct thread level.
+    # No outlier_status field implies a pass status, but we project a null value into the
+    # the docs to allow for this case.
+    filter_thread_level = {
+        'project': 1,
+        'revision': 1,
+        'variant': 1,
+        'task': 1,
+        'test': 1,
+        'order': 1,
+        'create_time': 1,
+        'task_id': 1,
+        'version_id': 1,
+        'test_identifier': test_identifier
+    }
+    if max_thread_level:
+        # The max_ops_per_sec is the correct value.
+        filter_thread_level['max_ops_per_sec'] = 1
+        filter_thread_level['rejected'] = {'$ifNull': ['$rejected', None]}
+        filter_thread_level['outlier'] = {'$ifNull': ['$outlier', None]}
+    else:
+        # Remove results not matching the correct thread level.
+        filter_thread_level['results'] = {
+            '$filter': {
+                'input': '$results',
+                'as': 'result',
+                'cond': {
+                    '$eq': ['$$result.thread_level', test_identifier['thread_level']]
+                }
+            }
+        }
+    pipeline.append({'$project': filter_thread_level})
+
+    # Step 5: Group by project / variant / task  / test and thread level and simultaneously
+    # accumulate the data required for change point detection.
+    if max_thread_level:
+        # Push max_ops_per_sec to series.
+        ops_per_sec = '$max_ops_per_sec'
+        rejected = '$rejected'
+        outlier = '$outlier'
+    else:
+        # Push the first results.ops_per_sec. There can only be one.
+        ops_per_sec = {'$arrayElemAt': ['$results.ops_per_sec', 0]}
+        rejected = {'$ifNull': [{'$arrayElemAt': ['$results.rejected', 0]}, None]}
+        outlier = {'$ifNull': [{'$arrayElemAt': ['$results.outlier', 0]}, None]}
+
+    pipeline.append({
+        '$group': {
+            '_id': None,
+            "test_identifier": {
+                "$first": "$test_identifier"
+            },
+            'size': {
+                '$sum': 1
+            },
+            'revisions': {
+                '$push': '$revision'
+            },
+            'series': {
+                '$push': ops_per_sec
+            },
+            'orders': {
+                '$push': '$order'
+            },
+            'create_times': {
+                '$push': '$create_time'
+            },
+            'task_ids': {
+                '$push': '$task_id'
+            },
+            'version_ids': {
+                '$push': '$version_id'
+            },
+            'rejected': {
+                '$push': rejected
+            },
+            'outlier': {
+                '$push': outlier
+            }
+        }
+    })
+    return pipeline
+
+
 class PointsModel(object):
     """
     Model that gathers the point data and runs E-Divisive to find change points.
@@ -79,9 +195,9 @@ class PointsModel(object):
         The point found is excluded from the change point detection. That is, we calculate change
         points for all points newer than the selected point.
 
-        Note: The latest data point will never have a change point generated for it, so a min_points
-        of 1 will always regenerate from the latest change point (if there is one) or all if there
-        are none.
+        Note: The latest data point will never have a change point generated for it, so a
+        min_points of 1 will always regenerate from the latest change point (if there is one) or
+        all if there are none.
 
         :param str mongo_uri: The uri to connect to the cluster.
         :param min_points: The minimum number of points to consider when detecting change points.
@@ -115,99 +231,16 @@ class PointsModel(object):
         Retrieve the documents from the `points` collection in the database for the given test.
 
         :param dict test_identifier: The project / variant / task / test and thread_level.
-        :return: The results from the query to the database as well as some additional information
-        extracted from those results.
         :param int min_order: If given then get all data greater than this value. Otherwise get
         all data.
         :type min_order: int or None.
-        :return: The number of points (and thus the length of the lists), the query used to retrieve
-        the points and a dict of lists for the metrics for each point (ops/s, revisions, orders,
-        create_times, task_ids).
+        :return: The number of points (and thus the length of the lists), the query used to
+        retrieve the points and a dict of lists for the metrics for each point (ops/s, revisions,
+        orders, create_times, task_ids).
         :rtype: tuple(int, OrderedDict, dict).
         """
 
-        max_thread_level = helpers.is_max_thread_level(test_identifier)
-        pipeline = []
-
-        # Step 1: Match test identifier and correct thread level.
-        query = helpers.get_query_for_points(test_identifier)
-        # If order was given, only get points after that point.
-        if min_order is not None:
-            query['order'] = {'$gt': min_order}
-
-        pipeline.append({'$match': query})
-
-        # Step 2: A valid document must contain values for REQUIRED_KEYS.
-        pipeline.append({'$match': {'$and': [{key: {'$ne': None}} for key in REQUIRED_KEYS]}})
-
-        # Step 3: Sort by order.
-        pipeline.append({'$sort': {'order': 1}})
-
-        # Step 4: Project fields to ensure we only have the required fields.
-        # For non-max thread level, this removes results that don't match the correct thread level.
-        filter_thread_level = {
-            'project': 1,
-            'revision': 1,
-            'variant': 1,
-            'task': 1,
-            'test': 1,
-            'order': 1,
-            'create_time': 1,
-            'task_id': 1,
-            'version_id': 1,
-        }
-        if max_thread_level:
-            # The max_ops_per_sec is the correct value.
-            filter_thread_level['max_ops_per_sec'] = 1
-        else:
-            # Remove results not matching the correct thread level.
-            filter_thread_level['results'] = {
-                '$filter': {
-                    'input': '$results',
-                    'as': 'result',
-                    'cond': {
-                        '$eq': ['$$result.thread_level', test_identifier['thread_level']]
-                    }
-                }
-            }
-        pipeline.append({'$project': filter_thread_level})
-
-        # Step 5: Group by project / variant / task  / test and thread level and simultaneously
-        # accumulate the data required for change point detection.
-        if max_thread_level:
-            # Push max_ops_per_sec to series.
-            ops_per_sec = '$max_ops_per_sec'
-        else:
-            # Push the first results.ops_per_sec. There can only be one.
-            ops_per_sec = {'$arrayElemAt': ['$results.ops_per_sec', 0]}
-
-        pipeline.append({
-            '$group': {
-                '_id': None,
-                'size': {
-                    '$sum': 1
-                },
-                'revisions': {
-                    '$push': '$revision'
-                },
-                'series': {
-                    '$push': ops_per_sec
-                },
-                'orders': {
-                    '$push': '$order'
-                },
-                'create_times': {
-                    '$push': '$create_time'
-                },
-                'task_ids': {
-                    '$push': '$task_id'
-                },
-                'version_ids': {
-                    '$push': '$version_id'
-                }
-            }
-        })
-
+        pipeline = get_points_aggregation(test_identifier, min_order)
         results = list(self.db.points.aggregate(pipeline))[0]
         results.update(test_identifier)
         del results['_id']

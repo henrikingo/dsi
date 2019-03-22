@@ -1,0 +1,595 @@
+{
+  "task_id": "sys_perf_linux_shard_lite_mongos_large_catalog_workloads_32a067938731d184b271ba3d7f43ca6727e3109c_19_03_05_15_05_45",
+  "task_name": "mongos_large_catalog_workloads",
+  "status": {
+    "failures": 7,
+    "results": [
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_10000_colls_new_coll_same_db__steady_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_10000_colls_new_coll_same_db__steady_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |      -1.00|      -0.80|     20.00%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_1000000_colls_steady_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_1000000_colls_steady_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |      -1.00|      -1.00|      0.00%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868408.932722,
+        "PreviousCompare": "pass",
+        "end": 1551869440.288285,
+        "test_file": "fio_latency_test_write_clat_mean",
+        "log_raw": "\nTest: fio_latency_test_write_clat_mean\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    039be1c    |  max  |     179.24|     184.07|      2.69%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_0_colls_new_coll_same_db__steady_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_0_colls_new_coll_same_db__steady_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |      -1.00|      -1.00|      0.00%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_1000000_colls_new_coll_same_db_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_1000000_colls_new_coll_same_db_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |      -4.00|      -3.50|     12.50%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_1000_colls_fresh_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_1000_colls_fresh_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |      -6.20|      -6.20|      0.00%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_100000_colls_fresh_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_100000_colls_fresh_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |    -359.60|    -362.00|     -0.67%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868408.932722,
+        "PreviousCompare": "pass",
+        "end": 1551869440.288285,
+        "test_file": "fio_latency_test_read_clat_mean",
+        "log_raw": "\nTest: fio_latency_test_read_clat_mean\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    039be1c    |  max  |     175.16|     179.58|      2.53%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_1000000_colls_fresh_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_1000000_colls_fresh_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |   -3977.50|   -4013.00|     -0.89%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_1000_colls_new_coll_same_db__steady_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_1000_colls_new_coll_same_db__steady_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |      -1.00|      -1.00|      0.00%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_10000_colls_new_coll_same_db_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_10000_colls_new_coll_same_db_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |      -3.60|      -3.40|      5.56%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_0_colls_steady_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_0_colls_steady_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |      -0.80|      -0.60|     25.00%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_1000000_colls_new_coll_same_db__steady_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_1000000_colls_new_coll_same_db__steady_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |      -1.00|      -1.00|      0.00%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "fail",
+        "start": 1551868408.932722,
+        "PreviousCompare": "fail",
+        "end": 1551869440.288285,
+        "test_file": "fio_streaming_bandwidth_test_read_iops",
+        "log_raw": "\nTest: fio_streaming_bandwidth_test_read_iops\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Failed  |    039be1c    |  max  |   10297.89|    5215.36|    -49.36%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_0_colls_new_coll_same_db_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_0_colls_new_coll_same_db_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |      -3.60|      -3.20|     11.11%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_0_colls_fresh_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_0_colls_fresh_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |      -3.00|      -3.40|    -13.33%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_100000_colls_new_coll_same_db_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_100000_colls_new_coll_same_db_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |      -3.80|      -3.60|      5.26%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_1000_colls_steady_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_1000_colls_steady_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |      -1.00|      -0.60|     40.00%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_100000_colls_steady_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_100000_colls_steady_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |      -1.00|      -1.00|      0.00%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "fail",
+        "start": 1551868408.932722,
+        "PreviousCompare": "fail",
+        "end": 1551869440.288285,
+        "test_file": "fio_streaming_bandwidth_test_write_iops",
+        "log_raw": "\nTest: fio_streaming_bandwidth_test_write_iops\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Failed  |    039be1c    |  max  |   10278.32|    5204.55|    -49.36%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_1000_colls_new_coll_same_db_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_1000_colls_new_coll_same_db_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |      -3.80|      -3.60|      5.26%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_10000_colls_steady_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_10000_colls_steady_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |      -0.80|      -0.80|      0.00%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "fail",
+        "start": 1551868408.932722,
+        "PreviousCompare": "fail",
+        "end": 1551869440.288285,
+        "test_file": "fio_iops_test_read_iops",
+        "log_raw": "\nTest: fio_iops_test_read_iops\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Failed  |    039be1c    |  max  |   25125.55|   17316.43|    -31.08%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_10000_colls_fresh_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_10000_colls_fresh_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |     -38.40|     -37.80|      1.56%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "fail",
+        "start": 1551868408.932722,
+        "PreviousCompare": "fail",
+        "end": 1551869440.288285,
+        "test_file": "fio_iops_test_write_iops",
+        "log_raw": "\nTest: fio_iops_test_write_iops\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Failed  |    039be1c    |  max  |   25137.44|   17331.49|    -31.05%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551869585.857629,
+        "PreviousCompare": "pass",
+        "end": 1551869651.070383,
+        "test_file": "NetworkBandwidth",
+        "log_raw": "\nTest: NetworkBandwidth\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    039be1c    |  max  |9272140053.72|9172118405.19|     -1.08%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 1551868152.053081,
+        "PreviousCompare": "pass",
+        "end": 1551868287.798339,
+        "test_file": "mongos_large_catalog_100000_colls_new_coll_same_db__steady_mongos",
+        "log_raw": "\nTest: mongos_large_catalog_100000_colls_new_coll_same_db__steady_mongos\n   Rule   |  State   |  Compared_to  |Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+---------------+-------+-----------+-----------+-----------+------------\n Previous |  Passed  |    a39875e    |  max  |      -1.00|      -0.80|     20.00%|     20.00%|\n",
+        "exit_code": 0
+      },
+      {
+        "status": "fail",
+        "start": 0,
+        "log_raw": "Command Failed: status=1 message='cd workloads && numactl --interleave=all --cpunodebind=1 ./run_workloads.py -c ../workloads.yml'\n",
+        "test_file": "benchRun test_output.log",
+        "exit_code": 1
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "Command Succeeded: status=0 message='numactl --interleave=all --cpunodebind=1 ./fio-test.sh 10.2.0.80'\n",
+        "test_file": "fio test_output.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "Command Succeeded: status=0 message='numactl --interleave=all --cpunodebind=1 ./iperf-test.sh 10.2.0.80'\n",
+        "test_file": "iperf test_output.log",
+        "exit_code": 0
+      },
+      {
+        "status": "fail",
+        "start": 0,
+        "log_raw": "\ncore files found: 1\nNames: \ncore.thread156.22437.ip-10-2-0-71.eu-west-1.compute.internal.1551868286",
+        "test_file": "core.benchRun.configsvr.0",
+        "exit_code": 1
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.benchRun.mongod.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.benchRun.mongod.1",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.benchRun.mongod.2",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.benchRun.mongod.3",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.benchRun.mongos.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.benchRun.mongos.1",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.fio.configsvr.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.fio.mongod.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.fio.mongod.1",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.fio.mongod.2",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.fio.mongod.3",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.fio.mongos.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.fio.mongos.1",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.iperf.configsvr.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.iperf.mongod.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.iperf.mongod.1",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.iperf.mongod.2",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.iperf.mongod.3",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.iperf.mongos.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.iperf.mongos.1",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.post_task.configsvr.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.post_task.mongod.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.post_task.mongod.1",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.post_task.mongod.2",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.post_task.mongod.3",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.post_task.mongos.0",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo core files found",
+        "test_file": "core.post_task.mongos.1",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/benchRun/mongod.0/mongod.log\nNo bad messages found",
+        "test_file": "benchRun/mongod.0/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/benchRun/mongod.3/mongod.log\nNo bad messages found",
+        "test_file": "benchRun/mongod.3/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/benchRun/mongod.1/mongod.log\nNo bad messages found",
+        "test_file": "benchRun/mongod.1/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/benchRun/mongod.2/mongod.log\nNo bad messages found",
+        "test_file": "benchRun/mongod.2/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "fail",
+        "start": 0,
+        "log_raw": "\nLog file: reports/benchRun/configsvr.0/mongod.log\nNumber of bad lines: reports/benchRun/configsvr.0/mongod.log\nBad lines below: \n4\n2019-03-06T10:31:26.511+0000 E STORAGE  [thread155] WiredTiger error (28) [1551868286:511131][22437:0x7fb9a5903700], file:collection-8-5069871145430795990.wt, eviction-server: __posix_file_write, 576: /home/ec2-user/data/dbs/collection-8-5069871145430795990.wt: handle-write: pwrite: failed to write 8192 bytes at offset 443887616: No space left on device Raw: [1551868286:511131][22437:0x7fb9a5903700], file:collection-8-5069871145430795990.wt, eviction-server: __posix_file_write, 576: /home/ec2-user/data/dbs/collection-8-5069871145430795990.wt: handle-write: pwrite: failed to write 8192 bytes at offset 443887616: No space left on device\n2019-03-06T10:31:26.511+0000 E STORAGE  [thread155] WiredTiger error (28) [1551868286:511166][22437:0x7fb9a5903700], eviction-server: __wt_evict_thread_run, 321: cache eviction thread error: No space left on device Raw: [1551868286:511166][22437:0x7fb9a5903700], eviction-server: __wt_evict_thread_run, 321: cache eviction thread error: No space left on device\n2019-03-06T10:31:26.511+0000 E STORAGE  [thread155] WiredTiger error (-31804) [1551868286:511174][22437:0x7fb9a5903700], eviction-server: __wt_panic, 520: the process must exit and restart: WT_PANIC: WiredTiger library panic Raw: [1551868286:511174][22437:0x7fb9a5903700], eviction-server: __wt_panic, 520: the process must exit and restart: WT_PANIC: WiredTiger library panic\n2019-03-06T10:31:26.511+0000 F -        [thread155] Fatal Assertion 50853 at src/",
+        "test_file": "benchRun/configsvr.0/mongod.log",
+        "exit_code": 1
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/fio/mongod.1/mongod.log\nNo bad messages found",
+        "test_file": "fio/mongod.1/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/fio/mongod.2/mongod.log\nNo bad messages found",
+        "test_file": "fio/mongod.2/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/fio/configsvr.0/mongod.log\nNo bad messages found",
+        "test_file": "fio/configsvr.0/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/fio/mongod.3/mongod.log\nNo bad messages found",
+        "test_file": "fio/mongod.3/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/fio/mongod.0/mongod.log\nNo bad messages found",
+        "test_file": "fio/mongod.0/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/iperf/mongod.1/mongod.log\nNo bad messages found",
+        "test_file": "iperf/mongod.1/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/iperf/mongod.3/mongod.log\nNo bad messages found",
+        "test_file": "iperf/mongod.3/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/iperf/mongod.0/mongod.log\nNo bad messages found",
+        "test_file": "iperf/mongod.0/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/iperf/mongod.2/mongod.log\nNo bad messages found",
+        "test_file": "iperf/mongod.2/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nLog file: reports/iperf/configsvr.0/mongod.log\nNo bad messages found",
+        "test_file": "iperf/configsvr.0/mongod.log",
+        "exit_code": 0
+      },
+      {
+        "status": "pass",
+        "start": 0,
+        "log_raw": "\nNo FTDC metrics files found. Skipping resource sanity checks.",
+        "end": 1,
+        "test_file": "resource_sanity_checks"
+      },
+      {
+        "status": "fail",
+        "start": 0,
+        "log_raw": "\nFAILURE: (logfile `10.2.0.71:27017`)\n2019-03-06T10:31:32.527+0000 I CONTROL  [main] Total OS memory size of 63306211328 bytes detected\nMongoDB shell version v4.1.8-301-g32a0679\nconnecting to: mongodb://10.2.0.71:27017/?authSource=admin&gssapiServiceName=mongodb\n2019-03-06T10:31:32.580+0000 D NETWORK  [js] creating new connection to:10.2.0.71:27017\n2019-03-06T10:31:32.580+0000 D -        [js] User Assertion: InternalError: couldn't connect to server 10.2.0.71:27017, connection attempt failed: SocketException: Error connecting to 10.2.0.71:27017 :: caused by :: Connection refused src/mongo/scripting/mozjs/mongo.cpp 766\n2019-03-06T10:31:32.580+0000 E QUERY    [js] Error: couldn't connect to server 10.2.0.71:27017, connection attempt failed: SocketException: Error connecting to 10.2.0.71:27017 :: caused by :: Connection refused :\nconnect@src/mongo/shell/mongo.js:346:13\n@(connect):2:6\n2019-03-06T10:31:32.580+0000 D -        [js] User Assertion: Location12513: connect failed src/mongo/shell/shell_utils.cpp 348\n2019-03-06T10:31:32.580+0000 I QUERY    [js] MozJS GC prologue heap stats -  total: 4335225 limit: 0\n2019-03-06T10:31:32.582+0000 I QUERY    [js] MozJS GC epilogue heap stats -  total: 625 limit: 0\n2019-03-06T10:31:32.582+0000 D -        [main] User Assertion: Location12513: connect failed src/mongo/scripting/mozjs/proxyscope.cpp 318\n2019-03-06T10:31:32.582+0000 F -        [main] exception: connect failed\n2019-03-06T10:31:32.582+0000 E -        [main] exiting with code 1\nERROR\n1",
+        "test_file": "db-hash-check.benchRun",
+        "exit_code": 1
+      },
+      {
+        "status": "fail",
+        "start": 0,
+        "log_raw": "\nFAILURE: (logfile `10.2.0.71:27017`)\n2019-03-06T10:31:30.492+0000 I CONTROL  [main] Total OS memory size of 63306211328 bytes detected\nMongoDB shell version v4.1.8-301-g32a0679\nconnecting to: mongodb://10.2.0.71:27017/test?gssapiServiceName=mongodb\n2019-03-06T10:31:30.545+0000 E QUERY    [js] Error: couldn't connect to server 10.2.0.71:27017, connection attempt failed: SocketException: Error connecting to 10.2.0.71:27017 :: caused by :: Connection refused :\nconnect@src/mongo/shell/mongo.js:346:13\n@(connect):2:6\n2019-03-06T10:31:30.547+0000 F -        [main] exception: connect failed\n2019-03-06T10:31:30.547+0000 E -        [main] exiting with code 1\nERROR\n1",
+        "test_file": "validate-indexes-and-collections.benchRun",
+        "exit_code": 1
+      }
+    ]
+  }
+}

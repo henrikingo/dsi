@@ -1,6 +1,9 @@
 """
 Run the outlier detection algorithm and display results.
 """
+from __future__ import print_function
+import json
+import os
 from collections import namedtuple
 from datetime import datetime
 import multiprocessing
@@ -14,8 +17,22 @@ import signal_processing.commands.helpers as helpers
 import signal_processing.commands.jobs as jobs
 import signal_processing.detect_changes as detect_changes
 import signal_processing.outliers.detection as detection
+from signal_processing.outliers.reject.task import TaskAutoRejector
 from analysis.evergreen import evergreen_client
 from bin.common import config, log
+
+MINIMUM_POINTS = 15
+"""
+The minimum number of points required before an outlier can be automatically rejected. If there
+are fewer performance points than 15, then skip rejections.
+"""
+
+MAX_CONSECUTIVE_REJECTIONS = 3
+"""
+The maximum number of fails allowed before a rejection is skipped. In this case, if the same
+performance result is rejected 3 consecutive times then it is likely that the performance profile
+has actually changed.
+"""
 
 SUSPICIOUS_TYPE = 'suspicious'
 """
@@ -48,7 +65,7 @@ def print_result(job):
     else:
         exception = job.exception
         descriptor = etl_helpers.create_descriptor(job.identifier).ljust(120)
-        print "{0}: error: {1:1}".format(descriptor, str(exception))
+        print("{0}: error: {1:1}".format(descriptor, str(exception)))
 
 
 class DetectOutliersDriver(object):
@@ -103,6 +120,8 @@ class DetectOutliersDriver(object):
     def run(self):
         """
         Run the analysis to compute any change points with the new data.
+        :return: All the GESD outlier results.
+        :rtype: list(Job).
         """
         model = detect_changes.PointsModel(self.mongo_uri)
 
@@ -131,17 +150,16 @@ class DetectOutliersDriver(object):
         start = datetime.now()
         completed_jobs = jobs.process_jobs(
             job_list, self.pool_size, label, self.progressbar, bar_template, show_item, key='test')
-        jobs_with_exceptions = [job for job in completed_jobs if job.exception is not None]
 
         for job in completed_jobs:
             print_result(job)
 
         duration = (datetime.now() - start).total_seconds()
         LOG.debug("Detect outliers complete", duration=duration, pool_size=self.pool_size)
-        print "Detect outliers complete duration={} over {} processes.".format(
-            duration, self.pool_size)
+        print("Detect outliers complete duration={} over {} processes.".format(
+            duration, self.pool_size))
 
-        return jobs_with_exceptions
+        return completed_jobs
 
 
 def get_change_point_range(points_model, test_identifier, full_series, order):
@@ -349,6 +367,172 @@ def _save_outliers(points_model, outlier_results, test_identifier):
         raise
 
 
+def translate_field_name(field_name, max_thread_level):
+    """
+    Translate the field name based on whether it is in the results array or the main body of the
+    document (for max thread level).
+
+    :param str field_name: The field name (like rejected, etc.).
+    :param bool max_thread_level: True if this is a max thread level field.
+    :return: The translated field name, prepend 'results.$.' for max thread level.
+    """
+    if max_thread_level:
+        return field_name
+    return 'results.$.{}'.format(field_name)
+
+
+def get_updates(auto_rejector):
+    """
+    Create the list of performance points updates to reflect the outlier and rejection status and
+    the list of rejected tests.
+
+    :param TaskAutoRejector auto_rejector: The auto rejector instance.
+    :return: A list pymongo update operations.
+    :see: module::signal_processing.reject.task.
+    """
+    updates = []
+    if not auto_rejector.patch:
+        order = auto_rejector.order
+
+        for result in auto_rejector.results:
+            full_series = result.full_series
+            orders = full_series['orders']
+
+            if orders:
+                test_identifier = full_series['test_identifier']
+                query = helpers.get_query_for_points(test_identifier)
+                is_max = helpers.is_max_thread_level(test_identifier)
+
+                outliers = list(result.outlier_orders)
+                not_outliers = list(set(orders) - set(outliers))
+
+                if not_outliers:
+                    match = query.copy()
+                    not_outliers_length = len(not_outliers)
+                    if not_outliers_length == 1:
+                        match['order'] = not_outliers[0]
+                        update = pymongo.UpdateOne(match, {
+                            '$set': {
+                                translate_field_name('outlier', is_max): False
+                            }
+                        })
+                    else:
+                        match['order'] = {'$in': not_outliers}
+                        update = pymongo.UpdateMany(match, {
+                            '$set': {
+                                translate_field_name('outlier', is_max): False
+                            }
+                        })
+                    updates.append(update)
+
+                rejected = order in outliers and result.latest
+                if rejected:
+                    outliers.remove(order)
+                if outliers:
+                    match = query.copy()
+                    if len(outliers) == 1:
+                        match['order'] = outliers[0]
+                        update = pymongo.UpdateOne(match, {
+                            '$set': {
+                                translate_field_name('outlier', is_max): True
+                            }
+                        })
+                    else:
+                        match['order'] = {'$in': outliers}
+                        update = pymongo.UpdateMany(match, {
+                            '$set': {
+                                translate_field_name('outlier', is_max): True
+                            }
+                        })
+                    updates.append(update)
+
+                if rejected:
+                    match = query.copy()
+                    match['order'] = order
+                    update = pymongo.UpdateOne(
+                        match, {
+                            '$set': {
+                                translate_field_name('outlier', is_max): True,
+                                translate_field_name('rejected', is_max): True,
+                            }
+                        })
+                    updates.append(update)
+
+    return updates
+
+
+def update_outlier_status(model, updates):
+    # pylint: disable=no-member
+    """
+    Update performance points to include outlier and rejection status.
+
+    :param PointModel model: The point model instance.
+    :param list() updates: The list of pymongo point updates for this set of results.
+    """
+    if updates:
+        try:
+            client = model.db.client
+            points_collection = model.db.points
+            with client.start_session() as session:
+                with session.start_transaction():
+                    bulk_write_result = points_collection.bulk_write(updates)
+
+            LOG.debug(
+                "outliers bulk_write", updates=updates, results=bulk_write_result.bulk_api_result)
+        except Exception as e:
+            # pylint: disable=no-member
+            LOG.warn(
+                'compute_change_points failed. Attempting to rollback.',
+                exc_info=True,
+                details=e.details if hasattr(e, 'details') else str(e))
+            raise
+
+
+def write_rejects(rejects, rejects_file):
+    """
+    Write reject data to filename. If rejects is an empty list or None and filename exists, it
+    will be deleted. If rejects is not empty then the test identifiers for each result are written
+    to the file.
+
+    :param list(TestAutoReject) rejects: The list of rejected results,
+    :param str rejects_file: The filename to write.
+    """
+    if os.path.exists(rejects_file):
+        os.remove(rejects_file)
+    if rejects:
+        with open(rejects_file, 'w+') as out:
+            output = json.dumps(
+                {
+                    'rejects': [reject.test_identifier for reject in rejects]
+                },
+                out,
+                indent=2,
+                separators=[',', ': '],
+                sort_keys=True)
+            print('write_rejects ' + output)
+            out.write(output)
+
+
+def load_status_report(filename='report.json'):
+    """
+    Load the report status from the json file. If an error occurs then the function returns None,
+    and the rejector should attempt to handle this as gracefully as possible. However it is very
+    unlikely that we get to this code in this case.
+
+    :param str filename: The report filename.
+    :return: The test status report. On an exception, this function returns None.
+    :rtype: dict or None
+    """
+    try:
+        with open(filename) as file_handle:
+            report = json.load(file_handle)
+        return report
+    # pylint: disable=bare-except
+    except:
+        LOG.warn('load_status_report failed', exc_info=True)
+        return None
+
+
 def detect_outliers(task_id,
                     mongo_uri,
                     outliers_percentage,
@@ -356,12 +540,22 @@ def detect_outliers(task_id,
                     mad,
                     significance_level,
                     pool_size,
+                    rejects_file,
+                    max_consecutive_rejections,
+                    minimum_points,
                     progressbar=False):
+    # pylint: disable=too-many-locals
     """
     Setup and run the detect outliers algorithm.
     """
     evg_client = evergreen_client.Client()
     perf_json = evg_client.query_perf_results(task_id)
+    status = load_status_report()
+
+    test_identifiers = helpers.extract_test_identifiers(perf_json)
+    project = test_identifiers[0]['project']
+    variant = test_identifiers[0]['variant']
+    task = test_identifiers[0]['task']
 
     outliers_driver = DetectOutliersDriver(
         perf_json,
@@ -372,7 +566,25 @@ def detect_outliers(task_id,
         significance_level,
         pool_size=pool_size,
         progressbar=progressbar)
-    return outliers_driver.run()
+    completed_jobs = outliers_driver.run()
+
+    successful_jobs = [job.result for job in completed_jobs if not job.exception]
+    if successful_jobs:
+        auto_rejector = TaskAutoRejector(successful_jobs, project, variant, task,
+                                         perf_json['order'], mongo_uri, patch, status,
+                                         max_consecutive_rejections, minimum_points)
+
+        updates = get_updates(auto_rejector)
+        update_outlier_status(auto_rejector.model, updates)
+
+        rejects = auto_rejector.filtered_rejects()
+    else:
+        rejects = []
+
+    LOG.info('detect_outliers', rejects=rejects)
+    write_rejects(rejects, rejects_file)
+
+    return completed_jobs
 
 
 @click.command()
@@ -396,12 +608,28 @@ def detect_outliers(task_id,
 @click.option('-l', '--logfile', default='detect_outliers.log', help='The log file location.')
 @click.option(
     '--pool-size', default=None, help='The multiprocessor pool size. None => num(cpus) -1.')
+@click.option('--rejects-file', default='rejects.json', help='The rejects file location.')
 @click.option('-v', 'verbose', count=True, help='Control the verbosity.')
+@click.option(
+    '--rejections',
+    'max_consecutive_rejections',
+    default=MAX_CONSECUTIVE_REJECTIONS,
+    help='The max number of consecutive rejections (' + str(MAX_CONSECUTIVE_REJECTIONS) +
+    '). When there are more than this number of rejections then any rejects are skipped.')
+@click.option(
+    '--minimum',
+    'minimum_points',
+    default=MINIMUM_POINTS,
+    help='The minimum number of points required in a stationary range (' + str(MINIMUM_POINTS) +
+    '). Rejections are disabled until this number of points are available.')
 @click.option('--progressbar/--no-progressbar', default=False)
-def main(context, max_outliers, mad, significance_level, logfile, pool_size, verbose, progressbar):
+def main(context, max_outliers, mad, significance_level, logfile, pool_size, verbose, rejects_file,
+         max_consecutive_rejections, minimum_points, progressbar):
     """
     Main function.
     """
+    # pylint: disable=too-many-locals
+    rejects_file = os.path.expanduser(rejects_file)
     log.setup_logging(True if verbose > 0 else False, filename=logfile)
     conf = config.ConfigDict('analysis')
     conf.load()
@@ -413,7 +641,7 @@ def main(context, max_outliers, mad, significance_level, logfile, pool_size, ver
     if pool_size is not None:
         pool_size = int(pool_size)
 
-    jobs_with_exceptions = detect_outliers(
+    job_list = detect_outliers(
         task_id,
         mongo_uri,
         max_outliers,
@@ -421,6 +649,10 @@ def main(context, max_outliers, mad, significance_level, logfile, pool_size, ver
         mad,
         significance_level,
         pool_size,
+        rejects_file,
+        max_consecutive_rejections,
+        minimum_points,
         progressbar=progressbar)
 
+    jobs_with_exceptions = [job for job in job_list if job.exception is not None]
     jobs.handle_exceptions(context, jobs_with_exceptions, logfile)
