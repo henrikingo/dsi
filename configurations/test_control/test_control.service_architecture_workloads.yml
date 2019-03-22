@@ -24,13 +24,15 @@ run:
 
       # Write the output of genny to the ephemeral drive to ensure it has enough disk space.
       cd ./data
+      mkdir -p metrics
 
       workload_path="./genny/etc/genny/workloads/networking/PrimaryRequiredReads.yml"
       results_path="./genny-perf.csv"
 
-      ./genny/bin/genny "$workload_path" -u "${mongodb_setup.meta.mongodb_url}" -m csv -o "$results_path" > ./genny-log.log 2>&1
-      genny-metrics-to-perf-json < "$results_path" > ./genny-perf.json
+      ./genny/bin/genny "$workload_path" -u "${mongodb_setup.meta.mongodb_url}" -m cedar-csv -o "$results_path" > ./genny-log.log 2>&1
 
+      genny-metrics-report $results_path metrics
+      genny-metrics-legacy-report --report-file genny-perf.json $results_path
     output_files:
       # Genny output-parser only parses the first file (must be the json)
       # but we want to retrieve the .csv for the reports dir.

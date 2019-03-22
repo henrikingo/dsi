@@ -8,6 +8,8 @@ genny:
       upload_files:
         - source: ${bootstrap.genny_dir}
           target: ./data/genny
+        - source: ${runtime.workdir}/work/expansions.yml
+          target: ./data/expansions.yml
   # System Setup
   - on_workload_client:
       exec: |
