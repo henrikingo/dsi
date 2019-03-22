@@ -62,6 +62,10 @@ resource "aws_instance" "seeded_ebs_member" {
         task_id            = "${var.task_id}"
     }
 
+    root_block_device {
+        volume_size = 16
+    }
+
     ephemeral_block_device {
         device_name     = "/dev/sdc"
         virtual_name    = "ephemeral0"

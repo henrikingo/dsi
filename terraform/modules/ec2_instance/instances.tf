@@ -51,7 +51,11 @@ resource "aws_instance" "member" {
         runner_instance_id = "${var.runner_instance_id}"
         status             = "${var.status}"
         task_id            = "${var.task_id}"
-}
+    }
+
+    root_block_device {
+        volume_size = 16
+    }
 
     ephemeral_block_device {
         device_name     = "/dev/sdc"
