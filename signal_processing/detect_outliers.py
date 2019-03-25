@@ -550,40 +550,43 @@ def detect_outliers(task_id,
     """
     evg_client = evergreen_client.Client()
     perf_json = evg_client.query_perf_results(task_id)
-    status = load_status_report()
-
     test_identifiers = helpers.extract_test_identifiers(perf_json)
-    project = test_identifiers[0]['project']
-    variant = test_identifiers[0]['variant']
-    task = test_identifiers[0]['task']
+    if test_identifiers:
+        status = load_status_report()
 
-    outliers_driver = DetectOutliersDriver(
-        perf_json,
-        mongo_uri,
-        outliers_percentage,
-        patch,
-        mad,
-        significance_level,
-        pool_size=pool_size,
-        progressbar=progressbar)
-    completed_jobs = outliers_driver.run()
+        project = test_identifiers[0]['project']
+        variant = test_identifiers[0]['variant']
+        task = test_identifiers[0]['task']
 
-    successful_jobs = [job.result for job in completed_jobs if not job.exception]
-    if successful_jobs:
-        auto_rejector = TaskAutoRejector(successful_jobs, project, variant, task,
-                                         perf_json['order'], mongo_uri, patch, status,
-                                         max_consecutive_rejections, minimum_points)
+        outliers_driver = DetectOutliersDriver(
+            perf_json,
+            mongo_uri,
+            outliers_percentage,
+            patch,
+            mad,
+            significance_level,
+            pool_size=pool_size,
+            progressbar=progressbar)
+        completed_jobs = outliers_driver.run()
 
-        updates = get_updates(auto_rejector)
-        update_outlier_status(auto_rejector.model, updates)
+        successful_jobs = [job.result for job in completed_jobs if not job.exception]
+        if successful_jobs:
+            auto_rejector = TaskAutoRejector(successful_jobs, project, variant, task,
+                                             perf_json['order'], mongo_uri, patch, status,
+                                             max_consecutive_rejections, minimum_points)
 
-        rejects = auto_rejector.filtered_rejects()
+            updates = get_updates(auto_rejector)
+            update_outlier_status(auto_rejector.model, updates)
+
+            rejects = auto_rejector.filtered_rejects()
+        else:
+            rejects = []
+
+        LOG.info('detect_outliers', rejects=rejects)
+        write_rejects(rejects, rejects_file)
     else:
-        rejects = []
-
-    LOG.info('detect_outliers', rejects=rejects)
-    write_rejects(rejects, rejects_file)
-
+        LOG.info('detect_outliers: no tests')
+        completed_jobs = []
     return completed_jobs
 
 

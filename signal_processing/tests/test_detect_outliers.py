@@ -112,6 +112,26 @@ class TestDetectOutliers(unittest.TestCase):
     Test suite for the detect_outliers function.
     """
 
+    def test_no_results(self):
+        """ test handling no data (usually a system failure) """
+        # pylint: disable=too-many-locals
+        task_id = 'task_id'
+        pool_size = 7
+        progressbar = True
+
+        is_patch = False
+        rejects_file = 'rejects.json'
+        max_consecutive_rejections = 3
+        minimum_points = 15
+        with patch(ns('evergreen_client.Client'), autospec=True),\
+             patch(ns('helpers.extract_test_identifiers')) as mock_extract_test_identifiers:
+
+            mock_extract_test_identifiers.return_value = []
+            completed_jobs = detect_outliers.detect_outliers(
+                task_id, MONGO_URI, OUTLIERS_PERCENTAGE, is_patch, MAD, SIGNIFICANCE_LEVEL,
+                pool_size, rejects_file, max_consecutive_rejections, minimum_points, progressbar)
+            self.assertListEqual([], completed_jobs)
+
     def _test(self, mock_driver, mock_evg_cl, successful_jobs=None):
         # pylint: disable=too-many-locals
         task_id = 'task_id'
