@@ -1,5 +1,24 @@
 task_name: service_architecture_workloads
 run:
+  - id: benchRun
+    type: mongoshell
+
+    # This line to be shortened after the config file is copied from below into the production server.
+    cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
+    config_filename: workloads.yml  # The name used in previous row
+    output_files:
+      - workloads/workload_timestamps.csv
+    workload_config:
+      tests:
+        default:
+          - cpu_noise
+      # These next five lines match existing workloads.yml.
+      target: ${mongodb_setup.meta.hostname}
+      port: ${mongodb_setup.meta.port}
+      # Hard coding for now. These aren't working right now
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
+
   - id: fio
     type: fio
     cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
