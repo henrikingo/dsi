@@ -130,6 +130,12 @@ class TestTooManyRejections(unittest.TestCase):
         too_many = self._test()
         self.assertFalse(too_many)
 
+    def test_none(self):
+        orders = []
+        rejector, mock_result, mock_task = create_test_rejector(gesd_result=None)
+
+        self.assertListEqual(orders, rejector.outlier_orders)
+
     def test_single(self):
         too_many = self._test(True)
         self.assertFalse(too_many)

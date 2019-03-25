@@ -363,13 +363,13 @@ class TestAutoRejector(object):
         :return: A list of orders that are outliers.
         """
         if self._outlier_orders is None:
-            count = self.result.gesd_result.count
-            if count:
+            outlier_orders = []
+            if self.result.gesd_result and self.result.gesd_result.count:
+                count = self.result.gesd_result.count
                 orders = self.result.full_series['orders']
                 outlier_indexes = self.result.adjusted_indexes[:count]
-                self._outlier_orders = [orders[index] for index in outlier_indexes]
-            else:
-                self._outlier_orders = []
+                outlier_orders = [orders[index] for index in outlier_indexes]
+            self._outlier_orders = outlier_orders
         return self._outlier_orders
 
     @property
