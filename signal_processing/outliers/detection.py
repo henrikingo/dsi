@@ -20,8 +20,8 @@ MAD_Z_SCORE = 'mad'
 STANDARD_Z_SCORE = 'standard'
 """Use standard z score calculation."""
 
-DEFAULT_MAX_OUTLIERS_PERCENTAGE = 0.20
-""" The default max number of outliers to use in detection. 20% in this case. """
+DEFAULT_MAX_OUTLIERS_PERCENTAGE = 0.15
+""" The default max number of outliers to use in detection. 15% in this case. """
 
 LOG = structlog.getLogger(__name__)
 
@@ -97,6 +97,12 @@ def run_outlier_detection(full_series, start, end, series, test_identifier, outl
 
     LOG.debug("adjusting indexes", suspicious_indexes=gesd_result.suspicious_indexes, start=start)
     adjusted_indexes = np.array(gesd_result.suspicious_indexes, dtype=int) + start
+
+    if gesd_result.count and gesd_result.count == len(gesd_result.suspicious_indexes):
+        LOG.warn(
+            "gesd outliers all points are outliers?",
+            identifier=identifier,
+            count=gesd_result.count)
     LOG.debug(
         "gesd outliers",
         series=full_series,

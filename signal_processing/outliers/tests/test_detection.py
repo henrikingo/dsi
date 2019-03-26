@@ -153,7 +153,8 @@ class TestComputeMaxOutliers(unittest.TestCase):
         self.assertRaises(AssertionError, compute_max_outliers, 1.01, dict(project='project'), [])
 
     def test_0_implies_default(self):
-        self.assertEquals(20, compute_max_outliers(0, dict(project='project'), range(100)))
+        # int(DEFAULT_MAX_OUTLIERS_PERCENTAGE * 100)
+        self.assertEquals(15, compute_max_outliers(0, dict(project='project'), range(100)))
 
     def test_compute_20(self):
         self.assertEquals(20,
