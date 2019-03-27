@@ -1,6 +1,7 @@
 task_name: linkbench
+# Number of nodes to generate. 10e6 ids is approx 7.5gb of data
+linkbench_maxid1: 10000001
 run:
-
   - id: linkbench_load
     type: linkbench
     # the 2>&1 redirects stderr to stdout. This is necessary because
@@ -25,8 +26,7 @@ run:
       url=${test_control.url.${mongodb_setup.meta.is_sharded}}
       data_file = config/Distribution.dat
       startid1 = 1
-      # 10e6 ids is approx 7.5gb of data
-      maxid1 = 10000001
+      maxid1 = ${test_control.linkbench_maxid1}
       maxtime = 600
       link_type_count = 2
       nlinks_func = real
@@ -151,6 +151,7 @@ pre_task:
 
           db.linktable.drop();
           db.nodetable.drop();
+          db.counttable.drop();
 
           db.createCollection("linktable");
           db.createCollection("nodetable");
@@ -160,9 +161,67 @@ pre_task:
           db.linktable.createIndex({id1: 1, link_type: 1, id2: 1});
           db.linktable.createIndex({id1: 1, link_type: 1, time: 1, visibility: 1});
 
-          db.counttable.createIndex({id: 1, link_type: 1})
+          db.counttable.createIndex({id: 1, link_type: 1});
 
-          db.nodetable.createIndex({id: 1})
+          db.nodetable.createIndex({id: 1}, {unique: true});
+
+          // chunks across the shards.
+          // If we're running in a sharded cluster, shard the collections and spread
+          if ("${mongodb_setup.meta.is_sharded}" == "True") {
+            assert.commandWorked(sh.enableSharding('linkdb0'));
+
+            const config = db.getSiblingDB("config");
+            const shards = config.shards.find({}).toArray();
+
+            // Make sure that there are only two shards. This is currently inflexible due
+            // to the zone tagging system below.
+            assert.eq(shards.length, 2);
+
+            // Add a tag to each shard so that we can partition data across the two shards.
+            sh.addShardTag(shards[0]._id, 'a');
+            sh.addShardTag(shards[1]._id, 'b');
+
+            // Partition data in all collections across shards by node id. We choose the
+            // median node id based on the maxid1 parameter specified above. This will ensure that
+            // data will be spread across both shards without relying on the balancer to run.
+
+            // Find the midpoint of the range of node ids. Relies on there being 2 shards.
+            const id1Median = Math.floor(${test_control.linkbench_maxid1}/shards.length);
+
+            // Add ranges to the linktable collection.
+            assert.commandWorked(sh.addTagRange('linkdb0.linktable',
+                {id1: 0, link_type: MinKey, id2: MinKey},
+                {id1: id1Median, link_type: MinKey, id2: MinKey}, 'a'));
+            assert.commandWorked(sh.addTagRange('linkdb0.linktable',
+                {id1: id1Median, link_type: MinKey, id2: MinKey},
+                {id1: MaxKey, link_type: MinKey, id2: MinKey}, 'b'));
+
+            // Add ranges to the counttable collection.
+            assert.commandWorked(sh.addTagRange('linkdb0.counttable',
+                {id: 0, link_type: MinKey},
+                {id: id1Median, link_type: MinKey}, 'a'));
+            assert.commandWorked(sh.addTagRange('linkdb0.counttable',
+                {id: id1Median, link_type: MinKey},
+                {id: MaxKey, link_type: MinKey}, 'b'));
+
+            // Add ranges to the nodetable collection.
+            assert.commandWorked(sh.addTagRange('linkdb0.nodetable',
+                {id: 0},
+                {id: id1Median}, 'a'));
+            assert.commandWorked(sh.addTagRange('linkdb0.nodetable',
+                {id: id1Median},
+                {id: MaxKey}, 'b'));
+
+            // Shard all collections.
+            assert.commandWorked(sh.shardCollection('linkdb0.linktable', {id1: 1, link_type: 1, id2: 1}));
+            assert.commandWorked(sh.shardCollection('linkdb0.counttable', {id: 1, link_type: 1}));
+            assert.commandWorked(sh.shardCollection('linkdb0.nodetable', {id: 1}));
+
+            db.printShardingStatus();
+          } else {
+            print ("Non-sharded cluster");
+          }
+
 
 between_tests:
   - restart_mongodb:
