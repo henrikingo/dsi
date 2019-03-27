@@ -285,6 +285,9 @@ def _etl_evg_mongo(evg_client, mongo_uri, projects, progressbar, pool_size=1):
         show_item=show_item,
         key='task')
     jobs_with_exceptions = [job for job in completed_jobs if job.exception is not None]
+    if not jobs_with_exceptions:
+        LOG.info("all etl_evg_mongo jobs completed successfully", num_jobs=len(completed_jobs))
+
     return jobs_with_exceptions
 
 

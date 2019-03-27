@@ -267,6 +267,7 @@ class EtlJira(object):
         """
         issues = self.query_bfs()
         self.save_bf_in_mongo(issues)
+        LOG.info("etl_jira_mongo completed successfully", num_issues=len(issues))
 
 
 @click.command()
