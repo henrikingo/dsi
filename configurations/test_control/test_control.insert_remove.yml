@@ -18,6 +18,7 @@ run:
       # but we want to retrieve the .csv for the reports dir.
       - data/genny-perf.json
       - data/genny-perf.csv
+      - data/cedar_report.json
   - id: benchRun
     type: mongoshell
 
