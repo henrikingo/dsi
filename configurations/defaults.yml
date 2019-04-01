@@ -156,6 +156,8 @@ mongodb_setup:
     # We need to provide a separate variable for the shell, because the shell on 3.4 doesn't
     # support connecting to multiple mongoses and therefore can't use mongodb_url.
     mongodb_shell_url: "mongodb://${mongodb_setup.authentication.username}:${mongodb_setup.authentication.password}@${mongodb_setup.meta.hostname}:27017/admin?ssl=false"
+    # Used in mongoshell workloads (https://github.com/10gen/workloads/blob/23b1c6dd3a8c087b6a2c949147a8aeaba1d1d271/run_workloads.py#L289-L296)
+    shell_ssl_options: []
     is_sharded: false
     is_replset: false
     secondary: None

@@ -17,13 +17,11 @@ run:
               update_lookup: false
               selective_change: false
               nb_collections: 1
-
-      # These next five lines match existing workloads.yml.
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
-      # Hard coding for now. These aren't working right now
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
+      shell_ssl_options: ${mongodb_setup.meta.shell_ssl_options}
 
   - <<: *change_streams_base
     id: change_streams_update_lookup

@@ -46,6 +46,9 @@ meta:
   mongodb_url: ${mongodb_setup.meta.mongodb_url_base}?replicaSet=${mongodb_setup.topology.0.id}&ssl=true
   # For replset with ssl this is just fine ™
   mongodb_shell_url: ${mongodb_setup.meta.mongodb_url}
+  # Used in mongoshell workloads (https://github.com/10gen/workloads/blob/23b1c6dd3a8c087b6a2c949147a8aeaba1d1d271/run_workloads.py#L289-L296)
+  shell_ssl_options: ['--ssl', '--sslAllowInvalidHostnames', '--sslCAFile', '${mongodb_setup.mongo_dir}/root.crt', '--sslPEMKeyFile', '${mongodb_setup.mongo_dir}/member.pem']
+
 
 # Validation is currently broken with SSL (SERVER-7914)
 # Hosts to run correctness tests on.

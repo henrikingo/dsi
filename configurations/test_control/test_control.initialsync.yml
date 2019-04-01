@@ -33,6 +33,7 @@ run:
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      shell_ssl_options: ${mongodb_setup.meta.shell_ssl_options}
 
   - id: initialsync_c_1_d_32_w_f
     type: mongoshell
@@ -57,6 +58,7 @@ run:
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      shell_ssl_options: ${mongodb_setup.meta.shell_ssl_options}
 
   - id: initialsync_c_32_d_1_w_f
     type: mongoshell
@@ -82,6 +84,7 @@ run:
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      shell_ssl_options: ${mongodb_setup.meta.shell_ssl_options}
 
   - id: initialsync_c_32_d_32_w_f
     type: mongoshell
@@ -107,6 +110,7 @@ run:
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      shell_ssl_options: ${mongodb_setup.meta.shell_ssl_options}
 
   - id: initialsync_c_1_d_1_w_t
     type: mongoshell
@@ -132,6 +136,7 @@ run:
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      shell_ssl_options: ${mongodb_setup.meta.shell_ssl_options}
 
   - id: initialsync_c_1_d_32_w_t
     type: mongoshell
@@ -157,6 +162,7 @@ run:
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      shell_ssl_options: ${mongodb_setup.meta.shell_ssl_options}
 
   - id: initialsync_c_32_d_1_w_t
     type: mongoshell
@@ -182,6 +188,7 @@ run:
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      shell_ssl_options: ${mongodb_setup.meta.shell_ssl_options}
 
   - id: initialsync_c_32_d_32_w_t
     type: mongoshell
@@ -208,6 +215,7 @@ run:
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      shell_ssl_options: ${mongodb_setup.meta.shell_ssl_options}
 
   - id: fio
     type: fio

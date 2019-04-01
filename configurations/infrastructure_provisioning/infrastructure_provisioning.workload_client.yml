@@ -16,7 +16,7 @@ tfvars:
   workload_instance_count: 1
   workload_instance_type: ${infrastructure_provisioning.atlas_instance_sizes.${bootstrap.atlas_setup}}
   # Don't disable hyperthreading. (We disable HT cpus by default if this isn't here.)
-  with_hyperthreading: yes
+  with_hyperthreading: "yes"
 
   # Atlas Cloud Dev has the most capacity in that region and US-EAST-1 and US-WEST-1.
   # We kept getting InsufficientInstanceCapacity for us-west-1, so changed back to east.

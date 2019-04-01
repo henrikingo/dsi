@@ -65,6 +65,9 @@ mongoshell:
   - on_workload_client:
       exec: |
         sudo pip install argparse python-dateutil pytz
+        # Because run_workloads.py cannot be executed in home directory, we provide access to ~/mongodb via symlink.
+        # This is used if SSL is on, because certificates are there.
+        cd workloads && ln -s ../${mongodb_setup.mongo_dir} ${mongodb_setup.mongo_dir}
 
 fio:
   - on_workload_client:

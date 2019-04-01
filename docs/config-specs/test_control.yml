@@ -51,14 +51,13 @@ run:
               parameter1: foo
               parameter2: true
 
-      mongo:
-        # Note: We shall move to use a connection string for all tests. This allows things like
-        # multiple mongoses to be supported automatically.
-        # (After consideration, don't want automatic failover for perf tests. If it fails, fail
-        # hard.)
-        uri: mongodb://${mongodb_setup.meta.hosts}/testdb?readPreference=PRIMARY
-        sharded: ${mongodb_setup.meta.is_sharded}
-        replica: ${mongodb_setup.meta.is_replset}
+      uri: mongodb://${mongodb_setup.meta.hosts}/testdb?readPreference=PRIMARY
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
+      # Passed to mongo shell (https://github.com/10gen/workloads/blob/23b1c6dd3a8c087b6a2c949147a8aeaba1d1d271/run_workloads.py#L289-L296)
+      # Required for mongoshell workloads when using SSL
+      shell_ssl_options: ['--ssl', '--sslAllowInvalidHostnames', '--sslCAFile', '${mongodb_setup.mongo_dir}/root.crt', '--sslPEMKeyFile', '${mongodb_setup.mongo_dir}/member.pem']
+
     # Configure a set of tasks that run for the life span of this test. They are run AFTER the pre_*
     # hooks. There is no defined order as this is an object rather than a sequence.
     # The out for each task is captured to a file named:

@@ -125,6 +125,7 @@ run:
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       scale_factor: ${mongodb_setup.meta.primaries}
+      shell_ssl_options: ${mongodb_setup.meta.shell_ssl_options}
 
 # Disable jstest validations, it just takes too long to run it for this test.
 jstests_dir: ""
