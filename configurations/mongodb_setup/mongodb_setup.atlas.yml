@@ -14,12 +14,16 @@ meta:
   is_replset: true
   is_atlas: true
   mongodb_url: mongodb://${mongodb_setup.authentication.username}:${mongodb_setup.authentication.password}@${mongodb_setup.out.atlas.clusters.0.mongodb_url}
+  # Note: atlas_setup.py verifies that this is in fact the primary (at startup time)
+  hostname: ${mongodb_setup.out.atlas.clusters.0.hostname}
+  port: ${mongodb_setup.out.atlas.clusters.0.port}
   # We need to provide a separate variable for the shell, because the shell on 3.4 doesn't support
   # connecting to multiple mongoses.
   # Since Atlas clusters are >=3.6, this is just the same as mongodb_url.
   # (Note that on Atlas, in theory we don't know which node is primary, so need to use the url.)
   mongodb_shell_url: ${mongodb_setup.meta.mongodb_url}
-  hostname: This.is.an.Atlas.cluster.SSH.not.supported
+  # Atlas clusters use proper certificates, so this is all we need
+  shell_ssl_options: ['--ssl']
 
 # Correctness checks cause permission denied on Atlas, so there are none.
 # validate:

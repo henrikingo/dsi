@@ -5,11 +5,18 @@ set -e
 HOSTNAME=$1
 THIS_HOST=$(hostname -i)
 
-ATLAS_CLUSTER="This.is.an.Atlas.cluster.SSH.not.supported"
-if [ "$HOSTNAME" == "$ATLAS_CLUSTER" ]
+# Heuristic to detect Atlas clusters from the hostname, which have the form
+# *.mongodb-dev.net or *.mongodb.net
+domain=$(echo $HOSTNAME | cut -d. -f2)
+tld=$(echo $HOSTNAME | cut -d. -f3)
+
+if [ "$tld" == "net" ]
 then
-  echo "Detected Atlas cluster, skipping iperf."
-  exit 0
+  if [ "$domain" == "mongodb-dev" -o "$domain" == "mongodb" ]
+  then
+    echo "Detected Atlas cluster, skipping iperf."
+    exit 0
+  fi
 fi
 
 

@@ -7,6 +7,7 @@ Instead of creating our own MongoDB clusters, we make REST calls to Atlas instea
 import copy
 import random
 
+import pymongo
 import structlog
 
 import atlas_client
@@ -159,6 +160,10 @@ class AtlasSetup(object):
                 # blocks in the config file.
                 if key == "mongoURIWithOptions":
                     new_object["mongodb_url"] = response[key][prefix:]
+                    # Get hostname and port of the primary, since benchrun doesn't support uri
+                    hostname, port = self._get_primary(new_object["mongodb_url"])
+                    new_object["hostname"] = hostname
+                    new_object["port"] = port
                 if key == "mongoURI":
                     new_object["hosts"] = response[key][prefix:]
 
@@ -226,3 +231,23 @@ class AtlasSetup(object):
             if cluster["name"] == name:
                 return index
         return None
+
+    def _get_primary(self, mongodb_url_tail):
+        """
+        Get hostname and port of the primary (for benchrun).
+
+        :param str mongodb_url_tail: The part of a mongodb url that comes after the @.
+        :return: (hostname, port) of the primary at startup time.
+        :rtype: tuple(string, int)
+        """
+        # For mongodb_cluster we use host.py classes to SSH and use mongo shell and javascript.
+        # But here it seemed more straightforward to just pymongo straight to the Atlas cluster.
+        username = self.config["mongodb_setup"]["authentication"]["username"]
+        password = self.config["mongodb_setup"]["authentication"]["password"]
+        uri = "mongodb://{}:{}@{}".format(username, password, mongodb_url_tail)
+        LOG.debug("Connecting to new Atlas cluster to discover primary node.", uri=uri)
+        client = pymongo.MongoClient(uri)
+        db = client.admin
+        ismaster = db.command("isMaster")
+        hostname, port = ismaster["primary"].split(":")
+        return hostname, int(port)

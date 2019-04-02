@@ -38,25 +38,29 @@ class TestAtlasSetup(unittest.TestCase):
 
     @patch('common.atlas_client.AtlasClient.get_one_cluster')
     @patch('common.atlas_setup.AtlasSetup._generate_unique_name')
+    @patch('common.atlas_setup.AtlasSetup._get_primary')
     @patch('requests.post')
-    def test_start(self, mock_post, mock_generate, mock_get_one_cluster):
+    def test_start(self, mock_post, mock_get_primary, mock_generate, mock_get_one_cluster):
         mock_generate.return_value = 'mock_unique_name'
         response = MagicMock(name='requests.response', autospec=True)
         response.json.return_value = {'name': 'mock_unique_name'}
         mock_post.return_value = response
+        mock_get_primary.return_value = ('mock_primary_host', 27017)
 
         mock_http_return_value = {
             'stateName': 'IDLE',
             'name': 'mock_unique_name',
-            'mongoURI': 'mongodb://mock_mongo_uri:21017',
-            'mongoURIWithOptions': 'mongodb://mock_mongo_uri:21017/?ssl=true&authSource=admin',
+            'mongoURI': 'mongodb://mock_mongo_uri:27017',
+            'mongoURIWithOptions': 'mongodb://mock_mongo_uri:27017/?ssl=true&authSource=admin',
             'mongoURIUpdated': '2018-11-27T12:24:17Z'
         }
         mock_get_one_cluster.return_value = mock_http_return_value
         expected_out = copy.deepcopy(mock_http_return_value)
         expected_out.update({
-            'hosts': 'mock_mongo_uri:21017',
-            'mongodb_url': 'mock_mongo_uri:21017/?ssl=true&authSource=admin'
+            'hosts': 'mock_mongo_uri:27017',
+            'mongodb_url': 'mock_mongo_uri:27017/?ssl=true&authSource=admin',
+            'hostname': 'mock_primary_host',
+            'port': 27017
         })
 
         with in_dir(FIXTURE_FILES.fixture_file_path('atlas-config')):
