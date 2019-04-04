@@ -71,7 +71,7 @@ class TestDetectOutliersDriver(unittest.TestCase):
         with patch(ns('multiprocessing.cpu_count'), autospec=True) as mock_cpu_count, \
              patch(ns('jobs.Job'), autospec=True) as mock_job_cls,\
              patch(ns('jobs.process_jobs'), autospec=True) as mock_process_jobs,\
-             patch(ns('detect_changes.PointsModel'), autospec=True) as mock_PointsModel:
+             patch(ns('PointsModel'), autospec=True) as mock_PointsModel:
 
             mock_job = MagicMock(name='mock_job')
             mock_job_cls.return_value = mock_job

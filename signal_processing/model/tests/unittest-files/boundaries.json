@@ -1,0 +1,868 @@
+{
+  "boundaries": [
+    11287,
+    11330,
+    12091,
+    12181,
+    12282,
+    12350,
+    12788,
+    13100,
+    13218,
+    13716,
+    13842,
+    14033,
+    14117
+  ],
+  "first": 10932,
+  "last": 14866,
+  "buckets": [
+    {
+      "_id": 10932,
+      "count": 73
+    },
+    {
+      "_id": 11287,
+      "count": 9
+    },
+    {
+      "_id": 11330,
+      "count": 102
+    },
+    {
+      "_id": 12091,
+      "count": 31
+    },
+    {
+      "_id": 12181,
+      "count": 45
+    },
+    {
+      "_id": 12282,
+      "count": 21
+    },
+    {
+      "_id": 12350,
+      "count": 178
+    },
+    {
+      "_id": 12788,
+      "count": 132
+    },
+    {
+      "_id": 13100,
+      "count": 54
+    },
+    {
+      "_id": 13218,
+      "count": 245
+    },
+    {
+      "_id": 13716,
+      "count": 62
+    },
+    {
+      "_id": 13842,
+      "count": 89
+    },
+    {
+      "_id": 14033,
+      "count": 26
+    },
+    {
+      "_id": 14117,
+      "count": 293
+    }
+  ],
+  "change_points": [
+    {
+      "_id": 1,
+      "project": "performance",
+      "variant": "linux-wt-standalone",
+      "task": "singleThreaded",
+      "test": "Update.MmsSetDeepDistinctPaths",
+      "thread_level": "1",
+      "suspect_revision": "82d0934425e83acfcb9c3b65a4fc52994ae58351",
+      "all_suspect_revisions": [
+        "82d0934425e83acfcb9c3b65a4fc52994ae58351",
+        "9960da7396adf3a92ac22e3c0fc62be1bc54be91"
+      ],
+      "probability": 1,
+      "create_time": "2018-03-01T02:01:49Z",
+      "value": 6588.122060683745,
+      "order": 11287,
+      "order_of_change_point": 7,
+      "statistics": {
+        "next": {
+          "nobs": 8,
+          "minmax": [
+            6571.7742795836675,
+            6666.348624798795
+          ],
+          "mean": 6603.473954790755,
+          "variance": 1024.5449279317056,
+          "skewness": 1.0793381516465457,
+          "kurtosis": -0.16994439891128765
+        },
+        "previous": {
+          "nobs": 72,
+          "minmax": [
+            6598.20985369258,
+            6806.166375940241
+          ],
+          "mean": 6664.79063188592,
+          "variance": 1326.0132243800792,
+          "skewness": 0.9771764024407839,
+          "kurtosis": 1.9693634227040304
+        }
+      },
+      "range_finder": {
+        "weighting": 0.001
+      },
+      "algorithm": {
+        "name": "qhat",
+        "index": 73,
+        "value": 469.133968811824,
+        "value_to_avg": 0.07046547050751203,
+        "value_to_avg_diff": 10.61720736042337,
+        "average": 6657.643317116736,
+        "average_diff": 44.186192553850326,
+        "window_size": 82,
+        "probability": 0,
+        "revision": "82d0934425e83acfcb9c3b65a4fc52994ae58351"
+      },
+      "magnitude": -0.00924267272517694,
+      "category": "Minor Regression",
+      "task_id": "performance_linux_wt_standalone_singleThreaded_82d0934425e83acfcb9c3b65a4fc52994ae58351_18_03_01_02_01_49"
+    },
+    {
+      "_id": 2,
+      "project": "performance",
+      "variant": "linux-wt-standalone",
+      "task": "singleThreaded",
+      "test": "Update.MmsSetDeepDistinctPaths",
+      "thread_level": "1",
+      "suspect_revision": "acc197d5e68b0844ee429a695d46817c9b97174f",
+      "all_suspect_revisions": [
+        "acc197d5e68b0844ee429a695d46817c9b97174f"
+      ],
+      "probability": 1,
+      "create_time": "2018-03-01T19:05:23Z",
+      "value": 6579.559197013024,
+      "order": 11330,
+      "order_of_change_point": 3,
+      "statistics": {
+        "next": {
+          "nobs": 101,
+          "minmax": [
+            6386.603460875259,
+            6579.559197013024
+          ],
+          "mean": 6457.954174237145,
+          "variance": 1233.8918776817277,
+          "skewness": 0.5866214382840704,
+          "kurtosis": 0.547980928421874
+        },
+        "previous": {
+          "nobs": 8,
+          "minmax": [
+            6571.7742795836675,
+            6666.348624798795
+          ],
+          "mean": 6603.473954790755,
+          "variance": 1024.5449279317056,
+          "skewness": 1.0793381516465457,
+          "kurtosis": -0.16994439891128765
+        }
+      },
+      "range_finder": {
+        "weighting": 0.001
+      },
+      "algorithm": {
+        "name": "qhat",
+        "index": 82,
+        "value": 16811.564408187296,
+        "value_to_avg": 2.5769954656871223,
+        "value_to_avg_diff": 152.17544581418315,
+        "average": 6523.707407341018,
+        "average_diff": 110.47488192487631,
+        "window_size": 260,
+        "probability": 0,
+        "revision": "acc197d5e68b0844ee429a695d46817c9b97174f"
+      },
+      "magnitude": -0.0222832909990417,
+      "category": "Minor Regression",
+      "task_id": "performance_linux_wt_standalone_singleThreaded_acc197d5e68b0844ee429a695d46817c9b97174f_18_03_01_19_05_23"
+    },
+    {
+      "_id": 3,
+      "project": "performance",
+      "variant": "linux-wt-standalone",
+      "task": "singleThreaded",
+      "test": "Update.MmsSetDeepDistinctPaths",
+      "thread_level": "1",
+      "suspect_revision": "069b34c332ea7e8330759037df7bc4bc7d207f2f",
+      "all_suspect_revisions": [
+        "069b34c332ea7e8330759037df7bc4bc7d207f2f",
+        "059770e113c49968a425e821237cfbbf88c43dd3",
+        "be069c265428053250fad76b6ea6c17a9a159153"
+      ],
+      "probability": 1,
+      "create_time": "2018-04-02T21:35:57Z",
+      "value": 6555.915721512475,
+      "order": 12091,
+      "order_of_change_point": 10,
+      "statistics": {
+        "next": {
+          "nobs": 30,
+          "minmax": [
+            6444.372426046919,
+            6574.193804988563
+          ],
+          "mean": 6510.284527160021,
+          "variance": 1515.6243712741018,
+          "skewness": -0.014041168148867416,
+          "kurtosis": -1.2605624275186234
+        },
+        "previous": {
+          "nobs": 101,
+          "minmax": [
+            6386.603460875259,
+            6579.559197013024
+          ],
+          "mean": 6457.954174237145,
+          "variance": 1233.8918776817277,
+          "skewness": 0.5866214382840704,
+          "kurtosis": 0.547980928421874
+        }
+      },
+      "range_finder": {
+        "weighting": 0.001
+      },
+      "algorithm": {
+        "name": "qhat",
+        "index": 184,
+        "value": 817.7864786680942,
+        "value_to_avg": 0.12640117660876893,
+        "value_to_avg_diff": 17.514387991744414,
+        "average": 6469.769511713242,
+        "average_diff": 46.69226689813919,
+        "window_size": 133,
+        "probability": 0,
+        "revision": "069b34c332ea7e8330759037df7bc4bc7d207f2f"
+      },
+      "magnitude": 0.008070585091692211,
+      "category": "Minor Improvement",
+      "task_id": "performance_linux_wt_standalone_singleThreaded_069b34c332ea7e8330759037df7bc4bc7d207f2f_18_04_02_21_35_57"
+    },
+    {
+      "_id": 4,
+      "project": "performance",
+      "variant": "linux-wt-standalone",
+      "task": "singleThreaded",
+      "test": "Update.MmsSetDeepDistinctPaths",
+      "thread_level": "1",
+      "suspect_revision": "265a38952f11a5d9a6144a22f10dc59b138e0b69",
+      "all_suspect_revisions": [
+        "265a38952f11a5d9a6144a22f10dc59b138e0b69",
+        "a5aefd87dc4e9578ccb5e0ecda425ef030aa3569"
+      ],
+      "probability": 1,
+      "create_time": "2018-04-05T22:19:54Z",
+      "value": 6396.559105920283,
+      "order": 12181,
+      "order_of_change_point": 9,
+      "statistics": {
+        "next": {
+          "nobs": 44,
+          "minmax": [
+            6386.541828263116,
+            6499.265424629314
+          ],
+          "mean": 6439.478539975405,
+          "variance": 933.2377204563112,
+          "skewness": 0.1456743778865992,
+          "kurtosis": -0.895224231007353
+        },
+        "previous": {
+          "nobs": 30,
+          "minmax": [
+            6444.372426046919,
+            6574.193804988563
+          ],
+          "mean": 6510.284527160021,
+          "variance": 1515.6243712741018,
+          "skewness": -0.014041168148867416,
+          "kurtosis": -1.2605624275186234
+        }
+      },
+      "range_finder": {
+        "weighting": 0.001
+      },
+      "algorithm": {
+        "name": "qhat",
+        "index": 215,
+        "value": 402.9400831380515,
+        "value_to_avg": 0.0623552571814995,
+        "value_to_avg_diff": 8.744794713952306,
+        "average": 6462.006594972426,
+        "average_diff": 46.07770637487478,
+        "window_size": 178,
+        "probability": 0,
+        "revision": "265a38952f11a5d9a6144a22f10dc59b138e0b69"
+      },
+      "magnitude": -0.010935596650025185,
+      "category": "Minor Regression",
+      "task_id": "performance_linux_wt_standalone_singleThreaded_265a38952f11a5d9a6144a22f10dc59b138e0b69_18_04_05_22_19_54"
+    },
+    {
+      "_id": 5,
+      "project": "performance",
+      "variant": "linux-wt-standalone",
+      "task": "singleThreaded",
+      "test": "Update.MmsSetDeepDistinctPaths",
+      "thread_level": "1",
+      "suspect_revision": "8e59e8b22f3e0dd1cdef85c7da23262ffde0e5fb",
+      "all_suspect_revisions": [
+        "8e59e8b22f3e0dd1cdef85c7da23262ffde0e5fb"
+      ],
+      "probability": 1,
+      "create_time": "2018-04-13T03:57:59Z",
+      "value": 6372.667283909659,
+      "order": 12282,
+      "order_of_change_point": 1,
+      "statistics": {
+        "next": {
+          "nobs": 20,
+          "minmax": [
+            6154.925384994151,
+            6372.667283909659
+          ],
+          "mean": 6238.911896614241,
+          "variance": 2413.4281697286274,
+          "skewness": 0.7446763322684401,
+          "kurtosis": 1.0986910428016463
+        },
+        "previous": {
+          "nobs": 44,
+          "minmax": [
+            6386.541828263116,
+            6499.265424629314
+          ],
+          "mean": 6439.478539975405,
+          "variance": 933.2377204563112,
+          "skewness": 0.1456743778865992,
+          "kurtosis": -0.895224231007353
+        }
+      },
+      "range_finder": {
+        "weighting": 0.001
+      },
+      "algorithm": {
+        "name": "qhat",
+        "index": 260,
+        "value": 45206.360140413955,
+        "value_to_avg": 7.079982252517044,
+        "value_to_avg_diff": 272.34925489740976,
+        "average": 6385.095121437966,
+        "average_diff": 165.98672229686318,
+        "window_size": 591,
+        "probability": 0,
+        "revision": "8e59e8b22f3e0dd1cdef85c7da23262ffde0e5fb"
+      },
+      "magnitude": -0.031641773150775716,
+      "category": "Minor Regression",
+      "task_id": "performance_linux_wt_standalone_singleThreaded_8e59e8b22f3e0dd1cdef85c7da23262ffde0e5fb_18_04_13_03_57_59"
+    },
+    {
+      "_id": 6,
+      "project": "performance",
+      "variant": "linux-wt-standalone",
+      "task": "singleThreaded",
+      "test": "Update.MmsSetDeepDistinctPaths",
+      "thread_level": "1",
+      "suspect_revision": "dc4832736957d840760af6557d65dcf28cd81063",
+      "all_suspect_revisions": [
+        "dc4832736957d840760af6557d65dcf28cd81063"
+      ],
+      "probability": 1,
+      "create_time": "2018-04-17T11:59:33Z",
+      "value": 6308.960705007137,
+      "order": 12350,
+      "order_of_change_point": 6,
+      "statistics": {
+        "next": {
+          "nobs": 177,
+          "minmax": [
+            6069.12976179853,
+            6427.785605254614
+          ],
+          "mean": 6310.9891176685,
+          "variance": 2832.8246132842264,
+          "skewness": -1.2084514903251367,
+          "kurtosis": 3.0485945333463187
+        },
+        "previous": {
+          "nobs": 20,
+          "minmax": [
+            6154.925384994151,
+            6372.667283909659
+          ],
+          "mean": 6238.911896614241,
+          "variance": 2413.4281697286274,
+          "skewness": 0.7446763322684401,
+          "kurtosis": 1.0986910428016463
+        }
+      },
+      "range_finder": {
+        "weighting": 0.001
+      },
+      "algorithm": {
+        "name": "qhat",
+        "index": 281,
+        "value": 1195.321245618394,
+        "value_to_avg": 0.18963582361282194,
+        "value_to_avg_diff": 19.27143500212952,
+        "average": 6303.245994590518,
+        "average_diff": 62.025544308781846,
+        "window_size": 199,
+        "probability": 0,
+        "revision": "dc4832736957d840760af6557d65dcf28cd81063"
+      },
+      "magnitude": 0.011486626623603615,
+      "category": "Minor Improvement",
+      "task_id": "performance_linux_wt_standalone_singleThreaded_dc4832736957d840760af6557d65dcf28cd81063_18_04_17_11_59_33"
+    },
+    {
+      "_id": 7,
+      "project": "performance",
+      "variant": "linux-wt-standalone",
+      "task": "singleThreaded",
+      "test": "Update.MmsSetDeepDistinctPaths",
+      "thread_level": "1",
+      "suspect_revision": "fa9278c892a6833694983191a5726b20f6a187a0",
+      "all_suspect_revisions": [
+        "fa9278c892a6833694983191a5726b20f6a187a0",
+        "a9ba9539c5042911f030a1d4b3e4ce8ff0a449fc"
+      ],
+      "probability": 1,
+      "create_time": "2018-05-15T13:22:58Z",
+      "value": 6240.992686441044,
+      "order": 12788,
+      "order_of_change_point": 4,
+      "statistics": {
+        "next": {
+          "nobs": 131,
+          "minmax": [
+            6023.86807785455,
+            6345.529938412695
+          ],
+          "mean": 6235.422924684134,
+          "variance": 3121.9523634581765,
+          "skewness": -1.2819683669876196,
+          "kurtosis": 2.692321240704577
+        },
+        "previous": {
+          "nobs": 177,
+          "minmax": [
+            6069.12976179853,
+            6427.785605254614
+          ],
+          "mean": 6310.9891176685,
+          "variance": 2832.8246132842264,
+          "skewness": -1.2084514903251367,
+          "kurtosis": 3.0485945333463187
+        }
+      },
+      "range_finder": {
+        "weighting": 0.001
+      },
+      "algorithm": {
+        "name": "qhat",
+        "index": 459,
+        "value": 3826.6353111167687,
+        "value_to_avg": 0.6097042690984333,
+        "value_to_avg_diff": 53.0368264271315,
+        "average": 6276.215380245238,
+        "average_diff": 72.15053329735461,
+        "window_size": 331,
+        "probability": 0,
+        "revision": "fa9278c892a6833694983191a5726b20f6a187a0"
+      },
+      "magnitude": -0.012046010682323565,
+      "category": "Minor Regression",
+      "task_id": "performance_linux_wt_standalone_singleThreaded_fa9278c892a6833694983191a5726b20f6a187a0_18_05_15_13_22_58"
+    },
+    {
+      "_id": 8,
+      "project": "performance",
+      "variant": "linux-wt-standalone",
+      "task": "singleThreaded",
+      "test": "Update.MmsSetDeepDistinctPaths",
+      "thread_level": "1",
+      "suspect_revision": "e317b88bb811da53f73ddb992417ae05ea8fe451",
+      "all_suspect_revisions": [
+        "e317b88bb811da53f73ddb992417ae05ea8fe451"
+      ],
+      "probability": 1,
+      "create_time": "2018-06-08T04:08:00Z",
+      "value": 5608.285432434951,
+      "order": 13100,
+      "order_of_change_point": 0,
+      "statistics": {
+        "next": {
+          "nobs": 53,
+          "minmax": [
+            5440.967834797923,
+            5640.712407384228
+          ],
+          "mean": 5577.510258174697,
+          "variance": 1059.486551476894,
+          "skewness": -1.1996079885243103,
+          "kurtosis": 4.251657741230395
+        },
+        "previous": {
+          "nobs": 131,
+          "minmax": [
+            6023.86807785455,
+            6345.529938412695
+          ],
+          "mean": 6235.422924684134,
+          "variance": 3121.9523634581765,
+          "skewness": -1.2819683669876196,
+          "kurtosis": 2.692321240704577
+        }
+      },
+      "range_finder": {
+        "weighting": 0.001
+      },
+      "algorithm": {
+        "name": "qhat",
+        "index": 591,
+        "value": 507631.4170574655,
+        "value_to_avg": 86.29686874315523,
+        "value_to_avg_diff": 1015.0039262096689,
+        "average": 5882.385125332014,
+        "average_diff": 500.12754034668075,
+        "window_size": 1354,
+        "probability": 0,
+        "revision": "e317b88bb811da53f73ddb992417ae05ea8fe451"
+      },
+      "magnitude": -0.11150392104540552,
+      "category": "Minor Regression",
+      "task_id": "performance_linux_wt_standalone_singleThreaded_e317b88bb811da53f73ddb992417ae05ea8fe451_18_06_08_04_08_00"
+    },
+    {
+      "_id": 9,
+      "project": "performance",
+      "variant": "linux-wt-standalone",
+      "task": "singleThreaded",
+      "test": "Update.MmsSetDeepDistinctPaths",
+      "thread_level": "1",
+      "suspect_revision": "82b62cf1e513657a0c35d757cf37eab0231ebc9b",
+      "all_suspect_revisions": [
+        "82b62cf1e513657a0c35d757cf37eab0231ebc9b",
+        "76398baf84773e0e5766eb2e9d53d290933806fd"
+      ],
+      "probability": 0.9801980198019802,
+      "create_time": "2018-06-15T15:40:58Z",
+      "value": 5533.356220399207,
+      "order": 13218,
+      "order_of_change_point": 11,
+      "statistics": {
+        "next": {
+          "nobs": 244,
+          "minmax": [
+            5380.963966996026,
+            5641.583690543594
+          ],
+          "mean": 5549.186461975914,
+          "variance": 2050.4826794651067,
+          "skewness": -1.1425845000688117,
+          "kurtosis": 2.4372021510978428
+        },
+        "previous": {
+          "nobs": 53,
+          "minmax": [
+            5440.967834797923,
+            5640.712407384228
+          ],
+          "mean": 5577.510258174697,
+          "variance": 1059.486551476894,
+          "skewness": -1.1996079885243103,
+          "kurtosis": 4.251657741230395
+        }
+      },
+      "range_finder": {
+        "weighting": 0.001
+      },
+      "algorithm": {
+        "name": "qhat",
+        "index": 645,
+        "value": 390.9397187483431,
+        "value_to_avg": 0.07035387557790815,
+        "value_to_avg_diff": 7.920463011978595,
+        "average": 5556.761664329722,
+        "average_diff": 49.35819006503804,
+        "window_size": 361,
+        "probability": 0.019801980198019802,
+        "revision": "82b62cf1e513657a0c35d757cf37eab0231ebc9b"
+      },
+      "magnitude": -0.005091152943259317,
+      "category": "Minor Regression",
+      "task_id": "performance_linux_wt_standalone_singleThreaded_82b62cf1e513657a0c35d757cf37eab0231ebc9b_18_06_15_15_40_58"
+    },
+    {
+      "_id": 10,
+      "project": "performance",
+      "variant": "linux-wt-standalone",
+      "task": "singleThreaded",
+      "test": "Update.MmsSetDeepDistinctPaths",
+      "thread_level": "1",
+      "suspect_revision": "6a8543890960053d1d59c62a43a8804a23fe8f06",
+      "all_suspect_revisions": [
+        "6a8543890960053d1d59c62a43a8804a23fe8f06"
+      ],
+      "probability": 0.9702970297029703,
+      "create_time": "2018-07-30T21:43:59Z",
+      "value": 5612.826130628145,
+      "order": 13716,
+      "order_of_change_point": 12,
+      "statistics": {
+        "next": {
+          "nobs": 61,
+          "minmax": [
+            5390.091414477958,
+            5676.62364589025
+          ],
+          "mean": 5567.806995259812,
+          "variance": 3013.432278511822,
+          "skewness": -1.218059622069733,
+          "kurtosis": 1.9038754559194162
+        },
+        "previous": {
+          "nobs": 244,
+          "minmax": [
+            5380.963966996026,
+            5641.583690543594
+          ],
+          "mean": 5549.186461975914,
+          "variance": 2050.4826794651067,
+          "skewness": -1.1425845000688117,
+          "kurtosis": 2.4372021510978428
+        }
+      },
+      "range_finder": {
+        "weighting": 0.001
+      },
+      "algorithm": {
+        "name": "qhat",
+        "index": 890,
+        "value": 327.09828174765744,
+        "value_to_avg": 0.058904081143682605,
+        "value_to_avg_diff": 6.4509193952368795,
+        "average": 5553.066534554344,
+        "average_diff": 50.705684214435344,
+        "window_size": 307,
+        "probability": 0.0297029702970297,
+        "revision": "6a8543890960053d1d59c62a43a8804a23fe8f06"
+      },
+      "magnitude": 0.0033499256375074784,
+      "category": "Minor Improvement",
+      "task_id": "performance_linux_wt_standalone_singleThreaded_6a8543890960053d1d59c62a43a8804a23fe8f06_18_07_30_21_43_59"
+    },
+    {
+      "_id": 11,
+      "project": "performance",
+      "variant": "linux-wt-standalone",
+      "task": "singleThreaded",
+      "test": "Update.MmsSetDeepDistinctPaths",
+      "thread_level": "1",
+      "suspect_revision": "7c317b85b1273a8d465479f2205eefedb42154c9",
+      "all_suspect_revisions": [
+        "7c317b85b1273a8d465479f2205eefedb42154c9",
+        "25033952fa8cd51f18acada50f1894c232b610ff",
+        "8c2cd4720c59dae92c2b284efaec0f88a08b797a",
+        "fc758e567998b87a2360c1c49e3bd0b74da3796b",
+        "c19c600b78d6176ace0044d2af0104e44c51610a",
+        "80a858db1a1077087743e98ece9c81f7c274ba82",
+        "0faa26ed8b17295b071edb9c4debadada899aeb2"
+      ],
+      "probability": 1,
+      "create_time": "2018-08-09T20:06:04Z",
+      "value": 5440.197716214354,
+      "order": 13842,
+      "order_of_change_point": 5,
+      "statistics": {
+        "next": {
+          "nobs": 88,
+          "minmax": [
+            5299.588604648234,
+            5581.411911344866
+          ],
+          "mean": 5496.115407654111,
+          "variance": 2576.9045414537786,
+          "skewness": -1.4948945792882635,
+          "kurtosis": 3.423800659266293
+        },
+        "previous": {
+          "nobs": 61,
+          "minmax": [
+            5390.091414477958,
+            5676.62364589025
+          ],
+          "mean": 5567.806995259812,
+          "variance": 3013.432278511822,
+          "skewness": -1.218059622069733,
+          "kurtosis": 1.9038754559194162
+        }
+      },
+      "range_finder": {
+        "weighting": 0.001
+      },
+      "algorithm": {
+        "name": "qhat",
+        "index": 952,
+        "value": 2744.7306519972153,
+        "value_to_avg": 0.4950214313767163,
+        "value_to_avg_diff": 48.684597403503695,
+        "average": 5544.670347632783,
+        "average_diff": 56.37780321460941,
+        "window_size": 476,
+        "probability": 0,
+        "revision": "7c317b85b1273a8d465479f2205eefedb42154c9"
+      },
+      "magnitude": -0.012959706042642521,
+      "category": "Minor Regression",
+      "task_id": "performance_linux_wt_standalone_singleThreaded_7c317b85b1273a8d465479f2205eefedb42154c9_18_08_09_20_06_04"
+    },
+    {
+      "_id": 12,
+      "project": "performance",
+      "variant": "linux-wt-standalone",
+      "task": "singleThreaded",
+      "test": "Update.MmsSetDeepDistinctPaths",
+      "thread_level": "1",
+      "suspect_revision": "120a969b8bad82a3ae7cda14acd4a888e2954a0f",
+      "all_suspect_revisions": [
+        "120a969b8bad82a3ae7cda14acd4a888e2954a0f",
+        "0eb340d54510584b1d1c927e713a5afe0822feaf",
+        "402fa5cc4a5f74cd7e592d9273a94e7cf25446b6"
+      ],
+      "probability": 1,
+      "create_time": "2018-08-27T18:38:57Z",
+      "value": 5519.084944698248,
+      "order": 14033,
+      "order_of_change_point": 8,
+      "statistics": {
+        "next": {
+          "nobs": 25,
+          "minmax": [
+            5476.695133770205,
+            5623.095905469496
+          ],
+          "mean": 5545.160749901141,
+          "variance": 1409.7957894846588,
+          "skewness": 0.021151062458682944,
+          "kurtosis": -0.24681879411337748
+        },
+        "previous": {
+          "nobs": 88,
+          "minmax": [
+            5299.588604648234,
+            5581.411911344866
+          ],
+          "mean": 5496.115407654111,
+          "variance": 2576.9045414537786,
+          "skewness": -1.4948945792882635,
+          "kurtosis": 3.423800659266293
+        }
+      },
+      "range_finder": {
+        "weighting": 0.001
+      },
+      "algorithm": {
+        "name": "qhat",
+        "index": 1041,
+        "value": 454.2767342580514,
+        "value_to_avg": 0.08249506397985662,
+        "value_to_avg_diff": 8.408900982461414,
+        "average": 5506.7141273928255,
+        "average_diff": 54.02331829159887,
+        "window_size": 115,
+        "probability": 0,
+        "revision": "120a969b8bad82a3ae7cda14acd4a888e2954a0f"
+      },
+      "magnitude": 0.00888405726440777,
+      "category": "Minor Improvement",
+      "task_id": "performance_linux_wt_standalone_singleThreaded_120a969b8bad82a3ae7cda14acd4a888e2954a0f_18_08_27_18_38_57"
+    },
+    {
+      "_id": 13,
+      "project": "performance",
+      "variant": "linux-wt-standalone",
+      "task": "singleThreaded",
+      "test": "Update.MmsSetDeepDistinctPaths",
+      "thread_level": "1",
+      "suspect_revision": "26342af7491525e893b0ac106fb8a6e101daf33e",
+      "all_suspect_revisions": [
+        "26342af7491525e893b0ac106fb8a6e101daf33e",
+        "0bd60bab0b7118c891ee7e3cd956187df6179f9f",
+        "a081f728209f6a5d39353835c1a711a2ebf93563",
+        "0bb846536e3dda6905bd211db4e4a137705eeb51",
+        "87235ccf747184cd32d5d3abc86fa4606c377f3b",
+        "b793288bb367ca33108e06a58dbb7933c344b4b2",
+        "c7ab3a15d104ec60be11893300e164288f33e003",
+        "a54264b53097556622e5e8e823bfacabd39ee1e7",
+        "8aadacefd8c3f3507d519e60c2e7d8ef7f2f29bb"
+      ],
+      "probability": 1,
+      "create_time": "2018-09-06T20:32:25Z",
+      "value": 5407.095918503592,
+      "order": 14117,
+      "order_of_change_point": 2,
+      "statistics": {
+        "next": {
+          "nobs": 287,
+          "minmax": [
+            5227.086783283092,
+            5509.524634263975
+          ],
+          "mean": 5407.300200196873,
+          "variance": 1637.5806028023032,
+          "skewness": -1.350517174788932,
+          "kurtosis": 3.990367574498337
+        },
+        "previous": {
+          "nobs": 25,
+          "minmax": [
+            5476.695133770205,
+            5623.095905469496
+          ],
+          "mean": 5545.160749901141,
+          "variance": 1409.7957894846588,
+          "skewness": 0.021151062458682944,
+          "kurtosis": -0.24681879411337748
+        }
+      },
+      "range_finder": {
+        "weighting": 0.001
+      },
+      "algorithm": {
+        "name": "qhat",
+        "index": 1067,
+        "value": 32511.802744809043,
+        "value_to_avg": 5.918770911629677,
+        "value_to_avg_diff": 348.155654349249,
+        "average": 5492.999007771569,
+        "average_diff": 93.38295196031812,
+        "window_size": 763,
+        "probability": 0,
+        "revision": "26342af7491525e893b0ac106fb8a6e101daf33e"
+      },
+      "magnitude": -0.025175680928971534,
+      "category": "Minor Regression",
+      "task_id": "performance_linux_wt_standalone_singleThreaded_26342af7491525e893b0ac106fb8a6e101daf33e_18_09_06_20_32_25"
+    }
+  ]
+}

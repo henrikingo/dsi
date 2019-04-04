@@ -15,7 +15,7 @@ from scipy.stats import probplot
 from bin.common.utils import mkdir_p
 from signal_processing.commands import helpers
 from signal_processing.commands.helpers import PORTRAIT_FIGSIZE
-from signal_processing.detect_changes import PointsModel
+from signal_processing.model.points import PointsModel
 from signal_processing.outliers.detection import run_outlier_detection, print_outliers
 
 from matplotlib.ticker import MaxNLocator

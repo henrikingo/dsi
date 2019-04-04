@@ -15,8 +15,8 @@ import structlog
 import etl_helpers
 import signal_processing.commands.helpers as helpers
 import signal_processing.commands.jobs as jobs
-import signal_processing.detect_changes as detect_changes
 import signal_processing.outliers.detection as detection
+from signal_processing.model.points import PointsModel
 from signal_processing.outliers.reject.task import TaskAutoRejector
 from analysis.evergreen import evergreen_client
 from bin.common import config, log
@@ -123,7 +123,7 @@ class DetectOutliersDriver(object):
         :return: All the GESD outlier results.
         :rtype: list(Job).
         """
-        model = detect_changes.PointsModel(self.mongo_uri)
+        model = PointsModel(self.mongo_uri)
 
         test_identifiers = helpers.extract_test_identifiers(self.perf_json)
         LOG.info('loaded tests', test_identifiers=len(test_identifiers))

@@ -135,6 +135,7 @@ setup(
               'signal_processing.commands.change_points',
               'signal_processing.commands.outliers',
               'signal_processing.keyring',
+              'signal_processing.model',
               'signal_processing.native',
               'signal_processing.outliers',
               'signal_processing.outliers.reject',

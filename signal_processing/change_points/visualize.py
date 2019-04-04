@@ -13,7 +13,7 @@ import structlog
 
 from signal_processing.commands.helpers import LANDSCAPE_FIGSIZE
 from signal_processing.change_points.e_divisive import EDivisive
-from signal_processing.detect_changes import PointsModel
+from signal_processing.model.points import PointsModel
 
 LOG = structlog.getLogger(__name__)
 

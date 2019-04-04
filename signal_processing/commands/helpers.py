@@ -391,6 +391,8 @@ class CommandConfiguration(object):
             'unprocessed_change_points': self.unprocessed_change_points_name,
             'build_failures': self.build_failures_name,
             'mute_outliers': self.mute_outliers_name,
+            'outliers': self.outliers_name,
+            'marked_outliers': self.marked_outliers_name,
             'style': self.style,
             'mongo_repo': self._mongo_repo
         }

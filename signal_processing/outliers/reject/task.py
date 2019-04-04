@@ -57,7 +57,7 @@ import pymongo
 import structlog
 from nose.tools import nottest
 
-from signal_processing.detect_changes import PointsModel
+from signal_processing.model.points import PointsModel
 from signal_processing.outliers.list_mutes import mute_expired
 
 STATUS_PASS = 'pass'

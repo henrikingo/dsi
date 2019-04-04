@@ -10,8 +10,8 @@ import structlog
 
 from bin.common.utils import mkdir_p
 from signal_processing.commands.helpers import PORTRAIT_FIGSIZE
-from signal_processing.detect_changes import PointsModel
 from signal_processing.change_points.detection import detect_change_points
+from signal_processing.model.points import PointsModel
 
 LOG = structlog.getLogger(__name__)
 

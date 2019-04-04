@@ -3,7 +3,7 @@ Functionality to compute / recompute change points.
 """
 import structlog
 
-from signal_processing.detect_changes import PointsModel
+from signal_processing.model.points import PointsModel
 
 LOG = structlog.getLogger(__name__)
 

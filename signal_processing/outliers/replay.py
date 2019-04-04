@@ -17,7 +17,7 @@ from matplotlib.patches import Rectangle
 from bin.common.config import is_integer
 from bin.common.utils import mkdir_p
 from signal_processing.commands.helpers import PORTRAIT_FIGSIZE
-from signal_processing.detect_changes import PointsModel
+from signal_processing.model.points import PointsModel
 from signal_processing.outliers.config import get_matplotlib
 from signal_processing.outliers.detection import STANDARD_Z_SCORE, compute_max_outliers
 from signal_processing.outliers.gesd import gesd

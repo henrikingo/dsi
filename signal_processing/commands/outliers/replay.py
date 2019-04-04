@@ -8,11 +8,11 @@ import click
 import structlog
 
 from signal_processing.change_points.helpers import generate_change_point_ranges
+from signal_processing.model.points import PointsModel
 from signal_processing.outliers.detection import STANDARD_Z_SCORE, MAD_Z_SCORE
 from signal_processing.outliers.replay import ReplayGesdParams, \
     DEFAULT_INTERVAL
 
-from signal_processing.detect_changes import PointsModel
 from signal_processing.outliers.replay import replay_gesd
 
 from signal_processing.commands import helpers, jobs
