@@ -11,17 +11,14 @@ run:
 
       ./genny/bin/genny ./genny/etc/genny/workloads/scale/InsertRemove.yml -u "${mongodb_setup.meta.mongodb_url}" -m cedar-csv -o ./genny-perf.csv
 
-      genny-metrics-report genny-perf.csv metrics
+      genny-metrics-report --report-file genny-cedar-report.json genny-perf.csv metrics
       genny-metrics-legacy-report --report-file genny-perf.json genny-perf.csv
     output_files:
       # Genny output-parser only parses the first file (must be the json)
       # but we want to retrieve the .csv for the reports dir.
       - data/genny-perf.json
       - data/genny-perf.csv
-      - data/cedar_report.json
-
-
-
+      - data/genny-cedar-report.json
 
   - id: benchRun
     type: mongoshell
