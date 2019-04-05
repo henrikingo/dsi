@@ -9,7 +9,7 @@ run:
       cd ./data
       mkdir -p metrics
 
-      ./genny/bin/genny ./genny/etc/genny/workloads/scale/BigUpdate.yml -u "${mongodb_setup.meta.mongodb_url}" -m cedar-csv -o ./genny-perf.csv
+      ./genny/bin/genny run ./genny/etc/genny/workloads/scale/BigUpdate.yml -u "${mongodb_setup.meta.mongodb_url}" -m cedar-csv -o ./genny-perf.csv
 
       genny-metrics-report --report-file genny-cedar-report.json genny-perf.csv metrics
       genny-metrics-legacy-report --report-file genny-perf.json genny-perf.csv

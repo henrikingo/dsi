@@ -48,7 +48,7 @@ run:
       workload_path="./genny/etc/genny/workloads/networking/PrimaryRequiredReads.yml"
       results_path="./genny-perf.csv"
 
-      ./genny/bin/genny "$workload_path" -u "${mongodb_setup.meta.mongodb_url}" -m cedar-csv -o "$results_path"
+      ./genny/bin/genny run "$workload_path" -u "${mongodb_setup.meta.mongodb_url}" -m cedar-csv -o "$results_path"
 
       genny-metrics-report --report-file genny-cedar-report.json $results_path metrics
       genny-metrics-legacy-report --report-file genny-perf.json $results_path

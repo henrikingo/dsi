@@ -43,7 +43,7 @@ genny:
         cd ./data
 
         ldd genny/bin/genny
-        genny/bin/genny --list-actors
+        genny/bin/genny list-actors
 
   # Build Genny's Python Component
   - on_workload_client:
