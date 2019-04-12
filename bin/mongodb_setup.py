@@ -72,7 +72,14 @@ class MongodbSetup(object):
             run_host_commands(self.config['mongodb_setup']['pre_cluster_start'], self.config,
                               'pre_cluster_start')
 
-        return self._start()
+        status = self._start()
+
+        if 'post_cluster_start' in self.config['mongodb_setup']:
+            LOG.info("Mongodb_setup running post_cluster_start commands")
+            run_host_commands(self.config['mongodb_setup']['post_cluster_start'], self.config,
+                              'post_cluster_start')
+
+        return status
 
     def restart(self, clean_db_dir=None, clean_logs=None):
         """

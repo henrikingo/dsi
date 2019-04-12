@@ -3,6 +3,8 @@ journal_dir: /media/ebs2/journal
 mongod_config_file:
   storage:
     engine: ${bootstrap.storageEngine}
+  replication:
+    oplogSizeMB: 153600   # 150GB oplog
 
 topology:
   - cluster_type: replset

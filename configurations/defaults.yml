@@ -62,8 +62,6 @@ mongodb_setup:
       bindIp: 0.0.0.0
     processManagement:
       fork: true
-    replication:
-      oplogSizeMB: 153600   # 150GB oplog
     setParameter:
       enableTestCommands: 1
     storage:
@@ -100,8 +98,6 @@ mongodb_setup:
         exec: |
           export JAVA_HOME="/usr/java/jdk1.8.0_162"
           sudo $JAVA_HOME/bin/keytool -importcert -trustcacerts -file ${mongodb_setup.mongo_dir}/root.crt -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -noprompt || true
-
-
 
   mongos_config_file:
     net: ${mongodb_setup.mongod_config_file.net}

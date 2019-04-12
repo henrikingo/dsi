@@ -5,6 +5,8 @@ mongod_config_file:
     engine: ${bootstrap.storageEngine}
   sharding:
     clusterRole: shardsvr
+  replication:
+    oplogSizeMB: 153600   # 150GB oplog
 
 topology:
   - id: mycluster

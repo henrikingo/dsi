@@ -1,0 +1,113 @@
+# This configuration is based off of work in https://jira.mongodb.org/browse/PERF-1792 and this
+# report:
+# https://docs.google.com/document/d/10Rod0WeFARdDrBH8Uh-zQJY__7QwCdfQcR2XaN4C3as/edit?usp=sharing
+
+# Shared by all mongods
+# Unset journal dir so same device.
+# TODO PERF-1572
+journal_dir: /home/ec2-user/data/journal-mount  # This is a hack to link to the same device.
+mongod_config_file:
+  storage:
+    engine: ${bootstrap.storageEngine}
+    wiredTiger:
+      engineConfig:
+        configString: cache_size=36864MB  # M60 specific
+  replication:
+    replSetName: rs0
+  net:
+    compression:
+      compressors: snappy,zlib
+    maxIncomingConnections: 2000
+    port: 27017
+    bindIp: 0.0.0.0
+    ssl:
+      mode: preferSSL  # Atlas uses requireSSL
+      PEMKeyFile: ${mongodb_setup.mongo_dir}/member.pem
+      PEMKeyPassword: server-perf
+      CAFile: ${mongodb_setup.mongo_dir}/root.crt
+      allowInvalidHostnames: true
+      allowConnectionsWithoutCertificates: true
+  setParameter:
+    # Set parameters pulled from Atlas log files as part of https://docs.google.com/document/d/10Rod0WeFARdDrBH8Uh-zQJY__7QwCdfQcR2XaN4C3as/edit?usp=sharing
+    honorSystemUmask: true
+    reportOpWriteConcernCountersInServerStatus: true
+    suppressNoTLSPeerCertificateWarning: true
+    ttlMonitorEnabled: true
+    # watchdogPeriodSeconds: 60 # Requires enterprise build. Currently won't start even with the
+    # enterprise build
+    # authenticationMechanisms: SCRAM-SHA-1
+
+topology:
+  - cluster_type: replset
+    id: rs0
+    mongod:
+      - public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
+        private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
+      - public_ip: ${infrastructure_provisioning.out.mongod.1.public_ip}
+        private_ip: ${infrastructure_provisioning.out.mongod.1.private_ip}
+      - public_ip: ${infrastructure_provisioning.out.mongod.2.public_ip}
+        private_ip: ${infrastructure_provisioning.out.mongod.2.private_ip}
+
+# Meta data about this mongodb setup
+meta:
+  # The list of hosts that can be used in a mongodb connection string
+  hosts: ${mongodb_setup.topology.0.mongod.0.private_ip}:27017
+  hostname: ${mongodb_setup.topology.0.mongod.0.private_ip}
+  secondary: ${mongodb_setup.topology.0.mongod.1.private_ip}
+  port: 27017
+  is_sharded: false
+  is_replset: true
+  secondaries: 2
+  mongodb_setup: atlas-like-replica
+  # This appends the replicaset information to the end of the default mongodb_url and ends up
+  # looking like "mongodb://username:password@10.2.0.200:27017/admin?ssl=false&replicaSet=rs0"
+  mongodb_url: ${mongodb_setup.meta.mongodb_url_base}?replicaSet=${mongodb_setup.topology.0.id}&ssl=true
+  # For replset with ssl this is just fine ™
+  mongodb_shell_url: ${mongodb_setup.meta.mongodb_url}
+  # Used in mongoshell workloads (https://github.com/10gen/workloads/blob/23b1c6dd3a8c087b6a2c949147a8aeaba1d1d271/run_workloads.py#L289-L296)
+  shell_ssl_options: ['--ssl', '--sslAllowInvalidHostnames', '--sslCAFile', '${mongodb_setup.mongo_dir}/root.crt', '--sslPEMKeyFile', '${mongodb_setup.mongo_dir}/member.pem']
+
+# Hosts to run correctness tests on.
+validate:
+  primaries:
+    - ${mongodb_setup.topology.0.mongod.0.private_ip}:27017
+
+
+post_cluster_start:
+  # This adds delay to the cluster from the client. It adds 300us from client to cluster, and 300us
+  # from cluster back to client, to approximately match observed Atlas latencies. It does not add
+  # delay between nodes in the replica set.
+  # Note: tc to be replaced with mongobridge when mongobridge can go between client and server.
+  # See https://wiki.linuxfoundation.org/networking/netem for reference on TC.
+  - on_workload_client:
+      exec: |
+        sudo yum -y -q install tc
+        sudo modprobe ifb
+        sudo ip link set dev ifb0 up
+        sudo tc qdisc del dev eth0 root || true # Delete any existing rules
+        sudo tc qdisc del dev eth0 ingress || true # Delete any existing rules
+        sudo tc qdisc del dev ifb0 root || true
+        sudo tc qdisc add dev eth0 root handle 1: prio
+        sudo tc qdisc add dev eth0 parent 1:3 handle 30: netem  delay 0.3ms
+        sudo tc filter add dev eth0 protocol ip parent 1:0 prio 3 u32 match ip dst 10.2.0.200/4 flowid 1:3
+        # Setup delay on incoming packets
+        # The ip link needs to be up for this to work.
+        while [ -z "$(sudo ip link show dev ifb0 up)" ]; do sleep 1 && echo "sleeping"; done
+        sudo tc qdisc add dev eth0 ingress
+        sudo tc filter add dev eth0 parent ffff: protocol ip u32 match ip src 10.2.0.200/4 flowid 1:1 action mirred egress redirect dev ifb0
+        sudo tc qdisc add dev ifb0 root netem delay 0.3ms
+  - on_workload_client:
+      exec_mongo_shell:
+        connection_string: ${mongodb_setup.meta.mongodb_shell_url}
+        script: |
+          var runPing = function(iterations) {
+          var start = Date.now();
+          for (i = 0; i < iterations; i++) {
+          res = db.runCommand({"ping": 1});
+          }
+          var end = Date.now();
+          print(end-start);
+          return end-start;
+          }
+          runPing(1000)
+          runPing(1000)

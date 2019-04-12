@@ -5,6 +5,7 @@ mongod_config_file:
     engine: ${bootstrap.storageEngine}
   replication:
     replSetName: rs0
+    oplogSizeMB: 153600   # 150GB oplog
 
 topology:
   - cluster_type: replset

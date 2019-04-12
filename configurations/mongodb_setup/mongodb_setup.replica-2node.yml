@@ -5,6 +5,7 @@ mongod_config_file:
     engine: ${bootstrap.storageEngine}
   replication:
     replSetName: initialsyncrs
+    oplogSizeMB: 153600   # 150GB oplog
     # setParameter:
     # Exhaust cursor feature support is available only since MongoDB 4.1.4.
     # To enable/disable exhaust cursor support for initial sync collection cloner.

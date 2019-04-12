@@ -402,7 +402,6 @@ class ConfigDictTestCase(unittest.TestCase):
         self.assert_equal_dicts(
             mycluster['shard'][0]['mongod'][0]['config_file'], {
                 'replication': {
-                    'oplogSizeMB': 153600,
                     'replSetName': 'override-rs'
                 },
                 'systemLog': {
@@ -428,7 +427,6 @@ class ConfigDictTestCase(unittest.TestCase):
         self.assert_equal_dicts(
             mycluster['shard'][2]['mongod'][0]['config_file'], {
                 'replication': {
-                    'oplogSizeMB': 153600,
                     'replSetName': 'override-rs'
                 },
                 'systemLog': {
@@ -474,7 +472,6 @@ class ConfigDictTestCase(unittest.TestCase):
         self.assert_equal_dicts(
             self.conf['mongodb_setup']['topology'][2]['config_file'], {
                 'replication': {
-                    'oplogSizeMB': 153600,
                     'replSetName': 'override-rs'
                 },
                 'systemLog': {
@@ -586,7 +583,6 @@ class ConfigDictTestCase(unittest.TestCase):
         self.assert_equal_lists(mycluster['shard'][2]['mongod'][0].values(), [
             '53.1.1.7', 'https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.4.6.tgz', {
                 'replication': {
-                    'oplogSizeMB': 153600,
                     'replSetName': 'override-rs'
                 },
                 'systemLog': {

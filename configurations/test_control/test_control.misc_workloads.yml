@@ -58,6 +58,8 @@ thread_levels:
     replica:
       mmapv1: [1, 4]
       wiredTiger: [1, 8, 16]
+    atlas-like-replica:
+      wiredTiger: [1, 8, 16]
     shard:
       mmapv1: [1, 32]
       wiredTiger: [1, 32, 64]
