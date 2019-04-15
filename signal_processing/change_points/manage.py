@@ -308,7 +308,7 @@ def create_unprocessed_change_points_view(command_config):
 
         # The following match filters documents from the lookup phase with
         # any processed_change_points.
-        {'$match': {'processed_change_points.processed_type': {'$ne': 'hidden'}}},
+        {'$match': {'$expr': {'$eq': [0, {'$size': '$processed_change_points'}]}}},
 
         # Filter out real change points that have matching BF ticket.
         {'$match': {'$expr': {'$eq': [0, {'$size': '$build_failures'}]}}},

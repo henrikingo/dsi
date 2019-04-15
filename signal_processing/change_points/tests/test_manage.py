@@ -184,6 +184,19 @@ class TestUnprocessedChangePointView(unittest.TestCase):
         mock_database.command.assert_called_once_with(
             OrderedDict([('create', view_name), ('pipeline', ANY), ('viewOn',
                                                                     source_collection_name)]))
+        all_arguments, _kwargs = mock_database.command.call_args
+        first_argument = all_arguments[0]
+        pipeline = first_argument['pipeline']
+        self.assertIn({
+            '$match': {
+                '$expr': {
+                    '$eq': [0, {
+                        '$size': '$processed_change_points'
+                    }]
+                }
+            }
+        }, pipeline)
+        self.assertIn({'$match': {'$expr': {'$eq': [0, {'$size': '$build_failures'}]}}}, pipeline)
 
 
 class TestCreateChangePointsValidators(unittest.TestCase):
