@@ -27,10 +27,9 @@ genny:
       exec: |
         set -eou pipefail
 
-        # Create /data/mci for gennytoolchain and put it on the ephemeral drive.
-        mkdir -p ./data/mci
-        sudo mkdir -p /data
-        sudo ln -s "$PWD/data/mci" /data/mci
+        # Double check that the directories are all there.
+        sudo mkdir -p /data/mci
+        sudo mkdir -p ./data/mci
 
         cd ./data/genny
         ./scripts/lamp --linux-distro amazon2 -DGENNY_INSTALL_DIR="$PWD"

@@ -15,7 +15,7 @@ EXIT_STATUS_LINE_PREFIX = 'exit_status:'
 """ A test output file name status must start with this prefix """
 
 
-class ExitStatus(namedtuple("ExitStatus", ["status", "message"])):
+class StatusWithMessage(namedtuple("StatusWithMessage", ["status", "message"])):
     """ Class to hold exit status and message """
 
     __slots__ = ()
@@ -36,27 +36,6 @@ class ExitStatus(namedtuple("ExitStatus", ["status", "message"])):
         else:
             human = "Command {}: status={}".format(result, self.status)
         return human
-
-
-def write_exit_status(stream, exit_status):
-    """
-    print the exit status in the correct format.
-
-    :param io stream: the io to write the status.
-    :param exit_status: the process exit status or None (None indicates success).
-    :type exit_status:  ErrorStatus  or None.
-    """
-
-    if exit_status is None:
-        status = 0
-        message = ""
-    else:
-        status = exit_status.status
-        message = exit_status.message
-        if message:
-            message = message.encode('string_escape')
-    stream.write("\n{} {} '{}'\n".format(EXIT_STATUS_LINE_PREFIX, status, message))
-    stream.flush()
 
 
 def read_exit_status(filename):
@@ -88,4 +67,4 @@ def read_exit_status(filename):
         status = EXIT_STATUS_ERR
         message = "Unknown Error: empty file '{}'".format(filename)
 
-    return ExitStatus(status, message)
+    return StatusWithMessage(status, message)

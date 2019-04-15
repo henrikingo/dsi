@@ -38,23 +38,5 @@ run:
 
   - id: PrimaryRequiredReads
     type: genny
-    cmd: |
-      set -eou pipefail
+    config_filename: ./genny/etc/genny/workloads/networking/PrimaryRequiredReads.yml
 
-      # Write the output of genny to the ephemeral drive to ensure it has enough disk space.
-      cd ./data
-      mkdir -p metrics
-
-      workload_path="./genny/etc/genny/workloads/networking/PrimaryRequiredReads.yml"
-      results_path="./genny-perf.csv"
-
-      ./genny/bin/genny run "$workload_path" -u "${mongodb_setup.meta.mongodb_url}" -m cedar-csv -o "$results_path"
-
-      genny-metrics-report --report-file genny-cedar-report.json $results_path metrics
-      genny-metrics-legacy-report --report-file genny-perf.json $results_path
-    output_files:
-      # Genny output-parser only parses the first file (must be the json)
-      # but we want to retrieve the .csv for the reports dir.
-      - data/genny-perf.json
-      - data/genny-perf.csv
-      - data/genny-cedar-report.json

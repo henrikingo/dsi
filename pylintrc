@@ -4,7 +4,8 @@ disable=locally-disabled,
         fixme,
         duplicate-code,
         import-error,
-        relative-import
+        relative-import,
+        too-few-public-methods
 
 [REPORTS]
 reports=no

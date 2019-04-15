@@ -13,6 +13,7 @@ import re
 from nose.tools import nottest
 
 import cedar
+from bin import test_runner
 
 LOG = logging.getLogger(__name__)
 
@@ -284,17 +285,15 @@ class GennyResultsParser(ResultParser):
         :param timer used by ResultParser
         """
         super(GennyResultsParser, self).__init__(test, config, timer)
-
         reports_root = config['test_control']['reports_dir_basename']
         input_dir = os.path.join(reports_root, test['id'])
 
-        output_files = test.get('output_files')
+        output_files = test_runner.GennyRunner.get_default_output_files()
         if not output_files:
             raise InvalidConfigurationException(
                 'Need single output_files entry. Got {}'.format(output_files))
         if output_files and len(output_files) > 1:
             LOG.info("Got files %s but will only report on first one", output_files)
-
         self.genny_results_path = os.path.join(input_dir, os.path.basename(output_files[0]))
 
     def _parse(self):

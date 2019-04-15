@@ -8,6 +8,7 @@ from mock import Mock, patch
 from testfixtures import LogCapture
 
 import test_control
+
 from common.config import ConfigDict
 from common.remote_host import RemoteHost
 from test_lib.fixture_files import FixtureFiles

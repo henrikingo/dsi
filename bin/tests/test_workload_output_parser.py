@@ -19,9 +19,6 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
     def setUp(self):
         """Set some common input data"""
         self.tests = [
-            {'id': 'genny-unittest',
-             'type': 'genny',
-             'output_files': ['genny-metrics.json']},
             {'id': 'benchRun-unittest',
              'type': 'shell'},
             {'id': 'ycsb-unittest',

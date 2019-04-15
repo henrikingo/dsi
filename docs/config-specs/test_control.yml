@@ -58,22 +58,6 @@ run:
       # Required for mongoshell workloads when using SSL
       shell_ssl_options: ['--ssl', '--sslAllowInvalidHostnames', '--sslCAFile', '${mongodb_setup.mongo_dir}/root.crt', '--sslPEMKeyFile', '${mongodb_setup.mongo_dir}/member.pem']
 
-    # Configure a set of tasks that run for the life span of this test. They are run AFTER the pre_*
-    # hooks. There is no defined order as this is an object rather than a sequence.
-    # The out for each task is captured to a file named:
-    #     reports/{{task}}/{{test_id}}/{{background task key}}.log--{{user}}@{{host}}
-    # where 'background task key' is background_traffic, start_time and iostat in the following
-    # sample.
-    background_tasks:
-      background_traffic: LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/media/ephemeral0/ ./mongoreplay play -p /media/ephemeral0/playback.bson --host mongodb://${mongodb_setup.meta.hosts} --no-preprocess
-      start_time: echo "the current time is $(date)"
-      iostat: |
-        # Poor mans FTDC
-        while true ; do
-          iostat -xt 1
-          sleep 1
-        done | awk '{ print strftime("%Y-%m-%dT%H:%M:%S"), $0; fflush(); }'
-
     # Indicate that mongodb database validation checks should be skipped. Defaults to false.
     skip_validate: false
 

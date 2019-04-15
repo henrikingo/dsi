@@ -102,10 +102,6 @@ post_test:
 run:
   - id: benchRun
     type: mongoshell
-    # Disabled mongoreplay background_task as we discovered in PERF-1497 it doesn't do much.
-    # TODO PERF-1534 to fix this (if ever)
-    # background_tasks:
-    #   background_traffic: LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/media/ephemeral0/ ./mongoreplay play -p /media/ephemeral0/playback.bson --host mongodb://${mongodb_setup.meta.hosts} --no-preprocess
     cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     output_files:
@@ -129,14 +125,3 @@ run:
 
 # Disable jstest validations, it just takes too long to run it for this test.
 jstests_dir: ""
-
-# Dependencies for the background_task
-# pre_task:
-#   - on_workload_client:
-#       exec: |
-#         curl -O --retry 10 -fsS https://s3.amazonaws.com/mciuploads/mongo-tools/binaries/mongo_tools_ubuntu_b3187697d342563efd9b90bdd1aa574aec4d2e00_16_12_08_22_07_30/community/mongoreplay
-#         chmod +x mongoreplay
-#         curl -o /media/ephemeral0/initialsync.playback.tgz --retry 10 -fsS https://s3-us-west-2.amazonaws.com/dsi-donot-remove/initialsync.playback.tgz
-#         curl -o /media/ephemeral0/libpcap.so.0.8  --retry 10 -fsS https://s3-us-west-2.amazonaws.com/dsi-donot-remove/libpcap/libpcap.so.0.8
-#         cd /media/ephemeral0
-#         tar zxf initialsync.playback.tgz

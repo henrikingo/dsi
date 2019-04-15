@@ -2,15 +2,12 @@
 Tests for bin/test_control.py
 """
 
-import copy
 import logging
-import os
 import re
-import shutil
 import subprocess
 import unittest
 
-from mock import patch, mock_open, MagicMock, Mock, call
+from mock import patch, MagicMock, call, Mock
 from testfixtures import LogCapture
 
 import common.cedar
@@ -19,15 +16,58 @@ from common.command_runner import EXCEPTION_BEHAVIOR
 from common.command_runner import print_trace
 from common.command_runner import run_pre_post_commands
 from common.remote_host import RemoteHost
-from common.utils import mkdir_p
-from test_control import BackgroundCommand, start_background_tasks
 from test_control import copy_timeseries
-from test_control import get_error_from_exception, ExitStatus
-from test_control import run_test
 from test_control import run_tests
-from test_lib.fixture_files import FixtureFiles
+from test_control import run_test
 
-FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
+
+class RunTestTestCase(unittest.TestCase):
+    """
+    Test for test_control.run_test()
+    """
+
+    def setUp(self):
+        self.test_config = {
+            'id': 'dummy_test',
+            'type': 'dummy_test_kind',
+            'cmd': 'dummy shell command',
+        }
+
+        self.god_config = {
+            'bootstrap': {
+                'production': True
+            },
+            'test_control': {
+                'timeouts': {
+                    'no_output_ms': 100
+                }
+            }
+        }
+
+    @patch('common.command_runner.make_workload_runner_host')
+    def test_run_test_success(self, mock_make_host):
+        """
+        run_test() returns the status of a successful test run.
+        """
+        mock_host = Mock(spec=RemoteHost)
+        mock_host.exec_command = Mock(return_value=0)
+        mock_make_host.return_value = mock_host
+
+        # Implicitly assert did not raise.
+        res = run_test(self.test_config, self.god_config)
+        self.assertEqual(res.status, 0)
+
+    @patch('common.command_runner.make_workload_runner_host')
+    def test_run_test_error(self, mock_make_host):
+        """
+        run_test() throws for a failed test run.
+        """
+        mock_host = Mock(spec=RemoteHost)
+        mock_host.exec_command = Mock(return_value=1)
+        mock_make_host.return_value = mock_host
+
+        self.assertRaises(subprocess.CalledProcessError,
+                          lambda: run_test(self.test_config, self.god_config))
 
 
 class RunTestsTestCase(unittest.TestCase):
@@ -137,15 +177,7 @@ class RunTestsTestCase(unittest.TestCase):
                     }
                 ]
             }
-        } # yapf: disable
-        self.reports_container = FIXTURE_FILES.fixture_file_path('container')
-        self.reports_path = os.path.join(self.reports_container, 'reports_tests')
-
-        mkdir_p(self.reports_path)
-
-    def tearDown(self):
-        """Create a dict that looks like a ConfigDict object """
-        shutil.rmtree(self.reports_container)
+        }  # yapf: disable
 
     @patch('os.walk')
     @patch('test_control.extract_hosts')
@@ -372,191 +404,6 @@ class RunTestsTestCase(unittest.TestCase):
             }],
         }, {}]
         self.help_trace_function(mock_create_file, mock_command_dicts)
-
-    @patch("common.remote_host.RemoteHost")
-    @patch("os.makedirs")
-    def test_background_command_run(self, mock_makedirs, mock_host):
-        """ Test BackgroundCommand run"""
-        subject = BackgroundCommand(mock_host, 'command', 'dirname/basename')
-
-        with patch('test_control.open', mock_open()) as mock_file:
-            mock_out = mock_file.return_value
-            subject.run()
-            mock_file.assert_called_with('dirname/basename', 'wb+', 0)
-            mock_makedirs.assert_called_with('dirname')
-            mock_host.exec_command.assert_called_with(
-                'command', stdout=mock_out, stderr=mock_out, get_pty=True)
-
-    @patch("common.remote_host.RemoteHost")
-    def test_background_command_stop(self, mock_host):
-        """ Test BackgroundCommand  stop"""
-        subject = BackgroundCommand(mock_host, 'command', 'dirname/basename')
-        subject.stop()
-        mock_host.close.assert_called_once()
-
-    @patch('test_control.make_host')
-    @patch('test_control.extract_hosts')
-    def test_start_background_tasks(self, mock_extract_hosts, mock_make_host):
-        """ Test start_background_tasks"""
-        # Add some background tasks to our config
-        config = copy.deepcopy(self.config)
-        config['test_control']['run'][0]['background_tasks'] = {
-            'background_task_one': 'mock_background_task',
-            'background_task_two': 'mock_background_task',
-            'background_task_three': 'mock_background_task'
-        }
-        test_id = 'benchRun'
-
-        with patch('test_control.BackgroundCommand'):
-            command_dict = config['test_control']['run'][1]
-            self.assertEqual(start_background_tasks(config, command_dict, test_id), [])
-
-        with patch('test_control.BackgroundCommand'):
-            command_dict = config['test_control']['run'][0]
-            mock_make_host.return_value = Mock()
-            result = start_background_tasks(config, command_dict, test_id)
-            self.assertEqual(len(result), 3)
-
-    @patch('test_control.generate_config_file')
-    @patch('common.command_runner.make_workload_runner_host')
-    @patch('test_control.mkdir_p')
-    def test_run_test_exec_command_success(self, mock_mkdir, mock_make_host,
-                                           mock_generate_config_file):
-        """
-        Test test_control.run_test with 0 return value from exec_command (success)
-        """
-        mock_host = Mock(spec=RemoteHost)
-        mock_host.exec_command = Mock(return_value=0)
-        mock_make_host.return_value = mock_host
-        test = self.config['test_control']['run'][0]
-        directory = os.path.join('reports', test['id'])
-        with patch('test_control.open', mock_open()):
-            run_test(test, self.config)
-        mock_mkdir.assert_called_with(directory)
-        mock_host.exec_command.assert_called_once()
-        mock_generate_config_file.assert_called_once_with(test, directory, mock_host)
-
-        mock_host.exec_command.assert_called()
-        mock_host.close.assert_called()
-        # These are just throwaway mocks, pylint wants me to do something with them
-        mock_mkdir.assert_called()
-
-    @patch('test_control.generate_config_file')
-    @patch('common.command_runner.make_workload_runner_host')
-    @patch('test_control.mkdir_p')
-    def test_run_test_exec_command_failure(self, mock_mkdir, mock_make_host,
-                                           mock_generate_config_file):
-        """
-        Test test_control.run_test with non-zero return value from exec_command (failure)
-        """
-        # Test with non-zero return value from exec_command
-        mock_host = Mock(spec=RemoteHost)
-        mock_host.exec_command = Mock(return_value=1)
-        mock_make_host.return_value = mock_host
-        test = self.config['test_control']['run'][0]
-        directory = os.path.join('reports', test['id'])
-        with patch('test_control.open', mock_open()):
-            self.assertRaises(subprocess.CalledProcessError, run_test, test, self.config)
-        mock_host.exec_command.assert_called_once()
-        mock_generate_config_file.assert_called_once_with(test, directory, mock_host)
-
-    @patch('test_control.generate_config_file')
-    @patch('common.command_runner.make_workload_runner_host')
-    @patch('test_control.mkdir_p')
-    def test_run_test_output_files(self, mock_mkdir, mock_make_host, mock_generate_config_file):
-        """
-        Test test_control.run_test with output files specified
-        """
-        mock_host = Mock(spec=RemoteHost)
-        mock_host.exec_command = Mock(return_value=0)
-        mock_make_host.return_value = mock_host
-        test = self.config['test_control']['run'][0]
-        directory = os.path.join('reports', test['id'])
-        expected_calls = [call(f, os.path.join(directory, f)) for f in test['output_files']]
-        with patch('test_control.open', mock_open()):
-            run_test(test, self.config)
-        mock_host.retrieve_path.assert_has_calls(expected_calls)
-        mock_generate_config_file.assert_called_once_with(test, directory, mock_host)
-
-        mock_host.exec_command.assert_called()
-        # These are just throwaway mocks, pylint wants me to do something with them
-        mock_host.close.assert_called()
-        mock_mkdir.assert_called()
-
-    @patch('test_control.generate_config_file')
-    @patch('common.command_runner.make_workload_runner_host')
-    @patch('test_control.mkdir_p')
-    def test_run_test_get_pty(self, mock_mkdir, mock_make_host, mock_generate_config_file):
-        """
-        Test test_control.run_test with get_pty=True see PERF-1375
-        """
-        mock_host = Mock(spec=RemoteHost)
-        mock_host.exec_command = Mock(return_value=0)
-        mock_make_host.return_value = mock_host
-        test = self.config['test_control']['run'][0]
-        with patch('test_control.open', mock_open()):
-            run_test(test, self.config)
-        mock_host.exec_command.assert_called_once()
-        self.assertDictContainsSubset({
-            'get_pty': True
-        }, mock_host.exec_command.call_args_list[0][-1])
-
-    @patch('test_control.generate_config_file')
-    @patch('common.command_runner.make_workload_runner_host')
-    @patch('test_control.mkdir_p')
-    def test_run_test_no_output_files(self, mock_mkdir, mock_make_host, mock_generate_config_file):
-        """
-        Test test_control.run_test with no output files specified
-        """
-        mock_host = Mock(spec=RemoteHost)
-        mock_host.exec_command = Mock(return_value=0)
-        mock_make_host.return_value = mock_host
-        test = self.config['test_control']['run'][1]
-        directory = os.path.join('reports', test['id'])
-        with patch('test_control.open', mock_open()):
-            run_test(test, self.config)
-        mock_host.retrieve_path.assert_not_called()
-        mock_generate_config_file.assert_called_once_with(test, directory, mock_host)
-
-    # normally wouldn't test internal method, but the collaboration with other
-    # objects is complicated within host.exec_command and leads to the core logic
-    # being hard to isolate on its own.
-    def when_get_error_from_exception(self, case):
-        """
-        :param case: contains given/then conditions for behavior of _perform_exec
-
-        Example:
-
-            'given': {
-                # params given to _perform_exec
-                'exception': Exception('cowsay HellowWorld'),
-            },
-            'then': ErrorStatus(1, 'cowsay HellowWorld')
-        """
-        given = case['given']
-        then = case.get('then', None)
-
-        error = get_error_from_exception(given['exception'])
-
-        self.assertEqual(then, error)
-
-    def test_error_from_exception(self):
-        """Test test_control.get_error_from_exception for exception"""
-        self.when_get_error_from_exception({
-            'given': {
-                'exception': Exception('cowsay Hello World'),
-            },
-            'then': ExitStatus(1, "Exception('cowsay Hello World',)")
-        })
-
-    def test_error_from_called_process(self):
-        """Test test_control.get_error_from_exception for process error"""
-        self.when_get_error_from_exception({
-            'given': {
-                'exception': subprocess.CalledProcessError(2, 'command', 'process Hello World'),
-            },
-            'then': ExitStatus(2, "process Hello World")
-        })
 
     @patch('common.cedar.Report')
     @patch('test_control.parse_test_results')
