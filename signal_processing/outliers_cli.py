@@ -15,7 +15,8 @@ import structlog
 
 from bin.common import log
 from signal_processing.commands import helpers
-from signal_processing.commands.outliers.config import config_command
+from signal_processing.commands.outliers.configure import configure_group
+from signal_processing.commands.outliers.evaluate import evaluate_command
 from signal_processing.commands.outliers.replay import replay_command
 from signal_processing.commands.outliers.list_mutes import list_mutes_command
 from signal_processing.commands.outliers.list_outliers import list_outliers_command
@@ -117,7 +118,8 @@ def help_command(context):
     print(context.parent.get_help())
 
 
-cli.add_command(config_command)
+cli.add_command(configure_group)
+cli.add_command(evaluate_command)
 cli.add_command(replay_command)
 cli.add_command(list_mutes_command)
 cli.add_command(list_outliers_command)

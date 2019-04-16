@@ -56,11 +56,49 @@ class TestRunOutlierDetection(unittest.TestCase):
         self.assertIsNone(res.adjusted_indexes)
 
     @patch(ns('gesd'), autospec=True)
-    def test_series_with_points(self, mock_gesd):
+    def test_series_with_2_points(self, mock_gesd):
         full_series = MagicMock()
         start = 1
         end = 3
         series = [1.0, 2.0]
+        outliers_percent = .5
+        max_outliers = 0
+        mad = True
+        significance_level = 0.05
+        test_identifier = {
+            'project': 'PROJECT',
+            'variant': 'variant',
+            'task': 'task',
+            'test': 'test',
+            'thread_level': 'thread_level'
+        }
+        suspicious_indexes = [1]
+
+        mock_gesd.return_value.suspicious_indexes = suspicious_indexes
+
+        res = run_outlier_detection(full_series, start, end, series, test_identifier,
+                                    outliers_percent, mad, significance_level)
+
+        mock_gesd.assert_called_once_with(
+            series, max_outliers, significance_level=significance_level, mad=mad)
+        self.assertEqual("PROJECT variant task test thread_level", res.identifier)
+        self.assertEqual(full_series, res.full_series)
+        self.assertEqual(start, res.start)
+        self.assertEqual(end, res.end)
+        self.assertEqual(series, res.series)
+        self.assertEqual(mad, res.mad)
+        self.assertEqual(significance_level, res.significance_level)
+        self.assertEqual(max_outliers, res.num_outliers)
+        self.assertEqual(mock_gesd.return_value, res.gesd_result)
+        self.assertEquals([2], res.adjusted_indexes)
+
+    @patch(ns('gesd'), autospec=True)
+    def test_series_with_3_points(self, mock_gesd):
+        full_series = MagicMock()
+        start = 1
+        end = 3
+        series = [1.0, 2.0, 3.0]
+        outliers_percent = .5
         max_outliers = 1
         mad = True
         significance_level = 0.05
@@ -75,8 +113,8 @@ class TestRunOutlierDetection(unittest.TestCase):
 
         mock_gesd.return_value.suspicious_indexes = suspicious_indexes
 
-        res = run_outlier_detection(full_series, start, end, series, test_identifier, max_outliers,
-                                    mad, significance_level)
+        res = run_outlier_detection(full_series, start, end, series, test_identifier,
+                                    outliers_percent, mad, significance_level)
 
         mock_gesd.assert_called_once_with(
             series, max_outliers, significance_level=significance_level, mad=mad)
@@ -167,15 +205,20 @@ class TestComputeMaxOutliers(unittest.TestCase):
                               .5, dict(project='project'), np.array(range(100), dtype=int)))
 
     def test_compute_max_np(self):
-        self.assertEquals(99,
+        self.assertEquals(98,
                           compute_max_outliers(
                               1, dict(project='project'), np.array(range(100), dtype=int)))
 
     def test_compute_max_outliers(self):
         self.assertEquals(1, compute_max_outliers(.01, dict(project='project'), range(100)))
 
-    def test_99_and_100(self):
-        for max_outlier in [.99, 1.0]:
-            self.assertEquals(99,
+    def test_98(self):
+        max_outlier = .97
+        self.assertEquals(97, compute_max_outliers(
+            max_outlier, dict(project='project'), range(100)))
+
+    def test_98_and_100(self):
+        for max_outlier in [.98, .99, 1.0]:
+            self.assertEquals(98,
                               compute_max_outliers(
                                   max_outlier, dict(project='project'), range(100)))

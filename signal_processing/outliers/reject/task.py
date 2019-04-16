@@ -51,12 +51,13 @@ automatically rejected. Data points of this type should be displayed.
 from __future__ import print_function
 
 import json
-import re
 
 import pymongo
 import structlog
+from bson import Regex
 from nose.tools import nottest
 
+from signal_processing.model.configuration import ConfigurationModel, combine_outlier_configs
 from signal_processing.model.points import PointsModel
 from signal_processing.outliers.list_mutes import mute_expired
 
@@ -68,22 +69,6 @@ A test has passed.
 STATUS_FAIL = 'fail'
 """
 A test has failed.
-"""
-
-DEFAULT_CANARY_PATTERN = re.compile('^(canary_.*|fio_.*|iperf.*|NetworkBandwidth)$')
-"""
-The default pattern for canary test names. In this case, the test name starts with one of:
-  * canary
-  * fio
-  * NetworkBandwidth
-"""
-
-CORRECTNESS_PATTERNS = [
-    re.compile(pattern)
-    for pattern in ('^db-hash-check', '^validate-indexes-and-collections', '^core\\.')
-]
-"""
-Any test_file matching one of these patterns is a correctness error.
 """
 
 LOG = structlog.getLogger(__name__)
@@ -109,18 +94,8 @@ class TaskAutoRejector(object):
     """
 
     # pylint: disable=too-few-public-methods,too-many-arguments, too-many-instance-attributes
-    def __init__(self,
-                 results,
-                 project,
-                 variant,
-                 task,
-                 order,
-                 mongo_uri,
-                 patch,
-                 status,
-                 max_consecutive_rejections=3,
-                 minimum_points=15,
-                 canary_pattern=None):
+    def __init__(self, results, project, variant, task, order, mongo_uri, patch, status,
+                 override_config):
         """
         :param list(dict) results: The outlier test results for this task.
         :param str project: The project name for this task.
@@ -130,51 +105,60 @@ class TaskAutoRejector(object):
         :param str mongo_uri: The uri to connect to the cluster.
         :param bool patch: True if this is a patch.
         :param dict status: The task status.
-        :param canary_pattern: The pattern for a canary test. None uses the default pattern.
-        :type canary_pattern: str or None.
-        :param int max_consecutive_rejections: The number of fails to reject, if there are more
-        than this number of fails then skip rejecting.
-        :param int minimum_points: The minimum number of data points required to reject a result.
+        :param dict override_config: The override_config from the user.
         """
-        self.results = [
-            TestAutoRejector(result, self, max_consecutive_rejections, minimum_points)
-            for result in results
-        ]
-        self.max_consecutive_rejections = max_consecutive_rejections
-        self.minimum_points = minimum_points
+        self.results = [TestAutoRejector(result, self, override_config) for result in results]
 
+        self.override_config = override_config
         self.project = project
         self.variant = variant
         self.task = task
+        self.task_identifier = {'project': self.project, 'variant': self.variant, 'task': self.task}
 
         self.order = order
         self.mongo_uri = mongo_uri
         self.patch = patch
         self.status = status
-        self._model = None
-
-        if canary_pattern is None:
-            self.canary_pattern = DEFAULT_CANARY_PATTERN
-        else:
-            if isinstance(self.canary_pattern, str):
-                self.canary_pattern = re.compile(self.canary_pattern)
-        assert isinstance(self.canary_pattern, type(re.compile("", 0)))
+        self._points_model = None
+        self._configuration_model = None
 
         self._correct = None
         self._failed_correctness_reports = None
 
         self._rejects = None
+        self._config = None
+        self._canary_pattern = None
+        self._correctness_pattern = None
 
     @property
-    def model(self):
+    def points_model(self):
         """
         Get a reference to the PointsModel Object.
         :return: The PointsModel instance (lazy evaluated).
         :rtype: detect_changes.PointsModel
         """
-        if self._model is None:
-            self._model = PointsModel(self.mongo_uri)
-        return self._model
+        if self._points_model is None:
+            self._points_model = PointsModel(self.mongo_uri)
+        return self._points_model
+
+    @property
+    def configuration_model(self):
+        """
+        Get a reference to the ConfigurationModel Object.
+        :return: The PointsModel instance (lazy evaluated).
+        :rtype: detect_changes.PointsModel
+        """
+        if self._configuration_model is None:
+            self._configuration_model = ConfigurationModel(self.mongo_uri)
+        return self._configuration_model
+
+    @property
+    def config(self):
+        if self._config is None:
+            configurations = self.configuration_model.get_configuration(self.task_identifier)
+            self._config = combine_outlier_configs(self.task_identifier, configurations,
+                                                   self.override_config)
+        return self._config
 
     @property
     def correct(self):
@@ -188,12 +172,12 @@ class TaskAutoRejector(object):
                 self._correct = False
             else:
                 if self.status['failures'] > 0:
+                    LOG.debug('correct', pattern=self.correctness_pattern.pattern)
                     all_tests = self.status['results']
                     self._failed_correctness_reports = [
                         result['test_file'] for result in all_tests
-                        if any(
-                            regex.match(result['test_file'])
-                            for regex in CORRECTNESS_PATTERNS) and result['status'] == STATUS_FAIL
+                        if self.correctness_pattern.match(result['test_file'])
+                        and result['status'] == STATUS_FAIL
                     ]
                     self._correct = len(self._failed_correctness_reports) == 0
                 else:
@@ -248,10 +232,80 @@ class TaskAutoRejector(object):
         """
         LOG.debug('filtered rejects list', patch=self.patch, correct=self.correct)
         rejects = [
-            result for result in self.rejects if not self.patch and self.correct and result.reject
+            result for result in self.rejects
+            if not self.patch and self.correct and result.reject(self.order)
         ]
         LOG.debug('filtered rejects list', rejects=rejects)
         return rejects
+
+    @property
+    def canary_pattern(self):
+        """
+        Get the canary pattern. If this comes from the configuration collection then it is a
+        bson.Regex and needs to be translated.
+        :return: The canary task.
+        """
+        if self._canary_pattern is None:
+            canary_pattern = self.config.canary_pattern
+            if isinstance(canary_pattern, Regex):
+                canary_pattern = canary_pattern.try_compile()
+            self._canary_pattern = canary_pattern
+        return self._canary_pattern
+
+    @property
+    def correctness_pattern(self):
+        """
+        Get the correctness pattern. If this comes from the configuration collection then it is a
+        bson.Regex and needs to be translated
+        :return: The correctness task.
+        """
+        if self._correctness_pattern is None:
+            correctness_pattern = self.config.correctness_pattern
+            if isinstance(correctness_pattern, Regex):
+                correctness_pattern = correctness_pattern.try_compile()
+            self._correctness_pattern = correctness_pattern
+        return self._correctness_pattern
+
+    def canary(self, test):
+        """
+        Check if this test is a canary.
+        :param TestAutoRejector test: The test rejector.
+        :return: True if this is a canary test.
+        """
+        return True if self.canary_pattern.match(test.test) else False
+
+    def has_minimum_points(self, test):
+        """
+        Check if the minimum number of data points are available.
+        :param TestAutoRejector test: The test rejector.
+        :return: True if the minimum number of data points are available.
+        """
+        return test.full_series['size'] >= self.config.minimum_points
+
+    def too_many_rejections(self, test):
+        """
+        Check if there are too many consecutive rejections.
+        :param TestAutoRejector test: The test rejector.
+        :return: True if there are too many consecutive rejections.
+        """
+        consecutive_fails = 0
+        for status in reversed(test.full_series['rejected']):
+            if status:
+                consecutive_fails += 1
+            else:
+                break
+        return consecutive_fails >= self.config.max_consecutive_rejections
+
+    def latest(self, test):
+        """
+        Check if this task is the latest. Latest in this case means the task 'order' value is
+        greater than or equal to the last order in the perf.points collection for the given
+        test_identifier (project / variant / task / test).
+        :param TestAutoRejector test: The test rejector.
+        :return: True if this is a the latest task.
+        """
+        latest_order = test.full_series['orders'][-1]
+        return self.order >= latest_order
 
 
 @nottest
@@ -269,13 +323,11 @@ class TestAutoRejector(object):
     """
 
     # pylint: disable=too-few-public-methods,too-many-arguments, too-many-instance-attributes
-    def __init__(self, result, task, max_consecutive_rejections, minimum_points):
+    def __init__(self, result, task, override_config):
         """
         :param dict result: The outlier test results for this test.
         :param TaskAutoRejector task: The task auto detector.
-        :param int max_consecutive_rejections: The number of fails to reject, if there are more
-        than this number of fails then skip rejecting.
-        :param int minimum_points: The minimum number of data points required to reject a result.
+        :param dict override_config: The override configuration from the user.
         """
         self.result = result
         self.task = task
@@ -283,12 +335,26 @@ class TestAutoRejector(object):
         self.test = self.test_identifier['test']
         self.thread_level = self.test_identifier['thread_level']
 
-        self.max_consecutive_rejections = max_consecutive_rejections
-        self.minimum_points = minimum_points
+        self.override_config = override_config
 
         self._consecutive_fails = None
         self._muted = None
         self._outlier_orders = None
+        self._config = None
+        self._canary_pattern = None
+
+        self._canary = None
+        self._has_minimum_points = None
+        self._too_many_rejections = None
+        self._latest = None
+
+    @property
+    def config(self):
+        if self._config is None:
+            configurations = self.task.configuration_model.get_configuration(self.test_identifier)
+            self._config = combine_outlier_configs(self.test_identifier, configurations,
+                                                   self.override_config)
+        return self._config
 
     @property
     def full_series(self):
@@ -301,49 +367,33 @@ class TestAutoRejector(object):
     @property
     def canary(self):
         """
-        Check if this task is a canary.
-        :return: True if this is a canary task.
+        Check if this test is a canary. This invocation defers to the task.
+        :return: True if this is a canary test.
         """
-        return True if self.task.canary_pattern.match(self.test) else False
+        if self._canary is None:
+            self._canary = self.task.canary(self)
+        return self._canary
 
     @property
     def has_minimum_points(self):
         """
-        Check if the minimum number of data points are available.
+        Check if the minimum number of data points are available. This invocation defers to the
+        task.
         :return: True if the minimum number of data points are available.
         """
-        return self.result.full_series['size'] >= self.minimum_points
+        if self._has_minimum_points is None:
+            self._has_minimum_points = self.task.has_minimum_points(self)
+        return self._has_minimum_points
 
     @property
     def too_many_rejections(self):
         """
-        Check if there are too many consecutive rejections.
+        Check if there are too many consecutive rejections. This invocation defers to the task.
         :return: True if there are too many consecutive rejections.
         """
-        if self._consecutive_fails is None:
-            self._consecutive_fails = 0
-            for status in reversed(self.result.full_series['rejected']):
-                if status:
-                    self._consecutive_fails += 1
-                else:
-                    break
-        return self._consecutive_fails >= self.max_consecutive_rejections
-
-    @property
-    def muted(self):
-        """
-        Check if this task is muted.
-        :return: True if this task is muted.
-        """
-        if self._muted is None:
-            mutes_collection = self.task.model.db['mute_outliers']
-            mute = mutes_collection.find(self.test_identifier) \
-                .sort('order', pymongo.DESCENDING) \
-                .limit(1)
-            mute = next(mute, None)
-
-            self._muted = mute is not None and not mute_expired(mute, self.task.model.db.points)
-        return self._muted
+        if self._too_many_rejections is None:
+            self._too_many_rejections = self.task.too_many_rejections(self)
+        return self._too_many_rejections
 
     @property
     def latest(self):
@@ -353,8 +403,28 @@ class TestAutoRejector(object):
         test_identifier (project / variant / task / test).
         :return: True if this is a the latest task.
         """
-        latest_order = self.full_series['orders'][-1]
-        return self.task.order >= latest_order
+        if self._latest is None:
+            self._latest = self.task.latest(self)
+        return self._latest
+
+    @property
+    def muted(self):
+        """
+        Check if this task is muted.
+        :return: True if this task is muted.
+        """
+        if self._muted is None:
+            mutes_collection = self.task.points_model.db['mute_outliers']
+            mute = mutes_collection.find(self.test_identifier) \
+                .sort('order', pymongo.DESCENDING) \
+                .limit(1)
+            mute = next(mute, None)
+
+            self._muted = \
+                mute is not None and \
+                mute.get('enabled', True) and \
+                not mute_expired(mute, self.task.points_model.db.points)  # yapf: disable
+        return self._muted
 
     @property
     def outlier_orders(self):
@@ -372,19 +442,35 @@ class TestAutoRejector(object):
             self._outlier_orders = outlier_orders
         return self._outlier_orders
 
-    @property
-    def reject(self):
+    def reject(self, order):
         """
         Check if this test should be rejected based on:
+            * order is in the list of outliers.
             * this is a canary test
             * it is not muted
             * it does not have too many rejections (more than 3)
             * there are more than 5 data points
             * it is the latest test result
+        :param int order: The order to check.
         :return: True if this test should be rejected.
         """
-        return self.canary and \
+        rejected = order in self.outlier_orders and \
+               self.canary and \
                not self.muted and \
                not self.too_many_rejections and \
                self.has_minimum_points and \
                self.latest
+
+        LOG.debug(
+            'reject',
+            order=order,
+            outlier=order in self.outlier_orders,
+            canary=self.canary,
+            test=self.test,
+            not_muted=not self.muted,
+            not_too_many=not self.too_many_rejections,
+            has_minimum_points=self.has_minimum_points,
+            points=self.result.full_series['size'],
+            latest=self.latest,
+            rejected=rejected)
+        return rejected

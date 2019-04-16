@@ -981,7 +981,7 @@ def _assert_valid_outlier_percentage(percentage):
 
 def validate_outlier_percentage(context, param, value):
     """
-    Validate that the value is between 0 and 1 (inclusive).
+    Validate that the value is None or between 0 and 1 (inclusive).
 
     :param object context: The click context object.
     :param object param: The click parameter definition.
@@ -992,12 +992,13 @@ def validate_outlier_percentage(context, param, value):
     """
     #pylint: disable=unused-argument
     try:
-        _assert_valid_outlier_percentage(value)
+        if value is not None:
+            _assert_valid_outlier_percentage(value)
         return value
     except ValueError:
         pass
     raise click.BadParameter(
-        '{} is not a valid outlier percentage (between 0 and 1.0).'.format(value))
+        '{} is not a valid outlier percentage (between 0 and 1.0) or None.'.format(value))
 
 
 def validate_outlier_percentages(context, param, value):

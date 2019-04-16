@@ -167,7 +167,10 @@ def mute_expired(mute, points_collection):
 
     LOG.debug('mute_expired', pipeline=pipeline)
     result = next(points_collection.aggregate(pipeline), None)
-    return result
+    LOG.debug('mute_expired', result=result)
+    if result:
+        return result['expired']
+    return True
 
 
 HUMAN_READABLE_TEMPLATE_STR = '''

@@ -1,3 +1,6 @@
+"""
+Class to hold points state and business logic.
+"""
 import sys
 import numpy as np
 

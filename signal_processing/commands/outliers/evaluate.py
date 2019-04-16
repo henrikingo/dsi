@@ -1,5 +1,5 @@
 """
-Test Gesd outlier detection with various parameters.
+CLI to evaluate Gesd outlier detection.
 """
 from __future__ import print_function
 
@@ -9,12 +9,12 @@ from datetime import datetime
 import click
 import structlog
 from signal_processing.commands import helpers, jobs
-from signal_processing.outliers.config import config_gesd, TestGesd
+from signal_processing.outliers.evaluate import evaluate_gesd, TestGesd
 
 LOG = structlog.getLogger(__name__)
 
 
-@click.command(name='config')
+@click.command(name='evaluate')
 @click.pass_context
 @click.argument('project', required=True)
 @click.argument('variant', required=False)
@@ -71,13 +71,13 @@ production. Values greater than 20% are really only for test and validation purp
     help='The change point range (python indexing, -1 being the last).')
 @click.option(
     '--plot-critical', is_flag=True, default=False, help='Plot z score c critical values.')
-def config_command(context, project, variant, task, test, thread_level, significance_levels,
-                   max_outliers, mad, visualize, save, use_subseries, standardize, pool_size,
-                   change_point, plot_critical):
-    """ Test the GESD algorithm with various parameters. """
+def evaluate_command(context, project, variant, task, test, thread_level, significance_levels,
+                     max_outliers, mad, visualize, save, use_subseries, standardize, pool_size,
+                     change_point, plot_critical):
+    """ Evaluate the GESD algorithm with various parameters. """
     # pylint: disable=too-many-locals, too-many-arguments
     LOG.debug(
-        'test command starting',
+        'evaluate command starting',
         project=project,
         variant=variant,
         task=task,
@@ -114,7 +114,7 @@ def config_command(context, project, variant, task, test, thread_level, signific
 
     job_list = [
         jobs.Job(
-            config_gesd,
+            evaluate_gesd,
             arguments=(TestGesd(
                 test_identifier=test_identifier,
                 max_outliers=outliers,

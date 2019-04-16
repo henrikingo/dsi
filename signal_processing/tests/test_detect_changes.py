@@ -136,16 +136,6 @@ class TestTig1423(unittest.TestCase):
                 self.assertDictContainsSubset(subset, args[0]['algorithm'])
 
 
-def create_test_identifier(project=None, variant=None, task=None, test=None, thread_level=None):
-    return {
-        'project': 'sys-perf' if project is None else project,
-        'variant': 'linux-1-node-replSet' if variant is None else variant,
-        'task': 'linux-1-node-replSet' if task is None else task,
-        'test': '15_5c_update' if test is None else test,
-        'thread_level': '60' if thread_level is None else thread_level
-    }
-
-
 # pylint: disable=invalid-name
 class TestDetectChangesDriver(unittest.TestCase):
     """

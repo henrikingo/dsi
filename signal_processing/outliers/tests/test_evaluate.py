@@ -1,5 +1,5 @@
 """
-Unit tests for signal_processing/outliers/config.py.
+Unit tests for signal_processing/outliers/evaluate.py.
 """
 # pylint: disable=missing-docstring
 from __future__ import print_function
@@ -10,12 +10,12 @@ import unittest
 from mock import MagicMock, patch, mock_open
 import numpy as np
 
-from signal_processing.outliers.config import normalize_series, \
+from signal_processing.outliers.evaluate import normalize_series, \
     standardize_series, mask_outliers, plot_outliers, plot_without_outliers, \
     plot_without_any_outliers, plot_test_scores, plot_probability, \
-    plot_histogram, plot_gesd, TestGesd, config_gesd, get_matplotlib
+    plot_histogram, plot_gesd, TestGesd, evaluate_gesd, get_matplotlib
 
-NS = 'signal_processing.outliers.config'
+NS = 'signal_processing.outliers.evaluate'
 
 
 def ns(relative_name):  # pylint: disable=invalid-name
@@ -337,7 +337,7 @@ class TestConfigGesd(unittest.TestCase):
              patch(ns('open'), mock_open()):
             mock_get_change_point_range.return_value = [1, 2, [1, 2]]
 
-            config_gesd(parameters, mock_command_config)
+            evaluate_gesd(parameters, mock_command_config)
 
         mock_detect.assert_called_once()
         mock_print.assert_called_once()

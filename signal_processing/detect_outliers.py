@@ -16,31 +16,20 @@ import etl_helpers
 import signal_processing.commands.helpers as helpers
 import signal_processing.commands.jobs as jobs
 import signal_processing.outliers.detection as detection
+from signal_processing.model.configuration import ConfigurationModel, \
+    combine_outlier_configs, OutlierConfiguration
 from signal_processing.model.points import PointsModel
 from signal_processing.outliers.reject.task import TaskAutoRejector
 from analysis.evergreen import evergreen_client
 from bin.common import config, log
 
-MINIMUM_POINTS = 15
-"""
-The minimum number of points required before an outlier can be automatically rejected. If there
-are fewer performance points than 15, then skip rejections.
-"""
-
-MAX_CONSECUTIVE_REJECTIONS = 3
-"""
-The maximum number of fails allowed before a rejection is skipped. In this case, if the same
-performance result is rejected 3 consecutive times then it is likely that the performance profile
-has actually changed.
-"""
-
 SUSPICIOUS_TYPE = 'suspicious'
 """
 The string value indicating that this point was deemed to be within the acceptable
 performance range. The nature of the GESD algorithm means that in most cases points which are
-not and cannot be outliers are marked as suspicious. Care should be taken in reading significance
-into supicious points. You would really need to compare the z score and critical values and
-take the position into account w.r.t the last detected outlier.
+not and cannot be outliers are marked as suspicious / low confidence. Care should be taken in
+reading significance into suspicious points. You would really need to compare the z score and
+critical values and take the position into account w.r.t the last detected outlier.
 """
 
 DETECTED_TYPE = 'detected'
@@ -76,20 +65,19 @@ class DetectOutliersDriver(object):
     # pylint: disable=too-few-public-methods,too-many-arguments, too-many-instance-attributes
     def __init__(self,
                  perf_json,
+                 override_config,
                  mongo_uri,
-                 outliers_percentage,
                  patch,
-                 mad,
-                 significance_level,
                  pool_size=None,
                  progressbar=False):
         """
         :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
+        :param dict override_config: A dict containing the override configuration values. These
+        values will override the values from the configuration collection. The pertinent values are
+        outliers_percentage (float between 0 and 1), mad (bool), significance_level (float between
+        0 and 1). A missing key implies no override, use the value from the collection.
         :param str mongo_uri: The uri to connect to the cluster.
-        :param int outliers_percentage: The max outliers % input value for the GESD algorithm.
         :param bool patch: True if this is a patch.
-        :param bool mad: Whether to use Median Absolute Deviation in the GESD algorithm.
-        :param float significance_level: The significance level input value for the GESD algorithm.
         :param int pool_size: The size of the process pool size.
         :param bool progressbar: Whether to show a progress bar.
         """
@@ -97,19 +85,15 @@ class DetectOutliersDriver(object):
             "DetectOutliersDriver",
             perf_json=perf_json,
             mongo_uri=mongo_uri,
-            outliers_percentage=outliers_percentage,
+            override_config=override_config,
             patch=patch,
-            mad=mad,
-            significance_level=significance_level,
             pool_size=pool_size,
             progressbar=progressbar)
         self.perf_json = perf_json
+        self.override_config = override_config
         self.mongo_uri = mongo_uri
 
-        self.outliers_percentage = outliers_percentage
         self.patch = patch
-        self.mad = mad
-        self.significance_level = significance_level
 
         if pool_size is None:
             pool_size = max(1, (multiprocessing.cpu_count() - 1) * 2)
@@ -123,7 +107,8 @@ class DetectOutliersDriver(object):
         :return: All the GESD outlier results.
         :rtype: list(Job).
         """
-        model = PointsModel(self.mongo_uri)
+        points_model = PointsModel(self.mongo_uri)
+        configuration_model = ConfigurationModel(self.mongo_uri)
 
         test_identifiers = helpers.extract_test_identifiers(self.perf_json)
         LOG.info('loaded tests', test_identifiers=len(test_identifiers))
@@ -133,7 +118,7 @@ class DetectOutliersDriver(object):
         test_identifiers = [
             thread_identifier
             for test_identifier in test_identifiers for thread_identifier in
-            helpers.generate_thread_levels(test_identifier, model.db.points)
+            helpers.generate_thread_levels(test_identifier, points_model.db.points)
         ]
 
         bar_template, show_item = helpers.query_terminal_for_bar()
@@ -143,8 +128,8 @@ class DetectOutliersDriver(object):
         job_list = [
             jobs.Job(
                 _get_data_and_run_detection,
-                arguments=(model, test_identifier, order, self.outliers_percentage, self.patch,
-                           self.mad, self.significance_level),
+                arguments=(points_model, configuration_model, test_identifier, order,
+                           self.override_config, self.patch),
                 identifier=test_identifier) for test_identifier in test_identifiers
         ]
         start = datetime.now()
@@ -200,39 +185,42 @@ def get_change_point_range(points_model, test_identifier, full_series, order):
 
 
 # pylint: disable=too-many-arguments
-def _get_data_and_run_detection(points_model, test_identifier, order, outliers_percentage, patch,
-                                mad, significance_level):
+def _get_data_and_run_detection(points_model, configuration_model, test_identifier, order,
+                                override_config, patch):
     """
     Retrieve the time series data and run the outliers detection algorithm.
     """
     LOG.debug(
         "_get_data_and_run_detection",
         points_model=points_model,
+        configuration_model=configuration_model,
         test_identifier=test_identifier,
         order=order,
-        outliers_percentage=outliers_percentage,
-        patch=patch,
-        mad=mad,
-        significance_level=significance_level)
+        override_config=override_config,
+        patch=patch)
+
+    configuration = combine_outlier_configs(test_identifier,
+                                            configuration_model.get_configuration(test_identifier),
+                                            override_config)
 
     full_series = points_model.get_points(test_identifier, 0)
     start, end, series = get_change_point_range(points_model, test_identifier, full_series, order)
 
-    outlier_results = detection.run_outlier_detection(full_series, start, end, series,
-                                                      test_identifier, outliers_percentage, mad,
-                                                      significance_level)
+    outlier_results = detection.run_outlier_detection(
+        full_series, start, end, series, test_identifier, configuration.max_outliers,
+        configuration.mad, configuration.significance_level)
 
-    _save_outliers(points_model, outlier_results, test_identifier)
+    _save_outliers(points_model, outlier_results, test_identifier, configuration)
     return outlier_results
 
 
 Outlier = namedtuple('Outlier', [
     'type', 'project', 'variant', 'task', 'test', 'thread_level', 'revision', 'order', 'task_id',
     'version_id', 'create_time', 'change_point_revision', 'change_point_order', 'order_of_outlier',
-    'z_score', 'critical_value', 'mad', 'significance_level', 'num_outliers'
+    'z_score', 'critical_value', 'num_outliers', 'configuration'
 ])
 """
-Tuple enacapsulating an outlier.
+Tuple encapsulating an outlier.
 
 :ivar str type: The outlier type, 'detected' or 'suspicious'. Detected means that this outlier is
 outside the acceptable range of performance. Suspicious means that this outlier is within the
@@ -251,14 +239,13 @@ acceptable range. The number of suspicious outliers is a factor of max outliers.
 the larger the scale of the outlier.
 :ivar float z_score: The z score for this outlier with all previous outliers excluded.
 :ivar float critical_value: The percent point function value,
-:ivar bool mad: True if Median Absolute Value as used for z score calculation.
-:ivar float significance_level: The significance level for the pvalue calculation.
 :ivar int num_outliers: The max num outliers for the time series.
+:ivar dict configuration: The configuration params used to calculate the outliers.
 """
 
 
-def _translate_outliers(gesd_result, test_identifier, start, mad, significance_level, num_outliers,
-                        full_series):
+def _translate_outliers(gesd_result, test_identifier, start, num_outliers, full_series,
+                        configuration):
     # pylint: disable=too-many-locals
     """
     Translate raw GESD output to a list of Outlier instances.
@@ -267,8 +254,6 @@ def _translate_outliers(gesd_result, test_identifier, start, mad, significance_l
     :param dict test_identifier: The dict that identifies this project / variant/ task / test /
     thread level result.
     :param int start: The start index in the full time series data.
-    :param bool mad: Set to True if Median Absolute Deviation is being used.
-    :param float significance_level: The significance level pvalue test.
     :param int num_outliers: The max number of outliers expected in the series.
     :param dict full_series: The time series data for the full task.
     :return: The GESD outlier results.
@@ -306,14 +291,13 @@ def _translate_outliers(gesd_result, test_identifier, start, mad, significance_l
                     order_of_outlier=pos,
                     z_score=z_score,
                     critical_value=critical_value,
-                    mad=mad,
-                    significance_level=significance_level,
-                    num_outliers=num_outliers))
+                    num_outliers=num_outliers,
+                    configuration=configuration._asdict()))
 
     return outliers
 
 
-def _save_outliers(points_model, outlier_results, test_identifier):
+def _save_outliers(points_model, outlier_results, test_identifier, configuration):
     # pylint: disable=too-many-locals
     """
     Store the outliers in a mongo collection.
@@ -322,6 +306,7 @@ def _save_outliers(points_model, outlier_results, test_identifier):
     :param OutlierDetectionResult outlier_results: The GESD results.
     :param dict test_identifier: The dict that identifies this project / variant/ task / test /
     thread level result.
+    :param OutliersConfiguration configuration: The configuration tuple.
 
     :raises: mongoException on error. The write are applied in a transaction, changes are rolled
     back on error.
@@ -340,8 +325,7 @@ def _save_outliers(points_model, outlier_results, test_identifier):
 
     delete_old_outliers = query
     outliers = _translate_outliers(gesd_result, test_identifier, outlier_results.start,
-                                   outlier_results.mad, outlier_results.significance_level,
-                                   outlier_results.num_outliers, full_series)
+                                   outlier_results.num_outliers, full_series, configuration)
 
     # Note: _asdict is not protected, the underscore is just to ensure there is no possibility of
     # a name clash.
@@ -361,7 +345,7 @@ def _save_outliers(points_model, outlier_results, test_identifier):
     except Exception as e:
         # pylint: disable=no-member
         LOG.warn(
-            'compute_change_points failed. Attempting to rollback.',
+            'detect_outliers failed. Attempting to rollback.',
             exc_info=True,
             details=e.details if hasattr(e, 'details') else str(e))
         raise
@@ -425,7 +409,7 @@ def get_updates(auto_rejector):
                         })
                     updates.append(update)
 
-                rejected = order in outliers and result.latest
+                rejected = result.reject(order)
                 if rejected:
                     outliers.remove(order)
                 if outliers:
@@ -482,7 +466,7 @@ def update_outlier_status(model, updates):
         except Exception as e:
             # pylint: disable=no-member
             LOG.warn(
-                'compute_change_points failed. Attempting to rollback.',
+                'detect outliers failed. Attempting to rollback.',
                 exc_info=True,
                 details=e.details if hasattr(e, 'details') else str(e))
             raise
@@ -534,19 +518,24 @@ def load_status_report(filename='report.json'):
 
 
 def detect_outliers(task_id,
+                    override_config,
                     mongo_uri,
-                    outliers_percentage,
                     patch,
-                    mad,
-                    significance_level,
                     pool_size,
                     rejects_file,
-                    max_consecutive_rejections,
-                    minimum_points,
                     progressbar=False):
     # pylint: disable=too-many-locals
     """
     Setup and run the detect outliers algorithm.
+
+    :param str task_id: The task identifier from evergreen.
+    :param dict() override_config:  The override configuration supplied by the end user.
+    :param str mongo_uri: The mongodb locator.
+    :param bool patch: True iff this is a patch result.
+    :param int pool_size: The pool size. 0 implies no multiprocessing.
+    :param str rejects_file: The name of the rejects file.
+    :param bool progressbar: True if we should render / use a progress bar.
+    :return: A list of the completed jobs.
     """
     evg_client = evergreen_client.Client()
     perf_json = evg_client.query_perf_results(task_id)
@@ -560,23 +549,29 @@ def detect_outliers(task_id,
 
         outliers_driver = DetectOutliersDriver(
             perf_json,
+            override_config,
             mongo_uri,
-            outliers_percentage,
             patch,
-            mad,
-            significance_level,
             pool_size=pool_size,
             progressbar=progressbar)
         completed_jobs = outliers_driver.run()
 
         successful_jobs = [job.result for job in completed_jobs if not job.exception]
         if successful_jobs:
-            auto_rejector = TaskAutoRejector(successful_jobs, project, variant, task,
-                                             perf_json['order'], mongo_uri, patch, status,
-                                             max_consecutive_rejections, minimum_points)
+            auto_rejector = TaskAutoRejector(
+                successful_jobs,
+                project,
+                variant,
+                task,
+                perf_json['order'],
+                mongo_uri,
+                patch,
+                status,
+                override_config,
+            )
 
             updates = get_updates(auto_rejector)
-            update_outlier_status(auto_rejector.model, updates)
+            update_outlier_status(auto_rejector.points_model, updates)
 
             rejects = auto_rejector.filtered_rejects()
         else:
@@ -593,45 +588,108 @@ def detect_outliers(task_id,
 @click.command()
 @click.pass_context
 @click.option(
-    '--max-outliers',
-    type=float,
-    default=0.0,
-    callback=helpers.validate_outlier_percentage,
-    help="""The max number of outliers as a percentage of the series length.
-0 means use the default. Valid values are 0.0 to 1.0. """)
+    '-l',
+    '--logfile',
+    default='detect_outliers.log',
+    help='The log file location. Defaults to ./detect_outliers.log.')
 @click.option(
-    '--mad/--no-mad', 'mad', is_flag=True, default=False, help='Use Median Absolute Deviation')
+    '--pool-size',
+    type=int,
+    default=None,
+    help='The multiprocessor pool size. None => num(cpus) -1. 0 means run without multiprocessing.')
+@click.option(
+    '--rejects-file',
+    default='rejects.json',
+    help='The rejects file location. Rejected test results will be written to this file.')
+@click.option(
+    '--progressbar/--no-progressbar',
+    default=False,
+    help='Determines if a process bar should be rendered.')
+@click.option('-v', 'verbose', count=True, help='Control the verbosity.')
+@click.option(
+    '--max-outliers',
+    callback=helpers.validate_outlier_percentage,
+    type=float,
+    default=None,
+    help="""The max number of outliers as a percentage of the series length.
+0 means use the default. Valid values are 0.0 to 1.0.""")
+@click.option(
+    '--mad/--no-mad', 'mad', is_flag=True, default=None, help='Use Median Absolute Deviation')
 @click.option(
     '--significance',
     '-p',
     'significance_level',
+    callback=helpers.validate_outlier_percentage,
     type=float,
-    default=0.05,
+    default=None,
     help='Significance level')
-@click.option('-l', '--logfile', default='detect_outliers.log', help='The log file location.')
-@click.option(
-    '--pool-size', default=None, help='The multiprocessor pool size. None => num(cpus) -1.')
-@click.option('--rejects-file', default='rejects.json', help='The rejects file location.')
-@click.option('-v', 'verbose', count=True, help='Control the verbosity.')
 @click.option(
     '--rejections',
     'max_consecutive_rejections',
-    default=MAX_CONSECUTIVE_REJECTIONS,
-    help='The max number of consecutive rejections (' + str(MAX_CONSECUTIVE_REJECTIONS) +
-    '). When there are more than this number of rejections then any rejects are skipped.')
+    type=int,
+    default=None,
+    help='The max number of consecutive rejections.' +
+    'When there are more than this number of rejections then any rejects are skipped.')
 @click.option(
     '--minimum',
     'minimum_points',
-    default=MINIMUM_POINTS,
-    help='The minimum number of points required in a stationary range (' + str(MINIMUM_POINTS) +
-    '). Rejections are disabled until this number of points are available.')
-@click.option('--progressbar/--no-progressbar', default=False)
-def main(context, max_outliers, mad, significance_level, logfile, pool_size, verbose, rejects_file,
-         max_consecutive_rejections, minimum_points, progressbar):
+    default=None,
+    type=int,
+    help='The minimum number of points required in a stationary range.' +
+    ' Rejections are disabled until this number of points are available.')
+def main(context, logfile, pool_size, verbose, rejects_file, progressbar, max_outliers, mad,
+         significance_level, max_consecutive_rejections, minimum_points):
+    # pylint: disable=anomalous-backslash-in-string
     """
-    Main function.
-    """
+Detect outliers using the GESD algorithm.
+
+It is expected that this command is invoked in the top level directory of an evergreen project and
+that no parameters are required (i.e it is provided 'batteries included' with sensible defaults).
+
+It is also possible to download a DSI archive from an evergreen task, extract the contents and run
+the command in the root if this archive.
+
+Note: care should be taken in this case to ensure that you use a local mongo instance
+by editing the analysis.yml file.
+
+E.g:
+
+\b
+   $> sed -i.bak "s/^mongo_uri:.*$/mongo_uri: 'mongodb:\/\/localhost\/perf'/"  analysis.yml
+
+\b
+The following configuration options are also stored in the configuration collection:
+    --max-outliers: used by GESD
+    --mad/--no-mad: used by GESD
+    --significance: used by GESD
+    --rejections: used to control rejection of results
+    --minimum: used to control rejection of results
+
+The defaults value for any of these options is None. Semantically None means use the configuration
+collection.
+
+However when a command option is provided it overrides the configuration collection values. See the
+output of the configure command:
+
+   $> outliers configure --help
+
+Invocation
+
+   $> detect-outliers
+
+
+"""
     # pylint: disable=too-many-locals
+
+    # A value of None means use the default. A non-None value will override the value from the
+    # configuration collection.
+    override_config = OutlierConfiguration(
+        max_outliers=max_outliers,
+        mad=mad,
+        significance_level=significance_level,
+        max_consecutive_rejections=max_consecutive_rejections,
+        minimum_points=minimum_points)
+
     rejects_file = os.path.expanduser(rejects_file)
     log.setup_logging(True if verbose > 0 else False, filename=logfile)
     conf = config.ConfigDict('analysis')
@@ -646,15 +704,11 @@ def main(context, max_outliers, mad, significance_level, logfile, pool_size, ver
 
     job_list = detect_outliers(
         task_id,
+        override_config,
         mongo_uri,
-        max_outliers,
         patch,
-        mad,
-        significance_level,
         pool_size,
         rejects_file,
-        max_consecutive_rejections,
-        minimum_points,
         progressbar=progressbar)
 
     jobs_with_exceptions = [job for job in job_list if job.exception is not None]

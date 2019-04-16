@@ -1,0 +1,342 @@
+"""
+Class to hold configuration state and business logic.
+"""
+import collections
+import re
+
+import pymongo
+import structlog
+
+LOG = structlog.getLogger(__name__)
+
+DEFAULT_MAX_OUTLIERS_PERCENTAGE = 0.15
+""" The default max number of outliers to use in detection. 15% in this case. """
+
+DEFAULT_USE_MAD = False
+""" The default MAD value to apply. False in this case so do not use Median Absolute Deviation. """
+
+DEFAULT_SIGNIFICANCE_LEVEL = 0.05
+""" The default significance value to use. 0.05 is the default. """
+
+DEFAULT_MINIMUM_POINTS = 15
+"""
+The minimum number of points required before an outlier can be automatically rejected. If there
+are fewer performance points than 15, then skip rejections.
+"""
+
+DEFAULT_MAX_CONSECUTIVE_REJECTIONS = 3
+"""
+The maximum number of fails allowed before a rejection is skipped. In this case, if the same
+performance result is rejected 3 consecutive times then it is likely that the performance profile
+has actually changed.
+"""
+
+DEFAULT_CANARY_PATTERN = re.compile('^(canary_.*|fio_.*|iperf.*|NetworkBandwidth)$')
+"""
+The default pattern for canary test names. In this case, the test name starts with one of:
+  * canary
+  * fio
+  * NetworkBandwidth
+"""
+
+DEFAULT_CORRECTNESS_PATTERN = re.compile(
+    '^(db-hash-check|validate-indexes-and-collections|core\\.).*$')
+"""
+Any test_file matching this patterns is a correctness error.
+"""
+
+MAX_OUTLIERS_CFG_NAME = 'max_outliers'
+MAD_CFG_NAME = 'mad'
+SIGNIFICANCE_LEVEL_CFG_NAME = 'significance_level'
+MAX_CONSECUTIVE_REJECTIONS_CFG_NAME = 'max_consecutive_rejections'
+MINIMUM_POINTS_CFG_NAME = 'minimum_points'
+CANARY_PATTERN_CFG_NAME = 'canary_pattern'
+CORRECTNESS_PATTERN_CFG_NAME = 'correctness_pattern'
+
+FIELD_NAMES = [
+    MAX_OUTLIERS_CFG_NAME, MAD_CFG_NAME, SIGNIFICANCE_LEVEL_CFG_NAME,
+    MAX_CONSECUTIVE_REJECTIONS_CFG_NAME, MINIMUM_POINTS_CFG_NAME, CANARY_PATTERN_CFG_NAME,
+    CORRECTNESS_PATTERN_CFG_NAME
+]
+OutlierConfiguration = collections.namedtuple('OutlierConfiguration', FIELD_NAMES)
+"""
+An immutable Tuple encapsulating an outlier configuration.
+
+:ivar float max_outliers: The max outliers percentage, a float greater than 0.0 or less than 1.0.
+:ivar bool mad: Use Median Absolute Deviation based on the value of this flag.
+:ivar float significance_level: The signficance level for the test. A value between 0 and 1.
+:ivar int max_consecutive_rejections: The max consecutive rejections before accepting that this 
+new level is probably permanent. Ususally 3.
+:ivar int minimum_points: The minimum number of points required before rejections can take place.
+Usually 15.
+:ivar regex canary_pattern: The pattern to match for a canary test.
+:ivar regex correctness_pattern: The correctness test pattern.
+"""
+
+OutlierConfiguration.__new__.__defaults__ = (None, ) * len(FIELD_NAMES)
+
+DEFAULT_CONFIG = OutlierConfiguration(
+    max_outliers=DEFAULT_MAX_OUTLIERS_PERCENTAGE,
+    mad=DEFAULT_USE_MAD,
+    significance_level=DEFAULT_SIGNIFICANCE_LEVEL,
+    max_consecutive_rejections=DEFAULT_MAX_CONSECUTIVE_REJECTIONS,
+    minimum_points=DEFAULT_MINIMUM_POINTS,
+    canary_pattern=DEFAULT_CANARY_PATTERN,
+    correctness_pattern=DEFAULT_CORRECTNESS_PATTERN)
+
+VALIDATION_KEYS = [
+    "max_consecutive_rejections", "minimum_points", "canary_pattern", "correctness_pattern"
+]
+
+
+def validate_configuration(test_identifier, configuration):
+    """
+    Validate the configuration.
+
+    :param dict test_identifier: The test identifier.
+    :param dict configuration: The configuration.
+    :return: A list of invalid keys.
+    """
+
+    if 'test' in test_identifier:
+        return [key for key in VALIDATION_KEYS if key in configuration]
+    return []
+
+
+def flatten(document, prefix=None):
+    """
+    Concert the dict into a list of individual fields which can be used with a $set operator
+    (rather than over write).
+    :param dict document: The updates to the document,
+    :param tuple(str) prefix: The prefix key  name.
+    :return: A list of tuple(tuple(str,), values).
+    """
+    items = []
+    if not prefix:
+        prefix = ()
+    elif not isinstance(prefix, (list, tuple)):
+        prefix = (prefix, )
+
+    for key, value in document.items():
+        child = prefix + (key, ) if prefix else (key, )
+        if value and isinstance(value, collections.MutableMapping):
+            items.extend(flatten(value, child))
+        else:
+            items.append((child, value))
+    return items
+
+
+def filter_none_values(hash):
+    """
+    Remove key / value pairs where value is None.
+    :param dict hash: A dict to filter.
+    :return: A copy of hash with None values removed.
+    """
+    return {key: value for key, value in hash.iteritems() if value is not None}
+
+
+def combine_outlier_configs(test_identifier, configurations, override_config, default_config=None):
+    """
+    Combine the outlier configurations to generate a filled in, over ridden configuration.
+    The configuration is generated by:
+        * initially creating a copy of the applications default config
+        * get the test identifier configurations from the configuration collection and
+        overriding the default copy
+        * finally the override config values (if any) are applied.
+    :param list(dict) configurations: A list of configurations from the configuration database.
+    :param dict(str, str) test_identifier: The test identifier.
+    :param OutlierConfiguration override_config: The override configuration as supplied by the user.
+    :param OutlierConfiguration default_config: The default configuration.
+    :return: A new OutlierConfiguration instance.
+    """
+
+    LOG.debug(
+        'get_outlier_config',
+        test_identifier=test_identifier,
+        configurations=configurations,
+        override_config=override_config,
+        default_config=default_config)
+    default_config = DEFAULT_CONFIG if default_config is None else default_config
+    configuration = filter_none_values(default_config._asdict())
+    for override in configurations:
+        configuration.update(override['configuration'])
+    configuration.update(filter_none_values(override_config._asdict()))
+    return OutlierConfiguration(**configuration)
+
+
+KEYS = ('project', 'variant', 'task', 'test', 'thread_level')
+"""
+A tuple containing the keys for a unique identifier for a point.
+"""
+
+
+def _ordered_test_identifier(test_identifier):
+    """
+    Matching embedded / sub-documents in mongo queries must match the document exactly (including
+    the field order). This function ensures that the same order is used where ever a document is
+    created.
+
+    :param dict test_identifier: The fields that identify the test.
+    :return: An OrderedDict with the fields in a guaranteed order.
+    See https://docs.mongodb.com/manual/tutorial/query-embedded-documents/#match-an-embedded-nested-document
+    """
+    return collections.OrderedDict(
+        [(key, test_identifier[key]) for key in KEYS if key in test_identifier])
+
+
+class ConfigurationModel(object):
+    """
+    Model that gathers the point data and runs E-Divisive to find change points.
+    """
+
+    def __init__(self, mongo_uri):
+        """
+        ConfigurationModel is serializable through pickle. To maintain a consistent stable
+        interface, it delegates configuration to __setstate__.
+        See methods '__getstate__' and '__setstate__'.
+
+        :param str mongo_uri: The uri to connect to the cluster.
+        """
+        self._db = None
+        self._collection = None
+        self.__setstate__({'mongo_uri': mongo_uri})
+
+    def __getstate__(self):
+        """
+        Get state for pickle support.
+
+        Multiprocessor pickles instances to serialize and deserialize to the sub-processes. But
+        pickle cannot handle complex types (like a mongo client). However, these instances can
+        be recreated on demand in the instance.
+
+        :return: The pickle state.
+        """
+        return {'mongo_uri': self.mongo_uri}
+
+    def __setstate__(self, state):
+        """
+        Set state for pickle support.
+
+        :param dict state: The pickled state.
+        """
+        self.mongo_uri = state['mongo_uri']
+        self._db = None
+        self._collection = None
+
+    @property
+    def db(self):
+        """
+        Getter for self._db.
+        """
+        if self._db is None:
+            self._db = pymongo.MongoClient(self.mongo_uri).get_database()
+        return self._db
+
+    @property
+    def collection(self):
+        """
+        Getter for self._db.
+        """
+        if self._collection is None:
+            self._collection = self.db.configuration
+        return self._collection
+
+    def get_configuration(self, test_identifier):
+        """
+        Retrieve the documents from the `configuration` collection in the database for the given
+        test identifier.
+
+        :param dict test_identifier: The project / variant / task / test and thread_level.
+        :return: The configuration document.
+        :rtype: tuple(int, OrderedDict, dict).
+        """
+        results = []
+        partial = _ordered_test_identifier(test_identifier)
+        while partial:
+            query = {'_id': _ordered_test_identifier(partial)}
+            result = self.collection.find_one(query)
+            if result:
+                results.insert(0, result)
+
+            keys = partial.keys()
+            del partial[keys[-1]]
+        return results
+
+    def set_configuration(self, test_identifier, configuration):
+        """
+        Set the`configuration collection in the database for the given
+        test identifier.
+
+        :param dict test_identifier: The project / variant / task / test and thread_level.
+        :param dict configuration: The new configuration to add.
+        :return: The configuration document.
+        :rtype: tuple(int, OrderedDict, dict).
+        """
+
+        update = {
+            '$set': {
+                '.'.join(key): value
+                for key, value in flatten(configuration, prefix=('configuration', ))
+            },
+            '$setOnInsert': {
+                '_id': _ordered_test_identifier(test_identifier)
+            }
+        }
+
+        results = self.collection.update_one(test_identifier, update, upsert=True)
+        return results
+
+    def unset_configuration(self, test_identifier, configuration):
+        """
+        Set the`configuration collection in the database for the given
+        test identifier.
+
+        :param dict test_identifier: The project / variant / task / test and thread_level.
+        :param dict configuration: The new configuration to add.
+        :return: The configuration document.
+        :rtype: tuple(int, OrderedDict, dict).
+        """
+
+        update = {
+            '$unset': {
+                '.'.join(key): value
+                for key, value in flatten(configuration, prefix=('configuration', ))
+            }
+        }
+        results = self.collection.update_one(test_identifier, update, upsert=False)
+        return results
+
+    def update_configuration(self, test_identifier, configuration):
+        """
+        Retrieve the documents from the `configuration` collection in the database for the given
+        test identifier.
+
+        :param dict test_identifier: The project / variant / task / test and thread_level.
+        :param dict configuration: The new configuration document to replace the existing
+        configuration.
+        :return: The configuration document.
+        :rtype: tuple(int, OrderedDict, dict).
+        """
+
+        update = {
+            '$set': {
+                'configuration': configuration
+            },
+            '$setOnInsert': {
+                '_id': _ordered_test_identifier(test_identifier)
+            }
+        }
+        results = self.collection.update_one(test_identifier, update, upsert=True)
+        return results
+
+    def delete_configuration(self, test_identifier):
+        """
+        Retrieve the documents from the `configuration` collection in the database for the given
+        test identifier.
+
+        :param dict test_identifier: The project / variant / task / test and thread_level.
+        :return: The configuration document.
+        :rtype: tuple(int, OrderedDict, dict).
+        """
+        results = self.collection.delete_one(test_identifier)
+        return results

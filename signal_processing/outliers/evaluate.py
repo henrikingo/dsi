@@ -1,5 +1,5 @@
 """
-Test Gesd outlier detection with various parameters.
+Evaluate Gesd outlier detection with various parameters.
 """
 from __future__ import print_function
 
@@ -364,7 +364,7 @@ def get_change_point_range(test_identifier, change_points, series, index=-1):
     return start, end, sub_series
 
 
-def config_gesd(command, command_config):
+def evaluate_gesd(command, command_config):
     """ Test Gesd Outlier Detection with different parameters. """
     # pylint: disable=too-many-locals
     model = PointsModel(

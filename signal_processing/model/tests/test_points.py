@@ -1,5 +1,5 @@
 """
-Unit tests for signal_processing/detect_changes.py.
+Unit tests for signal_processing/model/points.py.
 """
 
 import os
@@ -12,6 +12,7 @@ from mock import ANY, MagicMock, call, patch
 from signal_processing.commands import helpers
 from signal_processing.detect_changes import detect_changes
 from signal_processing.model.points import get_points_aggregation, PointsModel, ARRAY_FIELDS
+from signal_processing.tests.helpers import Helpers
 from test_lib.fixture_files import FixtureFiles
 
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
@@ -34,16 +35,6 @@ def ns(relative_name):  # pylint: disable=invalid-name
     return NS + '.' + relative_name
 
 
-def create_test_identifier(project=None, variant=None, task=None, test=None, thread_level=None):
-    return {
-        'project': 'sys-perf' if project is None else project,
-        'variant': 'linux-1-node-replSet' if variant is None else variant,
-        'task': 'linux-1-node-replSet' if task is None else task,
-        'test': '15_5c_update' if test is None else test,
-        'thread_level': '60' if thread_level is None else thread_level
-    }
-
-
 class TestGetPointsAggregation(unittest.TestCase):
     """
     Test suite for the get_points_aggregation.
@@ -51,7 +42,7 @@ class TestGetPointsAggregation(unittest.TestCase):
 
     def _test(self, level=None, min_order=None):
         """ test run with min_points. """
-        test_identifier = create_test_identifier(thread_level=level)
+        test_identifier = Helpers.create_test_identifier(thread_level=level)
         pipeline = get_points_aggregation(test_identifier, min_order)
         stage = pipeline.pop(0)
         query = helpers.get_query_for_points(test_identifier)

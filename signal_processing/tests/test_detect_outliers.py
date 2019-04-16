@@ -1,10 +1,10 @@
 """
 Unit tests for signal_processing/detect_outliers.py.
 """
+# pylint: disable=too-many-lines
 
 import os
 import unittest
-from collections import OrderedDict
 
 import pymongo
 from mock import MagicMock, call, patch, ANY, mock_open
@@ -13,6 +13,10 @@ import signal_processing.detect_outliers as detect_outliers
 from signal_processing.commands.helpers import get_query_for_points
 from signal_processing.detect_outliers import DETECTED_TYPE, SUSPICIOUS_TYPE
 from signal_processing.detect_outliers import main, _translate_outliers
+from signal_processing.model.configuration import DEFAULT_CONFIG, OutlierConfiguration, \
+    DEFAULT_MAX_CONSECUTIVE_REJECTIONS, DEFAULT_MINIMUM_POINTS, DEFAULT_CANARY_PATTERN, \
+    DEFAULT_CORRECTNESS_PATTERN
+from signal_processing.tests.helpers import Helpers
 from test_lib.fixture_files import FixtureFiles
 from click.testing import CliRunner
 
@@ -47,38 +51,36 @@ class TestDetectOutliersDriver(unittest.TestCase):
         """ test outliers driver ctor. """
         mock_cpu_count.return_value = 101
         is_patch = False
-        test_driver = detect_outliers.DetectOutliersDriver(self.sysperf_perf_json, MONGO_URI,
-                                                           OUTLIERS_PERCENTAGE, is_patch, MAD,
-                                                           SIGNIFICANCE_LEVEL)
+        override_config = DEFAULT_CONFIG
+        test_driver = detect_outliers.DetectOutliersDriver(self.sysperf_perf_json, override_config,
+                                                           MONGO_URI, is_patch)
         self.assertEquals(test_driver.pool_size, 200)
 
     def test_constructor_pool_size(self):
         """ test pool size. """
         is_patch = False
+        override_config = DEFAULT_CONFIG
         test_driver = detect_outliers.DetectOutliersDriver(
-            self.sysperf_perf_json,
-            MONGO_URI,
-            OUTLIERS_PERCENTAGE,
-            is_patch,
-            MAD,
-            SIGNIFICANCE_LEVEL,
-            pool_size=99)
+            self.sysperf_perf_json, override_config, MONGO_URI, is_patch, pool_size=99)
         self.assertEquals(test_driver.pool_size, 99)
 
+    # pylint: disable=too-many-locals
     def test_run(self):
         """ test run. """
 
         with patch(ns('multiprocessing.cpu_count'), autospec=True) as mock_cpu_count, \
              patch(ns('jobs.Job'), autospec=True) as mock_job_cls,\
              patch(ns('jobs.process_jobs'), autospec=True) as mock_process_jobs,\
-             patch(ns('PointsModel'), autospec=True) as mock_PointsModel:
+             patch(ns('PointsModel'), autospec=True) as mock_PointsModel,\
+             patch(ns('ConfigurationModel'), autospec=True) as mock_ConfigurationModel:
 
             mock_job = MagicMock(name='mock_job')
             mock_job_cls.return_value = mock_job
 
             mock_process_jobs.return_value = ()
             mock_cpu_count.return_value = 101
-            mock_model = mock_PointsModel.return_value
+            mock_points_model = mock_PointsModel.return_value
+            mock_configuration_model = mock_ConfigurationModel.return_value
 
             test_identifiers = [{
                 'project': self.sysperf_perf_json['project_id'],
@@ -88,19 +90,20 @@ class TestDetectOutliersDriver(unittest.TestCase):
                 'thread_level': '1'
             } for test in (u'mixed_insert', u'mixed_insert_bad', u'mixed_findOne')]
 
-            mock_model.db.points.aggregate.return_value = test_identifiers
+            mock_points_model.db.points.aggregate.return_value = test_identifiers
             is_patch = False
-            test_driver = detect_outliers.DetectOutliersDriver(self.sysperf_perf_json, MONGO_URI,
-                                                               OUTLIERS_PERCENTAGE, is_patch, MAD,
-                                                               SIGNIFICANCE_LEVEL)
+            override_config = {}
+            test_driver = detect_outliers.DetectOutliersDriver(self.sysperf_perf_json,
+                                                               override_config, MONGO_URI, is_patch)
             test_driver.run()
             mock_PointsModel.assert_called_once_with(MONGO_URI)
+            mock_ConfigurationModel.assert_called_once_with(MONGO_URI)
 
             calls = [
                 call(
                     detect_outliers._get_data_and_run_detection,
-                    arguments=(mock_model, test_identifier, self.sysperf_perf_json['order'],
-                               OUTLIERS_PERCENTAGE, is_patch, MAD, SIGNIFICANCE_LEVEL),
+                    arguments=(mock_points_model, mock_configuration_model, test_identifier,
+                               self.sysperf_perf_json['order'], override_config, is_patch),
                     identifier=test_identifier) for test_identifier in test_identifiers
             ]
             mock_job_cls.assert_has_calls(calls)
@@ -121,15 +124,13 @@ class TestDetectOutliers(unittest.TestCase):
 
         is_patch = False
         rejects_file = 'rejects.json'
-        max_consecutive_rejections = 3
-        minimum_points = 15
+        override_config = DEFAULT_CONFIG
         with patch(ns('evergreen_client.Client'), autospec=True),\
              patch(ns('helpers.extract_test_identifiers')) as mock_extract_test_identifiers:
 
             mock_extract_test_identifiers.return_value = []
             completed_jobs = detect_outliers.detect_outliers(
-                task_id, MONGO_URI, OUTLIERS_PERCENTAGE, is_patch, MAD, SIGNIFICANCE_LEVEL,
-                pool_size, rejects_file, max_consecutive_rejections, minimum_points, progressbar)
+                task_id, override_config, MONGO_URI, is_patch, pool_size, rejects_file, progressbar)
             self.assertListEqual([], completed_jobs)
 
     def _test(self, mock_driver, mock_evg_cl, successful_jobs=None):
@@ -147,8 +148,6 @@ class TestDetectOutliers(unittest.TestCase):
         mock_runner = mock_driver.return_value
         is_patch = False
         rejects_file = 'rejects.json'
-        max_consecutive_rejections = 3
-        minimum_points = 15
 
         status = {"failures": 0}
         mock_evg_client.query_task_status.return_value = status
@@ -168,19 +167,17 @@ class TestDetectOutliers(unittest.TestCase):
                 'variant': variant,
                 'task': task
             }]
+            override_config = DEFAULT_CONFIG
             mock_load.return_value = status
-            detect_outliers.detect_outliers(task_id, MONGO_URI, OUTLIERS_PERCENTAGE, is_patch, MAD,
-                                            SIGNIFICANCE_LEVEL, pool_size, rejects_file,
-                                            max_consecutive_rejections, minimum_points, progressbar)
+            detect_outliers.detect_outliers(task_id, override_config, MONGO_URI, is_patch,
+                                            pool_size, rejects_file, progressbar)
 
         mock_load.assert_called_once()
         mock_driver.assert_called_once_with(
             mock_perf_json,
+            override_config,
             MONGO_URI,
-            OUTLIERS_PERCENTAGE,
             is_patch,
-            MAD,
-            SIGNIFICANCE_LEVEL,
             pool_size=pool_size,
             progressbar=progressbar)
         mock_runner.run.assert_called_once()
@@ -191,9 +188,9 @@ class TestDetectOutliers(unittest.TestCase):
 
             mock_task_rejector_clazz.assert_called_once_with(
                 ['result'], project, variant, task, mock_perf_json.__getitem__.return_value,
-                MONGO_URI, is_patch, status, max_consecutive_rejections, minimum_points)
+                MONGO_URI, is_patch, status, override_config)
             mock_get_updates.assert_called_once_with(mock_task_rejector)
-            mock_update_outlier_status.assert_called_once_with(mock_task_rejector.model,
+            mock_update_outlier_status.assert_called_once_with(mock_task_rejector.points_model,
                                                                mock_get_updates.return_value)
         else:
             rejects = []
@@ -236,38 +233,39 @@ class TestRunDetection(unittest.TestCase):
 
     def test_detect_outliers(self):
         """
-        Test detect_outliers.detect_outliers function.
+        Test detect_outliers.detect_outliers function with real data and configuration.
         """
 
         is_patch = False
         with patch(ns('Outlier'), autospec=True) as mock_outlier_ctor,\
              patch(ns('pymongo.InsertOne'), autospec=True) as mock_insert,\
              patch(ns('pymongo.DeleteMany'), autospec=True) as mock_delete,\
-             patch(ns('get_change_point_range'), autospec=True) as mock_get_change_point_range:
+             patch(ns('get_change_point_range'), autospec=True) as mock_get_change_point_range,\
+             patch(ns('combine_outlier_configs'), autospec=True) as mock_combine_outlier_configs:
 
-            mock_points_model = MagicMock()
-            # for test in (u'mixed_insert', u'mixed_insert_bad', u'mixed_findOne')]
-            times_series = self.data['time_series']
+            mock_points_model = MagicMock(name='points_mdodel')
+            mock_configuration_model = MagicMock(name='configuration_mdodel')
+            time_series = self.data['time_series']
             test_identifier = {
-                'project': times_series['project'],
-                'variant': times_series['variant'],
-                'task': times_series['task'],
-                'test': times_series['test'],
-                'thread_level': times_series['thread_level'],
+                'project': time_series['project'],
+                'variant': time_series['variant'],
+                'task': time_series['task'],
+                'test': time_series['test'],
+                'thread_level': time_series['thread_level'],
             }
 
             start_order = self.data['start_order']
             end_order = self.data['end_order']
-            start = times_series['orders'].index(start_order)
-            end = times_series['orders'].index(end_order)
-            series = times_series['series'][start:end]
+            start = time_series['orders'].index(start_order)
+            end = time_series['orders'].index(end_order)
+            series = time_series['series'][start:end]
 
             expected_suspicious_indexes = self.expected['suspicious_indexes']
 
             mock_get_change_point_range.return_value = (start, end, series)
 
             expected_range = list(range(len(expected_suspicious_indexes)))
-            mock_points_model.get_points.return_value = times_series
+            mock_points_model.get_points.return_value = time_series
             mock_outlier_ctor.return_value._asdict.side_effect = expected_range
             deletes = ['delete']
             inserts = ['insert {}'.format(i) for i in expected_range]
@@ -280,10 +278,23 @@ class TestRunDetection(unittest.TestCase):
             mock_session = mock_client.start_session.return_value.__enter__.return_value
             mock_outliers_collection = mock_points_model.db.__getitem__.return_value
 
-            outliers_percentage = OUTLIERS_PERCENTAGE / 100.0
+            mock_config = MagicMock(name='configuration')
+            override_config = mock_config
+
+            configuration = OutlierConfiguration(
+                max_outliers=OUTLIERS_PERCENTAGE / 100.0,
+                mad=MAD,
+                significance_level=SIGNIFICANCE_LEVEL,
+                max_consecutive_rejections=DEFAULT_MAX_CONSECUTIVE_REJECTIONS,
+                minimum_points=DEFAULT_MINIMUM_POINTS,
+                canary_pattern=DEFAULT_CANARY_PATTERN,
+                correctness_pattern=DEFAULT_CORRECTNESS_PATTERN)
+
+            mock_combine_outlier_configs.return_value = configuration
+
             outlier_results = detect_outliers._get_data_and_run_detection(
-                mock_points_model, test_identifier, start_order, outliers_percentage, is_patch, MAD,
-                SIGNIFICANCE_LEVEL)
+                mock_points_model, mock_configuration_model, test_identifier, start_order,
+                override_config, is_patch)
 
             mock_outliers_collection.bulk_write.assert_called_once_with(requests)
             mock_client.start_session.assert_called_once()
@@ -315,9 +326,9 @@ class TestRunDetection(unittest.TestCase):
                     order_of_outlier=ANY,
                     z_score=ANY,
                     critical_value=ANY,
-                    mad=ANY,
-                    significance_level=ANY,
-                    num_outliers=ANY) for pos, _ in enumerate(expected_suspicious_indexes)
+                    num_outliers=ANY,
+                    configuration=configuration._asdict())
+                for pos, _ in enumerate(expected_suspicious_indexes)
             ])
 
 
@@ -327,13 +338,72 @@ class TestTranslateOutliers(unittest.TestCase):
     """
 
     def test_no_gesd_results(self):
-        outliers = _translate_outliers(None, {}, 0, False, 0.1, 5, {})
+        """ test when no gesd results. """
+        gesd_result = None
+        test_identifier = {}
+        start = 0
+        num_outliers = 1
+        full_series = []
+        configuration = DEFAULT_CONFIG
+        outliers = _translate_outliers(gesd_result, test_identifier, start, num_outliers,
+                                       full_series, configuration)
         self.assertEqual(0, len(outliers))
 
     def test_gesd_count_of_zero(self):
-        gesd_results = MagicMock(count=0)
-        outliers = _translate_outliers(gesd_results, {}, 0, False, 0.1, 5, {})
+        """ test when gesd count == 0. """
+        gesd_result = MagicMock(count=0)
+        test_identifier = {}
+        start = 0
+        num_outliers = 1
+        full_series = []
+        configuration = DEFAULT_CONFIG
+        outliers = _translate_outliers(gesd_result, test_identifier, start, num_outliers,
+                                       full_series, configuration)
         self.assertEqual(0, len(outliers))
+
+    def test_gesd(self):
+        """ test when gesd count > 0. """
+        gesd_result = MagicMock(
+            count=1,
+            suspicious_indexes=[0],
+            critical_values=['critical value 0'],
+            test_statistics=['test statistic 0'],
+        )
+        test_identifier = Helpers.create_test_identifier()
+        start = 0
+        num_outliers = 1
+        start_order = 100
+        full_series = {
+            'orders': [start_order],
+            'revisions': ['revision 1'],
+            'create_times': ['create time 1'],
+            'task_ids': ['task id 1'],
+            'version_ids': ['version id 1'],
+        }
+        configuration = DEFAULT_CONFIG
+        with patch(ns('Outlier'), autospec=True) as mock_outlier_ctor:
+            outliers = _translate_outliers(gesd_result, test_identifier, start, num_outliers,
+                                           full_series, configuration)
+        self.assertEqual(1, len(outliers))
+        mock_outlier_ctor.assert_called_once_with(
+            type=DETECTED_TYPE,
+            project=test_identifier['project'],
+            variant=test_identifier['variant'],
+            task=test_identifier['task'],
+            test=test_identifier['test'],
+            thread_level=test_identifier['thread_level'],
+            revision='revision 1',
+            task_id='task id 1',
+            version_id='version id 1',
+            order=100,
+            create_time='create time 1',
+            change_point_revision='revision 1',
+            change_point_order=100,
+            order_of_outlier=0,
+            z_score='test statistic 0',
+            critical_value='critical value 0',
+            num_outliers=1,
+            configuration=configuration._asdict())
 
 
 class TestMain(unittest.TestCase):
@@ -363,7 +433,9 @@ class TestMain(unittest.TestCase):
     @patch(ns('detect_outliers'), autospec=True)
     @patch(ns('config.ConfigDict'), autospec=True)
     @patch(ns('log.setup_logging'), autospec=True)
-    def test_is_patch(self, mock_logging, mock_config_dict, mock_detect_outliers):
+    @patch(ns('OutlierConfiguration'), autospec=True)
+    def test_is_patch(self, mock_outlier_config, mock_logging, mock_config_dict,
+                      mock_detect_outliers):
         """
         Test this is a patch.
         """
@@ -376,31 +448,34 @@ class TestMain(unittest.TestCase):
         result = self.runner.invoke(main)
         self.assertEqual(result.exit_code, 0)
 
+        mock_outlier_config.assert_called_once_with(
+            max_outliers=None,
+            mad=None,
+            significance_level=None,
+            max_consecutive_rejections=None,
+            minimum_points=None)
         mock_config_dict.assert_called_once()
         mock_config.load.assert_called_once()
         mock_logging.assert_called_once_with(False, filename='detect_outliers.log')
 
         rejects_file = 'rejects.json'
-        max_consecutive_rejections = 3
-        minimum_points = 15
+        pool_size = None
 
         mock_detect_outliers.assert_called_once_with(
             'tid',
+            mock_outlier_config.return_value,
             'muri',
-            0,
             is_patch,
-            False,
-            0.05,
-            None,
+            pool_size,
             rejects_file,
-            max_consecutive_rejections,
-            minimum_points,
             progressbar=False)
 
     @patch(ns('detect_outliers'), autospec=True)
     @patch(ns('config.ConfigDict'), autospec=True)
     @patch(ns('log.setup_logging'), autospec=True)
-    def test_defaults(self, mock_logging, mock_config_dict, mock_detect_outliers):
+    @patch(ns('OutlierConfiguration'), autospec=True)
+    def test_defaults(self, mock_outlier_config, mock_logging, mock_config_dict,
+                      mock_detect_outliers):
         """
         Test default params.
         """
@@ -413,30 +488,35 @@ class TestMain(unittest.TestCase):
         result = self.runner.invoke(main)
         self.assertEqual(result.exit_code, 0)
 
+        mock_outlier_config.assert_called_once_with(
+            max_outliers=None,
+            mad=None,
+            significance_level=None,
+            max_consecutive_rejections=None,
+            minimum_points=None)
+
         mock_config_dict.assert_called_once()
         mock_config.load.assert_called_once()
         mock_logging.assert_called_once_with(False, filename='detect_outliers.log')
+
         rejects_file = 'rejects.json'
-        max_consecutive_rejections = 3
-        minimum_points = 15
+        pool_size = None
 
         mock_detect_outliers.assert_called_once_with(
             'tid',
+            mock_outlier_config.return_value,
             'muri',
-            0,
             is_patch,
-            False,
-            0.05,
-            None,
+            pool_size,
             rejects_file,
-            max_consecutive_rejections,
-            minimum_points,
             progressbar=False)
 
     @patch(ns('detect_outliers'), autospec=True)
     @patch(ns('config.ConfigDict'), autospec=True)
     @patch(ns('log.setup_logging'), autospec=True)
-    def test_params(self, mock_logging, mock_config_dict, mock_detect_outliers):
+    @patch(ns('OutlierConfiguration'), autospec=True)
+    def test_params(self, mock_outlier_config, mock_logging, mock_config_dict,
+                    mock_detect_outliers):
         """
         Test main with params.
         """
@@ -445,36 +525,50 @@ class TestMain(unittest.TestCase):
         mock_config = mock_config_dict.return_value
         mock_config.__getitem__.side_effect = self.config.__getitem__
 
+        pool_size = 1
+        max_outliers = 0.4
+        significance = 0.2
+        rejections = 10
+        min_points = 100
+
         result = self.runner.invoke(main, [
-            '-l', 'logfile', '--pool-size', '1', '--max-outliers', '0.40', '--mad',
-            '--significance', '0.20', '--progressbar', '-v'
+            '-l', 'logfile', '--pool-size',
+            str(pool_size), '--max-outliers',
+            str(max_outliers), '--mad', '--significance',
+            str(significance), '--progressbar', '-v', '--rejections',
+            str(rejections), '--minimum',
+            str(min_points)
         ])
         self.assertEqual(result.exit_code, 0)
+
+        mock_outlier_config.assert_called_once_with(
+            max_outliers=max_outliers,
+            mad=True,
+            significance_level=significance,
+            max_consecutive_rejections=rejections,
+            minimum_points=min_points)
 
         mock_config_dict.assert_called_once()
         mock_config.load.assert_called_once()
         mock_logging.assert_called_once_with(True, filename='logfile')
+
         rejects_file = 'rejects.json'
-        max_consecutive_rejections = 3
-        minimum_points = 15
 
         mock_detect_outliers.assert_called_once_with(
             'tid',
+            mock_outlier_config.return_value,
             'muri',
-            0.40,
             is_patch,
-            True,
-            0.2,
-            1,
+            pool_size,
             rejects_file,
-            max_consecutive_rejections,
-            minimum_points,
             progressbar=True)
 
     @patch(ns('detect_outliers'), autospec=True)
     @patch(ns('config.ConfigDict'), autospec=True)
     @patch(ns('log.setup_logging'), autospec=True)
-    def test_outliers_0(self, mock_logging, mock_config_dict, mock_detect_outliers):
+    @patch(ns('OutlierConfiguration'), autospec=True)
+    def test_outliers_0(self, mock_outlier_config, mock_logging, mock_config_dict,
+                        mock_detect_outliers):
         """
         Test main with params.
         """
@@ -484,15 +578,28 @@ class TestMain(unittest.TestCase):
         mock_config.__getitem__.side_effect = self.config.__getitem__
 
         rejects_file = 'watch.json'
-        max_consecutive_rejections = 5
-        minimum_points = 10
+        pool_size = 1
+        max_outliers = 0
+        significance = 0.2
+        rejections = 5
+        min_points = 10
+
         result = self.runner.invoke(main, [
-            '-l', 'logfile', '--pool-size', '1', '--max-outliers', '0', '--mad', '--significance',
-            '0.20', '--progressbar', '-v', '--rejects-file', rejects_file, '--rejections',
-            str(max_consecutive_rejections), '--minimum',
-            str(minimum_points)
+            '-l', 'logfile', '--pool-size',
+            str(pool_size), '--max-outliers',
+            str(max_outliers), '--mad', '--significance',
+            str(significance), '--rejects-file', rejects_file, '--rejections',
+            str(rejections), '--minimum',
+            str(min_points), '--progressbar', '-v'
         ])
         self.assertEqual(result.exit_code, 0)
+
+        mock_outlier_config.assert_called_once_with(
+            max_outliers=max_outliers,
+            mad=True,
+            significance_level=significance,
+            max_consecutive_rejections=rejections,
+            minimum_points=min_points)
 
         mock_config_dict.assert_called_once()
         mock_config.load.assert_called_once()
@@ -500,18 +607,12 @@ class TestMain(unittest.TestCase):
 
         mock_detect_outliers.assert_called_once_with(
             'tid',
+            mock_outlier_config.return_value,
             'muri',
-            0,
             is_patch,
-            True,
-            0.2,
-            1,
+            pool_size,
             rejects_file,
-            max_consecutive_rejections,
-            minimum_points,
             progressbar=True)
-        # mock_detect_outliers.assert_called_once_with(
-        #     'tid', 'muri', .0, is_patch, True, 0.2, 1, progressbar=True)
 
     @patch(ns('detect_outliers'), autospec=True)
     @patch(ns('config.ConfigDict'), autospec=True)
@@ -642,61 +743,75 @@ class TestTranslateFieldName(unittest.TestCase):
         self.assertEquals('results.$.test', detect_outliers.translate_field_name('test', False))
 
 
-def create_test_identifier(project=None, variant=None, task=None, test=None, thread_level=None):
-    return OrderedDict([('project', 'sys-perf'
-                         if project is None else project), ('variant', 'linux-1-node-replSet'
-                                                            if variant is None else variant),
-                        ('task', 'linux-1-node-replSet' if task is None else
-                         task), ('test', '15_5c_update' if test is None else
-                                 test), ('thread_level', '60'
-                                         if thread_level is None else thread_level)])
+def create_empty(i=0, reject=False):
+    """
+    create mock empty test rejector result.
+    :param i: result id,
+    :param bool reject: The reject status,
+    :return: A mock empty test rejector result
+    """
+    full_series = {'test_identifier': Helpers.create_test_identifier(test=str(i)), 'orders': []}
+    result = MagicMock(name='result ' + str(i), full_series=full_series)
+    result.reject.return_value = reject
+    return result
 
 
-def create_empty(i=0):
-    full_series = {'test_identifier': create_test_identifier(test=str(i)), 'orders': []}
-    return MagicMock(name='result ' + str(i), full_series=full_series)
-
-
-def create_one(i=0, orders=None):
-    test_identifier = create_test_identifier(test=str(i))
+def create_one(i=0, orders=None, reject=False):
+    """
+    create single mock test rejector result.
+    :param i: result id,
+    :param orders: The orders,
+    :param bool reject: The reject status,
+    :return: A single mock test rejector result
+    """
+    test_identifier = Helpers.create_test_identifier(test=str(i))
     full_series = {'test_identifier': test_identifier, 'orders': [1] if orders is None else orders}
-    return MagicMock(name='result ' + str(i), full_series=full_series, outlier_orders=[])
+    result = MagicMock(name='result ' + str(i), full_series=full_series, outlier_orders=[])
+    result.reject.return_value = reject
+    return result
 
 
-def create_two(i=0, orders=None, outlier_orders=None):
-    test_identifier = create_test_identifier(test=str(i))
+def create_two(i=0, orders=None, outlier_orders=None, reject=False):
+    """
+    create 2 mock test rejector result.
+    :param i: result id,
+    :param orders: The orders,
+    :param outlier_orders: The outlier orders,
+    :param bool reject: The reject status,
+    :return: A list of mock test rejector result
+    """
+    test_identifier = Helpers.create_test_identifier(test=str(i))
     if orders is None:
         orders = range(1, 3)
     if outlier_orders is None:
         outlier_orders = [orders[-1]]
 
     full_series = {'test_identifier': test_identifier, 'orders': orders}
-    return MagicMock(
+    result = MagicMock(
         name='result ' + str(i), full_series=full_series, outlier_orders=outlier_orders)
+    result.reject.return_value = reject
+    return result
 
 
-def create_three(i=0, orders=None, outlier_orders=None):
-    test_identifier = create_test_identifier(test=str(i))
+def create_three(i=0, orders=None, outlier_orders=None, reject=False):
+    """
+    create 3 mock test rejector result.
+    :param i: result id,
+    :param orders: The orders,
+    :param outlier_orders: The outlier orders,
+    :param bool reject: The reject status,
+    :return: A list of mock test rejector result
+    """
+    test_identifier = Helpers.create_test_identifier(test=str(i))
     if orders is None:
         orders = range(1, 4)
     if outlier_orders is None:
         outlier_orders = [orders[-1]]
     full_series = {'test_identifier': test_identifier, 'orders': orders}
-    return MagicMock(
+    result = MagicMock(
         name='result ' + str(i), full_series=full_series, outlier_orders=outlier_orders)
-
-
-def create_mock_task_rejector(results=None, is_patch=False, order=None, latest=None, rejected=None):
-    if results is None:
-        results = []
-    kwargs = dict(name='task_rejector', results=results, patch=is_patch)
-    if order is not None:
-        kwargs['order'] = order
-    if latest is not None:
-        kwargs['latest'] = latest
-    if rejected is not None:
-        kwargs['rejected'] = rejected
-    return MagicMock(**kwargs)
+    result.reject.return_value = reject
+    return result
 
 
 class TestGetUpdates(unittest.TestCase):
@@ -706,20 +821,20 @@ class TestGetUpdates(unittest.TestCase):
 
     def test_no_results(self):
         """ test no results. """
-        mock_task_rejector = create_mock_task_rejector()
+        mock_task_rejector = Helpers.create_mock_task_rejector()
         self.assertListEqual([], detect_outliers.get_updates(mock_task_rejector))
 
     def test_empty_orders(self):
         """ test max. """
         results = [create_empty()]
-        mock_task_rejector = create_mock_task_rejector(results=results)
+        mock_task_rejector = Helpers.create_mock_task_rejector(results=results)
         self.assertListEqual([], detect_outliers.get_updates(mock_task_rejector))
 
     def test_one_order_no_outliers(self):
         """ test one order and it is an outlier. """
-        test_identifier = create_test_identifier(test=str(0))
+        test_identifier = Helpers.create_test_identifier(test=str(0))
         results = [create_one()]
-        mock_task_rejector = create_mock_task_rejector(results=results, order=1)
+        mock_task_rejector = Helpers.create_mock_task_rejector(results=results, order=1)
         updates = detect_outliers.get_updates(mock_task_rejector)
 
         # 1 update one:
@@ -737,13 +852,14 @@ class TestGetUpdates(unittest.TestCase):
 
     def test_one_order_outlier_not_rejected(self):
         """ test one order and it is an outlier, not rejected. """
-        test_identifier = create_test_identifier()
+        test_identifier = Helpers.create_test_identifier()
         orders = [1]
         full_series = {'test_identifier': test_identifier, 'orders': orders}
-        results = [
-            MagicMock(name='result', full_series=full_series, outlier_orders=orders, latest=False)
-        ]
-        mock_task_rejector = create_mock_task_rejector(results=results, order=1)
+        result = MagicMock(
+            name='result', full_series=full_series, outlier_orders=orders, latest=False)
+        result.reject.return_value = False
+        results = [result]
+        mock_task_rejector = Helpers.create_mock_task_rejector(results=results, order=1)
         updates = detect_outliers.get_updates(mock_task_rejector)
 
         # 1 update one:
@@ -762,11 +878,12 @@ class TestGetUpdates(unittest.TestCase):
 
     def test_one_order_outlier_rejected(self):
         """ test one order and it is an outlier, rejected. """
-        test_identifier = create_test_identifier()
+        test_identifier = Helpers.create_test_identifier()
         orders = [1]
         full_series = {'test_identifier': test_identifier, 'orders': orders}
         results = [MagicMock(name='result', full_series=full_series, outlier_orders=orders)]
-        mock_task_rejector = create_mock_task_rejector(results=results, order=1, latest=True)
+        mock_task_rejector = Helpers.create_mock_task_rejector(
+            results=results, order=1, latest=True)
         updates = detect_outliers.get_updates(mock_task_rejector)
 
         # 1 update one:
@@ -790,11 +907,13 @@ class TestGetUpdates(unittest.TestCase):
 
     def test_two_orders_no_outliers(self):
         """ test one order and it is an outlier. """
-        test_identifier = create_test_identifier()
+        test_identifier = Helpers.create_test_identifier()
         orders = [1, 2]
         full_series = {'test_identifier': test_identifier, 'orders': orders}
-        results = [MagicMock(name='result', full_series=full_series, outlier_orders=[])]
-        mock_task_rejector = create_mock_task_rejector(results=results)
+        result = MagicMock(name='result', full_series=full_series, outlier_orders=[])
+        result.reject.return_value = False
+        results = [result]
+        mock_task_rejector = Helpers.create_mock_task_rejector(results=results)
         updates = detect_outliers.get_updates(mock_task_rejector)
 
         # 1 update many:
@@ -815,8 +934,8 @@ class TestGetUpdates(unittest.TestCase):
     def test_two_orders_outlier_not_rejected(self):
         """ test one order and it is an outlier. """
         results = [create_two()]
-        test_identifier = create_test_identifier(test=str(0))
-        mock_task_rejector = create_mock_task_rejector(results=results, rejected=False)
+        test_identifier = Helpers.create_test_identifier(test=str(0))
+        mock_task_rejector = Helpers.create_mock_task_rejector(results=results, rejected=False)
         updates = detect_outliers.get_updates(mock_task_rejector)
 
         # 2 update ones:
@@ -844,11 +963,12 @@ class TestGetUpdates(unittest.TestCase):
 
     def test_two_orders_outlier_rejected(self):
         """ test one order and it is an outlier. """
-        test_identifier = create_test_identifier()
+        test_identifier = Helpers.create_test_identifier()
         orders = [1, 2]
         full_series = {'test_identifier': test_identifier, 'orders': orders}
         results = [MagicMock(name='result', full_series=full_series, outlier_orders=[2])]
-        mock_task_rejector = create_mock_task_rejector(results=results, latest=True, order=2)
+        mock_task_rejector = Helpers.create_mock_task_rejector(
+            results=results, latest=True, order=2)
         updates = detect_outliers.get_updates(mock_task_rejector)
 
         # 2 update ones:
@@ -881,11 +1001,13 @@ class TestGetUpdates(unittest.TestCase):
 
     def test_three_orders_no_outliers(self):
         """ test one order and it is an outlier. """
-        test_identifier = create_test_identifier()
+        test_identifier = Helpers.create_test_identifier()
         orders = [1, 2, 3]
         full_series = {'test_identifier': test_identifier, 'orders': orders}
-        results = [MagicMock(name='result', full_series=full_series, outlier_orders=[])]
-        mock_task_rejector = create_mock_task_rejector(results=results)
+        result = MagicMock(name='result', full_series=full_series, outlier_orders=[])
+        result.reject.return_value = False
+        results = [result]
+        mock_task_rejector = Helpers.create_mock_task_rejector(results=results)
         updates = detect_outliers.get_updates(mock_task_rejector)
 
         # 1 update many:
@@ -903,12 +1025,14 @@ class TestGetUpdates(unittest.TestCase):
 
     def test_three_orders_outlier_not_rejected(self):
         """ test one order and it is an outlier. """
-        test_identifier = create_test_identifier()
+        test_identifier = Helpers.create_test_identifier()
         orders = [1, 2, 3]
         outlier_orders = [3]
         full_series = {'test_identifier': test_identifier, 'orders': orders}
-        results = [MagicMock(name='result', full_series=full_series, outlier_orders=outlier_orders)]
-        mock_task_rejector = create_mock_task_rejector(results=results, rejected=False)
+        result = MagicMock(name='result', full_series=full_series, outlier_orders=outlier_orders)
+        result.reject.return_value = False
+        results = [result]
+        mock_task_rejector = Helpers.create_mock_task_rejector(results=results, rejected=False)
         updates = detect_outliers.get_updates(mock_task_rejector)
 
         # 2 updates:
@@ -934,12 +1058,14 @@ class TestGetUpdates(unittest.TestCase):
 
     def test_three_orders_multipe_outliers_not_rejected(self):
         """ test one order and it is an outlier. """
-        test_identifier = create_test_identifier()
+        test_identifier = Helpers.create_test_identifier()
         orders = [1, 2, 3]
         outlier_orders = [2, 3]
         full_series = {'test_identifier': test_identifier, 'orders': orders}
-        results = [MagicMock(name='result', full_series=full_series, outlier_orders=outlier_orders)]
-        mock_task_rejector = create_mock_task_rejector(results=results, rejected=False)
+        result = MagicMock(name='result', full_series=full_series, outlier_orders=outlier_orders)
+        result.reject.return_value = False
+        results = [result]
+        mock_task_rejector = Helpers.create_mock_task_rejector(results=results, rejected=False)
         updates = detect_outliers.get_updates(mock_task_rejector)
 
         # 2 updates:
@@ -964,12 +1090,12 @@ class TestGetUpdates(unittest.TestCase):
 
     def test_three_orders_multiple_outliers_rejected(self):
         """ test one order and it is an outlier. """
-        test_identifier = create_test_identifier()
+        test_identifier = Helpers.create_test_identifier()
         orders = [1, 2, 3]
         outlier_orders = [2, 3]
         full_series = {'test_identifier': test_identifier, 'orders': orders}
         results = [MagicMock(name='result', full_series=full_series, outlier_orders=outlier_orders)]
-        mock_task_rejector = create_mock_task_rejector(
+        mock_task_rejector = Helpers.create_mock_task_rejector(
             results=results, rejected=False, latest=True, order=3)
         updates = detect_outliers.get_updates(mock_task_rejector)
 
@@ -1006,12 +1132,13 @@ class TestGetUpdates(unittest.TestCase):
 
     def test_three_orders_outlier_rejected(self):
         """ test one order and it is an outlier. """
-        test_identifier = create_test_identifier()
+        test_identifier = Helpers.create_test_identifier()
         orders = [1, 2, 3]
         outlier_orders = [3]
         full_series = {'test_identifier': test_identifier, 'orders': orders}
         results = [MagicMock(name='result', full_series=full_series, outlier_orders=outlier_orders)]
-        mock_task_rejector = create_mock_task_rejector(results=results, latest=True, order=3)
+        mock_task_rejector = Helpers.create_mock_task_rejector(
+            results=results, latest=True, order=3)
         updates = detect_outliers.get_updates(mock_task_rejector)
 
         # 2 updates:
@@ -1044,11 +1171,13 @@ class TestGetUpdates(unittest.TestCase):
 
     def test_multiple_orders_no_outliers(self):
         """ test one order and it is an outlier. """
-        test_identifier = create_test_identifier()
+        test_identifier = Helpers.create_test_identifier()
         orders = range(1, 11)
         full_series = {'test_identifier': test_identifier, 'orders': orders}
-        results = [MagicMock(name='result', full_series=full_series, outlier_orders=[])]
-        mock_task_rejector = create_mock_task_rejector(results=results)
+        result = MagicMock(name='result', full_series=full_series, outlier_orders=[])
+        result.reject.return_value = False
+        results = [result]
+        mock_task_rejector = Helpers.create_mock_task_rejector(results=results)
         updates = detect_outliers.get_updates(mock_task_rejector)
 
         # 1 update many:
@@ -1066,12 +1195,14 @@ class TestGetUpdates(unittest.TestCase):
 
     def test_multiple_orders_outlier_not_rejected(self):
         """ test one order and it is an outlier. """
-        test_identifier = create_test_identifier()
+        test_identifier = Helpers.create_test_identifier()
         orders = range(1, 11)
         outlier_orders = range(1, 11, 2)
         full_series = {'test_identifier': test_identifier, 'orders': orders}
-        results = [MagicMock(name='result', full_series=full_series, outlier_orders=outlier_orders)]
-        mock_task_rejector = create_mock_task_rejector(results=results, rejected=False)
+        result = MagicMock(name='result', full_series=full_series, outlier_orders=outlier_orders)
+        result.reject.return_value = False
+        results = [result]
+        mock_task_rejector = Helpers.create_mock_task_rejector(results=results, rejected=False)
         updates = detect_outliers.get_updates(mock_task_rejector)
 
         # 2 updates:
@@ -1098,12 +1229,14 @@ class TestGetUpdates(unittest.TestCase):
 
     def test_multiple_orders_multipe_outliers_not_rejected(self):
         """ test one order and it is an outlier. """
-        test_identifier = create_test_identifier()
+        test_identifier = Helpers.create_test_identifier()
         orders = range(1, 11)
         outlier_orders = range(1, 11, 2)
         full_series = {'test_identifier': test_identifier, 'orders': orders}
-        results = [MagicMock(name='result', full_series=full_series, outlier_orders=outlier_orders)]
-        mock_task_rejector = create_mock_task_rejector(results=results, rejected=False)
+        result = MagicMock(name='result', full_series=full_series, outlier_orders=outlier_orders)
+        result.reject.return_value = False
+        results = [result]
+        mock_task_rejector = Helpers.create_mock_task_rejector(results=results, rejected=False)
         updates = detect_outliers.get_updates(mock_task_rejector)
 
         # 2 update manys:
@@ -1130,13 +1263,13 @@ class TestGetUpdates(unittest.TestCase):
 
     def test_multiple_orders_multiple_outliers_rejected(self):
         """ test one order and it is an outlier. """
-        test_identifier = create_test_identifier()
+        test_identifier = Helpers.create_test_identifier()
         orders = range(1, 11)
         outlier_orders = range(1, 11, 2)
         current_order = outlier_orders[-1]
         full_series = {'test_identifier': test_identifier, 'orders': orders}
         results = [MagicMock(name='result', full_series=full_series, outlier_orders=outlier_orders)]
-        mock_task_rejector = create_mock_task_rejector(
+        mock_task_rejector = Helpers.create_mock_task_rejector(
             results=results, latest=True, order=current_order)
         updates = detect_outliers.get_updates(mock_task_rejector)
 
@@ -1178,7 +1311,7 @@ class TestGetUpdates(unittest.TestCase):
     def test_multiple_results_empty(self):
         """ test one order and it is an outlier. """
         results = [create_empty(i) for i in range(10)]
-        mock_task_rejector = create_mock_task_rejector(results=results)
+        mock_task_rejector = Helpers.create_mock_task_rejector(results=results)
         self.assertListEqual([], detect_outliers.get_updates(mock_task_rejector))
 
     def test_mixed(self):
@@ -1188,10 +1321,11 @@ class TestGetUpdates(unittest.TestCase):
             create_one(1),
             create_two(2, orders=range(2, 4)),
             create_two(3, orders=range(4, 6), outlier_orders=[4]),
-            create_three(4, orders=range(6, 9))
+            create_three(4, orders=range(6, 9), outlier_orders=[8], reject=True)
         ]
 
-        mock_task_rejector = create_mock_task_rejector(results=results, latest=True, order=8)
+        mock_task_rejector = Helpers.create_mock_task_rejector(
+            results=results, latest=True, order=8)
 
         updates = detect_outliers.get_updates(mock_task_rejector)
 
@@ -1199,7 +1333,7 @@ class TestGetUpdates(unittest.TestCase):
         # < --- one
         update = updates.pop(0)
         self.assertTrue(isinstance(update, pymongo.UpdateOne))
-        test_identifier = create_test_identifier(test=str(1))
+        test_identifier = Helpers.create_test_identifier(test=str(1))
         query = get_query_for_points(test_identifier)
         self.assertDictContainsSubset(query, update._filter)
         self.assertEquals(update._filter['order'], 1)
@@ -1207,7 +1341,7 @@ class TestGetUpdates(unittest.TestCase):
 
         # < --- two (last order is outlier)
         update = updates.pop(0)
-        test_identifier = create_test_identifier(test=str(2))
+        test_identifier = Helpers.create_test_identifier(test=str(2))
         query = get_query_for_points(test_identifier)
         self.assertTrue(isinstance(update, pymongo.UpdateOne))
         self.assertDictContainsSubset(query, update._filter)
@@ -1222,7 +1356,7 @@ class TestGetUpdates(unittest.TestCase):
 
         # < --- two, (first order is outlier)
         update = updates.pop(0)
-        test_identifier = create_test_identifier(test=str(3))
+        test_identifier = Helpers.create_test_identifier(test=str(3))
         query = get_query_for_points(test_identifier)
         self.assertTrue(isinstance(update, pymongo.UpdateOne))
         self.assertDictContainsSubset(query, update._filter)
@@ -1237,7 +1371,7 @@ class TestGetUpdates(unittest.TestCase):
 
         # < ---- three with reject
         update = updates.pop(0)
-        test_identifier = create_test_identifier(test=str(4))
+        test_identifier = Helpers.create_test_identifier(test=str(4))
         query = get_query_for_points(test_identifier)
         self.assertTrue(isinstance(update, pymongo.UpdateMany))
         self.assertDictContainsSubset(query, update._filter)
@@ -1260,12 +1394,12 @@ class TestGetUpdates(unittest.TestCase):
 
     def test_patch_three_orders_multiple_outliers_rejected(self):
         """ test one order and it is an outlier. """
-        test_identifier = create_test_identifier()
+        test_identifier = Helpers.create_test_identifier()
         orders = [1, 2, 3]
         outlier_orders = [2, 3]
         full_series = {'test_identifier': test_identifier, 'orders': orders}
         results = [MagicMock(name='result', full_series=full_series, outlier_orders=outlier_orders)]
-        mock_task_rejector = create_mock_task_rejector(
+        mock_task_rejector = Helpers.create_mock_task_rejector(
             results=results, latest=True, order=3, is_patch=True)
         updates = detect_outliers.get_updates(mock_task_rejector)
 
@@ -1273,12 +1407,14 @@ class TestGetUpdates(unittest.TestCase):
         self.assertListEqual([], updates)
 
 
+# pylint: disable=no-self-use
 class TestUpdateOutlierStatus(unittest.TestCase):
     """
     Test suite for the update_outlier_status.
     """
 
     def test_empty(self):
+        """ test empty updates. """
         mock_model = MagicMock(name='model')
         updates = []
         detect_outliers.update_outlier_status(mock_model, updates)
@@ -1286,6 +1422,7 @@ class TestUpdateOutlierStatus(unittest.TestCase):
         mock_model.db.client.start_session.assert_not_called()
 
     def test_update(self):
+        """ test with updates. """
         mock_model = MagicMock(name='model')
         updates = ['updates']
         detect_outliers.update_outlier_status(mock_model, updates)
@@ -1297,6 +1434,7 @@ class TestUpdateOutlierStatus(unittest.TestCase):
         mock_model.db.points.bulk_write.assert_called_once_with(updates)
 
     def test_exception(self):
+        """ test raises exception. """
         mock_model = MagicMock(name='model')
         updates = ['updates']
 
@@ -1322,9 +1460,11 @@ class TestWriteRejects(unittest.TestCase):
                 mock_remove.assert_not_called()
 
     def test_exists(self):
+        """ test write rejects file exists. """
         self._test_file()
 
     def test_not_exists(self):
+        """ test write rejects file does not exists. """
         self._test_file(exists=False)
 
     def _test_rejects(self, size=None):
@@ -1349,9 +1489,11 @@ class TestWriteRejects(unittest.TestCase):
                 mock_file.return_value.write.assert_called_once_with(output)
 
     def test_no_rejects(self):
+        """ test no rejects. """
         self._test_rejects()
 
     def test_rejects(self):
+        """ test rejects. """
         self._test_rejects(size=3)
 
 
@@ -1361,6 +1503,7 @@ class TestLoadStatusReport(unittest.TestCase):
     """
 
     def test_exception(self):
+        """ test with exception. """
         with patch(ns('open'), mock_open()) as mock_file:
             mock_file.side_effect = Exception('find me')
             self.assertIsNone(detect_outliers.load_status_report())
@@ -1380,7 +1523,9 @@ class TestLoadStatusReport(unittest.TestCase):
         mock_json.assert_called_once_with(mock_file.return_value)
 
     def test_load(self):
+        """ test load default filename. """
         self._test_load()
 
     def test_load_filename(self):
+        """ test load non-default filename. """
         self._test_load(filename='test.json')

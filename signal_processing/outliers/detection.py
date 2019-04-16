@@ -15,13 +15,19 @@ from scipy.stats import describe
 from signal_processing.outliers.gesd import gesd
 
 MAD_Z_SCORE = 'mad'
-"""Use Median Abolute Deviation to calculate the z score."""
+"""Use Median Absolute Deviation to calculate the z score."""
 
 STANDARD_Z_SCORE = 'standard'
 """Use standard z score calculation."""
 
 DEFAULT_MAX_OUTLIERS_PERCENTAGE = 0.15
 """ The default max number of outliers to use in detection. 15% in this case. """
+
+DEFAULT_USE_MAD = False
+""" The default MAD value to apply. False in this case so do not use Median Absolute Deviation. """
+
+DEFAULT_SIGNIFICANCE_LEVEL = 0.05
+""" The default MAD value to apply. False in this case so do not use Median Absolute Deviation. """
 
 LOG = structlog.getLogger(__name__)
 
@@ -133,13 +139,15 @@ def compute_max_outliers(outliers_percentage, test_identifier, series):
     if outliers_percentage == 0:
         outliers_percentage = DEFAULT_MAX_OUTLIERS_PERCENTAGE
 
+    num_outliers = -1
     if series is not None and np.size(series) > 0:
         num_outliers = int(len(series) * outliers_percentage)
         if num_outliers == 0:
             num_outliers = 1
-        elif num_outliers >= len(series):
-            num_outliers = len(series) - 1
-    else:
+        elif num_outliers >= len(series) - 1:
+            num_outliers = len(series) - 2
+
+    if num_outliers < 0:
         num_outliers = 0
 
     LOG.info(

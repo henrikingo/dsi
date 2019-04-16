@@ -397,16 +397,16 @@ View the top level help as follows:
       -h, --help                  Show this message and exit.
     
     Commands:
-      config  Test the GESD algorithm with various...
+      evaluate Evaluate the GESD algorithm with various...
       help    Show the help message and exit.
 
 
 To view the config help issue the following command:
 
     $ outliers config --help
-    Usage: outliers config [OPTIONS] PROJECT [VARIANT] [TASK] [TEST] [THREAD_LEVEL]
+    Usage: outliers evaluate [OPTIONS] PROJECT [VARIANT] [TASK] [TEST] [THREAD_LEVEL]
     
-      Test the GESD algorithm with various parameters.
+      Evaluate the GESD algorithm with various parameters.
     
     Options:
       -p, --significance FLOAT        Significance level test.

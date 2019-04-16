@@ -64,7 +64,7 @@ class TestReplayParams(ClickTest):
     @patch(ns('helpers.process_params'), autospec=True)
     @patch('signal_processing.commands.helpers.CommandConfiguration', autospec=True)
     def test_no_jobs(self, mock_config, mock_process_params):
-        """ Test outliers config correctly uses parameters. """
+        """ Test outliers replay correctly uses parameters. """
         expected_query = {'find': 'me'}
         mock_process_params.return_value = expected_query
         expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')

@@ -1,5 +1,5 @@
 """
-Unit tests for signal_processing/commands/outliers/config.py.
+Unit tests for signal_processing/commands/outliers/evaluate.py.
 """
 # pylint: disable=missing-docstring
 from __future__ import print_function
@@ -11,7 +11,7 @@ from click.testing import CliRunner
 
 from signal_processing.outliers_cli import cli
 
-NS = 'signal_processing.commands.outliers.config'
+NS = 'signal_processing.commands.outliers.evaluate'
 
 
 def ns(relative_name):  # pylint: disable=invalid-name
@@ -56,13 +56,13 @@ class TestOutliersParams(ClickTest):
         mock_command_config_cls.return_value = expected_config
         mock_process_jobs.return_value.__enter__.return_value = ()
 
-        result = self.runner.invoke(cli, ['config', 'sys-perf'])
+        result = self.runner.invoke(cli, ['evaluate', 'sys-perf'])
         self.assertEqual(result.exit_code, 0)
 
     @patch(ns('helpers.process_params'), autospec=True)
     @patch('signal_processing.commands.helpers.CommandConfiguration', autospec=True)
     def test_no_jobs(self, mock_config, mock_process_params):
-        """ Test outliers config correctly uses parameters. """
+        """ Test outliers evaluate correctly uses parameters. """
         expected_query = {'find': 'me'}
         mock_process_params.return_value = expected_query
         expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
@@ -70,7 +70,7 @@ class TestOutliersParams(ClickTest):
 
         result = self.runner.invoke(
             cli,
-            ['config', 'sys-perf', 'linux-standalone', 'industry_benchmarks', 'ycsb_load', '1'])
+            ['evaluate', 'sys-perf', 'linux-standalone', 'industry_benchmarks', 'ycsb_load', '1'])
         self.assertEqual(result.exit_code, 0)
         mock_process_params.assert_called_once_with(
             'sys-perf', 'linux-standalone', 'industry_benchmarks', 'ycsb_load', thread_level='1')
