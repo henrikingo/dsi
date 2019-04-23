@@ -1,4 +1,4 @@
-genny:
+genny: &compile_genny
   - on_localhost:
       checkout_repos:
         - source: git@github.com:mongodb/genny.git
@@ -49,6 +49,10 @@ genny:
       exec: |
         cd ./data/genny/src/python
         sudo pip3 install .
+
+
+genny_self_tests: *compile_genny
+
 
 mongoshell:
   - on_localhost:

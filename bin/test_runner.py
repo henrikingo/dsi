@@ -155,8 +155,47 @@ class GennyRunner(_BaseRunner):
             if exit_code:
                 return StatusWithMessage(exit_code, command)
 
-        # Log a generic message on success.
-        return StatusWithMessage(0, 'GennyRunner().run()')
+        # Log a short message on success.
+        return StatusWithMessage(0, 'GennyRunner.run()')
+
+
+class GennySelfTestRunner(_BaseRunner):
+    """
+    Class for running Genny performance self tests.
+    """
+
+    def __init__(self, db_url, **kwargs):
+        super(GennySelfTestRunner, self).__init__(**kwargs)
+        self.db_url = db_url
+        self.output_files = self.get_default_output_files()
+
+    @staticmethod
+    def get_default_output_files():
+        """
+        See _BaseRunner.get_default_output_files()
+        """
+        return ['data/nop.csv', 'data/ping.csv']
+
+    def _do_run(self, host, out):
+        commands = [
+            'genny/bin/genny-canaries nop -o nop.csv',
+            'genny/bin/genny-canaries ping -u "{}" -i 10000 -o ping.csv'.format(self.db_url),
+        ]
+
+        for command in commands:
+            # Write the output of genny to the ephemeral drive (mounted on ~/data)
+            # to ensure it has enough disk space.
+            command = 'cd ./data; ' + command
+
+            exit_code = host.exec_command(
+                command, stdout=out, stderr=out, no_output_timeout_ms=self.timeout, get_pty=True)
+
+            # Fail early and log the exact command that failed.
+            if exit_code:
+                return StatusWithMessage(exit_code, command)
+
+        # Log a short message on success.
+        return StatusWithMessage(0, 'GennySelfTestRunner.run()')
 
 
 @nottest
@@ -185,9 +224,12 @@ def get_test_runner(test_config, god_config):
         'timeout': timeout
     }
 
+    db_url = god_config['mongodb_setup']['meta']['mongodb_url']
+
     if test_type == 'genny':
-        db_url = god_config['mongodb_setup']['meta']['mongodb_url']
         workload_config_path = test_config['config_filename']
         return GennyRunner(workload_config_path, db_url, **runner_config)
+    elif test_type == 'genny_self_tests':
+        return GennySelfTestRunner(db_url, **runner_config)
 
     return _ShellRunner(test_config['cmd'], **runner_config)

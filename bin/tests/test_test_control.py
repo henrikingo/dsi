@@ -41,6 +41,11 @@ class RunTestTestCase(unittest.TestCase):
                 'timeouts': {
                     'no_output_ms': 100
                 }
+            },
+            'mongodb_setup': {
+                'meta': {
+                    'mongodb_url': 'dummy_mongodb_url'
+                }
             }
         }
 

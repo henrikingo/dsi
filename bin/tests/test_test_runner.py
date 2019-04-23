@@ -104,11 +104,25 @@ class GetTestRunnerTestCase(unittest.TestCase):
         runner = get_test_runner(self.get_test_config('genny'), self.get_god_config())
         self.assertIsInstance(runner, test_runner.GennyRunner)
 
-        report_str = '\nexit_status: 0 \'GennyRunner().run()\'\n'
+        report_str = '\nexit_status: 0 \'GennyRunner.run()\'\n'
         output_file_calls = [
             call('data/genny-perf.json', 'reports/dummy_test/genny-perf.json'),
             call('data/genny-perf.csv', 'reports/dummy_test/genny-perf.csv'),
             call('data/genny-cedar-report.json', 'reports/dummy_test/genny-cedar-report.json')
+        ]
+        self.call_runner_run(runner, report_str, output_file_calls)
+
+    def test_get_genny_self_test_runner(self):
+        """
+        Can get the genny test runner for "genny" tests.
+        """
+        runner = get_test_runner(self.get_test_config('genny_self_tests'), self.get_god_config())
+        self.assertIsInstance(runner, test_runner.GennySelfTestRunner)
+
+        report_str = '\nexit_status: 0 \'GennySelfTestRunner.run()\'\n'
+        output_file_calls = [
+            call('data/nop.csv', 'reports/dummy_test/nop.csv'),
+            call('data/ping.csv', 'reports/dummy_test/ping.csv')
         ]
         self.call_runner_run(runner, report_str, output_file_calls)
 
