@@ -299,7 +299,7 @@ class GennyResultsParser(ResultParser):
     def _parse(self):
         with open(self.genny_results_path) as file_handle:
             for result in json.load(file_handle)['results']:
-                name = self.test_id + '.' + result['name']
+                name = result['name']
                 threads = result['results'].keys()[0]
                 result = result['results'].values()[0]['ops_per_sec']
                 self.add_result(name, result, threads)
