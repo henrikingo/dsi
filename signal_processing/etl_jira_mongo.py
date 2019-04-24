@@ -157,7 +157,8 @@ def new_jira_client(jira_user=None, jira_password=None):
         jira_user = input('JIRA user id: ')
     if jira_password is None:
         jira_password = getpass()
-    jira_client = jira.JIRA(basic_auth=(jira_user, jira_password), options={'server': JIRA_URL})
+    jira_client = jira.JIRA(
+        basic_auth=(jira_user, jira_password), options={'server': JIRA_URL}, max_retries=1)
     # The following will fail on authentication error.
     # UPDATE: As of 2018-06-12 already the above constructor now properly 403 fails on
     # on authentication error. Still leaving this here in case behavior changes again in the
@@ -291,7 +292,10 @@ def main(jira_user, jira_password, mongo_uri, projects, batch, debug):
 
     You will be prompted for --jira-user and --jira-password if not provided.
     """
-    log.setup_logging(debug)
-    jira_client, _ = new_jira_client(jira_user, jira_password)
-    mongo_client = pymongo.MongoClient(mongo_uri)
-    EtlJira(jira_client, mongo_client, projects, batch).run()
+    try:
+        log.setup_logging(debug)
+        jira_client, _ = new_jira_client(jira_user, jira_password)
+        mongo_client = pymongo.MongoClient(mongo_uri)
+        EtlJira(jira_client, mongo_client, projects, batch).run()
+    except Exception as err:  # pylint: disable=broad-except
+        LOG.error('Unexpected Exception loading JIRA project data.', exception=err)

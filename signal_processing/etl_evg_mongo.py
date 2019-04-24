@@ -305,7 +305,7 @@ def _etl_evg_mongo(evg_client, mongo_uri, projects, progressbar, pool_size=1):
 @click.option(
     '-l',
     '--logfile',
-    default='etl_evg_mongo.log',
+    default='/dev/stdout',
     help='The log file location. Use /dev/stdout (or stderr) for console.')
 @click.option('--progressbar/--no-progressbar', default=False)
 @click.option('--all', 'all_projects', default=False, is_flag=True)
@@ -379,4 +379,8 @@ Examples:
     jobs_with_exceptions = _etl_evg_mongo(
         evg_client, mongo_uri, list(projects), progressbar, pool_size=pool_size)
 
+    # Since this job is meant to be run as cron job in the mongodb.sh platform, we don't
+    # want to exit with a non-zero return code if we hit an error. So, we will override
+    # the 'fail' method on context to just log the failure message and not exit.
+    context.fail = LOG.info
     jobs.handle_exceptions(context, jobs_with_exceptions, logfile)
