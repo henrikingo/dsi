@@ -148,5 +148,5 @@ buildvariants:
   - name: osx-runner
     display_name: OSX
     run_on:
-      - "macos-1012"
+      - "macos-1014"
     tasks: *dsi_tasks
