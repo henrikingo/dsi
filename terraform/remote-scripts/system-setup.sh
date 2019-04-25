@@ -92,6 +92,11 @@ fi
 ##
 create_required_directories
 
+##
+# Disable Hyperthreading
+##
+disable_hyperthreading
+
 
 ##
 # Run FIO to warm up disk
