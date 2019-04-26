@@ -67,8 +67,10 @@ def get_bad_messages(task):
 # Whitelisting message "older than oldest timestamp" until SERVER-38871 is done (TODO: TIG-1357)
 MESSAGE_WHITELIST = [
     msg.lower()
-    for msg in
-    ["ttl query execution for index", "not starting an election", "older than oldest timestamp"]
+    for msg in [
+        "ttl query execution for index", "not starting an election", "older than oldest timestamp",
+        "less than the oldest timestamp"
+    ]
 ]
 
 # Resource sanity check rules
