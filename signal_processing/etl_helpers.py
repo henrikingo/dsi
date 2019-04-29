@@ -46,6 +46,41 @@ def load(perf_json, mongo_uri, tests=None):
             ordered=False)
 
 
+def _filter_non_test_results(results):
+    """
+    Remove non-results data from a results section of a test_results dict.
+
+    This will filter out the 'start' and 'end' keys.
+
+    :param results: results section to filter.
+    :return: results with non-results data filtered out.
+    """
+    ignored_keys = {'start', 'end'}
+    return {k: v for k, v in results.items() if k not in ignored_keys}
+
+
+def _is_valid_result(test_result, tests):
+    """
+    Determine if the given test_result contains valid data.
+
+    :param test_result: test_result to check.
+    :param tests: List of tests to upload.
+    :return: True if the test_result contains valid data.
+    """
+    if tests is not None and test_result['name'] not in tests:
+        return False
+
+    if 'start' not in test_result and 'start' not in test_result['results']:
+        return False
+
+    results = _filter_non_test_results(test_result['results'])
+    if all('ops_per_sec' not in result for _, result in results.items()):
+        LOG.warn('no ops_per_sec, skipping', test_result=test_result)
+        return False
+
+    return True
+
+
 def translate_points(perf_json, tests):
     """
     Take the data from perf_json and extract the necessary information to create documents for the
@@ -59,10 +94,9 @@ def translate_points(perf_json, tests):
     """
     points = []
     for test_result in perf_json['data']['results']:
-        if tests is not None and test_result['name'] not in tests:
+        if not _is_valid_result(test_result, tests):
             continue
-        if 'start' not in test_result and 'start' not in test_result['results']:
-            continue
+
         point = {}
         point['project'] = perf_json['project_id']
         point['task'] = perf_json['task_name']
@@ -136,12 +170,11 @@ def _get_max_ops_per_sec(test_result):
     """
     max_ops_per_sec = None
     max_thread_level = None
-    for key, thread_level in test_result['results'].iteritems():
-        if not key.isdigit() and key != 'start' and key != 'end':
+    results = _filter_non_test_results(test_result['results'])
+    for key, thread_level in results.items():
+        if not key.isdigit():
             LOG.warn(
                 'Invalid thread level value found', results_item_key=key, thread_level=thread_level)
-            continue
-        elif key == 'start' or key == 'end':
             continue
         if max_ops_per_sec is None or max_ops_per_sec < thread_level['ops_per_sec']:
             max_ops_per_sec = thread_level['ops_per_sec']

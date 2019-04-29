@@ -228,3 +228,100 @@ class TestCreateDescriptor(unittest.TestCase):
             'task': 'task_name',
             'test': 'test',
         })
+
+
+class TestFilterNonTestResults(unittest.TestCase):
+    def test_empty_results(self):
+        self.assertDictEqual({}, etl_helpers._filter_non_test_results({}))
+
+    def test_filters_out_start_end_tasks(self):
+        results = {
+            'start': 'start',
+            'item 1': 'item 1',
+            'item 2': 'item 2',
+            'end': 'end',
+            'item 3': 'item 3'
+        }
+        filtered = etl_helpers._filter_non_test_results(results)
+        self.assertNotIn('start', filtered)
+        self.assertNotIn('end', filtered)
+        self.assertEqual(3, len(filtered.keys()))
+
+    def test_does_not_filters_out_non_start_end_tasks(self):
+        results = {
+            'item 1': 'item 1',
+            'item 2': 'item 2',
+            'item 3': 'item 3'
+        }  # yapf: disable
+        filtered = etl_helpers._filter_non_test_results(results)
+        self.assertDictEqual(results, filtered)
+
+
+class TestIsValidResults(unittest.TestCase):
+    def test_result_with_name_not_in_tests_not_valid(self):
+        test_name = 'test_name'
+        tests = ['test 0', 'test 2']
+        test_result = {'name': test_name}
+
+        self.assertFalse(etl_helpers._is_valid_result(test_result, tests))
+
+    def test_result_with_name_in_tests_is_valid(self):
+        test_name = 'test_name'
+        tests = ['test 0', test_name, 'test 2']
+        test_result = {
+            'name': test_name,
+            'results': {
+                'start': 'start',
+                '1': {
+                    'ops_per_sec': 100,
+                }
+            }
+        }
+
+        self.assertTrue(etl_helpers._is_valid_result(test_result, tests))
+
+    def test_result_with_no_tests_is_valid(self):
+        test_name = 'test_name'
+        tests = None
+        test_result = {
+            'name': test_name,
+            'start': 'start',
+            'results': {
+                '1': {
+                    'ops_per_sec': 100,
+                }
+            }
+        }
+
+        self.assertTrue(etl_helpers._is_valid_result(test_result, tests))
+
+    def test_result_with_no_start_is_invalid(self):
+        test_name = 'test_name'
+        tests = None
+        test_result = {
+            'name': test_name,
+            'results': {
+                '1': {
+                    'ops_per_sec': 100,
+                }
+            }
+        }  # yapf: disable
+
+        self.assertFalse(etl_helpers._is_valid_result(test_result, tests))
+
+    def test_result_with_no_ops_per_sec_is_invalid(self):
+        test_name = 'test_name'
+        tests = None
+        test_result = {
+            'name': test_name,
+            'results': {
+                '1': {
+                    'ops_per_sec': 100,
+                },
+                '8': {
+                    # Does not contain ops_per_sec.
+                }
+            }
+        }
+
+        self.assertFalse(etl_helpers._is_valid_result(test_result, tests))

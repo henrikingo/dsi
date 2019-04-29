@@ -371,7 +371,7 @@ it requires Atlas database access.
 
 ### Installation
 
-Install using the same intructions as the change points CLI.
+Install using the same instructions as the change points CLI.
 
 ### Invocation
 
@@ -488,3 +488,25 @@ patch diagnostic archive or add an ```is_patch:true``` flag to runtime.yml.
 1. Run detect_changes from ~/tmp/test_detect_changes directory:
 
     $ cd ~/tmp/test_detect_changes && detect-changes
+    
+    
+# ETL Scripts
+ 
+There are two ETL scripts for transforming data, etl-jira-mongo and etl-evg-mongo. 
+ 
+### Troubleshooting
+ 
+#### MacOS
+ 
+The etl-evg-mongo script may hit the following error on Macs:
+
+```
+objc[11135]: +[__NSPlaceholderDate initialize] may have been in progress in another thread when fork() was called.
+objc[11134]: +[__NSPlaceholderDate initialize] may have been in progress in another thread when fork() was called.
+```
+
+This can be worked around by adding the `OBJC_DISABLE_INITALIZE_FORK_SAFETY=yes` to the environment the scripts is executing in.
+
+```
+OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES etl-evg-mongo --mongo-uri mongodb://localhost/perf -d --project sys-perf
+```
