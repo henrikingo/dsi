@@ -67,6 +67,15 @@ class _BaseRunner(object):
 
         return status
 
+    @property
+    def numactl_prefix(self):
+        """
+        Bind a process to a single CPU socket but use RAM connected to all sockets.
+
+        This configuration is duplicated in YAML as infrastructure_provisioning.numactl_prefix
+        """
+        return 'numactl --interleave=all --cpunodebind=1'
+
     @staticmethod
     def get_default_output_files():
         """
@@ -132,8 +141,8 @@ class GennyRunner(_BaseRunner):
     def _do_run(self, host, out):
         commands = [
             'mkdir -p metrics',
-            'genny/bin/genny run -u "{}" -m cedar-csv -o ./genny-perf.csv {}'.format(
-                self.db_url, self.workload_config),
+            '{} genny/bin/genny run -u "{}" -m cedar-csv -o ./genny-perf.csv {}'.format(
+                self.numactl_prefix, self.db_url, self.workload_config),
             'genny-metrics-legacy-report --report-file genny-perf.json genny-perf.csv'
         ]
 
@@ -185,7 +194,7 @@ class GennySelfTestRunner(_BaseRunner):
         for command in commands:
             # Write the output of genny to the ephemeral drive (mounted on ~/data)
             # to ensure it has enough disk space.
-            command = 'cd ./data; ' + command
+            command = '{} && {} {}'.format('cd ./data', self.numactl_prefix, command)
 
             exit_code = host.exec_command(
                 command, stdout=out, stderr=out, no_output_timeout_ms=self.timeout, get_pty=True)

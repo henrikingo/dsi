@@ -137,8 +137,8 @@ class GetTestRunnerTestCase(unittest.TestCase):
         runner = get_test_runner(self.get_test_config('genny'), self.get_god_config(False))
         call_args = [
             'cd ./data; mkdir -p metrics',
-            'cd ./data; genny/bin/genny run -u "dummy_mongodb_url" -m cedar-csv '
-            '-o ./genny-perf.csv dummy_config_filename',
+            'cd ./data; numactl --interleave=all --cpunodebind=1 '
+            'genny/bin/genny run -u "dummy_mongodb_url" -m cedar-csv -o ./genny-perf.csv dummy_config_filename',
             'cd ./data; genny-metrics-legacy-report --report-file genny-perf.json genny-perf.csv',
         ]
         mock_host = Mock(spec=RemoteHost)
