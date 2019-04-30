@@ -13,7 +13,7 @@ import re
 from nose.tools import nottest
 
 import cedar
-from bin import test_runner
+from testcontrollib import test_runner
 
 LOG = logging.getLogger(__name__)
 

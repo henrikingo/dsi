@@ -129,6 +129,7 @@ setup(
     packages=['aws_tools',
               'bin',
               'bin.common',
+              'bin.testcontrollib',
               'signal_processing',
               'signal_processing.change_points',
               'signal_processing.commands',

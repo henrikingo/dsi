@@ -24,7 +24,7 @@ import common.log
 import common.cedar as cedar
 from common.workload_output_parser import parse_test_results, validate_config
 
-import test_runner
+from testcontrollib import test_runner
 
 LOG = logging.getLogger(__name__)
 

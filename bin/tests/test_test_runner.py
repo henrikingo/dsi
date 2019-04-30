@@ -11,8 +11,8 @@ from mock import Mock, call
 
 from common.remote_host import RemoteHost
 
-import test_runner
-from test_runner import get_test_runner
+from testcontrollib import test_runner
+from testcontrollib.test_runner import get_test_runner
 
 
 class GetTestRunnerTestCase(unittest.TestCase):
