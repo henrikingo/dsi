@@ -57,13 +57,16 @@ def create_task_rejector(results=[],
                          variant='variant',
                          task='task',
                          order=0,
+                         revision='revision',
                          mongo_uri='mongo_uri',
                          patch=False,
                          status=None,
                          config=None):
     if not status:
         status = {'failures': 0}
-    tar = TaskAutoRejector(results, project, variant, task, order, mongo_uri, patch, status, config)
+    perf_json = {'order': order, 'revision': revision}
+    tar = TaskAutoRejector(results, project, variant, task, perf_json, mongo_uri, patch, status,
+                           config)
     config = DEFAULT_CONFIG if config is None else config
     tar._config = config
     for result in tar.results:

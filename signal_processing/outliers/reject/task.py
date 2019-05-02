@@ -57,6 +57,7 @@ import structlog
 from bson import Regex
 from nose.tools import nottest
 
+from signal_processing.commands.helpers import WHITELISTED_OUTLIER_TASKS, MUTE_OUTLIERS
 from signal_processing.model.configuration import ConfigurationModel, combine_outlier_configs
 from signal_processing.model.points import PointsModel
 from signal_processing.outliers.list_mutes import mute_expired
@@ -94,14 +95,14 @@ class TaskAutoRejector(object):
     """
 
     # pylint: disable=too-few-public-methods,too-many-arguments, too-many-instance-attributes
-    def __init__(self, results, project, variant, task, order, mongo_uri, patch, status,
+    def __init__(self, results, project, variant, task, perf_json, mongo_uri, patch, status,
                  override_config):
         """
         :param list(dict) results: The outlier test results for this task.
         :param str project: The project name for this task.
         :param str variant: The variant for this task.
         :param str task: The task name for this task.
-        :param int order: The order value for this task.
+        :param dict perf_json: The performance data for this task.
         :param str mongo_uri: The uri to connect to the cluster.
         :param bool patch: True if this is a patch.
         :param dict status: The task status.
@@ -115,10 +116,15 @@ class TaskAutoRejector(object):
         self.task = task
         self.task_identifier = {'project': self.project, 'variant': self.variant, 'task': self.task}
 
-        self.order = order
+        self.revision = perf_json['revision']
+        self.order = perf_json['order']
+
         self.mongo_uri = mongo_uri
         self.patch = patch
         self.status = status
+
+        self._whitelisted = None
+
         self._points_model = None
         self._configuration_model = None
 
@@ -208,6 +214,7 @@ class TaskAutoRejector(object):
             # A point is not an outlier and is not rejects if it is not a confirmed outlier and it
             was not an outlier when initially run.
 
+        If the task is whitelisted then no rejects are returned.
         Point that are outliers or rejects should not be displayed.
 
         :param TaskAutoRejector auto_rejector: The auto rejector instance.
@@ -306,6 +313,20 @@ class TaskAutoRejector(object):
         """
         latest_order = test.full_series['orders'][-1]
         return self.order >= latest_order
+
+    @property
+    def whitelisted(self):
+        """
+        Check if this task is whitelisted.
+        :return: True if this task is whitelisted.
+        """
+        if self._whitelisted is None:
+            whitelist_collection = self.points_model.db[WHITELISTED_OUTLIER_TASKS]
+            whitelist_query = dict(revision=self.revision, **self.task_identifier)
+            whitelisted = whitelist_collection.find_one(whitelist_query)
+            LOG.debug('whitelisted', found=whitelisted)
+            self._whitelisted = whitelisted is not None
+        return self._whitelisted
 
 
 @nottest
@@ -414,7 +435,7 @@ class TestAutoRejector(object):
         :return: True if this task is muted.
         """
         if self._muted is None:
-            mutes_collection = self.task.points_model.db['mute_outliers']
+            mutes_collection = self.task.points_model.db[MUTE_OUTLIERS]
             mute = mutes_collection.find(self.test_identifier) \
                 .sort('order', pymongo.DESCENDING) \
                 .limit(1)

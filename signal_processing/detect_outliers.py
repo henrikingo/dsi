@@ -563,7 +563,7 @@ def detect_outliers(task_id,
                 project,
                 variant,
                 task,
-                perf_json['order'],
+                perf_json,
                 mongo_uri,
                 patch,
                 status,
@@ -574,6 +574,12 @@ def detect_outliers(task_id,
             update_outlier_status(auto_rejector.points_model, updates)
 
             rejects = auto_rejector.filtered_rejects()
+            if auto_rejector.whitelisted:
+                LOG.info(
+                    'detect_outliers task whitelisted',
+                    rejects=rejects,
+                    whitelisted=auto_rejector.whitelisted)
+                rejects = []
         else:
             rejects = []
 

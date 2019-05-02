@@ -133,7 +133,7 @@ class TestDetectOutliers(unittest.TestCase):
                 task_id, override_config, MONGO_URI, is_patch, pool_size, rejects_file, progressbar)
             self.assertListEqual([], completed_jobs)
 
-    def _test(self, mock_driver, mock_evg_cl, successful_jobs=None):
+    def _test(self, mock_driver, mock_evg_cl, successful_jobs=None, whitelisted=None):
         # pylint: disable=too-many-locals
         task_id = 'task_id'
         pool_size = 7
@@ -162,6 +162,10 @@ class TestDetectOutliers(unittest.TestCase):
              patch(ns('get_updates')) as mock_get_updates, \
              patch(ns('update_outlier_status')) as mock_update_outlier_status, \
              patch(ns('helpers.extract_test_identifiers')) as mock_extract_test_identifiers:
+            if whitelisted is not None:
+                mock_task_rejector_clazz.return_value = MagicMock(
+                    name='task_rejector', whitelisted=whitelisted)
+
             mock_extract_test_identifiers.return_value = [{
                 'project': project,
                 'variant': variant,
@@ -183,12 +187,14 @@ class TestDetectOutliers(unittest.TestCase):
         mock_runner.run.assert_called_once()
         if mock_runner.run.return_value:
             mock_task_rejector = mock_task_rejector_clazz.return_value
+            if whitelisted:
+                rejects = []
+            else:
+                rejects = mock_task_rejector_clazz.return_value.filtered_rejects.return_value
 
-            rejects = mock_task_rejector_clazz.return_value.filtered_rejects.return_value
-
-            mock_task_rejector_clazz.assert_called_once_with(
-                ['result'], project, variant, task, mock_perf_json.__getitem__.return_value,
-                MONGO_URI, is_patch, status, override_config)
+            mock_task_rejector_clazz.assert_called_once_with(['result'], project, variant, task,
+                                                             mock_perf_json, MONGO_URI, is_patch,
+                                                             status, override_config)
             mock_get_updates.assert_called_once_with(mock_task_rejector)
             mock_update_outlier_status.assert_called_once_with(mock_task_rejector.points_model,
                                                                mock_get_updates.return_value)
@@ -211,7 +217,16 @@ class TestDetectOutliers(unittest.TestCase):
         Test detect_outliers.detect_outliers rejection functionality.
         """
         successful_jobs = [MagicMock(name='success', exception=False, result='result')]
-        self._test(mock_driver, mock_evg_cl, successful_jobs)
+        self._test(mock_driver, mock_evg_cl, successful_jobs, whitelisted=False)
+
+    @patch(ns('evergreen_client.Client'), autospec=True)
+    @patch(ns('DetectOutliersDriver'), autospec=True)
+    def test_reject_whitelisted(self, mock_driver, mock_evg_cl):
+        """
+        Test detect_outliers.detect_outliers rejection functionality.
+        """
+        successful_jobs = [MagicMock(name='success', exception=False, result='result')]
+        self._test(mock_driver, mock_evg_cl, successful_jobs, whitelisted=True)
 
 
 class TestRunDetection(unittest.TestCase):

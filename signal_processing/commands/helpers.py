@@ -71,6 +71,7 @@ BUILD_FAILURES = 'build_failures'
 MUTE_OUTLIERS = 'mute_outliers'
 OUTLIERS = 'outliers'
 MARKED_OUTLIERS = 'marked_outliers'
+WHITELISTED_OUTLIER_TASKS = 'whitelisted_outlier_tasks'
 
 DEFAULT_MONGO_URI = 'mongodb+srv://performancedata-g6tsc.mongodb.net/perf'
 
@@ -146,6 +147,7 @@ class CommandConfiguration(object):
                  mute_outliers=MUTE_OUTLIERS,
                  outliers=OUTLIERS,
                  marked_outliers=MARKED_OUTLIERS,
+                 whitelisted_outlier_tasks=WHITELISTED_OUTLIER_TASKS,
                  auth_mode=None,
                  mongo_username=None,
                  mongo_password=None):
@@ -173,6 +175,7 @@ class CommandConfiguration(object):
         :param str mute_outliers: The mute_outliers collection name.
         :param str outliers: The outliers collection name.
         :param str marked_outliers: The marked_outliers collection name.
+        :param str whitelisted_outlier_tasks: The whitelisted_outlier_tasks collection name.
         :param str auth_mode: How mongo db credentials are obtained.
         :param str mongo_username: The mongo db username.
         :param str mongo_password: The mongo db password.
@@ -202,6 +205,7 @@ class CommandConfiguration(object):
             'mute_outliers': mute_outliers,
             'outliers': outliers,
             'marked_outliers': marked_outliers,
+            'whitelisted_outlier_tasks': whitelisted_outlier_tasks,
         })
 
     # pylint: disable=attribute-defined-outside-init
@@ -362,6 +366,19 @@ class CommandConfiguration(object):
                 self.database.get_collection(self.marked_outliers_name)
         return self._marked_outliers
 
+    # pylint disable=attribute-defined-outside-init
+    @property
+    def whitelisted_outlier_tasks(self):
+        """
+        Get the collection instance for self.database_name / self.whitelisted_outlier_tasks_name.
+
+        :return: collection.
+        """
+        if self._whitelisted_outlier_tasks is None:
+            self._whitelisted_outlier_tasks = \
+                self.database.get_collection(self.whitelisted_outlier_tasks_name)
+        return self._whitelisted_outlier_tasks
+
     def __getstate__(self):
         """
         Get state for pickle support.
@@ -393,6 +410,7 @@ class CommandConfiguration(object):
             'mute_outliers': self.mute_outliers_name,
             'outliers': self.outliers_name,
             'marked_outliers': self.marked_outliers_name,
+            'whitelisted_outlier_tasks': self.whitelisted_outlier_tasks_name,
             'style': self.style,
             'mongo_repo': self._mongo_repo
         }
@@ -449,6 +467,9 @@ class CommandConfiguration(object):
 
         self._marked_outliers = None
         self.marked_outliers_name = state['marked_outliers']
+
+        self._whitelisted_outlier_tasks = None
+        self.whitelisted_outlier_tasks_name = state['whitelisted_outlier_tasks']
 
         self.style = state['style']
         self._mongo_repo = state['mongo_repo']

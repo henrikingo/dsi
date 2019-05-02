@@ -23,6 +23,25 @@ def create_outliers_indexes(command_config):
     }])
 
 
+# whitelisted_outlier_tasks
+def create_whitelist_indexes(command_config):
+    """
+    Create indexes for the whitelisted_outlier_tasks collection.
+
+    :param CommandConfig command_config: Common configuration.
+    """
+    # pylint: disable=invalid-name
+    LOG.debug('create whitelisted_outlier_tasks indexes')
+    create_indexes(command_config.whitelisted_outlier_tasks, [{
+        'keys': [("revision", pymongo.ASCENDING),
+                 ("project", pymongo.ASCENDING),
+                 ("variant", pymongo.ASCENDING),
+                 ("task", pymongo.ASCENDING),
+                ],
+        'options': {'unique': True}
+    }])  # yapf: disable
+
+
 def manage(command_config):
     """
     Manage the database. At the moment, this command contains code to
@@ -31,3 +50,4 @@ def manage(command_config):
     """
 
     create_outliers_indexes(command_config)
+    create_whitelist_indexes(command_config)

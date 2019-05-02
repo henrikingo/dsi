@@ -9,6 +9,7 @@ import unittest
 import bson
 from mock import MagicMock, patch
 
+from signal_processing.commands.helpers import WHITELISTED_OUTLIER_TASKS
 from signal_processing.model.configuration import DEFAULT_CONFIG, OutlierConfiguration
 from signal_processing.outliers.reject.tests.helper import create_task_rejector, load_status, \
     test_identifier
@@ -32,6 +33,7 @@ class TestTaskAutoRejector(unittest.TestCase):
         self.assertEquals('project', self.subject.project)
         self.assertEquals('variant', self.subject.variant)
         self.assertEquals('task', self.subject.task)
+        self.assertEquals('revision', self.subject.revision)
         self.assertEquals(0, self.subject.order)
         self.assertEquals('mongo_uri', self.subject.mongo_uri)
         self.assertEquals({'failures': 0}, self.subject.status)
@@ -363,8 +365,8 @@ class TestCanaryPattern(unittest.TestCase):
         self.assertEquals(flags, subject.canary_pattern.flags)
 
 
-class TestCanaryPattern(unittest.TestCase):
-    """Tests for canary_pattern."""
+class TestCorrectnessPattern(unittest.TestCase):
+    """Tests for correctness_pattern."""
 
     def test_re(self):
         correctness_pattern = re.compile('pattern')
@@ -460,3 +462,38 @@ class TestTaskLatest(unittest.TestCase):
         for i in range(len(orders)):
             mock_test = MagicMock(name='test', full_series={'orders': orders[:i + 1]})
             self.assertTrue(task.latest(mock_test))
+
+
+class TestWhitelisted(unittest.TestCase):
+    """Tests for TaskRejector.whitelisted."""
+
+    def _test(self, found=True):
+        query = dict(
+            revision='c1e9a0774ce6e01ea55729cade50c1586cb6602d',
+            project='sys-pef',
+            variant='linux-standalone',
+            task='bestbuy-agg')
+        task = create_task_rejector(**query)
+        model_mock = MagicMock(name='points model')
+        collection_mock = MagicMock(name='whitelisted collection')
+        model_mock.db.__getitem__.return_value = collection_mock
+        if found:
+            whitelist_mock = MagicMock(name='whitelist')
+        else:
+            whitelist_mock = None
+
+        collection_mock.find_one.return_value = whitelist_mock
+        task._points_model = model_mock
+
+        self.assertEquals(task.whitelisted, found)
+        self.assertEquals(task.whitelisted, found)
+        model_mock.db.__getitem__.assert_called_once_with(WHITELISTED_OUTLIER_TASKS)
+        collection_mock.find_one.assert_called_once_with(query)
+
+    def test_found(self):
+        """ test whitelist found. """
+        self._test()
+
+    def test_not_found(self):
+        """ test whitelist not found. """
+        self._test(found=False)

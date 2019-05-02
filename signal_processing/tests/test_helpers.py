@@ -269,6 +269,12 @@ class TestCommandConfiguration(unittest.TestCase):
         self.assertEqual('processed_change_points', subject.processed_change_points_name)
         self.assertEqual('unprocessed_change_points', subject.unprocessed_change_points_name)
         self.assertEqual('build_failures', subject.build_failures_name)
+
+        self.assertEqual('mute_outliers', subject.mute_outliers_name)
+        self.assertEqual('outliers', subject.outliers_name)
+        self.assertEqual('marked_outliers', subject.marked_outliers_name)
+        self.assertEqual('whitelisted_outlier_tasks', subject.whitelisted_outlier_tasks_name)
+
         self.assertEqual(('style', ), subject.style)
         self.assertEqual('token_file', subject.token_file)
         self.assertEqual('credentials', subject.credentials)
@@ -280,6 +286,11 @@ class TestCommandConfiguration(unittest.TestCase):
         self.assertEqual(mock_collection, subject.processed_change_points)
         self.assertEqual(mock_collection, subject.unprocessed_change_points)
         self.assertEqual(mock_collection, subject.build_failures)
+
+        self.assertEqual(mock_collection, subject.mute_outliers)
+        self.assertEqual(mock_collection, subject.outliers)
+        self.assertEqual(mock_collection, subject.marked_outliers)
+        self.assertEqual(mock_collection, subject.whitelisted_outlier_tasks)
 
     @patch('signal_processing.commands.helpers.new_mongo_client', autospec=True)
     def test_mongo_username_password_can_be_specified(self, new_mongo_client_mock):

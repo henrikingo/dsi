@@ -19,10 +19,12 @@ class TestManage(unittest.TestCase):
     """Test for the manage function."""
 
     @patch(ns('create_outliers_indexes'))
-    def test_manage(self, create_indexes_mock):
+    @patch(ns('create_whitelist_indexes'))
+    def test_manage(self, create_whitelist_indexes_mock, create_indexes_mock):
         mock_command_config = MagicMock()
         manage.manage(mock_command_config)
         create_indexes_mock.assert_called_with(mock_command_config)
+        create_whitelist_indexes_mock.assert_called_with(mock_command_config)
 
 
 class TestCreateOutliersIndexes(unittest.TestCase):
@@ -35,5 +37,19 @@ class TestCreateOutliersIndexes(unittest.TestCase):
 
         calls = [
             call([('project', 1), ('variant', 1), ('task', 1), ('test', 1), ('order', 1)]),
+        ]
+        mock_collection.create_index.assert_has_calls(calls)
+
+
+class TestCreateWhitelistIndexes(unittest.TestCase):
+    """Tests for create_whitelist_indexes."""
+
+    def test_create_whitelist_indexes(self):
+        mock_collection = MagicMock()
+        mock_command_config = MagicMock(whitelisted_outlier_tasks=mock_collection)
+        manage.create_whitelist_indexes(mock_command_config)
+
+        calls = [
+            call([('revision', 1), ('project', 1), ('variant', 1), ('task', 1)], unique=True),
         ]
         mock_collection.create_index.assert_has_calls(calls)
