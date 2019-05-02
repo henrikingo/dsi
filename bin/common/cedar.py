@@ -112,7 +112,7 @@ class CedarTest(object):
     def add_metric(self, name, rollup_type, value, user_submitted=False):
         """
         Add a "rollup" (calculated) metric to a test. This must be of the
-        predefined types specifed above.
+        predefined types specified above.
 
         For the parameters see `TestMetric.__init__`.
         """

@@ -1,0 +1,5 @@
+task_name: genny_canaries
+run:
+  - id: genny_canaries
+    type: genny_canaries
+    skip_validate: true

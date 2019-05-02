@@ -1,5 +1,0 @@
-task_name: genny_self_tests
-run:
-  - id: genny_self_tests
-    type: genny_self_tests
-    skip_validate: true

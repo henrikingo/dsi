@@ -18,7 +18,7 @@ from testcontrollib import test_runner
 LOG = logging.getLogger(__name__)
 
 SUPPORTED_TYPES = {
-    'shell', 'mongoshell', 'ycsb', 'fio', 'iperf', 'linkbench', 'tpcc', 'genny', 'genny_self_tests'
+    'shell', 'mongoshell', 'ycsb', 'fio', 'iperf', 'linkbench', 'tpcc', 'genny', 'genny_canaries'
 }
 
 
@@ -58,7 +58,7 @@ def parser_factory(test, config, timer):
         'linkbench': LinkbenchResultParser,
         'tpcc': TPCCResultParser,
         'genny': GennyResultsParser,
-        'genny_self_tests': GennySelfTestsParser,
+        'genny_canaries': GennyCanariesParser,
     }
     if test['type'] not in parsers:
         raise ValueError("parser_factory: Unsupported test type: {}".format(test['type']))
@@ -307,7 +307,7 @@ class GennyResultsParser(ResultParser):
                 self.add_result(name, result, threads)
 
 
-class GennySelfTestsParser(ResultParser):
+class GennyCanariesParser(ResultParser):
     """A ResultParser for Genny self-tests"""
 
     def __init__(self, test, config, timer):
@@ -316,11 +316,11 @@ class GennySelfTestsParser(ResultParser):
         :param ConfigDict config top-level
         :param timer used by ResultParser
         """
-        super(GennySelfTestsParser, self).__init__(test, config, timer)
+        super(GennyCanariesParser, self).__init__(test, config, timer)
         self.input_dir = os.path.join(self.reports_root, test['id'])
 
     def _parse(self):
-        for metrics_file in test_runner.GennySelfTestRunner.get_default_output_files():
+        for metrics_file in test_runner.GennyCanariesRunner.get_default_output_files():
             location_on_controller_host = os.path.join(self.input_dir,
                                                        os.path.basename(metrics_file))
             with open(location_on_controller_host) as file_handle:
@@ -335,7 +335,7 @@ class GennySelfTestsParser(ResultParser):
                     result = int(components[1])
                     threads = "1"
                     metrics_type = "avg_latency_picoseconds"
-                    self.add_result(name, result, threads, metrics_type)
+                    self.add_result('{}_{}'.format(name, metrics_type), result, threads)
                     self.cedar_test.add_metric(name=metrics_type, rollup_type='MEAN', value=result)
 
 

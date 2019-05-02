@@ -51,7 +51,7 @@ genny: &compile_genny
         sudo pip3 install .
 
 
-genny_self_tests: *compile_genny
+genny_canaries: *compile_genny
 
 
 mongoshell:

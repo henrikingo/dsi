@@ -112,14 +112,14 @@ class GetTestRunnerTestCase(unittest.TestCase):
         ]
         self.call_runner_run(runner, report_str, output_file_calls)
 
-    def test_get_genny_self_test_runner(self):
+    def test_get_genny_canaries_runner(self):
         """
         Can get the genny test runner for "genny" tests.
         """
-        runner = get_test_runner(self.get_test_config('genny_self_tests'), self.get_god_config())
-        self.assertIsInstance(runner, test_runner.GennySelfTestRunner)
+        runner = get_test_runner(self.get_test_config('genny_canaries'), self.get_god_config())
+        self.assertIsInstance(runner, test_runner.GennyCanariesRunner)
 
-        report_str = '\nexit_status: 0 \'GennySelfTestRunner.run()\'\n'
+        report_str = '\nexit_status: 0 \'GennyCanariesRunner.run()\'\n'
         output_file_calls = [
             call('data/nop.csv', 'reports/dummy_test/nop.csv'),
             call('data/ping.csv', 'reports/dummy_test/ping.csv')

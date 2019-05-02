@@ -168,13 +168,13 @@ class GennyRunner(_BaseRunner):
         return StatusWithMessage(0, 'GennyRunner.run()')
 
 
-class GennySelfTestRunner(_BaseRunner):
+class GennyCanariesRunner(_BaseRunner):
     """
     Class for running Genny performance self tests.
     """
 
     def __init__(self, db_url, **kwargs):
-        super(GennySelfTestRunner, self).__init__(**kwargs)
+        super(GennyCanariesRunner, self).__init__(**kwargs)
         self.db_url = db_url
         self.output_files = self.get_default_output_files()
 
@@ -204,7 +204,7 @@ class GennySelfTestRunner(_BaseRunner):
                 return StatusWithMessage(exit_code, command)
 
         # Log a short message on success.
-        return StatusWithMessage(0, 'GennySelfTestRunner.run()')
+        return StatusWithMessage(0, 'GennyCanariesRunner.run()')
 
 
 @nottest
@@ -238,7 +238,7 @@ def get_test_runner(test_config, god_config):
     if test_type == 'genny':
         workload_config_path = test_config['config_filename']
         return GennyRunner(workload_config_path, db_url, **runner_config)
-    elif test_type == 'genny_self_tests':
-        return GennySelfTestRunner(db_url, **runner_config)
+    elif test_type == 'genny_canaries':
+        return GennyCanariesRunner(db_url, **runner_config)
 
     return _ShellRunner(test_config['cmd'], **runner_config)
