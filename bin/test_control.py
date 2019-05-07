@@ -34,7 +34,6 @@ def legacy_copy_perf_output():
     if os.path.exists('../perf.json'):
         os.remove('../perf.json')
     shutil.copyfile('perf.json', '../perf.json')
-
     # Read perf.json into the log file
     with open('../perf.json') as perf_file:
         for line in perf_file:
@@ -121,12 +120,20 @@ def run_test(test, config):
     return status
 
 
+class TestStatus(object):
+    """Status of this script."""
+    FAILED = 'failed'
+    SUCCESS = 'succeeded'
+    ERROR = 'failed with unknown error'
+
+
 # pylint: disable=too-many-branches,too-many-statements,too-many-nested-blocks
 @nottest
 def run_tests(config):
     """Main logic to run tests
 
-    :return: True if all tests passed
+    :return: True if all tests failed or an error occurred.
+             No more tests are run when an error is encountered.
     """
     test_control_config = config['test_control']
     mongodb_setup_config = config['mongodb_setup']
@@ -143,25 +150,27 @@ def run_tests(config):
     else:
         test_delay_seconds = 0
 
-    # array containing the status of each test
-    statuses = []
+    num_tests_run = 0
+    num_tests_failed = 0
 
     # cedar reporting
     report = cedar.Report(config.get('runtime'))
+
+    # Default the status to ERROR to catch unexpected failures.
+    # If a tests succeeds, the status is explicitly set to SUCCESS.
+    cur_test_status = TestStatus.ERROR
 
     try:
         if os.path.exists('perf.json'):
             os.remove('perf.json')
             LOG.warning("Found old perf.json file. Overwriting.")
 
-        for index, test in enumerate(test_control_config['run']):
-            # the exit code for the current test
-            error = False
+        for test in test_control_config['run']:
             LOG.info('running test %s', test)
             timer = {}
             try:
                 # Only run between_tests after the first test.
-                if index > 0:
+                if num_tests_run > 0:
                     run_pre_post_commands('between_tests',
                                           [mongodb_setup_config, test_control_config], config,
                                           EXCEPTION_BEHAVIOR.RERAISE)
@@ -177,10 +186,16 @@ def run_tests(config):
                 timer['start'] = time.time()
                 # Run the actual task
                 run_test(test, config)
-            except:  # pylint: disable=bare-except
+            except subprocess.CalledProcessError:
                 LOG.error("test %s failed.", test['id'], exc_info=1)
-                error = True
+                cur_test_status = TestStatus.FAILED
+            except:  # pylint: disable=bare-except
+                LOG.error("Unexpected failure in test %s.", test['id'], exc_info=1)
+                cur_test_status = TestStatus.ERROR
+            else:
+                cur_test_status = TestStatus.SUCCESS
 
+            num_tests_run += 1
             timer['end'] = time.time()
 
             try:
@@ -190,19 +205,26 @@ def run_tests(config):
                                       [test, test_control_config, mongodb_setup_config], config,
                                       EXCEPTION_BEHAVIOR.CONTINUE, test['id'])
             except:  # pylint: disable=bare-except
+                # The post test activities failing implies the test failing.
                 LOG.error("Post-test activities failed after test %s.", test['id'], exc_info=1)
-                error = True
 
-            statuses.append(error)
-            if error:
-                LOG.warning("Unsuccessful test run for test %s. Parsing results now", test['id'])
+                # Don't "downgrade" from ERROR to FAILED.
+                if cur_test_status != TestStatus.ERROR:
+                    cur_test_status = TestStatus.FAILED
+
+            if cur_test_status == TestStatus.FAILED:
+                num_tests_failed += 1
+                LOG.warn("Unsuccessful test run for test %s. Parsing results now", test['id'])
+            elif cur_test_status == TestStatus.ERROR:
+                LOG.warn("Unknown error in test %s, exiting early.", test['id'])
+                break
             else:
                 LOG.info("Successful test run for test %s. Parsing results now", test['id'])
 
             _, cedar_test = parse_test_results(test, config, timer)
             report.add_test(cedar_test)
     except Exception as e:  # pylint: disable=broad-except
-        LOG.error('Unexcepted exception: %s', repr(e))
+        LOG.error('Unexcepted exception: %s', repr(e), exc_info=1)
     finally:
         report.write_report()
         run_pre_post_commands('post_task', [test_control_config, mongodb_setup_config], config,
@@ -213,8 +235,10 @@ def run_tests(config):
         subprocess.check_call(['chmod', '555', 'perf.json'])
         legacy_copy_perf_output()
 
-    LOG.info("%s of %s tests exited with an error.", sum(statuses), len(statuses))
-    return all(statuses)
+    LOG.info("%s of %s tests exited with an error.", num_tests_failed, num_tests_run)
+
+    # Return True if all tests failed or if the last test errored.
+    return (num_tests_run == num_tests_failed) or (cur_test_status == TestStatus.ERROR)
 
 
 def main(argv):
@@ -244,13 +268,8 @@ def main(argv):
         raise RuntimeError('Must run workload_setup prior to test_control')
 
     error = run_tests(config)
-    return 0 if not error else 1
+    return 1 if error else 0
 
 
 if __name__ == '__main__':
-    exit_code = main(sys.argv[1:])  # pylint: disable=invalid-name
-    if exit_code != 0:
-        LOG.error("main() call failed: exiting with %s", exit_code)
-    # test_control needs to return 0 or evergreen will skip all subsequent steps (like
-    # upload, analysis etc.)
-    sys.exit(0)
+    sys.exit(main(sys.argv[1:]))

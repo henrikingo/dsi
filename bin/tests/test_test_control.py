@@ -410,21 +410,18 @@ class RunTestsTestCase(unittest.TestCase):
         }, {}]
         self.help_trace_function(mock_create_file, mock_command_dicts)
 
-    @patch('common.cedar.Report')
-    @patch('test_control.parse_test_results')
+    # pylint: disable=unused-argument
+    @patch('test_control.run_pre_post_commands')
+    @patch('test_control.run_test')
+    @patch('test_control.parse_test_results', return_value=['status', 'CedarTest'])
     @patch('test_control.prepare_reports_dir')
     @patch('subprocess.check_call')
-    @patch('test_control.run_validate')
-    @patch('test_control.run_test')
     @patch('test_control.legacy_copy_perf_output')
-    @patch('test_control.run_pre_post_commands')
-    def test_run_tests(self, mock_pre_post, mock_copy_perf, mock_run, mock_run_validate,
-                       mock_check_call, mock_prepare_reports, mock_parse_test_results,
-                       mock_cedar_report):
-        """Test run_tests (the top level workhorse for test_control)"""
-
-        mock_cedar_test = MagicMock()
-        mock_parse_test_results.return_value = (True, mock_cedar_test)
+    @patch('test_control.cedar')
+    def test_pre_post_commands_ordering(self, mock_cedar, mock_copy_perf, mock_check_call,
+                                        mock_prep_rep, mock_parse_results, mock_run_test,
+                                        mock_pre_post):
+        """Test that pre and post commands are called in the right order"""
         run_tests(self.config)
 
         # We will check that the calls to run_pre_post_commands() happened in expected order
@@ -432,18 +429,50 @@ class RunTestsTestCase(unittest.TestCase):
             'pre_task', 'pre_test', 'post_test', 'between_tests', 'pre_test', 'post_test',
             'between_tests', 'pre_test', 'post_test', 'post_task'
         ]
-        observed_args = []
-        for args in mock_pre_post.call_args_list:
-            observed_args.append(args[0][0])
+        observed_args = [args[0][0] for args in mock_pre_post.call_args_list]
         self.assertEqual(expected_args, observed_args)
 
-        # These are just throwaway mocks, pylint wants me to do something with them
-        mock_copy_perf.assert_called()
-        mock_run.assert_called()
-        mock_check_call.assert_called()
-        mock_prepare_reports.assert_called()
-        mock_run_validate.assert_called_once_with(self.config, 'benchRun')
-        mock_parse_test_results.assert_called()
+    # pylint: disable=unused-argument
+    @patch('test_control.run_pre_post_commands')
+    @patch('test_control.parse_test_results', return_value=['status', 'CedarTest'])
+    @patch('test_control.prepare_reports_dir')
+    @patch('subprocess.check_call')
+    @patch('test_control.legacy_copy_perf_output')
+    @patch('test_control.cedar')
+    def test_run_test_exception(self, mock_cedar, mock_copy_perf, mock_check_call, mock_prep_rep,
+                                mock_parse_results, mock_pre_post):
+        """
+        Test CalledProcessErrors with cause run_tests return false but other errors will
+        cause it to return true
+        """
+
+        # pylint: disable=bad-continuation
+        with patch(
+                'test_control.run_test',
+                side_effect=[subprocess.CalledProcessError(99, 'failed-cmd'), 0, 0]):
+            utter_failure = run_tests(self.config)
+            self.assertFalse(utter_failure)
+
+        with patch('test_control.run_test', side_effect=[ValueError(), 0, 0]):
+            utter_failure = run_tests(self.config)
+            self.assertTrue(utter_failure)
+
+    # pylint: disable=unused-argument
+    @patch('test_control.run_pre_post_commands')
+    @patch('test_control.run_test')
+    @patch('test_control.parse_test_results')
+    @patch('test_control.prepare_reports_dir')
+    @patch('subprocess.check_call')
+    @patch('test_control.legacy_copy_perf_output')
+    @patch('common.cedar.Report')
+    def test_cedar_report(self, mock_cedar_report, mock_copy_perf, mock_check_call, mock_prep_rep,
+                          mock_parse_results, mock_run_test, mock_pre_post):
+        """Test that cedar report is called the correct number of times"""
+
+        mock_cedar_test = MagicMock()
+        mock_parse_results.return_value = (True, mock_cedar_test)
+
+        run_tests(self.config)
 
         mock_cedar_report.assert_called_once_with({'task_id': 'STAY IN YOUR VEHICLE CITIZEN'})
         mock_cedar_report().add_test.assert_has_calls([
@@ -451,7 +480,7 @@ class RunTestsTestCase(unittest.TestCase):
             call(mock_cedar_test),
             call(mock_cedar_test),
         ])
-        mock_cedar_report().write_report.assert_called_once_with()
+        mock_cedar_report().write_report.assert_called_once()
 
 
 if __name__ == '__main__':
