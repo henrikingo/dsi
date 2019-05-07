@@ -345,7 +345,7 @@ def _save_outliers(points_model, outlier_results, test_identifier, configuration
     except Exception as e:
         # pylint: disable=no-member
         LOG.warn(
-            'detect_outliers failed. Attempting to rollback.',
+            'detect_outliers failed - rollback.',
             exc_info=True,
             details=e.details if hasattr(e, 'details') else str(e))
         raise
@@ -466,7 +466,7 @@ def update_outlier_status(model, updates):
         except Exception as e:
             # pylint: disable=no-member
             LOG.warn(
-                'detect outliers failed. Attempting to rollback.',
+                'detect outliers failed - rollback.',
                 exc_info=True,
                 details=e.details if hasattr(e, 'details') else str(e))
             raise

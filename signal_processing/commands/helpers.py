@@ -556,11 +556,21 @@ def process_params(project, variant, task_name, test, revision=None, thread_leve
 
 def process_params_for_points(project, variant, task_name, test, revision=None, thread_level=None):
     # pylint: disable=too-many-arguments
-    # pylint: disable=too-many-arguments
     """
     Convert the command line parameters to a points query.
     For parameters and return type see :method: `_process_params`.
     """
+    return _process_params(revision, project, variant, task_name, test, thread_level, 'revision')
+
+
+def process_params_for_whitelist(revision, project, variant, task_name):
+    # pylint: disable=too-many-arguments
+    """
+    Convert the command line parameters to a whitelist query.
+    For parameters and return type see :method: `_process_params`.
+    """
+    test = None
+    thread_level = None
     return _process_params(revision, project, variant, task_name, test, thread_level, 'revision')
 
 
@@ -1122,6 +1132,43 @@ def generate_thread_levels(test_identifier, points_collection, thread_level=None
         max_level = levels[0].copy()
         max_level['thread_level'] = MAX_THREAD_LEVEL
         yield max_level
+
+
+def get_whitelists(task_identifier, points_collection):
+    """
+    Given a whitelist identifier of revision and order / project / variant / task get a list of
+    whitelist identifiers from the points collection.
+
+    :param dict task_identifier: The revision / project / variant and task.
+    :param pymongo.Collection points_collection: The points collection ref.
+
+    :returns: pymongo.Cursor containing the task identifiers.
+    """
+
+    pipeline = [{
+        '$match': task_identifier
+    }, {
+        '$group': {
+            '_id': {
+                'revision': '$revision',
+                'order': '$order',
+                'project': '$project',
+                'variant': '$variant',
+                'task': '$task',
+            }
+        }
+    }, {
+        '$project': {
+            '_id': 0,
+            'revision': '$_id.revision',
+            'order': '$_id.order',
+            'project': '$_id.project',
+            'variant': '$_id.variant',
+            'task': '$_id.task',
+        }
+    }]
+    task_identifiers_cursor = points_collection.aggregate(pipeline)
+    return task_identifiers_cursor
 
 
 def is_max_thread_level(test_identifier):

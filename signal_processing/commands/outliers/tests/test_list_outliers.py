@@ -64,7 +64,7 @@ class TestListOutliers(unittest.TestCase):
         revision = 'revision'
         result = self.runner.invoke(cli, ['list', project, '--revision', revision])
         self.assertEqual(result.exit_code, 0)
-        query = {'project': project, 'suspect_revision': revision}
+        query = {'project': project, 'revision': revision}
         human_readable = True
         limit = None
         no_older_than = 14

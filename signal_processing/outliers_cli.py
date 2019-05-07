@@ -25,6 +25,7 @@ from signal_processing.commands.outliers.mark_outliers import mark_outliers_comm
 from signal_processing.commands.outliers.mute_outliers import mute_outliers_command,\
     unmute_outliers_command
 from signal_processing.commands.outliers.unmark_outliers import unmark_outliers_command
+from signal_processing.commands.outliers.whitelist_task import whitelist_task_group
 
 LOG = structlog.getLogger(__name__)
 
@@ -128,3 +129,4 @@ cli.add_command(mark_outliers_command)
 cli.add_command(mute_outliers_command)
 cli.add_command(unmark_outliers_command)
 cli.add_command(unmute_outliers_command)
+cli.add_command(whitelist_task_group)

@@ -66,7 +66,7 @@ Examples:
     $> outliers list sys-perf --no-older-than 1
 """
 
-    query = helpers.process_params(
+    query = helpers.process_params_for_points(
         project, variant, task, test, revision=revision, thread_level=thread_level)
     list_outliers.list_outliers(query, marked, types, human_readable, limit, no_older_than,
                                 command_config)

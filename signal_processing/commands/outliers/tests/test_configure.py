@@ -1,5 +1,5 @@
 """
-Unit tests for signal_processing/commands/outliers/evaluate.py.
+Unit tests for signal_processing/commands/outliers/configure.py.
 """
 from __future__ import print_function
 

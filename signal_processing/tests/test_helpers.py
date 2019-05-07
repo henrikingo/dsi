@@ -22,7 +22,7 @@ class TestIsMaxThreadLevel(unittest.TestCase):
 
     def _test_is_max_thread_level(self, test_identifier, expected):
         """
-        Test generate_thread_levels identifier.
+        Test is_max_thread_level identifier.
         """
         self.assertEquals(helpers.is_max_thread_level(test_identifier), expected)
 
@@ -89,6 +89,62 @@ class TestGenerateThreadLevels(unittest.TestCase):
             return_value=return_value, expected=return_value + [{
                 'thread_level': 'max'
             }])
+
+
+class TestGetWhitelistIdentifiers(unittest.TestCase):
+    """
+    Test suite for get_whitelist_identifiers.
+    """
+
+    def test_get_whitelist_identifiers(self):
+        """
+        Test get_whitelist_identifiers identifier.
+        """
+
+        return_value = ()
+        expected = None
+        return_value = list(return_value)
+        collection_mock = mock.MagicMock(name="points collection")
+        collection_mock.aggregate.return_value = return_value
+        actual = helpers.get_whitelists('test_identifier', collection_mock)
+        if expected is None:
+            expected = return_value
+        self.assertEquals(actual, expected)
+
+        calls = collection_mock.aggregate.call_args_list
+        self.assertEquals(len(calls), 1)
+        arguments = calls[0][0][0]
+
+        self.assertEquals(len(arguments), 3)
+        match = arguments.pop(0)
+        self.assertEquals(match, {'$match': 'test_identifier'})
+
+        group = arguments.pop(0)
+        self.assertEquals(
+            group, {
+                '$group': {
+                    '_id': {
+                        'revision': '$revision',
+                        'order': '$order',
+                        'project': '$project',
+                        'variant': '$variant',
+                        'task': '$task',
+                    }
+                }
+            })
+
+        project = arguments.pop(0)
+        self.assertEquals(
+            project, {
+                '$project': {
+                    '_id': 0,
+                    'revision': '$_id.revision',
+                    'order': '$_id.order',
+                    'project': '$_id.project',
+                    'variant': '$_id.variant',
+                    'task': '$_id.task',
+                }
+            })
 
 
 class TestGetQueryForPoints(unittest.TestCase):
@@ -500,6 +556,46 @@ class TestProcessParamsForPoints(unittest.TestCase):
             mock.call('task', 0),
             mock.call('test', 0),
             mock.call('thread_level', 0),
+        ]
+        mock_compile.assert_has_calls(calls=calls)
+
+
+class TestProcessParamsForWhitelist(unittest.TestCase):
+    """
+    Test process_params_for_whitelist.
+    """
+
+    def test_process_params_empty(self):
+        """ Test empty."""
+        self.assertEqual(helpers.process_params_for_whitelist('', '', '', ''), {})
+        self.assertEqual(helpers.process_params_for_whitelist(None, None, None, None), {})
+
+    def test_process_params_strings(self):
+        """ Test strings."""
+        expected = {k: k for k in ('revision', 'project', 'variant', 'task')}
+        actual = helpers.process_params_for_whitelist('revision', 'project', 'variant', 'task')
+        self.assertDictEqual(expected, actual)
+
+    @patch(
+        'signal_processing.commands.helpers.re.compile',
+        autospec=True,
+        side_effect=[1, 2, 3, 4, 5, 6])
+    def test_process_params_re_strings(self, mock_compile):
+        """ Test re strings."""
+        expected = {
+            'revision': 1,
+            'project': 2,
+            'variant': 3,
+            'task': 4,
+        }
+        actual = helpers.process_params_for_whitelist('/revision/', '/project/', '/variant/',
+                                                      '/task/')
+        self.assertDictEqual(expected, actual)
+        calls = [
+            mock.call('revision', 0),
+            mock.call('project', 0),
+            mock.call('variant', 0),
+            mock.call('task', 0),
         ]
         mock_compile.assert_has_calls(calls=calls)
 

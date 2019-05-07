@@ -465,7 +465,7 @@ class PointsModel(object):
         except Exception as e:
             # pylint: disable=no-member
             LOG.warn(
-                'compute_change_points failed. Attempting to rollback.',
+                'compute_change_points failed - rollback.',
                 exc_info=True,
                 details=e.details if hasattr(e, 'details') else str(e))
             requests = [pymongo.DeleteMany(query)] +\
