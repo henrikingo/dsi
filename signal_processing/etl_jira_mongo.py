@@ -297,5 +297,5 @@ def main(jira_user, jira_password, mongo_uri, projects, batch, debug):
         jira_client, _ = new_jira_client(jira_user, jira_password)
         mongo_client = pymongo.MongoClient(mongo_uri)
         EtlJira(jira_client, mongo_client, projects, batch).run()
-    except Exception as err:  # pylint: disable=broad-except
-        LOG.error('Unexpected Exception loading JIRA project data.', exception=err)
+    except:  # pylint: disable=bare-except
+        LOG.error('Unexpected Exception loading JIRA project data.', exc_info=1)

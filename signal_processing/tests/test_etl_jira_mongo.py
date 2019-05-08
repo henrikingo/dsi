@@ -11,6 +11,13 @@ from mock import MagicMock, patch
 from signal_processing import etl_jira_mongo
 from signal_processing.etl_jira_mongo import EtlJira, main
 
+NS = "signal_processing.etl_jira_mongo"
+
+
+def ns(relative_name):  # pylint: disable=invalid-name
+    """Return a full name from a name relative to the test module"s name space."""
+    return NS + "." + relative_name
+
 
 class MockJiraIssue(object):
     """
@@ -100,10 +107,10 @@ class TestEtlJiraMongoCli(ClickTest):
     Test the etl-jira-mongo CLI interface.
     """
 
-    @patch('signal_processing.etl_jira_mongo.log.setup_logging')
-    @patch('signal_processing.etl_jira_mongo.EtlJira')
-    @patch('signal_processing.etl_jira_mongo.new_jira_client')
-    @patch('signal_processing.etl_jira_mongo.pymongo.MongoClient')
+    @patch(ns('log.setup_logging'))
+    @patch(ns('EtlJira'))
+    @patch(ns('new_jira_client'))
+    @patch(ns('pymongo.MongoClient'))
     def _test_cli(self,
                   cli_params,
                   expected_jira_user,
@@ -206,3 +213,10 @@ class TestEtlJiraMongoCli(ClickTest):
                        etl_jira_mongo.DEFAULT_PROJECTS,
                        etl_jira_mongo.DEFAULT_BATCH_SIZE,
                        True)  # yapf: disable
+
+    @patch(ns('new_jira_client'))
+    def test_exception_throw(self, new_jira_client_mock):
+        """Test script properly handles exceptions."""
+        new_jira_client_mock.side_effect = ValueError('Exception thrown')
+        result = self.runner.invoke(main, [])
+        self.assertEqual(result.exit_code, 0)
