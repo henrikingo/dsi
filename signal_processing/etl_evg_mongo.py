@@ -11,6 +11,8 @@ import pymongo
 import structlog
 import yaml
 
+from tenacity import retry, stop_after_attempt
+
 import etl_helpers
 import signal_processing.commands.helpers as helpers
 import signal_processing.commands.jobs as jobs
@@ -141,6 +143,21 @@ def _get_last_version_id(mongo_uri, variant, task_name, project):
     return last_version_id
 
 
+@retry(stop=stop_after_attempt(3))
+def _get_task_history(evg_client, task_name, task_id):
+    """
+    Get the historical data of a task from evergreen.
+
+    If an error occurs, this will retry the query to evergreen up to 3 times.
+
+    :param evg_client: Evergreen client to use.
+    :param task_name: Name of task to get history of.
+    :param task_id: Id of last task instance retrieved.
+    :return: List of task history.
+    """
+    return evg_client.query_mongo_perf_task_history(task_name, task_id)
+
+
 def _etl_single_task(evg_client, mongo_uri, task):
     """
     Determines the most recent point existing in the mongodb, and then fetches all newer points
@@ -177,7 +194,7 @@ def _etl_single_task(evg_client, mongo_uri, task):
             variant=variant,
             task_name=task_name,
             start_task_id=task_id)
-        result_history = evg_client.query_mongo_perf_task_history(task_name, task_id)
+        result_history = _get_task_history(evg_client, task_name, task_id)
         if not isinstance(result_history, list):
             break
         # Search the history from newest to oldest.
