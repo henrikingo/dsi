@@ -195,7 +195,7 @@ def _etl_single_task(evg_client, mongo_uri, task):
             task_name=task_name,
             start_task_id=task_id)
         result_history = _get_task_history(evg_client, task_name, task_id)
-        if not isinstance(result_history, list):
+        if not result_history or not isinstance(result_history, list):
             break
         # Search the history from newest to oldest.
         result_history.reverse()

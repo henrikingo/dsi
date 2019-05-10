@@ -588,3 +588,31 @@ class TestEtlSingleTask(unittest.TestCase):
             reverse=True)
         load_calls = [call(result, self.mongo_uri) for result in expected]
         mock_load.assert_has_calls(load_calls, any_order=True)
+
+    @patch('signal_processing.etl_evg_mongo.etl_helpers.load')
+    @patch('signal_processing.etl_evg_mongo._get_project_variant_tasks', autospec=True)
+    @patch('signal_processing.etl_evg_mongo._get_last_version_id', autospec=True)
+    def test_empty_history(self, mock__get_last_version_id, mock__get_project_variant_tasks,
+                           mock_load):
+        """
+        Test _etl_evg_mongo load one batches with no previous version id.
+        """
+        project_variant_task = {
+            'task': 'task_with_no_history',
+            'task_id': 'some_task_id',
+            'variant': 'linux-standalone',
+            'project': 'sys-perf'
+        }
+
+        # history is reversed so seen version id is first and loaded
+        # is everything but the first
+        mock_evg_client = MagicMock(name='evg_client', autospec=True)
+        # pass in a copy of the array as it is reversed in place
+        mock_evg_client.query_mongo_perf_task_history.return_value = []
+
+        version_id = None
+        mock__get_last_version_id.return_value = version_id
+        mock__get_project_variant_tasks.return_value = project_variant_task
+
+        etl_evg_mongo._etl_single_task(mock_evg_client, self.mongo_uri, project_variant_task)
+        mock_load.assert_not_called()
