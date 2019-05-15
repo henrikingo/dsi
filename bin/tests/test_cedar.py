@@ -47,7 +47,9 @@ class TestCedar(unittest.TestCase):
         'variant':
             'linux-standalone',
         'version':
-            'revHEAD'
+            'revHEAD',
+        'order':
+            2
     }
 
     BASE_RUNTIME = {
@@ -58,6 +60,7 @@ class TestCedar(unittest.TestCase):
         'task_id': '2C9TU0UAQ1NBCNG6K15P',
         'task_name': 'some_genny_test',
         'version_id': 'revHEAD',
+        'order': '2'
     }
 
     @staticmethod
@@ -108,7 +111,7 @@ class TestCedar(unittest.TestCase):
                 '    "bucket": {\n', '        "name": "", \n', '        "api_secret": "", \n',
                 '        "region": "", \n', '        "prefix": "", \n',
                 '        "api_token": "", \n', '        "api_key": ""\n', '    }, \n',
-                '    "variant": null, \n', '    "mainline": false, \n',
+                '    "variant": null, \n', '    "mainline": false, \n', '"order": null, \n'
                 '    "execution_number": null\n', '}'
             ]))
             self.assertDictEqual(expect, written)

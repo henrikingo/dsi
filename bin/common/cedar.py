@@ -28,6 +28,7 @@ class Report(object):
         has the following keys:
           project: Name of the Evergreen project.
           version: Version id from Evergreen.
+          order: Evergreen order based on git commit.
           variant: Build variant task ran on.
           task_name: Name of task.
           task_id: Unique id for this task run.
@@ -42,6 +43,11 @@ class Report(object):
         self.task_id = runtime.get('task_id')
         self.execution_number = runtime.get('execution')
         self.mainline = not runtime.get('is_patch', True)
+
+        try:
+            self.order = int(runtime.get('order'))
+        except (ValueError, TypeError):
+            self.order = None
 
         self.tests = []
         self.bucket = BucketConfiguration()
@@ -73,6 +79,7 @@ class Report(object):
         return {
             'project': self.project,
             'version': self.version,
+            'order': self.order,
             'variant': self.variant,
             'task_name': self.task_name,
             'task_id': self.task_id,
