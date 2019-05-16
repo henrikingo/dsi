@@ -146,21 +146,20 @@ atlas_types:
   M200-repl:
     - <<: *repl_template
       providerSettings:
-        providerName: AWS
-        regionName: US_WEST_1
+        providerName: *providerName
+        regionName: *regionName
         instanceSizeName: M200
         diskIOPS: 8448
       diskSizeGB: 512
 
-  # Only available in 2 EU regions.
-  # M300-repl:
-  #   - <<: *repl_template
-  #     providerSettings:
-  #       providerName: AWS
-  #       regionName: US_WEST_1
-  #       instanceSizeName: M300
-  #       diskIOPS: 8448
-  #     diskSizeGB: 512
+  M300-repl:
+    - <<: *repl_template
+      providerSettings:
+        providerName: *providerName
+        regionName: *regionName
+        instanceSizeName: M300
+        diskIOPS: 8448
+      diskSizeGB: 512
 
   # R Class
   R40-repl:
@@ -208,34 +207,32 @@ atlas_types:
         diskIOPS: 5280  # sys-perf uses 5500
       diskSizeGB: 320  # sys-perf uses 320
 
-  # Only supported in one region in EU
-  # R300-repl:
-  #   - <<: *repl_template
-  #     providerSettings:
-  #       providerName: *providerName
-  #       regionName: *regionName
-  #       instanceSizeName: R300
-  #       diskIOPS: 5280  # sys-perf uses 5500
-  #     diskSizeGB: 320  # sys-perf uses 320
+  R300-repl:
+    - <<: *repl_template
+      providerSettings:
+        providerName: *providerName
+        regionName: *regionName
+        instanceSizeName: R300
+        diskIOPS: 5280  # sys-perf uses 5500
+      diskSizeGB: 320  # sys-perf uses 320
 
   R400-repl:
     - <<: *repl_template
       providerSettings:
-        providerName: AWS
-        regionName: US_WEST_1
+        providerName: *providerName
+        regionName: *regionName
         instanceSizeName: R400
         diskIOPS: 5280  # sys-perf uses 5500
       diskSizeGB: 320  # sys-perf uses 320
 
-  # Only supported in one region in EU.
-  # R700-repl:
-  #   - <<: *repl_template
-  #     providerSettings:
-  #       providerName: AWS
-  #       regionName: US_WEST_1
-  #       instanceSizeName: R700
-  #       diskIOPS: 5280  # sys-perf uses 5500
-  #     diskSizeGB: 320  # sys-perf uses 320
+  R700-repl:
+    - <<: *repl_template
+      providerSettings:
+        providerName: *providerName
+        regionName: *regionName
+        instanceSizeName: R700
+        diskIOPS: 5280  # sys-perf uses 5500
+      diskSizeGB: 320  # sys-perf uses 320
 
   # M NVME class
   M40_NVME-repl:
@@ -270,15 +267,6 @@ atlas_types:
         instanceSizeName: M80_NVME
       providerBackupEnabled: "True"
 
-  # Not available in US_WEST_1. It is available in US WEST 2 and US EAST 1 and 2.
-  # M400_NVME-repl:
-  #   - <<: *repl_base_template
-  #     providerSettings:
-  #       providerName: *providerName
-  #       regionName: *regionName
-  #       instanceSizeName: M400_NVME
-  #     providerBackupEnabled: "True"
-
   M200_NVME-repl:
     - <<: *repl_base_template
       providerSettings:
@@ -287,3 +275,11 @@ atlas_types:
         instanceSizeName: M200_NVME
       providerBackupEnabled: "True"
 
+  # Not available in US_WEST_1. It is available in US WEST 2 and US EAST 1 and 2.
+  M400_NVME-repl:
+    - <<: *repl_base_template
+      providerSettings:
+        providerName: *providerName
+        regionName: *regionName
+        instanceSizeName: M400_NVME
+      providerBackupEnabled: "True"

@@ -597,17 +597,14 @@ buildvariants:
   expansions:
     atlas_setup: M200-repl
 
-# - <<: *buildvariant_template
-#   name: M300-atlas-repl
-#   display_name: M300 Atlas ReplSet
-#   expansions:
-#     atlas_setup: M300-repl
-
 - <<: *buildvariant_template
-  name: M400-atlas-repl
-  display_name: M400 Atlas ReplSet
+  name: M300-atlas-repl
+  display_name: M300 Atlas ReplSet
   expansions:
-    atlas_setup: M400-repl
+    atlas_setup: M300-repl
+
+# Note: This is not obvious in the UI, but if you look closely you see that M400 doesn't exist
+# at all in the "General" variation, rather only the M400_NVMe and R400 exist.
 
 
 - <<: *buildvariant_template
@@ -688,8 +685,9 @@ buildvariants:
   expansions:
     atlas_setup: M200_NVME-repl
 
-# - <<: *buildvariant_template
-#   name: M400-atlas-NVME-repl
-#   display_name: M400 NVMe Atlas ReplSet
-#   expansions:
-#     atlas_setup: M400_NVME-repl
+# US_EAST_1 only (which is exactly what we use)
+- <<: *buildvariant_template
+  name: M400-atlas-NVME-repl
+  display_name: M400 NVMe Atlas ReplSet
+  expansions:
+    atlas_setup: M400_NVME-repl

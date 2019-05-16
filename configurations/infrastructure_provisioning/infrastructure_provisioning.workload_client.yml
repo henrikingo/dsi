@@ -34,15 +34,18 @@ atlas_instance_sizes:
   M60-repl: m4.4xlarge
   M100-repl: m4.10xlarge
   M200-repl: m4.16xlarge
-  M400-repl: i3.metal
+  M300-repl: m5.24xlarge
   R40-repl: r4.large
   R50-repl: r4.xlarge
   R60-repl: r4.2xlarge
   R80-repl: r4.4xlarge
   R200-repl: r4.8xlarge
+  R300-repl: r5.12xlarge
   R400-repl: r4.16xlarge
+  R700-repl: r5.24xlarge
   M40_NVME-repl: i3.large
   M50_NVME-repl: i3.xlarge
   M60_NVME-repl: i3.2xlarge
   M80_NVME-repl: i3.4xlarge
   M200_NVME-repl: i3.8xlarge
+  M400_NVME-repl: i3.metal
