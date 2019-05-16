@@ -5,15 +5,45 @@ A thin client around Atlas REST API calls we use.
 Not complete, rather add calls as you need them.
 """
 
+import os
+import shutil
 import time
 
 import requests
 import requests.auth as auth
 import structlog
 
+from utils import mkdir_p
+
 LOG = structlog.get_logger(__name__)
 
 DEFAULT_ROOT_URL = "https://cloud.mongodb.com/api/atlas/v1.0/"
+
+
+class AtlasTimeout(RuntimeError):
+    """
+    Raised when Atlas HTTP requests return ok but a desired state was not reached within a timeout.
+    """
+
+    def __init__(self, operation, target_state, last_state, timeout_seconds):
+        """
+        Instantiate the exception.
+
+        :param str operation: What operation timed out. Ex: "get_one_cluster"
+        :param str target_state: What target state wasn't reached. Ex: "IDLE"
+        :param str last_state: Last returned state (that wasn't the target state). Ex: "CREATING"
+        :param int timeout_seconds: The timeout in seconds.
+        """
+        super(AtlasTimeout, self).__init__()
+        self.operation = operation
+        self.target_state = target_state
+        self.last_state = last_state
+        self.timeout_seconds = timeout_seconds
+
+    def __repr__(self):
+        msg = "Atlas operation '{}' didn't reach '{}' state within {} seconds. " + \
+              "Last state was: '{}'."
+        return msg.format(self.operation, self.target_state, self.timeout_seconds, self.last_state)
 
 
 class AtlasClient(object):
@@ -99,16 +129,17 @@ class AtlasClient(object):
         """
         return self.await_state(cluster_name, "IDLE")
 
-    def await_state(self, cluster_name, target_state):
+    def await_state(self, cluster_name, target_state, timeout_seconds=1500):
         """
         Periodically poll cluster_name. Return when stateName == target_state.
 
-        TODO: Add a timeout.
-
         :param str cluster_name: The Atlas CLUSTER-NAME in GROUP-ID from init.
         :param str target_state: The Atlas stateName to wait for. Ex: "IDLE".
+        :param int timeout_seconds: Seconds after which to raise AtlasTimeout.
+        :raises: AtlasTimeout if Atlas fails to arrive at the target_state.
         :return: The Atlas response, which contains state and meta-data about the cluster.
         """
+        end_time = time.time() + timeout_seconds
         while True:
             # The await state occassionaly fails it's query, particularly in cluster types that take
             # longer to spawn (e.g., NVMe).
@@ -123,8 +154,11 @@ class AtlasClient(object):
                     return cluster
             except requests.exceptions.HTTPError:
                 LOG.exception(
-                    "In await state and self.get_one_cluster threw. Catching and moving on")
+                    "In await state and self.get_one_cluster threw. Catching and moving on.")
             time.sleep(30)
+            if time.time() > end_time:
+                raise AtlasTimeout("get_one_cluster", target_state, cluster["stateName"],
+                                   timeout_seconds)
 
     def delete_cluster(self, cluster_name):
         """
@@ -135,7 +169,7 @@ class AtlasClient(object):
         https://docs.atlas.mongodb.com/reference/api/clusters-delete-one/
 
         :param str cluster_name: The Atlas CLUSTER-NAME in GROUP-ID from init.
-        :return: The Atlas response, which contains state and meta-data about the cluster.
+        :return: The created jobId as string.
         """
         url = "{}groups/{}/clusters/{}".format(self.root, self.group_id, cluster_name)
         response = requests.delete(url, auth=self.auth)
@@ -145,3 +179,114 @@ class AtlasClient(object):
             response.raise_for_status()
         else:
             return True
+
+    def create_log_collection_job(self, options=None):
+        """
+        Create a "job" which can later be accessed to download mongod.log and ftdc.
+
+        POST groups/{GROUP-ID}/logCollectionJobs
+
+        options = {
+            "resourceType": "replicaset",
+            "resourceName": "clustername-shard-0",
+            "sizeRequestedPerFileBytes": 1000,
+            "redacted": false,
+            "logTypes": ["FTDC", "MONGODB", "AUTOMATION_AGENT", "BACKUP_AGENT", "MONITORING_AGENT"]
+        }
+
+        https://wiki.corp.mongodb.com/pages/viewpage.action?spaceKey=MMS&title=Atlas+Performance+Testing+Support#AtlasPerformanceTestingSupport-CollectandDownloadLogs  # pylint: disable=line-too-long
+
+        :param dict options: A dict with options, see above. REQUIRED.
+        :return: The logCollectionJob id as string.
+        """
+        url = "{}groups/{}/logCollectionJobs".format(self.root, self.group_id)
+        response = requests.post(url, json=options, auth=self.auth)
+        LOG.debug(
+            "Create logCollectionJob response",
+            headers=response.request.headers,
+            body=response.request.body)
+        if not response.ok:
+            LOG.error("HTTP error in create_log_collection_job", response=response.json())
+            response.raise_for_status()
+        else:
+            result = response.json()
+            return result["id"]
+
+    def get_log_collection_job(self, log_job_id):
+        """
+        Get status for a (previously created) logCollectionJob.
+
+        GET groups/{GROUP-ID}/logCollectionJobs/{JOB-ID}
+
+        :param str log_job_id: ID of the job to poll.
+        :return: The logCollectionJob id as string.
+        """
+        url = "{}groups/{}/logCollectionJobs/{}".format(self.root, self.group_id, log_job_id)
+        response = requests.get(url, auth=self.auth)
+        LOG.debug("Get logCollectionJob response", headers=response.request.headers)
+        if not response.ok:
+            LOG.error("HTTP error in get_log_collection_job", response=response.json())
+            response.raise_for_status()
+        else:
+            return response.json()
+
+    def await_log_job(self, log_job_id):
+        """
+        Wait until a logCollectionJob is ready for download.
+
+        Wait for status == SUCCESS.
+
+        :param str log_job_id: ID of the job to poll.
+        :return: The Atlas response, which contains state about the logCollectionJob.
+        """
+        return self.await_log_job_state(log_job_id, "SUCCESS")
+
+    def await_log_job_state(self, log_job_id, target_state, timeout_seconds=1500):
+        """
+        Periodically poll log_job_id. Return when status == target_state.
+
+        :param str log_job_id: The Atlas logCollectionJobs ID.
+        :param str target_state: The Atlas stateName to wait for. Ex: "IDLE".
+        :param int timeout: Seconds after which to raise AtlasTimeout.
+        :raises: AtlasTimeout if Atlas fails to arrive at the target_state.
+        :return: The Atlas response, which contains state about the logCollectionJob.
+        """
+        end_time = time.time() + timeout_seconds
+        while True:
+            try:
+                job_status = self.get_log_collection_job(log_job_id)
+                LOG.info(
+                    "Await logCollectionJobs state",
+                    log_job_id=log_job_id,
+                    status=job_status["status"],
+                    target_state=target_state)
+                if job_status["status"] == target_state:
+                    return job_status
+            except requests.exceptions.HTTPError:
+                LOG.exception(
+                    "In await state and get_log_collection_job() threw. Catching and moving on.")
+            time.sleep(10)
+            if time.time() > end_time:
+                raise AtlasTimeout("get_log_collection_job", target_state, job_status["stateName"],
+                                   timeout_seconds)
+
+    def download_logs(self, log_job_id, local_path):
+        """
+        Download a tar.gz file with logs from the given job id.
+
+        GET groups/{groupId}/logCollectionJobs/{jobId}/download
+
+        :param str log_job_id: A string previously returned by create_log_collection_job().
+        :param str local_path: The local file where to store the downloaded file.
+        """
+        url = "{}groups/{}/logCollectionJobs/{}/download".format(self.root, self.group_id,
+                                                                 log_job_id)
+        with requests.get(url, auth=self.auth, stream=True) as response:
+            if not response.ok:
+                LOG.error("HTTP error in download_logs", response=response.json())
+                response.raise_for_status()
+            else:
+                LOG.info("Downloading Atlas log file.", local_path=local_path)
+                mkdir_p(os.path.dirname(local_path))
+                with open(local_path, "w") as file_handle:
+                    shutil.copyfileobj(response.raw, file_handle)

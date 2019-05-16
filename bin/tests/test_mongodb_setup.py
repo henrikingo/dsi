@@ -55,7 +55,11 @@ DEFAULT_CONFIG = {
             'password': 'password',
         },
     },
-    'test_control': {}
+    'test_control': {},
+    'runtime_secret': {
+        'atlas_api_user': 'mock_atlas_api_user',
+        'atlas_api_secret': 's3cret'
+    }
 }
 
 
@@ -105,8 +109,8 @@ class TestMongodbSetup(unittest.TestCase):
     def test_start(self):
         """ test start"""
 
-        @mock.patch('mongodb_setup.run_host_commands')
-        def _test_start(mock_run_host_commands, download_status=False, pre_cluster_start=False):
+        @mock.patch('mongodb_setup.run_pre_post_commands')
+        def _test_start(mock_run_pre_post_commands, download_status=False, pre_cluster_start=False):
             test_config = copy.deepcopy(self.config)
             if pre_cluster_start:
                 test_config['mongodb_setup']['pre_cluster_start'] = [{
@@ -122,7 +126,6 @@ class TestMongodbSetup(unittest.TestCase):
             setup.downloader.download_and_extract = mock.MagicMock(name='downloader')
 
             setup._start = mock.MagicMock(name='_start')
-            setup._start.return_value = "start clusters"
             setup.destroy = mock.MagicMock(name='destroy')
             # shutdown should never be called in this path
             setup.shutdown = mock.MagicMock(name='shutdown')
@@ -132,25 +135,15 @@ class TestMongodbSetup(unittest.TestCase):
                 self.assertEquals(setup.start(), False)
                 setup._start.assert_not_called()
             else:
-                self.assertEquals(setup.start(), "start clusters")
+                self.assertEquals(setup.start(), True)
                 setup._start.assert_called_once()
-
-            if pre_cluster_start:
-                mock_run_host_commands.assert_called_with(
-                    test_config['mongodb_setup']['pre_cluster_start'], test_config,
-                    "pre_cluster_start")
-            else:
-                mock_run_host_commands.assert_not_called()
 
             setup.destroy.assert_called_once_with(60000)
             setup.shutdown.assert_not_called()
             setup.downloader.download_and_extract.assert_called_once()
 
         _test_start()
-        # The following case will not call run_host_commands because setup will exit before
-        # _test_start(download_status=True)
-        _test_start(download_status=True, pre_cluster_start=True)
-        _test_start(download_status=True, pre_cluster_start=False)
+        _test_start(download_status=True)
 
     def test_restart(self):
         """ test start"""
