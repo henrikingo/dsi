@@ -83,15 +83,14 @@ class TestAtlasSetup(unittest.TestCase):
                 'stateName': 'IDLE'
             }]
             atlas = atlas_setup.AtlasSetup(config)
-            with self.assertRaises(RuntimeError):
-                with LogCapture(level=logging.ERROR) as log_error:
-                    self.assertFalse(atlas.start())
-                    log_error.check(
-                        ('common.atlas_setup', 'ERROR',
-                         u'[error    ] Clusters already exist in mongodb_setup.out.atlas.clusters. [common.atlas_setup] '),
-                        ('common.atlas_setup', 'ERROR',
-                         u'[error    ] Please shutdown existing clusters first with infrastructure_teardown.py. [common.atlas_setup] '
-                        )) #yapf: disable
+            with LogCapture(level=logging.ERROR) as log_error:
+                self.assertFalse(atlas.start())
+                log_error.check(
+                    ('common.atlas_setup', 'ERROR',
+                     u'[error    ] Clusters already exist in mongodb_setup.out.atlas.clusters. [common.atlas_setup] '),
+                    ('common.atlas_setup', 'ERROR',
+                     u'[error    ] Please shutdown existing clusters first with infrastructure_teardown.py. [common.atlas_setup] '
+                    )) #yapf: disable
 
     @patch('common.atlas_client.AtlasClient.get_one_cluster')
     @patch('common.atlas_setup.AtlasSetup._generate_unique_name')
@@ -123,26 +122,3 @@ class TestAtlasSetup(unittest.TestCase):
         # (The last part is random, but fixed length.)
         self.assertRegexpMatches(name, 'dsi-M99-')
         self.assertEquals(len(name), 15)
-
-    @patch('time.sleep')
-    @patch('common.atlas_client.AtlasClient.download_logs')
-    @patch('common.atlas_client.AtlasClient.get_log_collection_job')
-    @patch('common.atlas_client.AtlasClient.create_log_collection_job')
-    def test_log_collection(self, mock_create, mock_get, mock_download, mock_sleep):
-        mock_create.return_value = '12345abcdef'
-        mock_get.side_effect = [{'status': 'FOO'}, {'status': 'SUCCESS'}]
-        with in_dir(FIXTURE_FILES.fixture_file_path('atlas-config')):
-            config = load_config_dict('mongodb_setup')
-            # Inject a fake cluster into mongodb_setup.out
-            config['mongodb_setup']['out'] = {}
-            config['mongodb_setup']['out']['atlas'] = {}
-            config['mongodb_setup']['out']['atlas']['clusters'] = [{
-                'name': 'mock_cluster_name',
-                'clusterType': 'REPLSET',
-                'stateName': 'IDLE'
-            }]
-            atlas = atlas_setup.AtlasSetup(config)
-            atlas.download_logs('post_task')
-            mock_download.assert_called_with('12345abcdef',
-                                             'reports/post_task/mock_cluster_name.tgz')
-        mock_sleep.assert_called()

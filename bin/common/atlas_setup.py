@@ -74,7 +74,7 @@ class AtlasSetup(object):
             LOG.error("Clusters already exist in mongodb_setup.out.atlas.clusters.")
             LOG.error("Please shutdown existing clusters first with infrastructure_teardown.py.")
             LOG.debug("Start atlas cluster", out=self.mongodb_setup["out"])
-            raise RuntimeError("Clusters already exist in mongodb_setup.out.atlas.clusters.")
+            return False
 
         if "atlas" in self.mongodb_setup and "clusters" in self.mongodb_setup["atlas"]:
             LOG.info("AtlasSetup.start")
@@ -151,8 +151,7 @@ class AtlasSetup(object):
 
     def _save_create_response(self, response):
         new_object = {}
-        save_fields = ("log_job_id", "mongoURI", "mongoURIWithOptions", "mongoURIUpdated", "name",
-                       "stateName", "clusterType")
+        save_fields = ("name", "stateName", "mongoURI", "mongoURIWithOptions", "mongoURIUpdated")
         prefix = len("mongodb://")
         for key in save_fields:
             if key in response:
@@ -252,28 +251,3 @@ class AtlasSetup(object):
         ismaster = db.command("isMaster")
         hostname, port = ismaster["primary"].split(":")
         return hostname, int(port)
-
-    def download_logs(self, dir_in_reports):
-        """
-        Download mongod.log and ftdc from Atlas.
-
-        Two Atlas API calls are needed: First create the logCollectionJob, then download its file.
-
-        See https://wiki.corp.mongodb.com/display/MMS/Atlas+Performance+Testing+Support#AtlasPerformanceTestingSupport-CollectandDownloadLogs  # pylint: disable=line-too-long
-
-        :param str dir_in_reports: A prefix to use in the path of the downloaded file.
-        """
-        for atlas_cluster in self.mongodb_setup["out"]["atlas"]["clusters"]:
-            options = {
-                "resourceType": atlas_cluster["clusterType"],
-                # TODO: See PERF-1808: the string below is magic knowledge for now.
-                # As of this writing, it's unknown what to do here for a sharded cluster.
-                "resourceName": atlas_cluster["name"] + "-shard-0",
-                "sizeRequestedPerFileBytes": 3000000,
-                "redacted": False,
-                "logTypes": ["FTDC", "MONGODB", "AUTOMATION_AGENT"]
-            }
-            log_job_id = self.atlas_client.create_log_collection_job(options)
-            self.atlas_client.await_log_job(log_job_id)
-            filepath = "reports/{}/{}.tgz".format(dir_in_reports, atlas_cluster["name"])
-            self.atlas_client.download_logs(log_job_id, filepath)

@@ -33,13 +33,6 @@ authentication:
   username: ${runtime_secret.atlas_database_user}
   password: ${runtime_secret.atlas_database_password}
 
-post_task:
-  - on_atlas:
-      # The value is actually ignored, but there needs to be a non-empty value.
-      retrieve_logs: true
-
-
-
 # The keys in this lookup table map to atlas-setup expansion in system_perf_atlas.yml
 atlas_types:
   just_a_template:

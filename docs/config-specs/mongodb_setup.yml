@@ -85,10 +85,6 @@ post_task:
           target: ./mongod.log
         - source: data/dbs/diagnostic.data
           target: ./diagnostic.data
-  # For Atlas clusters, the above do nothing, but the below does the same over REST.
-  - on_atlas:
-      # The value is actually ignored, but there needs to be a non-empty value.
-      retrieve_logs: true
 
 
 # This defines the cluster topology to deploy, and what to deploy on which IP address.
