@@ -184,7 +184,7 @@ def run_tests(config):
 
                 LOG.info("Starting test %s", test['id'])
                 timer['start'] = time.time()
-                # Run the actual task
+                # Run the actual test
                 run_test(test, config)
             except subprocess.CalledProcessError:
                 LOG.error("test %s failed.", test['id'], exc_info=1)

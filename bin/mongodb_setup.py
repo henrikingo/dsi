@@ -13,7 +13,7 @@ import argparse
 
 import common.atlas_setup as atlas_setup
 import common.host_utils
-from common.command_runner import run_host_commands, run_upon_error
+from common.command_runner import run_pre_post_commands, EXCEPTION_BEHAVIOR, run_upon_error
 from common.download_mongodb import DownloadMongodb
 import common.mongodb_setup_helpers
 import common.mongodb_cluster
@@ -39,6 +39,7 @@ class MongodbSetup(object):
         self.sigterm_ms = timeouts.get('sigterm_ms', common.host_utils.ONE_MINUTE_MILLIS)
 
         self.parse_topologies()
+        self.atlas = atlas_setup.AtlasSetup(config)
 
     def parse_topologies(self):
         """Create cluster for each topology"""
@@ -67,17 +68,18 @@ class MongodbSetup(object):
             LOG.error("Download and extract failed.")
             return False
 
-        if 'pre_cluster_start' in self.config['mongodb_setup']:
-            LOG.info("Mongodb_setup running pre_cluster_start commands")
-            run_host_commands(self.config['mongodb_setup']['pre_cluster_start'], self.config,
-                              'pre_cluster_start')
+        LOG.info("Mongodb_setup running pre_cluster_start commands")
+        run_pre_post_commands('pre_cluster_start', [self.config['mongodb_setup']], self.config,
+                              EXCEPTION_BEHAVIOR.EXIT)
 
         status = self._start()
+        # Start Atlas clusters using config given in mongodb_setup.atlas (if any).
+        status = status and self.atlas.start()
 
-        if 'post_cluster_start' in self.config['mongodb_setup']:
-            LOG.info("Mongodb_setup running post_cluster_start commands")
-            run_host_commands(self.config['mongodb_setup']['post_cluster_start'], self.config,
-                              'post_cluster_start')
+        LOG.info("Mongodb_setup running post_cluster_start commands")
+        # Exit also here. Among other things it causes setup failure in Evergreen.
+        run_pre_post_commands('post_cluster_start', [self.config['mongodb_setup']], self.config,
+                              EXCEPTION_BEHAVIOR.EXIT)
 
         return status
 
@@ -268,10 +270,6 @@ def main():
     mongo = MongodbSetup(config=config)
 
     start_cluster(mongo, config)
-
-    # Start Atlas clusters using config given in mongodb_setup.atlas (if any).
-    atlas = atlas_setup.AtlasSetup(config)
-    atlas.start()
 
 
 if __name__ == '__main__':

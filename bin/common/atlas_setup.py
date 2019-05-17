@@ -51,7 +51,7 @@ class AtlasSetup(object):
         if "root" in self.api and "group_id" in self.api and self.api_credentials:
             self.atlas_client = atlas_client.AtlasClient(self.api, self.api_credentials)
 
-        # Initialize empty objects here to simplify all later code
+    def _init_config_out(self):
         if not "out" in self.mongodb_setup:
             self.mongodb_setup["out"] = {}
         if not "atlas" in self.mongodb_setup["out"]:
@@ -70,11 +70,11 @@ class AtlasSetup(object):
         # Repeated calls to start() would generate new cluster(s) with new unique name(s).
         # I decided that would probably be a bad thing, so not supporting repeated start() without
         # calling destroy() in between.
-        if self.mongodb_setup["out"]["atlas"]["clusters"]:
+        if self.mongodb_setup.get("out", {}).get("atlas", {}).get("clusters", []):
             LOG.error("Clusters already exist in mongodb_setup.out.atlas.clusters.")
             LOG.error("Please shutdown existing clusters first with infrastructure_teardown.py.")
             LOG.debug("Start atlas cluster", out=self.mongodb_setup["out"])
-            return False
+            raise RuntimeError("Clusters already exist in mongodb_setup.out.atlas.clusters.")
 
         if "atlas" in self.mongodb_setup and "clusters" in self.mongodb_setup["atlas"]:
             LOG.info("AtlasSetup.start")
@@ -97,15 +97,11 @@ class AtlasSetup(object):
         """
         Destroy the cluster(s) listed in `mongodb_setup.out.atlas.clusters`.
         """
+        clusters_list = self.mongodb_setup.get("out", {}).get("atlas", {}).get("clusters", [])
         LOG.info(
             "About to shutdown Atlas clusters",
-            clusters=[
-                atlas_cluster["name"]
-                for atlas_cluster in self.mongodb_setup["out"]["atlas"]["clusters"]
-            ])
-        return all(
-            self.delete_cluster(atlas_cluster)
-            for atlas_cluster in self.mongodb_setup["out"]["atlas"]["clusters"])
+            clusters=[atlas_cluster["name"] for atlas_cluster in clusters_list])
+        return all(self.delete_cluster(atlas_cluster) for atlas_cluster in clusters_list)
 
     def create_cluster(self, atlas_cluster):
         """
@@ -150,8 +146,10 @@ class AtlasSetup(object):
             '_', ''), unique)
 
     def _save_create_response(self, response):
+        self._init_config_out()
         new_object = {}
-        save_fields = ("name", "stateName", "mongoURI", "mongoURIWithOptions", "mongoURIUpdated")
+        save_fields = ("log_job_id", "mongoURI", "mongoURIWithOptions", "mongoURIUpdated", "name",
+                       "stateName", "clusterType")
         prefix = len("mongodb://")
         for key in save_fields:
             if key in response:
@@ -216,6 +214,7 @@ class AtlasSetup(object):
 
     def _remove_cluster_from_list(self, atlas_cluster):
         found = False
+        self._init_config_out()
         clusters = copy.copy(self.mongodb_setup["out"]["atlas"]["clusters"])
         for i, cluster in enumerate(self.mongodb_setup["out"]["atlas"]["clusters"]):
             if cluster["name"] == atlas_cluster["name"]:
@@ -226,8 +225,9 @@ class AtlasSetup(object):
         self.mongodb_setup["out"]["atlas"]["clusters"] = clusters
 
     def _find_cluster_in_list(self, atlas_cluster):
+        clusters_list = self.mongodb_setup.get("out", {}).get("atlas", {}).get("clusters", [])
         name = atlas_cluster["name"]
-        for index, cluster in enumerate(self.mongodb_setup["out"]["atlas"]["clusters"]):
+        for index, cluster in enumerate(clusters_list):
             if cluster["name"] == name:
                 return index
         return None
@@ -251,3 +251,29 @@ class AtlasSetup(object):
         ismaster = db.command("isMaster")
         hostname, port = ismaster["primary"].split(":")
         return hostname, int(port)
+
+    def download_logs(self, dir_in_reports):
+        """
+        Download mongod.log and ftdc from Atlas.
+
+        Two Atlas API calls are needed: First create the logCollectionJob, then download its file.
+
+        See https://wiki.corp.mongodb.com/display/MMS/Atlas+Performance+Testing+Support#AtlasPerformanceTestingSupport-CollectandDownloadLogs  # pylint: disable=line-too-long
+
+        :param str dir_in_reports: A prefix to use in the path of the downloaded file.
+        """
+        clusters_list = self.mongodb_setup.get("out", {}).get("atlas", {}).get("clusters", [])
+        for atlas_cluster in clusters_list:
+            options = {
+                "resourceType": atlas_cluster["clusterType"],
+                # TODO: See PERF-1808: the string below is magic knowledge for now.
+                # As of this writing, it's unknown what to do here for a sharded cluster.
+                "resourceName": atlas_cluster["name"] + "-shard-0",
+                "sizeRequestedPerFileBytes": 3000000,
+                "redacted": False,
+                "logTypes": ["FTDC", "MONGODB", "AUTOMATION_AGENT"]
+            }
+            log_job_id = self.atlas_client.create_log_collection_job(options)
+            self.atlas_client.await_log_job(log_job_id)
+            filepath = "reports/{}/{}.tgz".format(dir_in_reports, atlas_cluster["name"])
+            self.atlas_client.download_logs(log_job_id, filepath)

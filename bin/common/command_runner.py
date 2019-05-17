@@ -12,6 +12,7 @@ from enum import Enum
 from functools import partial
 from dateutil import tz
 
+import common.atlas_setup as atlas_setup
 import common.cedar
 import common.host_factory
 import common.host_utils
@@ -197,6 +198,30 @@ def run_host_command(target, command, config, prefix):
     LOG.debug("Done running command(s) %s on %s", keys, target)
 
 
+def run_atlas_command(target, command, config, prefix):
+    """
+    Execute on_atlas commands with atlas_setup.
+
+    :param str target: The target to run the command on
+    :param dict command: The action to run
+    :param ConfigDict config: The system configuration
+    :param str prefix: The id for the test related to the current command. If there
+    is not a specific test related to the current command, the value of prefix should reflect the
+    hook that the command belongs to, such as between_tests, post_task, and so on.
+    """
+    assert target == "on_atlas"
+
+    keys = command.keys()
+    LOG.info("Running command(s) %s on %s", keys, target)
+    atlas = atlas_setup.AtlasSetup(config)
+    for key in keys:
+        if key == "retrieve_logs":
+            atlas.download_logs(prefix)
+        else:
+            raise KeyError("Command {} not supported with on_atlas.".format(key))
+    LOG.debug("Done running command(s) %s on %s", keys, target)
+
+
 def run_host_commands(commands, config, prefix):
     """
     Plural version of run_host_command: run a list of commands.
@@ -357,7 +382,9 @@ def dispatch_commands(command_key, command_list, config, current_test_id=None):
         assert isinstance(item, MutableMapping), 'item in list isn\'t a dict'
         assert len(item.keys()) == 1, 'item has more than one entry'
         for target, command in item.iteritems():
-            if target.startswith('on_'):
+            if target == "on_atlas":
+                run_atlas_command(target, command, config, prefix)
+            elif target.startswith('on_'):
                 run_host_command(target, command, config, prefix)
             elif target == "restart_mongodb":
                 import mongodb_setup
