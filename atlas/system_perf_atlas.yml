@@ -79,16 +79,19 @@ functions:
 
           cat > runtime.yml <<EOF
           # evergreen default expansions
-          is_patch: ${is_patch}
-          task_id: ${task_id}
-          task_name: ${task_name}
-          execution: ${execution}
+          branch_name: ${branch_name}
           build_id: ${build_id}
           build_variant: ${build_variant}
+          execution: ${execution}
+          is_patch: ${is_patch|false}
+          order: ${revision_order_id}
+          project: ${project}
+          project_dir: ${project_dir}
+          revision: ${revision}
+          task_id: ${task_id}
+          task_name: ${task_name}
           version_id: ${version_id}
           workdir: ${workdir}
-          revision: ${revision}
-          branch_name: ${branch_name}
 
           # sys-perf expansions
           # Shouldn't be needed: testList: ${testList}
@@ -123,6 +126,9 @@ functions:
           atlas_database_password: "${atlas_database_password}"
           EOF
           chmod 400 runtime_secret.yml
+    - command: expansions.write
+      params:
+        file: work/expansions.yml
     - command: shell.exec
       params:
         working_dir: work
