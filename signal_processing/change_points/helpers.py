@@ -127,3 +127,13 @@ def generate_change_point_ranges(test_identifier, model, change_points_indexes):
         generator = _generate_all_change_point_ranges(full_series, change_points)
     for start, end in generator:
         yield start, end
+
+
+def friendly_identifier(test_identifier):
+    """
+    Generate a human friendly printable identifier.
+
+    :param dict test_identifier: The test identifier
+    :return: A human friendly identifier.
+    """
+    return "{project} {variant} {task} {test} {thread_level}".format(**test_identifier)

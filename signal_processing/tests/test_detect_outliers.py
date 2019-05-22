@@ -4,6 +4,7 @@ Unit tests for signal_processing/detect_outliers.py.
 # pylint: disable=too-many-lines
 
 import os
+import re
 import unittest
 
 import pymongo
@@ -232,35 +233,50 @@ class TestDetectOutliers(unittest.TestCase):
 class TestRunDetection(unittest.TestCase):
     # pylint: disable=protected-access, too-many-locals
     """
-    Test suite for the detect_outliers function.
+    Test suite for the detect_outliers function. These tests do not depend on each other and can
+    run in any order.
     """
 
-    @classmethod
-    def setUpClass(cls):
-        file_parts = [
-            'sys-perf', 'linux-1-node-replSet', 'bestbuy_query', 'canary_client-cpuloop-10x', '1'
-        ] + ['{}.json'.format('standard')]
+    FILE_PARTS = [
+        'sys-perf', 'linux-1-node-replSet', 'bestbuy_query', 'canary_client-cpuloop-10x', '1'
+    ]
+
+    def load(self, fixture_name, *file_path):
+        """
+        load the test data associated with test_name.
+
+        :param str fixture_name: The name of the test data to load.
+        :param str file_path: The parts of the path to load the data from. An empty list implies
+        use FILE_PARTS.
+        :return: A tuple of expected data and test data.
+        """
+        if not file_path:
+            file_path = self.FILE_PARTS
+        file_parts = list(file_path) + ['{}.json'.format(fixture_name)]
 
         filename = os.path.join(*file_parts)
-        cls.fixture = FIXTURE_FILES.load_json_file(filename)
-        cls.expected = cls.fixture['expected']
-        cls.data = cls.fixture['data']
+        fixture = FIXTURE_FILES.load_json_file(filename)
+        expected = fixture['expected']
+        data = fixture['data']
+        return expected, data
 
-    def test_detect_outliers(self):
+    def _test(self, expected, data):
         """
         Test detect_outliers.detect_outliers function with real data and configuration.
         """
 
         is_patch = False
         with patch(ns('Outlier'), autospec=True) as mock_outlier_ctor,\
-             patch(ns('pymongo.InsertOne'), autospec=True) as mock_insert,\
-             patch(ns('pymongo.DeleteMany'), autospec=True) as mock_delete,\
-             patch(ns('get_change_point_range'), autospec=True) as mock_get_change_point_range,\
-             patch(ns('combine_outlier_configs'), autospec=True) as mock_combine_outlier_configs:
+             patch(ns('pymongo.InsertOne'), autospec=True) as insert_mock,\
+             patch(ns('pymongo.DeleteMany'), autospec=True) as delete_mock,\
+             patch(ns('get_change_point_range'), autospec=True) as get_change_point_range_mock,\
+             patch(ns('combine_outlier_configs'), autospec=True) as combine_outlier_configs_mock:
 
-            mock_points_model = MagicMock(name='points_mdodel')
-            mock_configuration_model = MagicMock(name='configuration_mdodel')
-            time_series = self.data['time_series']
+            expected_number_outliers = expected['number_outliers']
+
+            points_model_mock = MagicMock(name='points_model')
+            configuration_model_mock = MagicMock(name='configuration_mdodel')
+            time_series = data['time_series']
             test_identifier = {
                 'project': time_series['project'],
                 'variant': time_series['variant'],
@@ -269,29 +285,53 @@ class TestRunDetection(unittest.TestCase):
                 'thread_level': time_series['thread_level'],
             }
 
-            start_order = self.data['start_order']
-            end_order = self.data['end_order']
-            start = time_series['orders'].index(start_order)
-            end = time_series['orders'].index(end_order)
-            series = time_series['series'][start:end]
+            start_order = data.get('start_order', None)
+            end_order = data.get('end_order', None)
 
-            expected_suspicious_indexes = self.expected['suspicious_indexes']
+            orders = time_series['orders']
+            if start_order is None and end_order is None:
+                start = 0
+                start_order = time_series['orders'][0]
+                end = None
+                series = time_series['series']
+            elif end_order is None:
+                start = orders.index(start_order)
+                end = None
 
-            mock_get_change_point_range.return_value = (start, end, series)
+                series = time_series['series'][start:]
+            elif start_order is None:
+                start = 0
+                start_order = time_series['orders'][0]
+
+                end = orders.index(end_order)
+                series = time_series['series'][:end]
+            else:
+                start = orders.index(start_order)
+                end = orders.index(end_order)
+                series = time_series['series'][start:end]
+
+            expected_suspicious_indexes = expected['suspicious_indexes']
+
+            get_change_point_range_mock.return_value = (start, end, series)
 
             expected_range = list(range(len(expected_suspicious_indexes)))
-            mock_points_model.get_points.return_value = time_series
+
+            points_model_mock.get_points.return_value = time_series
             mock_outlier_ctor.return_value._asdict.side_effect = expected_range
             deletes = ['delete']
-            inserts = ['insert {}'.format(i) for i in expected_range]
+            if expected_number_outliers:
+                inserts = ['insert {}'.format(i) for i in expected_range]
+            else:
+                inserts = []
+
             requests = deletes + inserts
 
-            mock_delete.side_effect = deletes
-            mock_insert.side_effect = inserts
+            delete_mock.side_effect = deletes
+            insert_mock.side_effect = inserts
 
-            mock_client = mock_points_model.db.client
+            mock_client = points_model_mock.db.client
             mock_session = mock_client.start_session.return_value.__enter__.return_value
-            mock_outliers_collection = mock_points_model.db.__getitem__.return_value
+            mock_outliers_collection = points_model_mock.db.__getitem__.return_value
 
             mock_config = MagicMock(name='configuration')
             override_config = mock_config
@@ -305,22 +345,27 @@ class TestRunDetection(unittest.TestCase):
                 canary_pattern=DEFAULT_CANARY_PATTERN,
                 correctness_pattern=DEFAULT_CORRECTNESS_PATTERN)
 
-            mock_combine_outlier_configs.return_value = configuration
+            combine_outlier_configs_mock.return_value = configuration
 
             outlier_results = detect_outliers._get_data_and_run_detection(
-                mock_points_model, mock_configuration_model, test_identifier, start_order,
+                points_model_mock, configuration_model_mock, test_identifier, start_order,
                 override_config, is_patch)
 
-            mock_outliers_collection.bulk_write.assert_called_once_with(requests)
+            mock_outliers_collection.bulk_write.assert_called_once_with(requests, ordered=True)
             mock_client.start_session.assert_called_once()
             mock_session.start_transaction.return_value.__enter__.assert_called_once()
 
             gesd_result = outlier_results.gesd_result
-            self.assertEquals(gesd_result.count, self.expected['number_outliers'])
+            self.assertEquals(gesd_result.count, expected_number_outliers)
             self.assertListEqual(gesd_result.suspicious_indexes, expected_suspicious_indexes)
 
-            mock_delete.assert_called_once()
-            mock_insert.assert_has_calls([call(i) for i in expected_range])
+            expected = dict(test_identifier, order={'$gte': start_order})
+            if end_order is not None:
+                expected['order']['$lt'] = end_order
+
+            delete_mock.assert_called_once_with(expected)
+
+            insert_mock.assert_has_calls([call(i) for i in range(len(inserts))])
 
             count = gesd_result.count
             mock_outlier_ctor.assert_has_calls([
@@ -343,8 +388,45 @@ class TestRunDetection(unittest.TestCase):
                     critical_value=ANY,
                     num_outliers=ANY,
                     configuration=configuration._asdict())
-                for pos, _ in enumerate(expected_suspicious_indexes)
+                for pos, _ in enumerate(expected_suspicious_indexes[:expected_number_outliers])
             ])
+
+    def test_standard(self):
+        """
+        Test detect_outliers.detect_outliers with standard data.
+        """
+        expected, data = self.load('standard')
+        self._test(expected, data)
+
+    def test_before_change_points(self):
+        """
+        Test detect_outliers with order before the first change point.
+        """
+        expected, data = self.load('start_to_first_change_point')
+        self._test(expected, data)
+
+    def test_between_change_points(self):
+        """
+        Test detect_outliers with order between the first and second change points.
+        """
+        expected, data = self.load('first_to_second_change_point')
+        self._test(expected, data)
+
+    def test_after_change_points(self):
+        """
+        Test detect_outliers with order after the last change points.
+        """
+        expected, data = self.load('last_change_point_to_end')
+        self._test(expected, data)
+
+    def test_tig1665(self):
+        """
+        Test detect_outliers.detect_outliers with data that specifically failed in TIG-1665. The
+        unpatched code left a 'leaked' outlier on each run.
+        """
+        expected, data = self.load('standard', 'sys-perf', 'linux-1-node-replSet', 'linkbench',
+                                   'LOAD_COUNTS_BULK', '1')
+        self._test(expected, data)
 
 
 class TestTranslateOutliers(unittest.TestCase):
@@ -364,9 +446,9 @@ class TestTranslateOutliers(unittest.TestCase):
                                        full_series, configuration)
         self.assertEqual(0, len(outliers))
 
-    def test_gesd_count_of_zero(self):
-        """ test when gesd count == 0. """
-        gesd_result = MagicMock(count=0)
+    def test_gesd_count_of_zero_no_indexes(self):
+        """ test when gesd count == 0 and no indexes. """
+        gesd_result = MagicMock(count=0, suspicious_indexes=[])
         test_identifier = {}
         start = 0
         num_outliers = 1
@@ -374,6 +456,31 @@ class TestTranslateOutliers(unittest.TestCase):
         configuration = DEFAULT_CONFIG
         outliers = _translate_outliers(gesd_result, test_identifier, start, num_outliers,
                                        full_series, configuration)
+        self.assertEqual(0, len(outliers))
+
+    def test_gesd_count_of_zero_with_indexes(self):
+        """ test when gesd count == 0 and indexes. """
+        gesd_result = MagicMock(
+            count=0,
+            suspicious_indexes=[0],
+            critical_values=['critical value 0'],
+            test_statistics=['test statistic 0'],
+        )
+        test_identifier = Helpers.create_test_identifier()
+        start = 0
+        num_outliers = 1
+        start_order = 100
+        full_series = {
+            'orders': [start_order],
+            'revisions': ['revision 1'],
+            'create_times': ['create time 1'],
+            'task_ids': ['task id 1'],
+            'version_ids': ['version id 1'],
+        }
+        configuration = DEFAULT_CONFIG
+        with patch(ns('Outlier'), autospec=True):
+            outliers = _translate_outliers(gesd_result, test_identifier, start, num_outliers,
+                                           full_series, configuration)
         self.assertEqual(0, len(outliers))
 
     def test_gesd(self):
@@ -419,6 +526,67 @@ class TestTranslateOutliers(unittest.TestCase):
             critical_value='critical value 0',
             num_outliers=1,
             configuration=configuration._asdict())
+
+    def test_gesd_multiple(self):
+        """ test when gesd count > 1. """
+        gesd_result = MagicMock(
+            count=1,
+            suspicious_indexes=[0, 1],
+            critical_values=['critical value 0', 'critical value 2'],
+            test_statistics=['test statistic 0', 'test statistic 2'],
+        )
+        test_identifier = Helpers.create_test_identifier()
+        start = 0
+        num_outliers = 1
+        start_order = 100
+        full_series = {
+            'orders': [start_order, start_order + 2],
+            'revisions': ['revision 0', 'revision 2'],
+            'create_times': ['create time 0', 'create time 2'],
+            'task_ids': ['task id 0', 'task id 2'],
+            'version_ids': ['version id 0', 'version id 2'],
+        }
+        configuration = DEFAULT_CONFIG
+        with patch(ns('Outlier'), autospec=True) as mock_outlier_ctor:
+            outliers = _translate_outliers(gesd_result, test_identifier, start, num_outliers,
+                                           full_series, configuration)
+        self.assertEqual(2, len(outliers))
+        common = dict(
+            project=test_identifier['project'],
+            variant=test_identifier['variant'],
+            task=test_identifier['task'],
+            test=test_identifier['test'],
+            thread_level=test_identifier['thread_level'],
+            change_point_revision='revision 0',
+            change_point_order=100,
+            num_outliers=1,
+            configuration=configuration._asdict())
+
+        first = common.copy()
+        first.update(
+            type=DETECTED_TYPE,
+            revision='revision 0',
+            task_id='task id 0',
+            version_id='version id 0',
+            order=100,
+            create_time='create time 0',
+            order_of_outlier=0,
+            z_score='test statistic 0',
+            critical_value='critical value 0')
+        second = common.copy()
+        second.update(
+            type=SUSPICIOUS_TYPE,
+            revision='revision 2',
+            task_id='task id 2',
+            version_id='version id 2',
+            order=102,
+            create_time='create time 2',
+            order_of_outlier=1,
+            z_score='test statistic 2',
+            critical_value='critical value 2')
+
+        expected_calls = [call(**first), call(**second)]
+        mock_outlier_ctor.assert_has_calls(expected_calls, any_order=True)
 
 
 class TestMain(unittest.TestCase):
@@ -704,15 +872,19 @@ class TestGetChangePointRange(unittest.TestCase):
 
         self.assertEqual(expected_start, start)
         self.assertEqual(expected_end, end)
-        self.assertListEqual(self.full_series['series'][start:end], series)
+        if end is None:
+            expected = self.full_series['series'][start:]
+        else:
+            expected = self.full_series['series'][start:end]
+        self.assertListEqual(expected, series)
 
     def test_after_last_range(self):
         """ test after last range. """
-        self._test(102, 90, 100)
+        self._test(102, 90, None)
 
     def test_in_last_range(self):
         """ test last range. """
-        self._test(93, 90, 100)
+        self._test(93, 90, None)
 
     def test_in_middle_range(self):
         """ test middle of range. """
@@ -740,8 +912,8 @@ class TestGetChangePointRange(unittest.TestCase):
                                                                     self.full_series, 13)
 
         self.assertEqual(0, start)
-        self.assertEqual(100, end)
-        self.assertListEqual(self.full_series['series'][start:end], series)
+        self.assertEqual(None, end)
+        self.assertListEqual(self.full_series['series'], series)
 
 
 class TestTranslateFieldName(unittest.TestCase):
@@ -1544,3 +1716,136 @@ class TestLoadStatusReport(unittest.TestCase):
     def test_load_filename(self):
         """ test load non-default filename. """
         self._test_load(filename='test.json')
+
+
+class TestFullSeries(unittest.TestCase):
+    # pylint: disable=protected-access, too-many-locals
+    """
+    Test Full Series is more of a system test. These tests do not depend on each other and can
+    run in any order.
+
+    They use the real state of the sys-perf linux-1-node-replSet linkbench canary_ping 16 tests
+    at the current point in time (May 2019).
+
+    It covers the following possibilities:
+        1) The revision is before the first change point (first). This simulates the rerunning of
+        a very old revision and rerunning a moderately old revision when there is only a single
+        change point.
+        2) The revision is between 2 change points (second). These simulate running an
+        old revision.
+        3) The revision is after the last change points but not the latest revision(fourth).
+        3) The revision is after the last change points and is the latest revision (latest). This
+        simulates the most common case of running the latest revision.
+
+    This suite of tests ensures that real data with multiple
+    change points generates the correct bounds (start / end) and outliers.
+
+    """
+
+    FILE_PARTS = [
+        'sys-perf', 'linux-1-node-replSet', 'linkbench', 'canary_ping', '16', 'full_series'
+    ]
+
+    def load(self, fixture_name):
+        """
+        load the test data associated with fixture_name.
+
+        :param str fixture_name: The name of the test data to load.
+        :return: A tuple of test data (contains the input params and expected data) and the full
+        fixture data.
+        """
+        filename = os.path.join(*self.FILE_PARTS) + '.json'
+        fixture = FIXTURE_FILES.load_json_file(filename)
+
+        test = next(test for test in fixture['tests'] if test['name'] == fixture_name)
+        return test, fixture
+
+    def _test(self, test, fixture):
+        """
+        test helper function.
+
+        :param dict test: The test data, including the input params and expected results.
+        :param dict fixture: The full fixture data.
+        """
+
+        expected = test['expected']
+        is_patch = False
+        canary_pattern = re.compile('^(canary_.*|fio_.*|iperf.*|NetworkBandwidth)$'),
+        correctness_pattern = re.compile(
+            '^(db-hash-check|validate-indexes-and-collections|core\\.).*$')
+        with patch(ns('_save_outliers'), autospec=True) as _save_outliers_mock,\
+             patch(ns('combine_outlier_configs'), autospec=True) as combine_outlier_configs_mock:
+
+            points_model_mock = MagicMock(name='points_model')
+            configuration_model_mock = MagicMock(name='configuration_mdodel')
+            full_series = fixture['data']['full_series']
+            test_identifier = {
+                'project': full_series['project'],
+                'variant': full_series['variant'],
+                'task': full_series['task'],
+                'test': full_series['test'],
+                'thread_level': full_series['thread_level'],
+            }
+
+            points_model_mock.get_points.return_value = full_series
+            change_points_col_mock = MagicMock(name='change_points collection')
+
+            change_points_col_mock.find.return_value.sort.return_value = fixture['data'][
+                'change_points']
+
+            collections = {'change_points': change_points_col_mock}
+            points_model_mock.db.get_collection.side_effect = lambda name: collections[name]
+
+            mock_config = MagicMock(name='configuration')
+            override_config = mock_config
+
+            configuration = OutlierConfiguration(
+                max_outliers=0.15,
+                mad=False,
+                significance_level=0.05,
+                max_consecutive_rejections=3,
+                minimum_points=15,
+                canary_pattern=canary_pattern,
+                correctness_pattern=correctness_pattern)
+
+            combine_outlier_configs_mock.return_value = configuration
+
+            order = test['order']
+
+            outlier_results = detect_outliers._get_data_and_run_detection(
+                points_model_mock, configuration_model_mock, test_identifier, order,
+                override_config, is_patch)
+
+            gesd_result = outlier_results.gesd_result
+
+            expected_start = expected.get('start', 0)
+            self.assertEquals(outlier_results.start, expected_start)
+
+            expected_end = expected.get('end', None)
+            self.assertEquals(outlier_results.end, expected_end)
+
+            expected_count = expected['count']
+            self.assertEquals(gesd_result.count, expected_count)
+
+            expected_suspicious_indexes = expected['suspicious_indexes']
+            self.assertEquals(gesd_result.suspicious_indexes, expected_suspicious_indexes)
+
+    def test_before_change_points(self):
+        """ Test from with order that is before first change point. """
+        test, fixture = self.load("Before first change point")
+        self._test(test, fixture)
+
+    def test_between_change_points(self):
+        """ Test from first to second change point. """
+        test, fixture = self.load("Between first and second change points")
+        self._test(test, fixture)
+
+    def test_after_last_change_point(self):
+        """ Test from last change point to end. """
+        test, fixture = self.load("After last change point")
+        self._test(test, fixture)
+
+    def test_current_revision(self):
+        """ Test where order is lateset revision and after last change point. """
+        test, fixture = self.load("Order is current revision")
+        self._test(test, fixture)

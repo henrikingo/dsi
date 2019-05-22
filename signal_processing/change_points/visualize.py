@@ -99,16 +99,27 @@ def on_click(event, series=None, source=None):
 
     for _, index in enumerate(event.ind):
         # pylint: disable=too-many-format-args
-        text = "db.points.find({{project:'{}', variant:'{}', task: '{}', test: '{}'," \
-                "revision:'{}'}})\n{}\n{}\n{}".format(series['project'],
-                                                      series['variant'],
-                                                      series['task'],
-                                                      series['test'],
-                                                      series['revisions'][index],
-                                                      series['create_times'][index],
-                                                      series['series'][index],
-                                                      series['series'][index],
-                                                      index)
+        text = "\n" +\
+               "https://evergreen.mongodb.com/task/{task_id}##{test}\n" \
+               "db.points.find({{project:'{project}', "\
+                                "variant:'{variant}', "\
+                                "task: '{task}', "\
+                                "test: '{test}', " \
+                                "revision:'{revision}'"\
+                                "'results.thread_level': '{thread_level}'}})\n"\
+               "{create_time}\n"\
+               "{value}\n"\
+               "{index}".format(
+                   task_id=series['task_ids'][index],
+                   project=series['project'],
+                   variant=series['variant'],
+                   task=series['task'],
+                   test=series['test'],
+                   thread_level=series['thread_level'],
+                   revision=series['revisions'][index],
+                   create_time=series['create_times'][index],
+                   value=series['series'][index],
+                   index=index) # yapf: disable
         print text
     return True
 

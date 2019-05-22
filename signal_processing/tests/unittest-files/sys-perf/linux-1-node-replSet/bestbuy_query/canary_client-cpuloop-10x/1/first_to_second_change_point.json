@@ -1,13 +1,9 @@
 {
   "expected": {
-    "number_outliers": 2,
-    "suspicious_indexes" : [90, 4, 27, 37, 64, 78, 74, 88, 47, 60, 91, 127, 65]
+    "number_outliers": 0,
+    "suspicious_indexes" : [3, 15, 10, 1]
   },
   "data": {
-    "all_suspect_revisions": [
-            ["80c7c825a44cf99b17e81f4233445c7ab1927706", "bb9f225e47faacb95ae9e5658313a5ebf56f37bf", "55bf25f29caab71487178302e471120e1f2b0a6a", "7bff26918103cb58d3e01f52a61e1286f2f1c4a4", "ca2b902002110013479af34f0ce6dee9906d9ad9", "acd9fd112d1c2f591f04a31ed6489d9f4b0ec0e8", "a7f2cf99a1ab6548eff63d3eddafab1134fe6b84", "01cf7a585de2942562837077dff73968562b91f3", "d1955c0bddabfa76d4c942ecec9110de9534337a", "88cea24944cf277759b74b18878a0b4c0d89686e", "7739477c23a8c15b6d56738c68b07e21742a05a6", "9b75cafcc14b8bc4ac73ef2149c14c39f1c8d1e1", "eaf551c3aa01eb80b48bc7601aa288eed464532c", "ebae61b165911806423030a24cdcf211d70dccaa", "1868c56cf7466793b1bbee553d9325d5d68f5ba2", "e86d684515abe1c4dbf79dbb71741b5db0317039", "a750bf210f70dd6e15cd65a15d50aeb8cd75fa3f"],
-            ["145f3a4368ac2efe92d58ddb2462229e5c27365c", "69de1dd12074380806295d6830937625d581af1b", "c727aeae4dbcafd8c33b607e8d21e2d3ae14c816", "1ee551653a1ff9c154d94e59c429529eb3ea9098", "9b45c3bb604a5ac661383a75ab1a94d9f8b1d8df", "5321f4b168cb70fc03711f42b9f58c34935ff101", "529b7e260862c8748212f1158764b4a93f967eda", "bf8b4ce9815b4514a72e4e547e5032806ab1d66e", "1a2599c31d296d79bf78f7b19305c1e983a8f858", "a3d17a55ca68ba37eb59620e04258f61f133b21f", "0add763d724f409cc4e90d86e0047a8810929d6d", "2eb308afe270f9443d60f2f8ae574f5b1ea1fd37", "15d627c3b7b9b1b2ca4d2f729102f730a0568c1c", "3ef3a0de876f16e8fcc6a49f8e0056849b10a24e", "ce0602665adb7ec7d241dd77e585f7907e405e84"]
-    ],
     "change_points":[
       {
         "project": "sys-perf",
@@ -98,7 +94,8 @@
         "order_of_change_point": 1
       }
     ],
-    "start_order": 13527,
+    "start_order": 12985,
+    "end_order": 13527,
     "time_series": {
       "size": 306,
       "task": "bestbuy_query",

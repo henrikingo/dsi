@@ -16,6 +16,7 @@ from matplotlib.patches import Rectangle
 
 from bin.common.config import is_integer
 from bin.common.utils import mkdir_p
+from signal_processing.change_points.helpers import friendly_identifier
 from signal_processing.commands.helpers import PORTRAIT_FIGSIZE
 from signal_processing.model.points import PointsModel
 from signal_processing.outliers.evaluate import get_matplotlib
@@ -781,8 +782,7 @@ def replay_gesd(command_params,
         save=save,
         interval=interval,
         command_config=command_config)
-    identifier_str = "{project} {variant} {task} {test} {thread_level}".format(
-        **command_params.test_identifier)
+    identifier_str = friendly_identifier(command_params.test_identifier)
     with get_matplotlib().style.context(command_config.style):
         controller = None
         try:

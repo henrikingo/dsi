@@ -148,7 +148,30 @@ class DetectOutliersDriver(object):
 
 
 def get_change_point_range(points_model, test_identifier, full_series, order):
-    """Calculate the change point range for a given revision (order)."""
+    """
+    Calculate the change point range for a given revision (order).
+
+    The cases to handle are:
+      1. no change points, so start = 0 and end = None.
+      1. one change point and order is before, so start = 0 and end = change point.
+      1. one change point and order is after, so start = change point and end = None.
+      1. multiple change points and order is between 2, so start = previous change point and
+      end = next change point.
+
+    start is always inclusive and end is always exclusive.
+
+    :param PointsModel points_model: The points model instance.
+    :param dict test_identifier: The dict to use to query for data.
+    :param dict full_series: The full data (series, orders, revisions etc) for the test.
+    :param int order: The order value for this revision.
+
+    :return: A tuple containing
+                *start*: the index within the full series.
+                *end*: the index within the full series. None is returned to indicate the remainder
+                of the list.
+                *series*: the data between start (inclusive) and end(exclusive).
+    :rtype: tuple(int, int, list).
+    """
     change_points_col = points_model.db.get_collection(helpers.CHANGE_POINTS)
     change_points = list(
         change_points_col.find(test_identifier).sort([('order', pymongo.DESCENDING)]))
@@ -167,7 +190,7 @@ def get_change_point_range(points_model, test_identifier, full_series, order):
             start = full_series['orders'].index(start_change_point['order'])
             if start_change_point_index == 0:
                 # The start change point is the last point.
-                end = len(full_series['orders'])
+                end = None
             else:
                 end_change_point = change_points[start_change_point_index - 1]
                 end = full_series['orders'].index(end_change_point['order'])
@@ -175,12 +198,15 @@ def get_change_point_range(points_model, test_identifier, full_series, order):
             # order precedes all the change points, returning range before first change point.
             start = 0
             end = full_series['orders'].index(change_points[-1]['order'])
-
     else:
         start = 0
-        end = len(full_series['orders'])
+        end = None
 
-    series = full_series['series'][start:end]
+    if end is None:
+        series = full_series['series'][start:]
+    else:
+        series = full_series['series'][start:end]
+
     return start, end, series
 
 
@@ -315,13 +341,12 @@ def _save_outliers(points_model, outlier_results, test_identifier, configuration
     full_series = outlier_results.full_series
     gesd_result = outlier_results.gesd_result
 
-    # start order is also the order of the associated change point
-    start_order = full_series['orders'][outlier_results.start]
-    end_order = full_series['orders'][outlier_results.end - 1]
+    orders = full_series['orders']
+    start_order = orders[outlier_results.start]
     query = dict(**test_identifier)
     query['order'] = {'$gte': start_order}
-    if end_order is not None:
-        query['order']['$lt'] = end_order
+    if outlier_results.end is not None:
+        query['order']['$lt'] = orders[outlier_results.end]
 
     delete_old_outliers = query
     outliers = _translate_outliers(gesd_result, test_identifier, outlier_results.start,
@@ -336,7 +361,7 @@ def _save_outliers(points_model, outlier_results, test_identifier, configuration
         outliers_collection = points_model.db['outliers']
         with client.start_session() as session:
             with session.start_transaction():
-                bulk_write_result = outliers_collection.bulk_write(requests)
+                bulk_write_result = outliers_collection.bulk_write(requests, ordered=True)
 
         LOG.debug(
             "outliers bulk_write",

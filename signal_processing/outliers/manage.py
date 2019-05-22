@@ -20,6 +20,13 @@ def create_outliers_indexes(command_config):
         'keys': [("project", pymongo.ASCENDING), ("variant", pymongo.ASCENDING),
                  ("task", pymongo.ASCENDING), ("test", pymongo.ASCENDING),
                  ("order", pymongo.ASCENDING)]
+    }, {
+        'keys': [("project", pymongo.ASCENDING), ("variant", pymongo.ASCENDING),
+                 ("task", pymongo.ASCENDING), ("test", pymongo.ASCENDING),
+                 ("thread_level", pymongo.ASCENDING), ("order", pymongo.ASCENDING)],
+        'options': {
+            'unique': True
+        }
     }])
 
 

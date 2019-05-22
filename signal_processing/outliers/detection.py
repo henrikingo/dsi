@@ -12,6 +12,7 @@ import numpy as np
 import structlog
 from scipy.stats import describe
 
+from signal_processing.change_points.helpers import friendly_identifier
 from signal_processing.outliers.gesd import gesd
 
 MAD_Z_SCORE = 'mad'
@@ -42,14 +43,18 @@ It contains the GESD algorithm result as well as some of the data and parameters
 """
 
 HUMAN_READABLE_TEMPLATE_STR = '''
+{%- set start_index = start if start != None else 0 -%}
+{%- set end_index = end - 1 if end != None else -1 -%}
 [ {{ now() }} ] Running: `{{ command_line }}`
 ## {{ identifier }}
-## max_outliers={{ max_outliers }},
-## start={{ start }},
-## end={{ end }},
+## confirmed_outliers={{ count }}
+## max_outliers={{ max_outliers }}
+## start={{ start }}
+## end={{ end }}
+## len={{ length }}
 ## p={{ p }}
-## StartTime {{ full_series.create_times[start][:-4] }}
-## EndTime {{ full_series.create_times[end][:-4] }}
+## StartTime {{ full_series.create_times[start_index][:-4] }}
+## EndTime {{ full_series.create_times[end_index][:-4] }}
 ## stats=(nobs={{ stats.nobs }},
 ##        minmax={{ stats.minmax }},
 ##        mean={{ stats.mean }},
@@ -63,6 +68,7 @@ HUMAN_READABLE_TEMPLATE_STR = '''
 {% for outlier in outliers -%}
 | {{ "% -5s" | format(loop.index,) }} | {{ "% -5s" | format(outlier.index,) }} |   {{ "%-5s" | format(loop.index <= count,) }}    | {{ "% -9.3f" | format( 100 * ( full_series.series[outlier.index] - mean) / mean,) }}  | {{ "% -7.3f" | format(outlier.z_score,) }} {{'M' if mad}} | {{ "%-7.3f" | format(outlier.critical,) }}  |    {{ '(/)' if abs(outlier.z_score) > outlier.critical else '(x)' }}   | {{ full_series.revisions[outlier.index][0:8] }} | {{ full_series.create_times[outlier.index][:-4] }} | <{{outlier.version_id}}> |
 {% endfor %}
+
 '''
 
 ENVIRONMENT = jinja2.Environment()
@@ -90,7 +96,7 @@ def run_outlier_detection(full_series, start, end, series, test_identifier, outl
     :param float significance_level: The significance level used for the algorithm.
     """
     # pylint: disable=too-many-locals, too-many-arguments
-    identifier = "{project} {variant} {task} {test} {thread_level}".format(**test_identifier)
+    identifier = friendly_identifier(test_identifier)
 
     if len(series) == 1:
         return OutlierDetectionResult(identifier, full_series, start, end, series, mad,
@@ -192,7 +198,7 @@ def print_outliers(detection_result):
         max_outliers=num_outliers,
         full_series=full_series,
         start=start,
-        end=end - 1,
+        end=end,
         length=len(series),
         p=significance_level,
         identifier=identifier,
