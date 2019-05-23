@@ -24,8 +24,13 @@ def make_filter(point):
 
 def load(perf_json, mongo_uri, tests=None):
     """
-    Take the data from perf_json, create documents and upload them to the `points` collection in the
-    given database. Note that this always uses the collection `points` when uploading the documents.
+    Take the perf_json data, create documents and upsert / update the data in the `points`
+    collection in the given database.
+
+    Note the operations runs in a transaction and the code takes care to update the documents
+    without overwriting previous state (like outlier and rejected status).
+
+    Note that this always uses the collection `points` when uploading the documents.
 
     :param dict perf_json: The raw data json file from Evergreen mapped to a Python dictionary.
     :param str mongo_uri: The uri to connect to the cluster.
@@ -34,16 +39,54 @@ def load(perf_json, mongo_uri, tests=None):
     :type: dict, None.
     """
     # pylint: disable=invalid-name
-    db = pymongo.MongoClient(mongo_uri).get_database()
-    collection = db.points
     points = translate_points(perf_json, tests)
-    if points:
-        collection.bulk_write(
-            [
-                pymongo.UpdateOne(make_filter(point), {"$set": point}, upsert=True)
-                for point in points
-            ],
-            ordered=False)
+    try:
+        db = pymongo.MongoClient(mongo_uri).get_database()
+        collection = db.points
+        client = db.client
+        if points:
+            requests = [operation for point in points for operation in make_updates(point)]
+
+            with client.start_session() as session:
+                with session.start_transaction():
+                    bulk_write_result = collection.bulk_write(requests, ordered=True)
+
+            LOG.debug("load bulk_write", results=bulk_write_result.bulk_api_result)
+        else:
+            LOG.debug("load bulk_write no points")
+    except Exception as e:
+        # pylint: disable=no-member
+        LOG.warn(
+            'load failed.', exc_info=True, details=e.details if hasattr(e, 'details') else str(e))
+        raise
+
+
+def make_updates(point):
+    """
+    make the expected set of upsert and update operations for this point.
+
+    :param dict point: The point data.
+    :return: A list of expected updates.
+    """
+    insert_operation = point.copy()
+    results = insert_operation.pop('results') if 'results' in insert_operation else []
+
+    operations = [
+        pymongo.UpdateOne(
+            make_filter(point), {'$set': insert_operation,
+                                 '$setOnInsert': {
+                                     'results': results
+                                 }},
+            upsert=True)
+    ]
+
+    for result in results:
+        query = make_filter(point)
+        query['results.thread_level'] = result['thread_level']
+
+        operation = {'results.$.{k}'.format(k=k): v for k, v in result.items()}
+        operations.append(pymongo.UpdateOne(query, {'$set': operation}))
+    return operations
 
 
 def _filter_non_test_results(results):

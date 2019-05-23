@@ -63,10 +63,10 @@ HUMAN_READABLE_TEMPLATE_STR = '''
 ##        skewness={{ stats.skewness }},
 ##        kurtosis={{ stats.kurtosis }})
 
-|  Pos  | Index |  Detected  |  %Change   |  Z-Score | Critical |   Match  | Revision |       Time       | Version Id {{ "%91s" | format(" ",) }} |
-| ----- | ----- | ---------- | ---------- | -------- | -------- | -------- | -------- | ---------------- | {{ '-' * 102 }} |
+|  Pos  | Index |  Detected  |  %Change   |  Z-Score | Critical |   Match  | Revision |   Order  |       Time       | Version Id {{ "%91s" | format(" ",) }} |
+| ----- | ----- | ---------- | ---------- | -------- | -------- | -------- | -------- | -------- | ---------------- | {{ '-' * 102 }} |
 {% for outlier in outliers -%}
-| {{ "% -5s" | format(loop.index,) }} | {{ "% -5s" | format(outlier.index,) }} |   {{ "%-5s" | format(loop.index <= count,) }}    | {{ "% -9.3f" | format( 100 * ( full_series.series[outlier.index] - mean) / mean,) }}  | {{ "% -7.3f" | format(outlier.z_score,) }} {{'M' if mad}} | {{ "%-7.3f" | format(outlier.critical,) }}  |    {{ '(/)' if abs(outlier.z_score) > outlier.critical else '(x)' }}   | {{ full_series.revisions[outlier.index][0:8] }} | {{ full_series.create_times[outlier.index][:-4] }} | <{{outlier.version_id}}> |
+| {{ "% -5s" | format(loop.index,) }} | {{ "% -5s" | format(outlier.index,) }} |   {{ "%-5s" | format(loop.index <= count,) }}    | {{ "% -9.3f" | format( 100 * ( full_series.series[outlier.index] - mean) / mean,) }}  | {{ "% -7.3f" | format(outlier.z_score,) }} {{'M' if mad}} | {{ "%-7.3f" | format(outlier.critical,) }}  |    {{ '(/)' if abs(outlier.z_score) > outlier.critical else '(x)' }}   | {{ full_series.revisions[outlier.index][0:8] }} | {{ "%  8d" | format(full_series.orders[outlier.index],) }} | {{ full_series.create_times[outlier.index][:-4] }} | <{{outlier.version_id}}> |
 {% endfor %}
 
 '''

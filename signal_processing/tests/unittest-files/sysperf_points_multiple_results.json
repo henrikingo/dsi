@@ -1,0 +1,39 @@
+[{
+  "project": "sys-perf",
+  "revision": "fbaa4f4e91534ebb2dffba33e3740e91d7782e22",
+  "task": "crud_workloads",
+  "test": "insert_jfalse",
+  "variant": "linux-3-shard",
+  "version_id": "sys_perf_fbaa4f4e91534ebb2dffba33e3740e91d7782e22",
+  "create_time": "2019-04-22T18:51:53Z",
+  "end": 1555982031.597904,
+  "max_ops_per_sec": 34990.715441872024,
+  "max_thread_level": 32,
+  "order": 16414,
+  "results": [
+    {
+      "thread_level": "1",
+      "ops_per_sec": 1648.1294807879642,
+      "ops_per_sec_values": [
+        1648.1294807879642
+      ]
+    },
+    {
+      "thread_level": "16",
+      "ops_per_sec": 21480.08869287802,
+      "ops_per_sec_values": [
+        21480.08869287802
+      ]
+    },
+    {
+      "thread_level": "32",
+      "ops_per_sec": 34990.715441872024,
+      "ops_per_sec_values": [
+        34990.715441872024
+      ]
+    }
+  ],
+  "start": 1555980693.728591,
+  "task_id": "sys_perf_linux_3_shard_crud_workloads_fbaa4f4e91534ebb2dffba33e3740e91d7782e22_19_04_22_18_51_53",
+  "workload": "mongoshell"
+}]

@@ -15,6 +15,40 @@ from test_lib.fixture_files import FixtureFiles
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
+# pylint: disable=invalid-name
+def ns(name):
+    return 'signal_processing.etl_helpers.' + name
+
+
+def create_update(point, result):
+    """
+    Create an update operation for each result.
+
+    :param dict point: The full point data.
+    :param dict result: The current result being processed.
+    :return: An updateOne with the correct query and update.
+    """
+    return pymongo.UpdateOne(
+        extract_filter(point, result), {
+            "$set": {'results.$.' + k: v
+                     for k, v in result.items()}
+        })
+
+
+def extract_filter(point, result=None):
+    """
+    Create a filter for the point and possibly result thread_level.
+
+    :param dict point: The point data.
+    :param dict result: The specific result within the point.
+    :return: The filter used in the update command.
+    """
+    query = {k: point[k] for k in ('project', 'variant', 'task', 'test', 'version_id', 'revision')}
+    if result is not None:
+        query['results.thread_level'] = result['thread_level']
+    return query
+
+
 class TestloadHistory(unittest.TestCase):
     """
     Test suite for load_history.py methods.
@@ -43,45 +77,76 @@ class TestloadHistory(unittest.TestCase):
         )
 
     # pylint: disable=invalid-name
-    @patch('signal_processing.etl_helpers.pymongo.MongoClient', autospec=True)
-    def test_load(self, mock_MongoClient):
+    @patch(ns('pymongo.MongoClient'), autospec=True)
+    def test_load(self, mongo_client_mock):
         """
         Test that load works with a standard configuration.
         """
         self.sysperf_perf_json = FIXTURE_FILES.load_json_file('sysperf_perf_small.json')
         self.sysperf_points = FIXTURE_FILES.load_json_file('sysperf_points_small.json')
-        mock_db = MagicMock(name='db', autospec=True)
-        mock_MongoClient.return_value.get_database.return_value = mock_db
+        db_mock = MagicMock(name='db', autospec=True)
+        mongo_client_mock.return_value.get_database.return_value = db_mock
+
+        mock_client = db_mock.client
+        mock_session = mock_client.start_session.return_value.__enter__.return_value
+
         etl_helpers.load(self.sysperf_perf_json, self.mongo_uri)
-        mock_MongoClient.assert_called_once_with(self.mongo_uri)
-        mock_MongoClient.return_value.get_database.assert_called_once_with()
-        mock_db.points.bulk_write.assert_called_once_with(
-            [
-                pymongo.UpdateOne(
-                    {
-                        'task': u'mixed_workloads_WT',
-                        'variant': u'wtdevelop-1-node-replSet',
-                        'version_id': u'sys_perf_e31a40ab59fb5c784ff8d15f07c0b811bd54a516',
-                        'project': u'sys-perf',
-                        'test': u'mixed_findOne',
-                        'revision': u'e31a40ab59fb5c784ff8d15f07c0b811bd54a516'
-                    }, {"$set": self.sysperf_points[0]},
-                    upsert=True)
-            ],
-            ordered=False)
+        mongo_client_mock.assert_called_once_with(self.mongo_uri)
+        mongo_client_mock.return_value.get_database.assert_called_once_with()
 
-    def test_make_filter(self):
-        self.assertEqual(
-            etl_helpers.make_filter(self.sysperf_points[0]), {
-                'project': u'sys-perf',
-                'revision': u'e31a40ab59fb5c784ff8d15f07c0b811bd54a516',
-                'task': u'mixed_workloads_WT',
-                'test': u'mixed_findOne',
-                'variant': u'wtdevelop-1-node-replSet',
-                'version_id': u'sys_perf_e31a40ab59fb5c784ff8d15f07c0b811bd54a516'
-            })
+        point = self.sysperf_points[0]
+        query = extract_filter(point)
 
-    @patch('signal_processing.etl_helpers.pymongo.MongoClient', autospec=True)
+        insert_operation = point.copy()
+        results = insert_operation.pop('results')
+
+        requests = [
+            pymongo.UpdateOne(
+                query, {"$set": insert_operation,
+                        "$setOnInsert": {
+                            "results": results
+                        }},
+                upsert=True)
+        ]
+
+        requests += [create_update(point, result) for result in results]
+
+        mock_session.start_transaction.return_value.__enter__.assert_called_once()
+        db_mock.points.bulk_write.assert_called_once_with(requests, ordered=True)
+
+    # pylint: disable=invalid-name
+    @patch(ns('pymongo.MongoClient'), autospec=True)
+    def test_load_no_results(self, mongo_client_mock):
+        """
+        Test that load works when results are empty.
+        """
+        self.sysperf_perf_json = FIXTURE_FILES.load_json_file('sysperf_perf_small.json')
+        self.sysperf_points = FIXTURE_FILES.load_json_file('sysperf_points_small.json')
+
+        self.sysperf_perf_json['data']['results'] = []
+        db_mock = MagicMock(name='db', autospec=True)
+        mongo_client_mock.return_value.get_database.return_value = db_mock
+
+        etl_helpers.load(self.sysperf_perf_json, self.mongo_uri)
+
+        db_mock.client.start_session.return_value.__enter__.assert_not_called()
+
+    # pylint: disable=invalid-name
+    @patch(ns('pymongo.MongoClient'), autospec=True)
+    def test_load_exception(self, mongo_client_mock):
+        """
+        Test that load raises exceptions.
+        """
+        self.sysperf_perf_json = FIXTURE_FILES.load_json_file('sysperf_perf_small.json')
+        self.sysperf_points = FIXTURE_FILES.load_json_file('sysperf_points_small.json')
+        db_mock = MagicMock(name='db', autospec=True)
+        mongo_client_mock.return_value.get_database.return_value = db_mock
+        db_mock.points.bulk_write.side_effect = Exception('boom')
+
+        self.assertRaisesRegexp(Exception, 'boom', etl_helpers.load, self.sysperf_perf_json,
+                                self.mongo_uri)
+
+    @patch(ns('pymongo.MongoClient'), autospec=True)
     def test_load_with_tests(self, mock_MongoClient):
         """
         Test that load works with a `tests` set that exludes at least one test.
@@ -96,6 +161,17 @@ class TestloadHistory(unittest.TestCase):
         mock_db.reset_mock()
         etl_helpers.load(self.sysperf_perf_json, self.mongo_uri, tests)
         mock_db.points.bulk_write.assert_called_once()
+
+    def test_make_filter(self):
+        self.assertEqual(
+            etl_helpers.make_filter(self.sysperf_points[0]), {
+                'project': u'sys-perf',
+                'revision': u'e31a40ab59fb5c784ff8d15f07c0b811bd54a516',
+                'task': u'mixed_workloads_WT',
+                'test': u'mixed_findOne',
+                'variant': u'wtdevelop-1-node-replSet',
+                'version_id': u'sys_perf_e31a40ab59fb5c784ff8d15f07c0b811bd54a516'
+            })
 
     # pylint: enable=invalid-name
 
@@ -120,7 +196,7 @@ class TestloadHistory(unittest.TestCase):
                             'signal_processing.etl_helpers',
                             'WARNING',
                             u"[warning  ] Invalid thread level value found [signal_processing.etl_helpers] results_item_key=u'-t' thread_level={u'ops_per_sec': 13876.06811527, u'ops_per_sec_values': [13876.06811527]}"  #pylint: disable=line-too-long
-                        ), )
+                        ), )  # yapf: disable
                 else:
                     log.check()
             self.assertEqual(actual, (point['max_thread_level'], point['max_ops_per_sec']))
@@ -135,6 +211,58 @@ class TestloadHistory(unittest.TestCase):
         """
         tests = set(['mixed_insert', 'mixed_findOne', 'mixed_insert_bad'])
         self.assertEqual(etl_helpers.extract_tests(self.sysperf_perf_json), tests)
+
+
+class TestMakeUpdates(unittest.TestCase):
+    """
+    Test suite for make_updates.
+    """
+
+    def load(self, file_name):
+        sysperf_points = FIXTURE_FILES.load_json_file(file_name)
+        return sysperf_points[0]
+
+    def _test(self, point):
+        updates = etl_helpers.make_updates(point)
+
+        insert_operation = point.copy()
+        results = insert_operation.pop('results') if 'results' in insert_operation else []
+        query = extract_filter(point)
+
+        expected = [
+            pymongo.UpdateOne(
+                query, {"$set": insert_operation,
+                        "$setOnInsert": {
+                            "results": results
+                        }},
+                upsert=True)
+        ]
+
+        expected += [create_update(point, result) for result in results]
+        self.assertEquals(updates, expected)
+
+    def test_no_results(self):
+        """
+        Test make_updates with no results.
+        """
+        point = self.load('sysperf_points_no_results.json')
+        self._test(point)
+
+    def test_single_result(self):
+        """
+        Test make_updates with single result.
+        """
+
+        point = self.load('sysperf_points_small.json')
+        self._test(point)
+
+    def test_multiple_results(self):
+        """
+        Test make_updates with multiple results.
+        """
+
+        point = self.load('sysperf_points_multiple_results.json')
+        self._test(point)
 
 
 class TestRedactURL(unittest.TestCase):
