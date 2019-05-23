@@ -7,6 +7,8 @@ import unittest
 
 import mock
 from mock import patch
+import pymongo
+import pymongo.errors
 
 import signal_processing.commands.jobs as jobs
 
@@ -54,6 +56,38 @@ class TestJob(unittest.TestCase):
         self.assertTrue(job.complete)
         self.assertIsNone(job.result)
         self.assertEqual(exception, job.exception)
+
+    def test_pymongo_exception(self):
+        """ Test pymongo exception."""
+        exception_message = 'exception'
+        exception_clazz = pymongo.errors.OperationFailure
+        job = _create_job(exception=exception_clazz(exception_message))
+        job()
+        self.assertTrue(job.complete)
+        self.assertIsNone(job.result)
+        self.assertFalse(isinstance(job.exception, exception_clazz))
+        self.assertIsInstance(job.exception, Exception)
+        self.assertIn('pymongo.errors.OperationFailure', job.exception.message)
+        self.assertIn('Traceback', job.exception.message)
+
+    def test_pymongo_exception_with_details(self):
+        """ Test pymongo exception with details."""
+        exception_message = 'exception'
+        exception_clazz = pymongo.errors.OperationFailure
+        job = _create_job(
+            exception=exception_clazz(
+                exception_message, details={
+                    'find': 'details',
+                    'errorLabels': []
+                }))
+        job()
+        self.assertTrue(job.complete)
+        self.assertIsNone(job.result)
+        self.assertFalse(isinstance(job.exception, exception_clazz))
+        self.assertIsInstance(job.exception, Exception)
+        self.assertIn('pymongo.errors.OperationFailure', job.exception.message)
+        self.assertIn('"find": "details"', job.exception.message)
+        self.assertIn('Traceback', job.exception.message)
 
     def test_none_arguments(self):
         """

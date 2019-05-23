@@ -367,12 +367,8 @@ def _save_outliers(points_model, outlier_results, test_identifier, configuration
             "outliers bulk_write",
             test_identifier=test_identifier,
             results=bulk_write_result.bulk_api_result)
-    except Exception as e:
-        # pylint: disable=no-member
-        LOG.warn(
-            'detect_outliers failed - rollback.',
-            exc_info=True,
-            details=e.details if hasattr(e, 'details') else str(e))
+    except:  # pylint: disable=bare-except
+        LOG.warn('detect_outliers failed.', exc_info=1)
         raise
 
 

@@ -4,6 +4,7 @@ Common Job helpers and objects.
 import multiprocessing
 import signal
 import sys
+import traceback
 from StringIO import StringIO
 import copy_reg
 import types
@@ -11,6 +12,9 @@ import types
 # pylint: disable=too-many-instance-attributes,too-many-arguments,too-few-public-methods
 from contextlib import contextmanager
 from datetime import datetime
+
+from bson.json_util import dumps
+import pymongo
 import structlog
 
 import click
@@ -144,6 +148,31 @@ class Job(object):
             kwargs = self.kwargs if self.kwargs is not None else {}
             arguments = self.function_arguments if self.function_arguments is not None else []
             self.result = self.function_reference(*arguments, **kwargs)
+        except pymongo.errors.PyMongoError as pme:
+            # Setting `self.exception=pme` causes errors, see TIG-1689.
+            # This seems to match the behaviour described
+            # http://api.mongodb.com/python/current/faq.html#id3
+            # Multiprocessing uses forks / locks and threads. I suspect pymongo Exceptions must
+            # be keeping a reference to the mongo client and if a lock is invalid then reading
+            # the exception details from the socket would not be correct.
+            # The actual error manifests as the 'details' being a string instance (rather than a
+            # dict), this case appears to be otherwise impossible.
+
+            # pylint: disable=no-member
+            details = getattr(pme, 'details') if hasattr(pme, 'details') else {}
+            full_name = str(pme.__module__) + '.' + str(pme.__class__.__name__)
+
+            LOG.warn(
+                "error in function call",
+                function=self.function_reference,
+                arguments=self.function_arguments,
+                exc_info=1,
+                details=details,
+                full_name=full_name)
+
+            e = "\n".join((full_name, dumps(details, indent=4, sort_keys=True) if details else '',
+                           traceback.format_exc()))
+            self.exception = Exception(e)
         except Exception as e:  # pylint: disable=broad-except
             LOG.warn(
                 "error in function call",
@@ -151,6 +180,7 @@ class Job(object):
                 arguments=self.function_arguments,
                 exc_info=1)
             self.exception = e
+
         self.ended_at = datetime.utcnow()
         LOG.debug(
             "job completed",
