@@ -31,7 +31,7 @@ atlas_instance_sizes:
   M30-repl: m4.large
   M40-repl: m4.xlarge
   M50-repl: m4.2xlarge
-  M60-repl: m4.4xlarge
+  M60-repl: m5.4xlarge
   M100-repl: m4.10xlarge
   M200-repl: m4.16xlarge
   M300-repl: m5.24xlarge

@@ -89,7 +89,8 @@ iperf:
         mkdir -p data/tmp; pushd data/tmp
         sudo yum groupinstall -y --quiet "Development tools"
         sudo yum install -y --quiet zlib-devel
-        sudo killall iperf3
+        sudo yum install pmisc
+        sudo pkill -15 iperf3
         rm -rf iperf
         git clone --quiet https://github.com/esnet/iperf
         cd iperf/
@@ -145,7 +146,7 @@ linkbench:
   - on_workload_client:
       exec: |
         export JAVA_HOME="/usr/java/jdk1.8.0_162/jre"
-        source /etc/profile.d/maven.sh && cd /home/ec2-user/linkbench
+        source /etc/profile.d/maven.sh && cd ~/linkbench
         mvn --quiet clean package -DskipTests
 
 ycsb:
@@ -173,7 +174,7 @@ ycsb:
   - on_workload_client:
       exec: |
         export JAVA_HOME="/usr/java/jdk1.8.0_162/jre"
-        source /etc/profile.d/maven.sh && cd /home/ec2-user/YCSB/ycsb-mongodb && mvn -Dmongo.version=3.8.1 --quiet clean package
+        source /etc/profile.d/maven.sh && cd ~/YCSB/ycsb-mongodb && mvn -Dmongo.version=3.8.1 --quiet clean package
 
 install_curator: |
   curl -o curator.tar.gz --retry 10 -LsS "${bootstrap.curator_url}"

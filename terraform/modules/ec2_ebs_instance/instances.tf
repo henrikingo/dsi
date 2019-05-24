@@ -75,6 +75,7 @@ resource "aws_instance" "ebs_member" {
         iops                    = "${var.ebs_iops}"
         volume_size             = "${var.ebs_size}"
         delete_on_termination   = true
+        encrypted               = true
     }
 
     ebs_block_device {
@@ -83,6 +84,7 @@ resource "aws_instance" "ebs_member" {
         iops                    = "${var.ebs_iops}"
         volume_size             = "${var.ebs_size}"
         delete_on_termination   = true
+        encrypted               = true
     }
 
     associate_public_ip_address = 1

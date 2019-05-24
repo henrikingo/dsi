@@ -23,8 +23,8 @@ fi
 echo "Run iperf network tests between $THIS_HOST and $HOSTNAME."
 
 sudo rm -f iperf.json
-ssh -A ${HOSTNAME} "sudo killall iperf3" || true
-sudo killall iperf3 || true
+ssh -A ${HOSTNAME} "sudo pkill -15 iperf3" || true
+sudo pkill -15 iperf3 || true
 
 # Start the remote process
 echo "Start the iperf listener side process"
@@ -38,7 +38,7 @@ sudo /usr/local/bin/iperf3 -c ${HOSTNAME} -i 2 -t 60 -V -p 27016 -J --logfile ip
 
 echo "Clean up iperf processes"
 kill %1
-ssh -A ${HOSTNAME} "sudo killall iperf3" || true
-sudo killall iperf3 || true
+ssh -A ${HOSTNAME} "sudo pkill iperf3" || true
+sudo pkill -15 iperf3 || true
 
 echo "Done $0"

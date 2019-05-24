@@ -68,13 +68,27 @@ dev=/dev/xvdc; sudo umount $dev; sudo mkfs.xfs -f $dev; sudo mount $dev
 sudo chmod 777 /media/ephemeral0
 sudo chown ec2-user /media/ephemeral0
 
-prepare_disk "/dev/xvdc" "/media/ephemeral0"
-prepare_disk "/dev/xvdd" "/media/ephemeral1"
+if [[ -e /dev/xvdc ]]; then
+    prepare_disk "/dev/xvdc" "/media/ephemeral0"
+fi
+if [[ -e /dev/xvdd ]]; then
+    prepare_disk "/dev/xvdd" "/media/ephemeral1"
+fi
 
 # Prepare empty EBS volume
 if [ "${WITH_EBS}" == "with_ebs" ]; then
-    prepare_disk "/dev/xvde" "/media/ebs"
-    prepare_disk "/dev/xvdf" "/media/ebs2"
+    if [[ -e /dev/xvde ]]; then
+        prepare_disk "/dev/xvde" "/media/ebs"
+    fi
+    if [[ -e /dev/xvdf ]]; then
+        prepare_disk "/dev/xvdf" "/media/ebs2"
+    fi
+    if [[ -e /dev/nvme1n1 ]]; then
+        prepare_disk "/dev/nvme1n1" "/media/ebs"
+    fi
+    if [[ -e /dev/nvme2n1 ]]; then
+        prepare_disk "/dev/nvme2n1" "/media/ebs2"
+    fi
     sudo ln -s /media/ebs /data
 # Will not format disk for seeded EBS partition.
 elif [ "${WITH_EBS}" == "with_seeded_ebs" ]; then
@@ -83,7 +97,16 @@ elif [ "${WITH_EBS}" == "with_seeded_ebs" ]; then
     sudo ln -s /media/ebs /data
 # Default to SSD only instance
 else
-    sudo ln -s /media/ephemeral0 /data
+    if [[ -e /media/ephermeral0 ]]; then
+        sudo ln -s /media/ephemeral0 /data
+    else
+        echo
+        echo
+        echo "WARNING: Did not find any mounted disks for /data. Creating /data on root partition."
+        echo
+        echo
+        sudo mkdir -p /data
+    fi
 fi
 
 
