@@ -9,9 +9,19 @@ set -eou pipefail
 source ./dsienv.sh
 
 # Exclude security-sensitive and unnecessary files
+EXCLUDED_FILES=(
+    "aws_ssh_key.pem"
+    "expansions.yml"
+    "reports.tgz"
+    "runtime_secret.yml"
+    "security.tf"
+    "venv"
+)
+
 TAR_EXCLUDE=""
-TAR_EXCLUDE="$TAR_EXCLUDE --exclude runtime_secret.yml --exclude security.tf --exclude aws_ssh_key.pem"
-TAR_EXCLUDE="$TAR_EXCLUDE --exclude venv --exclude reports.tgz"
+for EXCLUDED_FILE in "${EXCLUDED_FILES[@]}"; do
+    TAR_EXCLUDE+=" --exclude ${EXCLUDED_FILE}"
+done
 
 TAR_ARTIFACT="dsi-artifacts.tgz"
 
