@@ -1,4 +1,4 @@
-task_name: bestbuy_agg_out
+task_name: bestbuy_agg_merge
 run:
   - id: benchRun
     type: mongoshell
@@ -9,33 +9,24 @@ run:
     workload_config:
       tests:
         default:
-          # First just 'replaceCollection' which has to be unsharded - these tests are all in the
-          # same database.
-          - agg_out:
+          # Test $merge in the same database.
+          - agg_merge:
               - testDbName: bestbuy
                 testCollName: products
-                nDocsPerOut: [1, 1000, 100000]
-                modes: ["replaceCollection"]
-                targets: ["temp_testing"]
-                targetDB: bestbuy
-          # Now the new modes in the same database.
-          - agg_out:
-              - testDbName: bestbuy
-                testCollName: products
-                nDocsPerOut: [1, 1000, 100000]
-                modes: ["replaceDocuments", "insertDocuments"]
+                nDocsPerMerge: [1, 1000, 100000]
+                modes: [{whenMatched: "replace", whenNotMatched: "insert"}, {whenMatched: "fail", whenNotMatched: "insert"}]
                 targets: ["target_identical_distribution"]
                 targetDB: bestbuy
-          # Now the new modes in a different database, and again with a different database and a
+          # Test $merge into a different database, and again with a different database and a
           # different shard distribution
-          - agg_out:
+          - agg_merge:
               - testDbName: bestbuy
                 testCollName: products
-                nDocsPerOut: [1, 1000, 100000]
-                modes: ["replaceDocuments", "insertDocuments"]
+                nDocsPerMerge: [1, 1000, 100000]
+                modes: [{whenMatched: "replace", whenNotMatched: "insert"}, {whenMatched: "fail", whenNotMatched: "insert"}]
                 targets: ["identical_distribution", "hashed_id"]
                 targetDB: target
-          # Now test the exchange functionality of $out
+          # Now test the exchange functionality of $merge
           - bestbuy_wordcount:
               - testDbName: bestbuy
                 testCollName: products
