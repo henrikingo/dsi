@@ -16,6 +16,7 @@ from tenacity import retry, stop_after_attempt
 import etl_helpers
 import signal_processing.commands.helpers as helpers
 import signal_processing.commands.jobs as jobs
+from signal_processing.util import sighandler
 from analysis.evergreen import evergreen_client
 from bin.common import log
 
@@ -379,6 +380,7 @@ Examples:
 """
 
     log.setup_logging(True if verbose > 0 else False, logfile)
+    sighandler.register(LOG)
     path = os.path.expanduser(evergreen_config)
     with open(path) as config_file:
         evg_client = evergreen_client.Client(yaml.load(config_file))

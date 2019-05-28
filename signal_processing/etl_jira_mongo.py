@@ -26,6 +26,7 @@ import pymongo
 
 from bin.common import log
 from signal_processing.keyring.credentials import Credentials
+from signal_processing.util import sighandler
 
 DB = 'perf'
 COLLECTION = 'build_failures'
@@ -294,6 +295,7 @@ def main(jira_user, jira_password, mongo_uri, projects, batch, debug):
     """
     try:
         log.setup_logging(debug)
+        sighandler.register(LOG)
         jira_client, _ = new_jira_client(jira_user, jira_password)
         mongo_client = pymongo.MongoClient(mongo_uri)
         EtlJira(jira_client, mongo_client, projects, batch).run()
