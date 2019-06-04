@@ -10,6 +10,7 @@ from subprocess import Popen, PIPE
 import yaml
 import requests
 
+NETWORK_TIMEOUT_SECS = 120
 GIT_HASH_LEN = 40
 GITHUB_API = 'https://api.github.com'
 GH_USER = 'mongodb'
@@ -201,7 +202,7 @@ def get_as_json(url, **kwargs):
     :rtype: dict
     :raises: HTTPError if the response is not OK
     """
-    response = requests.get(url, **kwargs)
+    response = requests.get(url, timeout=NETWORK_TIMEOUT_SECS, **kwargs)
     if not response.ok:
         response.raise_for_status()
     else:

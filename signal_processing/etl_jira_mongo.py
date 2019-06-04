@@ -36,6 +36,7 @@ DEFAULT_PROJECTS = ('performance', 'performance-4.0', 'performance-3.6', 'perfor
                     'sys-perf-3.6', 'sys-perf-3.4', 'sys-perf-3.2')
 DEFAULT_MONGO_URI = 'mongodb://localhost:27017/' + DB
 JIRA_URL = 'https://jira.mongodb.org'
+NETWORK_TIMEOUT_SECS = 120
 
 # Dict to translate Jira field names we use in our mongodb collection into the internal Jira path.
 FIELDS = OrderedDict([
@@ -159,7 +160,10 @@ def new_jira_client(jira_user=None, jira_password=None):
     if jira_password is None:
         jira_password = getpass()
     jira_client = jira.JIRA(
-        basic_auth=(jira_user, jira_password), options={'server': JIRA_URL}, max_retries=1)
+        basic_auth=(jira_user, jira_password),
+        options={'server': JIRA_URL},
+        max_retries=1,
+        timeout=NETWORK_TIMEOUT_SECS)
     # The following will fail on authentication error.
     # UPDATE: As of 2018-06-12 already the above constructor now properly 403 fails on
     # on authentication error. Still leaving this here in case behavior changes again in the
