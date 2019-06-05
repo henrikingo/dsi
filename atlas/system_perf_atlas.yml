@@ -547,6 +547,15 @@ buildvariant_templates:  # Dummy key that evergreen ignores
     - name: service_architecture_workloads
 
 
+- &large_buildvariant_template
+  <<: *buildvariant_template
+  run_on:
+    - "rhel70-perf-atlas-large"
+
+- &xlarge_buildvariant_template
+  <<: *buildvariant_template
+  run_on:
+    - "rhel70-perf-atlas-xlarge"
 
 buildvariants:
 - <<: *buildvariant_template
@@ -573,37 +582,37 @@ buildvariants:
   expansions:
     atlas_setup: M40-repl
 
-- <<: *buildvariant_template
+- <<: *large_buildvariant_template
   name: M50-atlas-repl
   display_name: M50 Atlas ReplSet
   expansions:
     atlas_setup: M50-repl
 
-- <<: *buildvariant_template
+- <<: *large_buildvariant_template
   name: M60-atlas-repl
   display_name: M60 Atlas ReplSet
   expansions:
     atlas_setup: M60-repl
 
-- <<: *buildvariant_template
+- <<: *large_buildvariant_template
   name: M100-atlas-repl
   display_name: M100 Atlas ReplSet
   expansions:
     atlas_setup: M100-repl
 
-# - <<: *buildvariant_template
+# - <<: *xlarge_buildvariant_template
 #   name: M140-atlas-repl
 #   display_name: M140 Atlas ReplSet
 #   expansions:
 #     atlas_setup: M140-repl
 
-- <<: *buildvariant_template
+- <<: *xlarge_buildvariant_template
   name: M200-atlas-repl
   display_name: M200 Atlas ReplSet
   expansions:
     atlas_setup: M200-repl
 
-- <<: *buildvariant_template
+- <<: *xlarge_buildvariant_template
   name: M300-atlas-repl
   display_name: M300 Atlas ReplSet
   expansions:
@@ -619,43 +628,43 @@ buildvariants:
   expansions:
     atlas_setup: R40-repl
 
-- <<: *buildvariant_template
+- <<: *large_buildvariant_template
   name: R50-atlas-repl
   display_name: R50 Atlas ReplSet
   expansions:
     atlas_setup: R50-repl
 
-- <<: *buildvariant_template
+- <<: *large_buildvariant_template
   name: R60-atlas-repl
   display_name: R60 Atlas ReplSet
   expansions:
     atlas_setup: R60-repl
 
-- <<: *buildvariant_template
+- <<: *large_buildvariant_template
   name: R80-atlas-repl
   display_name: R80 Atlas ReplSet
   expansions:
     atlas_setup: R80-repl
 
-- <<: *buildvariant_template
+- <<: *xlarge_buildvariant_template
   name: R200-atlas-repl
   display_name: R200 Atlas ReplSet
   expansions:
     atlas_setup: R200-repl
 
-# - <<: *buildvariant_template
+# - <<: *xlarge_buildvariant_template
 #   name: R300-atlas-repl
 #   display_name: R300 Atlas ReplSet
 #   expansions:
 #     atlas_setup: R300-repl
 
-- <<: *buildvariant_template
+- <<: *xlarge_buildvariant_template
   name: R400-atlas-repl
   display_name: R400 Atlas ReplSet
   expansions:
     atlas_setup: R400-repl
 
-# - <<: *buildvariant_template
+# - <<: *xlarge_buildvariant_template
 #   name: R700-atlas-repl
 #   display_name: R700 Atlas ReplSet
 #   expansions:
@@ -667,32 +676,32 @@ buildvariants:
   expansions:
     atlas_setup: M40_NVME-repl
 
-- <<: *buildvariant_template
+- <<: *large_buildvariant_template
   name: M50-nvme-atlas-repl
   display_name: M50 NVMe Atlas ReplSet
   expansions:
     atlas_setup: M50_NVME-repl
 
-- <<: *buildvariant_template
+- <<: *large_buildvariant_template
   name: M60-atlas-NVME-repl
   display_name: M60 NVMe Atlas ReplSet
   expansions:
     atlas_setup: M60_NVME-repl
 
-- <<: *buildvariant_template
+- <<: *large_buildvariant_template
   name: M80-atlas-NVME-repl
   display_name: M80 NVMe Atlas ReplSet
   expansions:
     atlas_setup: M80_NVME-repl
 
-- <<: *buildvariant_template
+- <<: *xlarge_buildvariant_template
   name: M200-atlas-NVME-repl
   display_name: M200 NVMe Atlas ReplSet
   expansions:
     atlas_setup: M200_NVME-repl
 
 # US_EAST_1 only (which is exactly what we use)
-- <<: *buildvariant_template
+- <<: *xlarge_buildvariant_template
   name: M400-atlas-NVME-repl
   display_name: M400 NVMe Atlas ReplSet
   expansions:
