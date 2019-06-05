@@ -33,3 +33,6 @@ _e_divisive.so
 
 # Mac specific
 /tests/.DS_Store
+
+# VS Code
+.vscode

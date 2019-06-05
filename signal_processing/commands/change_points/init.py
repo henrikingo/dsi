@@ -11,12 +11,14 @@ from signal_processing.keyring.mongo_keyring import prompt_for_credentials, \
     save_credentials_to_keyring, new_mongo_client
 
 import signal_processing.commands.helpers as helpers
+from signal_processing.detect_changes import DEFAULT_MONGO_REPO
 
 LOG = structlog.getLogger(__name__)
 
 APP_NAME = os.environ.get('DSI_APP_NAME', 'change-points')
 DEFAULT_LOG_FILE = os.path.join('/', 'tmp', '{}.log'.format(APP_NAME))
 DEFAULT_CONFIG_FILE = click.get_app_dir(APP_NAME, roaming=True, force_posix=True)
+MONGO_GIT_URL = 'git@github.com:mongodb/mongo.git'
 
 
 def validate_mongo_connection(mongo_uri, credentials):
@@ -84,11 +86,24 @@ def get_configuration():
         else:
             config['auth_mode'] = 'prompt'
             click.secho(
-                'System keyring is NOT being used, credentials will be require each run.',
+                'System keyring is NOT being used, credentials will be required each run.',
                 fg='yellow',
                 bold=True)
 
     return config
+
+
+def check_mongo_repo_present():
+    """
+    Check if mongo repo is present as this will be needed later in tool execution
+    """
+    if os.path.exists(DEFAULT_MONGO_REPO):
+        return
+    if click.confirm(
+            'This tool requires the mongo repository locally to' +
+            ' function efficiently, but it is missing; clone it now?',
+            default=True):
+        os.system('git clone %s %s' % (MONGO_GIT_URL, DEFAULT_MONGO_REPO))
 
 
 @click.command(name='init')
@@ -109,6 +124,7 @@ def init_command(target_file):
             abort=True)
 
     print_preamble()
+    check_mongo_repo_present()
 
     config = get_configuration()
     write_configuration(config, target_file)
