@@ -638,14 +638,29 @@ class ConfigDictTestCase(unittest.TestCase):
         """check that lookup_path throws exceptions for the correct portion of the pathspec."""
 
         conf = self.conf['infrastructure_provisioning']['out']
-        self.assertRaisesRegexp(KeyError, "Key not found: MONGOD'$", conf.lookup_path, 'MONGOD')
-        self.assertRaisesRegexp(KeyError, "MONGOD'$", conf.lookup_path, 'MONGOD.50')
-        self.assertRaisesRegexp(KeyError, "list index out of range: mongod.50'$", conf.lookup_path,
-                                'mongod.50')
-        self.assertRaisesRegexp(KeyError, "mongod.50e-1'$", conf.lookup_path, 'mongod.50e-1')
-        self.assertRaisesRegexp(KeyError, "mongod.50'$", conf.lookup_path, 'mongod.50.public_ip')
-        self.assertRaisesRegexp(KeyError, "mongod.0.0'$", conf.lookup_path, 'mongod.0.0')
-        self.assertRaisesRegexp(KeyError, "mongod.50'$", conf.lookup_path, 'mongod.50.public_ip.0')
+        self.assertRaisesRegexp(KeyError,
+                                "ConfigDict: Key not found: MONGOD in path \\['MONGOD'\\]",
+                                conf.lookup_path, 'MONGOD')
+        self.assertRaisesRegexp(KeyError,
+                                "ConfigDict: Key not found: MONGOD in path \\['MONGOD', 50\\]",
+                                conf.lookup_path, 'MONGOD.50')
+        self.assertRaisesRegexp(
+            KeyError, "ConfigDict: list index out of range: mongod.50 in path \\['mongod', 50\\]",
+            conf.lookup_path, 'mongod.50')
+        self.assertRaisesRegexp(
+            KeyError, "ConfigDict: Key not found: mongod.50e-1 in path \\['mongod', '50e-1'\\]",
+            conf.lookup_path, 'mongod.50e-1')
+        self.assertRaisesRegexp(
+            KeyError,
+            "ConfigDict: list index out of range: mongod.50 in path \\['mongod', 50, 'public_ip'\\]",
+            conf.lookup_path, 'mongod.50.public_ip')
+        self.assertRaisesRegexp(
+            KeyError, "ConfigDict: Key not found: mongod.0.0 in path \\['mongod', 0, 0\\]",
+            conf.lookup_path, 'mongod.0.0')
+        self.assertRaisesRegexp(
+            KeyError,
+            "ConfigDict: list index out of range: mongod.50 in path \\['mongod', 50, 'public_ip', 0\\]",
+            conf.lookup_path, 'mongod.50.public_ip.0')
 
     # Helpers
     def assert_equal_dicts(self, dict1, dict2):

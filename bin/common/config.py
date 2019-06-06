@@ -233,11 +233,14 @@ class ConfigDict(dict):
             try:
                 current = current[key]
             except TypeError:
-                raise KeyError("ConfigDict: Key not found: {}".format(".".join(keys)))
+                raise KeyError("ConfigDict: Key not found: {} in path {}".format(
+                    ".".join(keys), path))
             except KeyError:
-                raise KeyError("ConfigDict: Key not found: {}".format(".".join(keys)))
+                raise KeyError("ConfigDict: Key not found: {} in path {}".format(
+                    ".".join(keys), path))
             except IndexError:
-                raise KeyError("ConfigDict: list index out of range: {}".format(".".join(keys)))
+                raise KeyError("ConfigDict: list index out of range: {} in path {}".format(
+                    ".".join(keys), path))
 
         return current
 
@@ -312,8 +315,11 @@ class ConfigDict(dict):
 
     def __getitem__(self, key):
         """Return dict item, after applying overrides and ${variable.references}"""
-        value = self.descend_key_and_apply_overrides(key)
-        value = self.variable_references(key, value)
+        try:
+            value = self.descend_key_and_apply_overrides(key)
+            value = self.variable_references(key, value)
+        except KeyError:
+            raise KeyError("Key or sub-key not found: [{}] at path [{}]".format(key, self.path))
         return value
 
     def __setitem__(self, key, value):
