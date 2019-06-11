@@ -1,10 +1,11 @@
 task_name: move_chunk
+numactl_prefix_for_workload_client: ${infrastructure_provisioning.numactl_prefix}
 run:
   - id: benchRun
     type: mongoshell
 
     # This line to be shortened after the config file is copied from below into the production server.
-    cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
+    cmd: cd workloads && ${test_control.numactl_prefix_for_workload_client} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     output_files:
       - workloads/workload_timestamps.csv
@@ -35,7 +36,7 @@ run:
 
   - id: fio
     type: fio
-    cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
+    cmd: '${test_control.numactl_prefix_for_workload_client} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
     output_files:
       - fio.json
@@ -45,7 +46,7 @@ run:
 
   - id: iperf
     type: iperf
-    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    cmd: '${test_control.numactl_prefix_for_workload_client} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
     output_files:
       - iperf.json
     skip_validate: true

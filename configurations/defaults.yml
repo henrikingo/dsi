@@ -224,9 +224,12 @@ runtime_secret:
   dsi_analysis_atlas_user: dsi_analysis
 
 test_control:
+  is_production: ${bootstrap.production}
+  mongodb_url: ${mongodb_setup.meta.mongodb_url}
   task_name: default_task_name
   timeouts:
     no_output_ms: 5400000  # 90 minutes
+  numactl_prefix_for_workload_client: ""
   jstests_dir: ./jstests/hooks
   spawn_using: ssh
   between_tests:

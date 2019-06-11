@@ -34,18 +34,13 @@ class RunTestTestCase(unittest.TestCase):
         }
 
         self.god_config = {
-            'bootstrap': {
-                'production': True
-            },
             'test_control': {
+                'mongodb_url': 'dummy_mongodb_url',
+                'is_production': True,
                 'timeouts': {
                     'no_output_ms': 100
-                }
-            },
-            'mongodb_setup': {
-                'meta': {
-                    'mongodb_url': 'dummy_mongodb_url'
-                }
+                },
+                'numactl_prefix_for_workload_client': 'dummy_numa_prefix'
             }
         }
 
@@ -137,6 +132,7 @@ class RunTestsTestCase(unittest.TestCase):
             },
             'test_control': {
                 'task_name': 'test_config',
+                'numactl_prefix_for_workload_client': 'numactl --interleave=all --cpunodebind=1',
                 'reports_dir_basename': 'reports',
                 'perf_json': {
                     'path': 'perf.json'
@@ -168,7 +164,7 @@ class RunTestsTestCase(unittest.TestCase):
                     },
                     {'id': 'fio',
                      'type': 'fio',
-                     'cmd': '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh' +
+                     'cmd': '${test_control.numactl_prefix_for_workload_client} ./fio-test.sh' +
                             '${mongodb_setup.meta.hostname}',
                      'skip_validate': True
                     }

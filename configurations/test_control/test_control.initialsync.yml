@@ -1,4 +1,5 @@
 task_name: initialSync
+numactl_prefix_for_workload_client: ${infrastructure_provisioning.numactl_prefix}
 post_test:
   # Clean-up dbPath+'-tmp' directory that got created during rsync.
   - on_mongod:
@@ -12,7 +13,7 @@ post_test:
 run:
   - id: initialsync_c_1_d_1_w_f
     type: mongoshell
-    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
+    cmd: cd workloads &&  ${test_control.numactl_prefix_for_workload_client} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     output_files:
       - workloads/workloads.yml
@@ -37,7 +38,7 @@ run:
 
   - id: initialsync_c_1_d_32_w_f
     type: mongoshell
-    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
+    cmd: cd workloads &&  ${test_control.numactl_prefix_for_workload_client} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     output_files:
       - workloads/workloads.yml
@@ -62,7 +63,7 @@ run:
 
   - id: initialsync_c_32_d_1_w_f
     type: mongoshell
-    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
+    cmd: cd workloads &&  ${test_control.numactl_prefix_for_workload_client} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     config_target: workloads/workloads.yml
     output_files:
@@ -88,7 +89,7 @@ run:
 
   - id: initialsync_c_32_d_32_w_f
     type: mongoshell
-    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
+    cmd: cd workloads &&  ${test_control.numactl_prefix_for_workload_client} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     config_target: workloads/workloads.yml
     output_files:
@@ -103,7 +104,7 @@ run:
               empty_node_addr: ${mongodb_setup.meta.empty_node}
               primary_addr: ${mongodb_setup.meta.hostname}
               sync_type: "initialSync"
-              start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
+              start_mongod: ${test_control.numactl_prefix_for_workload_client} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
@@ -114,7 +115,7 @@ run:
 
   - id: initialsync_c_1_d_1_w_t
     type: mongoshell
-    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
+    cmd: cd workloads &&  ${test_control.numactl_prefix_for_workload_client} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     config_target: workloads/workloads.yml
     output_files:
@@ -129,7 +130,7 @@ run:
               empty_node_addr: ${mongodb_setup.meta.empty_node}
               primary_addr: ${mongodb_setup.meta.hostname}
               sync_type: "initialSync"
-              start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
+              start_mongod: ${test_control.numactl_prefix_for_workload_client} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
@@ -140,7 +141,7 @@ run:
 
   - id: initialsync_c_1_d_32_w_t
     type: mongoshell
-    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
+    cmd: cd workloads &&  ${test_control.numactl_prefix_for_workload_client} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     config_target: workloads/workloads.yml
     output_files:
@@ -155,7 +156,7 @@ run:
               empty_node_addr: ${mongodb_setup.meta.empty_node}
               primary_addr: ${mongodb_setup.meta.hostname}
               sync_type: "initialSync"
-              start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
+              start_mongod: ${test_control.numactl_prefix_for_workload_client} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
@@ -166,7 +167,7 @@ run:
 
   - id: initialsync_c_32_d_1_w_t
     type: mongoshell
-    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
+    cmd: cd workloads &&  ${test_control.numactl_prefix_for_workload_client} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     config_target: workloads/workloads.yml
     output_files:
@@ -181,7 +182,7 @@ run:
               empty_node_addr: ${mongodb_setup.meta.empty_node}
               primary_addr: ${mongodb_setup.meta.hostname}
               sync_type: "initialSync"
-              start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
+              start_mongod: ${test_control.numactl_prefix_for_workload_client} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
@@ -192,7 +193,7 @@ run:
 
   - id: initialsync_c_32_d_32_w_t
     type: mongoshell
-    cmd: cd workloads &&  ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
+    cmd: cd workloads &&  ${test_control.numactl_prefix_for_workload_client} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     config_target: workloads/workloads.yml
     output_files:
@@ -207,7 +208,7 @@ run:
               empty_node_addr: ${mongodb_setup.meta.empty_node}
               primary_addr: ${mongodb_setup.meta.hostname}
               sync_type: "initialSync"
-              start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
+              start_mongod: ${test_control.numactl_prefix_for_workload_client} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
           - cpu_noise
       target: ${mongodb_setup.meta.hostname}
@@ -219,7 +220,7 @@ run:
 
   - id: fio
     type: fio
-    cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
+    cmd: '${test_control.numactl_prefix_for_workload_client} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
     output_files:
       - fio.json
@@ -229,7 +230,7 @@ run:
 
   - id: iperf
     type: iperf
-    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    cmd: '${test_control.numactl_prefix_for_workload_client} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
     output_files:
       - iperf.json
     skip_validate: true

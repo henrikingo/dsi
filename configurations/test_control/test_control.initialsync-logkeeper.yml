@@ -89,6 +89,7 @@
 # have to be updated. The most common update that needs to be  performed relates to the Feature Compatibility Version.
 #
 task_name: initialsync-logkeeper
+numactl_prefix_for_workload_client: ${infrastructure_provisioning.numactl_prefix}
 post_test:
   # Clean-up dbPath+'-tmp' directory that got created during rsync.
   - on_mongod:
@@ -102,7 +103,7 @@ post_test:
 run:
   - id: benchRun
     type: mongoshell
-    cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
+    cmd: cd workloads && ${test_control.numactl_prefix_for_workload_client} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     output_files:
       - workloads/workload_timestamps.csv

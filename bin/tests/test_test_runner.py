@@ -29,20 +29,13 @@ class GetTestRunnerTestCase(unittest.TestCase):
             'output_files': ['output_file1', 'output_file2']
         }
 
-        self.get_god_config = lambda prod=True: {
-            'bootstrap': {
-                'production': prod
+        self.get_test_control_config = lambda prod=True, numa='numactl --interleave=all --cpunodebind=1': {
+            'mongodb_url': 'dummy_mongodb_url',
+            'is_production': prod,
+            'timeouts': {
+                'no_output_ms': 100
             },
-            'test_control': {
-                'timeouts': {
-                    'no_output_ms': 100
-                }
-            },
-            'mongodb_setup': {
-                'meta': {
-                    'mongodb_url': 'dummy_mongodb_url'
-                }
-            }
+            'numactl_prefix_for_workload_client': numa
         }
 
         # Change to a temporary directory for this test because the report
@@ -87,7 +80,7 @@ class GetTestRunnerTestCase(unittest.TestCase):
         """
         Can get the shell test runner for unknown test kinds.
         """
-        runner = get_test_runner(self.get_test_config('unknown'), self.get_god_config())
+        runner = get_test_runner(self.get_test_config('unknown'), self.get_test_control_config())
         self.assertIsInstance(runner, test_runner._ShellRunner)
         output_file_calls = [
             call('output_file1', 'reports/dummy_test/output_file1'),
@@ -101,7 +94,7 @@ class GetTestRunnerTestCase(unittest.TestCase):
         """
         Can get the genny test runner for "genny" tests.
         """
-        runner = get_test_runner(self.get_test_config('genny'), self.get_god_config())
+        runner = get_test_runner(self.get_test_config('genny'), self.get_test_control_config())
         self.assertIsInstance(runner, test_runner.GennyRunner)
 
         report_str = '\nexit_status: 0 \'GennyRunner.run()\'\n'
@@ -116,7 +109,8 @@ class GetTestRunnerTestCase(unittest.TestCase):
         """
         Can get the genny test runner for "genny" tests.
         """
-        runner = get_test_runner(self.get_test_config('genny_canaries'), self.get_god_config())
+        runner = get_test_runner(
+            self.get_test_config('genny_canaries'), self.get_test_control_config())
         self.assertIsInstance(runner, test_runner.GennyCanariesRunner)
 
         report_str = '\nexit_status: 0 \'GennyCanariesRunner.run()\'\n'
@@ -128,17 +122,17 @@ class GetTestRunnerTestCase(unittest.TestCase):
 
     def test_genny_runner_run(self):
         """
-        Check that GennyRunner calls the correct shell commands. Do the check twice,
-        once for production environment, once for local environment.
+        Check that GennyRunner calls the correct shell commands. Do the check multiple times,
+        for different configurations.
 
         Any changes to genny's invocation will require updating this test.
         """
         # Local Environment
-        runner = get_test_runner(self.get_test_config('genny'), self.get_god_config(False))
+        runner = get_test_runner(self.get_test_config('genny'), self.get_test_control_config(False))
         call_args = [
             'cd ./data; mkdir -p metrics',
-            'cd ./data; numactl --interleave=all --cpunodebind=1 '
-            'genny/bin/genny run -u "dummy_mongodb_url" -m cedar-csv -o ./genny-perf.csv dummy_config_filename',
+            ('cd ./data; numactl --interleave=all --cpunodebind=1 genny/bin/genny run '
+             '-u "dummy_mongodb_url" -m cedar-csv -o ./genny-perf.csv dummy_config_filename'),
             'cd ./data; genny-metrics-legacy-report --report-file genny-perf.json genny-perf.csv',
         ]
         mock_host = Mock(spec=RemoteHost)
@@ -149,11 +143,25 @@ class GetTestRunnerTestCase(unittest.TestCase):
             self.assertEqual(arg[0][0], next(call_args_iter))
 
         # Production Environment
-        runner = get_test_runner(self.get_test_config('genny'), self.get_god_config(False))
-        call_args.append('cd ./data; genny-metrics-report --report-file genny-cedar-report.json '
-                         'genny-perf.csv metrics')
+        runner = get_test_runner(self.get_test_config('genny'), self.get_test_control_config(False))
+        args = call_args[:]
+        args.append('cd ./data; genny-metrics-report --report-file '
+                    'genny-cedar-report.json genny-perf.csv metrics')
         mock_host.exec_command = Mock(return_value=0)
         runner.run(mock_host)
-        call_args_iter = iter(call_args)
+        call_args_iter = iter(args)
+        for arg in mock_host.exec_command.call_args_list:
+            self.assertEqual(arg[0][0], next(call_args_iter))
+
+        # No numactl.
+        runner = get_test_runner(
+            self.get_test_config('genny'), self.get_test_control_config(False, ''))
+        args = call_args[:]
+        args[1] = (
+            'cd ./data;  genny/bin/genny run -u "dummy_mongodb_url" -m cedar-csv -o ./genny-perf.csv '
+            'dummy_config_filename')  # Remove the numactl line.
+        mock_host.exec_command = Mock(return_value=0)
+        runner.run(mock_host)
+        call_args_iter = iter(args)
         for arg in mock_host.exec_command.call_args_list:
             self.assertEqual(arg[0][0], next(call_args_iter))

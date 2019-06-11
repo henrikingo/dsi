@@ -1,8 +1,9 @@
 task_name: crud_workloads
+numactl_prefix_for_workload_client: ${infrastructure_provisioning.numactl_prefix}
 run:
   - id: benchRun
     type: mongoshell
-    cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
+    cmd: cd workloads && ${test_control.numactl_prefix_for_workload_client} ./run_workloads.py -c ../workloads.yml
     config_filename: workloads.yml  # The name used in previous row
     output_files:
       - workloads/workload_timestamps.csv
@@ -25,7 +26,7 @@ run:
 
   - id: fio
     type: fio
-    cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
+    cmd: '${test_control.numactl_prefix_for_workload_client} ./fio-test.sh ${mongodb_setup.meta.hostname}'
     config_filename: fio.ini
     output_files:
       - fio.json
@@ -37,7 +38,7 @@ run:
     type: iperf
     output_files:
       - iperf.json
-    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    cmd: '${test_control.numactl_prefix_for_workload_client} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
     skip_validate: true
 
 # This is just a lookup table. Each test may reference some leaf node here from a test parameter.

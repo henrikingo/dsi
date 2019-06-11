@@ -167,7 +167,8 @@ class MongoNode(MongoCluster):
         else:
             self.dbdir = self.mongo_config_file['storage']['dbPath']
 
-        self.numactl_prefix = self.config['infrastructure_provisioning'].get('numactl_prefix', '')
+        self.numactl_prefix = \
+            self.config['infrastructure_provisioning'].get('numactl_prefix', '')
 
         # The numactl_prefix is used in shell scripts directly invoked from yaml configs as a shell
         # variable, so it has to be a string. Ideally we want the configuration for numactl to

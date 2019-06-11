@@ -25,7 +25,12 @@ class _BaseRunner(object):
     don't have their own dedicated runners.
     """
 
-    def __init__(self, test_name=None, output_files=None, is_production=None, timeout=None):
+    def __init__(self,
+                 test_name=None,
+                 output_files=None,
+                 is_production=None,
+                 timeout=None,
+                 numactl_prefix_for_workload_client=None):
         """
         :param test_name: the name of the test suite. obtained from test_control.id.
         :param output_files: the list of output files a test suite generates. Used for uploading
@@ -33,6 +38,7 @@ class _BaseRunner(object):
                              output files in addition to what's specified here.
         :param is_production: whether this test is running in production or locally.
         :param timeout: test timeout
+        :param numactl_prefix_for_workload_client: whether the test should be started with numactl.
         """
         self.report_dir = os.path.join('reports', test_name)
         common.utils.mkdir_p(self.report_dir)
@@ -42,6 +48,7 @@ class _BaseRunner(object):
         self.output_files = output_files
         self.is_production = is_production
         self.timeout = timeout
+        self.numactl_prefix_for_workload_client = numactl_prefix_for_workload_client
 
     def run(self, host):
         """
@@ -66,15 +73,6 @@ class _BaseRunner(object):
         self._retrieve_test_output(host)
 
         return status
-
-    @property
-    def numactl_prefix(self):
-        """
-        Bind a process to a single CPU socket but use RAM connected to all sockets.
-
-        This configuration is duplicated in YAML as infrastructure_provisioning.numactl_prefix
-        """
-        return 'numactl --interleave=all --cpunodebind=1'
 
     @staticmethod
     def get_default_output_files():
@@ -142,7 +140,7 @@ class GennyRunner(_BaseRunner):
         commands = [
             'mkdir -p metrics',
             '{} genny/bin/genny run -u "{}" -m cedar-csv -o ./genny-perf.csv {}'.format(
-                self.numactl_prefix, self.db_url, self.workload_config),
+                self.numactl_prefix_for_workload_client, self.db_url, self.workload_config),
             'genny-metrics-legacy-report --report-file genny-perf.json genny-perf.csv'
         ]
 
@@ -194,7 +192,8 @@ class GennyCanariesRunner(_BaseRunner):
         for command in commands:
             # Write the output of genny to the ephemeral drive (mounted on ~/data)
             # to ensure it has enough disk space.
-            command = '{} && {} {}'.format('cd ./data', self.numactl_prefix, command)
+            command = '{} && {} {}'.format('cd ./data', self.numactl_prefix_for_workload_client,
+                                           command)
 
             exit_code = host.exec_command(
                 command, stdout=out, stderr=out, no_output_timeout_ms=self.timeout, get_pty=True)
@@ -208,13 +207,13 @@ class GennyCanariesRunner(_BaseRunner):
 
 
 @nottest
-def get_test_runner(test_config, god_config):
+def get_test_runner(test_config, test_control_config):
     """
     Get the test runner for a given test type.
 
     :rtype: _BaseRunner
     :param test_config: config dictionary for this test.
-    :param god_config: top-level config dictionary.
+    :param test_control_config: top-level config dictionary for test_control.
     :return: an instance of a _BaseRunner subclass.
     """
     # Options from test_config.
@@ -222,18 +221,20 @@ def get_test_runner(test_config, god_config):
     test_type = test_config['type']
     output_files = test_config.get('output_files', [])
 
-    # Options from god_config.
-    is_production = god_config['bootstrap']['production']
-    timeout = god_config['test_control']['timeouts']['no_output_ms']
+    # Options from test_control_config.
+    is_production = test_control_config['is_production']
+    timeout = test_control_config['timeouts']['no_output_ms']
+    numactl_prefix = test_control_config['numactl_prefix_for_workload_client']
 
     runner_config = {
         'test_name': name,
         'output_files': output_files,
         'is_production': is_production,
-        'timeout': timeout
+        'timeout': timeout,
+        'numactl_prefix_for_workload_client': numactl_prefix
     }
 
-    db_url = god_config['mongodb_setup']['meta']['mongodb_url']
+    db_url = test_control_config['mongodb_url']
 
     if test_type == 'genny':
         workload_config_path = test_config['config_filename']

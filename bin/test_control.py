@@ -104,7 +104,7 @@ def run_test(test, config):
     :param test ConfigDict: The ConfigDict object for the test to run
     :param config ConfigDict: The top level ConfigDict
     """
-    runner = test_runner.get_test_runner(test, config)
+    runner = test_runner.get_test_runner(test, config['test_control'])
     client_host = common.command_runner.make_workload_runner_host(config)
 
     # Generate and upload the test's configuration file if there is one.
