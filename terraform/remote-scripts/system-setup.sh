@@ -97,7 +97,7 @@ elif [ "${WITH_EBS}" == "with_seeded_ebs" ]; then
     sudo ln -s /media/ebs /data
 # Default to SSD only instance
 else
-    if [[ -e /media/ephermeral0 ]]; then
+    if [[ -e /media/ephemeral0 ]]; then
         sudo ln -s /media/ephemeral0 /data
     else
         echo
