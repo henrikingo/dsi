@@ -12,7 +12,7 @@ from mock import patch
 from bin.common.log import setup_logging
 from test_lib import math_utils
 from signal_processing.change_points.detection import ChangePointsDetection, _calculate_magnitude, \
-    create_outlier_mask
+    create_exclusion_mask
 from signal_processing.change_points.e_divisive import EDivisive
 
 setup_logging(False)
@@ -45,9 +45,9 @@ def create_revisions(length, iterable=None, size=None):
     return revisions
 
 
-class TestCreateOutlierMask(unittest.TestCase):
+class TestCreateExclusionMask(unittest.TestCase):
     """
-    Test Suite for create_outlier_mask.
+    Test Suite for create_exclusion_mask.
     """
 
     def _test(self, outlier=None, marked=None, rejected=None, whitelisted=None, expected=None):
@@ -65,7 +65,7 @@ class TestCreateOutlierMask(unittest.TestCase):
             'rejected': rejected if rejected is not None else [False] * length,
             'whitelisted': whitelisted if whitelisted is not None else [False] * length
         }
-        mask = create_outlier_mask(time_series)
+        mask = create_exclusion_mask(time_series)
         assert_array_equal(expected, mask)
 
     def test_single_result_not_outlier(self):

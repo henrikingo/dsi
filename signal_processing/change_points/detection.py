@@ -74,12 +74,12 @@ def detect_change_points(state,
     return detection.detect_change_points(state)
 
 
-def create_outlier_mask(time_series):
+def create_exclusion_mask(time_series):
     """
-    Create a mask which can be used to exclude outliers.
+    Create a mask which can be used to exclude test result outliers and rejected tasks.
 
     :param dict time_series: The time series data.
-    :return: The outlier mask.
+    :return: The exclusion mask.
     :rtype: list(bool)
     """
     outlier_mask = np.array(time_series.get('outlier'), np.bool)
@@ -120,7 +120,7 @@ class ChangePointsDetection(object):
 
         series = np.array(time_series.get('series'), np.float)
         series_masked = series.view(np.ma.masked_array)
-        series_masked.mask = create_outlier_mask(time_series)
+        series_masked.mask = create_exclusion_mask(time_series)
 
         indices_map = [i for i, value in enumerate(series_masked.mask) if not value]
 
