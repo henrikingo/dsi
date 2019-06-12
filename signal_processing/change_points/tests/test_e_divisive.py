@@ -51,8 +51,8 @@ class TestEDivisive(unittest.TestCase):
         Test that compute_change_points parameters are validated.
         """
         e_divisive = EDivisive()
-        with self.assertRaises(ValueError):
-            e_divisive.compute_change_points("string")
+        self.assertRaisesRegexp(ValueError, "could not convert string to float: string",
+                                e_divisive.compute_change_points, "string")
 
     def test_series_empty(self):
         """

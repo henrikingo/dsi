@@ -1,6 +1,7 @@
 """
 Change points detection.
 """
+import copy
 from collections import OrderedDict
 
 import numpy as np
@@ -73,6 +74,26 @@ def detect_change_points(state,
     return detection.detect_change_points(state)
 
 
+def create_outlier_mask(time_series):
+    """
+    Create a mask which can be used to exclude outliers.
+
+    :param dict time_series: The time series data.
+    :return: The outlier mask.
+    :rtype: list(bool)
+    """
+    outlier_mask = np.array(time_series.get('outlier'), np.bool)
+    marked_mask = np.array(time_series.get('marked'), np.bool)
+    outlier_mask[marked_mask] = True
+
+    rejected_mask = np.array(time_series.get('rejected'), np.bool)
+    whitelisted = np.array(time_series.get('whitelisted'), np.bool)
+    rejected_mask[whitelisted] = False
+
+    mask = outlier_mask | rejected_mask
+    return mask
+
+
 class ChangePointsDetection(object):
     # pylint: disable=too-many-instance-attributes, too-few-public-methods
     """
@@ -85,25 +106,36 @@ class ChangePointsDetection(object):
         self._mongo_repo = mongo_repo
         self._github_credentials = github_credentials
 
-    def detect_change_points(self, state):
+    def detect_change_points(self, time_series):
         """
         Detect the change points.
 
-        :param dict state: The input data for the calculations. This contains the time series
+        :param dict time_series: The input data for the calculations. This contains the time series
         performance data ('series') and the meta data (like 'revisions', 'orders', 'create_times'
         and 'thread_level') to help identify the location of any calculated change points.
         :return: the change points in order of probability.
         :rtype: list(dict)
         """
         LOG.info('detect_change_points')
-        series = state.get('series')
 
-        e_divisive_change_points = self._e_divisive.compute_change_points(series)
-        change_points = self._add_to_change_points(state, e_divisive_change_points, 'E-Divisive')
+        series = np.array(time_series.get('series'), np.float)
+        series_masked = series.view(np.ma.masked_array)
+        series_masked.mask = create_outlier_mask(time_series)
+
+        indices_map = [i for i, value in enumerate(series_masked.mask) if not value]
+
+        time_series['series_masked'] = series_masked
+        time_series['series_compressed'] = series_masked.compressed()
+        time_series['indices_map'] = indices_map
+
+        e_divisive_change_points = self._e_divisive.compute_change_points(
+            time_series['series_compressed'])
+        change_points = self._add_to_change_points(time_series, e_divisive_change_points,
+                                                   'E-Divisive')
         LOG.debug("detect_change_points", change_points=change_points)
         return change_points
 
-    def _add_to_change_points(self, state, change_points, algorithm_name):
+    def _add_to_change_points(self, time_series, change_points, algorithm_name):
         # pylint: disable=too-many-locals
         """
         Update raw change points to:
@@ -113,7 +145,7 @@ class ChangePointsDetection(object):
             4) Calculate descriptive stats from series[prev:start] and series[end:next]
             5) Create change point dicts from this data.
 
-        :param dict state: The input data for the calculations. This contains the time series
+        :param dict time_series: The input data for the calculations. This contains the time series
         performance data ('series') and the meta data (like 'revisions', 'orders', 'create_times'
         and 'thread_level') to help identify the location of any calculated change points.
         :param list(EDivisiveChangePoint) change_points: The raw change points data.
@@ -122,21 +154,38 @@ class ChangePointsDetection(object):
         :return: The change points in order of probability.
         :rtype: list(dict).
         """
-        series = state.get('series')
-        revisions = state.get('revisions')
-        orders = state.get('orders')
-        create_times = state.get('create_times')
-        thread_level = state.get('thread_level')
+        series = time_series.get('series')
+        series_compressed = time_series.get('series_compressed')
+        revisions = time_series.get('revisions')
+        orders = time_series.get('orders')
+        create_times = time_series.get('create_times')
+        thread_level = time_series.get('thread_level')
         points = []
-        sorted_indexes = sorted([point.index for point in change_points])
-        start_ends = generate_start_and_end(sorted_indexes, series, weighting=self._weighting)
-        link_ordered_change_points(start_ends, series)
+        sorted_indexes_masked = sorted([point.index for point in change_points])
+        start_ends_masked = generate_start_and_end(
+            sorted_indexes_masked, series_compressed, weighting=self._weighting)
+        link_ordered_change_points(start_ends_masked, series_compressed)
 
-        for order_of_change_point, point in enumerate(change_points):
+        indices_map = time_series['indices_map']
+        size_indices_map = len(indices_map)
+        for order_of_change_point, point_masked in enumerate(change_points):
             # Find the index of the change point in the range finder output.
-            range_index = next(
-                i for i, start_end in enumerate(start_ends) if point.index == start_end['index'])
-            current_range = start_ends[range_index]
+            range_index = next(i for i, start_end in enumerate(start_ends_masked)
+                               if point_masked.index == start_end['index'])
+            current_range_masked = start_ends_masked[range_index]
+
+            point = point_masked._replace(index=indices_map[point_masked.index])
+            current_range = copy.deepcopy(current_range_masked)
+            current_range['index'] = indices_map[current_range_masked['index']]
+            current_range['start'] = indices_map[current_range_masked['start']]
+            current_range['end'] = indices_map[current_range_masked['end']]
+            value = current_range_masked['next']
+            if value >= size_indices_map:
+                current_range['next'] = len(series)
+            else:
+                current_range['next'] = indices_map[value]
+
+            current_range['previous'] = indices_map[current_range_masked['previous']]
 
             # Create a dict for the algorithm output. This is saved as a sub-document
             # in the change point.
@@ -145,7 +194,8 @@ class ChangePointsDetection(object):
 
             # Get the revision flagged by E-Divisive and add it to the
             # calculations to track.
-            algorithm['revision'] = revisions[algorithm['index']]
+            actual_index = algorithm['index']
+            algorithm['revision'] = revisions[actual_index]
 
             # Create a dict fort the range finder state. This is saved as
             # a sub-document in the change point.
@@ -156,16 +206,16 @@ class ChangePointsDetection(object):
 
             # This represents the last stable revision before the change in
             # performance.
-            stable_revision_index = current_range['start']  # oldest
-            stable_revision = revisions[stable_revision_index]  # oldest
+            actual_stable_revision_index = current_range['start']  # oldest
+            stable_revision = revisions[actual_stable_revision_index]  # oldest
 
             # This represents the first githash that displays the change
             # in performance. It may not be the root cause. There may
             # be older unrun revisions (between this and the stable
             # revision).
             # Put this value in the BF first fail or fix revision
-            suspect_revision_index = current_range['end']
-            suspect_revision = revisions[suspect_revision_index]  # newest
+            actual_suspect_revision_index = current_range['end']
+            suspect_revision = revisions[actual_suspect_revision_index]  # newest
 
             # The complete set of git hashes between the suspect / newer revision
             # (included in the list) to the stable / older revision (excluded from
@@ -184,9 +234,9 @@ class ChangePointsDetection(object):
                                  ('suspect_revision', suspect_revision),
                                  ('all_suspect_revisions', all_suspect_revisions),
                                  ('probability', probability),
-                                 ('create_time', create_times[suspect_revision_index]),
-                                 ('value', series[suspect_revision_index]),
-                                 ('order', orders[suspect_revision_index]),
+                                 ('create_time', create_times[actual_suspect_revision_index]),
+                                 ('value', series[actual_suspect_revision_index]),
+                                 ('order', orders[actual_suspect_revision_index]),
                                  ('order_of_change_point', order_of_change_point),
                                  ('statistics', current_range.get('statistics', {})),
                                  ('range_finder', range_finder),

@@ -102,8 +102,74 @@ class TestGetPointsAggregation(unittest.TestCase):
         self.assertDictContainsSubset(expected, stage['$project'])
 
         stage = pipeline.pop(0)
+        self.assertIn('$lookup', stage)
+        expected = {
+            'from': 'whitelisted_outlier_tasks',
+            'let': {
+                'project': '$project',
+                'variant': '$variant',
+                'task': '$task',
+                'revision': '$revision',
+                'order': '$order'
+            },
+            'pipeline': [{
+                '$match': {
+                    '$expr': {
+                        '$and': [
+                            {'$eq': ['$project', '$$project']},
+                            {'$eq': ['$variant', '$$variant']},
+                            {'$eq': ['$task', '$$task']},
+                            {'$eq': ['$revision', '$$revision']},
+                            {'$eq': ['$order', '$$order']},
+                        ]
+                    }
+                },
+            }],
+            'as': 'whitelisted'
+        }  # yapf: disable
+        self.assertDictEqual(stage['$lookup'], expected)
+
+        stage = pipeline.pop(0)
+        self.assertIn('$lookup', stage)
+        expected = {
+            'from': 'marked_outliers',
+            'let': {
+                'project': '$project',
+                'variant': '$variant',
+                'task': '$task',
+                'test': '$test',
+                'thread_level': '$thread_level',
+                'revision': '$revision',
+                'order': '$order'
+            },
+            'pipeline': [{
+                '$match': {
+                    '$expr': {
+                        '$and': [
+                            {'$eq': ['$project', '$$project']},
+                            {'$eq': ['$variant', '$$variant']},
+                            {'$eq': ['$task', '$$task']},
+                            {'$eq': ['$test', '$$test']},
+                            {'$eq': ['$thread_level', '$$thread_level']
+                            },
+                            {
+                                '$eq': ['$revision', '$$revision']
+                            },
+                            {
+                                '$eq': ['$order', '$$order']
+                            },
+                        ]
+                    }
+                },
+            }],
+            'as': 'marked'
+        }  # yapf: disable
+        self.assertDictEqual(stage['$lookup'], expected)
+
+        stage = pipeline.pop(0)
         self.assertIn('$group', stage)
 
+        self.maxDiff = None
         expected = {
             '_id': None,
             "test_identifier": {
@@ -114,6 +180,12 @@ class TestGetPointsAggregation(unittest.TestCase):
             },
             'revisions': {
                 '$push': '$revision'
+            },
+            'series': {
+                '$push':
+                    '$max_ops_per_sec' if level == 'max' else {
+                        '$arrayElemAt': ['$results.ops_per_sec', 0]
+                    }
             },
             'orders': {
                 '$push': '$order'
@@ -126,12 +198,6 @@ class TestGetPointsAggregation(unittest.TestCase):
             },
             'version_ids': {
                 '$push': '$version_id'
-            },
-            'series': {
-                '$push':
-                    '$max_ops_per_sec' if level == 'max' else {
-                        '$arrayElemAt': ['$results.ops_per_sec', 0]
-                    }
             },
             'rejected': {
                 '$push':
@@ -148,6 +214,18 @@ class TestGetPointsAggregation(unittest.TestCase):
                             '$arrayElemAt': ['$results.outlier', 0]
                         }, None]
                     }
+            },
+            'whitelisted': {
+                '$push': {
+                    '$gte': [{
+                        '$size': '$whitelisted'
+                    }, 1]
+                }
+            },
+            'marked': {
+                '$push': {
+                    '$eq': ['$marked', None]
+                }
             }
         }
         self.assertDictEqual(stage['$group'], expected)
@@ -211,7 +289,7 @@ class TestGetPoints(unittest.TestCase):
             calls = mock_db.points.aggregate.call_args_list
             self.assertTrue(len(calls) == 1)
 
-            self.assertTrue(len(calls[0][0][0]) == 5)
+            self.assertTrue(len(calls[0][0][0]) == 7)
 
             pipeline = calls[0][0][0]
             first = pipeline[0]
@@ -655,6 +733,10 @@ class TestComputeChangePoints(unittest.TestCase):
                 'create_times': values,
                 'task_ids': ['task {}'.format(i) for i in values],
                 'version_ids': ['version {}'.format(i) for i in values],
+                'outlier': [False] * size,
+                'marked': [False] * size,
+                'rejected': [False] * size,
+                'whitelisted': [False] * size,
             }
 
             if old_change_points:

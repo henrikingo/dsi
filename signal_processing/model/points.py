@@ -17,7 +17,8 @@ REQUIRED_KEYS = {'revision', 'order', 'create_time'}
 The set of keys that a valid performance point must in include.
 """
 
-ARRAY_FIELDS = {'series', 'revisions', 'orders', 'create_times', 'task_ids', 'version_ids'}
+ARRAY_FIELDS = {'series', 'revisions', 'orders', 'create_times', 'task_ids', 'version_ids',\
+                'outlier', 'marked', 'rejected', 'whitelisted', }
 """
 The set of array field keys. These arrays must be equal in size.
 """
@@ -40,7 +41,7 @@ def get_points_aggregation(test_identifier, min_order):
     max_thread_level = helpers.is_max_thread_level(test_identifier)
     pipeline = []
 
-    # Step 1: Match test identifier and correct thread level.
+    # Step: Match test identifier and correct thread level.
     query = helpers.get_query_for_points(test_identifier)
     # If order was given, only get points after that point.
     if min_order is not None:
@@ -48,13 +49,13 @@ def get_points_aggregation(test_identifier, min_order):
 
     pipeline.append({'$match': query})
 
-    # Step 2: A valid document must contain values for REQUIRED_KEYS.
+    # Step: A valid document must contain values for REQUIRED_KEYS.
     pipeline.append({'$match': {'$and': [{key: {'$ne': None}} for key in REQUIRED_KEYS]}})
 
-    # Step 3: Sort by order.
+    # Step: Sort by order.
     pipeline.append({'$sort': {'order': pymongo.ASCENDING}})
 
-    # Step 4: Project fields to ensure we only have the required fields.
+    # Step: Project fields to ensure we only have the required fields.
     # For non-max thread level, this removes results that don't match the correct thread level.
     # No outlier_status field implies a pass status, but we project a null value into the
     # the docs to allow for this case.
@@ -88,8 +89,98 @@ def get_points_aggregation(test_identifier, min_order):
         }
     pipeline.append({'$project': filter_thread_level})
 
-    # Step 5: Group by project / variant / task  / test and thread level and simultaneously
+    # Step: lookup whitelist.
+    pipeline.append({
+        '$lookup': {
+            'from':
+                'whitelisted_outlier_tasks',
+            'let': {
+                'project': '$project',
+                'variant': '$variant',
+                'task': '$task',
+                'revision': '$revision',
+                'order': '$order'
+            },
+            'pipeline': [{
+                '$match': {
+                    '$expr': {
+                        '$and': [
+                            {
+                                '$eq': ['$project', '$$project']
+                            },
+                            {
+                                '$eq': ['$variant', '$$variant']
+                            },
+                            {
+                                '$eq': ['$task', '$$task']
+                            },
+                            {
+                                '$eq': ['$revision', '$$revision']
+                            },
+                            {
+                                '$eq': ['$order', '$$order']
+                            },
+                        ]
+                    }
+                },
+            }],
+            'as':
+                'whitelisted'
+        }
+    })
+
+    # Step: lookup marked.
+    pipeline.append({
+        '$lookup': {
+            'from':
+                'marked_outliers',
+            'let': {
+                'project': '$project',
+                'variant': '$variant',
+                'task': '$task',
+                'test': '$test',
+                'thread_level': '$thread_level',
+                'revision': '$revision',
+                'order': '$order'
+            },
+            'pipeline': [{
+                '$match': {
+                    '$expr': {
+                        '$and': [
+                            {
+                                '$eq': ['$project', '$$project']
+                            },
+                            {
+                                '$eq': ['$variant', '$$variant']
+                            },
+                            {
+                                '$eq': ['$task', '$$task']
+                            },
+                            {
+                                '$eq': ['$test', '$$test']
+                            },
+                            {
+                                '$eq': ['$thread_level', '$$thread_level']
+                            },
+                            {
+                                '$eq': ['$revision', '$$revision']
+                            },
+                            {
+                                '$eq': ['$order', '$$order']
+                            },
+                        ]
+                    }
+                },
+            }],
+            'as':
+                'marked'
+        }
+    })
+
+    # Step: Group by project / variant / task  / test and thread level and simultaneously
     # accumulate the data required for change point detection.
+    whitelisted = {'$gte': [{'$size': '$whitelisted'}, 1]}
+    marked = {'$eq': ['$marked', None]}
     if max_thread_level:
         # Push max_ops_per_sec to series.
         ops_per_sec = '$max_ops_per_sec'
@@ -133,6 +224,12 @@ def get_points_aggregation(test_identifier, min_order):
             },
             'outlier': {
                 '$push': outlier
+            },
+            'whitelisted': {
+                '$push': whitelisted
+            },
+            'marked': {
+                '$push': marked
             }
         }
     })
