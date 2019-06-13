@@ -431,7 +431,7 @@ Absolute Deivation:
 
 It will generate an image in ~/tmp/sys-perf/linux-1-node-replSet/bestbuy_agg/0.050000/NetworkBandwidth-1-10-on-0.05.png,
 
-![NetworkBandwidth Outliers](signal_processing/outliers/NetworkBandwidth-1-10-on-0.05.png "NetworkBandwidth Outliers")
+![NetworkBandwidth Outliers](outliers/NetworkBandwidth-1-10-on-0.05.png "NetworkBandwidth Outliers")
 
 
 To save the standard z-score outlier detection:
@@ -442,7 +442,7 @@ To save the standard z-score outlier detection:
 
 Generates ~/tmp/sys-perf/linux-1-node-replSet/bestbuy_agg/0.050000/NetworkBandwidth-1-10-off-0.05.png,
 
-![NetworkBandwidth Outliers](signal_processing/outliers/NetworkBandwidth-1-10-off-0.05.png "NetworkBandwidth Outliers")
+![NetworkBandwidth Outliers](outliers/NetworkBandwidth-1-10-off-0.05.png "NetworkBandwidth Outliers")
 
 
 To view the images use:
