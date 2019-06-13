@@ -171,7 +171,7 @@ class TestEtlJiraMongoCli(ClickTest):
                        None,  # expected_jira_user
                        None,  # expected_jira_password
                        etl_jira_mongo.DEFAULT_MONGO_URI,
-                       (project, ),
+                       (project,),
                        etl_jira_mongo.DEFAULT_BATCH_SIZE,
                        False)  # yapf: disable
 

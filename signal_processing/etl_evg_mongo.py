@@ -24,10 +24,12 @@ DB = 'perf'
 LOG = structlog.get_logger(__name__)
 ALL_PROJECTS = [
     'sys-perf',
+    'sys-perf-4.2',
     'sys-perf-4.0',
     'sys-perf-3.6',
     'sys-perf-3.4',
     'performance',
+    'performance-4.2',
     'performance-4.0',
     'performance-3.6',
     'performance-3.4',
@@ -42,10 +44,12 @@ The list of all valid projects.
 
 DEFAULT_PROJECTS = [
     'sys-perf',
+    'sys-perf-4.2',
     'sys-perf-4.0',
     'sys-perf-3.6',
     'sys-perf-3.4',
     'performance',
+    'performance-4.2',
     'performance-4.0',
     'performance-3.6',
     'performance-3.4'

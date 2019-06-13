@@ -3,12 +3,41 @@ Please consult the full documentation available at http://bit.ly/2ufjQ0R for mor
 installing required binaries and dependencies. To set up your environment for locally running 
 performance tests, please see configurations/bootstrap/bootstrap.example.yml and follow the inline documentation.
 
-## dependencies
+## Environment
+
+This project uses python 2.7, and you may want to set up a virtual environment to support this, e.g. using [virtualenv](https://virtualenv.pypa.io/en/latest/)
+```
+// Create the virtual environment
+virtualenv -p python2.7 venv
+// activate it
+source venv/bin/activate
+// deactivate when done developing
+deactivate
+```
+
+
+## Installing DSI
+
+You can install a version for development:
+```
+cd $DSI_REPO_DIR # the git checkout location
+pip install -e . # install a development version
+```
+
+You can install a github (master or BRANCHNAME) with :
+
+```
+pip install --verbose -e . git+ssh://git@github.com/10gen/dsi.git --upgrade
+pip install --verbose -e . git+ssh://git@github.com/10gen/dsi.git@BRANCHNAME --upgrade
+```
+## Development Dependencies
+
+As a developer, extra requirements are needed, run the following command:
 ```
 pip install -r requirements-dev.txt
 ```
 
-## testing
+## Testing
 The repo's tests are all packaged into `/testscripts/runtests.sh`, which must be run from the repo
 root and it requires:
  

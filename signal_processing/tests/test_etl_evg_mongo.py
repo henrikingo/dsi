@@ -13,6 +13,37 @@ from test_lib.fixture_files import FixtureFiles
 
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
+NS = 'signal_processing.etl_evg_mongo'
+NS_COMMANDS = 'signal_processing.commands'
+
+
+def ns_format(base, relative):
+    """
+    Formats a module path using base and relative paths
+    :param base: base path
+    :param relative: relative path
+    :return: formatted path
+    """
+    return base + '.' + relative
+
+
+def ns_commands(relative):
+    """
+    Formats a path relative to the NS_COMMANDS base path
+    :param relative: relative path
+    :return: formatted path
+    """
+    return ns_format(NS_COMMANDS, relative)
+
+
+def ns(relative):  # pylint: disable=invalid-name
+    """
+    Formats a path relative to the NS base path
+    :param relative: relative path
+    :return: formatted path
+    """
+    return ns_format(NS, relative)
+
 
 def _get_load_results_args(histories, version_id=None, start_date=None, reverse=False):
     """
@@ -77,8 +108,8 @@ class TestGetLastVersionId(unittest.TestCase):
         self.default_history_config = OrderedDict([('sys-perf', None), ('performance', None)])
         self.mongo_uri = 'mongo_uri'
 
-    #pylint: disable=invalid-name
-    @patch('signal_processing.etl_evg_mongo.pymongo.MongoClient', autospec=True)
+    # pylint: disable=invalid-name
+    @patch(ns('pymongo.MongoClient'), autospec=True)
     def test__get_last_version_id(self, mock_MongoClient):
         """
         Test that `_get_last_version_id` correctly querys the most recent version_id in the `points`
@@ -104,7 +135,7 @@ class TestGetLastVersionId(unittest.TestCase):
         mock_db.points.find.return_value.sort.called_once_with('order', -1)
         mock_db.points.find.return_value.sort.return_value.limit.assert_called_once_with(1)
 
-    @patch('signal_processing.etl_evg_mongo.pymongo.MongoClient', autospec=True)
+    @patch(ns('pymongo.MongoClient'), autospec=True)
     def test__get_last_version_id_empty_task(self, mock_MongoClient):
         """
         Test that `_get_last_version_id` correctly returns `None` when the `points` collection does
@@ -146,14 +177,14 @@ class TestGetTaskIdentifiers(unittest.TestCase):
         """
         _etl_evg_mongo helper.
         """
-        #pylint: disable=invalid-name
+        # pylint: disable=invalid-name
         projects = list(projects)
-        with patch('signal_processing.etl_evg_mongo._get_project_variant_tasks')\
+        with patch(ns('_get_project_variant_tasks')) \
             as mock__get_project_variant_tasks, \
-             patch('signal_processing.commands.jobs.Job', autospec=True)\
-            as mock_job_cls, \
-            patch('signal_processing.commands.jobs.process_jobs', autospec=True)\
-                    as mock_process_jobs:
+            patch(ns_commands('jobs.Job'), autospec=True) \
+                as mock_job_cls, \
+            patch(ns_commands('jobs.process_jobs'), autospec=True) \
+                as mock_process_jobs:
 
             mock_evg_client = MagicMock(name='evg_client', autospec=True)
             mock__get_project_variant_tasks.return_value = []
@@ -189,7 +220,7 @@ class TestGetTaskIdentifiers(unittest.TestCase):
 
             mock_evg_client.query_mongo_perf_task_history.assert_not_called()
 
-    #pylint: enable=invalid-name
+    # pylint: enable=invalid-name
     def test_no_projects(self):
         """
         Test _get_task_identifiers  with no projects.
@@ -220,11 +251,10 @@ class TestGetTaskIdentifiers(unittest.TestCase):
         Test _etl_evg_mongo with multiple processes.
         """
         pool_size = 2
-        with patch('signal_processing.etl_evg_mongo._get_project_variant_tasks')\
+        with patch(ns('_get_project_variant_tasks')) \
             as mock__get_project_variant_tasks, \
-             patch('signal_processing.commands.jobs.process_jobs', autospec=True)\
-            as mock_process_jobs:
-
+            patch(ns_commands('jobs.process_jobs'), autospec=True) \
+                as mock_process_jobs:
             mock_evg_client = MagicMock(name='evg_client', autospec=True)
             mock__get_project_variant_tasks.return_value = []
             etl_evg_mongo._get_task_identifiers(mock_evg_client, [], False, pool_size)
@@ -247,17 +277,17 @@ class TestEtlEvgMongo(unittest.TestCase):
         """
         _etl_evg_mongo helper.
         """
-        #pylint: disable=invalid-name
+        # pylint: disable=invalid-name
         if task_identifiers:
             task_identifiers = [{'task': task} for task in task_identifiers]
-        with patch('signal_processing.etl_evg_mongo._get_task_identifiers')\
-                as mock__get_task_identifiers, \
-            patch('signal_processing.etl_evg_mongo._etl_single_task')\
+        with patch(ns('_get_task_identifiers')) \
+            as mock__get_task_identifiers, \
+            patch(ns('_etl_single_task')) \
                 as mock__etl_single_task, \
-             patch('signal_processing.commands.jobs.Job', autospec=True)\
-            as mock_job_cls, \
-             patch('signal_processing.commands.jobs.process_jobs', autospec=True)\
-            as mock_job_process_jobs:
+            patch(ns_commands('jobs.Job'), autospec=True) \
+                as mock_job_cls, \
+            patch(ns_commands('jobs.process_jobs'), autospec=True) \
+                as mock_job_process_jobs:
             mock_evg_client = MagicMock(name='evg_client', autospec=True)
             mock__get_task_identifiers.return_value = task_identifiers
             mock_job_process_jobs.return_value = ()
@@ -284,7 +314,7 @@ class TestEtlEvgMongo(unittest.TestCase):
                     identifier=task) for task in task_identifiers
             ])
 
-    #pylint: enable=invalid-name
+    # pylint: enable=invalid-name
     def test_no_tasks(self):
         """
         Test _etl_evg_mongo  with no tasks.
@@ -315,11 +345,10 @@ class TestEtlEvgMongo(unittest.TestCase):
         Test _etl_evg_mongo with multiple processes.
         """
         pool_size = 2
-        with patch('signal_processing.etl_evg_mongo._get_task_identifiers')\
+        with patch(ns('_get_task_identifiers')) \
             as mock__get_project_variant_tasks, \
-                patch('signal_processing.commands.jobs.process_jobs', autospec=True) \
-                        as mock_process_jobs:
-
+            patch(ns_commands('jobs.process_jobs'), autospec=True) \
+                as mock_process_jobs:
             mock_evg_client = MagicMock(name='evg_client', autospec=True)
             mock__get_project_variant_tasks.return_value = []
             etl_evg_mongo._etl_evg_mongo(mock_evg_client, self.mongo_uri, [], False, pool_size)
@@ -338,8 +367,8 @@ class TestEtlSingleTask(unittest.TestCase):
         self.default_history_config = OrderedDict([('sys-perf', None), ('performance', None)])
         self.mongo_uri = 'mongo_uri'
 
-    @patch('signal_processing.etl_evg_mongo.etl_helpers.load', autospec=True)
-    @patch('signal_processing.etl_evg_mongo._get_last_version_id', autospec=True)
+    @patch(ns('etl_helpers.load'), autospec=True)
+    @patch(ns('_get_last_version_id'), autospec=True)
     def test__etl_evg_mongo_empty(
             self,
             mock__get_last_version_id,
@@ -374,9 +403,9 @@ class TestEtlSingleTask(unittest.TestCase):
         mock_load.assert_has_calls(load_calls)
         etl_evg_mongo.START_DATE = actual_start_date
 
-    @patch('signal_processing.etl_evg_mongo.etl_helpers.load')
-    @patch('signal_processing.etl_evg_mongo._get_project_variant_tasks', autospec=True)
-    @patch('signal_processing.etl_evg_mongo._get_last_version_id', autospec=True)
+    @patch(ns('etl_helpers.load'))
+    @patch(ns('_get_project_variant_tasks'), autospec=True)
+    @patch(ns('_get_last_version_id'), autospec=True)
     def test_already_seen(self, mock__get_last_version_id, mock__get_project_variant_tasks,
                           mock_load):
         """
@@ -398,9 +427,9 @@ class TestEtlSingleTask(unittest.TestCase):
         etl_evg_mongo._etl_single_task(mock_evg_client, self.mongo_uri, project_variant_task)
         mock_load.assert_not_called()
 
-    @patch('signal_processing.etl_evg_mongo.etl_helpers.load')
-    @patch('signal_processing.etl_evg_mongo._get_project_variant_tasks', autospec=True)
-    @patch('signal_processing.etl_evg_mongo._get_last_version_id', autospec=True)
+    @patch(ns('etl_helpers.load'))
+    @patch(ns('_get_project_variant_tasks'), autospec=True)
+    @patch(ns('_get_last_version_id'), autospec=True)
     def test_load_one_test(self, mock__get_last_version_id, mock__get_project_variant_tasks,
                            mock_load):
         """
@@ -425,9 +454,9 @@ class TestEtlSingleTask(unittest.TestCase):
         etl_evg_mongo._etl_single_task(mock_evg_client, self.mongo_uri, project_variant_task)
         mock_load.assert_called_once_with(history[1], self.mongo_uri)
 
-    @patch('signal_processing.etl_evg_mongo.etl_helpers.load')
-    @patch('signal_processing.etl_evg_mongo._get_project_variant_tasks', autospec=True)
-    @patch('signal_processing.etl_evg_mongo._get_last_version_id', autospec=True)
+    @patch(ns('etl_helpers.load'))
+    @patch(ns('_get_project_variant_tasks'), autospec=True)
+    @patch(ns('_get_last_version_id'), autospec=True)
     def test_load_multiple_test(self, mock__get_last_version_id, mock__get_project_variant_tasks,
                                 mock_load):
         """
@@ -453,9 +482,9 @@ class TestEtlSingleTask(unittest.TestCase):
         load_calls = [call(result, self.mongo_uri) for result in history[1:]]
         mock_load.assert_has_calls(load_calls)
 
-    @patch('signal_processing.etl_evg_mongo.etl_helpers.load')
-    @patch('signal_processing.etl_evg_mongo._get_project_variant_tasks', autospec=True)
-    @patch('signal_processing.etl_evg_mongo._get_last_version_id', autospec=True)
+    @patch(ns('etl_helpers.load'))
+    @patch(ns('_get_project_variant_tasks'), autospec=True)
+    @patch(ns('_get_last_version_id'), autospec=True)
     def test_load_full_batch(self, mock__get_last_version_id, mock__get_project_variant_tasks,
                              mock_load):
         """
@@ -482,9 +511,9 @@ class TestEtlSingleTask(unittest.TestCase):
         load_calls = [call(result, self.mongo_uri) for result in history]
         mock_load.assert_has_calls(load_calls, any_order=True)
 
-    @patch('signal_processing.etl_evg_mongo.etl_helpers.load')
-    @patch('signal_processing.etl_evg_mongo._get_project_variant_tasks', autospec=True)
-    @patch('signal_processing.etl_evg_mongo._get_last_version_id', autospec=True)
+    @patch(ns('etl_helpers.load'))
+    @patch(ns('_get_project_variant_tasks'), autospec=True)
+    @patch(ns('_get_last_version_id'), autospec=True)
     def test_load_multiple_batches(self, mock__get_last_version_id, mock__get_project_variant_tasks,
                                    mock_load):
         """
@@ -516,9 +545,9 @@ class TestEtlSingleTask(unittest.TestCase):
         ]
         mock_load.assert_has_calls(load_calls, any_order=True)
 
-    @patch('signal_processing.etl_evg_mongo.etl_helpers.load')
-    @patch('signal_processing.etl_evg_mongo._get_project_variant_tasks', autospec=True)
-    @patch('signal_processing.etl_evg_mongo._get_last_version_id', autospec=True)
+    @patch(ns('etl_helpers.load'))
+    @patch(ns('_get_project_variant_tasks'), autospec=True)
+    @patch(ns('_get_last_version_id'), autospec=True)
     def test_load_no_previous(self, mock__get_last_version_id, mock__get_project_variant_tasks,
                               mock_load):
         """
@@ -549,9 +578,9 @@ class TestEtlSingleTask(unittest.TestCase):
         ]
         mock_load.assert_has_calls(load_calls, any_order=True)
 
-    @patch('signal_processing.etl_evg_mongo.etl_helpers.load')
-    @patch('signal_processing.etl_evg_mongo._get_project_variant_tasks', autospec=True)
-    @patch('signal_processing.etl_evg_mongo._get_last_version_id', autospec=True)
+    @patch(ns('etl_helpers.load'))
+    @patch(ns('_get_project_variant_tasks'), autospec=True)
+    @patch(ns('_get_last_version_id'), autospec=True)
     def test_load_batches_no_previous(self, mock__get_last_version_id,
                                       mock__get_project_variant_tasks, mock_load):
         """
@@ -589,9 +618,9 @@ class TestEtlSingleTask(unittest.TestCase):
         load_calls = [call(result, self.mongo_uri) for result in expected]
         mock_load.assert_has_calls(load_calls, any_order=True)
 
-    @patch('signal_processing.etl_evg_mongo.etl_helpers.load')
-    @patch('signal_processing.etl_evg_mongo._get_project_variant_tasks', autospec=True)
-    @patch('signal_processing.etl_evg_mongo._get_last_version_id', autospec=True)
+    @patch(ns('etl_helpers.load'))
+    @patch(ns('_get_project_variant_tasks'), autospec=True)
+    @patch(ns('_get_last_version_id'), autospec=True)
     def test_empty_history(self, mock__get_last_version_id, mock__get_project_variant_tasks,
                            mock_load):
         """

@@ -31,9 +31,19 @@ from signal_processing.util import sighandler
 DB = 'perf'
 COLLECTION = 'build_failures'
 DEFAULT_BATCH_SIZE = 1000
-DEFAULT_PROJECTS = ('performance', 'performance-4.0', 'performance-3.6', 'performance-3.4',
-                    'performance-3.2', 'performance-3.0', 'sys-perf', 'sys-perf-4.0',
-                    'sys-perf-3.6', 'sys-perf-3.4', 'sys-perf-3.2')
+DEFAULT_PROJECTS = ('performance',
+                    'performance-4.2',
+                    'performance-4.0',
+                    'performance-3.6',
+                    'performance-3.4',
+                    'performance-3.2',
+                    'performance-3.0',
+                    'sys-perf',
+                    'sys-perf-4.2',
+                    'sys-perf-4.0',
+                    'sys-perf-3.6',
+                    'sys-perf-3.4',
+                    'sys-perf-3.2')  # yapf: disable
 DEFAULT_MONGO_URI = 'mongodb://localhost:27017/' + DB
 JIRA_URL = 'https://jira.mongodb.org'
 NETWORK_TIMEOUT_SECS = 120
