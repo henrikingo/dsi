@@ -15,10 +15,11 @@ tfvars:
   workload_instance_count: 1
   workload_instance_type: m5.4xlarge
 
-  ssh_user: ec2-user
+  # ssh_user: root
   # Don't disable hyperthreading. (We disable HT cpus by default if this isn't here.)
   with_hyperthreading: "yes"
 
+  # image: centos7
   region: us-east-1
   availability_zone: us-east-1d
 

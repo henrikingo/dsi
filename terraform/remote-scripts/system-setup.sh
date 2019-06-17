@@ -12,6 +12,13 @@ WITH_HT="${2:-false}"
 
 sudo yum -y -q install tmux git wget sysstat dstat perf fio xfsprogs krb5-libs openldap-devel cyrus-sasl cyrus-sasl-devel cyrus-sasl-gssapi cyrus-sasl-lib cyrus-sasl-md5 net-snmp net-snmp-devel net-snmp-libs net-snmp-utils python2-pip numactl
 
+# Make sure we actually have pip
+if ! [ -x "$(command -v pip)" ]; then
+    echo "pip not installed. Installing now"
+    curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+    python get-pip.py
+fi
+
 disable_hyperthreading() {
     if [[ "${WITH_HT}" == "yes" ]]; then
         return

@@ -5,7 +5,7 @@
 # Shared by all mongods
 # Unset journal dir so same device.
 # TODO PERF-1572
-journal_dir: /home/ec2-user/data/journal-mount  # This is a hack to link to the same device.
+journal_dir: ~/data/no-journal-mount  # This is a hack to link to the same device.
 mongod_config_file:
   storage:
     engine: ${bootstrap.storageEngine}

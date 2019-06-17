@@ -30,6 +30,7 @@ infrastructure_provisioning:
     mongod_instance_type: c3.8xlarge
     workload_instance_type: c3.8xlarge
 
+    image: amazon2
     region: us-west-2
     availability_zone: us-west-2a
 

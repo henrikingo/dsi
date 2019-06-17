@@ -21,25 +21,14 @@ variable "amis" {
         # https://github.com/10gen/dsi/pull/189
         #
 
-        "us-west-2a" = "ami-6cd6f714"
-        "us-west-2b" = "ami-6cd6f714"
-        "us-west-2c" = "ami-6cd6f714"
-        "us-west-2d" = "ami-6cd6f714"
+        "us-west-2-amazon2" = "ami-6cd6f714"
+        "us-west-1-amazon2" = "ami-0799ad445b5727125"
+        "us-east-1-amazon2" = "ami-04681a1dbd79675a5"
+        "eu-west-1-amazon2" = "ami-0bdb1d6c15a40392c"
 
-        "us-west-1a" = "ami-0799ad445b5727125"
-        "us-west-1b" = "ami-0799ad445b5727125"
-        "us-west-1c" = "ami-0799ad445b5727125"
-
-        "us-east-1a" = "ami-04681a1dbd79675a5"
-        "us-east-1b" = "ami-04681a1dbd79675a5"
-        "us-east-1c" = "ami-04681a1dbd79675a5"
-        "us-east-1d" = "ami-04681a1dbd79675a5"
-        "us-east-1e" = "ami-04681a1dbd79675a5"
-        "us-east-1f" = "ami-04681a1dbd79675a5"
-
-        "eu-west-1a" = "ami-0bdb1d6c15a40392c"
-        "eu-west-1b" = "ami-0bdb1d6c15a40392c"
-        "eu-west-1c" = "ami-0bdb1d6c15a40392c"
+        #
+        # CENTOS AMI from Akshay
+        "us-east-1-centos7" = "ami-0af2cea0881faa972"
     }
 }
 

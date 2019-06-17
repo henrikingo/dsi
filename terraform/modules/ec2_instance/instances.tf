@@ -1,12 +1,15 @@
 # define list of variables
 variable "key_file"             {}
 variable "key_name"             {}
+variable "ssh_user"             { default = "ec2-user" }
 variable "instance_type"        {}
+variable "image"                { default = "amazon2" }
 variable "count"                {}
 variable "subnet_id"            {}
 variable "owner"                {}
 variable "security_groups"      {}
 variable "availability_zone"    {}
+variable "region"               {}
 variable "placement_group"      {}
 variable "expire_on"            {}
 variable "provisioner_file"     {}
@@ -20,7 +23,7 @@ variable "with_hyperthreading"  { default = "false" }
 
 # AWS instance with placement group for mongod
 resource "aws_instance" "member" {
-    ami                 = "${lookup(var.amis, var.availability_zone)}"
+    ami                 = "${lookup(var.amis, format("%s-%s", "${var.region}", "${var.image}"))}"
     instance_type       = "${var.instance_type}"
     count               = "${var.count}"
     subnet_id           = "${var.subnet_id}"
@@ -28,7 +31,7 @@ resource "aws_instance" "member" {
 
     connection {
         # The default username for our AMI
-        user            = "ec2-user"
+        user            = "${var.ssh_user}"
 
         # The path to your keyfile
         private_key        = "${file(var.key_file)}"

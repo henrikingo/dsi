@@ -13,6 +13,8 @@ variable mongod_ebs_instance_type               { default = "c3.8xlarge" }
 variable mongod_seeded_ebs_instance_type        { default = "c3.8xlarge" }
 variable mongos_instance_type                   { default = "c3.8xlarge" }
 variable configsvr_instance_type                { default = "m5.xlarge" }
+variable image                                  { default = "amazon2" }
+variable "ssh_user"                             { default = "ec2-user" }
 
 variable with_hyperthreading                    { default = "false" }
 
@@ -82,6 +84,9 @@ module "cluster" {
     mongod_seeded_ebs_instance_count   = "${var.mongod_seeded_ebs_instance_count}"
     mongod_seeded_ebs_iops             = "${var.mongod_seeded_ebs_iops}"
     mongod_seeded_ebs_snapshot_id      = "${var.mongod_seeded_ebs_snapshot_id}"
+
+    image                              = "${var.image}"
+    ssh_user                           = "${var.ssh_user}"
 
     workload_placement_group           = "${var.workload_placement_group}"
     mongod_placement_group             = "${var.mongod_placement_group}"

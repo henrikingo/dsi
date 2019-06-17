@@ -19,6 +19,9 @@ ERROR_ONLY = logging.getLogger('error_only')
 
 DEFAULT_JASPER_PORT = 2286
 
+# This will not work against the centos7 image that has a different home directory. This should be
+# parameterized and passed through from the configuration, or determined on the fly.
+# https://jira.mongodb.org/browse/TIG-1737
 DEFAULT_REMOTE_HOME_DIR = '/home/ec2-user'
 
 

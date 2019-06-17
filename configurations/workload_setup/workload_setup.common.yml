@@ -13,14 +13,32 @@ genny: &compile_genny
   # System Setup
   - on_workload_client:
       exec: |
-        set -eou pipefail
+        set -eu
+        # Specifically not using pipefail here.
+        # You can't use pipefail with head, as the tar will get a pipefail. We use head in a
+        # pipeline below.  https://news.ycombinator.com/item?id=9255830
 
+        # Clean up any build artifacts that were copied up with the repo
+        rm -rf ./data/genny/build/*
         mkdir -p data/tmp; pushd data/tmp
         sudo yum update -y > ./yum-update.log
+        if [[ "${infrastructure_provisioning.tfvars.image}" == "centos7" ]]; then
+          # Install the toolchain
+          mkdir -p ~/data/mongodbtoolchain
+          # Use /data directory for storage and speed
+          ln -s /data/mongodbtoolchain /opt/mongodbtoolchain || true
+          curl -o mongodbtoolchain.tar.gz --retry 10 -L http://mongodbtoolchain.build.10gen.cc/toolchain/rhel70/x86_64/latest
+          mkdir -p /opt/mongodbtoolchain/revisions
+          REVISION=$(tar --list -f mongodbtoolchain.tar.gz | head -1 | sed 's/\/$//')
+          tar -C /opt/mongodbtoolchain/revisions -xzvf mongodbtoolchain.tar.gz $REVISION
+          /opt/mongodbtoolchain/revisions/$REVISION/scripts/install.sh
+          sudo yum install -y libicu > ./yum-install-libicu.log 2>&1
+        else
         # https://aws.amazon.com/premiumsupport/knowledge-center/ec2-enable-epel/
-        sudo yum install -y https://s3-us-west-2.amazonaws.com/dsi-donot-remove/genny/epel-release-latest-7.noarch.rpm  || true > ./yum-epel-repo.log 2>&1
-        sudo yum-config-manager --enable epel > ./yum-epel.log 2>&1
-        sudo yum install -y gcc gcc-c++ python3 python3-pip > ./yum-install.log 2>&1
+          sudo yum install -y https://s3-us-west-2.amazonaws.com/dsi-donot-remove/genny/epel-release-latest-7.noarch.rpm  || true > ./yum-epel-repo.log 2>&1
+          sudo yum-config-manager --enable epel > ./yum-epel.log 2>&1
+          sudo yum install -y gcc gcc-c++ python3 python37 python3-pip python37-pip > ./yum-install.log 2>&1
+        fi
         popd
   # Get Genny's distribution
   - on_workload_client:
@@ -30,9 +48,13 @@ genny: &compile_genny
         # Double check that the directories are all there.
         sudo mkdir -p /data/mci
         sudo mkdir -p ./data/mci
-
+        if [[ "${infrastructure_provisioning.tfvars.image}" == "centos7" ]]; then
+          distro="rhel70";
+        else
+          distro="amazon2";
+        fi
         cd ./data/genny
-        ./scripts/lamp --linux-distro amazon2 -DGENNY_INSTALL_DIR="$PWD"
+        ./scripts/lamp --linux-distro $distro -DGENNY_INSTALL_DIR="$PWD"
 
   # Make sure the genny executable is reasonable
   - on_workload_client:
@@ -48,8 +70,10 @@ genny: &compile_genny
   - on_workload_client:
       exec: |
         cd ./data/genny/src/python
-        sudo pip3 install .
-
+        if [[ -e /opt/mongodbtoolchain/v3/bin/ ]]; then
+          PATH=/opt/mongodbtoolchain/v3/bin/:$PATH
+        fi
+        sudo -E env "PATH=$PATH" pip3 install .
 
 genny_canaries: *compile_genny
 
@@ -132,11 +156,11 @@ linkbench:
 # TODO: EVG-3317  modules can only track branches at the moment
 # but master ==  f9cca9bcc2c45a409d34584dad49a095d7efccef. If we need to track
 # a specific commit then this code will need to be placed back.
-#  - on_localhost:
-#      checkout_repos:
-#        - source: git@github.com:10gen/linkbench.git
-#          target: ${bootstrap.linkbench_dir}
-#          branch: f9cca9bcc2c45a409d34584dad49a095d7efccef
+  - on_localhost:
+      checkout_repos:
+        - source: git@github.com:10gen/linkbench.git
+          target: ${bootstrap.linkbench_dir}
+          #          branch: f9cca9bcc2c45a409d34584dad49a095d7efccef
   - on_workload_client:
       exec: rm -rf linkbench*
   - on_workload_client:
@@ -180,3 +204,4 @@ install_curator: |
   curl -o curator.tar.gz --retry 10 -LsS "${bootstrap.curator_url}"
   tar xvf curator.tar.gz
   ./curator --version
+

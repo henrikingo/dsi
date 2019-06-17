@@ -13,6 +13,7 @@ variable mongod_seeded_ebs_instance_type        { default = "c3.8xlarge" }
 variable mongos_instance_type                   { default = "c3.4xlarge" }
 variable workload_instance_type                 {}
 variable configsvr_instance_type                { default = "m3.2xlarge" }
+variable image                                  { default = "amazon2" }
 
 # define instance count
 variable mongod_instance_count                  { default = 0 }
@@ -35,6 +36,7 @@ variable region                         {}
 variable availability_zone              {}
 variable key_file                       {}
 variable key_name                       {}
+variable ssh_user                       { default = "ec2-user" }
 
 variable expire_on                      { default = "2016-12-31" }
 
@@ -69,12 +71,15 @@ module "mongod_instance" {
 
     # parameters for module
     instance_type       = "${var.mongod_instance_type}"
+    image               = "${var.image}"
+    ssh_user            = "${var.ssh_user}"
     count               = "${var.mongod_instance_count}"
     with_hyperthreading = "${var.with_hyperthreading}"
     subnet_id           = "${module.VPC.aws_subnet_id}"
     key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
+    region              = "${var.region}"
     placement_group     = "${var.mongod_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
@@ -94,12 +99,15 @@ module "mongod_ebs_instance" {
 
     # parameters for module
     instance_type       = "${var.mongod_ebs_instance_type}"
+    image               = "${var.image}"
+    ssh_user            = "${var.ssh_user}"
     count               = "${var.mongod_ebs_instance_count}"
     with_hyperthreading = "${var.with_hyperthreading}"
     subnet_id           = "${module.VPC.aws_subnet_id}"
     key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
+    region              = "${var.region}"
     placement_group     = "${var.mongod_ebs_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
@@ -121,12 +129,15 @@ module "mongod_seeded_ebs_instance" {
 
     # parameters for module
     instance_type           = "${var.mongod_seeded_ebs_instance_type}"
+    image                   = "${var.image}"
+    ssh_user                = "${var.ssh_user}"
     count                   = "${var.mongod_seeded_ebs_instance_count}"
     with_hyperthreading     = "${var.with_hyperthreading}"
     subnet_id               = "${module.VPC.aws_subnet_id}"
     key_file                = "${var.key_file}"
     security_groups         = "${module.VPC.aws_security_group_id}"
     availability_zone       = "${var.availability_zone}"
+    region              = "${var.region}"
     placement_group         = "${var.mongod_seeded_ebs_placement_group}"
     key_name                = "${var.key_name}"
     owner                   = "${var.owner}"
@@ -150,12 +161,15 @@ module "mongos_instance" {
 
     # parameters for module
     instance_type       = "${var.mongos_instance_type}"
+    image               = "${var.image}"
+    ssh_user            = "${var.ssh_user}"
     count               = "${var.mongos_instance_count}"
     with_hyperthreading = "${var.with_hyperthreading}"
     subnet_id           = "${module.VPC.aws_subnet_id}"
     key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
+    region              = "${var.region}"
     placement_group     = "${var.mongos_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
@@ -175,11 +189,14 @@ module "configsvr_instance" {
 
     # parameters for module
     instance_type       = "${var.configsvr_instance_type}"
+    image               = "${var.image}"
+    ssh_user            = "${var.ssh_user}"
     count               = "${var.configsvr_instance_count}"
     subnet_id           = "${module.VPC.aws_subnet_id}"
     key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
+    region              = "${var.region}"
     placement_group     = "${var.configsvr_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
@@ -199,12 +216,15 @@ module "workload_instance" {
 
     # parameters for module
     instance_type       = "${var.workload_instance_type}"
+    image               = "${var.image}"
+    ssh_user            = "${var.ssh_user}"
     count               = "${var.workload_instance_count}"
     with_hyperthreading = "${var.with_hyperthreading}"
     subnet_id           = "${module.VPC.aws_subnet_id}"
     key_file            = "${var.key_file}"
     security_groups     = "${module.VPC.aws_security_group_id}"
     availability_zone   = "${var.availability_zone}"
+    region              = "${var.region}"
     placement_group     = "${var.workload_placement_group}"
     key_name            = "${var.key_name}"
     owner               = "${var.owner}"
