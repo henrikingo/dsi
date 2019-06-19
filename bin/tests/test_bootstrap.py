@@ -13,6 +13,7 @@ from mock import patch
 from testfixtures import LogCapture
 
 import bootstrap
+from common.config import ConfigDict
 import test_lib.structlog_for_test as structlog_for_test
 
 
@@ -40,6 +41,7 @@ class TestBootstrap(unittest.TestCase):
         """
         bootstrap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bootstrap.yml')
         bootstrap2_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bootstrap2.yml')
+        test_override_path = os.path.dirname(os.path.abspath(__file__))
         paths = [
             'test_dsipath', 'test_directory', 'test_credentials', 'testdir', 'test_old_dir',
             'test_new_dir', 'test_cred_path'
@@ -56,6 +58,10 @@ class TestBootstrap(unittest.TestCase):
             pass
         try:
             os.remove(bootstrap2_path)
+        except OSError:
+            pass
+        try:
+            os.remove(os.path.join(test_override_path, 'overrides.yml'))
         except OSError:
             pass
 
@@ -149,10 +155,9 @@ class TestBootstrap(unittest.TestCase):
         Testing setup_overrides where path = False and config vals given
         """
         mock_path_exists.return_value = False
-        config = {}
-        config['owner'] = 'testuser'
-        config['ssh_key_name'] = 'test_ssh_key_name'
-        config['ssh_key_file'] = 'test_ssh_key_file.pem'
+        real_configdict = ConfigDict('bootstrap')
+        real_configdict.load()
+
         master_overrides = {}
         master_overrides.update({
             'infrastructure_provisioning': {
@@ -166,15 +171,17 @@ class TestBootstrap(unittest.TestCase):
                 }
             }
         })
-        master_override_dict = master_overrides
+        real_configdict.raw['bootstrap'] = {}
+        real_configdict.raw['bootstrap']['overrides'] = master_overrides
+
         test_override_path = os.path.dirname(os.path.abspath(__file__))
         test_override_dict = {}
 
         # Call to setup_overrides creates 'overrides.yml' in current dir
-        bootstrap.setup_overrides(config, test_override_path)
+        bootstrap.setup_overrides(real_configdict, test_override_path)
         with open(os.path.join(test_override_path, 'overrides.yml'), 'r') as test_override_file:
             test_override_dict = yaml.load(test_override_file)
-        self.assertEqual(test_override_dict, master_override_dict)
+        self.assertEqual(test_override_dict, master_overrides)
 
         # Removing created file
         os.remove(os.path.join(test_override_path, 'overrides.yml'))
@@ -183,10 +190,8 @@ class TestBootstrap(unittest.TestCase):
         """
         Testing setup_overrides where path = True and config vals given
         """
-        config = {}
-        config['owner'] = 'testuser1'
-        config['ssh_key_name'] = 'test_ssh_key_name1'
-        config['ssh_key_file'] = 'test_ssh_key_file1.pem'
+        real_configdict = ConfigDict('bootstrap')
+        real_configdict.load()
 
         test_override_path = os.path.dirname(os.path.abspath(__file__))
         master_overrides = {}
@@ -202,7 +207,7 @@ class TestBootstrap(unittest.TestCase):
                 }
             }
         })
-        master_override_dict = master_overrides
+        real_configdict.raw['bootstrap']['overrides'] = master_overrides
         test_override_str = yaml.dump(
             {
                 'infrastructure_provisioning': {
@@ -223,13 +228,13 @@ class TestBootstrap(unittest.TestCase):
             test_override_file.write(test_override_str)
 
         # Call to setup_overrides updates 'overrides.yml' in current dir
-        bootstrap.setup_overrides(config, test_override_path)
+        bootstrap.setup_overrides(real_configdict, test_override_path)
 
         test_override_dict = {}
         with open(os.path.join(test_override_path, 'overrides.yml'), 'r') as test_override_file:
             test_override_dict = yaml.load(test_override_file)
 
-        self.assertEqual(test_override_dict, master_override_dict)
+        self.assertEqual(test_override_dict, master_overrides)
 
         # Removing created file
         os.remove(os.path.join(test_override_path, 'overrides.yml'))
@@ -240,56 +245,24 @@ class TestBootstrap(unittest.TestCase):
         Testing setup_overrides, path = False and config vals not given
         """
         mock_path_exists.return_value = False
-        config = {}
-        config.pop('owner', None)
-        config.pop('ssh_key_name', None)
-        config.pop('ssh_key_file', None)
+        real_configdict = ConfigDict('bootstrap')
+        real_configdict.load()
+
         test_override_path = os.path.dirname(os.path.abspath(__file__))
 
-        master_overrides = {}
-        master_overrides.update({
-            'infrastructure_provisioning': {
-                'tfvars': {
-                    'tags': {
-                        'expire-on-delta': 24
-                    }
-                }
-            }
-        })
-        master_override_dict = master_overrides
-        test_override_dict = {}
-
         # Call to setup_overrides creates 'overrides.yml' in current dir
-        bootstrap.setup_overrides(config, test_override_path)
+        bootstrap.setup_overrides(real_configdict, test_override_path)
 
-        with open(os.path.join(test_override_path, 'overrides.yml'), 'r') as test_override_file:
-            test_override_dict = yaml.load(test_override_file)
-
-        self.assertEqual(test_override_dict, master_override_dict)
-        # Removing created file
-        os.remove(os.path.join(test_override_path, 'overrides.yml'))
+        self.assertFalse(os.path.exists(os.path.join(test_override_path, 'overrides.yml')))
 
     def test_setup_overrides_file_exists_empty_config(self):
         """
         Testing setup_overrides, path = True and config vals not given
         """
-        config = {}
-        config.pop('owner', None)
-        config.pop('ssh_key_name', None)
-        config.pop('ssh_key_file', None)
+        real_configdict = ConfigDict('bootstrap')
+        real_configdict.load()
 
         test_override_path = os.path.dirname(os.path.abspath(__file__))
-        master_overrides = {}
-        master_overrides.update({
-            'infrastructure_provisioning': {
-                'tfvars': {
-                    'tags': {
-                        'expire-on-delta': 24
-                    }
-                }
-            }
-        })
-        master_override_dict = master_overrides
         test_override_str = yaml.dump({}, default_flow_style=False)
 
         # Creating 'overrides.yml' in current dir
@@ -297,48 +270,60 @@ class TestBootstrap(unittest.TestCase):
             test_override_file.write(test_override_str)
 
         # Call to setup_overrides updates 'overrides.yml' in current dir
-        bootstrap.setup_overrides(config, test_override_path)
+        bootstrap.setup_overrides(real_configdict, test_override_path)
 
         test_override_dict = {}
         with open(os.path.join(test_override_path, 'overrides.yml'), 'r') as test_override_file:
             test_override_dict = yaml.load(test_override_file)
 
-        self.assertEqual(test_override_dict, master_override_dict)
+        self.assertEqual(test_override_dict, {})
 
         # Removing created file
         os.remove(os.path.join(test_override_path, 'overrides.yml'))
-
-    def test_setup_overrides_default_expire_on_delta(self):
-        """
-        Testing setup_overrides fills a expire-on-delta tag when production=False and omits it when
-        production=True.
-        """
-        test_override_path = os.path.dirname(os.path.abspath(__file__))
-
-        for (is_production, tfvars) in ((True, {}), (False, {'tags': {'expire-on-delta': 24}})):
-            config = {'production': is_production}
-            expected_overrides = {'infrastructure_provisioning': {'tfvars': tfvars}}
-
-            # Call to setup_overrides creates 'overrides.yml' in current dir
-            bootstrap.setup_overrides(config, test_override_path)
-
-            with open(os.path.join(test_override_path, 'overrides.yml'), 'r') as test_override_file:
-                actual_overrides = yaml.load(test_override_file)
-
-            self.assertEqual(actual_overrides, expected_overrides)
-
-            # Removing created file
-            os.remove(os.path.join(test_override_path, 'overrides.yml'))
 
     def test_setup_overrides_default_username(self):
         """
         Testing setup_overrides fails if user doesn't change username
         from bootstrap.example.yml default
         """
-        config = {'owner': 'your.username'}
+        real_configdict = ConfigDict('bootstrap')
+        real_configdict.load()
+
+        real_configdict.raw['bootstrap']['overrides'] = {
+            'infrastructure_provisioning': {
+                'tfvars': {
+                    'tags': {
+                        'owner': 'your.username'
+                    }
+                }
+            }
+        }
         test_override_path = os.path.dirname(os.path.abspath(__file__))
         with self.assertRaises(AssertionError):
-            bootstrap.setup_overrides(config, test_override_path)
+            bootstrap.setup_overrides(real_configdict, test_override_path)
+
+        # Removing created file
+        try:
+            os.remove(os.path.join(test_override_path, 'overrides.yml'))
+        except OSError:
+            pass
+
+    def test_setup_overrides_type_error(self):
+        """
+        Testing setup_overrides doesn't throw TypeError.
+        """
+        real_configdict = ConfigDict('bootstrap')
+        real_configdict.load()
+
+        real_configdict.raw['bootstrap']['overrides'] = {
+            'infrastructure_provisioning': {
+                'tfvars': {
+                    'tags': None
+                }
+            }
+        }
+        test_override_path = os.path.dirname(os.path.abspath(__file__))
+        bootstrap.setup_overrides(real_configdict, test_override_path)
 
         # Removing created file
         try:
@@ -599,28 +584,18 @@ class TestBootstrap(unittest.TestCase):
 
     def test_load_bootstrap_no_file_specified(self):
         """
-        Testing that load_bootstrap loads defaults without bootstrap.yml
+        Testing that load_bootstrap loads defaults into config object without bootstrap.yml
         """
-        mongodb_url = 'https://s3.amazonaws.com/mciuploads/dsi/sys_perf_4.0_caa42a1f75a56c7643d0b68d3880444375ec42e3/caa42a1f75a56c7643d0b68d3880444375ec42e3/linux/mongodb-sys_perf_4.0_caa42a1f75a56c7643d0b68d3880444375ec42e3.tar.gz'  # pylint: disable=line-too-long
-        curator_url = 'https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-16704e1faa1a26ebdb848bc6143ecdeec524c395.tar.gz'  # pylint: disable=line-too-long
         master_config = {
             'analysis': 'common',
             'workload_setup': 'common',
             'infrastructure_provisioning': 'single',
-            'mongodb_binary_archive': mongodb_url,
             'mongodb_setup': 'standalone',
-            'atlas_setup': 'not_atlas',
             'platform': 'linux',
             'production': False,
             'storageEngine': 'wiredTiger',
             'terraform_version_check': 'Terraform v0.10.4',
-            'test_control': 'core',
-            'genny_dir': './data/genny',
-            'workloads_dir': './workloads',
-            'ycsb_dir': './YCSB',
-            'linkbench_dir': './linkbench',
-            'tpcc_dir': './tpcc',
-            'curator_url': curator_url,
+            'test_control': 'core'
         }
         test_config = {}
         bootstrap.load_bootstrap(test_config, '.')

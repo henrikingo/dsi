@@ -100,6 +100,9 @@ class ConfigDict(dict):
                 with open(file_name) as file_handle:
                     self.raw[module_name] = _yaml_load(file_handle, file_name)
                     LOG.info('ConfigDict: Loaded: %s', file_name)
+            elif module_name != '_internal':
+                # Allow code to assume that first level of keys always exists
+                self.raw[module_name] = {}
             file_name = module_name + '.out.yml'
             if os.path.isfile(file_name):
                 with open(file_name) as file_handle:

@@ -1,9 +1,11 @@
 atlas:
+  # Used as key below to select the cluster configuration
+  setup: M30-repl
   api:
     root: https://cloud-dev.mongodb.com/api/atlas/v1.0/
     group_id: 5b991a4880eef5262645e0c7
     # atlas_api_user and atlas_api_key are given in runtime_secret.yml
-  clusters: ${mongodb_setup.atlas_types.${bootstrap.atlas_setup}}
+  clusters: ${mongodb_setup.atlas_types.${mongodb_setup.atlas.setup}}
 
 # Meta data about this mongodb setup
 meta:

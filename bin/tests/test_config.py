@@ -461,7 +461,7 @@ class ConfigDictTestCase(unittest.TestCase):
         self.assertEqual(
             mongod.raw, {
                 'public_ip': '${infrastructure_provisioning.out.mongod.6.public_ip}',
-                'mongodb_binary_archive': '${bootstrap.mongodb_binary_archive}',
+                'mongodb_binary_archive': '${mongodb_setup.mongodb_binary_archive}',
                 'config_file': {
                     'storage': {
                         'engine': 'inMemory'
@@ -547,9 +547,9 @@ class ConfigDictTestCase(unittest.TestCase):
     def test_iterators(self):
         """Test that iterators .keys() and .values() work"""
         mycluster = self.conf['mongodb_setup']['topology'][0]
-        self.assert_equal_lists(self.conf.keys(), [
-            'test_control', 'workload_setup', 'runtime_secret', 'bootstrap', 'mongodb_setup',
-            'analysis', 'infrastructure_provisioning', 'runtime'
+        self.assertEquals(self.conf.keys(), [
+            'system_setup', 'test_control', 'workload_setup', 'runtime_secret', 'bootstrap',
+            'mongodb_setup', 'analysis', 'infrastructure_provisioning', 'runtime'
         ])
 
         tfvars_dict = dict(

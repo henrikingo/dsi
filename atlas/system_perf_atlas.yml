@@ -68,13 +68,19 @@ functions:
           infrastructure_provisioning: workload_client
           platform: linux
           mongodb_setup: atlas
-          atlas_setup: ${atlas_setup}
           test_control: ${test}
           production: true
-          workloads_dir: ../src/workloads/workloads
-          ycsb_dir: ../src/YCSB/YCSB
-          genny_dir: ../src/genny/genny
-          linkbench_dir: ../src/linkbench/linkbench
+          overrides:
+            mongodb_setup:
+              atlas:
+                setup: ${atlas_setup}
+            workload_setup:
+              local_repos:
+                workloads: ../src/workloads/workloads
+                ycsb: ../src/YCSB/YCSB
+                linkbench: ../src/linkbench/linkbench
+                tpcc: ../src/tpcc/tpcc
+                genny: ../src/genny/genny
           EOF
 
           cat > runtime.yml <<EOF

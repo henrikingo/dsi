@@ -16,10 +16,9 @@
 #     test_control: initialsync-logkeeper
 #     task_name: initialsync-logkeeper
 #
-# Note: it may also be necessary to set 'mongodb_binary_archive' in your bootstrap.yml. For an FCV change, the current
+# Note: it may also be necessary to set 'bootstrap.overrides.mongodb_setup.mongodb_binary_archive'. For an FCV change, the current
 # default is most likely to work. For other changes, it may be necessary to get a mongod archive tarball from the
 # waterfall compilation task page.
-# Note: Unlike other configurations, mongod.1 is currently the master of this replica set.
 #
 # 2) On your local host, execute the following shell commands:
 #

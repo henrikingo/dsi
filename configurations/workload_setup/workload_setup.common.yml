@@ -2,11 +2,11 @@ genny: &compile_genny
   - on_localhost:
       checkout_repos:
         - source: git@github.com:mongodb/genny.git
-          target: ${bootstrap.genny_dir}
+          target: ${workload_setup.local_repos.genny}
           branch: master
   - on_workload_client:
       upload_files:
-        - source: ${bootstrap.genny_dir}
+        - source: ${workload_setup.local_repos.genny}
           target: ./data/genny
         - source: ${runtime.workdir}/work/expansions.yml
           target: ./data/expansions.yml
@@ -82,12 +82,12 @@ mongoshell:
   - on_localhost:
       checkout_repos:
         - source: git@github.com:10gen/workloads.git
-          target: ${bootstrap.workloads_dir}
+          target: ${workload_setup.local_repos.workloads}
   - on_workload_client:
       exec: rm -rf workloads*
   - on_workload_client:
       upload_files:
-        - source: ${bootstrap.workloads_dir}
+        - source: ${workload_setup.local_repos.workloads}
           target: ./workloads
   - on_workload_client:
       exec: |
@@ -132,13 +132,13 @@ tpcc:
   - on_localhost:
       checkout_repos:
         - source: git@github.com:10gen/py-tpcc.git
-          target: ${bootstrap.tpcc_dir}
+          target: ${workload_setup.local_repos.tpcc}
           branch: 52185e96bf28be6608ea65b61ff1d134b7cb3f13
   - on_workload_client:
       exec: rm -rf tpcc*
   - on_workload_client:
       upload_files:
-        - source: ${bootstrap.tpcc_dir}
+        - source: ${workload_setup.local_repos.tpcc}
           target: ./tpcc
   - on_workload_client:
       exec: |
@@ -159,13 +159,13 @@ linkbench:
   - on_localhost:
       checkout_repos:
         - source: git@github.com:10gen/linkbench.git
-          target: ${bootstrap.linkbench_dir}
+          target: ${workload_setup.local_repos.linkbench}
           #          branch: f9cca9bcc2c45a409d34584dad49a095d7efccef
   - on_workload_client:
       exec: rm -rf linkbench*
   - on_workload_client:
       upload_files:
-        - source: ${bootstrap.linkbench_dir}
+        - source: ${workload_setup.local_repos.linkbench}
           target: ./linkbench
   - on_workload_client:
       exec: |
@@ -187,13 +187,13 @@ ycsb:
   - on_localhost:
       checkout_repos:
         - source: git@github.com:mongodb-labs/YCSB.git
-          target: ${bootstrap.ycsb_dir}
+          target: ${workload_setup.local_repos.ycsb}
           branch: 9e7888c5009e44a185b135104dd8456eea1deb1e
   - on_workload_client:
       exec: rm -rf ycsb*
   - on_workload_client:
       upload_files:
-        - source: ${bootstrap.ycsb_dir}
+        - source: ${workload_setup.local_repos.ycsb}
           target: ./YCSB
   - on_workload_client:
       exec: |
@@ -201,7 +201,7 @@ ycsb:
         source /etc/profile.d/maven.sh && cd ~/YCSB/ycsb-mongodb && mvn -Dmongo.version=3.8.1 --quiet clean package
 
 install_curator: |
-  curl -o curator.tar.gz --retry 10 -LsS "${bootstrap.curator_url}"
+  curl -o curator.tar.gz --retry 10 -LsS "${workload_setup.downloads.curator}"
   tar xvf curator.tar.gz
   ./curator --version
 

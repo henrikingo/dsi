@@ -14,7 +14,7 @@ tfvars:
   mongod_ebs_instance_count: 0
 
   workload_instance_count: 1
-  workload_instance_type: ${infrastructure_provisioning.atlas_instance_sizes.${bootstrap.atlas_setup}}
+  workload_instance_type: ${infrastructure_provisioning.atlas_instance_sizes.${mongodb_setup.atlas.setup}}
   # Don't disable hyperthreading. (We disable HT cpus by default if this isn't here.)
   with_hyperthreading: "yes"
 

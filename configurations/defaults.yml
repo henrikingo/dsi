@@ -4,22 +4,16 @@ bootstrap:
   infrastructure_provisioning: single
   platform: linux
   mongodb_setup: standalone
-  atlas_setup: not_atlas
   workload_setup: common
   analysis: common
   storageEngine: wiredTiger
   test_control: core
   production: false
-  # Note: It's also allowed to upload your own binary. You can unset this by setting to the empty
-  # string "" in bootstrap.yml
-  # This URL is 4.0.6. We use the sys-perf build instead of official release to include the jstests/ directory that we copy in our compile task.
-  mongodb_binary_archive: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_4.0_caa42a1f75a56c7643d0b68d3880444375ec42e3/caa42a1f75a56c7643d0b68d3880444375ec42e3/linux/mongodb-sys_perf_4.0_caa42a1f75a56c7643d0b68d3880444375ec42e3.tar.gz
-  workloads_dir: ./workloads
-  ycsb_dir: ./YCSB
-  linkbench_dir: ./linkbench
-  tpcc_dir: ./tpcc
-  genny_dir: ./data/genny  # Put genny on the ephemeral drive to give it more space.
-  curator_url: "https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-16704e1faa1a26ebdb848bc6143ecdeec524c395.tar.gz"
+
+runtime_secret:
+  # While the user is now available as an Evergreen expansion, older builds will fail when it is
+  # missing from system_perf.yml. Thus, we must store it here as a default value.
+  dsi_analysis_atlas_user: dsi_analysis
 
 infrastructure_provisioning:
   tfvars:
@@ -50,12 +44,26 @@ infrastructure_provisioning:
     required_version: Terraform v0.10.4
     aws_required_version: 1.6.0
 
+workload_setup:
+  local_repos:
+    workloads: ./workloads
+    ycsb: ./YCSB
+    linkbench: ./linkbench
+    tpcc: ./tpcc
+    genny: ./data/genny  # Put genny on the large drive to give it more space.
+  downloads:
+    curator: "https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-16704e1faa1a26ebdb848bc6143ecdeec524c395.tar.gz"
+
+
 mongodb_setup:
   mongo_dir: mongodb
   journal_dir: /media/ephemeral1/journal
   clean_db_dir: true
   spawn_using: ssh
-  mongodb_binary_archive: ${bootstrap.mongodb_binary_archive}
+  # Note: It's also allowed to upload your own binary. You can unset this by setting to the empty
+  # string "" in mongodb_setup.yml or overrides.yml.
+  # This URL is 4.0.6. We use the sys-perf build instead of official release to include the jstests/ directory that we copy in our compile task.
+  mongodb_binary_archive: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_4.0_caa42a1f75a56c7643d0b68d3880444375ec42e3/caa42a1f75a56c7643d0b68d3880444375ec42e3/linux/mongodb-sys_perf_4.0_caa42a1f75a56c7643d0b68d3880444375ec42e3.tar.gz
 
   mongod_config_file:  # Note these defaults can be overridden by user, but not unset.
     net:
@@ -218,11 +226,6 @@ mongodb_setup:
         retrieve_files:
           - source: data/dbs/diagnostic.data
             target: ./diagnostic.data
-
-# While the user is now available as an Evergreen expansion, older builds will fail when it is
-# missing from system_perf.yml. Thus, we must store it here as a default value.
-runtime_secret:
-  dsi_analysis_atlas_user: dsi_analysis
 
 test_control:
   is_production: ${bootstrap.production}

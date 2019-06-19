@@ -37,26 +37,6 @@ class WorkloadSetupRunner(object):
         """
         return set([run['type'] for run in self.config['test_control']['run']])
 
-    def already_done(self):
-        """
-        Indicate if we've already completed workload setup.
-
-        :rtype: boolean
-        """
-        return 'out' in self.config['workload_setup'] and \
-               self.config['workload_setup']['out']['done'] is True
-
-    # Could make the case that this should actually call self.config.save(),
-    # but that would make it slightly harder to test with vanilla dicts,
-    # plus this class is otherwise entirely in-memory.
-    def mark_done(self):
-        """
-        Indicate in output configuration that we've completed workload setup
-        """
-        if 'out' not in self.config['workload_setup']:
-            self.config['workload_setup']['out'] = {}
-        self.config['workload_setup']['out']['done'] = True
-
     def setup_workloads(self):
         """
         Perform setup for all the required workload types
@@ -64,7 +44,6 @@ class WorkloadSetupRunner(object):
         common.host_utils.setup_ssh_agent(self.config)
         for test_type in self.test_types():
             self.run_setup_for_test_type(test_type)
-        self.mark_done()
 
     def run_setup_for_test_type(self, test_type):
         """
@@ -94,8 +73,6 @@ def main(argv):
 
     setup = WorkloadSetupRunner(config)
     setup.setup_workloads()
-
-    config.save()
 
 
 if __name__ == '__main__':

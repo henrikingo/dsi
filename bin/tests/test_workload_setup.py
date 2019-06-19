@@ -53,13 +53,6 @@ class TestWorkloadSetup(unittest.TestCase):
         self.config = copy.deepcopy(BASIC_CONFIG)
         self.mock_run_host = MagicMock()
 
-    def test_already_done(self):
-        """Don't do anything if already done"""
-        runner = new_runner({'workload_setup': {'out': {'done': True}}})
-        with mock.patch('common.command_runner.run_host_command', self.mock_run_host):
-            assert runner.already_done()
-            self.mock_run_host.assert_not_called()
-
     @patch('workload_setup.common.host_utils.setup_ssh_agent')
     def test_ignore_done_check(self, mock_setup_ssh_agent):
         """We don't check for done-ness unless told to"""
@@ -73,10 +66,7 @@ class TestWorkloadSetup(unittest.TestCase):
             'workload_setup': {
                 'x': [{
                     'foo': 'bar'
-                }],
-                'out': {
-                    'done': True
-                }
+                }]
             }
         })
         with mock.patch('common.command_runner.run_host_command', self.mock_run_host):
@@ -93,7 +83,6 @@ class TestWorkloadSetup(unittest.TestCase):
         # we call all of main which modifies config before we assert mock interactions,
         # and mock interactions aren't call-by-value.
         expected_call_config = copy.deepcopy(BASIC_CONFIG)
-        expected_call_config['workload_setup']['out'] = {'done': True}
 
         with mock.patch('common.command_runner.run_host_command', self.mock_run_host):
             # run the thing

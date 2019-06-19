@@ -23,24 +23,15 @@ LOGGER = structlog.get_logger(__name__)
 def parse_command_line(config, args=None):
     """
     Parse the command line options for setting up a working directory
+
+    :param dict config: The bootstrap.py config, populated from cli options. (NOT ConfigDict.)
+    :param list args: Command line arguments to pass to argparse.
     """
 
     parser = argparse.ArgumentParser(description='Setup DSI working environment. For instructions \
                     on setting up dsi locally, see \
                     https://drive.google.com/open?id=14QXOmo-ia8w72pW5zqQ2fCWfXEwiVQ8_1EoMCkB4baY')
 
-    # These command line options support current configuration. It
-    # should eventually support selecting the appropriate files for
-    # infrastructure.yml, mongodb_setup.yml, test_control.yml, and
-    # analyis.yml. The options should be reviewed as the different
-    # units start to use the config file, with new command line
-    # options added as needed, and old options removed.
-    #
-    # For example, the --cluster-type option currently affects the
-    # infrastructure provisioning and mongodb provisioning
-    # steps. Eventually that option should be removed, and replaced
-    # with distinct options for selecting infrastructure provisioning
-    # options and mongodb setup options.
     parser.add_argument(
         '-b',
         '--bootstrap-file',
@@ -68,6 +59,10 @@ def parse_command_line(config, args=None):
 def copy_config_files(dsipath, config, directory):
     """
     Copy all related config files to the target directory
+
+    :param str dsipath: Path to DSI repo.
+    :param dict config: The bootstrap.py internal config.
+    :param str directory: The work directory.
     """
     # Pairs of ConfigDict module, and bootstrap.yml input.
     # This is all the variable info needed to build the from and to file paths down below.
@@ -86,6 +81,7 @@ def copy_config_files(dsipath, config, directory):
         source_file = os.path.join(dsipath, "configurations", config_module,
                                    config_module + "." + bootstrap_variable + ".yml")
 
+        _warn_if_overwriting(target_file)
         #pylint: disable=broad-except
         try:
             shutil.copyfile(source_file, target_file)
@@ -105,42 +101,42 @@ def copy_config_files(dsipath, config, directory):
     return
 
 
-def setup_overrides(config, directory):
+def setup_overrides(config_dict, directory):
     """
     Generate the overrides.yml file
 
-    Note: this only happens when running locally, outside of evergreen. In evergreen runs,
-    the relevant variables are set in infrastructure_provisioning.yml and should not be present in
-    config at this point.
+    :param ConfigDict config_dict: The ConfigDict object. Note, must be a real ConfigDict instance,
+                                   passing a dict will fail.
+    :param str directory: The work directory.
     """
-
-    overrides = {}
+    # Use the raw dict to prevent ${variable.references} from being prematurely evaluated.
+    overrides = config_dict.raw['bootstrap'].get('overrides', {})
     override_path = os.path.join(directory, 'overrides.yml')
-    tfvars = {}
-    if 'ssh_key_file' in config:
-        tfvars['ssh_key_file'] = config['ssh_key_file']
-    if 'ssh_key_name' in config:
-        tfvars['ssh_key_name'] = config['ssh_key_name']
-    if 'owner' in config:
-        if config['owner'] == 'your.username':
-            LOGGER.critical("owner is set to your.username. Please update this setting in your "
-                            "bootstrap.yml file, and review the other settings in that file.")
-            assert False
-        tfvars.setdefault('tags', {})['owner'] = config['owner']
-    if not config.get('production', False):
-        # If DSI is being running locally, then we set the AWS instances to expire after 1 day.
-        tfvars.setdefault('tags', {})['expire-on-delta'] = 24
-    if os.path.exists(override_path):
-        with open(override_path) as override_file:
-            overrides = yaml.load(override_file)
-    overrides.update({'infrastructure_provisioning': {'tfvars': tfvars}})
-    with open(override_path, 'w') as override_file:
-        override_file.write(yaml.dump(overrides, default_flow_style=False))
+
+    # A bit odd place, but this used to be here when code was different, so leaving here for now
+    try:
+        if overrides['infrastructure_provisioning']['tfvars']['tags']['owner'] == 'your.username':
+            message = "owner is set to your.username. Please update this setting in your " \
+                    "bootstrap.yml file, and review the other settings in that file."
+            LOGGER.critical(message)
+            assert False, message
+    except KeyError:
+        pass
+    except TypeError:
+        pass
+
+    if overrides:
+        _warn_if_overwriting(override_path)
+        with open(override_path, 'w') as override_file:
+            override_file.write(yaml.dump(overrides, default_flow_style=False))
 
 
 def find_terraform(config, directory):
     """
-    Returns the location of the terraform binary to use
+    Returns the location of the terraform binary to use.
+
+    :param dict config: The bootstrap.py internal config.
+    :param str directory: The work directory.
     """
     try:
         system_tf = subprocess.check_output(['which', 'terraform']).strip()
@@ -165,7 +161,9 @@ def find_terraform(config, directory):
 
 def validate_terraform(config):
     """
-    Asserts that terraform is the correct version
+    Asserts that terraform is the correct version.
+
+    :param dict config: The bootstrap.py internal config.
     """
     if not config['production']:
         try:
@@ -190,8 +188,8 @@ def write_dsienv(directory, terraform):
     """
     Writes out the dsienv.sh file.
 
-    :param str directory: The work directory
-    :param str terraform: Path to terraform
+    :param str directory: The work directory.
+    :param str terraform: Path to terraform.
 
     """
     with open(os.path.join(directory, 'dsienv.sh'), 'w') as dsienv:
@@ -246,6 +244,16 @@ def load_bootstrap(config, directory):
     return config_dict
 
 
+def _warn_if_overwriting(destination):
+    """
+    Warn if destination exists.
+
+    :param str destination: A path to a config file.
+    """
+    if os.path.exists(destination):
+        LOGGER.warn("Overwriting existing file.", destination=destination)
+
+
 def main():
     """
     Main function for setting up working directory
@@ -277,7 +285,7 @@ def main():
 
     # This writes an overrides.yml with the ssh_key_file, ssh_key_name and owner, if given in
     # bootstrap.yml, and with expire-on-delta if running DSI locally.
-    setup_overrides(config, directory)
+    setup_overrides(config_dict, directory)
 
     LOGGER.info("Local environment setup", directory=directory)
 

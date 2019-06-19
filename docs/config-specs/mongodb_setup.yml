@@ -2,7 +2,11 @@
 # Useful to test multiple versions of MongoDB on same infrastructure (manual runs for analysing
 # build failures).
 # Note: mongo_root is the directory where a mongodb.tar.gz was extracted.
+# <mongo_root>/bin has the binaries.
 mongo_dir: mongodb
+# Note: It's also allowed to upload your own binary. You can unset this by setting to the empty
+# string "".
+mongodb_binary_archive: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.4.6.tgz
 
 journal_dir: /media/ephemeral1/journal  # If specified, create a symlink to have journal at this path
 clean_db_dir: true
@@ -145,20 +149,20 @@ topology:
         cluster_type: replset
         mongod:
           # Testing a cluster where some nodes are of a different version.
-          # This references mongodb_binary_archive from bootstrap.yml.
-          - mongodb_binary_archive: ${bootstrap.mongodb_binary_archive}
+          # This references mongodb_binary_archive from above, version 3.4.6.
+          - mongodb_binary_archive: ${mongodb_setup.mongodb_binary_archive}
             config_file: &diff_mongod_config  # And a different config
               storage:  # Note: These are merged (or "upserted") into the global/common mongod_config_file specified above
                 engine: inMemory
             public_ip: ${infrastructure_provisioning.out.mongod.6.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.6.private_ip}
-          # The mongodb binary used is the pinned version listed below
-          - mongodb_binary_archive: <another url>
+          # The mongodb binary used for this node is the version listed below
+          - mongodb_binary_archive: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.4.7.tgz
             config_file: *diff_mongod_config
             public_ip: ${infrastructure_provisioning.out.mongod.7.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.7.private_ip}
-          # The mongodb binary used is the pinned version listed below
-          - mongodb_binary_archive: <another url>
+          # The mongodb binary used for this node is the version listed below
+          - mongodb_binary_archive: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.4.7.tgz
             config_file: *diff_mongod_config
             public_ip: ${infrastructure_provisioning.out.mongod.7.public_ip}
             private_ip: ${infrastructure_provisioning.out.mongod.7.private_ip}

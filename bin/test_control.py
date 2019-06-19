@@ -261,12 +261,6 @@ def main(argv):
     config = ConfigDict('test_control')
     config.load()
 
-    if 'workload_setup' not in config or \
-            'out' not in config['workload_setup'] or \
-            'done' not in config['workload_setup']['out'] or \
-            not config['workload_setup']['out']['done']:
-        raise RuntimeError('Must run workload_setup prior to test_control')
-
     error = run_tests(config)
     return 1 if error else 0
 
