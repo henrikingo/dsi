@@ -277,7 +277,7 @@ def _translate_outliers(gesd_result, test_identifier, start, num_outliers, full_
     Translate raw GESD output to a list of Outlier instances.
 
     :param GesdResult gesd_result: The raw data gesd output.
-    :param dict test_identifier: The dict that identifies this project / variant/ task / test /
+    :param dict test_identifier: The dict that identifies this project / variant / task / test /
     thread level result.
     :param int start: The start index in the full time series data.
     :param int num_outliers: The max number of outliers expected in the series.
@@ -286,7 +286,7 @@ def _translate_outliers(gesd_result, test_identifier, start, num_outliers, full_
     :rtype: list[Outlier].
     """
     outliers = []
-    if gesd_result is not None and gesd_result.count:
+    if gesd_result is not None and gesd_result.suspicious_indexes:
         count = gesd_result.count
         change_point_order = full_series['orders'][start]
         change_point_revision = full_series['revisions'][start]

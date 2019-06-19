@@ -319,7 +319,7 @@ class TestRunDetection(unittest.TestCase):
             points_model_mock.get_points.return_value = time_series
             mock_outlier_ctor.return_value._asdict.side_effect = expected_range
             deletes = ['delete']
-            if expected_number_outliers:
+            if expected_number_outliers or expected_suspicious_indexes:
                 inserts = ['insert {}'.format(i) for i in expected_range]
             else:
                 inserts = []
@@ -407,7 +407,8 @@ class TestRunDetection(unittest.TestCase):
 
     def test_between_change_points(self):
         """
-        Test detect_outliers with order between the first and second change points.
+        Test detect_outliers with order between the first and second change points. The combination of no high
+         confidence outliers and some suspicious indexes is included in this test case.
         """
         expected, data = self.load('first_to_second_change_point')
         self._test(expected, data)
@@ -431,7 +432,7 @@ class TestRunDetection(unittest.TestCase):
 
 class TestTranslateOutliers(unittest.TestCase):
     """
-    Test suite for the _save_outliers function
+    Test suite for the _translate_outliers function
     """
 
     def test_no_gesd_results(self):
@@ -481,7 +482,7 @@ class TestTranslateOutliers(unittest.TestCase):
         with patch(ns('Outlier'), autospec=True):
             outliers = _translate_outliers(gesd_result, test_identifier, start, num_outliers,
                                            full_series, configuration)
-        self.assertEqual(0, len(outliers))
+        self.assertEqual(1, len(outliers))
 
     def test_gesd(self):
         """ test when gesd count > 0. """
@@ -1836,7 +1837,8 @@ class TestFullSeries(unittest.TestCase):
         self._test(test, fixture)
 
     def test_between_change_points(self):
-        """ Test from first to second change point. """
+        """ Test from first to second change point. The combination of no high
+         confidence outliers and some suspicious indexes is included in this test case. """
         test, fixture = self.load("Between first and second change points")
         self._test(test, fixture)
 
