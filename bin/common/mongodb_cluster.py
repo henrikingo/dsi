@@ -25,7 +25,6 @@ LOG = logging.getLogger(__name__)
 # Remote files that need to be created.
 # NB: these could/should come from defaults.yml
 DEFAULT_JOURNAL_DIR = '/media/ephemeral1/journal'
-DEFAULT_MONGO_DIR = 'mongodb'
 DEFAULT_MEMBER_PRIORITY = 1
 DEFAULT_CSRS_NAME = 'configSvrRS'
 
@@ -142,18 +141,21 @@ class MongoNode(MongoCluster):
         self.mongo_program = 'mongos' if is_mongos else 'mongod'
         self.public_ip = topology['public_ip']
         self.private_ip = topology.get('private_ip', self.public_ip)
-        self.bin_dir = os.path.join(topology.get('mongo_dir', DEFAULT_MONGO_DIR), 'bin')
+        mongodb_setup = self.config['mongodb_setup']
+        # Get the mongo_dir from the topology if set, otherwise from the mongo_dir.
+        # It now must come from configuration.
+        self.bin_dir = os.path.join(
+            topology.get('mongo_dir', mongodb_setup.get('mongo_dir')), 'bin')
         self.tls_settings = mongodb_setup_helpers.mongodb_tls_settings(topology['config_file'])
 
-        setup = self.config['mongodb_setup']
         # NB: we could specify these defaults in default.yml if not already!
         # TODO: https://jira.mongodb.org/browse/PERF-1246 For the next 3 configs, ConfigDict does
         #       not "magically" combine the common setting with the node specific one (topology vs
         #       mongodb_setup). We should add that to ConfigDict to make these lines as simple as
         #       the rest.
-        self.clean_logs = topology.get('clean_logs', setup.get('clean_logs', True))
+        self.clean_logs = topology.get('clean_logs', mongodb_setup.get('clean_logs', True))
         self.clean_db_dir = topology.get('clean_db_dir', (not is_mongos)
-                                         and setup.get('clean_db_dir', True))
+                                         and mongodb_setup.get('clean_db_dir', True))
 
         self.use_journal_mnt = topology.get('use_journal_mnt', not is_mongos)
         self.mongo_config_file = copy_obj(topology.get('config_file', {}))

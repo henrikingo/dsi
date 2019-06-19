@@ -19,7 +19,6 @@ common.mongodb_cluster.RemoteHost = mock.MagicMock()
 MONGOD_OPTS = {
     'public_ip': '1.2.3.4',
     'private_ip': '10.2.0.1',
-    'mongo_dir': '/usr/',
     'config_file': {
         'net': {
             'port': 9999,
@@ -46,6 +45,8 @@ DEFAULT_CONFIG = {
         'out': []
     },
     'mongodb_setup': {
+        'mongo_dir':
+            '/usr/',
         'shutdown_options': {
             'force': True,
             'timeoutSecs': 5

@@ -27,6 +27,8 @@ DEFAULT_CONFIG = {
             'force': True,
             'timeoutSecs': 5
         },
+        'mongo_dir':
+            'test_dir',
         'journal_dir':
             '/data/journal',
         'topology': [{

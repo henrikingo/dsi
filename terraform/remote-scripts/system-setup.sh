@@ -62,10 +62,8 @@ create_required_directories() {
     sudo chmod 777 /data
     mkdir -p /data/mci
     mkdir -p /data/tmp
-    mkdir -p /data/mongodb
 
     ln -s /data ~/data
-    ln -s ~/data/mongodb ~/mongodb
 }
 
 ##
