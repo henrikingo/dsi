@@ -200,8 +200,12 @@ ycsb:
         export JAVA_HOME="/usr/java/jdk1.8.0_162/jre"
         source /etc/profile.d/maven.sh && cd ~/YCSB/ycsb-mongodb && mvn -Dmongo.version=3.8.1 --quiet clean package
 
+# Only install curator for production runs
+# == "True" because production gets serialized as a Python boolean
 install_curator: |
-  curl -o curator.tar.gz --retry 10 -LsS "${workload_setup.downloads.curator}"
-  tar xvf curator.tar.gz
-  ./curator --version
+  if [[ "${bootstrap.production}" == "True" ]]; then
+    curl -o curator.tar.gz --retry 10 -LsS "${workload_setup.downloads.curator}"
+    tar xvf curator.tar.gz
+    ./curator --version
+  fi
 

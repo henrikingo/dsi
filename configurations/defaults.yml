@@ -227,6 +227,9 @@ mongodb_setup:
           - source: data/dbs/diagnostic.data
             target: ./diagnostic.data
 
+runtime:
+  workdir: ..
+
 test_control:
   is_production: ${bootstrap.production}
   mongodb_url: ${mongodb_setup.meta.mongodb_url}

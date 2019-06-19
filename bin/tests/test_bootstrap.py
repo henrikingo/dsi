@@ -526,6 +526,71 @@ class TestBootstrap(unittest.TestCase):
         bootstrap.load_bootstrap(config, directory)
         self.assertEqual(config['owner'], 'test_owner')
 
+    @patch('subprocess.check_output')
+    def test_bootstrap_respects_existing_expansions_file(self, mock_check_output):
+        """
+        Test we don't create a new expansions yaml file if already there
+        """
+        mock_check_output.return_value = 'Terraform v0.10.4'
+
+        bootstrap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bootstrap.yml')
+        directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'testdir/')
+        expansions_file = os.path.join(directory, 'expansions.yml')
+
+        os.mkdir(directory)
+
+        secret_overrides_path = os.path.join(directory, 'overrides.yml')
+        with open(secret_overrides_path, 'w') as config:
+            config.writelines([
+                'runtime_secret: { aws_access_key: dummy, aws_secret_key: dummy }',
+            ])
+
+        with open(bootstrap_path, 'w') as config:
+            config.writelines([
+                # this is the only entry that's actually needed
+                'infrastructure_provisioning: single',
+            ])
+
+        with open(expansions_file, 'w+') as expansions:
+            expansions.writelines(['from_expansions: true'])
+
+        self.assertTrue(os.path.exists(expansions_file))
+
+        bootstrap.run_bootstrap({'directory': directory, 'bootstrap_file': bootstrap_path})
+        with open(expansions_file, 'r') as expansions:
+            self.assertEquals(expansions.read(), 'from_expansions: true')
+
+    @patch('subprocess.check_output')
+    def test_bootstrap_creates_expansions(self, mock_check_output):
+        """
+        Test we create an exansions.yml file
+        """
+        mock_check_output.return_value = 'Terraform v0.10.4'
+
+        bootstrap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bootstrap.yml')
+        directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'testdir/')
+        expansions_file = os.path.join(directory, 'expansions.yml')
+
+        os.mkdir(directory)
+
+        secret_overrides_path = os.path.join(directory, 'overrides.yml')
+        with open(secret_overrides_path, 'w') as config:
+            config.writelines([
+                'runtime_secret: { aws_access_key: dummy, aws_secret_key: dummy }',
+            ])
+
+        with open(bootstrap_path, 'w') as config:
+            config.writelines([
+                # this is the only entry that's actually needed
+                'infrastructure_provisioning: single',
+            ])
+
+        self.assertFalse(os.path.exists(expansions_file))
+
+        bootstrap.run_bootstrap({'directory': directory, 'bootstrap_file': bootstrap_path})
+        with open(expansions_file, 'r') as expansions:
+            self.assertEquals(expansions.read(), 'curator_mode: skip')
+
     def test_load_bootstrap_copy_file_to_local(self):
         """
         Testing that load_bootstrap copies specified file in 'testdir' to local directory

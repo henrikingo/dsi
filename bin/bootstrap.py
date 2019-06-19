@@ -254,13 +254,27 @@ def _warn_if_overwriting(destination):
         LOGGER.warn("Overwriting existing file.", destination=destination)
 
 
-def main():
+def ensure_expansions_file(directory):
     """
-    Main function for setting up working directory
-    """
+    Create `directory`/expansions.yml if doesn't already exist.
 
-    config = {}
-    parse_command_line(config)
+    :param directory: str
+    :return: nothing
+    """
+    expansions_path = os.path.join(directory, 'expansions.yml')
+    if os.path.exists(expansions_path):
+        return
+    with open(expansions_path, 'w') as expansions:
+        expansions.write('curator_mode: skip')
+    LOGGER.info(
+        'No existing expansions file so created a default one.', expansions_path=expansions_path)
+
+
+def run_bootstrap(config):
+    """
+    Main logic.
+    :param config: parsed command-line args
+    """
     directory = os.path.abspath(os.path.expanduser(config['directory']))
     LOGGER.info('Creating work directory', directory=directory)
 
@@ -287,7 +301,20 @@ def main():
     # bootstrap.yml, and with expire-on-delta if running DSI locally.
     setup_overrides(config_dict, directory)
 
+    ensure_expansions_file(directory)
+
     LOGGER.info("Local environment setup", directory=directory)
+
+
+def main(args=None):
+    """
+    Run main logic.
+
+    :param args: argv (uses sys.argv if None)
+    :return: nothing
+    """
+    config = parse_command_line({}, args)
+    run_bootstrap(config)
 
 
 if __name__ == '__main__':
