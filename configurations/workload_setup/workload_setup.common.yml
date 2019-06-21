@@ -96,7 +96,7 @@ mongoshell:
         # This is used if SSL is on, because certificates are there.
         # Note: The following line only works if mongo_dir does not contain a '/'.
         # See https://jira.mongodb.org/browse/TIG-1749
-        ln -s "${mongodb_setup.mongo_dir}" "workloads/${mongodb_setup.mongo_dir}"
+        cd workloads && ln -s "../${mongodb_setup.mongo_dir}" "${mongodb_setup.mongo_dir}"
 
 fio:
   - on_workload_client:
