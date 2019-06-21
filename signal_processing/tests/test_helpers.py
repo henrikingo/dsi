@@ -50,20 +50,25 @@ class TestGenerateThreadLevels(unittest.TestCase):
     Test suite for generate_thread_levels.
     """
 
-    def _test_generate_thread_levels(self, return_value=(), expected=None):
+    def _test_generate_thread_levels(self, return_value=(), expected=None, exception=False):
         """
         Test generate_thread_levels identifier.
         """
         return_value = list(return_value)
         mock_collection = mock.MagicMock(name="points collection")
-        mock_collection.aggregate.return_value = return_value
+        if exception:
+            mock_collection.aggregate.side_effect = [
+                Exception('boom'), Exception('boom'), return_value
+            ]
+        else:
+            mock_collection.aggregate.return_value = return_value
         actual = list(helpers.generate_thread_levels('test_identifier', mock_collection))
         if expected is None:
             expected = return_value
         self.assertEquals(actual, expected)
 
         calls = mock_collection.aggregate.call_args_list
-        self.assertEquals(len(calls), 1)
+        self.assertEquals(len(calls), 3 if exception else 1)
         arguments = calls[0][0][0]
 
         self.assertEquals(arguments[0], {'$match': 'test_identifier'})
@@ -89,6 +94,9 @@ class TestGenerateThreadLevels(unittest.TestCase):
             return_value=return_value, expected=return_value + [{
                 'thread_level': 'max'
             }])
+
+    def test_retrying(self):
+        self._test_generate_thread_levels(exception=True)
 
 
 class TestGetWhitelistIdentifiers(unittest.TestCase):

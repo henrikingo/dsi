@@ -150,8 +150,7 @@ class TestGetPointsAggregation(unittest.TestCase):
                             {'$eq': ['$variant', '$$variant']},
                             {'$eq': ['$task', '$$task']},
                             {'$eq': ['$test', '$$test']},
-                            {'$eq': ['$thread_level', '$$thread_level']
-                            },
+                            {'$eq': ['$thread_level', '$$thread_level']},
                             {
                                 '$eq': ['$revision', '$$revision']
                             },
@@ -380,16 +379,16 @@ class TestGetClosestOrderNoChangePoints(unittest.TestCase):
             mock_points.count.return_value = count
             order = count + 1
             return_value = [{'order': order}]
-            mock_points.find.return_value.sort.return_value.skip.return_value.limit.return_value =\
+            mock_points.find.return_value.sort.return_value.skip.return_value.limit.return_value = \
                 return_value
 
             test_model = PointsModel(self.mongo_uri, min_points=min_points)
             self.assertEquals(order,
                               test_model._get_closest_order_no_change_points(self.test_identifier))
             mock_points.count.assert_called_once_with({'results.thread_level': '1'})
-            chained = call({'results.thread_level': '1'}, {'order': 1}).\
-                sort('order', pymongo.DESCENDING).\
-                skip(abs(min_points) - 1).\
+            chained = call({'results.thread_level': '1'}, {'order': 1}). \
+                sort('order', pymongo.DESCENDING). \
+                skip(abs(min_points) - 1). \
                 limit(1)
             self.assertEquals(mock_points.find.mock_calls, chained.call_list())
 
@@ -585,8 +584,8 @@ class TestFindPreviousChangePoint(unittest.TestCase):
                 'order': 'current'
             })
 
-            chained = call({'test': 'identifier', 'order': {'$lt': 'current'}}).\
-                sort('order', pymongo.DESCENDING).\
+            chained = call({'test': 'identifier', 'order': {'$lt': 'current'}}). \
+                sort('order', pymongo.DESCENDING). \
                 limit(1)
             self.assertEquals(mock_db.change_points.find.mock_calls, chained.call_list())
             return return_value
@@ -688,18 +687,20 @@ class TestComputeChangePoints(unittest.TestCase):
         # pylint: disable=too-many-locals, too-many-branches
 
         with patch(ns('pymongo.InsertOne')) as mock_insert, \
-             patch(ns('pymongo.DeleteMany')) as mock_delete, \
-             patch(ns('detect_change_points'), autospec=True) as mock_detect, \
-             patch(ns('pymongo.MongoClient')) as mock_mongo_client:
+                patch(ns('pymongo.DeleteMany')) as mock_delete, \
+                patch(ns('detect_change_points'), autospec=True) as mock_detect, \
+                patch(ns('pymongo.MongoClient')) as mock_mongo_client:
 
             mock_db = MagicMock(name='db', autospec=True)
             thread_level = '4'
 
             if exception:
-                mock_delete.side_effect = [Exception('boom'), "DeleteMany"]
+                retry = 3
+                mock_delete.side_effect = retry * [Exception('boom'), "DeleteMany"]
                 expected_inserts = [1, 2]
                 mock_db.change_points.find.return_value = expected_inserts
             else:
+                retry = 1
                 mock_delete.return_value = "DeleteMany"
                 mock_db.change_points.find.return_value = []
 
@@ -716,7 +717,7 @@ class TestComputeChangePoints(unittest.TestCase):
                         ('statistics', statistics(i))
                     ]) for i in range(1, 3)]  # yapf: disable
 
-            mock_insert.side_effect = ["InsertOne 1", "InsertOne 2"]
+            mock_insert.side_effect = retry * ["InsertOne 1", "InsertOne 2"]
             mock_bulk = MagicMock(name='bulk', autospec=True, bulk_api_result='bulk_api_result')
             mock_mongo_client.return_value.get_database.return_value = mock_db
             mock_db.change_points.bulk_write.return_value = mock_bulk
@@ -773,8 +774,9 @@ class TestComputeChangePoints(unittest.TestCase):
                     test_model.compute_change_points(test_identifier, weighting=0.001)
                 self.assertTrue('boom' in context.exception)
 
-                # delete is called twice in this case
-                delete_calls = [call(query), call(query)]
+                # delete is called retry * 2 times in this case,
+                # since it is called twice per compute_change_points invocation
+                delete_calls = retry * 2
             else:
                 actual_size, num_change_points = test_model.compute_change_points(
                     test_identifier, weighting=0.001)
@@ -782,7 +784,7 @@ class TestComputeChangePoints(unittest.TestCase):
                 self.assertEqual(actual_size, size)
                 self.assertEqual(num_change_points, 2 if old_change_points else 0)
 
-                delete_calls = [call(query)]
+                delete_calls = 1
 
                 if old_change_points:
                     test_model.update_previous_change_point.assert_called_once_with(
@@ -791,10 +793,11 @@ class TestComputeChangePoints(unittest.TestCase):
                     test_model.update_previous_change_point.assert_not_called()
 
             # delete is called once or twice
-            mock_delete.assert_has_calls(delete_calls)
+            self.assert_retried_n_times(mock_delete, call(query), delete_calls)
 
-            test_model.get_closest_order.assert_called_once_with(test_identifier)
-            mock_db.change_points.find.assert_called_once_with(query)
+            self.assert_retried_n_times(test_model.get_closest_order, call(test_identifier), retry)
+            self.assert_retried_n_times(mock_db.change_points.find, call(query), retry)
+
             if old_change_points:
                 mock_insert.assert_has_calls(
                     [call(expected_insert) for expected_insert in expected_inserts])
@@ -807,13 +810,20 @@ class TestComputeChangePoints(unittest.TestCase):
             expected_bulk_writes = ["DeleteMany"]
             if old_change_points:
                 expected_bulk_writes.extend(["InsertOne 1", "InsertOne 2"])
-            mock_db.change_points.bulk_write.assert_called_once_with(expected_bulk_writes)
-            mock_detect.assert_called_once_with(
-                thread_level_results,
-                pvalue=None,
-                github_credentials=None,
-                mongo_repo=None,
-                weighting=0.001)
+            self.assert_retried_n_times(mock_db.change_points.bulk_write,
+                                        call(expected_bulk_writes), retry)
+            self.assert_retried_n_times(mock_detect,
+                                        call(
+                                            thread_level_results,
+                                            pvalue=None,
+                                            github_credentials=None,
+                                            mongo_repo=None,
+                                            weighting=0.001), retry)
+
+    def assert_retried_n_times(self, mock, function_call, n):
+        """ assert a call was retried n times with arg arg"""
+        mock.assert_has_calls(n * [function_call])
+        self.assertEqual(mock.call_count, n)
 
     def test_compute_change_points(self):
         """ test compute change points no order. """

@@ -263,7 +263,6 @@ class EDivisiveNumpyImp(object):  # pylint: disable=too-many-instance-attributes
         Compute the change points for a series.
         """
         LOG.info("compute_change_points")
-        windows = []
         pts = len(series)
         qhat_values = self._qhat_values(series)
         LOG.debug("compute_change_points", qs=qhat_values, series=series)

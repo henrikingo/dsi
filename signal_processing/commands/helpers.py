@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 import structlog
 import click
 import yaml
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from analysis.evergreen.helpers import get_git_credentials
 from bson.json_util import RELAXED_JSON_OPTIONS, dumps
@@ -1098,7 +1099,25 @@ def generate_thread_levels(test_identifier, points_collection, thread_level=None
     :param pymongo.Collection points_collection: The points collection ref.
     :param re.pattern thread_level: A thread level pattern or None for all.
     """
+    levels = _get_levels(points_collection, test_identifier)
 
+    for identifier in levels:
+        if _matches(thread_level, identifier['thread_level']):
+            yield identifier
+    if len(levels) > 1 and _matches(thread_level, MAX_THREAD_LEVEL):
+        max_level = levels[0].copy()
+        max_level['thread_level'] = MAX_THREAD_LEVEL
+        yield max_level
+
+
+@retry(reraise=True, stop=stop_after_attempt(3), wait=wait_fixed(5))
+def _get_levels(points_collection, test_identifier):
+    """
+    Given a collection and test identifier, get the thread levels
+    :param points_collection: the points collection
+    :param test_identifier: the test identifier
+    :return: the thread levels
+    """
     pipeline = [{
         '$match': test_identifier
     }, {
@@ -1123,15 +1142,7 @@ def generate_thread_levels(test_identifier, points_collection, thread_level=None
             'thread_level': '$_id.thread_level'
         }
     }]
-    levels = list(points_collection.aggregate(pipeline))
-
-    for identifier in levels:
-        if _matches(thread_level, identifier['thread_level']):
-            yield identifier
-    if len(levels) > 1 and _matches(thread_level, MAX_THREAD_LEVEL):
-        max_level = levels[0].copy()
-        max_level['thread_level'] = MAX_THREAD_LEVEL
-        yield max_level
+    return list(points_collection.aggregate(pipeline))
 
 
 def get_whitelists(task_identifier, points_collection):

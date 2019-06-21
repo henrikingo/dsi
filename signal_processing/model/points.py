@@ -6,6 +6,8 @@ import numpy as np
 
 import pymongo
 import structlog
+from tenacity import retry, stop_after_attempt, wait_fixed
+
 from signal_processing.change_points.detection import detect_change_points
 
 from signal_processing.commands import helpers
@@ -320,7 +322,8 @@ class PointsModel(object):
         pipeline = get_points_aggregation(test_identifier, min_order)
         results = list(self.db.points.aggregate(pipeline))[0]
         results.update(test_identifier)
-        del results['_id']
+        if '_id' in results:
+            del results['_id']
 
         sizes = {key: len(results[key]) for key in ARRAY_FIELDS}
         if not all(current == sizes.values()[0] for current in sizes.values()):
@@ -499,6 +502,7 @@ class PointsModel(object):
                 test_identifier=test_identifier,
                 results=result.raw_result)
 
+    @retry(reraise=True, stop=stop_after_attempt(3), wait=wait_fixed(5))
     def compute_change_points(self, test_identifier, weighting):
         """
         Compute the change points for the given test using the E-Divisive algorithm and insert them
