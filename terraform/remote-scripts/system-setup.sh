@@ -169,7 +169,7 @@ install_java() {
 install_jasper() {
     # Please refer to README.md in jasper.proto's directory on steps for updating jasper.proto and the
     # curator binary.
-    curl -o curator.tar.gz --retry 10 -LsS https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-16704e1faa1a26ebdb848bc6143ecdeec524c395.tar.gz
+    curl -o curator.tar.gz --retry 10 -LsS https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-a59ee3794267d83709db1c73cd016f98330e13b5.tar.gz
     tar xvf curator.tar.gz
 
     sudo cp ./curator /usr/local/bin/curator
