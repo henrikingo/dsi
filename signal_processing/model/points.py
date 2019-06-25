@@ -477,9 +477,9 @@ class PointsModel(object):
             return previous_change_point[0]
         return None
 
-    def _prepare_update_previous_change_point(self, test_identifier, change_point):
+    def update_previous_change_point(self, test_identifier, change_point):
         """
-        Prepare an update of the statistics of the previous point.
+        Update the statistics of the previous point.
 
         :param dict test_identifier: The test identifier.
         :param dict change_point: The current change point.
@@ -492,12 +492,15 @@ class PointsModel(object):
             previous_change_point_query = test_identifier.copy()
             previous_change_point_query['order'] = previous['order']
             statistics = change_point['statistics']['previous']
-            return pymongo.UpdateOne(previous_change_point_query, {
+            result = self.db.change_points.update_one(previous_change_point_query, {
                 '$set': {
                     'statistics.next': statistics
                 }
             })
-        return None
+            LOG.info(
+                "previous change point update",
+                test_identifier=test_identifier,
+                results=result.raw_result)
 
     @retry(reraise=True, stop=stop_after_attempt(3), wait=wait_fixed(5))
     def compute_change_points(self, test_identifier, weighting):
@@ -529,43 +532,50 @@ class PointsModel(object):
             change_points=len(change_points),
             test_identifier=test_identifier)
 
+        # Poor mans transaction. Upgrade to 4.0?
+        # TODO: TIG-1174
         query = test_identifier
 
         if order is not None:
             query = test_identifier.copy()
             query['order'] = {'$gt': order}
 
-        requests = [pymongo.DeleteMany(query)]
-
-        for point in change_points:
-            change_point = test_identifier.copy()
-            change_point.update(point)
-            index = thread_level_results['orders'].index(point['order'])
-            change_point['task_id'] = thread_level_results['task_ids'][index]
-            change_point['version_id'] = thread_level_results['version_ids'][index]
-            requests.append(pymongo.InsertOne(change_point))
-
-        if change_points:
-            update = self._prepare_update_previous_change_point(test_identifier, change_points[0])
-            if update:
-                requests.append(update)
+        before = list(self.db.change_points.find(query))
 
         try:
-            with self.db.start_session() as session:
-                with session.start_transaction():
-                    bulk_write_result = self.db.change_points.bulk_write(requests)
-                    LOG.debug(
-                        "change points bulk_write",
-                        test_identifier=test_identifier,
-                        results=bulk_write_result.bulk_api_result)
+            requests = [pymongo.DeleteMany(query)]
+
+            for point in change_points:
+                change_point = test_identifier.copy()
+                change_point.update(point)
+                index = thread_level_results['orders'].index(point['order'])
+                change_point['task_id'] = thread_level_results['task_ids'][index]
+                change_point['version_id'] = thread_level_results['version_ids'][index]
+                requests.append(pymongo.InsertOne(change_point))
+
+            bulk_write_result = self.db.change_points.bulk_write(requests)
+            LOG.debug(
+                "change points bulk_write",
+                test_identifier=test_identifier,
+                results=bulk_write_result.bulk_api_result)
+
+            if change_points:
+                self.update_previous_change_point(test_identifier, change_points[0])
 
             return thread_level_results['size'], len(change_points)
         except Exception as e:
             # pylint: disable=no-member
             LOG.warn(
-                'compute_change_points failed',
+                'compute_change_points failed - rollback.',
                 exc_info=True,
                 details=e.details if hasattr(e, 'details') else str(e))
+            requests = [pymongo.DeleteMany(query)] +\
+                       [pymongo.InsertOne(point) for point in before]
+            bulk_write_result = self.db.change_points.bulk_write(requests)
+            LOG.debug(
+                "rollback bulk_write",
+                test_identifier=test_identifier,
+                results=bulk_write_result.bulk_api_result)
             raise
 
     def __getstate__(self):
