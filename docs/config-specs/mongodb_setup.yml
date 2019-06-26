@@ -244,3 +244,46 @@ upon_error:
       retrieve_files:
         - source: data/dbs/diagnostic.data
           target: ./diagnostic.data
+
+# To deploy Atlas clusters, leave out topology and use the below instead
+atlas:
+  api:
+    root: https://cloud-dev.mongodb.com/api/atlas/v1.0/
+    private: https://cloud-dev.mongodb.com/api/private/
+    group_id: 5b991a4880eef5262645e0c7
+    # atlas_api_user and atlas_api_key are given in runtime_secret.yml
+
+  clusters:
+    - autoScaling:
+        diskGBEnabled: false
+      clusterType: REPLICASET
+      mongoDBMajorVersion: 4.0
+      numShards: 1
+      providerSettings:
+        providerName: AWS
+        regionName: US_EAST_1
+        instanceSizeName: M30
+        diskIOPS: 3600
+      diskSizeGB: 320
+
+  # If given, use binaries from mongodb_binary_archive to create and use a custom Atlas build.
+  # This info must match what is actually in the binary archive. Since you can supply the archive
+  # from anywhere, you are also the one who needs to fill this in.
+  #
+  # trueName is automatically copied to mongoDBVersion in the cluster config by atlas_setup.py.
+  #
+  # See https://wiki.corp.mongodb.com/pages/viewpage.action?spaceKey=MMS&title=Atlas+Performance+Testing+Support
+  # TODO: Possible future enhancement: Just give URL and githash and code automatically figures out
+  # the rest. (PERF-1872)
+  custom_build:
+    trueName: 4.2.0-rc1-45-g84519c5
+    gitVersion: 84519c5dcffde5e59a007a19be32d943b32e908e
+    architecture: amd64
+    modules:
+      - enterprise
+    platform: linux
+    flavor: rhel
+    minOsVersion: "7.0"
+    maxOsVersion: "8.0"
+    # https://evergreen.mongodb.com/task/mongodb_mongo_v4.2_enterprise_rhel_70_64_bit_compile_84519c5dcffde5e59a007a19be32d943b32e908e_19_06_20_14_41_53
+    url: https://s3.amazonaws.com/mciuploads/mongodb-mongo-v4.2/enterprise-rhel-70-64-bit/84519c5dcffde5e59a007a19be32d943b32e908e/binaries/mongo-mongodb_mongo_v4.2_enterprise_rhel_70_64_bit_84519c5dcffde5e59a007a19be32d943b32e908e_19_06_20_14_41_53.tgz

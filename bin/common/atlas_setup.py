@@ -34,7 +34,9 @@ class AtlasSetup(object):
         self.api = {}
         if "atlas" in self.mongodb_setup and "api" in self.mongodb_setup["atlas"]:
             self.api = self.mongodb_setup["atlas"]["api"].as_dict()
-        LOG.debug("Atlas api config", api_config=self.api)
+            LOG.debug("Atlas api config", api_config=self.api)
+            self.custom_build = self.mongodb_setup["atlas"].as_dict().get("custom_build")
+            LOG.debug("Atlas custom build config", custom_build=self.custom_build)
 
         self.api_credentials = {}
         if ("atlas_api_user" in self.config["runtime_secret"]
@@ -118,16 +120,30 @@ class AtlasSetup(object):
         body = atlas_cluster.as_dict()
         body["name"] = name
 
-        LOG.info(
-            "Create Atlas Cluster",
-            instance_size_name=body["providerSettings"]["instanceSizeName"],
-            cluster_type=body["clusterType"],
-            name=body["name"])
-        response = self.atlas_client.create_cluster(body)
+        LOG.debug("Atlas custom build config", custom_build=self.custom_build)
+        if self.custom_build is not None:
+            LOG.info(
+                "Create Atlas CUSTOM BUILD Cluster",
+                instance_size_name=body["providerSettings"]["instanceSizeName"],
+                cluster_type=body["clusterType"],
+                name=body["name"],
+                custom_build_config=self.custom_build)
+            self.atlas_client.create_custom_build(self.custom_build)
+            body.pop("mongoDBMajorVersion", None)
+            body["mongoDBVersion"] = self.custom_build["trueName"]
+            response = self.atlas_client.create_custom_cluster(body)
+        else:
+            LOG.info(
+                "Create Atlas Cluster",
+                instance_size_name=body["providerSettings"]["instanceSizeName"],
+                cluster_type=body["clusterType"],
+                name=body["name"])
+            response = self.atlas_client.create_cluster(body)
+
         LOG.debug("Create cluster response", response=response)
         # This response still lacks meta data, but we want to persist the cluster name asap
         self._save_create_response(response)
-        response = self.atlas_client.await(name)
+        response = self.atlas_client.await(body["name"])
         LOG.debug("After cluster await", response=response)
         # Save MongoDB URI and such to mongodb_setup.out.yml
         self._save_create_response(response)

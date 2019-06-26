@@ -18,6 +18,7 @@ from utils import mkdir_p
 LOG = structlog.get_logger(__name__)
 
 DEFAULT_ROOT_URL = "https://cloud.mongodb.com/api/atlas/v1.0/"
+PRIVATE_ROOT_URL = "https://cloud.mongodb.com/api/private/"
 
 
 class AtlasTimeout(RuntimeError):
@@ -71,15 +72,22 @@ class AtlasClient(object):
         self.group_id = configuration["group_id"]
         self.root = configuration.get("root", DEFAULT_ROOT_URL)
         self.root += "/" if self.root[-1] != "/" else ""
+        self.private_root = configuration.get("private", PRIVATE_ROOT_URL)
+        self.private_root += "/" if self.private_root[-1] != "/" else ""
 
         # Check and fail early if credentials missing
         assert credentials["user"]
         assert credentials["key"]
         self.auth = auth.HTTPDigestAuth(credentials["user"], credentials["key"])
 
+    ### CLUSTER CREATION / LIFECYCLE
+
     def create_cluster(self, configuration):
         """
         Create new Atlas cluster using `configuration` as the request body.
+
+        For creating a cluster using a custom build,
+        see :method: `AtlasClient.create_custom_cluster`.
 
         `POST groups/{GROUP-ID}/clusters`
 
@@ -91,7 +99,9 @@ class AtlasClient(object):
         url = "{}groups/{}/clusters".format(self.root, self.group_id)
         response = requests.post(url, json=configuration, auth=self.auth)
         LOG.debug(
-            "Create cluster response", headers=response.request.headers, body=response.request.body)
+            "After create cluster request",
+            headers=response.request.headers,
+            body=response.request.body)
         if not response.ok:
             LOG.error("HTTP error in create_cluster", response=response.json())
             response.raise_for_status()
@@ -111,7 +121,7 @@ class AtlasClient(object):
         """
         url = "{}groups/{}/clusters/{}".format(self.root, self.group_id, cluster_name)
         response = requests.get(url, auth=self.auth)
-        LOG.debug("Get one cluster", headers=response.request.headers)
+        LOG.debug("After get one cluster request", headers=response.request.headers)
         if not response.ok:
             LOG.error("HTTP error in get_one_cluster", response=response.json())
             response.raise_for_status()
@@ -173,12 +183,14 @@ class AtlasClient(object):
         """
         url = "{}groups/{}/clusters/{}".format(self.root, self.group_id, cluster_name)
         response = requests.delete(url, auth=self.auth)
-        LOG.debug("Delete cluster", headers=response.request.headers)
+        LOG.debug("After delete cluster request", headers=response.request.headers)
         if not response.ok:
             LOG.error("HTTP error in delete_cluster", response=response.json())
             response.raise_for_status()
         else:
             return True
+
+    ### LOG COLLECTION
 
     def create_log_collection_job(self, options=None):
         """
@@ -202,7 +214,7 @@ class AtlasClient(object):
         url = "{}groups/{}/logCollectionJobs".format(self.root, self.group_id)
         response = requests.post(url, json=options, auth=self.auth)
         LOG.debug(
-            "Create logCollectionJob response",
+            "After create logCollectionJob request",
             headers=response.request.headers,
             body=response.request.body)
         if not response.ok:
@@ -219,11 +231,11 @@ class AtlasClient(object):
         GET groups/{GROUP-ID}/logCollectionJobs/{JOB-ID}
 
         :param str log_job_id: ID of the job to poll.
-        :return: The logCollectionJob id as string.
+        :return: The logCollectionJob status as dict.
         """
         url = "{}groups/{}/logCollectionJobs/{}".format(self.root, self.group_id, log_job_id)
         response = requests.get(url, auth=self.auth)
-        LOG.debug("Get logCollectionJob response", headers=response.request.headers)
+        LOG.debug("After get logCollectionJob request", headers=response.request.headers)
         if not response.ok:
             LOG.error("HTTP error in get_log_collection_job", response=response.json())
             response.raise_for_status()
@@ -290,3 +302,90 @@ class AtlasClient(object):
                 mkdir_p(os.path.dirname(local_path))
                 with open(local_path, "w") as file_handle:
                     shutil.copyfileobj(response.raw, file_handle)
+
+    ### CUSTOM BUILD
+
+    def create_custom_build(self, configuration):
+        """
+        Add new custom build using `configuration` as the request body.
+
+        `POST /api/private/nds/customMongoDbBuild`
+
+        https://wiki.corp.mongodb.com/pages/viewpage.action?spaceKey=MMS&title=Atlas+Performance+Testing+Support
+
+        :param dict configuration: Dictionary to use as json request body.
+        """
+        url = "{}nds/customMongoDbBuild".format(self.private_root)
+        LOG.debug("customMongoDbBuild input", json=configuration, url=url)
+        response = requests.post(url, json=configuration, auth=self.auth)
+        LOG.debug(
+            "After customMongoDbBuild request",
+            headers=response.request.headers,
+            body=response.request.body)
+        if not response.ok:
+            response_body = response.json()
+            # If build already exists, then all is well.
+            if response_body.get("errorCode") == "DUPLICATE_MONGODB_BUILD_NAME":
+                existing_configuration = self.get_custom_build(configuration["trueName"])
+                if configuration["url"] == existing_configuration["url"]:
+                    LOG.info(
+                        "Custom build already exists. (This is ok.)",
+                        trueName=configuration["trueName"])
+                else:
+                    LOG.error(
+                        "Custom build already exists for this trueName, but your " +
+                        "URL is different.",
+                        trueName=configuration["trueName"],
+                        your_url=configuration["url"],
+                        existing_url=existing_configuration["url"])
+                    LOG.error("HTTP error in create_custom_build", response=response_body)
+                    response.raise_for_status()
+            else:
+                LOG.error("HTTP error in create_custom_build", response=response_body)
+                response.raise_for_status()
+
+    def get_custom_build(self, true_name):
+        """
+        Get custom build.
+
+        `GET /api/private/nds/customMongoDbBuild/{trueName}`
+
+        :param str true_name: The trueName of the custom build.
+        :return: Response json as dict.
+        """
+        url = "{}nds/customMongoDbBuild/{}".format(self.private_root, true_name)
+        response = requests.get(url, auth=self.auth)
+        LOG.debug("After GET customMongoDbBuild request", headers=response.request.headers)
+        if not response.ok:
+            LOG.error("HTTP error in get_custom_build", response=response.json())
+            response.raise_for_status()
+        else:
+            return response.json()
+
+    def create_custom_cluster(self, configuration):
+        """
+        Create new cluster from custom build.
+
+        This is used instead of :method: `AtlasClient.create_cluster` when
+        deploying a custom build.
+
+        configuration["mongoDBVersion"] should match trueName of a previously added custom build.
+
+        `POST /api/private/nds/groups/{groupId}/clusters`
+
+        https://wiki.corp.mongodb.com/pages/viewpage.action?spaceKey=MMS&title=Atlas+Performance+Testing+Support
+
+        :param dict configuration: Dictionary to use as json request body.
+        :return: Atlas response as dict.
+        """
+        url = "{}nds/groups/{}/clusters".format(self.private_root, self.group_id)
+        response = requests.post(url, json=configuration, auth=self.auth)
+        LOG.debug(
+            "After create_custom_cluster request",
+            headers=response.request.headers,
+            body=response.request.body)
+        if not response.ok:
+            LOG.error("HTTP error in create_custom_cluster", response=response.json())
+            response.raise_for_status()
+        else:
+            return response.json()
