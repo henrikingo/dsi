@@ -87,7 +87,7 @@ overrides:
   # Find more here: https://evergreen.mongodb.com/waterfall/curator
   # Select build-variant you want and navigate to 'build' task and grab the url for the dist.tar.gz artifact
   #  downloads:
-  #    curator: "https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-a59ee3794267d83709db1c73cd016f98330e13b5.tar.gz"
+  #    curator: "https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-f78d20b10c7a70783c5ec47cc466bd9933e00212.tar.gz"
 
   mongodb_setup:
     # The MongoDB binary to use.
