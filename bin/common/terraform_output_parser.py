@@ -7,8 +7,6 @@ from __future__ import print_function
 import logging
 import sys
 
-from common.config import ConfigDict
-
 LOG = logging.getLogger(__name__)
 
 
@@ -21,14 +19,21 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
         "private_config_ip", "private_ip_mc", "private_member_ip", "private_mongos_ip",
         "public_config_ip", "public_ip_mc", "public_member_ip", "public_mongos_ip"
     ]
+    """Constructor. Uses either data from a file (input_file), data passed in as a string
+    (terraform_output), or from stdin if neither are set.
 
-    def __init__(self, input_file=None, terraform_output=None):
+    :param config: The system configuration
+    :param input_file: (Optional) Name of file to read Terraform output from
+    :param terraform_output: (Optional) String of terraform output to parse.
+
+    """
+
+    def __init__(self, config, input_file=None, terraform_output=None):
         self._file = input_file
         self._terraform_output = terraform_output
         # Dict to hold IP addresses.
         self._ips = {}
-        self.config_obj = ConfigDict("infrastructure_provisioning")
-        self.config_obj.load()
+        self.config_obj = config
         self._parse_terraform_output()
 
     def _get_ips(self, pub, priv, category, out_data):

@@ -5,6 +5,7 @@ import unittest
 import os
 import yaml
 
+from bin.common.config import ConfigDict
 from bin.common import terraform_output_parser as tf_output
 from test_lib.fixture_files import FixtureFiles
 
@@ -20,6 +21,8 @@ class TestTerraformOutputParser(unittest.TestCase):
         # that this chdir only works without breaking relative imports
         # because it's at the same directory depth
         os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/../../docs/config-specs/')
+        self.config = ConfigDict('infrastructure_provisioning')
+        self.config.load()
 
     def tearDown(self):
         """Restore working directory"""
@@ -28,6 +31,7 @@ class TestTerraformOutputParser(unittest.TestCase):
     def test_single_cluster_value(self):
         """Test parsing single cluster value is correct."""
         output = tf_output.TerraformOutputParser(
+            config=self.config,
             input_file=FIXTURE_FILES.fixture_file_path('terraform_single_cluster_output.txt'))
 
         print(output._ips)
@@ -40,6 +44,7 @@ class TestTerraformOutputParser(unittest.TestCase):
     def test_replica_ebs_cluster_value(self):
         """Test parsing replica_ebs cluster."""
         output = tf_output.TerraformOutputParser(
+            config=self.config,
             input_file=FIXTURE_FILES.fixture_file_path('terraform_replica_with_ebs_output.txt'))
 
         print(output._ips)
@@ -55,6 +60,7 @@ class TestTerraformOutputParser(unittest.TestCase):
     def test_shard_cluster_value(self):
         """Test parsing shard cluster value is correct."""
         output = tf_output.TerraformOutputParser(
+            config=self.config,
             input_file=FIXTURE_FILES.fixture_file_path('terraform_shard_cluster_output.txt'))
 
         print(output._ips)
@@ -83,6 +89,7 @@ class TestTerraformOutputParser(unittest.TestCase):
     def test_single_cluster_yml(self):
         """Test parsing single cluster YML file is correct."""
         output = tf_output.TerraformOutputParser(
+            config=self.config,
             input_file=FIXTURE_FILES.fixture_file_path('terraform_single_cluster_output.txt'))
         output._generate_output()
         reference = {}
@@ -97,6 +104,7 @@ class TestTerraformOutputParser(unittest.TestCase):
     def test_shard_cluster_yml(self):
         """Test parsing single cluster YML file is correct."""
         output = tf_output.TerraformOutputParser(
+            config=self.config,
             input_file=FIXTURE_FILES.fixture_file_path('terraform_shard_cluster_output.txt'))
 
         output._generate_output()

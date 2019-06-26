@@ -13,6 +13,7 @@ import structlog
 
 from common.log import setup_logging
 from common.config import ConfigDict
+from common.command_runner import run_pre_post_commands, EXCEPTION_BEHAVIOR
 from common.terraform_config import TerraformConfiguration
 from common.terraform_output_parser import TerraformOutputParser
 import common.utils
@@ -318,7 +319,7 @@ class Provisioner(object):
             LOG.info('terraform: output')
             terraform_output = run_and_save_output([self.terraform, 'output'])
             LOG.debug(terraform_output)
-            tf_parser = TerraformOutputParser(terraform_output=terraform_output)
+            tf_parser = TerraformOutputParser(config=self.config, terraform_output=terraform_output)
             tf_parser.write_output_files()
 
             with open('infrastructure_provisioning.out.yml', 'r') as provisioning_out_yaml:
@@ -327,6 +328,9 @@ class Provisioner(object):
             LOG.info("EC2 resources provisioned/updated successfully.")
             if self.reuse_cluster:
                 self.save_terraform_state()
+            # Run post provisioning scripts.
+            run_pre_post_commands("post_provisioning", [self.config['infrastructure_provisioning']],
+                                  self.config, EXCEPTION_BEHAVIOR.EXIT)
         except Exception as exception:
             LOG.info("Failed to provision EC2 resources.")
             if self.stderr is not None:

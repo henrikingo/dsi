@@ -39,6 +39,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         self.dsi_path = os.path.dirname(
             os.path.dirname(os.path.abspath(os.path.join(__file__, '..'))))
         self.reset_mock_objects()
+        #pylint: disable=line-too-long
         self.config = {
             'bootstrap': {
                 'infrastructure_provisioning': 'single'
@@ -54,13 +55,26 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 },
                 'evergreen': {
                     'data_dir': FIXTURE_FILES.fixture_dir_path
-                }
+                },
+                'post_provisioning': [{
+                    'on_all_hosts': {
+                        'exec':
+                            '''
+                     # set ulimit nofile for user
+                     echo "${infrastructure_provisioning.tfvars.ssh_user}           soft    nofile          65535" | sudo tee -a /etc/security/limits.conf
+                     echo "${infrastructure_provisioning.tfvars.ssh_user}           hard    nofile          65535" | sudo tee -a /etc/security/limits.conf
+                     echo "${infrastructure_provisioning.tfvars.ssh_user}   soft   core   unlimited" | sudo tee -a /etc/security/limits.conf
+                     echo "${infrastructure_provisioning.tfvars.ssh_user}   hard   core   unlimited" | sudo tee -a /etc/security/limits.conf
+                     '''
+                    }
+                }]
             },
             'runtime_secret': {
                 'aws_access_key': 'test_access_key',
                 'aws_secret_key': 'test_secret_key'
             }
         }
+        # pylint: enable=line-too-long
         # create a provision log path that can be safely deleted post test
         self.provision_log_path = os.path.join(FIXTURE_FILES.fixture_dir_path,
                                                ip.PROVISION_LOG_PATH)
@@ -399,6 +413,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 os.path.join(evg_data_dir, 'terraform/infrastructure_teardown.py'), 0755)
         self.reset_mock_objects()
 
+    @patch('infrastructure_provisioning.run_pre_post_commands')
     @patch('infrastructure_provisioning.Provisioner.setup_terraform_tf')
     @patch('infrastructure_provisioning.Provisioner.setup_security_tf')
     @patch('infrastructure_provisioning.Provisioner.setup_evg_dir')
@@ -409,7 +424,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     @patch('infrastructure_provisioning.subprocess')
     def test_setup_cluster(self, mock_subprocess, mock_save_output, mock_terraform_configuration,
                            mock_terraform_output_parser, mock_save_terraform_state,
-                           mock_setup_evg_dir, mock_setup_security_tf, mock_setup_terraform_tf):
+                           mock_setup_evg_dir, mock_setup_security_tf, mock_setup_terraform_tf,
+                           mock_pre_post_commands):
         """
         Test Provisioner.setup_cluster
         """
@@ -461,6 +477,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             self.assertTrue(mock_terraform_output_parser.return_value.write_output_files.called)
             self.assertTrue(mock_setup_evg_dir.called)
             self.assertTrue(mock_save_terraform_state.called)
+            mock_pre_post_commands.assert_called()
         self.reset_mock_objects()
 
     @patch('infrastructure_provisioning.Provisioner.setup_terraform_tf')

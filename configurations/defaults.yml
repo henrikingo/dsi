@@ -43,6 +43,19 @@ infrastructure_provisioning:
   terraform:
     required_version: Terraform v0.10.4
     aws_required_version: 1.6.0
+  post_provisioning:
+    - on_all_hosts:
+        exec: |
+          # set ulimit nofile for user
+          echo "${infrastructure_provisioning.tfvars.ssh_user}           soft    nofile          65535" | sudo tee -a /etc/security/limits.conf
+          echo "${infrastructure_provisioning.tfvars.ssh_user}           hard    nofile          65535" | sudo tee -a /etc/security/limits.conf
+          echo "${infrastructure_provisioning.tfvars.ssh_user}   soft   core   unlimited" | sudo tee -a /etc/security/limits.conf
+          echo "${infrastructure_provisioning.tfvars.ssh_user}   hard   core   unlimited" | sudo tee -a /etc/security/limits.conf
+          # For control of core dumps and file names:
+          # http://man7.org/linux/man-pages/man5/core.5.html
+          mkdir -p "$HOME/data/logs"
+          echo "$HOME/data/logs/core.%e.%p.%h.%t" |sudo tee -a  /proc/sys/kernel/core_pattern
+
 
 workload_setup:
   local_repos:

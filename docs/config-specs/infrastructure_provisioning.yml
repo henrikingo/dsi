@@ -47,3 +47,15 @@ terraform:
 custom_terraform: |
   resource "aws_ebs_volume" "my_ebs_volume" {
   }
+
+# Ordered list of thing to do after Terraform provisioning is complete and successful.
+# Same functionality as described in pre_task in test_control.yml.
+post_provisioning:
+  - on_all_hosts:
+      exec: |
+        # set ulimit nofile for user
+        echo "${infrastructure_provisioning.tfvars.ssh_user}           soft    nofile          65535" | sudo tee -a /etc/security/limits.conf
+        echo "${infrastructure_provisioning.tfvars.ssh_user}           hard    nofile          65535" | sudo tee -a /etc/security/limits.conf
+        echo "${infrastructure_provisioning.tfvars.ssh_user}   soft   core   unlimited" | sudo tee -a /etc/security/limits.conf
+        echo "${infrastructure_provisioning.tfvars.ssh_user}   hard   core   unlimited" | sudo tee -a /etc/security/limits.conf
+        echo "$HOME/data/logs/core.%e.%p.%h.%t" |sudo tee -a  /proc/sys/kernel/core_pattern

@@ -10,6 +10,7 @@ import sys
 from collections import MutableMapping
 from enum import Enum
 from functools import partial
+import structlog
 from dateutil import tz
 
 import common.atlas_setup as atlas_setup
@@ -22,6 +23,7 @@ import common.mongodb_setup_helpers
 from thread_runner import run_threads
 
 LOG = logging.getLogger(__name__)
+SLOG = structlog.get_logger(__name__)
 
 EXCEPTION_BEHAVIOR = Enum('Exception Behavior', 'CONTINUE RERAISE EXIT')
 
@@ -345,8 +347,14 @@ def run_pre_post_commands(command_key,
     commands. If there is not a specific test related to the current set of commands, the value of
     current_test_id will be None.
     '''
+    SLOG.info(
+        "run_pre_post_commands",
+        command_key=command_key,
+        command_dicts=command_dicts,
+        current_test_id=current_test_id)
     for command_dict in command_dicts:
         if command_key in command_dict:
+            SLOG.debug("in loop", command_dict=command_dict, command_key=command_key)
             try:
                 dispatch_commands(command_key, command_dict[command_key], config, current_test_id)
             except Exception as exception:  #pylint: disable=broad-except
@@ -359,7 +367,12 @@ def run_pre_post_commands(command_key,
                 elif exception_behavior == EXCEPTION_BEHAVIOR.CONTINUE:
                     pass
                 else:
-                    LOG.error("Invalid exception_behavior entry")
+                    SLOG.error(
+                        "Invalid exception_behavior entry",
+                        command_dict=command_dict,
+                        command_key=command_key,
+                        exception_behavior=exception_behavior,
+                        exception=exception)
 
 
 def dispatch_commands(command_key, command_list, config, current_test_id=None):
@@ -373,6 +386,12 @@ def dispatch_commands(command_key, command_list, config, current_test_id=None):
     commands. If there is not a specific test related to the current set of commands, the value of
     current_test_id will be None.
     '''
+
+    SLOG.debug(
+        "dispatch_commands",
+        command_key=command_key,
+        command_list=command_list,
+        current_test_id=current_test_id)
     # Most notably, the prefix is used for directory name under reports/.
     # It is either the test id (fio, ycsb_load...) or the command itself (post_task).
     prefix = current_test_id if current_test_id else command_key
