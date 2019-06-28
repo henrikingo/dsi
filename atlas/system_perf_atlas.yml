@@ -511,6 +511,17 @@ tasks:
     - func: "run test"
     - func: "analyze"
 
+- name: sysbench
+  priority: 5
+  exec_timeout_secs: 216000 # 2.5 days
+  commands:
+    - func: "prepare environment"
+      vars:
+        test: "sysbench"
+    - func: "deploy cluster"
+    - func: "run test"
+    - func: "analyze"
+
 #######################################
 #               Modules               #
 #######################################
@@ -575,6 +586,7 @@ buildvariant_templates:  # Dummy key that evergreen ignores
     - name: service_architecture_workloads
     - name: ycsb_smoke
     - name: genny_smoke
+#    - name: sysbench
 
 - &large_buildvariant_template
   <<: *buildvariant_template

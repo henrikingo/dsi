@@ -885,6 +885,34 @@
             },
             "start":1.001,
             "workload":"tpcc"
+        },
+        {
+            "end":2.002,
+            "name":"sysbench-unittest_reads_per_sec",
+            "results":{
+                "1":{
+                    "ops_per_sec":789.55321958931,
+                    "ops_per_sec_values":[
+                        789.55321958931
+                    ]
+                }
+            },
+            "start":1.001,
+            "workload":"sysbench"
+        },
+        {
+            "end":2.002,
+            "name":"sysbench-unittest_latency_99_ms",
+            "results":{
+                "1":{
+                    "ops_per_sec":-1.6078891680383,
+                    "ops_per_sec_values":[
+                        -1.6078891680383
+                    ]
+                }
+            },
+            "start":1.001,
+            "workload":"sysbench"
         }
     ],
     "storageEngine":"wiredTiger"

@@ -1,0 +1,24 @@
+sysbench 1.0.17 (using system LuaJIT 2.0.4)
+
+Running the test with following options:
+Number of threads: 1
+Report intermediate results every 1 second(s)
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+Printing statistics to ../../sysbench.csv
+--- sysbench json options start ---
+{"batch_size":1000,"collection_name":"sbtest","csv_file":"../../sysbench.csv","db_debug":false,"db_driver":"mysql","db_name":"sbtest","db_ps_mode":"auto","debug":false,"distribution":"uniform","events":0,"forced_shutdown":"off","help":false,"histogram":false,"loader_sleep":0,"max_requests":0,"max_time":0,"mongo_url":"mongodb://dsi-user:oyKDMvndicnuIz8H@dsi-m60-vqzhwsl-shard-00-00-5thdf.mongodb-dev.net:27017,dsi-m60-vqzhwsl-shard-00-01-5thdf.mongodb-dev.net:27017,dsi-m60-vqzhwsl-shard-00-02-5thdf.mongodb-dev.net:27017/?ssl=true&authSource=admin&replicaSet=dsi-M60-vqzhwsl-shard-0&w=3","mysql_compression":false,"mysql_db":"sbtest","mysql_debug":false,"mysql_dry_run":false,"mysql_host":["localhost"],"mysql_ignore_errors":["1213","1020","1205"],"mysql_password":"","mysql_port":["3306"],"mysql_socket":[],"mysql_ssl":false,"mysql_ssl_cipher":"","mysql_user":"sbtest","num_collections":100000,"num_docs":10,"num_indexes":0,"num_threads":1,"parallel_prepare":false,"percentile":99,"pgsql_db":"sbtest","pgsql_host":"localhost","pgsql_password":"","pgsql_port":5432,"pgsql_user":"sbtest","rand_pareto_h":0.2,"rand_seed":0,"rand_spec_iter":12,"rand_spec_pct":1,"rand_spec_res":75,"rand_type":"special","rate":0,"report_checkpoints":[],"report_interval":1,"thread_stack_size":65536,"threads":1,"time":180,"tx_rate":0,"validate":false,"verbose":0,"verbosity":3,"version":false}
+--- sysbench json options end ---
+--- sysbench json stats start ---
+{"errors":0,"events":142125,"latency_avg":0.001263682,"latency_max":0.098384862,"latency_min":0.000787246,"latency_pct":0.0016078891680383,"latency_sum":179.600916125,"other":0,"reads":142125,"reconnects":0,"threads_running":0,"time_interval":180.008542164,"time_total":180.006865242,"writes":0}
+--- sysbench json stats end ---
+--- sysbench json results start ---
+{"latency_99_ms":1.6078891680383,"reads_per_sec":789.55321958931}
+--- sysbench json results end ---
+
+exit_status: 0 'cd mongo-sb-benchmarks/lua && ./many_collections.lua run --time=180 --threads=1 --num-collections=100000 --num-indexes=0 --num-docs=10 --csv-file=../../sysbench.csv --percentile=99 --report-interval=1 --mongo-url=\'mongodb://dsi-user:oyKDMvndicnuIz8H@dsi-m60-vqzhwsl-shard-00-00-5thdf.mongodb-dev.net:27017,dsi-m60-vqzhwsl-shard-00-01-5thdf.mongodb-dev.net:27017,dsi-m60-vqzhwsl-shard-00-02-5thdf.mongodb-dev.net:27017/?ssl=true&authSource=admin&replicaSet=dsi-M60-vqzhwsl-shard-0&w=3\''

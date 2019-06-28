@@ -202,6 +202,21 @@ ycsb:
         export JAVA_HOME="/usr/java/jdk1.8.0_162/jre"
         source /etc/profile.d/maven.sh && cd ~/YCSB/ycsb-mongodb && mvn -Dmongo.version=3.8.1 --quiet clean package
 
+sysbench:
+  - on_localhost:
+      checkout_repos:
+        - source: git@github.com:mongodb-labs/benchmarks.git
+          target: ${workload_setup.local_repos.benchmarks}
+  - on_workload_client:
+      upload_files:
+        - source: ${workload_setup.local_repos.benchmarks}
+          target: ./benchmarks
+  - on_workload_client:
+      exec: |
+        sudo yum -y groupinstall "Development tools"
+        ./benchmarks/sysbench/install.sh
+
+
 # Only install curator for production runs
 # == "True" because production gets serialized as a Python boolean
 install_curator: |

@@ -18,7 +18,8 @@ from testcontrollib import test_runner
 LOG = logging.getLogger(__name__)
 
 SUPPORTED_TYPES = {
-    'shell', 'mongoshell', 'ycsb', 'fio', 'iperf', 'linkbench', 'tpcc', 'genny', 'genny_canaries'
+    'shell', 'mongoshell', 'ycsb', 'fio', 'iperf', 'linkbench', 'tpcc', 'genny', 'genny_canaries',
+    'sysbench'
 }
 
 
@@ -59,6 +60,7 @@ def parser_factory(test, config, timer):
         'tpcc': TPCCResultParser,
         'genny': GennyResultsParser,
         'genny_canaries': GennyCanariesParser,
+        'sysbench': SysbenchResultParser
     }
     if test['type'] not in parsers:
         raise ValueError("parser_factory: Unsupported test type: {}".format(test['type']))
@@ -505,6 +507,64 @@ class YcsbParser(ResultParser):
                     rollup_type='MEAN',
                     value=result,
                 )
+
+
+class SysbenchResultParser(ResultParser):
+    """A ResultParser for sysbench tests"""
+
+    def __init__(self, test, config, timer):
+        """Set sysbench specific attributes"""
+        super(SysbenchResultParser, self).__init__(test, config, timer)
+        input_file = config['test_control']['output_file']['sysbench']
+        self.input_log = os.path.join(self.reports_root, test['id'], input_file)
+        self.threads = None  # We postpone this to _parse()
+
+    def _parse(self):
+        """
+        We use our own sysbench report hook that prints json inside a start and end delimiter
+        """
+        read_options = False
+        read_results = False
+        options_str = ""
+        results_str = ""
+
+        for line in self.load_input_log():
+            if "--- sysbench json options start ---" in line:
+                read_options = True
+            elif "--- sysbench json options end ---" in line:
+                read_options = False
+            elif read_options:
+                assert not read_results
+                options_str += line
+
+            elif "--- sysbench json results start ---" in line:
+                read_results = True
+            elif "--- sysbench json results end ---" in line:
+                read_results = False
+            elif read_results:
+                assert not read_options
+                results_str += line
+
+        options = json.loads(options_str)
+        self.threads = options['threads']
+        results = json.loads(results_str)
+
+        for name in results.keys():
+            sign = -1 if "latency" in name else 1
+            # For historical reasons threads is expected to be a string. (It's a key in perf.json)
+            self.add_result(self.test_id + "_" + name, sign * float(results[name]), str(
+                self.threads))
+
+            self.cedar_test.set_thread_level(self.threads)
+            if "latency" in name:
+                self.cedar_test.add_metric(
+                    name=name,
+                    rollup_type='LATENCY',
+                    value=float(results[name]),
+                )
+            else:
+                self.cedar_test.add_metric(
+                    name=name, rollup_type='THROUGHPUT', value=float(results[name]))
 
 
 class FioParser(ResultParser):

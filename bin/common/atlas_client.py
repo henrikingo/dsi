@@ -253,7 +253,7 @@ class AtlasClient(object):
         """
         return self.await_log_job_state(log_job_id, "SUCCESS")
 
-    def await_log_job_state(self, log_job_id, target_state, timeout_seconds=1500):
+    def await_log_job_state(self, log_job_id, target_state, timeout_seconds=2500):
         """
         Periodically poll log_job_id. Return when status == target_state.
 

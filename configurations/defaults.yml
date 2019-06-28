@@ -58,12 +58,14 @@ infrastructure_provisioning:
 
 
 workload_setup:
+  # Paths to other repos on your workstation
   local_repos:
     workloads: ./workloads
     ycsb: ./YCSB
     linkbench: ./linkbench
     tpcc: ./tpcc
     genny: ./data/genny  # Put genny on the large drive to give it more space.
+    benchmarks: ./benchmarks
   downloads:
     curator: "https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-f78d20b10c7a70783c5ec47cc466bd9933e00212.tar.gz"
 
@@ -264,6 +266,7 @@ test_control:
     iperf: iperf.json
     tpcc: results.log
     genny: genny-perf.json
+    sysbench: test_output.log
 
   # As I'm writing this, the basename IS the name. PERF-1096 will add a unique component.
   reports_dir_basename: reports
