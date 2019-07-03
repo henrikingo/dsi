@@ -149,14 +149,13 @@ def main(args):  # pylint: disable=too-many-branches,too-many-locals,too-many-st
     arg_parsing.add_args(arg_parser, "reports analysis")
 
     args = arg_parser.parse_args(args)
-    (history, _, overrides) = read_histories(args.variant, args.task, args.file, args.tfile,
-                                             args.overrideFile)
-    testnames = history.testnames()
+    (history, _, overrides) = read_histories(args.variant, args.task, args.overrideFile)
+    test_names = history.testnames()
     failed = 0
 
     results = []
 
-    for test in testnames:  # pylint: disable=too-many-nested-blocks
+    for test in test_names:  # pylint: disable=too-many-nested-blocks
         # The first entry is valid. The rest is dummy data to match the existing format
         result = {
             'test_file': test,
