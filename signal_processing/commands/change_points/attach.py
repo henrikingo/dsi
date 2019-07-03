@@ -55,9 +55,9 @@ the credentials are stored in the keyring for subsequent calls.''')
 @click.argument('build_failure', required=True)
 @click.argument('revision', required=True)
 @click.argument('project', required=True)
-@click.argument('variant', required=False)
-@click.argument('task', required=False)
-@click.argument('test', required=False)
+@click.argument('variant', required=True)
+@click.argument('task', required=True)
+@click.argument('test', required=True)
 def attach_command(command_config, excludes, username, password, use_keyring, fail, build_failure,
                    revision, project, variant, task, test):
     # pylint: disable=too-many-arguments, too-many-locals

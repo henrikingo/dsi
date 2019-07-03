@@ -44,6 +44,19 @@ class TestAttach(unittest.TestCase):
         """ Test attach no project. """
         self._test_params_fails(args=['badf', 'revision'], name='project')
 
+    def test_no_variant_fails(self):
+        """ Test attach no project. """
+        self._test_params_fails(args=['badf', 'revision', 'project'], name='variant')
+
+    def test_no_task_fails(self):
+        """ Test attach no project. """
+        self._test_params_fails(args=['badf', 'revision', 'project', 'variant'], name='task')
+
+    def test_no_test_fails(self):
+        """ Test attach no project. """
+        self._test_params_fails(
+            args=['badf', 'revision', 'project', 'variant', 'task'], name='test')
+
     def _test(self, keyring_flag=None, use_keyring=True, fix_flag=None, fix=False):
         """ Test attach. """
 
@@ -68,14 +81,20 @@ class TestAttach(unittest.TestCase):
             build_failure = 'BF-11372'
             revision = 'badf'
             project = 'sys-perf'
+            variant = 'linux-3-shard'
+            task = 'crud_workloads'
+            test = 'fio_streaming_bandwidth_test_write_iops'
 
-            args = ['attach', build_failure, revision, project, keyring_flag, fix_flag]
+            args = [
+                'attach', build_failure, revision, project, variant, task, test, keyring_flag,
+                fix_flag
+            ]
 
             result = self.runner.invoke(cli, [arg for arg in args if arg is not None])
             self.assertEqual(result.exit_code, 0)
 
             mock_process_params_for_points.assert_called_once_with(
-                project, None, None, None, revision=revision)
+                project, variant, task, test, revision=revision)
             mock_get_matching_tasks.assert_called_once_with(expected_config.points, 'query')
             mock_attach.assert_called_once_with(ANY, [], fix, expected_config)
             mock_jira.issue.assert_called_once_with(build_failure)
