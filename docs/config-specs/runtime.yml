@@ -16,9 +16,19 @@ project: sys-perf
 branch_name: master
 
 # sys-perf expansions
-ext: None
+ext: null
 script_flags: --ycsb-throughput-analysis reports
 dsi_rev: 123...
 compare_task: industry_benchmarks_WT
 workloads_rev: 123...
 YCSB_rev: 123...
+
+# Merely for demonstrating null valued key support
+overridden_none: null
+override_with_none: "a string value"
+overridden_dict:
+  key1: val1
+  key2: val2
+overridden_list:
+  - val1
+  - val2

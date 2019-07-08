@@ -247,7 +247,7 @@ class ConfigDict(dict):
 
         return current
 
-    ### Implementation of dict API
+    # Implementation of dict API
 
     def __repr__(self):
         str_representation = '{'
@@ -306,8 +306,8 @@ class ConfigDict(dict):
         return iter(self.values())
 
     # pylint: disable=line-too-long
-    # TODO: __iter__ isn't actually called if you do dict(instance_of_ConfigDict), so casting
-    # to dict doesn't work. See http://stackoverflow.com/questions/18317905/overloaded-iter-is-bypassed-when-deriving-from-dict
+    # TODO: __iter__ isn't actually called if you do dict(instance_of_ConfigDict), so casting to dict doesn't work.
+    # See http://stackoverflow.com/questions/18317905/overloaded-iter-is-bypassed-when-deriving-from-dict
     def __iter__(self):
         """Iterator over the keys"""
         return self.iterkeys()
@@ -345,7 +345,7 @@ class ConfigDict(dict):
         """
         return copy_obj(self)
 
-    ### __getitem__() helpers
+    # __getitem__() helpers
     def descend_key_and_apply_overrides(self, key):
         """Return the key, but (for leaf nodes) if an override exists, return the override value.
 
@@ -355,28 +355,30 @@ class ConfigDict(dict):
 
            If no value exist, see if a default value exists.
            """
-        value = None
-
         # Check the magic per node mongod_config/mongos_config/configsvr_config keys first.
         # Note to reader: on first time, skip this, then come back to this when you understand
         # everything else first.
-        value = self.get_node_mongo_config(key)
-        if value:
+        value, key_exists = self.get_node_mongo_config(key)
+        if key_exists:
             return value
 
         # For leaf nodes, check overrides and return it if specified
         if self.overrides and \
-           isinstance(self.overrides, dict) and \
-           not isinstance(self.raw.get(key, "some string"), (list, dict)):
-            value = self.overrides.get(key, None)
+                isinstance(self.overrides, dict) and \
+                (not isinstance(self.raw.get(key, "some string"), (list, dict)) or \
+                 (key in self.overrides and self.overrides.get(key) is None)):
+            value = self.overrides.get(key)
+            key_exists = key_exists or key in self.overrides
 
         # And if none of the above apply, we just get the value from the raw dict, or from defaults:
-        if value is None:
-            value = self.raw.get(key, None)
-        if value is None and isinstance(self.defaults, dict):
-            value = self.defaults.get(key, None)
+        if not key_exists:
+            value = self.raw.get(key)
+            key_exists = key_exists or key in self.raw
+        if not key_exists and isinstance(self.defaults, dict):
+            value = self.defaults.get(key)
+            key_exists = key_exists or key in self.defaults
         # We raise our own error to highlight that key really is missing, not a bug or anything.
-        if value is None:
+        if not key_exists:
             raise KeyError("ConfigDict: Key not found: {}".format(key))
 
         value = self.wrap_dict_as_config_dict(key, value)
@@ -477,8 +479,8 @@ class ConfigDict(dict):
             # If the variable reference is the entire value, then return the referenced value as it
             # is, including preserving type. Otherwise, concatenate back into a string.
             if len(between_values) == 2 and \
-            between_values[0] == '' and \
-            between_values[1] == '':
+                    between_values[0] == '' and \
+                    between_values[1] == '':
                 value = values[0]
             else:
                 value = between_values.pop(0)
@@ -509,26 +511,20 @@ class ConfigDict(dict):
            This function does a similar merge for the rs_conf value for replsets."""
         # pylint: disable=too-many-boolean-expressions
 
-        value = None
-        if self.is_topology_node() and key == ('config_file'):
+        if self.is_topology_node() and key == 'config_file':
             # Note: In the below 2 lines, overrides and ${variables} are already applied
             common_config = self.root['mongodb_setup'].get(
                 self.topology_node_type() + '_config_file')
             node_specific_config = self.raw.get(key, {})
-            # Technically this works the same as if common_config was the raw value
-            # and node_specific_config is a dict with overrides. So let's reuse some code...
-            helper = ConfigDict('_internal')
-            helper.raw = {key: common_config}
-            helper.overrides = {key: node_specific_config}
-            value = helper[key]
+            return self.get_merged_config_dict_value(common_config, node_specific_config, key), True
 
-        if self.is_topology_replset() and key == ('rs_conf'):
+        if self.is_topology_replset() and key == 'rs_conf':
             # Note: In the below 2 lines, overrides and ${variables} are already applied
             common_rs_conf = self.root['mongodb_setup'].get('rs_conf')
             replset_rs_conf = self.raw.get('rs_conf', {})
-            value = self.get_merged_config_dict_value(common_rs_conf, replset_rs_conf, key)
+            return self.get_merged_config_dict_value(common_rs_conf, replset_rs_conf, key), True
 
-        return value
+        return None, False
 
     @staticmethod
     def get_merged_config_dict_value(config_dict1, config_dict2, key):
@@ -541,38 +537,38 @@ class ConfigDict(dict):
         return helper[key]
 
     def is_topology_node(self):
-        '''Returns true if self.path is a mongod/s/configsvr node under mongodb_setup.topology.
+        """
+        Returns true if self.path is a mongod/s/configsvr node under mongodb_setup.topology.
 
         Note: We cannot call self['cluster_type'] or self.get('cluster_type') in this function, as
         that would cause recursion. This causes a small restriction on defining topologies in the
         Yaml files: For a standalone node, the 'cluster_type' value must be a literal word, it
         cannot be a ${variable.reference}. It can however be defined in any of defaults.yml,
-        mongodb_setup.yml or overrides.yml.'''
+        mongodb_setup.yml or overrides.yml.
+        """
         # pylint: disable=too-many-boolean-expressions
         # Standalone nodes have a different path
         if len(self.path) >= 3 and \
-           self.path[0] == 'mongodb_setup' and \
-           self.path[1] == 'topology' and \
-           isinstance(self.path[2], int) and \
-           ((isinstance(self.raw, dict) and \
-             self.raw.get('cluster_type') == 'standalone') \
-            or \
-            (isinstance(self.defaults, dict) and \
-             self.defaults.get('cluster_type') == 'standalone') \
-            or \
-            (isinstance(self.overrides, dict) and \
-             self.overrides.get('cluster_type') == 'standalone')):
-
+                self.path[0] == 'mongodb_setup' and \
+                self.path[1] == 'topology' and \
+                isinstance(self.path[2], int) and \
+                ((isinstance(self.raw, dict) and \
+                  self.raw.get('cluster_type') == 'standalone') \
+                 or \
+                 (isinstance(self.defaults, dict) and \
+                  self.defaults.get('cluster_type') == 'standalone') \
+                 or \
+                 (isinstance(self.overrides, dict) and \
+                  self.overrides.get('cluster_type') == 'standalone')):
             return True
 
         # replset and sharded_cluster topologies
         if len(self.path) >= 3 and \
-           self.path[0] == 'mongodb_setup' and \
-           self.path[1] == 'topology' and \
-           isinstance(self.path[2], int) and \
-           self.path[-2] in ('mongod', 'mongos', 'configsvr') and \
-           isinstance(self.path[-1], int):
-
+                self.path[0] == 'mongodb_setup' and \
+                self.path[1] == 'topology' and \
+                isinstance(self.path[2], int) and \
+                self.path[-2] in ('mongod', 'mongos', 'configsvr') and \
+                isinstance(self.path[-1], int):
             return True
 
         return False
@@ -599,18 +595,17 @@ class ConfigDict(dict):
         # pylint: disable=too-many-boolean-expressions
         # replset and sharded_cluster topologies
         if len(self.path) >= 3 and \
-           self.path[0] == 'mongodb_setup' and \
-           self.path[1] == 'topology' and \
-           isinstance(self.path[2], int) and \
-           ((isinstance(self.raw, dict) and \
-             self.raw.get('cluster_type') == 'replset') \
-            or \
-            (isinstance(self.defaults, dict) and \
-             self.defaults.get('cluster_type') == 'replset') \
-            or \
-            (isinstance(self.overrides, dict) and \
-             self.overrides.get('cluster_type') == 'replset')):
-
+                self.path[0] == 'mongodb_setup' and \
+                self.path[1] == 'topology' and \
+                isinstance(self.path[2], int) and \
+                ((isinstance(self.raw, dict) and \
+                  self.raw.get('cluster_type') == 'replset') \
+                 or \
+                 (isinstance(self.defaults, dict) and \
+                  self.defaults.get('cluster_type') == 'replset') \
+                 or \
+                 (isinstance(self.overrides, dict) and \
+                  self.overrides.get('cluster_type') == 'replset')):
             return True
 
         return False
@@ -619,14 +614,14 @@ class ConfigDict(dict):
     def assert_writeable_path(self, key):
         """ConfigDict is read-only, except for self[self.module]['out'] namespace."""
         if len(self.path) >= 2 and \
-           self.path[0] == self.module and \
-           self.path[1] == 'out':
+                self.path[0] == self.module and \
+                self.path[1] == 'out':
 
             return True
 
         elif len(self.path) == 1 and \
-             self.path[0] == self.module and \
-             key == 'out':
+                self.path[0] == self.module and \
+                key == 'out':
 
             return True
 

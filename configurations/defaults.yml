@@ -180,7 +180,7 @@ mongodb_setup:
     shell_ssl_options: []
     is_sharded: false
     is_replset: false
-    secondary: None
+    secondary: null
     is_atlas: false
     # Clients (e.g. test_control) should use this to pick up net.ssl settings. Since there are
     # several of them, we just pull the entire net.ssl here.

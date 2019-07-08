@@ -26,3 +26,10 @@ mongodb_setup:
         -
         - public_ip: 127.0.0.1   # Adds a 4th mongos on localhost
           private_ip: 127.0.0.1
+
+# Merely for demonstrating null valued key support
+runtime:
+  overridden_none: "hey there"
+  override_with_none: null
+  overridden_dict: null
+  overridden_list: null

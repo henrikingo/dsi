@@ -93,7 +93,7 @@ mongodb_setup:
     hosts: ${mongodb_setup.topology.0.private_ip}:27017
     is_sharded: false
     is_replset: false
-    secondary: None
+    secondary: null
 
     # Number of primaries in the cluster. For non-sharded this
     # should be 1. For sharded will be the number of shards.

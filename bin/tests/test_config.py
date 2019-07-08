@@ -230,6 +230,16 @@ class ConfigDictTestCase(unittest.TestCase):
         self.assertTrue('infrastructure_provisioning' in test_conf.defaults['bootstrap'])
         os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/../../docs/config-specs/')
 
+    def test_none_valued_keys(self):
+        config_dict = ConfigDict('test_control')
+        config_dict.load()
+        self.assertEqual(config_dict['runtime']['overridden_none'], 'hey there')
+        self.assertEqual(config_dict['runtime']['override_with_none'], None)
+        self.assertEqual(config_dict['runtime']['overridden_dict'], None)
+        self.assertEqual(config_dict['runtime']['overridden_list'], None)
+        with self.assertRaises(KeyError):
+            config_dict['runtime']['nonexistant']  # pylint: disable=pointless-statement
+
     def test_traverse_entire_dict(self):
         """Traverse entire dict (also tests that the structure of docs/config-specs/ files are ok)"""
         # We actually could compare the result to a constant megadict here, but maintaining that
@@ -450,7 +460,11 @@ class ConfigDictTestCase(unittest.TestCase):
                     'dbPath': 'data/dbs'
                 }
             })
-        self.assert_equal_dicts(mycluster['shard'][2]['mongod'][0]['config_file'].overrides, {})
+        self.assert_equal_dicts(mycluster['shard'][2]['mongod'][0]['config_file'].overrides, {
+            'storage': {
+                'engine': 'inMemory'
+            }
+        })
         self.assertEqual(mycluster['shard'][2]['mongod'][0]['config_file']['storage']['engine'],
                          "inMemory")
         self.assertEqual(mycluster['shard'][2]['mongod'][0]['config_file']['net']['port'], 27017)
