@@ -22,13 +22,14 @@ class TestManage(unittest.TestCase):
     """
 
     @patch(ns('create_change_points_with_attachments_view'))
+    @patch(ns('create_build_failure_validator'))
     @patch(ns('create_change_points_validators'))
     @patch(ns('create_linked_build_failures_view'))
     @patch(ns('create_unprocessed_change_points_view'))
     @patch(ns('create_indexes'))
     def test_manage(self, mock_create_indexes, mock_create_change_points_view,
                     mock_create_build_failures_view, mock_change_points_validators,
-                    mock_change_points_with_attachments_view):
+                    mock_build_failures_validators, mock_change_points_with_attachments_view):
         # pylint: disable=invalid-name
         """ Test that manage calls the view and index functions. """
         mock_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
@@ -38,6 +39,7 @@ class TestManage(unittest.TestCase):
         mock_create_change_points_view.assert_called_once()
         mock_create_build_failures_view.assert_called_once()
         mock_change_points_with_attachments_view.assert_called_once()
+        mock_build_failures_validators.assert_called_once()
         mock_change_points_validators.assert_called_once()
 
 
@@ -209,14 +211,13 @@ class TestCreateChangePointsValidators(unittest.TestCase):
         mock_database = MagicMock(name='database')
         mock_change_points = MagicMock(name='change_points', database=mock_database)
         mock_change_points.name = "database.change_points"
-        mock_config = MagicMock(name='command_config', change_points=mock_change_points)
 
-        manage._create_common_change_points_validator(mock_config, mock_change_points)
+        manage._create_common_change_points_validator(mock_change_points)
         mock_database.command.assert_called_once_with(
             'collMod',
             'database.change_points',
             validator=ANY,
-            validationAction='error') # yapf: disable
+            validationAction='error')  # yapf: disable
         args = mock_database.command.call_args_list
 
         # Get the validator from the call args list.
@@ -250,7 +251,70 @@ class TestCreateChangePointsValidators(unittest.TestCase):
             processed_change_points=mock_processed_change_points)
 
         manage.create_change_points_validators(mock_config)
-        mock_common_validator.assert_has_calls([
-            call(mock_config, mock_change_points),
-            call(mock_config, mock_processed_change_points)
-        ])
+        mock_common_validator.assert_has_calls(
+            [call(mock_change_points), call(mock_processed_change_points)])
+
+
+class TestCreateBuildFailureValidator(unittest.TestCase):
+    """
+    Test validator functions.
+    """
+
+    def test_build_failures_validator(self):
+        """ Test common change_points validator. """
+        mock_database = MagicMock(name='database')
+        mock_build_failures = MagicMock(name='build_failures', database=mock_database)
+        mock_build_failures.name = "database.build_failures"
+
+        manage.create_build_failure_validator(mock_build_failures)
+        mock_database.command.assert_called_once_with(
+            'collMod',
+            'database.build_failures',
+            validator=ANY,
+            validationAction='warn')  # yapf: disable
+        args = mock_database.command.call_args_list
+
+        # Get the validator from the call args list.
+        validator = args[0][1]['validator']
+
+        # Only match on the all_suspect_revisions property.
+        self.assertTrue('$jsonSchema' in validator)
+        self.assertTrue('required' in validator['$jsonSchema'])
+        self.assertTrue('project' in validator['$jsonSchema']['required'])
+        self.assertTrue('buildvariants' in validator['$jsonSchema']['required'])
+        self.assertTrue('tasks' in validator['$jsonSchema']['required'])
+        self.assertTrue('tests' in validator['$jsonSchema']['required'])
+        self.assertDictContainsSubset({
+            'project': {
+                'bsonType': 'array',
+                'items': {
+                    'type': 'string'
+                },
+                'minItems': 1,
+                'description': "must be an array of strings with at least one element"
+            },
+            'buildvariants': {
+                'bsonType': 'array',
+                'items': {
+                    'type': 'string'
+                },
+                'minItems': 1,
+                'description': "must be an array of strings with at least one element"
+            },
+            'tasks': {
+                'bsonType': 'array',
+                'items': {
+                    'type': 'string'
+                },
+                'minItems': 1,
+                'description': "must be an array of strings with at least one element"
+            },
+            'tests': {
+                'bsonType': 'array',
+                'items': {
+                    'type': 'string'
+                },
+                'minItems': 1,
+                'description': "must be an array of strings with at least one element"
+            }
+        }, validator['$jsonSchema']['properties'])

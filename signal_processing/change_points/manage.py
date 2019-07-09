@@ -1,6 +1,8 @@
 """
 Functionality to create or recreate the unprocessed change points view.
 """
+import json
+import os
 from collections import OrderedDict
 
 import click
@@ -59,35 +61,41 @@ INDEXES_TO_CREATE = {
 }
 
 COLLECTIONS_TO_INDEX = INDEXES_TO_CREATE.keys()
+DIRECTORY = os.path.dirname(__file__)
 
 
-# TODO: TIG-1173 Add more validation to signal processing collections
-def _create_common_change_points_validator(command_config, collection):
+def _get_database_validator(operator, directory=DIRECTORY):
+    """
+    Get a database validator/filter to be applied to a collection from a json file
+    :param operator: name of the validator
+    :return: the validator object
+    """
+    with open(os.path.join(directory, 'database_validators',
+                           '{}.json'.format(operator))) as operator_file:
+        return json.load(operator_file)
+
+
+def _create_common_change_points_validator(collection):
     """
     Create change_points and processed change_points common validation rules.
 
-    :param CommandConfig command_config: Common configuration.
     :param pymongo.Collection collection: The target collection.
     """
     # pylint: disable=invalid-name, unused-argument
     LOG.debug('create common change points validation rules', collection=collection.name)
+    mongo_util.create_validator(collection, _get_database_validator('change_points_validator'))
+
+
+def create_build_failure_validator(collection):
+    """
+    Create build_failure validation rules.
+
+    :param pymongo.Collection collection: The target collection.
+    """
+    # pylint: disable=invalid-name, unused-argument
+    LOG.debug('create build failures validation rules', collection=collection.name)
     mongo_util.create_validator(
-        collection, {
-            '$jsonSchema': {
-                'bsonType': 'object',
-                'required': ['all_suspect_revisions'],
-                'properties': {
-                    'all_suspect_revisions': {
-                        'bsonType': 'array',
-                        'items': {
-                            'type': 'string'
-                        },
-                        'minItems': 1,
-                        'description': "must be an array of strings with at least one element"
-                    }
-                }
-            }
-        })
+        collection, _get_database_validator('build_failures_validator'), action='warn')
 
 
 def create_change_points_validators(command_config):
@@ -98,8 +106,8 @@ def create_change_points_validators(command_config):
     """
     # pylint: disable=invalid-name
     LOG.debug('create change_points validation rules')
-    _create_common_change_points_validator(command_config, command_config.change_points)
-    _create_common_change_points_validator(command_config, command_config.processed_change_points)
+    _create_common_change_points_validator(command_config.change_points)
+    _create_common_change_points_validator(command_config.processed_change_points)
 
 
 def create_linked_build_failures_view(command_config):
@@ -362,3 +370,4 @@ def manage(command_config, collections, drop=False, force=False):
     create_linked_build_failures_view(command_config)
 
     create_change_points_validators(command_config)
+    create_build_failure_validator(command_config.build_failures)

@@ -1,0 +1,45 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "required": [
+      "project",
+      "buildvariants",
+      "tasks",
+      "tests"
+    ],
+    "properties": {
+      "project": {
+        "bsonType": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1,
+        "description": "must be an array of strings with at least one element"
+      },
+      "buildvariants": {
+        "bsonType": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1,
+        "description": "must be an array of strings with at least one element"
+      },
+      "tasks": {
+        "bsonType": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1,
+        "description": "must be an array of strings with at least one element"
+      },
+      "tests": {
+        "bsonType": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1,
+        "description": "must be an array of strings with at least one element"
+      }
+    }
+  }
+}
