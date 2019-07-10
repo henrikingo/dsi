@@ -6,7 +6,7 @@ import unittest
 import click.testing
 from mock import MagicMock, patch
 
-from signal_processing.detect_outliers import DETECTED_TYPE
+from signal_processing.detect_outliers import DETECTED_HIGH_CONFIDENCE
 from signal_processing.outliers_cli import cli
 
 NS = 'signal_processing.commands.outliers.list_outliers'
@@ -49,7 +49,7 @@ class TestListOutliers(unittest.TestCase):
         limit = None
         no_older_than = 14
         marked = False
-        types = (DETECTED_TYPE, )
+        types = (DETECTED_HIGH_CONFIDENCE, )
         mock_list_outliers.assert_called_once_with(query, marked, types, human_readable, limit,
                                                    no_older_than, expected_config)
 
@@ -69,6 +69,6 @@ class TestListOutliers(unittest.TestCase):
         limit = None
         no_older_than = 14
         marked = False
-        types = (DETECTED_TYPE, )
+        types = (DETECTED_HIGH_CONFIDENCE, )
         mock_list_outliers.assert_called_once_with(query, marked, types, human_readable, limit,
                                                    no_older_than, expected_config)

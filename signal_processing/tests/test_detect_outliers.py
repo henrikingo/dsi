@@ -12,7 +12,7 @@ from mock import MagicMock, call, patch, ANY, mock_open
 
 import signal_processing.detect_outliers as detect_outliers
 from signal_processing.commands.helpers import get_query_for_points
-from signal_processing.detect_outliers import DETECTED_TYPE, SUSPICIOUS_TYPE
+from signal_processing.detect_outliers import DETECTED_HIGH_CONFIDENCE, DETECTED_LOW_CONFIDENCE
 from signal_processing.detect_outliers import main, _translate_outliers
 from signal_processing.model.configuration import DEFAULT_CONFIG, OutlierConfiguration, \
     DEFAULT_MAX_CONSECUTIVE_REJECTIONS, DEFAULT_MINIMUM_POINTS, DEFAULT_CANARY_PATTERN, \
@@ -370,7 +370,7 @@ class TestRunDetection(unittest.TestCase):
             count = gesd_result.count
             mock_outlier_ctor.assert_has_calls([
                 call(
-                    type=DETECTED_TYPE if pos < count else SUSPICIOUS_TYPE,
+                    type=DETECTED_HIGH_CONFIDENCE if pos < count else DETECTED_LOW_CONFIDENCE,
                     project=ANY,
                     variant=ANY,
                     task=ANY,
@@ -509,7 +509,7 @@ class TestTranslateOutliers(unittest.TestCase):
                                            full_series, configuration)
         self.assertEqual(1, len(outliers))
         mock_outlier_ctor.assert_called_once_with(
-            type=DETECTED_TYPE,
+            type=DETECTED_HIGH_CONFIDENCE,
             project=test_identifier['project'],
             variant=test_identifier['variant'],
             task=test_identifier['task'],
@@ -565,7 +565,7 @@ class TestTranslateOutliers(unittest.TestCase):
 
         first = common.copy()
         first.update(
-            type=DETECTED_TYPE,
+            type=DETECTED_HIGH_CONFIDENCE,
             revision='revision 0',
             task_id='task id 0',
             version_id='version id 0',
@@ -576,7 +576,7 @@ class TestTranslateOutliers(unittest.TestCase):
             critical_value='critical value 0')
         second = common.copy()
         second.update(
-            type=SUSPICIOUS_TYPE,
+            type=DETECTED_LOW_CONFIDENCE,
             revision='revision 2',
             task_id='task id 2',
             version_id='version id 2',

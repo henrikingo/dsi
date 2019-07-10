@@ -5,7 +5,7 @@ Command to list outliers.
 
 import click
 
-from signal_processing.detect_outliers import DETECTED_TYPE, SUSPICIOUS_TYPE
+from signal_processing.detect_outliers import DETECTED_HIGH_CONFIDENCE, DETECTED_LOW_CONFIDENCE
 from signal_processing.outliers import list_outliers
 from signal_processing.commands import helpers
 
@@ -33,8 +33,8 @@ A perf BB rotation is 2 weeks, so 14 days seems appropriate''')
     '--type',
     'types',
     multiple=True,
-    default=[DETECTED_TYPE],
-    type=click.Choice([DETECTED_TYPE, SUSPICIOUS_TYPE]))
+    default=[DETECTED_HIGH_CONFIDENCE],
+    type=click.Choice([DETECTED_HIGH_CONFIDENCE, DETECTED_LOW_CONFIDENCE]))
 @click.option('--marked/ --no-marked', 'marked', default=False, is_flag=True)
 @click.option('--revision', 'revision', default=None, help='Specify a revision, defaults to None.')
 @click.argument('project', required=True)
