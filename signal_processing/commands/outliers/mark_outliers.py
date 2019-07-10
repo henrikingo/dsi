@@ -9,24 +9,30 @@ from signal_processing.commands import helpers
 
 @click.command(name='mark')
 @click.pass_obj
+@click.option(
+    '--confirmed/--rejected',
+    'confirmed',
+    help='Specifies that the mark confirms/rejects the outlier as a true/false positive',
+    default=True)
 @click.argument('revision', required=True, callback=helpers.validate_outlier_param)
 @click.argument('project', required=True, callback=helpers.validate_outlier_param)
 @click.argument('variant', required=True, callback=helpers.validate_outlier_param)
 @click.argument('task', required=True, callback=helpers.validate_outlier_param)
 @click.argument('test', required=True, callback=helpers.validate_outlier_param)
 @click.argument('thread_level', required=True, callback=helpers.validate_outlier_param)
-def mark_outliers_command(command_config, revision, project, variant, task, test, thread_level):
+def mark_outliers_command(command_config, confirmed, revision, project, variant, task, test,
+                          thread_level):
     # pylint: disable=too-many-arguments, too-many-function-args
     """
-    Mark a single outlier as significant.This process creates a copy of a outlier (ephemeral
-output of the outlier detection algorithm) in the (persistent) marked_outliers collection.
+    Mark a single outlier as confirmed or rejected.This process creates a copy of an outlier
+    (ephemeral output of the outlier detection algorithm) in the (persistent) marked_outliers
+    collection.
 
 Arguments can be strings or patterns, A pattern starts with /.
 
 \b
-REVISION, the revision of the outlier. This parameter is mandatory.
-PROJECT, the project name or a regex (like /^sys-perf-3.*/ or /^(sys-perf|performance)$/). This
-parameter is mandatory.
+REVISION, the revision of the outlier.
+PROJECT, the project name or a regex (like /^sys-perf-3.*/ or /^(sys-perf|performance)$/).
 VARIANT, the build variant or a regex.
 TASK, the task name or a regex.
 TEST, the test name or a regex.
@@ -43,4 +49,4 @@ Examples:
 """
     query = helpers.process_params_for_points(
         project, variant, task, test, revision=revision, thread_level=thread_level)
-    mark_outliers.mark_outlier(query, command_config)
+    mark_outliers.mark_outlier(query, command_config, confirmed)

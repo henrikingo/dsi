@@ -40,7 +40,8 @@ class TestMarkOutliers(unittest.TestCase):
         expected_config = MagicMock(name='config', debug=0, log_file='/tmp/log_file')
         mock_config.return_value = expected_config
 
-        result = self.runner.invoke(
-            cli, ['mark', 'revision', 'project', 'variant', 'task', 'test', 'thread_level'])
+        result = self.runner.invoke(cli, [
+            'mark', 'revision', 'project', 'variant', 'task', 'test', 'thread_level', '--confirmed'
+        ])
         self.assertEqual(result.exit_code, 0)
         mock_mark_outliers.assert_called_once()

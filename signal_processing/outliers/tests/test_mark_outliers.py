@@ -50,6 +50,20 @@ class TestMarkOutlier(unittest.TestCase):
 
         mark_outlier({}, config)
         config.marked_outliers.update.assert_called_once()
+        identifier['type'] = 'confirmed'
+
+    def test_mark_outlier_with_found_outlier_rejected(self):
+        config = MagicMock(dry_run=False)
+
+        expected_id = create_identifier('0')
+        identifier = expected_id.copy()
+        identifier['_id'] = 'id'
+
+        config.outliers.find_one.return_value = identifier
+
+        mark_outlier({}, config, False)
+        config.marked_outliers.update.assert_called_once()
+        identifier['type'] = 'rejected'
 
 
 class TestGetIdentifier(unittest.TestCase):

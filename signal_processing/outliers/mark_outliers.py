@@ -23,11 +23,12 @@ def get_identifier(point):
     return {key: point[key] for key in KEYS}
 
 
-def mark_outlier(query, command_config):
+def mark_outlier(query, command_config, confirmed=True):
     """
     Mark an outlier.
     :param dict query: Find outlier matching this query.
     :param CommandConfig command_config: Common configuration.
+    :param bool confirmed: whether the outlier was rejected vs confirmed.
     """
     LOG.debug('mark outlier', query=query)
     collection = command_config.outliers
@@ -35,6 +36,7 @@ def mark_outlier(query, command_config):
     outlier = collection.find_one(query)
     if outlier:
         del outlier['_id']
+        outlier['type'] = 'user-confirmed' if confirmed else 'user-rejected'
         LOG.info("matched\n", outlier=stringify_json(outlier, compact=command_config.compact))
         if not command_config.dry_run:
             result = command_config.marked_outliers.update(
