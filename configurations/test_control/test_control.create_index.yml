@@ -1,0 +1,40 @@
+task_name: create_index
+numactl_prefix_for_workload_client: ${infrastructure_provisioning.numactl_prefix}
+run:
+  - id: CreateIndex
+    type: genny
+    config_filename: ./genny/etc/genny/workloads/execution/CreateIndex.yml
+
+  - id: benchRun
+    type: mongoshell
+    cmd: cd workloads && ${test_control.numactl_prefix_for_workload_client} ./run_workloads.py -c ../workloads.yml
+    config_filename: workloads.yml  # The name used in previous row
+    output_files:
+      - workloads/workload_timestamps.csv
+    workload_config:
+      tests:
+        default:
+          - cpu_noise
+
+      target: ${mongodb_setup.meta.hostname}
+      port: ${mongodb_setup.meta.port}
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
+      shell_ssl_options: ${mongodb_setup.meta.shell_ssl_options}
+
+  - id: fio
+    type: fio
+    cmd: '${test_control.numactl_prefix_for_workload_client} ./fio-test.sh ${mongodb_setup.meta.hostname}'
+    config_filename: fio.ini
+    output_files:
+      - fio.json
+      - fio_results.tgz
+    workload_config: ${test_control.common_fio_config}
+    skip_validate: true
+
+  - id: iperf
+    type: iperf
+    output_files:
+      - iperf.json
+    cmd: '${test_control.numactl_prefix_for_workload_client} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    skip_validate: true
