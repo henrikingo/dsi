@@ -25,3 +25,6 @@ tfvars:
 
   tags:
     expire-on-delta: 3      # adjust expire_on to now + expire-on-delta hours
+
+# Atlas uses a readahead setting of 256.
+read_ahead: 256

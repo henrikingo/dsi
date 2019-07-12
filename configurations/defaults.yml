@@ -43,18 +43,45 @@ infrastructure_provisioning:
   terraform:
     required_version: Terraform v0.10.4
     aws_required_version: 1.6.0
+  # Known disks in the system. This list is a superset. String list for use below
+  disks: "/dev/xvdc /dev/xvdd /dev/xvde /dev/xvdf /dev/nvme1n1 /dev/nvme2n1"
+  read_ahead: 32
+  post_provisioning_steps:
+    # This is a dict of steps you might want to use. This is not used directly.
+    set_readahead:
+      exec: |
+        # Set readahead for devices
+        for disk in ${infrastructure_provisioning.disks}; do
+          if [[ -e $disk ]]; then
+            sudo blockdev --setra ${infrastructure_provisioning.read_ahead} $disk;
+            sudo blockdev --getra $disk;
+          fi;
+        done;
+    set_ulimits:
+      exec: |
+        # set ulimit nofile for user
+        echo "${infrastructure_provisioning.tfvars.ssh_user}           soft    nofile          65535" | sudo tee -a /etc/security/limits.conf
+        echo "${infrastructure_provisioning.tfvars.ssh_user}           hard    nofile          65535" | sudo tee -a /etc/security/limits.conf
+        echo "${infrastructure_provisioning.tfvars.ssh_user}   soft   core   unlimited" | sudo tee -a /etc/security/limits.conf
+        echo "${infrastructure_provisioning.tfvars.ssh_user}   hard   core   unlimited" | sudo tee -a /etc/security/limits.conf
+        # For control of core dumps and file names:
+        # http://man7.org/linux/man-pages/man5/core.5.html
+        mkdir -p "$HOME/data/logs"
+        echo "$HOME/data/logs/core.%e.%p.%h.%t" |sudo tee -a  /proc/sys/kernel/core_pattern
+    production_settings:
+      exec: |
+        # mongodb production recommended configuration
+        echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled
+        echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag
+        echo f | sudo tee /sys/class/net/eth0/queues/rx-0/rps_cpus
+        # This last line fails on config servers, thus the || true.
+        # https://jira.mongodb.org/browse/PERF-1881
+        echo f0 | sudo tee /sys/class/net/eth0/queues/tx-0/xps_cpus || true
+
   post_provisioning:
-    - on_all_hosts:
-        exec: |
-          # set ulimit nofile for user
-          echo "${infrastructure_provisioning.tfvars.ssh_user}           soft    nofile          65535" | sudo tee -a /etc/security/limits.conf
-          echo "${infrastructure_provisioning.tfvars.ssh_user}           hard    nofile          65535" | sudo tee -a /etc/security/limits.conf
-          echo "${infrastructure_provisioning.tfvars.ssh_user}   soft   core   unlimited" | sudo tee -a /etc/security/limits.conf
-          echo "${infrastructure_provisioning.tfvars.ssh_user}   hard   core   unlimited" | sudo tee -a /etc/security/limits.conf
-          # For control of core dumps and file names:
-          # http://man7.org/linux/man-pages/man5/core.5.html
-          mkdir -p "$HOME/data/logs"
-          echo "$HOME/data/logs/core.%e.%p.%h.%t" |sudo tee -a  /proc/sys/kernel/core_pattern
+    - on_all_hosts: ${infrastructure_provisioning.post_provisioning_steps.set_readahead}
+    - on_all_hosts: ${infrastructure_provisioning.post_provisioning_steps.set_ulimits}
+    - on_all_hosts: ${infrastructure_provisioning.post_provisioning_steps.production_settings}
 
 
 workload_setup:
