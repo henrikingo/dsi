@@ -17,11 +17,6 @@ from testcontrollib import test_runner
 
 LOG = logging.getLogger(__name__)
 
-SUPPORTED_TYPES = {
-    'shell', 'mongoshell', 'ycsb', 'fio', 'iperf', 'linkbench', 'tpcc', 'genny', 'genny_canaries',
-    'sysbench'
-}
-
 
 @nottest
 def parse_test_results(test, config, timer):
@@ -33,57 +28,11 @@ def parse_test_results(test, config, timer):
     :param dict(time) timer: A dict with the start and end times of the test being reported
     :returns: bool True on success else False
     """
-    # We want to catch and log all exceptions here, so that we don't raise
-    # any exceptions to test_control.py
-    parser = parser_factory(test, config, timer)
 
-    return parser.parse_and_save()
-
-
-def parser_factory(test, config, timer):
-    """
-    Instantiate a ResultParser instance, based on test['type'].
-
-    :param ConfigDict test: The test that just finished running
-    :param ConfigDict config: The entire ConfigDict
-    :param dict(time) timer: A dict with the start and end times of the test being reported
-    """
-    # map test['type'] to a ResultParser class
-    parsers = {
-        'mongoshell': MongoShellParser,
-        # Backward compatibility until mission-control is removed
-        'shell': MongoShellParser,
-        'ycsb': YcsbParser,
-        'fio': FioParser,
-        'iperf': IperfParser,
-        'linkbench': LinkbenchResultParser,
-        'tpcc': TPCCResultParser,
-        'genny': GennyResultsParser,
-        'genny_canaries': GennyCanariesParser,
-        'sysbench': SysbenchResultParser
-    }
-    if test['type'] not in parsers:
+    if test['type'] not in PARSERS:
         raise ValueError("parser_factory: Unsupported test type: {}".format(test['type']))
-    ResultParserChild = parsers[test['type']]  # pylint: disable=invalid-name
-    return ResultParserChild(test, config, timer)
-
-
-def validate_config(config):
-    """
-    Validate that the given config only includes test types that are supported by a parser.
-
-    The motivation for this method is that result parsing happens at the end of a test, when time
-    and money was already spent running the test. If a parser is not found to process the test
-    result, they will not be recorded to Evergreen and a user will have to manually search for them
-    from the log file. (It's also possible nobody will notice some results are missing. To fail
-    early, test_control.py can call this method up front, to validate that all test types are
-    supported.
-
-    :param ConfigDict config: A full ConfigDict
-    """
-    for test in config['test_control']['run']:
-        if not test['type'] in SUPPORTED_TYPES:
-            raise NotImplementedError("No parser exists for test type {}".format(test['type']))
+    parser_cls = PARSERS[test['type']]  # pylint: disable=invalid-name
+    return parser_cls(test, config, timer).parse_and_save()
 
 
 class Results(object):
@@ -209,14 +158,16 @@ class ResultParser(object):
         self.timer = timer
         self.input_log = None
 
-        # cedar reporting
-        self.cedar_test = cedar.CedarTest(
+        self.cedar_tests = []
+
+        # cedar reporting template.
+        self.cedar_test_template = cedar.CedarTest(
             name=self.test_id, created=self.timer['start'], completed=self.timer['end'])
 
         # add tags for branch_name and constant 'sys-perf'
         if 'runtime' in config and 'branch_name' in config['runtime']:
-            self.cedar_test.add_tag(config['runtime']['branch_name'])
-        self.cedar_test.add_tag('sys-perf')
+            self.cedar_test_template.add_tag(config['runtime']['branch_name'])
+        self.cedar_test_template.add_tag('sys-perf')
 
     def load_input_log(self):
         """Load self.input_log and return it"""
@@ -235,7 +186,7 @@ class ResultParser(object):
         """
         passed = self.parse()
         self.results.save()
-        return passed, self.cedar_test
+        return passed, self.cedar_tests
 
     def add_result(self, name, result, threads="1", metric_type="ops_per_sec"):
         """
@@ -322,11 +273,13 @@ class GennyCanariesParser(ResultParser):
         self.input_dir = os.path.join(self.reports_root, test['id'])
 
     def _parse(self):
+        cedar_test = self.cedar_test_template.clone()
+
         for metrics_file in test_runner.GennyCanariesRunner.get_default_output_files():
             location_on_controller_host = os.path.join(self.input_dir,
                                                        os.path.basename(metrics_file))
             with open(location_on_controller_host) as file_handle:
-                self.cedar_test.set_thread_level(1)
+                cedar_test.set_thread_level(1)
 
                 for line in file_handle.readlines():
                     # The format of each line is:
@@ -338,7 +291,8 @@ class GennyCanariesParser(ResultParser):
                     threads = "1"
                     metrics_type = "avg_latency_picoseconds"
                     self.add_result('{}_{}'.format(name, metrics_type), result, threads)
-                    self.cedar_test.add_metric(name=metrics_type, rollup_type='MEAN', value=result)
+                    cedar_test.add_metric(name=metrics_type, rollup_type='MEAN', value=result)
+        self.cedar_tests.append(cedar_test)
 
 
 class TPCCResultParser(ResultParser):
@@ -452,24 +406,22 @@ class YcsbParser(ResultParser):
             -P workloads/workloadEvergreen_50read50update -threads 64 -t
         [OVERALL], Throughput(ops/sec), 47494.99521487923
         """
+        cur_test = None
         for line in self.load_input_log():
             if line.startswith("Command line:"):
-                # TODO: We currently set ycsb thread level as a command line option. One could also
-                # set it in the ycsb config file. In that case, we would have to grab that from
-                # the test object in __init__(). As we don't do that currently, this is not
-                # implemented.
+                cur_test = self.cedar_test_template.clone()
+                self.cedar_tests.append(cur_test)
                 parts = line.rstrip().split(" ")
                 for index, part in enumerate(parts):
                     if part == "-threads":
                         self.threads = str(parts[index + 1])  # In perf.json threads is a string
-                        self.cedar_test.set_thread_level(int(self.threads))
-                continue
-            if line.startswith("[OVERALL], Throughput(ops/sec), "):
+                        cur_test.set_thread_level(int(self.threads))
+            elif line.startswith("[OVERALL], Throughput(ops/sec), "):
                 parts = line.rstrip().split(", ")
                 result = float(parts[2])
                 name = self.test_id
                 self.add_result(name, result, self.threads, "ops_per_sec")
-                self.cedar_test.add_metric(
+                cur_test.add_metric(
                     name="ops_per_sec",
                     rollup_type='THROUGHPUT',
                     value=result,
@@ -480,7 +432,7 @@ class YcsbParser(ResultParser):
                 result = float(parts[2])
                 name = self.test_id
                 self.add_result(name, result, self.threads, "95th_read_latency_us")
-                self.cedar_test.add_metric(
+                cur_test.add_metric(
                     name="95th_read_latency_us",
                     rollup_type='PERCENTILE_95TH',
                     value=result,
@@ -491,7 +443,7 @@ class YcsbParser(ResultParser):
                 result = float(parts[2])
                 name = self.test_id
                 self.add_result(name, result, self.threads, "99th_read_latency_us")
-                self.cedar_test.add_metric(
+                cur_test.add_metric(
                     name="99th_read_latency_us",
                     rollup_type='PERCENTILE_99TH',
                     value=result,
@@ -502,7 +454,7 @@ class YcsbParser(ResultParser):
                 result = float(parts[2])
                 name = self.test_id
                 self.add_result(name, result, self.threads, "average_read_latency_us")
-                self.cedar_test.add_metric(
+                cur_test.add_metric(
                     name="average_read_latency_us",
                     rollup_type='MEAN',
                     value=result,
@@ -549,22 +501,25 @@ class SysbenchResultParser(ResultParser):
         self.threads = options['threads']
         results = json.loads(results_str)
 
+        cedar_test = self.cedar_test_template.clone()
+
         for name in results.keys():
             sign = -1 if "latency" in name else 1
             # For historical reasons threads is expected to be a string. (It's a key in perf.json)
             self.add_result(self.test_id + "_" + name, sign * float(results[name]), str(
                 self.threads))
 
-            self.cedar_test.set_thread_level(self.threads)
+            cedar_test.set_thread_level(self.threads)
             if "latency" in name:
-                self.cedar_test.add_metric(
+                cedar_test.add_metric(
                     name=name,
                     rollup_type='LATENCY',
                     value=float(results[name]),
                 )
             else:
-                self.cedar_test.add_metric(
+                cedar_test.add_metric(
                     name=name, rollup_type='THROUGHPUT', value=float(results[name]))
+        self.cedar_tests.append(cedar_test)
 
 
 class FioParser(ResultParser):
@@ -648,3 +603,24 @@ class IperfParser(ResultParser):
         iperf_output = json.loads(self.load_input_log())
         result = iperf_output['end']['sum_sent']['bits_per_second']
         self.add_result("NetworkBandwidth", result)
+
+
+# Map test['type'] to a ResultParser class.
+PARSERS = {
+    'mongoshell': MongoShellParser,
+    # Backward compatibility until mission-control is removed
+    'shell': MongoShellParser,
+    'ycsb': YcsbParser,
+    'fio': FioParser,
+    'iperf': IperfParser,
+    'linkbench': LinkbenchResultParser,
+    'tpcc': TPCCResultParser,
+    'genny': GennyResultsParser,
+    'genny_canaries': GennyCanariesParser,
+    'sysbench': SysbenchResultParser
+}
+
+
+def get_supported_parser_types():
+    """Get the names of all supported parser types"""
+    return PARSERS.keys()

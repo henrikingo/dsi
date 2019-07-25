@@ -1,0 +1,4 @@
+Command line: -threads 1
+[OVERALL], Throughput(ops/sec), 100
+Command line: -threads 2
+[OVERALL], Throughput(ops/sec), 200

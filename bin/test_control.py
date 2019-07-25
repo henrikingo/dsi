@@ -22,7 +22,7 @@ from common.command_runner import run_pre_post_commands, EXCEPTION_BEHAVIOR, pre
 from common.jstests import run_validate
 import common.log
 import common.cedar as cedar
-from common.workload_output_parser import parse_test_results, validate_config
+from common.workload_output_parser import parse_test_results, get_supported_parser_types
 
 from testcontrollib import test_runner
 
@@ -221,8 +221,9 @@ def run_tests(config):
             else:
                 LOG.info("Successful test run for test %s. Parsing results now", test['id'])
 
-            _, cedar_test = parse_test_results(test, config, timer)
-            report.add_test(cedar_test)
+            _, cedar_tests = parse_test_results(test, config, timer)
+            for cedar_test in cedar_tests:
+                report.add_test(cedar_test)
     except Exception as e:  # pylint: disable=broad-except
         LOG.error('Unexcepted exception: %s', repr(e), exc_info=1)
     finally:
@@ -241,6 +242,24 @@ def run_tests(config):
     return (num_tests_run == num_tests_failed) or (cur_test_status == TestStatus.ERROR)
 
 
+def validate_config(config):
+    """
+    Validate that the given config only includes test types that are supported by a parser.
+
+    The motivation for this method is that result parsing happens at the end of a test, when time
+    and money was already spent running the test. If a parser is not found to process the test
+    result, they will not be recorded to Evergreen and a user will have to manually search for them
+    from the log file. (It's also possible nobody will notice some results are missing. To fail
+    early, test_control.py can call this method up front, to validate that all test types are
+    supported.
+
+    :param ConfigDict config: A full ConfigDict
+    """
+    for test in config['test_control']['run']:
+        if not test['type'] in get_supported_parser_types():
+            raise NotImplementedError("No parser exists for test type {}".format(test['type']))
+
+
 def main(argv):
     """ Main function. Parse command line options, and run tests.
 
@@ -248,7 +267,7 @@ def main(argv):
     """
     parser = argparse.ArgumentParser(description='DSI Test runner')
 
-    # These were left here for backward compatibility.
+    # These were left here for backward compatibility.]
     parser.add_argument('foo', help='Ignored', nargs='?')
     parser.add_argument('bar', help='Ignored', nargs='?')
     parser.add_argument('czar', help='Ignored', nargs='?')

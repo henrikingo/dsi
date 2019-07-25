@@ -2,15 +2,41 @@
 
 import logging
 import os
-import sys
 import unittest
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
-from workload_output_parser import parse_test_results, validate_config
+from mock import mock, patch
+
+from test_control import validate_config
+
+from common.workload_output_parser import parse_test_results, YcsbParser
 from test_lib.fixture_files import FixtureFiles
 
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 LOG = logging.getLogger(__name__)
+
+
+class CedarTestCase(unittest.TestCase):
+    """Unit tests for parsers that report to Cedar"""
+
+    @patch('common.workload_output_parser.Results')
+    def test_ycsb_parser(self, mock_results):
+        """Test that one Cedar Test is added per thread-level"""
+        god_config = mock.MagicMock(dict)
+        test_config = mock.MagicMock(dict)
+        timer = {'start': 101, 'end': 202}
+
+        parser = YcsbParser(god_config, test_config, timer)
+        parser.input_log = os.path.join('bin', 'tests', 'unittest-files', 'ycsb-unittest',
+                                        'synthetic_output.log')
+
+        parser.parse()
+
+        self.assertEqual(len(parser.cedar_tests), 2)
+        test_dict_1 = parser.cedar_tests[0].as_dict()
+        test_dict_2 = parser.cedar_tests[1].as_dict()
+
+        self.assertDictEqual(test_dict_1['info']['args'], {'thread_level': 1})
+        self.assertDictEqual(test_dict_2['info']['args'], {'thread_level': 2})
 
 
 class WorkloadOutputParserTestCase(unittest.TestCase):

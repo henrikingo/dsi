@@ -466,7 +466,7 @@ class RunTestsTestCase(unittest.TestCase):
         """Test that cedar report is called the correct number of times"""
 
         mock_cedar_test = MagicMock()
-        mock_parse_results.return_value = (True, mock_cedar_test)
+        mock_parse_results.return_value = (True, [mock_cedar_test])
 
         run_tests(self.config)
 

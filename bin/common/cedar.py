@@ -106,15 +106,20 @@ class CedarTest(object):
         began (timestamp).
         :param float completed: Time in seconds from the epoch to when the test
         ended (timestamp).
-        :param int trial: Run of this specific test. Defaults to 0.
         """
-        self.info = TestInfo(name)
-        self.created_at = datetime.fromtimestamp(
+        self._raw_params = {'name': name, 'created': created, 'completed': completed}
+        self._created_at = datetime.fromtimestamp(
             created, tz=pytz.UTC).replace(tzinfo=pytz.UTC).isoformat()
-        self.completed_at = datetime.fromtimestamp(
+        self._completed_at = datetime.fromtimestamp(
             completed, tz=pytz.UTC).replace(tzinfo=pytz.UTC).isoformat()
+
+        self.info = TestInfo(name)
         self.metrics = []
         self.sub_tests = []
+
+    def clone(self):
+        """Clone this CedarTest object without metrics or sub-tests"""
+        return CedarTest(**self._raw_params)
 
     def add_metric(self, name, rollup_type, value, user_submitted=False):
         """
@@ -158,8 +163,8 @@ class CedarTest(object):
         """
         return {
             'info': self.info.as_dict(),
-            'created_at': self.created_at,
-            'completed_at': self.completed_at,
+            'created_at': self._created_at,
+            'completed_at': self._completed_at,
             'artifacts': [],  # use TestArtifact below when we support it
             'metrics': sorted([metric.as_dict() for metric in self.metrics]),
             'sub_tests': sorted([test.as_dict() for test in self.sub_tests]),
@@ -273,7 +278,7 @@ class BucketConfiguration(object):
 #         self.path = ''
 #         self.tags = []
 #         # where does created come from???
-#         self.created_at = datetime.fromtimestamp(created).replace(tzinfo=pytz.UTC).isoformat()
+#         self._created_at = datetime.fromtimestamp(created).replace(tzinfo=pytz.UTC).isoformat()
 #         self.local_path = ''
 #         self.is_ftdc = False
 #         self.s_bson = False
@@ -294,7 +299,7 @@ class BucketConfiguration(object):
 #             'bucket': self.bucket,
 #             'path': self.path,
 #             'tags': self.tags,
-#             'created_at': self.created_at,
+#             'created_at': self._created_at,
 #             'local_path': self.local_path,
 #             'is_ftdc': self.is_ftdc,
 #             's_bson': self.s_bson,
