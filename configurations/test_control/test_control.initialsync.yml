@@ -29,6 +29,7 @@ run:
               sync_type: "initialSync"
               start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
+              build_user_indexes: true
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
@@ -54,6 +55,7 @@ run:
               sync_type: "initialSync"
               start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
+              build_user_indexes: true
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
@@ -80,6 +82,7 @@ run:
               sync_type: "initialSync"
               start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
+              build_user_indexes: true
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
@@ -106,6 +109,7 @@ run:
               sync_type: "initialSync"
               start_mongod: ${test_control.numactl_prefix_for_workload_client} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
+              build_user_indexes: true
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
@@ -132,6 +136,7 @@ run:
               sync_type: "initialSync"
               start_mongod: ${test_control.numactl_prefix_for_workload_client} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
+              build_user_indexes: true
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
@@ -158,6 +163,7 @@ run:
               sync_type: "initialSync"
               start_mongod: ${test_control.numactl_prefix_for_workload_client} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
+              build_user_indexes: true
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
@@ -184,6 +190,7 @@ run:
               sync_type: "initialSync"
               start_mongod: ${test_control.numactl_prefix_for_workload_client} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
+              build_user_indexes: true
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
@@ -210,6 +217,7 @@ run:
               sync_type: "initialSync"
               start_mongod: ${test_control.numactl_prefix_for_workload_client} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
+              build_user_indexes: true
           - cpu_noise
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
