@@ -36,3 +36,5 @@ _e_divisive.so
 
 # VS Code
 .vscode
+
+.ipynb_checkpoints/

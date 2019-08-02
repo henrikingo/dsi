@@ -207,7 +207,7 @@ class ChangePointsDetection(object):
 
             # Create a dict fort the range finder state. This is saved as
             # a sub-document in the change point.
-            range_finder = OrderedDict([('weighting', self._weighting)]) # yapf: disable
+            range_finder = OrderedDict([('weighting', self._weighting)])  # yapf: disable
 
             # Start to colate the information we want to put at the top-level
             # of the change point
@@ -250,7 +250,7 @@ class ChangePointsDetection(object):
                                  ('range_finder', range_finder),
                                  ('algorithm', algorithm),
                                  ('magnitude', magnitude),
-                                 ('category', category)]) # yapf: disable
+                                 ('category', category)])  # yapf: disable
             points.append(point)
 
             LOG.debug("algorithm output", points=points)

@@ -8,7 +8,6 @@ from collections import defaultdict, OrderedDict
 
 import pymongo
 from mock import ANY, MagicMock, call, patch
-from tenacity import wait_none
 
 from signal_processing.commands import helpers
 from signal_processing.commands.helpers import USER_REJECTED, USER_CONFIRMED

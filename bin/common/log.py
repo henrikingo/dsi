@@ -9,9 +9,12 @@ from StringIO import StringIO
 import structlog
 
 
-def setup_logging(verbose, filename=None):
+def setup_logging(verbose=False, filename=None, explicit_log_level=None):
     """Configure logging verbosity and destination."""
-    loglevel = logging.DEBUG if verbose else logging.INFO
+    if explicit_log_level:
+        loglevel = explicit_log_level
+    else:
+        loglevel = logging.DEBUG if verbose else logging.INFO
     handler = logging.FileHandler(filename) if filename else logging.StreamHandler()
     handler.setLevel(loglevel)
     root_logger = logging.getLogger()

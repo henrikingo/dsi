@@ -77,3 +77,7 @@ Run all tests in a module:
 
 Note: the `.py`, using `signal_processing/outliers/tests/test_*` may run all the tests twice if
 there are py and pyc files. 
+
+## Signal Processing
+
+A module for processing signals, e.g. outlier and change point detection: [Signal Processing](signal_processing/README.md)
