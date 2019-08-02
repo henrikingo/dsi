@@ -23,21 +23,6 @@ from signal_processing.outliers.reject.task import TaskAutoRejector
 from analysis.evergreen import evergreen_client
 from bin.common import config, log
 
-DETECTED_LOW_CONFIDENCE = 'detected-low-confidence'
-"""
-The string value indicating that this point was deemed to be within the acceptable
-performance range. The nature of the GESD algorithm means that in most cases points which are
-not and cannot be outliers are marked as suspicious / low confidence. Care should be taken in
-reading significance into suspicious points. You would really need to compare the z score and
-critical values and take the position into account w.r.t the last detected outlier.
-"""
-
-DETECTED_HIGH_CONFIDENCE = 'detected-high-confidence'
-"""
-The string value indicating that this point was deemed to be outside the acceptable
-performance range.
-"""
-
 LOG = structlog.getLogger(__name__)
 
 
@@ -301,7 +286,8 @@ def _translate_outliers(gesd_result, test_identifier, start, num_outliers, full_
             z_score = gesd_result.test_statistics[pos]
             outliers.append(
                 Outlier(
-                    type=DETECTED_HIGH_CONFIDENCE if pos < count else DETECTED_LOW_CONFIDENCE,
+                    type=helpers.DETECTED_HIGH_CONFIDENCE
+                    if pos < count else helpers.DETECTED_LOW_CONFIDENCE,
                     project=test_identifier['project'],
                     variant=test_identifier['variant'],
                     task=test_identifier['task'],

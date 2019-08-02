@@ -12,7 +12,7 @@ from mock import MagicMock, call, patch, ANY, mock_open
 
 import signal_processing.detect_outliers as detect_outliers
 from signal_processing.commands.helpers import get_query_for_points
-from signal_processing.detect_outliers import DETECTED_HIGH_CONFIDENCE, DETECTED_LOW_CONFIDENCE
+from signal_processing.commands.helpers import DETECTED_HIGH_CONFIDENCE, DETECTED_LOW_CONFIDENCE
 from signal_processing.detect_outliers import main, _translate_outliers
 from signal_processing.model.configuration import DEFAULT_CONFIG, OutlierConfiguration, \
     DEFAULT_MAX_CONSECUTIVE_REJECTIONS, DEFAULT_MINIMUM_POINTS, DEFAULT_CANARY_PATTERN, \

@@ -50,7 +50,13 @@ class TestCreateExclusionMask(unittest.TestCase):
     Test Suite for create_exclusion_mask.
     """
 
-    def _test(self, outlier=None, marked=None, rejected=None, whitelisted=None, expected=None):
+    def _test(self,
+              outlier=None,
+              user_confirmed_marks=None,
+              user_rejected_marks=None,
+              rejected=None,
+              whitelisted=None,
+              expected=None):
         """
         Test where outlier, marked, not rejected, not whitelisted.
         """
@@ -60,10 +66,16 @@ class TestCreateExclusionMask(unittest.TestCase):
         expected = np.array(expected if expected is not None else outlier, dtype=np.bool)
 
         time_series = {
-            'outlier': outlier if outlier is not None else [False],
-            'marked': marked if marked is not None else [False] * length,
-            'rejected': rejected if rejected is not None else [False] * length,
-            'whitelisted': whitelisted if whitelisted is not None else [False] * length
+            'outlier':
+                outlier if outlier is not None else [False],
+            'user_marked_confirmed':
+                user_confirmed_marks if user_confirmed_marks is not None else [False] * length,
+            'user_marked_rejected':
+                user_rejected_marks if user_rejected_marks is not None else [False] * length,
+            'rejected':
+                rejected if rejected is not None else [False] * length,
+            'whitelisted':
+                whitelisted if whitelisted is not None else [False] * length
         }
         mask = create_exclusion_mask(time_series)
         assert_array_equal(expected, mask)
@@ -83,17 +95,26 @@ class TestCreateExclusionMask(unittest.TestCase):
         self._test(rejected=[True], whitelisted=[True])  # expected mask = False
 
         # no_m_nr_nw
-        self._test(marked=[True], expected=[True])  # mask = True
+        self._test(user_confirmed_marks=[True], expected=[True])  # mask = True
 
         # no_m_nr_w
-        self._test(marked=[True], whitelisted=[True], expected=[True])  # mask = False
+        self._test(user_confirmed_marks=[True], whitelisted=[True], expected=[True])  # mask = False
 
         # no_m_r_nw
-        self._test(marked=[True], rejected=[True], expected=[True])  # mask = True
+        self._test(user_confirmed_marks=[True], rejected=[True], expected=[True])  # mask = True
 
         # no_m_r_w
         self._test(
-            marked=[True], rejected=[True], whitelisted=[True], expected=[True])  # mask = False
+            user_confirmed_marks=[True], rejected=[True], whitelisted=[True], expected=[True])
+
+        self._test(user_rejected_marks=[True], expected=[False])
+
+        self._test(user_rejected_marks=[True], whitelisted=[True], expected=[False])
+
+        self._test(user_rejected_marks=[True], rejected=[True], expected=[True])
+
+        self._test(
+            user_rejected_marks=[True], rejected=[True], whitelisted=[True], expected=[False])
 
     def test_single_result_outlier(self):
 
@@ -110,17 +131,33 @@ class TestCreateExclusionMask(unittest.TestCase):
         self._test(outlier=[True], rejected=[True], whitelisted=[True])  # expected mask = False
 
         # o_m_nr_nw
-        self._test(outlier=[True], marked=[True])  # mask = True
+        self._test(outlier=[True], user_confirmed_marks=[True])  # mask = True
 
         # o_m_nr_w
-        self._test(outlier=[True], marked=[True], whitelisted=[True])  # mask = False
+        self._test(outlier=[True], user_confirmed_marks=[True], whitelisted=[True])  # mask = False
 
         # o_m_r_nw
-        self._test(outlier=[True], marked=[True], rejected=[True])  # mask = True
+        self._test(outlier=[True], user_confirmed_marks=[True], rejected=[True])  # mask = True
 
-        # o_m_r_w
         self._test(
-            outlier=[True], marked=[True], rejected=[True], whitelisted=[True])  # mask = False
+            outlier=[True],
+            user_rejected_marks=[True],
+            rejected=[True],
+            whitelisted=[True],
+            expected=[False])
+
+        self._test(outlier=[True], user_rejected_marks=[True], expected=[False])
+
+        self._test(outlier=[True], user_rejected_marks=[True], whitelisted=[True], expected=[False])
+
+        self._test(outlier=[True], user_rejected_marks=[True], rejected=[True], expected=[True])
+
+        self._test(
+            outlier=[True],
+            user_rejected_marks=[True],
+            rejected=[True],
+            whitelisted=[True],
+            expected=[False])
 
     def test_multiple(self):
 
@@ -137,7 +174,16 @@ class TestCreateExclusionMask(unittest.TestCase):
         self._test(outlier=outlier)
 
         outlier = [False, True, False]
-        self._test(outlier=outlier, marked=[True, False, True], expected=[True, True, True])
+        self._test(
+            outlier=outlier, user_confirmed_marks=[True, False, True], expected=[True, True, True])
+        outlier = [False, True, False]
+        self._test(
+            outlier=outlier, user_rejected_marks=[True, False, True], expected=[False, True, False])
+        outlier = [False, True, False]
+        self._test(
+            outlier=outlier,
+            user_rejected_marks=[False, True, False],
+            expected=[False, False, False])
 
 
 class TestPostRunCheck(unittest.TestCase):
@@ -246,7 +292,8 @@ class TestPostRunCheck(unittest.TestCase):
             'thread_level':
                 4,
             'outlier': [False] * length,
-            'marked': [False] * length,
+            'user_marked_rejected': [False] * length,
+            'user_marked_confirmed': [False] * length,
             'rejected': [False] * length,
             'whitelisted': [False] * length,
         }
@@ -325,8 +372,14 @@ class TestPostRunCheck(unittest.TestCase):
                 'probability': 0.0,
             }), math_utils.approx_dict(points[2]['algorithm']))
 
-    # pylint: disable=no-self-use
-    def _test_helper(self, series=None, outlier=None, marked=None, rejected=None, whitelisted=None):
+    # pylint: disable=no-self-use,too-many-locals
+    def _test_helper(self,
+                     series=None,
+                     outlier=None,
+                     user_marked_confirmed=None,
+                     user_marked_rejected=None,
+                     rejected=None,
+                     whitelisted=None):
         """
         Helper for simple regression test.
         """
@@ -339,16 +392,29 @@ class TestPostRunCheck(unittest.TestCase):
 
         with patch(ns('get_githashes_in_range_repo')):
             state = {
-                'testname': u'whatever you want, sugar',
-                'series': series,
-                'revisions': revisions,
-                'orders': values,
-                'create_times': values,
-                'thread_level': 4,
-                'outlier': outlier if outlier is not None else [False] * length,
-                'marked': marked if marked is not None else [False] * length,
-                'rejected': rejected if rejected is not None else [False] * length,
-                'whitelisted': whitelisted if whitelisted is not None else [False] * length,
+                'testname':
+                    u'whatever you want, sugar',
+                'series':
+                    series,
+                'revisions':
+                    revisions,
+                'orders':
+                    values,
+                'create_times':
+                    values,
+                'thread_level':
+                    4,
+                'outlier':
+                    outlier if outlier is not None else [False] * length,
+                'user_marked_confirmed':
+                    user_marked_confirmed
+                    if user_marked_confirmed is not None else [False] * length,
+                'user_marked_rejected':
+                    user_marked_rejected if user_marked_rejected is not None else [False] * length,
+                'rejected':
+                    rejected if rejected is not None else [False] * length,
+                'whitelisted':
+                    whitelisted if whitelisted is not None else [False] * length,
             }
             pvalue = 0.01
             permutations = 100
@@ -534,7 +600,8 @@ class TestPostRunCheck(unittest.TestCase):
         """
         Test regression and recovery helper.
         """
-        points, state = self._test_helper(series=series, outlier=outlier, marked=marked)
+        points, state = self._test_helper(
+            series=series, outlier=outlier, user_marked_confirmed=marked)
         expected = 18
 
         self.assertEqual(2, len(points))

@@ -3,7 +3,7 @@ Functionality to mark outliers.
 """
 import structlog
 
-from signal_processing.commands.helpers import stringify_json
+from signal_processing.commands.helpers import stringify_json, USER_CONFIRMED, USER_REJECTED
 
 LOG = structlog.getLogger(__name__)
 
@@ -36,7 +36,7 @@ def mark_outlier(query, command_config, confirmed=True):
     outlier = collection.find_one(query)
     if outlier:
         del outlier['_id']
-        outlier['type'] = 'user-confirmed' if confirmed else 'user-rejected'
+        outlier['type'] = USER_CONFIRMED if confirmed else USER_REJECTED
         LOG.info("matched\n", outlier=stringify_json(outlier, compact=command_config.compact))
         if not command_config.dry_run:
             result = command_config.marked_outliers.update(

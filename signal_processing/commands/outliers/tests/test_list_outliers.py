@@ -6,7 +6,7 @@ import unittest
 import click.testing
 from mock import MagicMock, patch
 
-from signal_processing.detect_outliers import DETECTED_HIGH_CONFIDENCE
+from signal_processing.commands.helpers import DETECTED_HIGH_CONFIDENCE
 from signal_processing.outliers_cli import cli
 
 NS = 'signal_processing.commands.outliers.list_outliers'

@@ -11,6 +11,7 @@ from mock import ANY, MagicMock, call, patch
 from tenacity import wait_none
 
 from signal_processing.commands import helpers
+from signal_processing.commands.helpers import USER_REJECTED, USER_CONFIRMED
 from signal_processing.detect_changes import detect_changes
 from signal_processing.model.points import get_points_aggregation, PointsModel, ARRAY_FIELDS
 from signal_processing.tests.helpers import Helpers
@@ -151,7 +152,7 @@ class TestGetPointsAggregation(unittest.TestCase):
                             {'$eq': ['$variant', '$$variant']},
                             {'$eq': ['$task', '$$task']},
                             {'$eq': ['$test', '$$test']},
-                            {'$eq': ['$thread_level', '$$thread_level']},
+                            {'$eq': ['$test_identifier.thread_level', '$$thread_level']},
                             {
                                 '$eq': ['$revision', '$$revision']
                             },
@@ -222,9 +223,18 @@ class TestGetPointsAggregation(unittest.TestCase):
                     }, 1]
                 }
             },
-            'marked': {
+            'user_marked_confirmed': {
                 '$push': {
-                    '$eq': ['$marked', None]
+                    '$eq': [USER_CONFIRMED, {
+                        '$arrayElemAt': ['$marked.type', 0]
+                    }]
+                }
+            },
+            'user_marked_rejected': {
+                '$push': {
+                    '$eq': [USER_REJECTED, {
+                        '$arrayElemAt': ['$marked.type', 0]
+                    }]
                 }
             }
         }
@@ -711,9 +721,9 @@ class TestComputeChangePoints(unittest.TestCase):
 
         # pylint: disable=too-many-locals, too-many-branches
         with patch(ns('pymongo.InsertOne')) as mock_insert_one, \
-             patch(ns('pymongo.DeleteMany')) as mock_delete_many, \
-             patch(ns('detect_change_points'), autospec=True) as mock_detect_change_points, \
-             patch(ns('pymongo.MongoClient')) as mock_mongo_client:
+                patch(ns('pymongo.DeleteMany')) as mock_delete_many, \
+                patch(ns('detect_change_points'), autospec=True) as mock_detect_change_points, \
+                patch(ns('pymongo.MongoClient')) as mock_mongo_client:
 
             # Prepare PointsModel
             test_model = PointsModel(self.mongo_uri)
@@ -739,8 +749,8 @@ class TestComputeChangePoints(unittest.TestCase):
             if expected_inserts:
                 mock_insert_one.return_value = expected_inserts[0]
                 if previous_change_point:
-                    test_model._prepare_update_previous_change_point.return_value = expected_updates[
-                        0]
+                    test_model._prepare_update_previous_change_point.return_value = \
+                        expected_updates[0]
                 else:
                     test_model._prepare_update_previous_change_point.return_value = None
 

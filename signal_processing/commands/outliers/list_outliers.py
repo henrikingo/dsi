@@ -5,7 +5,7 @@ Command to list outliers.
 
 import click
 
-from signal_processing.detect_outliers import DETECTED_HIGH_CONFIDENCE, DETECTED_LOW_CONFIDENCE
+from signal_processing.commands.helpers import DETECTED_HIGH_CONFIDENCE, DETECTED_LOW_CONFIDENCE
 from signal_processing.outliers import list_outliers
 from signal_processing.commands import helpers
 

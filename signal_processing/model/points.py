@@ -11,6 +11,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 from signal_processing.change_points.detection import detect_change_points
 
 from signal_processing.commands import helpers
+from signal_processing.commands.helpers import USER_CONFIRMED, USER_REJECTED
 
 LOG = structlog.getLogger(__name__)
 
@@ -19,8 +20,19 @@ REQUIRED_KEYS = {'revision', 'order', 'create_time'}
 The set of keys that a valid performance point must in include.
 """
 
-ARRAY_FIELDS = {'series', 'revisions', 'orders', 'create_times', 'task_ids', 'version_ids',\
-                'outlier', 'marked', 'rejected', 'whitelisted', }
+ARRAY_FIELDS = {
+    'series',
+    'revisions',
+    'orders',
+    'create_times',
+    'task_ids',
+    'version_ids',
+    'outlier',
+    'user_marked_rejected',
+    'user_marked_confirmed',
+    'rejected',
+    'whitelisted',
+}
 """
 The set of array field keys. These arrays must be equal in size.
 """
@@ -162,7 +174,7 @@ def get_points_aggregation(test_identifier, min_order):
                                 '$eq': ['$test', '$$test']
                             },
                             {
-                                '$eq': ['$thread_level', '$$thread_level']
+                                '$eq': ['$test_identifier.thread_level', '$$thread_level']
                             },
                             {
                                 '$eq': ['$revision', '$$revision']
@@ -182,7 +194,8 @@ def get_points_aggregation(test_identifier, min_order):
     # Step: Group by project / variant / task  / test and thread level and simultaneously
     # accumulate the data required for change point detection.
     whitelisted = {'$gte': [{'$size': '$whitelisted'}, 1]}
-    marked = {'$eq': ['$marked', None]}
+    user_marked_confirmed = {'$eq': [USER_CONFIRMED, {'$arrayElemAt': ['$marked.type', 0]}]}
+    user_marked_rejected = {'$eq': [USER_REJECTED, {'$arrayElemAt': ['$marked.type', 0]}]}
     if max_thread_level:
         # Push max_ops_per_sec to series.
         ops_per_sec = '$max_ops_per_sec'
@@ -230,8 +243,11 @@ def get_points_aggregation(test_identifier, min_order):
             'whitelisted': {
                 '$push': whitelisted
             },
-            'marked': {
-                '$push': marked
+            'user_marked_confirmed': {
+                '$push': user_marked_confirmed
+            },
+            'user_marked_rejected': {
+                '$push': user_marked_rejected
             }
         }
     })

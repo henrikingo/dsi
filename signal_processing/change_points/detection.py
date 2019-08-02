@@ -82,12 +82,20 @@ def create_exclusion_mask(time_series):
     :return: The exclusion mask.
     :rtype: list(bool)
     """
-    outlier_mask = np.array(time_series.get('outlier'), np.bool)
-    marked_mask = np.array(time_series.get('marked'), np.bool)
-    outlier_mask[marked_mask] = True
+    outlier_mask = np.array(time_series['outlier'], np.bool)
+    rejected_outlier_mask = np.array(time_series['user_marked_rejected'], np.bool)
+    confirmed_outlier_mask = np.array(time_series['user_marked_confirmed'], np.bool)
+    # Confirmed outliers are masked
+    outlier_mask[confirmed_outlier_mask] = True
+    # Rejected outliers are unmasked
+    outlier_mask[rejected_outlier_mask] = False
 
-    rejected_mask = np.array(time_series.get('rejected'), np.bool)
-    whitelisted = np.array(time_series.get('whitelisted'), np.bool)
+    # Rejected means that a canary test in the task failed, and all tests had their latest point
+    # marked as "rejected", i.e. trash --> mask that point
+    rejected_mask = np.array(time_series['rejected'], np.bool)
+    # Whitelisted means that a build baron (user) went in and specified that the task actually
+    # should be used for change point calculations --> unmask if masked
+    whitelisted = np.array(time_series['whitelisted'], np.bool)
     rejected_mask[whitelisted] = False
 
     mask = outlier_mask | rejected_mask

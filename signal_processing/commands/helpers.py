@@ -62,6 +62,32 @@ PROCESSED_TYPES = [PROCESSED_TYPE_HIDDEN, PROCESSED_TYPE_ACKNOWLEDGED]
 The list of recommended processed_types for a processed change point.
 """
 
+DETECTED_LOW_CONFIDENCE = 'detected-low-confidence'
+"""
+The string value indicating that this point was deemed to be within the acceptable
+performance range. The nature of the GESD algorithm means that in most cases points which are
+not and cannot be outliers are marked as suspicious / low confidence. Care should be taken in
+reading significance into suspicious points. You would really need to compare the z score and
+critical values and take the position into account w.r.t the last detected outlier.
+"""
+
+DETECTED_HIGH_CONFIDENCE = 'detected-high-confidence'
+"""
+The string value indicating that this point was deemed to be outside the acceptable
+performance range.
+"""
+
+USER_CONFIRMED = 'user-confirmed'
+"""
+The string value indicating that a point was verified as an outlier by a user.
+"""
+
+USER_REJECTED = 'user-rejected'
+"""
+The string value indicating that a point was verified as a false positive by a user, hence not an
+outlier.
+"""
+
 LOG = structlog.getLogger(__name__)
 
 PROCESSED_CHANGE_POINTS = 'processed_change_points'
