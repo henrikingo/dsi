@@ -432,11 +432,11 @@ class TestSetupBaselines(unittest.TestCase):
         cmd_args = updater.prepare_patch_cmd(self.perfyaml, '3.2.11', 'performance')
         reference = [
             'patch', '-p', 'performance', '-d', '3.2.11 baseline for project performance', '-y',
-            '-f', '-v', 'linux-wt-standalone', '-v', 'linux-mmap-standalone', '-v', 'linux-wt-repl',
-            '-v', 'linux-mmap-repl', '-v', 'linux-wt-repl-compare', '-v', 'linux-mmap-repl-compare',
-            '-t', 'query', '-t', 'where', '-t', 'update', '-t', 'insert', '-t', 'geo', '-t', 'misc',
-            '-t', 'singleThreaded', '-t', 'singleThreaded-wt-repl-comp', '-t',
-            'insert-wt-repl-comp', '-t', 'update-wt-repl-comp', '-t', 'misc-wt-repl-comp', '-t',
+            '-v', 'linux-wt-standalone', '-v', 'linux-mmap-standalone', '-v', 'linux-wt-repl', '-v',
+            'linux-mmap-repl', '-v', 'linux-wt-repl-compare', '-v', 'linux-mmap-repl-compare', '-t',
+            'query', '-t', 'where', '-t', 'update', '-t', 'insert', '-t', 'geo', '-t', 'misc', '-t',
+            'singleThreaded', '-t', 'singleThreaded-wt-repl-comp', '-t', 'insert-wt-repl-comp',
+            '-t', 'update-wt-repl-comp', '-t', 'misc-wt-repl-comp', '-t',
             'singleThreaded-mmap-repl-comp', '-t', 'insert-mmap-repl-comp', '-t',
             'update-mmap-repl-comp', '-t', 'misc-mmap-repl-comp', '-t', 'aggregation'
         ]
@@ -445,10 +445,10 @@ class TestSetupBaselines(unittest.TestCase):
         cmd_args = updater.prepare_patch_cmd(self.perfyaml, '3.4.1', 'performance')
         reference = [
             'patch', '-p', 'performance', '-d', '3.4.1 baseline for project performance', '-y',
-            '-f', '-v', 'linux-wt-standalone', '-v', 'linux-mmap-standalone', '-v', 'linux-wt-repl',
-            '-v', 'linux-mmap-repl', '-v', 'linux-wt-repl-compare', '-v', 'linux-mmap-repl-compare',
-            '-t', 'query', '-t', 'views-query', '-t', 'views-aggregation', '-t', 'where', '-t',
-            'update', '-t', 'insert', '-t', 'geo', '-t', 'misc', '-t', 'singleThreaded', '-t',
+            '-v', 'linux-wt-standalone', '-v', 'linux-mmap-standalone', '-v', 'linux-wt-repl', '-v',
+            'linux-mmap-repl', '-v', 'linux-wt-repl-compare', '-v', 'linux-mmap-repl-compare', '-t',
+            'query', '-t', 'views-query', '-t', 'views-aggregation', '-t', 'where', '-t', 'update',
+            '-t', 'insert', '-t', 'geo', '-t', 'misc', '-t', 'singleThreaded', '-t',
             'singleThreaded-wt-repl-comp', '-t', 'insert-wt-repl-comp', '-t', 'update-wt-repl-comp',
             '-t', 'misc-wt-repl-comp', '-t', 'singleThreaded-mmap-repl-comp', '-t',
             'insert-mmap-repl-comp', '-t', 'update-mmap-repl-comp', '-t', 'misc-mmap-repl-comp',

@@ -197,8 +197,8 @@ class BaselineUpdater(object):
         LOGGER.debug('Tasks are %s', tasks)
 
         description = '{0} baseline for project {1}'.format(version, project)
-        return ([get_evergreen(), 'patch', '-p', project, '-d', description, '-y', '-f'] +
-                variants + tasks)
+        return (
+            [get_evergreen(), 'patch', '-p', project, '-d', description, '-y'] + variants + tasks)
 
     def run_patch(self, version, project):
         '''Updated perf.yml and start a patch build. Assumes it is run in the
