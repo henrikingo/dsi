@@ -20,27 +20,50 @@ FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 class TestAtlasSetup(unittest.TestCase):
     def _cleanup(self):
-        if os.path.exists(self.out_file):
-            os.remove(self.out_file)
-        if os.path.exists(self.coverage_file):
-            os.remove(self.coverage_file)
+        for file_path in self.out_files:
+            if os.path.exists(file_path):
+                os.remove(file_path)
 
     def setUp(self):
-        self.out_file = os.path.join(
-            FIXTURE_FILES.fixture_file_path('atlas-config'), 'mongodb_setup.out.yml')
-        self.coverage_file = os.path.join(
-            FIXTURE_FILES.fixture_file_path('atlas-config'), 'coverage.xml')
+        self.config = None
+        self.out_files = []
+        self.out_files.append(
+            os.path.join(FIXTURE_FILES.fixture_file_path('atlas-config'), 'mongodb_setup.out.yml'))
+        self.out_files.append(
+            os.path.join(FIXTURE_FILES.fixture_file_path('atlas-config'), 'coverage.xml'))
+        self.out_files.append(
+            os.path.join(
+                FIXTURE_FILES.fixture_file_path('atlas-config-custom-build'),
+                'mongodb_setup.out.yml'))
+        self.out_files.append(
+            os.path.join(
+                FIXTURE_FILES.fixture_file_path('atlas-config-custom-build'), 'coverage.xml'))
         self._cleanup()
         structlog_for_test.setup_logging()
 
     def tearDown(self):
         self._cleanup()
 
+    def test_start(self):
+        expected_url = 'https://cloud-dev.mongodb.com/api/atlas/v1.0/MOCK/URL/groups/test_group_id/clusters'
+        with in_dir(FIXTURE_FILES.fixture_file_path('atlas-config')):
+            self.config = load_config_dict('mongodb_setup')
+            self._test_start(expected_url)
+
+    @patch('common.atlas_client.AtlasClient.create_custom_build')
+    def test_start_custom_build(self, mock_create_custom_build):
+        expected_url = 'https://cloud.mongodb.com/api/private/MOCK/URL/nds/groups/test_group_id/clusters'
+        with in_dir(FIXTURE_FILES.fixture_file_path('atlas-config-custom-build')):
+            self.config = load_config_dict('mongodb_setup')
+            self._test_start(expected_url)
+        mock_create_custom_build.assert_called()
+
     @patch('common.atlas_client.AtlasClient.get_one_cluster')
     @patch('common.atlas_setup.AtlasSetup._generate_unique_name')
     @patch('common.atlas_setup.AtlasSetup._get_primary')
     @patch('requests.post')
-    def test_start(self, mock_post, mock_get_primary, mock_generate, mock_get_one_cluster):
+    def _test_start(self, expected_url, mock_post, mock_get_primary, mock_generate,
+                    mock_get_one_cluster):
         mock_generate.return_value = 'mock_unique_name'
         response = MagicMock(name='requests.response', autospec=True)
         response.json.return_value = {'name': 'mock_unique_name'}
@@ -63,14 +86,12 @@ class TestAtlasSetup(unittest.TestCase):
             'port': 27017
         })
 
-        with in_dir(FIXTURE_FILES.fixture_file_path('atlas-config')):
-            config = load_config_dict('mongodb_setup')
-            atlas = atlas_setup.AtlasSetup(config)
-            atlas.start()
-        mock_post.assert_called()
-        self.assertDictEqual(config['mongodb_setup']['out']['atlas']['clusters'][0].as_dict(),
+        atlas = atlas_setup.AtlasSetup(self.config)
+        atlas.start()
+        mock_post.assert_called_with(expected_url, auth=ANY, json=ANY)
+        self.assertDictEqual(self.config['mongodb_setup']['out']['atlas']['clusters'][0].as_dict(),
                              expected_out)
-        self.assertEquals(len(config['mongodb_setup']['out']['atlas']['clusters']), 1)
+        self.assertEquals(len(self.config['mongodb_setup']['out']['atlas']['clusters']), 1)
 
     def test_start_when_cluster_exists(self):
         with in_dir(FIXTURE_FILES.fixture_file_path('atlas-config')):

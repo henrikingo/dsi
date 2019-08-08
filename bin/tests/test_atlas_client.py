@@ -18,11 +18,24 @@ class TestAtlasClient(unittest.TestCase):
     def setUp(self):
         self.api = {
             'root': 'https://cloud-dev.mongodb.com/api/atlas/v1.0/MOCK/URL',
+            'private': 'https://cloud.mongodb.com/api/private/MOCK/URL',
             'group_id': 'mock_group_id'
         }
         self.api_credentials = {'user': 'mock_user', 'key': 'mock_key'}
         self.auth = requests.auth.HTTPDigestAuth('mock_user', 'mock_key')
         self.atlas_client = atlas_client.AtlasClient(self.api, self.api_credentials)
+
+        self.custom_build = {
+            'trueName': '4.2.0-rc1-45-g84519c5',
+            'gitVersion': '84519c5dcffde5e59a007a19be32d943b32e908e',
+            'architecture': 'amd64',
+            'modules': ['enterprise'],
+            'platform': 'linux',
+            'flavor': 'rhel',
+            'minOsVersion': '7.0',
+            'maxOsVersion': '8.0',
+            'url': 'https://s3.amazonaws.com/mciuploads/foo.tgz'
+        }
 
         self.download_file = os.path.join(
             FIXTURE_FILES.fixture_file_path('atlas-config'), 'mock_download_file.tgz')
@@ -111,3 +124,25 @@ class TestAtlasClient(unittest.TestCase):
         self.atlas_client.await_log_job('test_job_id')
         mock_get.assert_called_with('test_job_id')
         mock_time.assert_called()
+
+    @patch('requests.post')
+    def test_create_custom_build(self, mock_post):
+        self.atlas_client.create_custom_build(self.custom_build)
+        mock_post.assert_called_with(
+            self.api['private'] + '/nds/customMongoDbBuild', auth=self.auth, json=self.custom_build)
+
+    @patch('requests.get')
+    def test_get_custom_build(self, mock_get):
+        self.atlas_client.get_custom_build('test_true_name')
+        mock_get.assert_called_with(
+            self.api['private'] + '/nds/customMongoDbBuild/test_true_name', auth=self.auth)
+
+    @patch('requests.post')
+    def test_create_custom_cluster(self, mock_post):
+        self.atlas_client.create_cluster({'mock_cluster': 'omitting_config'})
+        mock_post.assert_called_with(
+            self.api['root'] + '/groups/mock_group_id/clusters',
+            auth=self.auth,
+            json={
+                'mock_cluster': 'omitting_config'
+            })
