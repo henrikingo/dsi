@@ -50,7 +50,8 @@ infrastructure_provisioning:
     # This is a dict of steps you might want to use. This is not used directly.
     set_readahead:
       exec: |
-        # Set readahead for devices
+        # Set readahead: https://docs.mongodb.com/manual/administration/production-notes/#recommended-configuration
+        # (noatime is set when mounting.)
         for disk in ${infrastructure_provisioning.disks}; do
           if [[ -e $disk ]]; then
             sudo blockdev --setra ${infrastructure_provisioning.read_ahead} $disk;
@@ -71,12 +72,9 @@ infrastructure_provisioning:
     production_settings:
       exec: |
         # mongodb production recommended configuration
+        # https://docs.mongodb.com/manual/administration/production-notes/#recommended-configuration
         echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled
         echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag
-        echo f | sudo tee /sys/class/net/eth0/queues/rx-0/rps_cpus
-        # This last line fails on config servers, thus the || true.
-        # https://jira.mongodb.org/browse/PERF-1881
-        echo f0 | sudo tee /sys/class/net/eth0/queues/tx-0/xps_cpus || true
 
   post_provisioning:
     - on_all_hosts: ${infrastructure_provisioning.post_provisioning_steps.set_readahead}

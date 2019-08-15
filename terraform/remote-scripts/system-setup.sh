@@ -62,17 +62,13 @@ create_required_directories() {
     sudo chmod 777 /data
     mkdir -p /data/mci
     mkdir -p /data/tmp
-
+    # Tests are designed to access things with relative paths, which on EC2 is relative to $HOME.
     ln -s /data ~/data
 }
 
 ##
 # Prepare Disks
 ##
-dev=/dev/xvdc; sudo umount $dev; sudo mkfs.xfs -f $dev; sudo mount $dev
-sudo chmod 777 /media/ephemeral0
-sudo chown ec2-user /media/ephemeral0
-
 if [[ -e /dev/xvdc ]]; then
     prepare_disk "/dev/xvdc" "/media/ephemeral0"
 fi
