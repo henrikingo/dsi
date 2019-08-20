@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 set -eou pipefail
-
 _pip() {
     /usr/bin/env pip "$@" --isolated -q -q
 }
@@ -26,14 +25,16 @@ fi
 
 set +u
     source "./venv/bin/activate"
+    DIR=$(dirname "$0")
+    export PYTHONPATH="${DIR}/bin:${DIR}/analysis"
 set -u
+
+_pip uninstall dsi -y
+_pip install -e $DIR
 
 if [[ "$new_env" -eq 1 || "$1" == "setup" ]]; then
     pushd "$(dirname "$0")" >/dev/null
         _pip install -r requirements.txt
-        # Need to install in "develop" mode because config.py assumes its own file-location relative
-        # to the dsi/configurations.
-        /usr/bin/env python ./setup.py -q --no-user-cfg develop
     popd >/dev/null
 fi
 

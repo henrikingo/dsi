@@ -20,13 +20,6 @@ top_paths=(
     aws_tools
     bin
     bin/common
-    signal_processing
-    signal_processing/commands
-    signal_processing/commands/change_points
-    signal_processing/commands/outliers
-    signal_processing/change_points
-    signal_processing/outliers
-    signal_processing/keyring
 )
 
 # this set of directories uses /tests/pylintrc
@@ -35,12 +28,6 @@ test_paths=(
     tests
     tests/test_evergreen
     testscripts
-    signal_processing/tests
-    signal_processing/keyring/tests
-    signal_processing/commands/change_points/tests
-    signal_processing/commands/outliers/tests
-    signal_processing/change_points/tests
-    signal_processing/outliers/tests
     test_lib
 )
 

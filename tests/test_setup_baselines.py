@@ -21,6 +21,7 @@ class BaselineUpdaterTest(setup_baselines.BaselineUpdater):
 
     def __init__(self):
         ''' init. Load different file than parent '''
+        super(BaselineUpdaterTest, self).__init__()
         self.config = FIXTURE_FILES.load_yaml_file('baseline_config.yml')
 
 

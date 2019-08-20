@@ -2,6 +2,7 @@
 disable=locally-disabled,
         locally-enabled,
         fixme,
+        no-name-in-module,
         duplicate-code,
         import-error,
         relative-import,

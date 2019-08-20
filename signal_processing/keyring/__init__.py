@@ -1,3 +1,0 @@
-"""
-Handle keyring import.
-"""

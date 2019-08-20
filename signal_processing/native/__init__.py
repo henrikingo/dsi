@@ -1,3 +1,0 @@
-"""
-Native E-Divisive module.
-"""
