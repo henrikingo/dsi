@@ -347,11 +347,7 @@ def run_pre_post_commands(command_key,
     commands. If there is not a specific test related to the current set of commands, the value of
     current_test_id will be None.
     '''
-    SLOG.info(
-        "run_pre_post_commands",
-        command_key=command_key,
-        command_dicts=command_dicts,
-        current_test_id=current_test_id)
+    SLOG.info("run_pre_post_commands", command_key=command_key, current_test_id=current_test_id)
     for command_dict in command_dicts:
         if command_key in command_dict:
             SLOG.debug("in loop", command_dict=command_dict, command_key=command_key)
