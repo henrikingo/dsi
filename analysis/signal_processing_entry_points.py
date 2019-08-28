@@ -7,9 +7,9 @@ from signal_processing.profiling import cli as profiling_cli
 from bin.common.config import ConfigDict
 
 CONFIG = ConfigDict('analysis').load()
-TASK_ID = CONFIG['runtime']['task_id']
+TASK_ID = CONFIG['runtime'].get('task_id', None)
 PATCH = CONFIG['runtime'].get('is_patch', False)
-MONGO_URI = CONFIG['analysis']['mongo_uri']
+MONGO_URI = CONFIG['analysis'].get('mongo_uri', None)
 
 DEFAULT_MAP = {'task_id': TASK_ID, 'is_patch': PATCH, 'mongo_uri': MONGO_URI}
 
