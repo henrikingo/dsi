@@ -26,10 +26,11 @@ fi
 set +u
     source "./venv/bin/activate"
     DIR=$(dirname "$0")
-    _pip install ez_setup
-    _pip install -e ${DIR}
+    export PYTHONPATH="${DIR}/bin:${DIR}/analysis"
 set -u
 
+_pip uninstall dsi -y
+_pip install -e $DIR
 
 if [[ "$new_env" -eq 1 || "$1" == "setup" ]]; then
     pushd "$(dirname "$0")" >/dev/null

@@ -17,7 +17,7 @@ from setuptools import setup
 # See 'requires v requirements<https://packaging.python.org/discussions/install-requires-vs-requirements/>'.
 # pylint: disable=invalid-name
 install_requirements = ['boto3==1.4.7',
-                        'click~=7.0',
+                        'click==6.7',
                         'colorama==0.3.9',
                         'dnspython==1.15.0',
                         'enum34==1.1.6',
@@ -26,14 +26,14 @@ install_requirements = ['boto3==1.4.7',
                         'numpy==1.13.3',
                         'pymongo==3.7.2',
                         'python-dateutil==2.6.1',
-                        'PyYAML~=5.1',
-                        'requests~=2.22.0',
+                        'PyYAML==3.12',
+                        'requests==2.18.4',
                         'scipy==1.1.0',
-                        'structlog~=19.1.0',
+                        'structlog==18.1.0',
                         'tenacity==5.0.4',
                         'future==0.16.0',
                         'signal-processing @ git+ssh://git@github.com/10gen/signal-processing'
-                        '@0.2.1',
+                        '@0.1.0',
                         'keyring==10.6.0']
 extras_require = {
     'Plotting':  ['matplotlib==2.1.0']

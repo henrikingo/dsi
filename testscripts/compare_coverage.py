@@ -20,7 +20,7 @@ import requests
 
 # Sorry. Until we sort out python packaging, need to sneak in a path to use evergreen helpers.
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/analysis")
-from analysis.evergreen import evergreen_client
+from evergreen import evergreen_client
 
 
 def _does_url_exist(url):
