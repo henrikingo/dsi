@@ -275,17 +275,30 @@ class AtlasSetup(object):
         Two Atlas API calls are needed: First create the logCollectionJob, then download its file.
 
         See https://wiki.corp.mongodb.com/display/MMS/Atlas+Performance+Testing+Support#AtlasPerformanceTestingSupport-CollectandDownloadLogs  # pylint: disable=line-too-long
+        See https://wiki.corp.mongodb.com/display/PS/Atlas+Tips+and+Tricks
 
         :param str dir_in_reports: A prefix to use in the path of the downloaded file.
         """
         clusters_list = self.mongodb_setup.get("out", {}).get("atlas", {}).get("clusters", [])
         for atlas_cluster in clusters_list:
+            # To request logs for a single node:
+            # "resourceType": "PROCESS"
+            # "resourceName": "CLUSTERNAME-shard-x-node-y"
+            # Example: "Cluster0-shard-1-node-0"
+            #
+            # To request logs for a replica set or shard:
+            # "resourceType": "REPLICASET"
+            # "resourceName": "CLUSTERNAME-shard-x"
+            # Example: "Cluster0-shard-0"
+            #
+            # To request logs for a sharded cluster:
+            # "resourceType": "CLUSTER"
+            # "resourceName": "CLUSTERNAME"
+            # Example: "Cluster0"
             options = {
                 "resourceType": atlas_cluster["clusterType"],
-                # TODO: See PERF-1808: the string below is magic knowledge for now.
-                # As of this writing, it's unknown what to do here for a sharded cluster.
                 "resourceName": atlas_cluster["name"] + "-shard-0",
-                "sizeRequestedPerFileBytes": 3000000,
+                "sizeRequestedPerFileBytes": 999999999,
                 "redacted": False,
                 "logTypes": ["FTDC", "MONGODB", "AUTOMATION_AGENT"]
             }
