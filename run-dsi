@@ -4,40 +4,39 @@ set -eou pipefail
 _pip() {
     /usr/bin/env pip "$@" --isolated -q -q
 }
+DIR=$(dirname "$0")
 
 if [[ $# -lt 1 ]]; then
     echo -e "Usage: \\n\\t$0 setup\\n\\t$0 command-provided-by-setup.py" >/dev/stderr
     exit 5
 fi
 
-new_env=0
-if [ ! -d "venv" ]; then
+if [[ ! -d "dsi_venv" ]]; then
     python_path=/opt/mongodbtoolchain/v2/bin/python2.7
-    if [ ! -e "$python_path" ]; then
-        echo "${python_path} does not exists"
-        python_path="$(which python)"
+    if [[ ! -e "$python_path" ]]; then
+        echo "${python_path} does not exist"
+        python_path="$(command -v python2.7)"
     fi
     echo "creating new env with python: ${python_path}"
     _pip install virtualenv
-    /usr/bin/env virtualenv -q venv --python="${python_path}"
-    new_env=1
+    /usr/bin/env virtualenv -q "${DIR}/dsi_venv" --python="${python_path}"
+
+    set +u
+        # shellcheck source=/dev/null
+        source "${DIR}/dsi_venv/bin/activate"
+    set -u
+
+    _pip install -e "${DIR}"
+    _pip install -r requirements.txt
+
 fi
 
-set +u
-    source "./venv/bin/activate"
-    DIR=$(dirname "$0")
+
+if [[ "$1" != "setup" ]]; then
     export PYTHONPATH="${DIR}/bin:${DIR}/analysis"
-set -u
-
-_pip uninstall dsi -y
-_pip install -e $DIR
-
-if [[ "$new_env" -eq 1 || "$1" == "setup" ]]; then
-    pushd "$(dirname "$0")" >/dev/null
-        _pip install -r requirements.txt
-    popd >/dev/null
-fi
-
-if [ "$1" != "setup" ]; then
+    set +u
+        # shellcheck source=/dev/null
+        source "${DIR}/dsi_venv/bin/activate"
+    set -u
     /usr/bin/env "$@"
 fi
