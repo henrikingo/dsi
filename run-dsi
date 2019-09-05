@@ -27,7 +27,7 @@ if [[ ! -d "dsi_venv" ]]; then
     set -u
 
     _pip install -e "${DIR}"
-    _pip install -r requirements.txt
+    _pip install -r "${DIR}/requirements.txt"
 
 fi
 
