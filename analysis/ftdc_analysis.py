@@ -473,13 +473,21 @@ def _get_ftdc_file_paths(dir_path):
             test_id = os.path.basename(os.path.dirname(root_directory))
             ftdc_files = os.listdir(os.path.join(root_directory, find_directory))
             files = [file_name for file_name in ftdc_files if not file_name.endswith(".interim")]
+            if not files:
+                LOGGER.info('No FTDC metrics files in %s/%s. Expected at least one. Skipping.',
+                            test_id, host_alias)
+                continue
             if len(files) != 1:
-                LOGGER.info('%s FTDC metrics files in %s/%s: %s. Skipping.', len(files), test_id,
-                            host_alias, str(files))
+                LOGGER.info(
+                    '%s FTDC metrics files in %s/%s: %s. Expected one. Will use the last one.',
+                    len(files), test_id, host_alias, str(files))
+            # FTDC metric files have an ISO format date and timestring embedded in them. The
+            # filenames sort from oldest to newest.
+            # Sample filename: metrics.2019-09-09T17-24-55Z-00000
+            files.sort()
+            ftdc_file_path = os.path.join(root_directory, find_directory, files[-1])
+            if host_alias in ftdc_metrics_paths:
+                ftdc_metrics_paths[host_alias][test_id] = ftdc_file_path
             else:
-                ftdc_file_path = os.path.join(root_directory, find_directory, files[0])
-                if host_alias in ftdc_metrics_paths:
-                    ftdc_metrics_paths[host_alias][test_id] = ftdc_file_path
-                else:
-                    ftdc_metrics_paths[host_alias] = {test_id: ftdc_file_path}
+                ftdc_metrics_paths[host_alias] = {test_id: ftdc_file_path}
     return ftdc_metrics_paths

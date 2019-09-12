@@ -116,14 +116,13 @@ class TestFtdcAnalysis(unittest.TestCase):
                 'fio': {
                     'mongod.0': {
                         'diagnostic.data': {
-                            'test_true.txt': None
+                            'metrics.2019-09-09T17-24-55Z-00000': None,
+                            'metrics.2019-09-09T17-24-25Z-00000': None
                         },
                         'mongod.log': None
                     },
                     'mongod.1': {
-                        'diagnostic.data': {
-                            'test_true.txt': None
-                        },
+                        'diagnostic.data': {},
                         'mongod.log': None
                     }
                 },
@@ -136,13 +135,13 @@ class TestFtdcAnalysis(unittest.TestCase):
                     },
                     'mongod.0': {
                         'diagnostic.data': {
-                            'test_true.txt': None
+                            'metrics.2019-09-09T17-24-55Z-00000': None
                         },
                         'mongod.log': None
                     },
                     'mongod.1': {
                         'diagnostic.data': {
-                            'test_true.txt': None
+                            'metrics.2019-09-09T17-24-55Z-00000': None
                         },
                         'mongod.log': None
                     },
@@ -175,15 +174,19 @@ class TestFtdcAnalysis(unittest.TestCase):
         expected_result = {
             'mongod.0': {
                 'iperf':
-                    os.path.abspath('test_reports/iperf/mongod.0/diagnostic.data/test_true.txt'),
+                    os.path.abspath(
+                        'test_reports/iperf/mongod.0/diagnostic.data/metrics.2019-09-09T17-24-55Z-00000'
+                    ),
                 'fio':
-                    os.path.abspath('test_reports/fio/mongod.0/diagnostic.data/test_true.txt')
+                    os.path.abspath(
+                        'test_reports/fio/mongod.0/diagnostic.data/metrics.2019-09-09T17-24-55Z-00000'
+                    )
             },
             'mongod.1': {
                 'iperf':
-                    os.path.abspath('test_reports/iperf/mongod.1/diagnostic.data/test_true.txt'),
-                'fio':
-                    os.path.abspath('test_reports/fio/mongod.1/diagnostic.data/test_true.txt')
+                    os.path.abspath(
+                        'test_reports/iperf/mongod.1/diagnostic.data/metrics.2019-09-09T17-24-55Z-00000'
+                    )
             }
         }
         self.assertEqual(ftdc_metric_paths, expected_result)
