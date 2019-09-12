@@ -1,0 +1,23 @@
+task_name: refine_shard_key_transaction_stress
+numactl_prefix_for_workload_client: ${infrastructure_provisioning.numactl_prefix}
+run:
+  - id: UpdateMillionDocsInTxn
+    type: genny
+    config_filename: ./genny/etc/genny/workloads/scale/UpdateMillionDocsInTxn.yml
+
+  - id: fio
+    type: fio
+    cmd: '${test_control.numactl_prefix_for_workload_client} ./fio-test.sh ${mongodb_setup.meta.hostname}'
+    config_filename: fio.ini
+    output_files:
+      - fio.json
+      - fio_results.tgz
+    workload_config: ${test_control.common_fio_config}
+    skip_validate: true
+
+  - id: iperf
+    type: iperf
+    cmd: '${test_control.numactl_prefix_for_workload_client} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    output_files:
+      - iperf.json
+    skip_validate: true
