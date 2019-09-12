@@ -46,6 +46,7 @@ message LogOptions {
     int64 in_memory_cap = 6;
     SplunkOptions splunk_options = 7;
     string sumo_endpoint = 8;
+    LogLevel level = 9;
 }
 
 message BufferOptions {
@@ -70,6 +71,11 @@ message SplunkOptions {
     string channel = 3;
 }
 
+message LogLevel {
+    int32 threshold = 1;
+    int32 default = 2;
+}
+
 message CreateOptions {
   repeated string args = 1;
   string working_directory = 2;
@@ -81,6 +87,11 @@ message CreateOptions {
   repeated CreateOptions on_failure = 8;
   repeated CreateOptions on_timeout = 9;
   OutputOptions output = 10;
+  bytes standard_input_bytes = 11;
+}
+
+message IDResponse {
+    string value = 1;
 }
 
 message ProcessInfo {
@@ -139,7 +150,6 @@ message ProcessTags {
 
 message JasperProcessID {
   string value = 1;
-
 }
 
 message OperationOutcome {
@@ -156,14 +166,14 @@ message BuildOptions {
 }
 
 message MongoDBDownloadOptions {
-    BuildOptions build_options = 1;
+    BuildOptions build_opts = 1;
     string path = 2;
     repeated string releases = 3;
 }
 
 message CacheOptions {
     bool disabled = 1;
-    int64 prune_delay = 2;
+    int64 prune_delay_seconds = 2;
     int64 max_size = 3;
 }
 
@@ -181,29 +191,71 @@ message ArchiveOptions {
 }
 
 message DownloadInfo {
-  string url = 1;
-  string path = 2;
-  ArchiveOptions archive_opts = 3;
+    string url = 1;
+    string path = 2;
+    ArchiveOptions archive_opts = 3;
+}
+
+message WriteFileInfo {
+    string path = 1;
+    bytes content = 2;
+    bool append = 4;
+    uint32 perm = 3;
 }
 
 message BuildloggerURLs {
     repeated string urls = 1;
 }
 
+message LogRequest {
+    JasperProcessID id = 1;
+    int64 count = 2;
+}
+message LogStream {
+    repeated string logs = 1;
+    bool done = 2;
+}
+
+enum SignalTriggerID {
+  NONE = 0;
+  CLEANTERMINATION = 1;
+}
+
+message SignalTriggerParams {
+  JasperProcessID processID = 1;
+  SignalTriggerID signalTriggerID = 2;
+}
+
+message EventName {
+  string value = 1;
+}
+
 service JasperProcessManager {
-  rpc Status(google.protobuf.Empty) returns  (StatusResponse);
+  // Manager functions
+  rpc ID(google.protobuf.Empty) returns (IDResponse);
   rpc Create(CreateOptions) returns (ProcessInfo);
   rpc List(Filter) returns (stream ProcessInfo);
   rpc Group(TagName) returns (stream ProcessInfo);
   rpc Get(JasperProcessID) returns (ProcessInfo);
-  rpc Wait(JasperProcessID) returns (OperationOutcome);
   rpc Signal(SignalProcess) returns (OperationOutcome);
+  rpc Clear(google.protobuf.Empty) returns (OperationOutcome);
   rpc Close(google.protobuf.Empty) returns (OperationOutcome);
+
+  // Process functions
   rpc TagProcess(ProcessTags) returns (OperationOutcome);
   rpc ResetTags(JasperProcessID) returns (OperationOutcome);
   rpc GetTags(JasperProcessID) returns (ProcessTags);
+  rpc RegisterSignalTriggerID(SignalTriggerParams) returns (OperationOutcome);
+  rpc Wait(JasperProcessID) returns (OperationOutcome);
+  rpc Respawn(JasperProcessID) returns (ProcessInfo);
+
+  // RPC-specific functions
+  rpc Status(google.protobuf.Empty) returns (StatusResponse);
+  rpc ConfigureCache(CacheOptions) returns (OperationOutcome);
   rpc DownloadFile(DownloadInfo) returns (OperationOutcome);
   rpc DownloadMongoDB(MongoDBDownloadOptions) returns (OperationOutcome);
-  rpc ConfigureCache(CacheOptions) returns (OperationOutcome);
+  rpc GetLogStream(LogRequest) returns (LogStream);
   rpc GetBuildloggerURLs(JasperProcessID) returns (BuildloggerURLs);
+  rpc SignalEvent(EventName) returns (OperationOutcome);
+  rpc WriteFile(stream WriteFileInfo) returns (OperationOutcome);
 }

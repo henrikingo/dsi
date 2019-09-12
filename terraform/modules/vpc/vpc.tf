@@ -104,8 +104,8 @@ resource "aws_security_group" "default" {
 
     # jasper access from runner, and VPC.
     ingress {
-        from_port = 2286
-        to_port = 2286
+        from_port = 2486
+        to_port = 2486
         protocol = "tcp"
         cidr_blocks = ["${var.vpc_cidr_block}", "${var.runner_ip}/32"]
     }

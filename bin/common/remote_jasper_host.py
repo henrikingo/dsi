@@ -17,7 +17,7 @@ LOG = logging.getLogger(__name__)
 # This stream only log error or above messages
 ERROR_ONLY = logging.getLogger('error_only')
 
-DEFAULT_JASPER_PORT = 2286
+DEFAULT_JASPER_PORT = 2486
 
 # This will not work against the centos7 image that has a different home directory. This should be
 # parameterized and passed through from the configuration, or determined on the fly.

@@ -150,7 +150,7 @@ install_java() {
 install_jasper() {
     # Please refer to README.md in jasper.proto's directory on steps for updating jasper.proto and the
     # curator binary.
-    curl -o curator.tar.gz --retry 10 -LsS https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-f78d20b10c7a70783c5ec47cc466bd9933e00212.tar.gz
+    curl -o curator.tar.gz --retry 10 -LsS https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-ac7e518bd8c8d18188330413db79704f9f0eb8a3.tar.gz
     tar xvf curator.tar.gz
 
     sudo cp ./curator /usr/local/bin/curator
@@ -163,7 +163,7 @@ Description=Jasper Process Management Service
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/curator jasper grpc --host 0.0.0.0
+ExecStart=/usr/local/bin/curator jasper service run rpc --host 0.0.0.0
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=always
 User=ec2-user
