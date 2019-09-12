@@ -366,7 +366,8 @@ PROJECT_TEST_RULES = {
         'default': REGRESSION_RULES,
         'linux-3-shard': REGRESSION_RULES,
         'linux-3-node-replSet': REGRESSION_RULES,
-        'linux-3-node-replSet-initialsync': REGRESSION_RULES
+        'linux-3-node-replSet-initialsync': REGRESSION_RULES,
+        'linux-1-node-replSet-fle': REGRESSION_RULES,
     },
     'mongo-longevity': {
         'default': [compare_to_previous]

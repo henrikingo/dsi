@@ -11,6 +11,7 @@ run:
     config_filename: workloadEvergreen
     workload_config: |
       mongodb.url=${mongodb_setup.meta.mongodb_url}
+      mongodb.fle=${mongodb_setup.meta.is_fle}
       recordcount=5000000
       operationcount=20000000
       workload=com.yahoo.ycsb.workloads.CoreWorkload
@@ -33,6 +34,7 @@ run:
     config_filename: workloadEvergreen_100read
     workload_config: |
       mongodb.url=${mongodb_setup.meta.mongodb_url}
+      mongodb.fle=${mongodb_setup.meta.is_fle}
       recordcount=5000000
       operationcount=20000000
       maxexecutiontime=240
@@ -56,6 +58,7 @@ run:
     config_filename: workloadEvergreen_95read5update
     workload_config: |
       mongodb.url=${mongodb_setup.meta.mongodb_url}
+      mongodb.fle=${mongodb_setup.meta.is_fle}
       recordcount=5000000
       operationcount=20000000
       maxexecutiontime=240
@@ -79,6 +82,7 @@ run:
     config_filename: workloadEvergreen_100update
     workload_config: |
       mongodb.url=${mongodb_setup.meta.mongodb_url}
+      mongodb.fle=${mongodb_setup.meta.is_fle}
       recordcount=5000000
       operationcount=20000000
       maxexecutiontime=240
@@ -102,6 +106,7 @@ run:
     config_filename: workloadEvergreen_50read50update
     workload_config: |
       mongodb.url=${mongodb_setup.meta.mongodb_url}
+      mongodb.fle=${mongodb_setup.meta.is_fle}
       recordcount=5000000
       operationcount=20000000
       maxexecutiontime=240
@@ -223,6 +228,13 @@ pre_task:
         connection_string: ${mongodb_setup.meta.mongodb_shell_url}
         # Shard the YCSB cluster if sharding is enabled
         script: ${test_control.ycsb_sharding_script}
+  - on_workload_client:
+      exec: |
+        # Start mongocryptd separately so that it runs on a different cpu
+        pwd
+        if [ "${mongodb_setup.meta.is_fle}" == "True" ]; then
+          ${mongodb_setup.mongo_dir}/bin/mongocryptd --logpath $HOME/cryptd.log --pidfilepath=$HOME/mongocryptd.pid --fork
+        fi
 
 post_task:
   - on_localhost:
