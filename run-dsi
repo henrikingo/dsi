@@ -33,7 +33,6 @@ fi
 
 
 if [[ "$1" != "setup" ]]; then
-    export PYTHONPATH="${DIR}/bin:${DIR}/analysis"
     set +u
         # shellcheck source=/dev/null
         source "${DIR}/dsi_venv/bin/activate"
