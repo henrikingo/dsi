@@ -10,7 +10,6 @@ Exit with non-zero if total code coverage is lower than in the previous.
 """
 from __future__ import print_function
 
-import os
 import sys
 import traceback
 import xml.etree.ElementTree as ElementTree
@@ -18,9 +17,7 @@ import yaml
 
 import requests
 
-# Sorry. Until we sort out python packaging, need to sneak in a path to use evergreen helpers.
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/analysis")
-from evergreen import evergreen_client
+from analysis.evergreen import evergreen_client
 
 
 def _does_url_exist(url):
