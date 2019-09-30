@@ -29,9 +29,9 @@ run:
               sync_type: "initialSync"
               start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
-              # doc_size default for this workload is 300KB and num_docs is 17K to keep the size of data roughly 5GB
+              # string_field_size default for this workload is 300KB and num_docs is 17K to keep the size of data roughly 5GB
               num_docs: 17408
-              doc_size: 307200
+              string_field_size: 307200
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
@@ -58,7 +58,7 @@ run:
               start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
               num_docs: 17408
-              doc_size: 307200
+              string_field_size: 307200
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
@@ -86,7 +86,7 @@ run:
               start_mongod: ${infrastructure_provisioning.numactl_prefix} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
               num_docs: 17408
-              doc_size: 307200
+              string_field_size: 307200
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
@@ -114,7 +114,7 @@ run:
               start_mongod: ${test_control.numactl_prefix_for_workload_client} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
               num_docs: 17408
-              doc_size: 307200
+              string_field_size: 307200
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
@@ -142,7 +142,7 @@ run:
               start_mongod: ${test_control.numactl_prefix_for_workload_client} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
               num_docs: 17408
-              doc_size: 307200
+              string_field_size: 307200
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
@@ -170,7 +170,7 @@ run:
               start_mongod: ${test_control.numactl_prefix_for_workload_client} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
               num_docs: 17408
-              doc_size: 307200
+              string_field_size: 307200
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
@@ -198,7 +198,7 @@ run:
               start_mongod: ${test_control.numactl_prefix_for_workload_client} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
               num_docs: 17408
-              doc_size: 307200
+              string_field_size: 307200
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
       sharded: ${mongodb_setup.meta.is_sharded}
@@ -226,7 +226,7 @@ run:
               start_mongod: ${test_control.numactl_prefix_for_workload_client} mongod --config /tmp/mongo_port_${mongodb_setup.meta.port}.conf
               db_path: ${mongodb_setup.mongod_config_file.storage.dbPath}
               num_docs: 17408
-              doc_size: 307200
+              string_field_size: 307200
           - cpu_noise
       target: ${mongodb_setup.meta.hostname}
       port: ${mongodb_setup.meta.port}
