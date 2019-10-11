@@ -33,7 +33,7 @@ install_requirements = [
     'requests~=2.22.0',
     'scipy==1.1.0',
     'signal-processing @ git+ssh://git@github.com/10gen/signal-processing'
-    '@0.2.4',
+    '@0.2.5',
     'structlog~=19.1.0',
     'tenacity==5.0.4',
 ]
