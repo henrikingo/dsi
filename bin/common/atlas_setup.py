@@ -44,10 +44,9 @@ class AtlasSetup(object):
 
             self.api_credentials["user"] = self.config["runtime_secret"].get("atlas_api_user", "")
             self.api_credentials["key"] = self.config["runtime_secret"].get("atlas_api_key", "")
-            LOG.debug(
-                "Atlas credentials",
-                user=self.api_credentials["user"],
-                key=(self.api_credentials["key"][0:5] if self.api_credentials["key"] else ""))
+            LOG.debug("Atlas credentials",
+                      user=self.api_credentials["user"],
+                      key=(self.api_credentials["key"][0:5] if self.api_credentials["key"] else ""))
 
         self.atlas_client = None
         if "root" in self.api and "group_id" in self.api and self.api_credentials:
@@ -100,9 +99,8 @@ class AtlasSetup(object):
         Destroy the cluster(s) listed in `mongodb_setup.out.atlas.clusters`.
         """
         clusters_list = self.mongodb_setup.get("out", {}).get("atlas", {}).get("clusters", [])
-        LOG.info(
-            "About to shutdown Atlas clusters",
-            clusters=[atlas_cluster["name"] for atlas_cluster in clusters_list])
+        LOG.info("About to shutdown Atlas clusters",
+                 clusters=[atlas_cluster["name"] for atlas_cluster in clusters_list])
         return all(self.delete_cluster(atlas_cluster) for atlas_cluster in clusters_list)
 
     def create_cluster(self, atlas_cluster):
@@ -122,44 +120,41 @@ class AtlasSetup(object):
 
         LOG.debug("Atlas custom build config", custom_build=self.custom_build)
         if self.custom_build is not None:
-            LOG.info(
-                "Create Atlas CUSTOM BUILD Cluster",
-                instance_size_name=body["providerSettings"]["instanceSizeName"],
-                cluster_type=body["clusterType"],
-                name=body["name"],
-                custom_build_config=self.custom_build)
+            LOG.info("Create Atlas CUSTOM BUILD Cluster",
+                     instance_size_name=body["providerSettings"]["instanceSizeName"],
+                     cluster_type=body["clusterType"],
+                     name=body["name"],
+                     custom_build_config=self.custom_build)
             self.atlas_client.create_custom_build(self.custom_build)
             body.pop("mongoDBMajorVersion", None)
             body["mongoDBVersion"] = self.custom_build["trueName"]
             response = self.atlas_client.create_custom_cluster(body)
         else:
-            LOG.info(
-                "Create Atlas Cluster",
-                instance_size_name=body["providerSettings"]["instanceSizeName"],
-                cluster_type=body["clusterType"],
-                name=body["name"])
+            LOG.info("Create Atlas Cluster",
+                     instance_size_name=body["providerSettings"]["instanceSizeName"],
+                     cluster_type=body["clusterType"],
+                     name=body["name"])
             response = self.atlas_client.create_cluster(body)
 
         LOG.debug("Create cluster response", response=response)
         # This response still lacks meta data, but we want to persist the cluster name asap
         self._save_create_response(response)
-        response = self.atlas_client.await(body["name"])
-        LOG.debug("After cluster await", response=response)
+        response = self.atlas_client.await_idle(body["name"])
+        LOG.debug("After cluster await_idle", response=response)
         # Save MongoDB URI and such to mongodb_setup.out.yml
         self._save_create_response(response)
-        LOG.info(
-            "Done creating Atlas cluster",
-            instance_size_name=body["providerSettings"]["instanceSizeName"],
-            cluster_type=body["clusterType"],
-            name=body["name"])
+        LOG.info("Done creating Atlas cluster",
+                 instance_size_name=body["providerSettings"]["instanceSizeName"],
+                 cluster_type=body["clusterType"],
+                 name=body["name"])
         return True
 
     @staticmethod
     def _generate_unique_name(atlas_cluster):
         chars = "abcdefghijklmnopqrstuvwxyz"
         unique = ''.join([random.choice(chars) for _ in range(7)])
-        return "dsi-{}-{}".format(atlas_cluster["providerSettings"]["instanceSizeName"].replace(
-            '_', ''), unique)
+        return "dsi-{}-{}".format(
+            atlas_cluster["providerSettings"]["instanceSizeName"].replace('_', ''), unique)
 
     def _save_create_response(self, response):
         self._init_config_out()

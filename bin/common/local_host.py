@@ -23,7 +23,6 @@ class LocalHost(common.host.Host):
     """
     Represents a connection to the local host
     """
-
     def __init__(self, mongodb_auth_settings=None, mongodb_tls_settings=None):
         super(LocalHost, self).__init__("localhost", mongodb_auth_settings, mongodb_tls_settings)
 
@@ -62,11 +61,10 @@ class LocalHost(common.host.Host):
 
         start = datetime.now()
         logger.info('[localhost]$ %s', command)
-        proc = subprocess.Popen(
-            ['bash', '-c', command],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            preexec_fn=common.host_utils.restore_signals)
+        proc = subprocess.Popen(['bash', '-c', command],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                preexec_fn=common.host_utils.restore_signals)
         is_timed_out = common.host_utils.create_timer(start, max_time_ms)
         if common.host_utils.stream_proc_logs(proc, stdout, stderr, is_timed_out):
             exit_status = proc.returncode

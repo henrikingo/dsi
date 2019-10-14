@@ -332,8 +332,9 @@ def _process_ftdc_file(path_to_ftdc_file, project, variant, constant_values):  #
                 arguments_needed = inspect.getargspec(chunk_rule).args
 
                 # gather any missing arguments
-                (build_args, constant_values) = _fetch_constant_arguments(
-                    chunk, arguments_needed, build_args, constant_values)
+                (build_args,
+                 constant_values) = _fetch_constant_arguments(chunk, arguments_needed, build_args,
+                                                              constant_values)
                 if len(build_args) < len(arguments_needed):
                     continue  # could not find all the necessary metrics in this chunk
                 else:

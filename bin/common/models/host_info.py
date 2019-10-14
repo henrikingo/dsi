@@ -33,10 +33,9 @@ class HostInfo:
         return hash(self.__repr__())
 
     def __copy__(self):
-        return HostInfo(
-            public_ip=self.public_ip,
-            private_ip=self.private_ip,
-            ssh_user=self.ssh_user,
-            ssh_key_file=self.ssh_key_file,
-            category=self.category,
-            offset=self.offset)
+        return HostInfo(public_ip=self.public_ip,
+                        private_ip=self.private_ip,
+                        ssh_user=self.ssh_user,
+                        ssh_key_file=self.ssh_key_file,
+                        category=self.category,
+                        offset=self.offset)

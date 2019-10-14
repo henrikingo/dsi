@@ -54,15 +54,14 @@ def compare_results(  # pylint: disable=too-many-arguments,too-many-locals
     # For the max throughput, use the max noise across the thread levels as the noise parameter
     if noise_levels.values():
         noise = max(noise_levels.values())
-    result = compare_one_result(
-        this_one,
-        reference,
-        label,
-        "max",
-        noise_level=noise,
-        noise_multiple=noise_multiple,
-        default_threshold=threshold,
-        using_override=using_override)
+    result = compare_one_result(this_one,
+                                reference,
+                                label,
+                                "max",
+                                noise_level=noise,
+                                noise_multiple=noise_multiple,
+                                default_threshold=threshold,
+                                using_override=using_override)
     log += result[1] + '\n'
     if result[0]:  # Comparison failed
         failed = True
@@ -70,15 +69,14 @@ def compare_results(  # pylint: disable=too-many-arguments,too-many-locals
     thread_levels = [r for r in this_one["results"] if isinstance(this_one["results"][r], dict)]
     if len(thread_levels) > 1:
         for level in thread_levels:
-            result = compare_one_result(
-                this_one,
-                reference,
-                label,
-                level,
-                noise_level=noise_levels.get(level, 0),
-                noise_multiple=thread_noise_multiple,
-                default_threshold=thread_threshold,
-                using_override=using_override)
+            result = compare_one_result(this_one,
+                                        reference,
+                                        label,
+                                        level,
+                                        noise_level=noise_levels.get(level, 0),
+                                        noise_multiple=thread_noise_multiple,
+                                        default_threshold=thread_threshold,
+                                        using_override=using_override)
             log += result[1] + '\n'
             if result[0]:  # Comparison failed
                 failed = True
@@ -90,13 +88,20 @@ def main(args):  # pylint: disable=too-many-branches,too-many-locals,too-many-st
     """Main entrypoint for the script."""
 
     arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument(
-        "-f", "--file", dest="file", help="path to json file containing history data")
-    arg_parser.add_argument(
-        "-t", "--tagFile", dest="tfile", help="path to json file containing tag data")
+    arg_parser.add_argument("-f",
+                            "--file",
+                            dest="file",
+                            help="path to json file containing history data")
+    arg_parser.add_argument("-t",
+                            "--tagFile",
+                            dest="tfile",
+                            help="path to json file containing tag data")
     arg_parser.add_argument("--rev", dest="rev", help="revision to examine for regressions")
-    arg_parser.add_argument(
-        "--ndays", default=7, type=int, dest="ndays", help="Check against commit from n days ago.")
+    arg_parser.add_argument("--ndays",
+                            default=7,
+                            type=int,
+                            dest="ndays",
+                            help="Check against commit from n days ago.")
     arg_parser.add_argument(
         "--threshold",
         default=0.05,
@@ -118,29 +123,27 @@ def main(args):  # pylint: disable=too-many-branches,too-many-locals,too-many-st
         dest="threadNoise",
         help="Don't flag an error if thread level throughput is less than 'noise' times the"
         "computed noise level off")
-    arg_parser.add_argument(
-        "--refTag",
-        dest="reference",
-        help="Reference tag to compare against. Should be a valid tag name")
-    arg_parser.add_argument(
-        "--overrideFile",
-        dest="overrideFile",
-        help="File to read for comparison override information")
-    arg_parser.add_argument(
-        "--variant", dest="variant", help="Variant to lookup in the override file")
+    arg_parser.add_argument("--refTag",
+                            dest="reference",
+                            help="Reference tag to compare against. Should be a valid tag name")
+    arg_parser.add_argument("--overrideFile",
+                            dest="overrideFile",
+                            help="File to read for comparison override information")
+    arg_parser.add_argument("--variant",
+                            dest="variant",
+                            help="Variant to lookup in the override file")
     arg_parser.add_argument('--task', dest='task', help='task_name for the test in Evergreen')
-    arg_parser.add_argument(
-        "--out-file", help="File to write the results table to. Defaults to stdout.")
+    arg_parser.add_argument("--out-file",
+                            help="File to write the results table to. Defaults to stdout.")
     arg_parser.add_argument(
         "--report-file",
         help='File to write the report JSON file to. Defaults to "report.json".',
         default="report.json")
-    arg_parser.add_argument(
-        "--is-patch",
-        action='store_true',
-        default=False,
-        dest='is_patch',
-        help='If true, will skip NDays comparison (see PERF-386).')
+    arg_parser.add_argument("--is-patch",
+                            action='store_true',
+                            default=False,
+                            dest='is_patch',
+                            help='If true, will skip NDays comparison (see PERF-386).')
     # TODO: PERF-675 to remove this. Present for backwards compatibility right now.
     arg_parser.add_argument(
         "--log-analysis",
@@ -174,8 +177,9 @@ def main(args):  # pylint: disable=too-many-branches,too-many-locals,too-many-st
             continue
 
         # Handle threshold overrides
-        (threshold, thread_threshold, threshold_override) = read_threshold_overrides(
-            test, args.threshold, args.thread_threshold, overrides)
+        (threshold, thread_threshold,
+         threshold_override) = read_threshold_overrides(test, args.threshold, args.thread_threshold,
+                                                        overrides)
 
         previous = history.series_at_n_before(test, args.rev, 1)
         if not previous:

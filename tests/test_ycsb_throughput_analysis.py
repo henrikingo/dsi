@@ -18,7 +18,6 @@ def tuples_to_throughputs(time_ops_tuples):
 
 class TestYCSBThroughputAnalysis(unittest.TestCase):
     """Test suite."""
-
     def test_get_ycsb_file_paths(self):
         """Test `_get_ycsb_file_paths()`."""
 
@@ -52,7 +51,6 @@ class TestYCSBThroughputAnalysis(unittest.TestCase):
 
     def test_analyze_spiky_throughput(self):
         """Test `_analyze_spiky_throughput()`."""
-
         def analyze(*args, **kwargs):
             """Convenience function to reduce boilerplate when calling `_analyze_throughputs()`."""
 
@@ -68,26 +66,24 @@ class TestYCSBThroughputAnalysis(unittest.TestCase):
         self.assertFalse(analyze(max_drop=0.8, min_duration=10, skip_initial_seconds=-1))
         self.assertTrue(analyze(max_drop=0.4, min_duration=10, skip_initial_seconds=-1))
 
-        throughputs = tuples_to_throughputs([(0, 0), (5, 0), (10, 0), (20, 0), (30, 100), (40,
-                                                                                           100)])
+        throughputs = tuples_to_throughputs([(0, 0), (5, 0), (10, 0), (20, 0), (30, 100),
+                                             (40, 100)])
         self.assertTrue(analyze(max_drop=0.9, min_duration=5, skip_initial_seconds=20))
         self.assertFalse(analyze(max_drop=0.9, min_duration=1, skip_initial_seconds=5))
 
     def test_analyze_long_term(self):
         """Test `_analyze_long_term_degradation().`"""
-
         def analyze(*args, **kwargs):
             """Convenience function to reduce boilerplate."""
 
             results = ycsb_throughput._analyze_long_term_degradation(throughputs, *args, **kwargs)
             return not results
 
-        throughputs = tuples_to_throughputs(
-            [(time, 10) for time in range(600)] + [(time, 5) for time in range(601, 20 * 60 + 3)])
+        throughputs = tuples_to_throughputs([(time, 10) for time in range(600)] +
+                                            [(time, 5) for time in range(601, 20 * 60 + 3)])
         self.assertFalse(analyze(), "Detects long-term throughput degradation")
-        self.assertTrue(
-            analyze(duration_seconds=10 * 100),
-            "Ignores degradation shorter than `duration_seconds`")
+        self.assertTrue(analyze(duration_seconds=10 * 100),
+                        "Ignores degradation shorter than `duration_seconds`")
         self.assertTrue(analyze(max_drop=0.3), "Ignores degradation higher than `max_drop`")
         self.assertTrue(analyze(max_drop=0.4), "Ignores degradation higher than `max_drop`")
         self.assertFalse(analyze(max_drop=0.51), "Flags degradation lower than `max_drop`")

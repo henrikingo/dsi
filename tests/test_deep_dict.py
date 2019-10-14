@@ -9,7 +9,6 @@ class TestDeepDict(unittest.TestCase):
     """
     Test the deep_dict utility functions.
     """
-
     def test_deep_dict_iterate(self):
         """deep_dict.iterate()"""
         data = {

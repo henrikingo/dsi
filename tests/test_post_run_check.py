@@ -7,9 +7,9 @@ import shutil
 
 from mock import patch
 from nose.tools import nottest
+from evergreen.history import History
 
 from common.utils import mkdir_p, touch
-from evergreen.history import History
 from test_lib.comparator_utils import ANY_IN_STRING
 from test_lib.fixture_files import FixtureFiles
 import post_run_check
@@ -19,7 +19,6 @@ FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 class TestPostRunCheck(unittest.TestCase):
     """Test suite."""
-
     def cleanup(self):
         """ common clean up code. It is called from both setup and teardown to be sure to be sure.
         """
@@ -114,9 +113,9 @@ class TestPostRunCheck(unittest.TestCase):
             "--report-file {0}/report_ftdc.json --out-file /dev/null".format(
                 FIXTURE_FILES.fixture_dir_path)
         post_run_check.main(arg_string.split(" "))
-        mock_resource_rules.assert_called_once_with("{}/core_workloads_reports".format(
-            FIXTURE_FILES.fixture_dir_path), 'sys-perf', 'linux-standalone',
-                                                    {'max_thread_level': 419}, None)
+        mock_resource_rules.assert_called_once_with(
+            "{}/core_workloads_reports".format(FIXTURE_FILES.fixture_dir_path), 'sys-perf',
+            'linux-standalone', {'max_thread_level': 419}, None)
         os.remove(FIXTURE_FILES.fixture_file_path("report_ftdc.json"))
 
     @patch('util._get_history', autospec=True)
@@ -198,7 +197,6 @@ class TestPostRunCheck(unittest.TestCase):
         """
         test check_core_file_exists directly.
         """
-
         def check_failures(results, expected):
             """ helper to wrap called checks
             :type expected: list
@@ -206,7 +204,7 @@ class TestPostRunCheck(unittest.TestCase):
             :param expected: array containing [expexted dict result, filenames*]
             :param results: array of dict results
             """
-            self.assertEquals(len(results), len(expected))
+            self.assertEqual(len(results), len(expected))
             for i, result in enumerate(results):
                 current = expected[i][0]
                 self.assertDictContainsSubset(current, result)
@@ -218,21 +216,20 @@ class TestPostRunCheck(unittest.TestCase):
         mkdir_p(core_path)
 
         # no matching directories
-        self.assertEquals(post_run_check.check_core_file_exists(core_path), [])
+        self.assertEqual(post_run_check.check_core_file_exists(core_path), [])
 
         # matching directories but no core files
         log_filename = os.path.join(core_path, 'test_id', 'mongod.0', 'mongod.log')
         mkdir_p(os.path.dirname(log_filename))
         touch(log_filename)
 
-        self.assertEquals(
-            post_run_check.check_core_file_exists(core_path), [{
-                'status': 'pass',
-                'start': 0,
-                'test_file': 'core.test_id.mongod.0',
-                'log_raw': '\nNo core files found',
-                'exit_code': 0
-            }])
+        self.assertEqual(post_run_check.check_core_file_exists(core_path), [{
+            'status': 'pass',
+            'start': 0,
+            'test_file': 'core.test_id.mongod.0',
+            'log_raw': '\nNo core files found',
+            'exit_code': 0
+        }])
 
         # mongod
         core_path = FIXTURE_FILES.fixture_file_path('cores')
@@ -347,22 +344,25 @@ class TestPostRunCheck(unittest.TestCase):
             },
             core_filename_4,
             core_filename_5,
-        ], [{
-            'status': 'fail',
-            'start': 0,
-            'test_file': 'core.test_id.mongod.0',
-            'exit_code': 1
-        }, core_filename], [{
-            'status': 'fail',
-            'start': 0,
-            'test_file': 'core.test_id.mongod.1',
-            'exit_code': 1
-        }, core_filename_1], [{
-            'status': 'fail',
-            'start': 0,
-            'test_file': 'core.test_id.mongos.0',
-            'exit_code': 1
-        }, core_filename_3]]
+        ],
+                    [{
+                        'status': 'fail',
+                        'start': 0,
+                        'test_file': 'core.test_id.mongod.0',
+                        'exit_code': 1
+                    }, core_filename],
+                    [{
+                        'status': 'fail',
+                        'start': 0,
+                        'test_file': 'core.test_id.mongod.1',
+                        'exit_code': 1
+                    }, core_filename_1],
+                    [{
+                        'status': 'fail',
+                        'start': 0,
+                        'test_file': 'core.test_id.mongos.0',
+                        'exit_code': 1
+                    }, core_filename_3]]
         results = post_run_check.check_core_file_exists(core_path)
         check_failures(results, expected)
 
@@ -375,22 +375,25 @@ class TestPostRunCheck(unittest.TestCase):
             'start': 0,
             'test_file': 'core.test_id.configsvr.0',
             'exit_code': 0
-        }], [{
-            'status': 'fail',
-            'start': 0,
-            'test_file': 'core.test_id.mongod.0',
-            'exit_code': 1
-        }, core_filename], [{
-            'status': 'fail',
-            'start': 0,
-            'test_file': 'core.test_id.mongod.1',
-            'exit_code': 1
-        }, core_filename_1], [{
-            'status': 'fail',
-            'start': 0,
-            'test_file': 'core.test_id.mongos.0',
-            'exit_code': 1
-        }, core_filename_3]]
+        }],
+                    [{
+                        'status': 'fail',
+                        'start': 0,
+                        'test_file': 'core.test_id.mongod.0',
+                        'exit_code': 1
+                    }, core_filename],
+                    [{
+                        'status': 'fail',
+                        'start': 0,
+                        'test_file': 'core.test_id.mongod.1',
+                        'exit_code': 1
+                    }, core_filename_1],
+                    [{
+                        'status': 'fail',
+                        'start': 0,
+                        'test_file': 'core.test_id.mongos.0',
+                        'exit_code': 1
+                    }, core_filename_3]]
         results = post_run_check.check_core_file_exists(core_path)
         check_failures(results, expected)
 

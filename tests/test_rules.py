@@ -4,13 +4,13 @@ import os
 import unittest
 
 from dateutil import parser as date_parser
-
-import readers
-import rules
 from nose.tools import nottest
 
-from test_lib.fixture_files import FixtureFiles
+import rules
+import readers
 import util
+
+from test_lib.fixture_files import FixtureFiles
 
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
@@ -18,7 +18,6 @@ FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 class TestResourceRules(unittest.TestCase):
     """Test class evaluates correctness of resource sanity check rules.
     """
-
     def setUp(self):
         """Specifies the paths used to fetch JSON testing files. Additionally,
         sets up the common parameters for each operation being tested.
@@ -173,12 +172,11 @@ class TestResourceRules(unittest.TestCase):
         bound: BF-8357
         """
         max_thread_level = 8
-        self.helper_test_max_connections_equal(
-            self.single_chunk_1node,
-            self.times_1node,
-            max_thread_level,
-            self.members_1node,
-            current_connections=41)
+        self.helper_test_max_connections_equal(self.single_chunk_1node,
+                                               self.times_1node,
+                                               max_thread_level,
+                                               self.members_1node,
+                                               current_connections=41)
         self.helper_test_max_connections_equal(self.single_chunk_1node, self.times_1node,
                                                max_thread_level, self.members_1node)
 
@@ -215,12 +213,11 @@ class TestResourceRules(unittest.TestCase):
         bound: BF-8357
         """
         max_thread_level = 20
-        self.helper_test_max_connections_equal(
-            self.single_chunk_1node,
-            self.times_1node,
-            max_thread_level,
-            self.members_1node,
-            current_connections=66)
+        self.helper_test_max_connections_equal(self.single_chunk_1node,
+                                               self.times_1node,
+                                               max_thread_level,
+                                               self.members_1node,
+                                               current_connections=66)
         self.helper_test_max_connections_equal(self.single_chunk_1node, self.times_1node,
                                                max_thread_level, self.members_1node)
 
@@ -253,12 +250,11 @@ class TestResourceRules(unittest.TestCase):
         """
         max_thread_level = 21
         current_connections = 86
-        self.helper_test_max_connections_equal(
-            self.single_chunk_1node,
-            self.times_1node,
-            max_thread_level,
-            self.members_1node,
-            current_connections=current_connections)
+        self.helper_test_max_connections_equal(self.single_chunk_1node,
+                                               self.times_1node,
+                                               max_thread_level,
+                                               self.members_1node,
+                                               current_connections=current_connections)
         self.helper_test_max_connections_equal(self.single_chunk_1node, self.times_1node,
                                                max_thread_level, self.members_1node)
 
@@ -293,12 +289,11 @@ class TestResourceRules(unittest.TestCase):
         """
         max_thread_level = 60
         current_connections = 242
-        self.helper_test_max_connections_equal(
-            self.single_chunk_3node,
-            self.times_3node,
-            max_thread_level,
-            self.members_3node,
-            current_connections=current_connections)
+        self.helper_test_max_connections_equal(self.single_chunk_3node,
+                                               self.times_3node,
+                                               max_thread_level,
+                                               self.members_3node,
+                                               current_connections=current_connections)
 
     # this test will need to change if PERF-1389 is fixed
     def test_max_connections_fail(self):
@@ -406,28 +401,25 @@ class TestResourceRules(unittest.TestCase):
                 '1': {
                     'compared_values': [
                         (16.0, '2017-05-31 16:54:42Z', 129.0, '2017-05-31 16:54:42Z', 120.0),
-                        (17.0, '2017-05-31 16:59:23Z', 104.0, '2017-05-31 16:59:26Z',
-                         99.0), (16.0, '2017-05-31 17:04:33Z', 117.0, '2017-05-31 17:04:34Z',
-                                 110.0), (16.0, '2017-05-31 17:09:13Z', 93.0,
-                                          '2017-05-31 17:09:32Z', 12.0)
+                        (17.0, '2017-05-31 16:59:23Z', 104.0, '2017-05-31 16:59:26Z', 99.0),
+                        (16.0, '2017-05-31 17:04:33Z', 117.0, '2017-05-31 17:04:34Z', 110.0),
+                        (16.0, '2017-05-31 17:09:13Z', 93.0, '2017-05-31 17:09:32Z', 12.0)
                     ],
                     'labels': ('start value (s)', 'max time', 'max value (s)', 'end time',
                                'end value (s)'),
-                    'report_all_values':
-                        True,
+                    'report_all_values': True,
                     'times': [1496248949000, 1496249726000, 1496250019000, 1496250331000]
                 },
                 '2': {
-                    'compared_values': [(16.0, '2017-05-31 16:54:03Z', 90.0, '2017-05-31 16:54:04Z',
-                                         82.0), (16.0, '2017-05-31 16:58:53Z', 76.0,
-                                                 '2017-05-31 16:59:00Z', 72.0),
-                                        (16.0, '2017-05-31 17:03:53Z', 80.0, '2017-05-31 17:03:58Z',
-                                         77.0), (16.0, '2017-05-31 17:08:53Z', 70.0,
-                                                 '2017-05-31 17:08:54Z', 62.0)],
+                    'compared_values': [
+                        (16.0, '2017-05-31 16:54:03Z', 90.0, '2017-05-31 16:54:04Z', 82.0),
+                        (16.0, '2017-05-31 16:58:53Z', 76.0, '2017-05-31 16:59:00Z', 72.0),
+                        (16.0, '2017-05-31 17:03:53Z', 80.0, '2017-05-31 17:03:58Z', 77.0),
+                        (16.0, '2017-05-31 17:08:53Z', 70.0, '2017-05-31 17:08:54Z', 62.0)
+                    ],
                     'labels': ('start value (s)', 'max time', 'max value (s)', 'end time',
                                'end value (s)'),
-                    'report_all_values':
-                        True,
+                    'report_all_values': True,
                     'times': [1496248967000, 1496249735000, 1496250027000, 1496250339000]
                 }
             }
@@ -446,7 +438,6 @@ class TestResourceRules(unittest.TestCase):
 class TestFailureOutputFormatting(unittest.TestCase):
     """Test class checks resource sanity rules' error message formatting
     """
-
     def test_fail_collection_info(self):
         """Test expected output in _failure_collection when failure is detected
         """
@@ -475,7 +466,6 @@ class TestFailureOutputFormatting(unittest.TestCase):
 class TestLogAnalysisRules(unittest.TestCase):
     """Test class evaluates correctness of mongod.log check rules
     """
-
     def test_is_log_line_bad(self):
         """Test `_is_log_line_bad()`."""
 
@@ -555,7 +545,6 @@ class TestLogAnalysisRules(unittest.TestCase):
 class TestDBCorrectnessRules(unittest.TestCase):
     """Test class evaluates correctness of DB correctness check rules.
     """
-
     def test_dbcorrect_success(self):
         """Test expected success in db correctness test log file parsing
         """
@@ -567,15 +556,12 @@ class TestDBCorrectnessRules(unittest.TestCase):
             'test_file': 'db-hash-check.core_workloads_reports',
             'exit_code': 0
         }, {
-            'status':
-                'pass',
-            'start':
-                0,
-            'log_raw': (
-                '\nPassed validate-indexes-and-collections.core_workloads_reports JS test.'),
+            'status': 'pass',
+            'start': 0,
+            'log_raw':
+                ('\nPassed validate-indexes-and-collections.core_workloads_reports JS test.'),
             'test_file': ('validate-indexes-and-collections.core_workloads_reports'),
-            'exit_code':
-                0
+            'exit_code': 0
         }]
         observed_results = rules.db_correctness_analysis(log_dir)
         self.assertEqual(expected_results, observed_results)

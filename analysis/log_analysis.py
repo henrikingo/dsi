@@ -80,7 +80,7 @@ def _get_bad_log_lines(reports_dir_path, test_times=None, task=None):
 
     bad_messages_per_log = []
     for path in _get_log_file_paths(reports_dir_path):
-        LOGGER.info("Analyzing log file: " + path)
+        LOGGER.info("Analyzing log file: %s", path)
         bad_messages = []
         with open(path) as log_file:
             # Not using list comprehension due to the need to call _print_keepalive_msg()

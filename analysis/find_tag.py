@@ -24,7 +24,6 @@ class FindByTag(object):
     """
     Find Evergreen patch build by tag.
     """
-
     def __init__(self, project, tag):
         """Constructor."""
         self.project = project

@@ -21,7 +21,6 @@ class TestMultiEvergreen(TestRequestsParent):
     """
     Test the MultiEvergreen client class.
     """
-
     @classmethod
     def tearDownClass(cls):
         """Remove test output file"""
@@ -104,8 +103,7 @@ class TestMultiEvergreen(TestRequestsParent):
                 'https://evergreen.mongodb.com/plugin/json/task/sys_perf_linux_standalone_core_workloads_WT_651bc712c372e619513f1cc9564a38bf5b665237_16_12_29_21_39_27/perf/',
                 'https://evergreen.mongodb.com/plugin/json/task/sys_perf_linux_standalone_core_workloads_MMAPv1_651bc712c372e619513f1cc9564a38bf5b665237_16_12_29_21_39_27/perf/'
             ],
-            'ID':
-                '586582573ff1224524001e99'
+            'ID': '586582573ff1224524001e99'
         }, {
             'task_ids': [
                 u'sys_perf_linux_standalone_core_workloads_WT_651bc712c372e619513f1cc9564a38bf5b665237_16_12_29_21_39_24',
@@ -123,8 +121,7 @@ class TestMultiEvergreen(TestRequestsParent):
                 'https://evergreen.mongodb.com/plugin/json/task/sys_perf_linux_1_node_replSet_core_workloads_WT_651bc712c372e619513f1cc9564a38bf5b665237_16_12_29_21_39_24/perf/',
                 'https://evergreen.mongodb.com/plugin/json/task/sys_perf_linux_1_node_replSet_core_workloads_MMAPv1_651bc712c372e619513f1cc9564a38bf5b665237_16_12_29_21_39_24/perf/'
             ],
-            'ID':
-                '586582553ff1224524001e96'
+            'ID': '586582553ff1224524001e96'
         }]
 
         args = ['--description', 'PERF-814 Unit test, please ignore', '-n', '2']

@@ -33,18 +33,16 @@ def main(args):
     """Script entry point."""
 
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-b",
-        "--baseline",
-        default="base.json",
-        dest="baseline",
-        help="path to json file containing baseline data")
-    parser.add_argument(
-        "-c",
-        "--comparison",
-        default="compare.json",
-        dest="compare",
-        help="path to json file containing comparison data")
+    parser.add_argument("-b",
+                        "--baseline",
+                        default="base.json",
+                        dest="baseline",
+                        help="path to json file containing baseline data")
+    parser.add_argument("-c",
+                        "--comparison",
+                        default="compare.json",
+                        dest="compare",
+                        help="path to json file containing comparison data")
     args = parser.parse_args(args)
 
     compare_run = util.get_json(args.compare)

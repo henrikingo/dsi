@@ -151,8 +151,10 @@ def parse_args(args):
     parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
     parser.add_argument('-e', '--export', action='store_true', help='enable output as shell export')
     parser.add_argument('--log-file', default='/tmp/expand.log', help='path to log file')
-    parser.add_argument(
-        'host', metavar='host', type=str, help='the alias to expand and convert to an ip')
+    parser.add_argument('host',
+                        metavar='host',
+                        type=str,
+                        help='the alias to expand and convert to an ip')
 
     arguments = parser.parse_args(args)
     setup_logging(arguments.debug, arguments.log_file)

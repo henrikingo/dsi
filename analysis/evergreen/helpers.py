@@ -91,8 +91,10 @@ def get_full_git_commit_hash(prefix, token=None):
     """
     if len(prefix) == GIT_HASH_LEN:
         return prefix
-    request = '{url}/repos/{user}/{repo}/commits/{prefix}'.format(
-        url=GITHUB_API, user=GH_USER, repo=GH_REPO, prefix=prefix)
+    request = '{url}/repos/{user}/{repo}/commits/{prefix}'.format(url=GITHUB_API,
+                                                                  user=GH_USER,
+                                                                  repo=GH_REPO,
+                                                                  prefix=prefix)
     if token is not None:
         if 'token' in token:  # sent as a header 'token: OAUTH_TOKEN'
             response = requests.get(request, headers={'Authorization': token})
@@ -104,8 +106,8 @@ def get_full_git_commit_hash(prefix, token=None):
     if response.ok:
         commit_info = response.json()
         return str(commit_info['sha'])
-    else:
-        response.raise_for_status()
+
+    return response.raise_for_status()
 
 
 def get_git_commits(newest, token=None, per_page=None):
@@ -135,8 +137,7 @@ def get_git_commits(newest, token=None, per_page=None):
 
     if response.ok:
         return response.json()
-    else:
-        response.raise_for_status()
+    return response.raise_for_status()
 
 
 def get_githashes_in_range_github(oldest, newest, token=None, per_page=None):
@@ -203,10 +204,9 @@ def get_as_json(url, **kwargs):
     :raises: HTTPError if the response is not OK
     """
     response = requests.get(url, timeout=NETWORK_TIMEOUT_SECS, **kwargs)
-    if not response.ok:
-        response.raise_for_status()
-    else:
+    if response.ok:
         return response.json()
+    return response.raise_for_status()
 
 
 def file_as_json(file_or_filename):

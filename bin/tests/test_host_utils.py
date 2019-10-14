@@ -19,7 +19,6 @@ FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 class HostUtilsTestCase(unittest.TestCase):
     """ Unit Tests for Host Utils library """
-
     def _delete_fixtures(self):
         """ delete FIXTURE_FILES path and set filename attribute """
         local_host_path = FIXTURE_FILES.fixture_file_path('fixtures')
@@ -59,8 +58,8 @@ class HostUtilsTestCase(unittest.TestCase):
     def test_create_timer(self):
         """ test create_timer """
         start = datetime.now()
-        self.assertEquals(
-            common.host_utils.create_timer(start, None), common.host_utils.never_timeout)
+        self.assertEqual(common.host_utils.create_timer(start, None),
+                         common.host_utils.never_timeout)
         with patch('common.host_utils.partial') as mock_partial:
             self.assertTrue(common.host_utils.create_timer(start, 50))
             mock_partial.assert_called_once_with(common.host_utils.check_timed_out, start, 50)
@@ -96,17 +95,15 @@ class HostUtilsTestCase(unittest.TestCase):
         ]
 
         self.assertEqual(common.host_utils.extract_hosts('localhost', self.config), localhost)
-        self.assertEqual(
-            common.host_utils.extract_hosts('workload_client', self.config), workload_clients)
+        self.assertEqual(common.host_utils.extract_hosts('workload_client', self.config),
+                         workload_clients)
         self.assertEqual(common.host_utils.extract_hosts('mongod', self.config), mongods)
         self.assertEqual(common.host_utils.extract_hosts('mongos', self.config), mongos)
         self.assertEqual(common.host_utils.extract_hosts('configsvr', self.config), configsvrs)
-        self.assertEqual(
-            common.host_utils.extract_hosts('all_servers', self.config),
-            mongods + mongos + configsvrs)
-        self.assertEqual(
-            common.host_utils.extract_hosts('all_hosts', self.config),
-            mongods + mongos + configsvrs + workload_clients)
+        self.assertEqual(common.host_utils.extract_hosts('all_servers', self.config),
+                         mongods + mongos + configsvrs)
+        self.assertEqual(common.host_utils.extract_hosts('all_hosts', self.config),
+                         mongods + mongos + configsvrs + workload_clients)
 
     def test_stream_lines(self):
         """ Test stream_lines """
@@ -116,14 +113,14 @@ class HostUtilsTestCase(unittest.TestCase):
         source.next = MagicMock(name="in")
         source.next.side_effect = socket.timeout('args')
         any_lines = common.host_utils.stream_lines(source, destination)
-        self.assertEquals(False, any_lines)
+        self.assertEqual(False, any_lines)
         destination.write.assert_not_called()
 
         destination = MagicMock(name="destination")
         source.next = MagicMock(name="in")
         source.next.side_effect = ['first', 'second', socket.timeout('args'), 'third']
         any_lines = common.host_utils.stream_lines(source, destination)
-        self.assertEquals(True, any_lines)
+        self.assertEqual(True, any_lines)
 
         calls = [
             call('first'),

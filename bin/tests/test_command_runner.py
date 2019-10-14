@@ -19,7 +19,6 @@ FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 class CommandRunnerTestCase(unittest.TestCase):
     """ Unit Tests for Host Utils library """
-
     def _delete_fixtures(self):
         """ delete fixture path and set filename attribute """
         local_host_path = FIXTURE_FILES.fixture_file_path('fixtures')
@@ -265,19 +264,18 @@ class CommandRunnerTestCase(unittest.TestCase):
             }
             mongod.exec_mongo_command.return_value = 0
             common.command_runner._run_host_command_map(mongod, command, "test_id", {})
-            mongod.exec_mongo_command.assert_called_once_with(
-                "this is a script", connection_string="connection string")
+            mongod.exec_mongo_command.assert_called_once_with("this is a script",
+                                                              connection_string="connection string")
 
         with patch('common.remote_host.RemoteHost') as mongod:
             command = {"exec_mongo_shell": {"script": "this is a script"}}
             mongod.exec_mongo_command.return_value = 0
             common.command_runner._run_host_command_map(mongod, command, "test_id", {})
-            mongod.exec_mongo_command.assert_called_once_with(
-                "this is a script", connection_string="")
+            mongod.exec_mongo_command.assert_called_once_with("this is a script",
+                                                              connection_string="")
 
     def test_run_upon_error(self):
         """ test run_upon_error """
-
         @mock.patch('common.command_runner.prepare_reports_dir')
         @mock.patch('common.command_runner.run_pre_post_commands')
         def _test_run_upon_error(behave, mock_run_pre_post_commands, mock_prepare_reports_dir):
@@ -308,7 +306,7 @@ class CommandRunnerTestCase(unittest.TestCase):
         observed_args = []
         for args in mock_run_host_command.call_args_list:
             observed_args.append(args[0][0])
-        self.assertEquals(observed_args, expected_args)
+        self.assertEqual(observed_args, expected_args)
 
     def test_prepare_reports_dir(self):
         """Test test_control.run_test where the exec command returns non-zero"""

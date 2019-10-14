@@ -11,7 +11,6 @@ FIXTURE_FILES = FixtureFiles(path.dirname(__file__))
 
 class TestLogAnalysis(unittest.TestCase):
     """Test suite."""
-
     def test_get_log_file_paths(self):
         """Test `_get_bad_log_lines()`."""
 

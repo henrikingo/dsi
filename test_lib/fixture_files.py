@@ -13,7 +13,6 @@ class FixtureFiles(object):
     """
     Convenience methods utilizing the fixture directory.
     """
-
     def __init__(self, dir_name=None, subdir_name=None, is_unittest=True):
         """
         :param directory_name: The name of the test directory. Defaults to 'tests'.

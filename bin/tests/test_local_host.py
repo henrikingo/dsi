@@ -18,7 +18,6 @@ FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 class LocalHostTestCase(unittest.TestCase):
     """ Unit Test for LocalHost library """
-
     def _delete_fixtures(self):
         """ delete fixture path and set filename attribute """
         local_host_path = FIXTURE_FILES.fixture_file_path('fixtures')

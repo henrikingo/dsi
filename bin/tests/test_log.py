@@ -13,7 +13,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/
 
 class LogTestCase(unittest.TestCase):
     """ Unit Test for Host library """
-
     def test_tee_write(self):
         """ Test TeeStream write """
 

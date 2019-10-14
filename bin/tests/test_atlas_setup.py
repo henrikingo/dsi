@@ -32,12 +32,11 @@ class TestAtlasSetup(unittest.TestCase):
         self.out_files.append(
             os.path.join(FIXTURE_FILES.fixture_file_path('atlas-config'), 'coverage.xml'))
         self.out_files.append(
-            os.path.join(
-                FIXTURE_FILES.fixture_file_path('atlas-config-custom-build'),
-                'mongodb_setup.out.yml'))
+            os.path.join(FIXTURE_FILES.fixture_file_path('atlas-config-custom-build'),
+                         'mongodb_setup.out.yml'))
         self.out_files.append(
-            os.path.join(
-                FIXTURE_FILES.fixture_file_path('atlas-config-custom-build'), 'coverage.xml'))
+            os.path.join(FIXTURE_FILES.fixture_file_path('atlas-config-custom-build'),
+                         'coverage.xml'))
         self._cleanup()
         structlog_for_test.setup_logging()
 
@@ -91,7 +90,7 @@ class TestAtlasSetup(unittest.TestCase):
         mock_post.assert_called_with(expected_url, auth=ANY, json=ANY)
         self.assertDictEqual(self.config['mongodb_setup']['out']['atlas']['clusters'][0].as_dict(),
                              expected_out)
-        self.assertEquals(len(self.config['mongodb_setup']['out']['atlas']['clusters']), 1)
+        self.assertEqual(len(self.config['mongodb_setup']['out']['atlas']['clusters']), 1)
 
     def test_start_when_cluster_exists(self):
         with in_dir(FIXTURE_FILES.fixture_file_path('atlas-config')):
@@ -132,7 +131,7 @@ class TestAtlasSetup(unittest.TestCase):
         mock_delete.assert_called_with(
             'https://cloud-dev.mongodb.com/api/atlas/v1.0/MOCK/URL/groups/test_group_id/clusters/some_other_unique_name',
             auth=ANY)
-        self.assertEquals(config['mongodb_setup']['out']['atlas']['clusters'], [])
+        self.assertEqual(config['mongodb_setup']['out']['atlas']['clusters'], [])
 
     def test_unique_name(self):
         atlas_cluster = {'clusterType': 'REPLSET', 'providerSettings': {'instanceSizeName': 'M99'}}
@@ -143,7 +142,7 @@ class TestAtlasSetup(unittest.TestCase):
         # Generated name looks like: dsi-M99-abcdefg
         # (The last part is random, but fixed length.)
         self.assertRegexpMatches(name, 'dsi-M99-')
-        self.assertEquals(len(name), 15)
+        self.assertEqual(len(name), 15)
 
     @patch('time.sleep')
     @patch('common.atlas_client.AtlasClient.download_logs')

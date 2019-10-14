@@ -15,10 +15,9 @@ class TestUtils(unittest.TestCase):
     """
     Test suite for utils.py
     """
-
     def setUp(self):
-        self.test_cred_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'test_credentials')
+        self.test_cred_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                           'test_credentials')
         with open(self.test_cred_path, 'w') as test_cred_file:
             test_cred_file.write('[default]\naws_access_key_id = '
                                  'test_aws_access_key1\naws_secret_access_key = '

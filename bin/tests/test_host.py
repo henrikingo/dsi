@@ -5,11 +5,11 @@ import shutil
 import unittest
 
 from mock import patch, mock, MagicMock, call, ANY
+from nose.tools import nottest
 
 from common.config import ConfigDict
 from common.local_host import LocalHost
 from common.remote_host import RemoteHost
-from nose.tools import nottest
 from test_lib.fixture_files import FixtureFiles
 
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
@@ -17,7 +17,6 @@ FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 class HostTestCase(unittest.TestCase):
     """ Unit Test for Host library """
-
     def _delete_fixtures(self):
         """ delete fixture path and set filename attribute """
         local_host_path = FIXTURE_FILES.fixture_file_path('fixtures')
@@ -165,8 +164,8 @@ class HostTestCase(unittest.TestCase):
         subject.exec_command = MagicMock(name='exec_command')
         subject.exec_command.return_value = 0
         self.assertTrue(subject.run(['cowsay Hello World', 'cowsay moo']))
-        subject.exec_command.assert_called_once_with(
-            ['cowsay Hello World', 'cowsay moo'], quiet=False)
+        subject.exec_command.assert_called_once_with(['cowsay Hello World', 'cowsay moo'],
+                                                     quiet=False)
 
     @nottest
     def helper_test_checkout_repos(self, source, target, commands, branch=None, verbose=True):

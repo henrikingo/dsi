@@ -13,7 +13,6 @@ from common.models.host_info import HostInfo
 
 class DownloadMongodbTestCase(unittest.TestCase):
     """Unit tests for DownloadMongodb library."""
-
     def setUp(self):
         """Init a DownloadMongodb object"""
         self.config = {
@@ -134,16 +133,15 @@ class DownloadMongodbTestCase(unittest.TestCase):
 
         _test_temp_file(self, temp_file(), "mongodb.tgz")
         _test_temp_file(self, temp_file(path=mongodb_binary_archive), "foo.tgz")
-        _test_temp_file(
-            self, temp_file(path=mongodb_binary_archive + "?test=ing"), "foo.tgztesting")
+        _test_temp_file(self, temp_file(path=mongodb_binary_archive + "?test=ing"),
+                        "foo.tgztesting")
         path = mongodb_binary_archive + "?test=ing&second=param"
         _test_temp_file(self, temp_file(path=path), "foo.tgztestingsecondparam")
 
         # the '/' chars wouldn't have survived the basename, which is why they are removed
         path = ''.join(sorted(string.printable.split())).replace("/", "")
-        _test_temp_file(
-            self,
-            temp_file(path=path), (string.digits + string.ascii_letters + "-._").replace("/", ""))
+        _test_temp_file(self, temp_file(path=path),
+                        (string.digits + string.ascii_letters + "-._").replace("/", ""))
 
         # test sanitize allows everything
         path = mongodb_binary_archive + "?test=ing"

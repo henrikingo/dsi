@@ -54,7 +54,6 @@ def load_config_dict(module):
 
 class InvalidConfigDictTestCase(unittest.TestCase):
     """Test that we're as picky as we claim to be with config keys and values"""
-
     def test_load_yaml_invalid_keys(self):
         """can't even get bad keys from yaml"""
         with in_dir(FIXTURE_FILES.fixture_file_path('invalid-config')):
@@ -65,11 +64,11 @@ class InvalidConfigDictTestCase(unittest.TestCase):
         """can't use conf[key] = X with key invalid"""
         with in_dir(FIXTURE_FILES.fixture_file_path('nested-config')):
             conf = load_config_dict('mongodb_setup')
-            self.assertEquals(conf['mongodb_setup']['this']['is']['quite']['deeply']['nested'],
-                              'okay')
+            self.assertEqual(conf['mongodb_setup']['this']['is']['quite']['deeply']['nested'],
+                             'okay')
             conf['mongodb_setup']['out'] = {}
             conf['mongodb_setup']['out']['safe-key'] = u'💃'
-            self.assertEquals(conf['mongodb_setup']['out']['safe-key'], u'💃')
+            self.assertEqual(conf['mongodb_setup']['out']['safe-key'], u'💃')
 
     def causes_exception(self, subdict):
         """
@@ -157,15 +156,14 @@ class InvalidConfigDictTestCase(unittest.TestCase):
         """
         Cannot have duplicate ids on the same level.
         """
-        self.causes_id_exception({
-            "stuff": [{
+        self.causes_id_exception(
+            {"stuff": [{
                 "id": "myname",
                 "hey": "greetings"
             }, {
                 "id": "myname",
                 "bye": "see ya"
-            }]
-        })
+            }]})
 
     def test_nested_duplicate_ids(self):
         """
@@ -203,7 +201,6 @@ class InvalidConfigDictTestCase(unittest.TestCase):
 
 class ConfigDictTestCase(unittest.TestCase):
     """Unit tests for ConfigDict library."""
-
     def setUp(self):
         """Init a ConfigDict object and load the configuration files from docs/config-specs/"""
         self.restore = dirmarker('./../../docs/config-specs/')  # Save the old path to restore Note
@@ -460,11 +457,10 @@ class ConfigDictTestCase(unittest.TestCase):
                     'dbPath': 'data/dbs'
                 }
             })
-        self.assert_equal_dicts(mycluster['shard'][2]['mongod'][0]['config_file'].overrides, {
-            'storage': {
-                'engine': 'inMemory'
-            }
-        })
+        self.assert_equal_dicts(mycluster['shard'][2]['mongod'][0]['config_file'].overrides,
+                                {'storage': {
+                                    'engine': 'inMemory'
+                                }})
         self.assertEqual(mycluster['shard'][2]['mongod'][0]['config_file']['storage']['engine'],
                          "inMemory")
         self.assertEqual(mycluster['shard'][2]['mongod'][0]['config_file']['net']['port'], 27017)
@@ -561,7 +557,7 @@ class ConfigDictTestCase(unittest.TestCase):
     def test_iterators(self):
         """Test that iterators .keys() and .values() work"""
         mycluster = self.conf['mongodb_setup']['topology'][0]
-        self.assertEquals(self.conf.keys(), [
+        self.assertEqual(self.conf.keys(), [
             'system_setup', 'test_control', 'workload_setup', 'runtime_secret', 'bootstrap',
             'mongodb_setup', 'analysis', 'infrastructure_provisioning', 'runtime'
         ])
@@ -638,17 +634,17 @@ class ConfigDictTestCase(unittest.TestCase):
         configsvr = ['53.1.1.{}'.format(i) for i in range(51, 54)]
         workload_client = ['53.1.1.101']
 
-        self.assertEquals(conf.lookup_path('mongod.0.public_ip'), mongod[0])
+        self.assertEqual(conf.lookup_path('mongod.0.public_ip'), mongod[0])
 
-        self.assertEquals(conf.lookup_path('mongod.1.public_ip'), mongod[1])
-        self.assertEquals(conf.lookup_path('mongod.4.public_ip'), mongod[4])
+        self.assertEqual(conf.lookup_path('mongod.1.public_ip'), mongod[1])
+        self.assertEqual(conf.lookup_path('mongod.4.public_ip'), mongod[4])
 
-        self.assertEquals(conf.lookup_path('mongos.0.public_ip'), mongos[0])
-        self.assertEquals(conf.lookup_path('configsvr.0.public_ip'), configsvr[0])
-        self.assertEquals(conf.lookup_path('workload_client.0.public_ip'), workload_client[0])
+        self.assertEqual(conf.lookup_path('mongos.0.public_ip'), mongos[0])
+        self.assertEqual(conf.lookup_path('configsvr.0.public_ip'), configsvr[0])
+        self.assertEqual(conf.lookup_path('workload_client.0.public_ip'), workload_client[0])
 
         # document that this is the current behavior
-        self.assertEquals(conf.lookup_path('mongod.-1.public_ip'), mongod[-1])
+        self.assertEqual(conf.lookup_path('mongod.-1.public_ip'), mongod[-1])
 
     def test_lookup_path_ex(self):
         """check that lookup_path throws exceptions for the correct portion of the pathspec."""
@@ -688,8 +684,9 @@ class ConfigDictTestCase(unittest.TestCase):
         for dict1key in dict1keys:
             # Pop the corresponding key from dict2, note that they won't be in the same order.
             dict2key = dict2keys.pop(dict2keys.index(dict1key))
-            self.assertEqual(dict1key, dict2key, 'assert_equal_dicts failed: mismatch in keys: ' +
-                             str(dict1key) + '!=' + str(dict2key))
+            self.assertEqual(
+                dict1key, dict2key, 'assert_equal_dicts failed: mismatch in keys: ' +
+                str(dict1key) + '!=' + str(dict2key))
             if isinstance(dict1[dict1key], dict):
                 self.assert_equal_dicts(dict1[dict1key], dict2[dict2key])
             elif isinstance(dict1[dict1key], list):

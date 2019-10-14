@@ -42,8 +42,7 @@ CONSTANTS = {
 
 BAD_LOG_TYPES = ["F", "E"]  # See https://docs.mongodb.com/manual/reference/log-messages/
 BAD_MESSAGES = [
-    msg.lower()
-    for msg in [
+    msg.lower() for msg in [
         "starting an election", "election succeeded", "transition to primary",
         "posix_fallocate failed"
     ]
@@ -66,8 +65,7 @@ def get_bad_messages(task):
 # Whitelisting message "Not starting an election": BF-4019
 # Whitelisting message "older than oldest timestamp" until SERVER-38871 is done (TODO: TIG-1357)
 MESSAGE_WHITELIST = [
-    msg.lower()
-    for msg in [
+    msg.lower() for msg in [
         "ttl query execution for index", "not starting an election", "older than oldest timestamp",
         "less than the oldest timestamp"
     ]
@@ -139,8 +137,8 @@ def is_log_line_bad(log_line, test_times=None, task=None):
     if any(whitelist_msg in log_msg for whitelist_msg in MESSAGE_WHITELIST):
         return False
 
-    return err_type_char in ["F", "E"] or any(
-        bad_msg in log_msg for bad_msg in get_bad_messages(task))
+    return err_type_char in ["F", "E"] or any(bad_msg in log_msg
+                                              for bad_msg in get_bad_messages(task))
 
 
 def ftdc_date_parse(time_in_s):

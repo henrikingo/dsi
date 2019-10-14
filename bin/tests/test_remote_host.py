@@ -18,7 +18,6 @@ FakeStat = collections.namedtuple('FakeStat', 'st_mode')
 
 class RemoteHostTestCase(unittest.TestCase):
     """ Unit Test for RemoteHost library """
-
     @patch('common.remote_host.RemoteHost.connected_ssh')
     def test_upload_files_dir(self, mock_connected_ssh):
         """We can upload directories of files"""
@@ -39,17 +38,16 @@ class RemoteHostTestCase(unittest.TestCase):
 
         remote.upload_file(local_path, remote_path)
 
-        ssh.exec_command.assert_has_calls(
-            [
-                call('mkdir -p /foo/bar', get_pty=False),
-                call('tar xf /foo/bar.tar -C /foo/bar', get_pty=False),
-                call('rm /foo/bar.tar', get_pty=False)
-            ],
-            any_order=False)
+        ssh.exec_command.assert_has_calls([
+            call('mkdir -p /foo/bar', get_pty=False),
+            call('tar xf /foo/bar.tar -C /foo/bar', get_pty=False),
+            call('rm /foo/bar.tar', get_pty=False)
+        ],
+                                          any_order=False)
 
-        ftp.assert_has_calls(
-            [call.put(ANY, '/foo/bar.tar'),
-             call.chmod('/foo/bar.tar', ANY)], any_order=False)
+        ftp.assert_has_calls([call.put(ANY, '/foo/bar.tar'),
+                              call.chmod('/foo/bar.tar', ANY)],
+                             any_order=False)
 
     @patch('common.remote_host.RemoteHost.connected_ssh')
     def test_upload_single_file(self, mock_connected_ssh):
@@ -67,9 +65,9 @@ class RemoteHostTestCase(unittest.TestCase):
 
         ssh.assert_not_called()
 
-        ftp.assert_has_calls(
-            [call.put(ANY, '/foo/bar/idk.py'),
-             call.chmod('/foo/bar/idk.py', ANY)], any_order=False)
+        ftp.assert_has_calls([call.put(ANY, '/foo/bar/idk.py'),
+                              call.chmod('/foo/bar/idk.py', ANY)],
+                             any_order=False)
 
     @patch('paramiko.SSHClient')
     def test__upload_files_host_ex(self, ssh_client):

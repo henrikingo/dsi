@@ -43,14 +43,12 @@ def create_cluster(topology, config):
         return ReplSet(topology=topology, config=config)
     elif cluster_type == 'sharded_cluster':
         return ShardedCluster(topology=topology, config=config)
-    else:
-        LOG.fatal('unknown cluster_type: %s', cluster_type)
-        exit(1)
+    LOG.fatal('unknown cluster_type: %s', cluster_type)
+    return exit(1)
 
 
 class MongoCluster(object):
     """ Abstract base class for mongo clusters """
-
     def __init__(self, topology, config):
         """
         :param topology: Cluster specific configuration
@@ -119,7 +117,6 @@ class MongoCluster(object):
 
 class MongoNode(MongoCluster):
     """Represents a mongo[ds] program on a remote host."""
-
     def __init__(self, topology, config, is_mongos=False):
         """
         :param topology: Read-only options for mongo[ds], example:
@@ -144,8 +141,8 @@ class MongoNode(MongoCluster):
         mongodb_setup = self.config['mongodb_setup']
         # Get the mongo_dir from the topology if set, otherwise from the mongo_dir.
         # It now must come from configuration.
-        self.bin_dir = os.path.join(
-            topology.get('mongo_dir', mongodb_setup.get('mongo_dir')), 'bin')
+        self.bin_dir = os.path.join(topology.get('mongo_dir', mongodb_setup.get('mongo_dir')),
+                                    'bin')
         self.tls_settings = mongodb_setup_helpers.mongodb_tls_settings(topology['config_file'])
 
         # NB: we could specify these defaults in default.yml if not already!
@@ -194,18 +191,18 @@ class MongoNode(MongoCluster):
         """Access to remote or local host."""
         if self._host is None:
             host_info = self._compute_host_info()
-            self._host = host_factory.make_host(
-                host_info, mongodb_tls_settings=self.tls_settings, spawn_using=self.spawn_using)
+            self._host = host_factory.make_host(host_info,
+                                                mongodb_tls_settings=self.tls_settings,
+                                                spawn_using=self.spawn_using)
         return self._host
 
     def _compute_host_info(self):
         """Create host wrapper to run commands."""
         (ssh_user, ssh_key_file) = ssh_user_and_key_file(self.config)
-        return HostInfo(
-            public_ip=self.public_ip,
-            private_ip=self.private_ip,
-            ssh_user=ssh_user,
-            ssh_key_file=ssh_key_file)
+        return HostInfo(public_ip=self.public_ip,
+                        private_ip=self.private_ip,
+                        ssh_user=ssh_user,
+                        ssh_key_file=ssh_key_file)
 
     def wait_until_up(self):
         """ Checks to make sure node is up and accessible"""
@@ -306,8 +303,8 @@ class MongoNode(MongoCluster):
 
         if use_numactl and self.numactl_prefix:
             if not isinstance(self.numactl_prefix, list):
-                raise ValueError('numactl_prefix must be a list of commands, given: %s',
-                                 self.numactl_prefix)
+                raise ValueError('numactl_prefix must be a list of commands, given: {}'.format(
+                    self.numactl_prefix))
             cmd = self.numactl_prefix + cmd
 
         LOG.debug("cmd is %s", str(cmd))
@@ -347,11 +344,10 @@ class MongoNode(MongoCluster):
         else:
             self.host.mongodb_auth_settings = None
 
-        if self.host.exec_mongo_command(
-                js_string,
-                remote_file_name=remote_file_name,
-                connection_string="localhost:" + str(self.port),
-                max_time_ms=max_time_ms) != 0:
+        if self.host.exec_mongo_command(js_string,
+                                        remote_file_name=remote_file_name,
+                                        connection_string="localhost:" + str(self.port),
+                                        max_time_ms=max_time_ms) != 0:
             self.dump_mongo_log()
             return False
         return True
@@ -384,9 +380,9 @@ class MongoNode(MongoCluster):
             if auth_enabled is not None:
                 self.auth_enabled = auth_enabled
             for _ in range(retries):
-                self.run_mongo_shell(
-                    'db.getSiblingDB("admin").shutdownServer({})'.format(self.shutdown_options),
-                    max_time_ms=max_time_ms)
+                self.run_mongo_shell('db.getSiblingDB("admin").shutdownServer({})'.format(
+                    self.shutdown_options),
+                                     max_time_ms=max_time_ms)
                 if self.host.run(['pgrep -l', 'mongo']):
                     LOG.warn("Mongo %s:%s did not shutdown yet", self.public_ip, self.port)
                 else:
@@ -427,7 +423,6 @@ class ReplSet(MongoCluster):
 
     replsets = 0
     """Counts the number of ReplSets created."""
-
     def __init__(self, topology, config):
         """
         :param topology: Read-only options for  replSet, example:
@@ -454,19 +449,17 @@ class ReplSet(MongoCluster):
             self.rs_conf_members.append(copy_obj(opt.get('rs_conf_member', {})))
             # Must add replSetName and clusterRole
             config_file = copy_obj(opt.get('config_file', {}))
-            config_file = mongodb_setup_helpers.merge_dicts(config_file, {
-                'replication': {
+            config_file = mongodb_setup_helpers.merge_dicts(
+                config_file, {'replication': {
                     'replSetName': self.name
-                }
-            })
+                }})
 
             mongod_opt = copy_obj(opt)
             if topology.get('configsvr', False):
-                config_file = mongodb_setup_helpers.merge_dicts(config_file, {
-                    'sharding': {
+                config_file = mongodb_setup_helpers.merge_dicts(
+                    config_file, {'sharding': {
                         'clusterRole': 'configsvr'
-                    }
-                })
+                    }})
                 # The test infrastructure does not set up a separate journal dir for
                 # the config server machines.
                 mongod_opt['use_journal_mnt'] = False
@@ -523,28 +516,23 @@ class ReplSet(MongoCluster):
 
     def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None):
         return all(
-            run_threads(
-                [
-                    partial(
-                        node.setup_host,
+            run_threads([
+                partial(node.setup_host,
                         restart_clean_db_dir=restart_clean_db_dir,
                         restart_clean_logs=restart_clean_logs) for node in self.nodes
-                ],
-                daemon=True))
+            ],
+                        daemon=True))
 
     def launch(self, initialize=True, use_numactl=True, enable_auth=False):
         """Starts the replica set.
         :param boolean initialize: Initialize the replica set"""
         if not all(
-                run_threads(
-                    [
-                        partial(
-                            node.launch,
-                            initialize,
-                            use_numactl=use_numactl,
-                            enable_auth=enable_auth) for node in self.nodes
-                    ],
-                    daemon=True)):
+                run_threads([
+                    partial(
+                        node.launch, initialize, use_numactl=use_numactl, enable_auth=enable_auth)
+                    for node in self.nodes
+                ],
+                            daemon=True)):
             return False
         self._set_explicit_priorities()
         if initialize:
@@ -608,9 +596,8 @@ class ReplSet(MongoCluster):
             :method:`Host.exec_command`
         """
         return all(
-            run_threads(
-                [partial(node.shutdown, max_time_ms, auth_enabled) for node in self.nodes],
-                daemon=True))
+            run_threads([partial(node.shutdown, max_time_ms, auth_enabled) for node in self.nodes],
+                        daemon=True))
 
     def destroy(self, max_time_ms):
         """Kills the remote replica members.
@@ -645,7 +632,6 @@ class ReplSet(MongoCluster):
 
 class ShardedCluster(MongoCluster):
     """Represents a sharded cluster on remote hosts."""
-
     def __init__(self, topology, config):
         """
         :param topology: Read-only options for a sharded cluster:
@@ -706,10 +692,9 @@ class ShardedCluster(MongoCluster):
 
     def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None):
         commands = [
-            partial(
-                self.config_svr.setup_host,
-                restart_clean_db_dir=restart_clean_db_dir,
-                restart_clean_logs=restart_clean_logs)
+            partial(self.config_svr.setup_host,
+                    restart_clean_db_dir=restart_clean_db_dir,
+                    restart_clean_logs=restart_clean_logs)
         ]
         commands.extend(
             partial(
@@ -732,24 +717,21 @@ class ShardedCluster(MongoCluster):
         """
         LOG.info('Launching sharded cluster...')
         commands = [
-            partial(
-                self.config_svr.launch,
-                initialize=initialize,
-                use_numactl=False,
-                enable_auth=enable_auth)
+            partial(self.config_svr.launch,
+                    initialize=initialize,
+                    use_numactl=False,
+                    enable_auth=enable_auth)
         ]
         commands.extend(
-            partial(
-                shard.launch,
-                initialize=initialize,
-                use_numactl=use_numactl,
-                enable_auth=enable_auth) for shard in self.shards)
+            partial(shard.launch,
+                    initialize=initialize,
+                    use_numactl=use_numactl,
+                    enable_auth=enable_auth) for shard in self.shards)
         commands.extend(
-            partial(
-                mongos.launch,
-                initialize=initialize,
-                use_numactl=use_numactl,
-                enable_auth=enable_auth) for mongos in self.mongoses)
+            partial(mongos.launch,
+                    initialize=initialize,
+                    use_numactl=use_numactl,
+                    enable_auth=enable_auth) for mongos in self.mongoses)
         if not all(run_threads(commands, daemon=True)):
             return False
         if initialize:

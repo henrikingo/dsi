@@ -10,13 +10,14 @@ import common.host_factory
 
 class HostFactoryTestCase(unittest.TestCase):
     """ Unit Test for Host Factory library """
-
     @patch('paramiko.SSHClient')
     def test_make_host(self, mock_ssh):
         """ Test make host """
 
-        my_host_info = host_info.HostInfo(
-            public_ip='53.1.1.1', offset=0, ssh_user='ssh_user', ssh_key_file='ssh_key_file')
+        my_host_info = host_info.HostInfo(public_ip='53.1.1.1',
+                                          offset=0,
+                                          ssh_user='ssh_user',
+                                          ssh_key_file='ssh_key_file')
 
         my_host_info.category = 'mongod'
         mongod = common.host_factory.make_host(my_host_info)

@@ -52,28 +52,26 @@ def main(args):
 
     global LOGGER  # pylint: disable=global-statement
     parser = argparse.ArgumentParser(prog='get-tags', description='Get tagged task data')
-    parser.add_argument(
-        '-p',
-        '--project',
-        default='performance',
-        help='The Evergreen project from which to fetch tagged data')
-    parser.add_argument(
-        '-v',
-        '--variants',
-        default='.*',
-        help='The build variant or variants to get data from; defaults to all')
-    parser.add_argument(
-        '-t', '--tasks', default='.*', help='The tasks to get tagged data from; defaults to all')
-    parser.add_argument(
-        '-f',
-        '--format',
-        default='{variant}.{task}.tags.json',
-        help='Format for tag data file names. Wildcards are {variant} and {task}')
-    parser.add_argument(
-        '-c',
-        '--config',
-        default=os.path.expanduser('~/.evergreen.yml'),
-        help='The path to your .evergreen.yml configuration')
+    parser.add_argument('-p',
+                        '--project',
+                        default='performance',
+                        help='The Evergreen project from which to fetch tagged data')
+    parser.add_argument('-v',
+                        '--variants',
+                        default='.*',
+                        help='The build variant or variants to get data from; defaults to all')
+    parser.add_argument('-t',
+                        '--tasks',
+                        default='.*',
+                        help='The tasks to get tagged data from; defaults to all')
+    parser.add_argument('-f',
+                        '--format',
+                        default='{variant}.{task}.tags.json',
+                        help='Format for tag data file names. Wildcards are {variant} and {task}')
+    parser.add_argument('-c',
+                        '--config',
+                        default=os.path.expanduser('~/.evergreen.yml'),
+                        help='The path to your .evergreen.yml configuration')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose output')
 
     # Parse the arguments and initialize the logging output

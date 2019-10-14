@@ -8,7 +8,6 @@ import common.mongodb_setup_helpers
 
 class TestHelperFunctions(unittest.TestCase):
     """Basic tests for helper functions in mongodb_setup"""
-
     def test_merge_dicts(self):
         """Test merge_dicts correctly overrides literals."""
         base = {'a': 1, 'b': 'string'}
@@ -33,9 +32,8 @@ class TestHelperFunctions(unittest.TestCase):
                 }
             },
         }
-        self.assertEqual(
-            common.mongodb_setup_helpers.mongodb_auth_settings(config),
-            common.mongodb_setup_helpers.MongoDBAuthSettings('username', 'password'))
+        self.assertEqual(common.mongodb_setup_helpers.mongodb_auth_settings(config),
+                         common.mongodb_setup_helpers.MongoDBAuthSettings('username', 'password'))
 
     def test_mongodb_auth_settings_missing(self):
         config = {'mongodb_setup': {}}

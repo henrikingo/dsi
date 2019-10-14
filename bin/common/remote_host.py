@@ -114,8 +114,8 @@ class RemoteHost(common.host.Host):
         remote_parent_dir = os.path.dirname(remote_path)
         remote_tarball_path = os.path.join(remote_parent_dir, tarball_name)
 
-        tarball_path = shutil.make_archive(
-            os.path.join(temp_dir, tarball_name), 'tar', local_path, '.')
+        tarball_path = shutil.make_archive(os.path.join(temp_dir, tarball_name), 'tar', local_path,
+                                           '.')
 
         # Make way and upload it
         cmd = ['mkdir', '-p', remote_path]

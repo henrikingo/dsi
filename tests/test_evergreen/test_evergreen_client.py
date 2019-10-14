@@ -9,7 +9,6 @@ from evergreen import evergreen_client
 
 class TestEvergreenClient(unittest.TestCase):
     """Tests are related to Evergreen API access"""
-
     def setUp(self):
         """Get evergreen credentials from config file."""
         self.mock_evg_history = copy.deepcopy(MOCK_EVG_HISTORY)
@@ -64,9 +63,7 @@ class TestEvergreenClient(unittest.TestCase):
         mock_get_as_json.assert_called_once_with(
             'https://evergreen.mongodb.com/rest/v2/projects/sys-perf/versions/tasks',
             headers={},
-            params={
-                'status': ['failed']
-            })
+            params={'status': ['failed']})
 
         self.assertEqual(result, expected)
 

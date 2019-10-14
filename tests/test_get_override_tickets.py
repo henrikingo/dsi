@@ -16,7 +16,6 @@ FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 class TestPerfRegressionCheck(unittest.TestCase):
     """Test suite."""
-
     def runTest(self):
         """
         Run the script and compare the file it generates to an expected one.

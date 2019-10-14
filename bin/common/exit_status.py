@@ -23,7 +23,6 @@ class StatusWithMessage(namedtuple("StatusWithMessage", ["status", "message"])):
         to an empty tuple. This helps keep memory requirements low by preventing the creation of
         instance dictionaries.
     """
-
     def __str__(self):
         """ generate a human readable exit status. """
         if self.status == 0:

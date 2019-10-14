@@ -106,13 +106,12 @@ def _extract_hosts(category, config):
     if category in config['infrastructure_provisioning']['out']:
         ssh_user, ssh_key_file = ssh_user_and_key_file(config)
         return [
-            HostInfo(
-                public_ip=host_info['public_ip'],
-                private_ip=host_info['private_ip'],
-                ssh_user=ssh_user,
-                ssh_key_file=ssh_key_file,
-                category=category,
-                offset=i)
+            HostInfo(public_ip=host_info['public_ip'],
+                     private_ip=host_info['private_ip'],
+                     ssh_user=ssh_user,
+                     ssh_key_file=ssh_key_file,
+                     category=category,
+                     offset=i)
             for i, host_info in enumerate(config['infrastructure_provisioning']['out'][category])
         ]
     return list()

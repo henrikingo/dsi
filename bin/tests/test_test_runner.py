@@ -19,7 +19,6 @@ class GetTestRunnerTestCase(unittest.TestCase):
     """
     Test for test_runner.get_test_runner()
     """
-
     def setUp(self):
         self.get_test_config = lambda kind: {
             'id': 'dummy_test',
@@ -109,8 +108,8 @@ class GetTestRunnerTestCase(unittest.TestCase):
         """
         Can get the genny test runner for "genny" tests.
         """
-        runner = get_test_runner(
-            self.get_test_config('genny_canaries'), self.get_test_control_config())
+        runner = get_test_runner(self.get_test_config('genny_canaries'),
+                                 self.get_test_control_config())
         self.assertIsInstance(runner, test_runner.GennyCanariesRunner)
 
         report_str = '\nexit_status: 0 \'GennyCanariesRunner.run()\'\n'
@@ -154,8 +153,8 @@ class GetTestRunnerTestCase(unittest.TestCase):
             self.assertEqual(arg[0][0], next(call_args_iter))
 
         # No numactl.
-        runner = get_test_runner(
-            self.get_test_config('genny'), self.get_test_control_config(False, ''))
+        runner = get_test_runner(self.get_test_config('genny'),
+                                 self.get_test_control_config(False, ''))
         args = call_args[:]
         args[1] = (
             'cd ./data;  genny/bin/genny run -u "dummy_mongodb_url" -m cedar-csv -o ./genny-perf.csv '

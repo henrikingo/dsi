@@ -27,10 +27,8 @@ DEFAULT_CONFIG = {
             'force': True,
             'timeoutSecs': 5
         },
-        'mongo_dir':
-            'test_dir',
-        'journal_dir':
-            '/data/journal',
+        'mongo_dir': 'test_dir',
+        'journal_dir': '/data/journal',
         'topology': [{
             'cluster_type': 'standalone',
             'id': 'myid1',
@@ -67,7 +65,6 @@ DEFAULT_CONFIG = {
 
 class TestMongodbSetup(unittest.TestCase):
     """MongodbSetup tests"""
-
     def setUp(self):
         """Common options"""
         self.config = copy.deepcopy(DEFAULT_CONFIG)
@@ -110,7 +107,6 @@ class TestMongodbSetup(unittest.TestCase):
 
     def test_start(self):
         """ test start"""
-
         @mock.patch('mongodb_setup.run_pre_post_commands')
         def _test_start(mock_run_pre_post_commands, download_status=False, pre_cluster_start=False):
             test_config = copy.deepcopy(self.config)
@@ -134,10 +130,10 @@ class TestMongodbSetup(unittest.TestCase):
             setup.downloader.download_and_extract.return_value = download_status
 
             if not download_status:
-                self.assertEquals(setup.start(), False)
+                self.assertEqual(setup.start(), False)
                 setup._start.assert_not_called()
             else:
-                self.assertEquals(setup.start(), True)
+                self.assertEqual(setup.start(), True)
                 setup._start.assert_called_once()
 
             setup.destroy.assert_called_once_with(60000)
@@ -149,7 +145,6 @@ class TestMongodbSetup(unittest.TestCase):
 
     def test_restart(self):
         """ test start"""
-
         def _test_restart(shutdown=True):
             setup = mongodb_setup.MongodbSetup(config=self.config)
 
@@ -161,12 +156,13 @@ class TestMongodbSetup(unittest.TestCase):
             setup.shutdown.return_value = shutdown
 
             if not shutdown:
-                self.assertEquals(setup.restart(), False)
+                self.assertEqual(setup.restart(), False)
                 setup._start.assert_not_called()
             else:
-                self.assertEquals(setup.restart(), "start clusters")
-                setup._start.assert_called_once_with(
-                    is_restart=True, restart_clean_db_dir=None, restart_clean_logs=None)
+                self.assertEqual(setup.restart(), "start clusters")
+                setup._start.assert_called_once_with(is_restart=True,
+                                                     restart_clean_db_dir=None,
+                                                     restart_clean_logs=None)
             setup.destroy.assert_called_once_with(60000)
             setup.shutdown.assert_called_once_with(540000, True)
 
@@ -200,15 +196,14 @@ class TestMongodbSetup(unittest.TestCase):
             mock_run_threads.return_value = run_threads
             mock_partial.return_value = 'threads'
 
-            self.assertEquals(setup._start(), success)
+            self.assertEqual(setup._start(), success)
             calls = [
-                mock.call(
-                    setup.start_cluster,
-                    cluster=setup.clusters[0],
-                    is_restart=False,
-                    restart_clean_db_dir=None,
-                    restart_clean_logs=None,
-                    enable_auth=False)
+                mock.call(setup.start_cluster,
+                          cluster=setup.clusters[0],
+                          is_restart=False,
+                          restart_clean_db_dir=None,
+                          restart_clean_logs=None,
+                          enable_auth=False)
             ]
             mock_partial.assert_has_calls(calls)
             setup.destroy.assert_not_called()
@@ -245,23 +240,21 @@ class TestMongodbSetup(unittest.TestCase):
              mock.patch('mongodb_setup.partial') as mock_partial:
             mock_run_threads.return_value = [True, True]
             mock_partial.return_value = 'threads'
-            self.assertEquals(setup._start(), True)
+            self.assertEqual(setup._start(), True)
             mock_shutdown.assert_has_calls([mock.call(setup.shutdown_ms)])
             mock_partial.assert_has_calls([
-                mock.call(
-                    setup.start_cluster,
-                    cluster=setup.clusters[0],
-                    is_restart=False,
-                    restart_clean_db_dir=None,
-                    restart_clean_logs=None,
-                    enable_auth=False),
-                mock.call(
-                    setup.start_cluster,
-                    cluster=setup.clusters[0],
-                    is_restart=True,
-                    restart_clean_db_dir=False,
-                    restart_clean_logs=False,
-                    enable_auth=True)
+                mock.call(setup.start_cluster,
+                          cluster=setup.clusters[0],
+                          is_restart=False,
+                          restart_clean_db_dir=None,
+                          restart_clean_logs=None,
+                          enable_auth=False),
+                mock.call(setup.start_cluster,
+                          cluster=setup.clusters[0],
+                          is_restart=True,
+                          restart_clean_db_dir=False,
+                          restart_clean_logs=False,
+                          enable_auth=True)
             ])
         mock_add_default_users.assert_called_once()
 
@@ -277,25 +270,23 @@ class TestMongodbSetup(unittest.TestCase):
              mock.patch('mongodb_setup.partial') as mock_partial:
             mock_run_threads.return_value = [True, True]
             mock_partial.return_value = 'threads'
-            self.assertEquals(
+            self.assertEqual(
                 setup._start(is_restart=True, restart_clean_db_dir=True, restart_clean_logs=True),
                 True)
             mock_shutdown.assert_has_calls([mock.call(setup.shutdown_ms)])
             mock_partial.assert_has_calls([
-                mock.call(
-                    setup.start_cluster,
-                    cluster=setup.clusters[0],
-                    is_restart=True,
-                    restart_clean_db_dir=True,
-                    restart_clean_logs=True,
-                    enable_auth=False),
-                mock.call(
-                    setup.start_cluster,
-                    cluster=setup.clusters[0],
-                    is_restart=True,
-                    restart_clean_db_dir=False,
-                    restart_clean_logs=False,
-                    enable_auth=True)
+                mock.call(setup.start_cluster,
+                          cluster=setup.clusters[0],
+                          is_restart=True,
+                          restart_clean_db_dir=True,
+                          restart_clean_logs=True,
+                          enable_auth=False),
+                mock.call(setup.start_cluster,
+                          cluster=setup.clusters[0],
+                          is_restart=True,
+                          restart_clean_db_dir=False,
+                          restart_clean_logs=False,
+                          enable_auth=True)
             ])
         mock_add_default_users.assert_called_once()
 
@@ -311,18 +302,17 @@ class TestMongodbSetup(unittest.TestCase):
              mock.patch('mongodb_setup.partial') as mock_partial:
             mock_run_threads.return_value = [True, True]
             mock_partial.return_value = 'threads'
-            self.assertEquals(
+            self.assertEqual(
                 setup._start(is_restart=True, restart_clean_db_dir=False, restart_clean_logs=True),
                 True)
             setup.shutdown.assert_not_called()
             mock_partial.assert_has_calls([
-                mock.call(
-                    setup.start_cluster,
-                    cluster=setup.clusters[0],
-                    is_restart=True,
-                    restart_clean_db_dir=False,
-                    restart_clean_logs=True,
-                    enable_auth=True),
+                mock.call(setup.start_cluster,
+                          cluster=setup.clusters[0],
+                          is_restart=True,
+                          restart_clean_db_dir=False,
+                          restart_clean_logs=True,
+                          enable_auth=True),
             ])
         mock_add_default_users.assert_not_called()
 
@@ -373,7 +363,6 @@ class TestMongodbSetup(unittest.TestCase):
 
     def test_start_cluster(self):
         """ test start and correctly handles run on error"""
-
         @mock.patch('sys.exit')
         @mock.patch('mongodb_setup.run_upon_error')
         def _test_start_cluster(success, mock_run_upon_error, mock_exit):

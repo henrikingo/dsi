@@ -15,7 +15,6 @@ class TestDashboardGen(unittest.TestCase):
     """
     Test suite.
     """
-
     def tearDown(self):
         """
         Remove the temperary test files

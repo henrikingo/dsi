@@ -72,7 +72,7 @@ class TestBootstrap(unittest.TestCase):
         expected_config = {'directory': '.'}
         test_config = {}
         test_config = bootstrap.parse_command_line(test_config, [])
-        self.assertEquals(test_config, expected_config)
+        self.assertEqual(test_config, expected_config)
 
     def test_parse_command_line_all_args(self):
         """
@@ -87,7 +87,7 @@ class TestBootstrap(unittest.TestCase):
         master_config['bootstrap_file'] = './test/bootstrap.yml'
         test_config = {}
         test_config = bootstrap.parse_command_line(test_config, args)
-        self.assertEquals(test_config, master_config)
+        self.assertEqual(test_config, master_config)
 
     def test_parse_command_line_all_args_alternate(self):
         """
@@ -102,7 +102,7 @@ class TestBootstrap(unittest.TestCase):
         master_config['bootstrap_file'] = './test/bootstrap.yml'
         test_config = {}
         test_config = bootstrap.parse_command_line(test_config, args)
-        self.assertEquals(test_config, master_config)
+        self.assertEqual(test_config, master_config)
         try:
             os.remove('log.txt')
         except OSError:
@@ -126,9 +126,8 @@ class TestBootstrap(unittest.TestCase):
         open(
             os.path.join(test_dsipath, 'configurations', 'mongodb_setup',
                          'mongodb_setup.replica.yml'), 'w').close()
-        open(
-            os.path.join(test_dsipath, 'configurations', 'test_control', 'test_control.core.yml'),
-            'w').close()
+        open(os.path.join(test_dsipath, 'configurations', 'test_control', 'test_control.core.yml'),
+             'w').close()
         open(
             os.path.join(test_dsipath, 'configurations', 'workload_setup',
                          'workload_setup.core.yml'), 'w').close()
@@ -411,11 +410,12 @@ class TestBootstrap(unittest.TestCase):
             with self.assertRaises(AssertionError):
                 bootstrap.validate_terraform(config)
             crit_logs = set(crit.actual())
-            crit_expected = set([(
-                'bootstrap', 'CRITICAL',
-                u'[critical ] See documentation for installing terraform: http://bit.ly/2ufjQ0R [bootstrap] '
-            ), ('bootstrap', 'CRITICAL',
-                u'[critical ] Call to terraform failed.      [bootstrap] ')])
+
+            message_1 = (u'[critical ] See documentation for installing terraform: '
+                         u'http://bit.ly/2ufjQ0R [bootstrap] ')
+            message_2 = u'[critical ] Call to terraform failed.      [bootstrap] '
+            crit_expected = {('bootstrap', 'CRITICAL', message_1),
+                             ('bootstrap', 'CRITICAL', message_2)}
             print crit_logs
             print crit_expected
             self.assertTrue(crit_expected.issubset(crit_logs))
@@ -433,11 +433,12 @@ class TestBootstrap(unittest.TestCase):
                 bootstrap.validate_terraform(config)
             crit_logs = set(crit.actual())
             print crit_logs
-            crit_expected = set([(
+            crit_expected = {(
                 'bootstrap', 'CRITICAL',
                 u'[critical ] See documentation for installing terraform: http://bit.ly/2ufjQ0R [bootstrap] '
-            ), ('bootstrap', 'CRITICAL',
-                u'[critical ] Cannot execute terraform binary file. [bootstrap] ')])
+            ),
+                             ('bootstrap', 'CRITICAL',
+                              u'[critical ] Cannot execute terraform binary file. [bootstrap] ')}
             print crit_expected
             self.assertTrue(crit_expected.issubset(crit_logs))
 
@@ -470,7 +471,7 @@ class TestBootstrap(unittest.TestCase):
         mock_check_output.return_value = 'Terraform v0.9.11'
         config = copy.copy(self.TERRAFORM_CONFIG)
         bootstrap.validate_terraform(config)
-        self.assertEquals(config, config)
+        self.assertEqual(config, config)
 
     @patch('common.utils.get_dsi_bin_dir')
     def test_write_dsienv(self, mock_dsi_bin_dir):
@@ -558,7 +559,7 @@ class TestBootstrap(unittest.TestCase):
 
         bootstrap.run_bootstrap({'directory': directory, 'bootstrap_file': bootstrap_path})
         with open(expansions_file, 'r') as expansions:
-            self.assertEquals(expansions.read(), 'from_expansions: true')
+            self.assertEqual(expansions.read(), 'from_expansions: true')
 
     @patch('subprocess.check_output')
     def test_bootstrap_creates_expansions(self, mock_check_output):
@@ -589,14 +590,14 @@ class TestBootstrap(unittest.TestCase):
 
         bootstrap.run_bootstrap({'directory': directory, 'bootstrap_file': bootstrap_path})
         with open(expansions_file, 'r') as expansions:
-            self.assertEquals(expansions.read(), 'curator_mode: skip')
+            self.assertEqual(expansions.read(), 'curator_mode: skip')
 
     def test_load_bootstrap_copy_file_to_local(self):
         """
         Testing that load_bootstrap copies specified file in 'testdir' to local directory
         """
-        bootstrap_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'testdir/bootstrap.yml')
+        bootstrap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                      'testdir/bootstrap.yml')
         bootstrap_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'testdir/')
         os.mkdir(bootstrap_directory)
         config = {'bootstrap_file': bootstrap_path, 'production': False}
@@ -612,10 +613,10 @@ class TestBootstrap(unittest.TestCase):
         Testing that load_bootstrap copies specified file in 'testdir' to
         local directory and fails on collision
         """
-        bootstrap_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'testdir/bootstrap.yml')
-        wrong_bootstrap_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), './bootstrap.yml')
+        bootstrap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                      'testdir/bootstrap.yml')
+        wrong_bootstrap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                            './bootstrap.yml')
         bootstrap_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'testdir/')
         os.mkdir(bootstrap_directory)
         config = {'bootstrap_file': bootstrap_path, 'production': False}
@@ -631,12 +632,12 @@ class TestBootstrap(unittest.TestCase):
         Testing that load_bootstrap copies file from 'test_old_dir' into
         'test_new_dir' without collisions
         """
-        bootstrap_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'test_old_dir/bootstrap.yml')
-        bootstrap_new_directory = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'test_new_dir/')
-        bootstrap_old_directory = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'test_old_dir/')
+        bootstrap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                      'test_old_dir/bootstrap.yml')
+        bootstrap_new_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                               'test_new_dir/')
+        bootstrap_old_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                               'test_old_dir/')
         os.mkdir(bootstrap_new_directory)
         os.mkdir(bootstrap_old_directory)
         config = {'bootstrap_file': bootstrap_path, 'production': False}

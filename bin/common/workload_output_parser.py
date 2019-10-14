@@ -37,7 +37,6 @@ def parse_test_results(test, config, timer):
 
 class Results(object):
     """Holds a list of result objects"""
-
     def __init__(self, path, storage_engine):
         self.path = path
         self.storage_engine = storage_engine
@@ -124,6 +123,7 @@ class Results(object):
         for entry in self.results:
             if entry['name'] == name:
                 return entry
+        return None
 
     def save(self):
         """Save perf.json into self.perf_json_path"""
@@ -161,8 +161,9 @@ class ResultParser(object):
         self.cedar_tests = []
 
         # cedar reporting template.
-        self.cedar_test_template = cedar.CedarTest(
-            name=self.test_id, created=self.timer['start'], completed=self.timer['end'])
+        self.cedar_test_template = cedar.CedarTest(name=self.test_id,
+                                                   created=self.timer['start'],
+                                                   completed=self.timer['end'])
 
         # add tags for branch_name and constant 'sys-perf'
         if 'runtime' in config and 'branch_name' in config['runtime']:
@@ -233,7 +234,6 @@ class GennyResultsParser(ResultParser):
     Genny's output doesn't require a parser so this just merges
     genny's output to the configured perf.json path.
     """
-
     def __init__(self, test, config, timer):
         """
         :param ConfigDict test test-level config
@@ -262,7 +262,6 @@ class GennyResultsParser(ResultParser):
 
 class GennyCanariesParser(ResultParser):
     """A ResultParser for Genny self-tests"""
-
     def __init__(self, test, config, timer):
         """
         :param ConfigDict test test-level config
@@ -297,7 +296,6 @@ class GennyCanariesParser(ResultParser):
 
 class TPCCResultParser(ResultParser):
     """A ResultParser of TPC-C tests"""
-
     def __init__(self, test, config, timer):
         """Set tpcc specific attributes"""
         super(TPCCResultParser, self).__init__(test, config, timer)
@@ -325,7 +323,6 @@ class LinkbenchResultParser(ResultParser):
     """
     A ResultParser for linkbench csv files.
     """
-
     def __init__(self, test, config, timer):
         """Set linkbench specific attributes"""
         super(LinkbenchResultParser, self).__init__(test, config, timer)
@@ -361,7 +358,6 @@ class LinkbenchResultParser(ResultParser):
 
 class MongoShellParser(ResultParser):
     """A ResultParser of mongoshell tests"""
-
     def __init__(self, test, config, timer):
         """Set mongoshell specific attributes"""
         super(MongoShellParser, self).__init__(test, config, timer)
@@ -389,7 +385,6 @@ class MongoShellParser(ResultParser):
 
 class YcsbParser(ResultParser):
     """A ResultParser of ycsb tests (aka industry benchmarks)"""
-
     def __init__(self, test, config, timer):
         """Set ycsb specific attributes"""
         super(YcsbParser, self).__init__(test, config, timer)
@@ -463,7 +458,6 @@ class YcsbParser(ResultParser):
 
 class SysbenchResultParser(ResultParser):
     """A ResultParser for sysbench tests"""
-
     def __init__(self, test, config, timer):
         """Set sysbench specific attributes"""
         super(SysbenchResultParser, self).__init__(test, config, timer)
@@ -506,8 +500,8 @@ class SysbenchResultParser(ResultParser):
         for name in results.keys():
             sign = -1 if "latency" in name else 1
             # For historical reasons threads is expected to be a string. (It's a key in perf.json)
-            self.add_result(self.test_id + "_" + name, sign * float(results[name]), str(
-                self.threads))
+            self.add_result(self.test_id + "_" + name, sign * float(results[name]),
+                            str(self.threads))
 
             cedar_test.set_thread_level(self.threads)
             if "latency" in name:
@@ -517,14 +511,14 @@ class SysbenchResultParser(ResultParser):
                     value=float(results[name]),
                 )
             else:
-                cedar_test.add_metric(
-                    name=name, rollup_type='THROUGHPUT', value=float(results[name]))
+                cedar_test.add_metric(name=name,
+                                      rollup_type='THROUGHPUT',
+                                      value=float(results[name]))
         self.cedar_tests.append(cedar_test)
 
 
 class FioParser(ResultParser):
     """A ResultParser of fio results in fio.json"""
-
     def __init__(self, test, config, timer):
         """Set fio specific attributes"""
         super(FioParser, self).__init__(test, config, timer)
@@ -552,6 +546,7 @@ class FioParser(ResultParser):
         matcher = re.compile(regex)
         if matcher.search(name):
             return self.add_result(name, result, threads)
+        return None
 
     def _parse(self):
         """Parse fio.json"""
@@ -582,7 +577,6 @@ class FioParser(ResultParser):
 
 class IperfParser(ResultParser):
     """A ResultParser of iperf3 results in iperf.json"""
-
     def __init__(self, test, config, timer):
         """Set fio specific attributes"""
         super(IperfParser, self).__init__(test, config, timer)

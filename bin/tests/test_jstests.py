@@ -8,7 +8,6 @@ import common.jstests
 
 class JSTestsTestCase(unittest.TestCase):
     """Unit tests for jstests library."""
-
     def setUp(self):
         """Create a dict that looks like a ConfigDict object """
         self.config = {
@@ -71,16 +70,15 @@ class JSTestsTestCase(unittest.TestCase):
 
         # Because of the use of threading, the order of the calls between the primaries is
         # non-determinanistic, and we have to set any_order to True below.
-        mock_jstest_one_host.assert_has_calls(
-            [
-                call(self.config, "10.10.10.10:27017", "reports", "UnitTest",
-                     "validate-indexes-and-collections"),
-                call(self.config, "10.10.10.10:27017", "reports", "UnitTest", "db-hash-check"),
-                call(self.config, "10.10.10.11:27017", "reports", "UnitTest",
-                     "validate-indexes-and-collections"),
-                call(self.config, "10.10.10.11:27017", "reports", "UnitTest", "db-hash-check")
-            ],
-            any_order=True)
+        mock_jstest_one_host.assert_has_calls([
+            call(self.config, "10.10.10.10:27017", "reports", "UnitTest",
+                 "validate-indexes-and-collections"),
+            call(self.config, "10.10.10.10:27017", "reports", "UnitTest", "db-hash-check"),
+            call(self.config, "10.10.10.11:27017", "reports", "UnitTest",
+                 "validate-indexes-and-collections"),
+            call(self.config, "10.10.10.11:27017", "reports", "UnitTest", "db-hash-check")
+        ],
+                                              any_order=True)
 
     @patch('common.jstests.jstest_one_host')
     @patch('common.jstests._remote_exists')

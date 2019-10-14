@@ -21,7 +21,7 @@ class TestJsonFiles(unittest.TestCase):
                     json_as_dict = json.load(file_handle)
                     correct_json = json.dumps(json_as_dict, indent=4,
                                               separators=[',', ':'], sort_keys=True)
-                self.assertEquals(json_as_str, correct_json)
+                self.assertEqual(json_as_str, correct_json)
 
 if __name__ == '__main__':
     unittest.main()

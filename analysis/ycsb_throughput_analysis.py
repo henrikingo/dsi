@@ -22,7 +22,7 @@ def analyze_ycsb_throughput(reports_dir_path):
     results = []
     LOGGER.info("Starting YCSB throughput analysis.")
     for num, path in enumerate(_get_ycsb_file_paths(reports_dir_path)):
-        LOGGER.info("Reading file: " + path)
+        LOGGER.info("Reading file: %s", path)
         # Check that this is a ycsb output file
         ycsb_in_file = True
         with open(path) as ycsb_file:
@@ -169,9 +169,10 @@ def _analyze_spiky_throughput(throughputs, max_drop=0.5, min_duration=10, skip_i
                     "spiky throughput: Detected low throughput for {0} seconds, starting at {1} "
                     "seconds and ending at {2} seconds. The minimum acceptable throughput is {3} "
                     "ops/sec (the average throughput for the test was {4}ops/sec ), and the low "
-                    "throughputs were: \n{5}\n").format(
-                        duration, first_low_throughput_time, last_low_throughput_time,
-                        min_acceptable_throughput, avg_throughput, low_throughputs_str)
+                    "throughputs were: \n{5}\n").format(duration, first_low_throughput_time,
+                                                        last_low_throughput_time,
+                                                        min_acceptable_throughput, avg_throughput,
+                                                        low_throughputs_str)
                 err_messages.append(err_msg)
 
     return err_messages

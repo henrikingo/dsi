@@ -21,16 +21,11 @@ class TestCedar(unittest.TestCase):
             'prefix': '',
             'region': ''
         },
-        'execution_number':
-            1,
-        'mainline':
-            True,
-        'project':
-            'Genny',
-        'task_id':
-            '2C9TU0UAQ1NBCNG6K15P',
-        'task_name':
-            'some_genny_test',
+        'execution_number': 1,
+        'mainline': True,
+        'project': 'Genny',
+        'task_id': '2C9TU0UAQ1NBCNG6K15P',
+        'task_name': 'some_genny_test',
         'tests': [{
             'artifacts': [],
             'completed_at': '1972-12-17T22:04:39+00:00',
@@ -44,12 +39,9 @@ class TestCedar(unittest.TestCase):
             'metrics': [],
             'sub_tests': []
         }],
-        'variant':
-            'linux-standalone',
-        'version':
-            'revHEAD',
-        'order':
-            2
+        'variant': 'linux-standalone',
+        'version': 'revHEAD',
+        'order': 2
     }
 
     BASE_RUNTIME = {
@@ -143,10 +135,8 @@ class TestCedar(unittest.TestCase):
         expect = self.expected({
             'tests': [{
                 'artifacts': [],
-                'completed_at':
-                    '1972-12-17T22:04:39+00:00',
-                'created_at':
-                    '2091-08-29T17:46:14+00:00',
+                'completed_at': '1972-12-17T22:04:39+00:00',
+                'created_at': '2091-08-29T17:46:14+00:00',
                 'info': {
                     'args': {
                         'foo': 150,
@@ -200,13 +190,11 @@ class TestRunCuratorAndFriends(unittest.TestCase):
             call(),
             call('https://cedar.mongodb.com/rest/v1/admin/ca'),
             call().raise_for_status(),
-            call(
-                'https://cedar.mongodb.com/rest/v1/admin/users/certificate',
-                data='{"username": "test-user", "password": "test-pwd"}'),
+            call('https://cedar.mongodb.com/rest/v1/admin/users/certificate',
+                 data='{"username": "test-user", "password": "test-pwd"}'),
             call().raise_for_status(),
-            call(
-                'https://cedar.mongodb.com/rest/v1/admin/users/certificate/key',
-                data='{"username": "test-user", "password": "test-pwd"}'),
+            call('https://cedar.mongodb.com/rest/v1/admin/users/certificate/key',
+                 data='{"username": "test-user", "password": "test-pwd"}'),
             call().raise_for_status()
         ])
         mock_get().assert_has_calls([call.raise_for_status()])

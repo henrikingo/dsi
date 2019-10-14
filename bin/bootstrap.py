@@ -32,14 +32,15 @@ def parse_command_line(config, args=None):
                     on setting up dsi locally, see \
                     https://drive.google.com/open?id=14QXOmo-ia8w72pW5zqQ2fCWfXEwiVQ8_1EoMCkB4baY')
 
-    parser.add_argument(
-        '-b',
-        '--bootstrap-file',
-        help='Specify the bootstrap file. If not specified, will look for '
-        'bootstrap.yml in the current directory. ')
+    parser.add_argument('-b',
+                        '--bootstrap-file',
+                        help='Specify the bootstrap file. If not specified, will look for '
+                        'bootstrap.yml in the current directory. ')
     parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
-    parser.add_argument(
-        '-D', '--directory', default='.', help="Directory to setup. Defaults to current directory")
+    parser.add_argument('-D',
+                        '--directory',
+                        default='.',
+                        help="Directory to setup. Defaults to current directory")
     parser.add_argument('--log-file', help='path to log file')
 
     # These options are ignored but allowed for backward compatibility
@@ -85,8 +86,9 @@ def copy_config_files(dsipath, config, directory):
         #pylint: disable=broad-except
         try:
             shutil.copyfile(source_file, target_file)
-            LOGGER.debug(
-                "Copied file to work directory", source_file=source_file, target_file=target_file)
+            LOGGER.debug("Copied file to work directory",
+                         source_file=source_file,
+                         target_file=target_file)
         except Exception as error:
             # If a source file doesn't exist, it's probably because a wrong or no option was
             # provided in bootstrap.yml. When running manually, this is not fatal. For example,
@@ -145,9 +147,8 @@ def find_terraform(config, directory):
 
     if 'terraform' in config:
         terraform = os.path.abspath(os.path.expanduser(config['terraform']))
-        LOGGER.debug(
-            'Using terraform binary specified by bootstrap.terraform',
-            terraform=config['terraform'])
+        LOGGER.debug('Using terraform binary specified by bootstrap.terraform',
+                     terraform=config['terraform'])
     elif system_tf is not None:
         terraform = os.path.abspath(system_tf)
         LOGGER.debug('Using terraform binary specified by $(which terraform)', terraform=terraform)
@@ -210,8 +211,9 @@ def load_bootstrap(config, directory):
         if os.path.isfile(bootstrap_path):
             if not bootstrap_path == os.path.abspath(os.path.join(directory, 'bootstrap.yml')):
                 if os.path.isfile(os.path.abspath(os.path.join(directory, 'bootstrap.yml'))):
-                    LOGGER.critical('Attempting to overwrite existing bootstrap.yml file in %s. '
-                                    'Aborting.', directory)
+                    LOGGER.critical(
+                        'Attempting to overwrite existing bootstrap.yml file in %s. '
+                        'Aborting.', directory)
                     assert False
                 shutil.copyfile(bootstrap_path, os.path.join(directory, 'bootstrap.yml'))
         else:
@@ -223,8 +225,9 @@ def load_bootstrap(config, directory):
         if os.path.isfile(bootstrap_path):
             if not bootstrap_path == os.path.abspath(os.path.join(directory, 'bootstrap.yml')):
                 if os.path.isfile(os.path.abspath(os.path.join(directory, 'bootstrap.yml'))):
-                    LOGGER.critical('Attempting to overwrite existing bootstrap.yml file in %s. '
-                                    'Aborting.', directory)
+                    LOGGER.critical(
+                        'Attempting to overwrite existing bootstrap.yml file in %s. '
+                        'Aborting.', directory)
                     assert False
                 shutil.copyfile(bootstrap_path, os.path.join(directory, 'bootstrap.yml'))
 
@@ -266,8 +269,8 @@ def ensure_expansions_file(directory):
         return
     with open(expansions_path, 'w') as expansions:
         expansions.write('curator_mode: skip')
-    LOGGER.info(
-        'No existing expansions file so created a default one.', expansions_path=expansions_path)
+    LOGGER.info('No existing expansions file so created a default one.',
+                expansions_path=expansions_path)
 
 
 def run_bootstrap(config):

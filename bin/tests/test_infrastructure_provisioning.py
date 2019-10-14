@@ -32,7 +32,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     """
     Test suite for infrastructure_provisioning.py
     """
-
     def setUp(self):
         self.os_environ_patcher = patch('infrastructure_provisioning.os.environ')
         self.mock_environ = self.os_environ_patcher.start()
@@ -137,8 +136,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         del os_environ_missing_terraform['TERRAFORM']
         self.mock_environ.__getitem__.side_effect = os_environ_missing_terraform.__getitem__
         self.mock_environ.__contains__.side_effect = os_environ_missing_terraform.__contains__
-        provisioner_missing_terraform = ip.Provisioner(
-            self.config, provisioning_file=self.provision_log_path)
+        provisioner_missing_terraform = ip.Provisioner(self.config,
+                                                       provisioning_file=self.provision_log_path)
         self.assertEqual(provisioner_missing_terraform.cluster, 'single')
         self.assertFalse(provisioner_missing_terraform.reuse_cluster)
         self.assertEqual(provisioner_missing_terraform.dsi_dir, self.dsi_path)
@@ -233,9 +232,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             ]
             mock_isfile.assert_has_calls(isfile_calls)
             copyfile_calls = [
-                call(
-                    FIXTURE_FILES.fixture_file_path('terraform/terraform.tfstate'),
-                    './terraform.tfstate'),
+                call(FIXTURE_FILES.fixture_file_path('terraform/terraform.tfstate'),
+                     './terraform.tfstate'),
                 call(FIXTURE_FILES.fixture_file_path('terraform/cluster.json'), 'cluster.json')
             ]
             mock_copyfile.assert_has_calls(copyfile_calls)
@@ -299,8 +297,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 call('cluster.json'),
                 call('terraform.tfstate'),
                 call(FIXTURE_FILES.fixture_file_path('terraform/terraform.tfstate')),
-                call(
-                    FIXTURE_FILES.fixture_file_path('terraform/provisioned.initialsync-logkeeper'))
+                call(FIXTURE_FILES.fixture_file_path('terraform/provisioned.initialsync-logkeeper'))
             ]
             mock_isfile.assert_has_calls(isfile_calls)
             remove_calls = [call('cluster.json'), call('terraform.tfstate')]
@@ -448,29 +445,24 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             # If the cluster is initialsync-logkeeper, then terraform should be run twice
             terraform = self.os_environ['TERRAFORM']
             check_call_calls = [
-                call(
-                    [terraform, 'init', '-upgrade'],
-                    stdout=provisioner.stdout,
-                    stderr=provisioner.stderr),
-                call(
-                    [
-                        terraform, 'apply', '-var-file=cluster.json', provisioner.parallelism,
-                        '-var="mongod_ebs_instance_count=0"', '-var="workload_instance_count=0"'
-                    ],
-                    stdout=provisioner.stdout,
-                    stderr=provisioner.stderr),
-                call(
-                    [terraform, 'apply', '-var-file=cluster.json', provisioner.parallelism],
-                    stdout=provisioner.stdout,
-                    stderr=provisioner.stderr),
-                call(
-                    [terraform, 'refresh', '-var-file=cluster.json'],
-                    stdout=provisioner.stdout,
-                    stderr=provisioner.stderr),
-                call(
-                    [terraform, 'plan', '-detailed-exitcode', '-var-file=cluster.json'],
-                    stdout=provisioner.stdout,
-                    stderr=provisioner.stderr)
+                call([terraform, 'init', '-upgrade'],
+                     stdout=provisioner.stdout,
+                     stderr=provisioner.stderr),
+                call([
+                    terraform, 'apply', '-var-file=cluster.json', provisioner.parallelism,
+                    '-var="mongod_ebs_instance_count=0"', '-var="workload_instance_count=0"'
+                ],
+                     stdout=provisioner.stdout,
+                     stderr=provisioner.stderr),
+                call([terraform, 'apply', '-var-file=cluster.json', provisioner.parallelism],
+                     stdout=provisioner.stdout,
+                     stderr=provisioner.stderr),
+                call([terraform, 'refresh', '-var-file=cluster.json'],
+                     stdout=provisioner.stdout,
+                     stderr=provisioner.stderr),
+                call([terraform, 'plan', '-detailed-exitcode', '-var-file=cluster.json'],
+                     stdout=provisioner.stdout,
+                     stderr=provisioner.stderr)
             ]
             mock_subprocess.check_call.assert_has_calls(check_call_calls)
             mock_save_output.assert_called_with([terraform, 'output'])
@@ -543,10 +535,9 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 mock_copyfile.assert_has_calls(copyfile_calls)
                 chdir_calls = [call(terraform_dir), call(mock_getcwd.return_value)]
                 mock_chdir.assert_has_calls(chdir_calls)
-                mock_check_call.assert_called_with(
-                    ['./terraform', 'init', '-upgrade'],
-                    stdout=provisioner.stdout,
-                    stderr=provisioner.stderr)
+                mock_check_call.assert_called_with(['./terraform', 'init', '-upgrade'],
+                                                   stdout=provisioner.stdout,
+                                                   stderr=provisioner.stderr)
                 remove_calls = [call('provisioned.single'), call('provisioned.shard')]
                 mock_remove.assert_has_calls(remove_calls)
                 mock_open_file.assert_called_with('provisioned.single', 'w')

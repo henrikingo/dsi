@@ -19,7 +19,6 @@ FIXTURE_FILES = FixtureFiles(os.path.dirname(os.path.dirname(__file__)))
 
 class TestEvergreenHelpers(unittest.TestCase):
     """Tests are related to Evergreen & Github API access"""
-
     def setUp(self):
         """Specify the expected result variables used in more than 1 test"""
         config_file = FIXTURE_FILES.repo_root_file_path('config.yml')
@@ -86,7 +85,6 @@ class TestGitCommit(unittest.TestCase):
     """
     Test get_git_commits.
     """
-
     def setUp(self):
         self.url = '{}/repos/mongodb/mongo/commits'.format(GITHUB_API)
 
@@ -129,7 +127,6 @@ class TestGetGithashes(unittest.TestCase):
     """
     Test get_githashes_in_range_github.
     """
-
     def setUp(self):
         # Real commit data from master.
         self.newest = 'af600c3876a26f62d8dde93bf769fc4ca3054072'
@@ -186,7 +183,6 @@ class TestGetRevList(unittest.TestCase):
     """
     Test get_githashes_in_range_repo.
     """
-
     def setUp(self):
         # Real commit data from master.
         self.newest = 'af600c3876a26f62d8dde93bf769fc4ca3054072'
@@ -212,12 +208,11 @@ class TestGetRevList(unittest.TestCase):
         mock_popen.return_value = mock_process
         actual = helpers.get_githashes_in_range_repo(self.oldest, self.newest, 'repo')
         self.assertEqual(actual, self.expected)
-        mock_popen.assert_called_once_with(
-            ['git', 'rev-list', self.oldest + '..' + self.newest],
-            stdin=PIPE,
-            stdout=PIPE,
-            stderr=PIPE,
-            cwd='repo')
+        mock_popen.assert_called_once_with(['git', 'rev-list', self.oldest + '..' + self.newest],
+                                           stdin=PIPE,
+                                           stdout=PIPE,
+                                           stderr=PIPE,
+                                           cwd='repo')
 
     @patch('evergreen.helpers.Popen')
     def test_get_githashes_in_range_repo_error(self, mock_popen):
@@ -264,7 +259,6 @@ class TestNoGit(unittest.TestCase):
     """
     Test git OS Failure case.
     """
-
     def setUp(self):
         self.newest = 'af600c3876a26f62d8dde93bf769fc4ca3054072'
         self.oldest = '59a4bf14617facbb49520e00c91a55ac8e9a316c'

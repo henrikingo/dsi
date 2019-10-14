@@ -262,13 +262,12 @@ def compare_one_throughput(  # pylint: disable=too-many-arguments
     Compare one data point from result series this_one to reference at thread_level
     if this_one is lower by threshold*reference return True.
     """
-    (passed, log) = compare_one_result(
-        this_one,
-        reference,
-        label,
-        thread_level,
-        default_threshold=threshold,
-        using_override=using_override)
+    (passed, log) = compare_one_result(this_one,
+                                       reference,
+                                       label,
+                                       thread_level,
+                                       default_threshold=threshold,
+                                       using_override=using_override)
     if label != 'silent':
         print(log)
     return passed
@@ -297,8 +296,9 @@ def compare_throughputs(  # pylint: disable=too-many-arguments
 
     # some tests may have higher noise margin and need different thresholds
     # this info is kept as part of the override file
-    (threshold, thread_threshold, threshold_override) = read_threshold_overrides(
-        this_one['name'], threshold, thread_threshold, overrides)
+    (threshold, thread_threshold,
+     threshold_override) = read_threshold_overrides(this_one['name'], threshold, thread_threshold,
+                                                    overrides)
 
     if threshold_override:
         using_override.append('threshold')
@@ -384,41 +384,44 @@ def main(args):  # pylint: disable=too-many-locals,too-many-statements,too-many-
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--project_id', dest='project_id', help='project_id for the test in Evergreen')
+    parser.add_argument('--project_id',
+                        dest='project_id',
+                        help='project_id for the test in Evergreen')
     parser.add_argument('--task_name', dest='task_name', help='Deprecated. See --task.')
-    parser.add_argument(
-        '-f', '--file', dest='hfile', help='path to json file containing '
-        'history data')
-    parser.add_argument(
-        '-t', '--tagFile', dest='tfile', help='path to json file containing '
-        'tag data')
+    parser.add_argument('-f',
+                        '--file',
+                        dest='hfile',
+                        help='path to json file containing '
+                        'history data')
+    parser.add_argument('-t',
+                        '--tagFile',
+                        dest='tfile',
+                        help='path to json file containing '
+                        'tag data')
     parser.add_argument('--rev', dest='rev', help='revision to examine for regressions')
-    parser.add_argument(
-        '--refTag',
-        dest='reference',
-        help='Reference tag to compare against. Should be a valid tag name')
-    parser.add_argument(
-        '--overrideFile', dest='ofile', help='File to read for comparison override information')
+    parser.add_argument('--refTag',
+                        dest='reference',
+                        help='Reference tag to compare against. Should be a valid tag name')
+    parser.add_argument('--overrideFile',
+                        dest='ofile',
+                        help='File to read for comparison override information')
     parser.add_argument('--variant', dest='variant', help='Variant to lookup in the override file')
     parser.add_argument('--task', dest='task', help='Evergreen task name for the test')
-    parser.add_argument(
-        "--report-file",
-        help='File to write the report JSON file to. Defaults to "report.json".',
-        default="report.json")
-    parser.add_argument(
-        "--out-file", help="File to write the results table to. Defaults to stdout.")
+    parser.add_argument("--report-file",
+                        help='File to write the report JSON file to. Defaults to "report.json".',
+                        default="report.json")
+    parser.add_argument("--out-file",
+                        help="File to write the results table to. Defaults to stdout.")
     parser.add_argument(
         "--ycsb-throughput-analysis",
         help=("Analyze the throughput-over-time data from YCSB log files. The argument to this "
               "flag should be the directory to recursively search for the files."))
     # TODO: PERF-675 to remove this. Present for backwards compatibility right now.
-    parser.add_argument(
-        "--is-patch",
-        action='store_true',
-        default=False,
-        dest='is_patch',
-        help='If true, will skip NDays comparison (see PERF-386).')
+    parser.add_argument("--is-patch",
+                        action='store_true',
+                        default=False,
+                        dest='is_patch',
+                        help='If true, will skip NDays comparison (see PERF-386).')
     parser.add_argument(
         "--log-analysis",
         help=("This argument is only present for backwards compatibility. To be removed."))
@@ -526,9 +529,10 @@ def main(args):  # pylint: disable=too-many-locals,too-many-statements,too-many-
             if not max_thread_level:
                 max_thread_level = task_max_thread_sum
             resource_constant_values = {'max_thread_level': max_thread_level}
-            resource_rule_outcome = ftdc_analysis.resource_rules(
-                args.reports_analysis, args.project_id, args.variant, resource_constant_values,
-                args.perf_file)
+            resource_rule_outcome = ftdc_analysis.resource_rules(args.reports_analysis,
+                                                                 args.project_id, args.variant,
+                                                                 resource_constant_values,
+                                                                 args.perf_file)
             report['results'] += [resource_rule_outcome]
 
         db_correctness_results = rules.db_correctness_analysis(args.reports_analysis)

@@ -51,7 +51,6 @@ class IOLogAdapter(StringIO):
     It derives from StringIO in order to get stubbed base implementations
     of methods like flush and close.
     """
-
     def __init__(self, logger, level=None):
         StringIO.__init__(self)
         self.logger = logger
@@ -93,7 +92,6 @@ class UTF8WrapperStream(object):
 
     This hopefully goes away when DSI moves to Python 3.
     """
-
     def __init__(self, child):
         """
         :param child: child io-stream or file-like object.
@@ -101,9 +99,8 @@ class UTF8WrapperStream(object):
         self._child = child
         if sys.version_info[0] > 2:
             # can't rely on logging yet!
-            print(
-                "UTF8WrapperStream is only necessary in Python versions prior to 3.0",
-                file=sys.stderr)
+            print("UTF8WrapperStream is only necessary in Python versions prior to 3.0",
+                  file=sys.stderr)
 
     def write(self, line):
         """Write to the underlying stream first converting to utf-8."""
@@ -155,7 +152,6 @@ class TeeStream(object):
     :see https://docs.python.org/2/library/io.html#io.IOBase for the
     interface it should implement.
     """
-
     def __init__(self, *streams):
         self.streams = list(streams)
         self.closed = False

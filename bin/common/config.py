@@ -86,9 +86,8 @@ class ConfigDict(dict):
         """
 
         # defaults.yml
-        file_name = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), '..', '..', 'configurations',
-            'defaults.yml')
+        file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..',
+                                 'configurations', 'defaults.yml')
         with open(file_name) as file_handle:
             self.defaults = _yaml_load(file_handle, file_name)
             LOG.info('ConfigDict: Loaded: %s', file_name)
@@ -513,8 +512,8 @@ class ConfigDict(dict):
 
         if self.is_topology_node() and key == 'config_file':
             # Note: In the below 2 lines, overrides and ${variables} are already applied
-            common_config = self.root['mongodb_setup'].get(
-                self.topology_node_type() + '_config_file')
+            common_config = self.root['mongodb_setup'].get(self.topology_node_type() +
+                                                           '_config_file')
             node_specific_config = self.raw.get(key, {})
             return self.get_merged_config_dict_value(common_config, node_specific_config, key), True
 
@@ -626,8 +625,8 @@ class ConfigDict(dict):
             return True
 
         else:
-            raise KeyError(
-                'Only values under self["' + self.module + '"]["out"] are settable in this object')
+            raise KeyError('Only values under self["' + self.module +
+                           '"]["out"] are settable in this object')
 
 
 def copy_obj(obj):
@@ -714,7 +713,6 @@ def validate_id(value, path, ids, errs, src_file):
 
 class InvalidConfigurationException(Exception):
     """Indicates invalid configuration either from YAML or from user modifying 'out' config."""
-
     def __init__(self, errors):
         self.errors = errors
         key_info = "Keys must be strings and match {}.".format(_VALID_KEY_REX_SRC)
@@ -723,8 +721,8 @@ class InvalidConfigurationException(Exception):
         id_info = "Id fields must be unique in a file and cannot be reserved words."
         errs = ", ".join([
             u"😱 {} [{}] of type [{}] at path [{}] in file [{}]".format(
-                err['err_type'], err['item'], err['item_type'].__name__, ".".join(
-                    str(p) for p in err['path']), err['src_file']) for err in self.errors
+                err['err_type'], err['item'], err['item_type'].__name__,
+                ".".join(str(p) for p in err['path']), err['src_file']) for err in self.errors
         ])
         message = " ".join([key_info, value_info, id_info, errs])
         super(InvalidConfigurationException, self).__init__(message.encode('utf-8'))
@@ -774,7 +772,6 @@ def _check_object(obj, src_file=None):
     :param obj: object to check for validity as use as a ConfigDict entry.
     :raises InvalidConfigurationExcetion if keys or types are insuitable.
     """
-
     def explore(obj, path, ids, errs):
         """
         :param obj: object (scalar or complex type) we're traversing

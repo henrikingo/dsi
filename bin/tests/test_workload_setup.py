@@ -48,7 +48,6 @@ def new_runner(conf):
 
 class TestWorkloadSetup(unittest.TestCase):
     """Test workload_setup module"""
-
     def setUp(self):
         self.config = copy.deepcopy(BASIC_CONFIG)
         self.mock_run_host = MagicMock()

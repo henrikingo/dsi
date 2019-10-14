@@ -9,7 +9,6 @@ import util
 
 class TestUtilFunctions(unittest.TestCase):
     """Test suite."""
-
     def test_num_or_str_to_date(self):
         """Test `num_or_str_to_date()`."""
 
@@ -19,7 +18,6 @@ class TestUtilFunctions(unittest.TestCase):
 
     def test_get_test_times(self):
         """Test `get_test_times()`."""
-
         def assert_instancesof_datetime(tuples):
             """
             Assert that all of the items in a list of tuples are instanced of

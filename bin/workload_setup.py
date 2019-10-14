@@ -19,7 +19,6 @@ class WorkloadSetupRunner(object):
     """
     Responsible for invoking workload_setup.yml commands before test_control
     """
-
     def __init__(self, config):
         """
         Constructor.

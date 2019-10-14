@@ -16,7 +16,6 @@ class TestCompare(unittest.TestCase):
     """
     Test suite.
     """
-
     def runTest(self):
         """
         Load comparison data from two different sets of comparison/baseline JSON files and compare

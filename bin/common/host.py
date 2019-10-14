@@ -26,7 +26,6 @@ class Host(object):
     """
     Base class for hosts
     """
-
     def __init__(self, hostname, mongodb_auth_settings=None, mongodb_tls_settings=None):
         self._alias = None
         self.hostname = hostname
@@ -207,8 +206,11 @@ class Host(object):
         self.create_file(remote_file_name, script)
         self.run(['cat', remote_file_name])
 
-        status_code = self.exec_command(
-            argv, stdout=stdout, stderr=stderr, max_time_ms=max_time_ms, quiet=quiet)
+        status_code = self.exec_command(argv,
+                                        stdout=stdout,
+                                        stderr=stderr,
+                                        max_time_ms=max_time_ms,
+                                        quiet=quiet)
         return status_code
 
     def kill_remote_procs(self,
@@ -298,7 +300,7 @@ class Host(object):
             if branch is not None:
                 self.exec_command(['cd', target, '&&', 'git', 'checkout', quiet_arg, branch])
         elif self.exec_command(['cd', target, '&&', 'git', 'status']) != 0:
-            raise UserWarning('%s exists and is not a git repository', target)
+            raise UserWarning('{} exists and is not a git repository'.format(target))
         else:
             LOG.info('checkout_repos target directory %s exists and is a git repository', target)
 

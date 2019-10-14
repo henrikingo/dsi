@@ -17,7 +17,6 @@ LOG = logging.getLogger(__name__)
 
 class CedarTestCase(unittest.TestCase):
     """Unit tests for parsers that report to Cedar"""
-
     @patch('common.workload_output_parser.Results')
     def test_ycsb_parser(self, mock_results):
         """Test that one Cedar Test is added per thread-level"""
@@ -41,7 +40,6 @@ class CedarTestCase(unittest.TestCase):
 
 class WorkloadOutputParserTestCase(unittest.TestCase):
     """Unit tests for workload_output_parser.py."""
-
     def setUp(self):
         """Set some common input data"""
         self.tests = [
@@ -131,8 +129,9 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
             parse_test_results(test, self.config, self.timer)
 
         # Verify output file
-        FIXTURE_FILES.assert_json_files_equal(
-            self, expect="{}.ok".format(self.perf_json_path), actual=self.perf_json_path)
+        FIXTURE_FILES.assert_json_files_equal(self,
+                                              expect="{}.ok".format(self.perf_json_path),
+                                              actual=self.perf_json_path)
 
     def test_atlas_perf_json(self):
         """Generates a perf.json file but omitting fio and iperf."""
@@ -146,8 +145,9 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
             parse_test_results(test, self.config, self.timer)
 
         # Verify output file
-        FIXTURE_FILES.assert_json_files_equal(
-            self, expect="{}.ok".format(self.perf_json_path), actual=self.perf_json_path)
+        FIXTURE_FILES.assert_json_files_equal(self,
+                                              expect="{}.ok".format(self.perf_json_path),
+                                              actual=self.perf_json_path)
 
     def test_validate_config(self):
         """Test workload_output_parser.validate_config()"""

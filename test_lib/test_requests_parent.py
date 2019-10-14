@@ -21,7 +21,6 @@ class TestRequestsParent(unittest.TestCase):
     """
     Parent Class for tests which do requests. Mocks out requests and uses ContextShelve.
     """
-
     def setUp(self):
         """
         Mocks the connection functions and also opens up the ContextShelve object.

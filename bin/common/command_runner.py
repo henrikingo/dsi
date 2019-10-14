@@ -157,13 +157,13 @@ def _run_host_command_map(target_host, command, prefix, config):
             success = target_host.run(value)
             common.host_utils.raise_if_not_success(success, value)
         elif key == "run_curator":
-            LOG.info('Executing curator in ' + os.getcwd())
+            LOG.info('Executing curator in %s', os.getcwd())
             common.cedar.run_curator(value, target_host, config)
         elif key == "exec_mongo_shell":
             LOG.debug('Executing command %s in mongo shell', value)
             connection_string = value.get('connection_string', "")
-            exit_status = target_host.exec_mongo_command(
-                value['script'], connection_string=connection_string)
+            exit_status = target_host.exec_mongo_command(value['script'],
+                                                         connection_string=connection_string)
             common.host_utils.raise_if_not_ok(exit_status, value)
         elif key == "checkout_repos":
             for paths in value:
@@ -363,12 +363,11 @@ def run_pre_post_commands(command_key,
                 elif exception_behavior == EXCEPTION_BEHAVIOR.CONTINUE:
                     pass
                 else:
-                    SLOG.error(
-                        "Invalid exception_behavior entry",
-                        command_dict=command_dict,
-                        command_key=command_key,
-                        exception_behavior=exception_behavior,
-                        exception=exception)
+                    SLOG.error("Invalid exception_behavior entry",
+                               command_dict=command_dict,
+                               command_key=command_key,
+                               exception_behavior=exception_behavior,
+                               exception=exception)
 
 
 def dispatch_commands(command_key, command_list, config, current_test_id=None):
@@ -383,11 +382,10 @@ def dispatch_commands(command_key, command_list, config, current_test_id=None):
     current_test_id will be None.
     '''
 
-    SLOG.debug(
-        "dispatch_commands",
-        command_key=command_key,
-        command_list=command_list,
-        current_test_id=current_test_id)
+    SLOG.debug("dispatch_commands",
+               command_key=command_key,
+               command_list=command_list,
+               current_test_id=current_test_id)
     # Most notably, the prefix is used for directory name under reports/.
     # It is either the test id (fio, ycsb_load...) or the command itself (post_task).
     prefix = current_test_id if current_test_id else command_key

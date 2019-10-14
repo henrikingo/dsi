@@ -18,7 +18,6 @@ class BaselineUpdaterTest(setup_baselines.BaselineUpdater):
     ''' Subclassed BaselineUpdater to use different baseline_config.yml file
 
     All tests for BaselineUpdater should use this class instead'''
-
     def __init__(self):
         ''' init. Load different file than parent '''
         super(BaselineUpdaterTest, self).__init__()
@@ -27,7 +26,6 @@ class BaselineUpdaterTest(setup_baselines.BaselineUpdater):
 
 class TestSetupBaselines(unittest.TestCase):
     ''' Test suite for setup_baselines.py'''
-
     def setUp(self):
         '''
         Setup perfyaml for each test, and patch the file open of baseline_config.yml

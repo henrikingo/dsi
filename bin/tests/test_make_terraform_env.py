@@ -17,7 +17,6 @@ from common import terraform_config
 
 class TestTerraformConfiguration(unittest.TestCase):
     """To test terraform configuration class."""
-
     def setUp(self):
         ''' Load self.config (ConfigDict) and set some other common values '''
 
@@ -208,7 +207,6 @@ class TestTerraformConfiguration(unittest.TestCase):
 
     def test_generate_expire_on_tag(self):
         """Test expire-on tag generator."""
-
         def fake_datetime_utcnow():
             return datetime.datetime(2018, 10, 13, 14, 19, 51)
 

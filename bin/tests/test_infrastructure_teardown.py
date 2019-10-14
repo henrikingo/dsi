@@ -12,7 +12,6 @@ import infrastructure_teardown
 
 class TestInfrastructureTeardown(unittest.TestCase):
     """ Test suite for infrastructure_teardown.py """
-
     def setUp(self):
         self.os_environ = {'TERRAFORM': 'test/path/terraform'}
 

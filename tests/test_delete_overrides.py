@@ -16,7 +16,6 @@ FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 class TestDeleteOverrides(TestRequestsParent):
     """Test class evaluates correctness of the delete_overrides script.
     """
-
     def setUp(self):
         """Specifies the paths to output the JSON files. Additionally,
         sets up the common parameters for each operation being tested.
@@ -232,8 +231,9 @@ class TestDeleteOverrides(TestRequestsParent):
                                   '"geo": [\n      "Geo.near.2d.findOne"\n    ],\n    '
                                   '"insert": [],\n    "misc": [],\n    "query": [],\n    '
                                   '"singleThreaded": [],\n    "update": [],\n    "where": []\n  '
-                                  '}\n}'), ('override.update.information', 'INFO',
-                                            'The following tests were overridden for rule ndays:'),
+                                  '}\n}'),
+                                 ('override.update.information', 'INFO',
+                                  'The following tests were overridden for rule ndays:'),
                                  ('override.update.information', 'INFO', '{\n  '
                                   '"linux-mmap-standalone": {\n    "geo": [],\n    '
                                   '"insert": [],\n    "misc": [],\n    "query": [\n      '

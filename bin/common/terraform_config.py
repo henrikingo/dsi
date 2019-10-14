@@ -115,8 +115,8 @@ def _do_generate_runner(endpoint):
     :rtype: str
     """
     try:
-        response = requests.get(
-            'http://169.254.169.254/latest/meta-data/%s' % endpoint, timeout=0.01)
+        response = requests.get('http://169.254.169.254/latest/meta-data/%s' % endpoint,
+                                timeout=0.01)
         response.raise_for_status()
         return response.text
     except RequestException as exception:
@@ -155,7 +155,6 @@ class TerraformConfiguration(object):
     """
     DSI Terraform configuration
     """
-
     def __init__(self, config, file_name="cluster.json"):
         """
         Instantiate a TerraformConfiguration object

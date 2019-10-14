@@ -14,7 +14,6 @@ FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 class TestTerraformOutputParser(unittest.TestCase):
     """To test terraform configuration"""
-
     def setUp(self):
         """Setup so config dict works properly"""
         self.old_dir = os.getcwd()  # Save the old path to restore Note

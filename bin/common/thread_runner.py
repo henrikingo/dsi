@@ -29,9 +29,9 @@ def run_threads(commands, daemon=False):
     stop_thread_execution = threading.Event()
     try:
         for command in commands:
-            thread = threading.Thread(
-                target=wrap,
-                args=(command, thread_results, thread_exceptions_bucket, stop_thread_execution))
+            thread = threading.Thread(target=wrap,
+                                      args=(command, thread_results, thread_exceptions_bucket,
+                                            stop_thread_execution))
             thread.daemon = daemon
             threads.append(thread)
             thread.start()

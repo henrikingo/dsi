@@ -42,7 +42,6 @@ class Client(object):
     Evergreen revisions, build variants and tasks by extracting the relevant information. Most of
     these are implemented as generators to cache the results of the HTTP queries.
     """
-
     def __init__(self, configuration=None, verbose=True):
         """Create a new handle to an Evergreen server.
 
@@ -132,8 +131,8 @@ class Client(object):
         :param str project: The name of the Evergreen project (e.g. 'performance', 'sys-perf')
         :rtype: dict
         """
-        return helpers.get_as_json(
-            '{}/rest/v1/projects/{}/versions'.format(self.base_url, project), headers=self.headers)
+        return helpers.get_as_json('{}/rest/v1/projects/{}/versions'.format(self.base_url, project),
+                                   headers=self.headers)
 
     def query_revision_by_commit(self, project, revision):
         """Get Evergreen run information on a given Git commit.
@@ -145,8 +144,9 @@ class Client(object):
         :rtype: dict
         """
         return helpers.get_as_json(
-            '{url}/rest/v1/projects/{project_id}/revisions/{revision}'.format(
-                url=self.base_url, project_id=project, revision=revision),
+            '{url}/rest/v1/projects/{project_id}/revisions/{revision}'.format(url=self.base_url,
+                                                                              project_id=project,
+                                                                              revision=revision),
             headers=self.headers)
 
     def query_revision(self, revision_id):
@@ -157,8 +157,8 @@ class Client(object):
         :param str revision_id: The Evergreen ID of a particular revision or version
         :rtype: dict
         """
-        return helpers.get_as_json(
-            '{}/rest/v1/versions/{}'.format(self.base_url, revision_id), headers=self.headers)
+        return helpers.get_as_json('{}/rest/v1/versions/{}'.format(self.base_url, revision_id),
+                                   headers=self.headers)
 
     def query_revision_status(self, revision_id):
         """Get the status of a particular revision.
@@ -168,9 +168,9 @@ class Client(object):
         :param str revision_id: The Evergreen ID of a particular revision or version
         :rtype: dict
         """
-        return helpers.get_as_json(
-            '{}/rest/v1/versions/{}/status'.format(self.base_url, revision_id),
-            headers=self.headers)
+        return helpers.get_as_json('{}/rest/v1/versions/{}/status'.format(
+            self.base_url, revision_id),
+                                   headers=self.headers)
 
     def query_build_variant(self, build_variant_id):
         """Get information on a particular build variant.
@@ -180,9 +180,9 @@ class Client(object):
         :param str build_variant_id: The Evergreen ID of a particular build variant
         :rtype: dict
         """
-        return helpers.get_as_json(
-            '{url}/rest/v1/builds/{build_id}'.format(url=self.base_url, build_id=build_variant_id),
-            headers=self.headers)
+        return helpers.get_as_json('{url}/rest/v1/builds/{build_id}'.format(
+            url=self.base_url, build_id=build_variant_id),
+                                   headers=self.headers)
 
     def query_build_variant_status(self, build_variant_id):
         """Get the status of a particular build variant.
@@ -192,9 +192,9 @@ class Client(object):
         :param str build_variant_id: The Evergreen ID of a particular build variant
         :rtype: dict
         """
-        return helpers.get_as_json(
-            '{}/rest/v1/builds/{}/status'.format(self.base_url, build_variant_id),
-            headers=self.headers)
+        return helpers.get_as_json('{}/rest/v1/builds/{}/status'.format(
+            self.base_url, build_variant_id),
+                                   headers=self.headers)
 
     def query_task(self, task_id):
         """Get information on a particular task.
@@ -204,9 +204,9 @@ class Client(object):
         :param str task_id: The Evergreen ID of a particular task
         :rtype: dict
         """
-        return helpers.get_as_json(
-            '{url}/rest/v1/tasks/{task_id}'.format(url=self.base_url, task_id=task_id),
-            headers=self.headers)
+        return helpers.get_as_json('{url}/rest/v1/tasks/{task_id}'.format(url=self.base_url,
+                                                                          task_id=task_id),
+                                   headers=self.headers)
 
     def query_task_status(self, task_id):
         """Get the status of a particular task
@@ -216,9 +216,9 @@ class Client(object):
         :param str task_id: The Evergreen ID of a particular task
         :rtype: dict
         """
-        return helpers.get_as_json(
-            '{url}/rest/v1/tasks/{task_id}/status'.format(url=self.base_url, task_id=task_id),
-            headers=self.headers)
+        return helpers.get_as_json('{url}/rest/v1/tasks/{task_id}/status'.format(url=self.base_url,
+                                                                                 task_id=task_id),
+                                   headers=self.headers)
 
     def query_task_history(self, task_name):
         """Get the history of a particular task.
@@ -250,10 +250,10 @@ class Client(object):
         params = {}
         if statuses:
             params['status'] = statuses
-        return helpers.get_as_json(
-            '{}/rest/v2/projects/{}/versions/tasks'.format(self.base_url, project),
-            headers=self.headers,
-            params=params)
+        return helpers.get_as_json('{}/rest/v2/projects/{}/versions/tasks'.format(
+            self.base_url, project),
+                                   headers=self.headers,
+                                   params=params)
 
     def get_recent_revisions(self, project_name, max_results=10):
         """Get the most recent revisions for an Evergreen project.
@@ -288,10 +288,9 @@ class Client(object):
         :param str task_id: The Evergreen ID of a particular task
         :rtype: list
         """
-        return helpers.get_as_json(
-            '{url}/api/2/task/{task_id}/json/tags/{task_name}/perf'.format(
-                url=self.base_url, task_id=task_id, task_name=task_name),
-            headers=self.headers)
+        return helpers.get_as_json('{url}/api/2/task/{task_id}/json/tags/{task_name}/perf'.format(
+            url=self.base_url, task_id=task_id, task_name=task_name),
+                                   headers=self.headers)
 
     def query_mongo_perf_task_history(self, task_name, task_id):
         """Get the historical data of a particular task in the Performance project.
@@ -306,8 +305,9 @@ class Client(object):
         :rtype: list
         """
         return helpers.get_as_json(
-            '{url}/api/2/task/{task_id}/json/history/{task_name}/perf'.format(
-                url=self.base_url, task_id=task_id, task_name=task_name),
+            '{url}/api/2/task/{task_id}/json/history/{task_name}/perf'.format(url=self.base_url,
+                                                                              task_id=task_id,
+                                                                              task_name=task_name),
             headers=self.headers)
 
     def query_perf_results(self, task_id):
@@ -320,8 +320,8 @@ class Client(object):
         :param str project: task_id of a specific build+variant
         :rtype: dict
         """
-        return helpers.get_as_json(
-            '{}/plugin/json/task/{}/perf/'.format(self.base_url, task_id), headers=self.headers)
+        return helpers.get_as_json('{}/plugin/json/task/{}/perf/'.format(self.base_url, task_id),
+                                   headers=self.headers)
 
     def build_variants_from_git_commit(self, project, commit_sha):
         """Generates the names and Evergreen IDs of build variants.
@@ -333,9 +333,9 @@ class Client(object):
         :return: Tuples in the form ("build-variant-name", "build-variant-id")
         :rtype: tuple(str, str)
         """
-        response = helpers.get_as_json(
-            '{0}/rest/v1/projects/{1}/revisions/{2}'.format(self.base_url, project, commit_sha),
-            headers=self.headers)
+        response = helpers.get_as_json('{0}/rest/v1/projects/{1}/revisions/{2}'.format(
+            self.base_url, project, commit_sha),
+                                       headers=self.headers)
         names = [x.replace('_', '-') for x in response['build_variants']]
         ids = response['builds']
 
@@ -352,8 +352,9 @@ class Client(object):
         :return: Tuples in the form ("build-variant-name", "build-variant-id")
         :rtype: tuple(str, str)
         """
-        response = helpers.get_as_json(
-            '{0}/rest/v1/versions/{1}'.format(self.base_url, revision_id), headers=self.headers)
+        response = helpers.get_as_json('{0}/rest/v1/versions/{1}'.format(
+            self.base_url, revision_id),
+                                       headers=self.headers)
         names = [x.replace('_', '-') for x in response['build_variants']]
         ids = response['builds']
 

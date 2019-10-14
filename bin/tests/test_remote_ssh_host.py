@@ -21,7 +21,6 @@ def sleepy_streamer(sleep_time_sec, outval):
     :param outval: forced return value
     :return: a function that sleeps for `sleep_time_sec` seconds and returns `outval`
     """
-
     def out(_1, _2):
         time.sleep(sleep_time_sec)
         return outval
@@ -142,12 +141,11 @@ class RemoteSSHHostTestCase(unittest.TestCase):
             remote._perform_exec = mock.MagicMock(name='_perform_exec')
             remote._perform_exec.return_value = 0
 
-            remote.exec_command(
-                'command',
-                out,
-                err,
-                max_time_ms='max_time_ms',
-                no_output_timeout_ms='no_output_timeout_ms')
+            remote.exec_command('command',
+                                out,
+                                err,
+                                max_time_ms='max_time_ms',
+                                no_output_timeout_ms='no_output_timeout_ms')
             ssh_instance.exec_command.assert_called_once_with('command', get_pty=False)
             stdin.channel.shutdown_write.assert_called_once()
             stdin.close.assert_called()
@@ -200,8 +198,11 @@ class RemoteSSHHostTestCase(unittest.TestCase):
             status_code = remote.exec_mongo_command(test_script, test_file, connection_string)
             self.assertEqual(0, status_code)
             mock_create_file.assert_called_with(test_file, test_script)
-            mock_exec_command.assert_called_with(
-                expected_argv, stdout=None, stderr=None, max_time_ms=None, quiet=False)
+            mock_exec_command.assert_called_with(expected_argv,
+                                                 stdout=None,
+                                                 stderr=None,
+                                                 max_time_ms=None,
+                                                 quiet=False)
 
         run_test()
 
@@ -216,11 +217,10 @@ class RemoteSSHHostTestCase(unittest.TestCase):
         self.helper_exec_mongo_command(
             connection_string="mongodb://username:password@test_connection_string")
 
-        self.assertRaisesRegexp(
-            ValueError,
-            "Must specify both username and password",
-            self.helper_exec_mongo_command,
-            connection_string="mongodb://username@test_connection_string")
+        self.assertRaisesRegexp(ValueError,
+                                "Must specify both username and password",
+                                self.helper_exec_mongo_command,
+                                connection_string="mongodb://username@test_connection_string")
 
     def test_exec_mongo_command_with_auth_settings_and_connection_string(self):
         self.helper_exec_mongo_command(

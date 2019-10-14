@@ -7,7 +7,6 @@ from evergreen import override
 
 class TestValidate(unittest.TestCase):
     """Test `validation()`."""
-
     def setUp(self):
         """Instantiate a valid override dictionary in `self.override`."""
 

@@ -95,7 +95,6 @@ class BaselineUpdater(object):
     '''
     Class to handle setting up and running new baseline runs
     '''
-
     def __init__(self):
         ''' init '''
         source_dir = os.path.dirname(os.path.abspath(__file__))
@@ -197,8 +196,8 @@ class BaselineUpdater(object):
         LOGGER.debug('Tasks are %s', tasks)
 
         description = '{0} baseline for project {1}'.format(version, project)
-        return (
-            [get_evergreen(), 'patch', '-p', project, '-d', description, '-y'] + variants + tasks)
+        return ([get_evergreen(), 'patch', '-p', project, '-d', description, '-y'] + variants +
+                tasks)
 
     def run_patch(self, version, project):
         '''Updated perf.yml and start a patch build. Assumes it is run in the
@@ -236,6 +235,7 @@ def get_evergreen():
     for directory in path.split(':'):
         if os.path.exists(os.path.join(os.path.expanduser(directory), 'evergreen')):
             return os.path.join(os.path.expanduser(directory), 'evergreen')
+    return None
 
 
 def get_variants(perfyaml):
@@ -276,11 +276,10 @@ def main(argv):
 
     arg_parser = argparse.ArgumentParser(description=description)
     arg_parser.add_argument('-d', '--debug', action="store_true", help='Turn on debug output')
-    arg_parser.add_argument(
-        '-p',
-        '--project',
-        help='Project to use when running baselines (e.g., performance)',
-        required=True)
+    arg_parser.add_argument('-p',
+                            '--project',
+                            help='Project to use when running baselines (e.g., performance)',
+                            required=True)
     arg_parser.add_argument('--version', help='Baseline version (e.g., 3.2.10)', required=True)
 
     args = arg_parser.parse_args(argv)

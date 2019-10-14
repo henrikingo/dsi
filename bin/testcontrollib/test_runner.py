@@ -24,7 +24,6 @@ class _BaseRunner(object):
     There is a catch-all _ShellRunner for running shell commands of frameworks that
     don't have their own dedicated runners.
     """
-
     def __init__(self,
                  test_name=None,
                  output_files=None,
@@ -107,8 +106,11 @@ class _ShellRunner(_BaseRunner):
         self.test_cmd = test_cmd
 
     def _do_run(self, host, out):
-        exit_code = host.exec_command(
-            self.test_cmd, stdout=out, stderr=out, no_output_timeout_ms=self.timeout, get_pty=True)
+        exit_code = host.exec_command(self.test_cmd,
+                                      stdout=out,
+                                      stderr=out,
+                                      no_output_timeout_ms=self.timeout,
+                                      get_pty=True)
         return StatusWithMessage(exit_code, self.test_cmd)
 
 
@@ -116,7 +118,6 @@ class GennyRunner(_BaseRunner):
     """
     Class for running genny tests.
     """
-
     def __init__(self, workload_config, db_url, **kwargs):
         super(GennyRunner, self).__init__(**kwargs)
         self.workload_config = workload_config
@@ -155,8 +156,11 @@ class GennyRunner(_BaseRunner):
             # to ensure it has enough disk space.
             command = 'cd ./data; ' + command
 
-            exit_code = host.exec_command(
-                command, stdout=out, stderr=out, no_output_timeout_ms=self.timeout, get_pty=True)
+            exit_code = host.exec_command(command,
+                                          stdout=out,
+                                          stderr=out,
+                                          no_output_timeout_ms=self.timeout,
+                                          get_pty=True)
 
             # Fail early and log the exact command that failed.
             if exit_code:
@@ -170,7 +174,6 @@ class GennyCanariesRunner(_BaseRunner):
     """
     Class for running Genny performance self tests.
     """
-
     def __init__(self, db_url, **kwargs):
         super(GennyCanariesRunner, self).__init__(**kwargs)
         self.db_url = db_url
@@ -195,8 +198,11 @@ class GennyCanariesRunner(_BaseRunner):
             command = '{} && {} {}'.format('cd ./data', self.numactl_prefix_for_workload_client,
                                            command)
 
-            exit_code = host.exec_command(
-                command, stdout=out, stderr=out, no_output_timeout_ms=self.timeout, get_pty=True)
+            exit_code = host.exec_command(command,
+                                          stdout=out,
+                                          stderr=out,
+                                          no_output_timeout_ms=self.timeout,
+                                          get_pty=True)
 
             # Fail early and log the exact command that failed.
             if exit_code:

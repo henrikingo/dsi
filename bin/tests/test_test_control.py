@@ -25,7 +25,6 @@ class RunTestTestCase(unittest.TestCase):
     """
     Test for test_control.run_test()
     """
-
     def setUp(self):
         self.test_config = {
             'id': 'dummy_test',
@@ -74,7 +73,6 @@ class RunTestsTestCase(unittest.TestCase):
     """
     Unit Test for test_control.run_tests
     """
-
     def setUp(self):
         """Create a dict that looks like a ConfigDict object """
         self.config = {
@@ -204,8 +202,9 @@ class RunTestsTestCase(unittest.TestCase):
             ('/dirpath', ('dirnames', ), ()),
         ]
 
-        dummy_host_info = common.host_utils.HostInfo(
-            public_ip='10.0.0.0', category='mongod', offset=0)
+        dummy_host_info = common.host_utils.HostInfo(public_ip='10.0.0.0',
+                                                     category='mongod',
+                                                     offset=0)
 
         mock_hosts.return_value = [dummy_host_info]
 
@@ -443,9 +442,8 @@ class RunTestsTestCase(unittest.TestCase):
         """
 
         # pylint: disable=bad-continuation
-        with patch(
-                'test_control.run_test',
-                side_effect=[subprocess.CalledProcessError(99, 'failed-cmd'), 0, 0]):
+        with patch('test_control.run_test',
+                   side_effect=[subprocess.CalledProcessError(99, 'failed-cmd'), 0, 0]):
             utter_failure = run_tests(self.config)
             self.assertFalse(utter_failure)
 

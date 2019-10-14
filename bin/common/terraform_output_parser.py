@@ -27,7 +27,6 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
     :param terraform_output: (Optional) String of terraform output to parse.
 
     """
-
     def __init__(self, config, input_file=None, terraform_output=None):
         self._file = input_file
         self._terraform_output = terraform_output
@@ -39,7 +38,7 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
     def _get_ips(self, pub, priv, category, out_data):
         if pub in self._ips:
             if len(self._ips[pub]) != len(self._ips[priv]):
-                LOG.error(category + ": public and private IP address counts mismatch!")
+                LOG.error("%s: public and private IP address counts mismatch!", category)
                 raise ValueError(category + ": public and private IP address counts mismatch!")
 
             if self._ips[pub] and self._ips[pub][0]:

@@ -10,7 +10,6 @@ class History(object):
     """
     Class for processing evergreen history objects.
     """
-
     def __init__(self, jsonobj):
         self._raw = sorted(jsonobj, key=lambda d: d["order"])
         self._noise = None
@@ -19,8 +18,8 @@ class History(object):
         """Get the set of test names"""
         return set(
             list(
-                itertools.chain.from_iterable(
-                    [[z["name"] for z in c["data"]["results"]] for c in self._raw])))
+                itertools.chain.from_iterable([[z["name"] for z in c["data"]["results"]]
+                                               for c in self._raw])))
 
     def task(self):
         """Get the task that this history belongs to (as recorded in the history.json file)."""
@@ -95,8 +94,8 @@ class History(object):
                 result["tag"] = commit["tag"]
                 result["order"] = commit["order"]
                 result["create_time"] = commit["create_time"]
-                result["max"] = max(
-                    f["ops_per_sec"] for f in result["results"].values() if isinstance(f, dict))
+                result["max"] = max(f["ops_per_sec"] for f in result["results"].values()
+                                    if isinstance(f, dict))
                 result["threads"] = [
                     f for f in result["results"] if isinstance(result["results"][f], dict)
                 ]
@@ -121,8 +120,9 @@ class History(object):
             # Determine levels from last commit? Probably a better way to do this.
             for thread in threads:
                 test_series = self.series(test)
-                self._noise[test][thread] = sum((compute_range(x["results"][thread].get(
-                    "ops_per_sec_values", [0]))[2] for x in test_series if thread in x["results"]))
+                self._noise[test][thread] = sum(
+                    (compute_range(x["results"][thread].get("ops_per_sec_values", [0]))[2]
+                     for x in test_series if thread in x["results"]))
                 test_series = self.series(test)
                 self._noise[test][thread] /= sum(1 for x in test_series if thread in x["results"])
 

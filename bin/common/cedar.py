@@ -21,7 +21,6 @@ class Report(object):
     the "tests" field, with additional metadata common to all tests in the
     top-level fields of the Report structure.
     """
-
     def __init__(self, runtime=None):
         """
         :param runtime dict
@@ -98,7 +97,6 @@ class CedarTest(object):
     high level metadata that is, in this representation, stored in the report
     structure.
     """
-
     def __init__(self, name, created, completed):
         """
         :param str name: Name of the test.
@@ -108,8 +106,8 @@ class CedarTest(object):
         ended (timestamp).
         """
         self._raw_params = {'name': name, 'created': created, 'completed': completed}
-        self._created_at = datetime.fromtimestamp(
-            created, tz=pytz.UTC).replace(tzinfo=pytz.UTC).isoformat()
+        self._created_at = datetime.fromtimestamp(created,
+                                                  tz=pytz.UTC).replace(tzinfo=pytz.UTC).isoformat()
         self._completed_at = datetime.fromtimestamp(
             completed, tz=pytz.UTC).replace(tzinfo=pytz.UTC).isoformat()
 
@@ -128,8 +126,10 @@ class CedarTest(object):
 
         For the parameters see `TestMetric.__init__`.
         """
-        metric = TestMetric(
-            name=name, rollup_type=rollup_type, value=value, user_submitted=user_submitted)
+        metric = TestMetric(name=name,
+                            rollup_type=rollup_type,
+                            value=value,
+                            user_submitted=user_submitted)
         self.metrics.append(metric)
 
     def add_tag(self, tag):
@@ -179,7 +179,6 @@ class TestInfo(object):
     tests, and should be populated automatically by the client when uploading
     results.
     """
-
     def __init__(self, name, trial=0):
         """
         :param str name: Name of the test.
@@ -209,7 +208,6 @@ class TestMetric(object):
     in the case that test harnesses need or want to report their own test
     outcomes.
     """
-
     def __init__(self, name, rollup_type, value, user_submitted=False):
         """
         :param str name: Name of the metric.
@@ -242,7 +240,6 @@ class BucketConfiguration(object):
     BucketConfiguration describes the configuration information for an AWS s3
     bucket for uploading test artifacts for this report.
     """
-
     def __init__(self):
         self.api_key = ''
         self.api_secret = ''
@@ -335,7 +332,6 @@ def _create_curator_runner(value, host, config):
 
 class CertRetriever(object):
     """Retrieves certs/keys from the cedar API."""
-
     def __init__(self, config):
         """
         :param config: top-level ConfigDict
@@ -374,25 +370,22 @@ class CertRetriever(object):
         """
         :return: the user-level pem
         """
-        return self._fetch(
-            'https://cedar.mongodb.com/rest/v1/admin/users/certificate',
-            'cedar.user.crt',
-            data=self.auth)
+        return self._fetch('https://cedar.mongodb.com/rest/v1/admin/users/certificate',
+                           'cedar.user.crt',
+                           data=self.auth)
 
     def user_key(self):
         """
         :return: the user-level key
         """
-        return self._fetch(
-            'https://cedar.mongodb.com/rest/v1/admin/users/certificate/key',
-            'cedar.user.key',
-            data=self.auth)
+        return self._fetch('https://cedar.mongodb.com/rest/v1/admin/users/certificate/key',
+                           'cedar.user.key',
+                           data=self.auth)
 
 
 # pylint: disable=too-few-public-methods
 class CuratorRunner(object):
     """Runs curator via a host.py host"""
-
     def __init__(self, value, host, config):
         """
         :param value: the run_curator type
@@ -414,7 +407,6 @@ class CuratorRunner(object):
 # pylint: disable=too-few-public-methods
 class NopCuratorRunner(CuratorRunner):
     """Does nothing. Used when no runtime_secret in config (e..g when running DSI locally)"""
-
     def run_curator(self):
         pass
 
@@ -422,7 +414,6 @@ class NopCuratorRunner(CuratorRunner):
 # pylint: disable=too-few-public-methods
 class ShellCuratorRunner(CuratorRunner):
     """Runs curator for realsies."""
-
     def __init__(self, value, host, config, retriever=None):
         """
         :param value: the run_curator type

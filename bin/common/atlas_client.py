@@ -25,7 +25,6 @@ class AtlasTimeout(RuntimeError):
     """
     Raised when Atlas HTTP requests return ok but a desired state was not reached within a timeout.
     """
-
     def __init__(self, operation, target_state, last_state, timeout_seconds):
         """
         Instantiate the exception.
@@ -55,7 +54,6 @@ class AtlasClient(object):
 
     :raises HTTPError: As raised by requests.Response.raise_for_status()
     """
-
     def __init__(self, configuration, credentials):
         """
         Initiate an object with configuration and credentials.
@@ -98,15 +96,13 @@ class AtlasClient(object):
         """
         url = "{}groups/{}/clusters".format(self.root, self.group_id)
         response = requests.post(url, json=configuration, auth=self.auth)
-        LOG.debug(
-            "After create cluster request",
-            headers=response.request.headers,
-            body=response.request.body)
+        LOG.debug("After create cluster request",
+                  headers=response.request.headers,
+                  body=response.request.body)
         if not response.ok:
             LOG.error("HTTP error in create_cluster", response=response.json())
-            response.raise_for_status()
-        else:
-            return response.json()
+            return response.raise_for_status()
+        return response.json()
 
     def get_one_cluster(self, cluster_name):
         """
@@ -124,11 +120,11 @@ class AtlasClient(object):
         LOG.debug("After get one cluster request", headers=response.request.headers)
         if not response.ok:
             LOG.error("HTTP error in get_one_cluster", response=response.json())
-            response.raise_for_status()
-        else:
-            return response.json()
+            return response.raise_for_status()
+        return response.json()
 
-    def await(self, cluster_name):
+    # pylint: disable=assign-to-new-keyword
+    def await_idle(self, cluster_name):
         """
         Wait until cluster creation is considered finished.
 
@@ -151,20 +147,19 @@ class AtlasClient(object):
         """
         end_time = time.time() + timeout_seconds
         while True:
-            # The await state occassionaly fails it's query, particularly in cluster types that take
-            # longer to spawn (e.g., NVMe).
+            # The await_idle state occassionaly fails it's query, particularly in
+            # cluster types that take longer to spawn (e.g., NVMe).
             try:
                 cluster = self.get_one_cluster(cluster_name)
-                LOG.info(
-                    "Await state",
-                    cluster_name=cluster_name,
-                    status=cluster["stateName"],
-                    target_state=target_state)
+                LOG.info("Await state",
+                         cluster_name=cluster_name,
+                         status=cluster["stateName"],
+                         target_state=target_state)
                 if cluster["stateName"] == target_state:
                     return cluster
             except requests.exceptions.HTTPError:
                 LOG.exception(
-                    "In await state and self.get_one_cluster threw. Catching and moving on.")
+                    "In await_idle state and self.get_one_cluster threw. Catching and moving on.")
             time.sleep(30)
             if time.time() > end_time:
                 raise AtlasTimeout("get_one_cluster", target_state, cluster["stateName"],
@@ -186,9 +181,8 @@ class AtlasClient(object):
         LOG.debug("After delete cluster request", headers=response.request.headers)
         if not response.ok:
             LOG.error("HTTP error in delete_cluster", response=response.json())
-            response.raise_for_status()
-        else:
-            return True
+            return response.raise_for_status()
+        return True
 
     ### LOG COLLECTION
 
@@ -213,16 +207,14 @@ class AtlasClient(object):
         """
         url = "{}groups/{}/logCollectionJobs".format(self.root, self.group_id)
         response = requests.post(url, json=options, auth=self.auth)
-        LOG.debug(
-            "After create logCollectionJob request",
-            headers=response.request.headers,
-            body=response.request.body)
+        LOG.debug("After create logCollectionJob request",
+                  headers=response.request.headers,
+                  body=response.request.body)
         if not response.ok:
             LOG.error("HTTP error in create_log_collection_job", response=response.json())
-            response.raise_for_status()
-        else:
-            result = response.json()
-            return result["id"]
+            return response.raise_for_status()
+        result = response.json()
+        return result["id"]
 
     def get_log_collection_job(self, log_job_id):
         """
@@ -238,9 +230,8 @@ class AtlasClient(object):
         LOG.debug("After get logCollectionJob request", headers=response.request.headers)
         if not response.ok:
             LOG.error("HTTP error in get_log_collection_job", response=response.json())
-            response.raise_for_status()
-        else:
-            return response.json()
+            return response.raise_for_status()
+        return response.json()
 
     def await_log_job(self, log_job_id):
         """
@@ -267,16 +258,15 @@ class AtlasClient(object):
         while True:
             try:
                 job_status = self.get_log_collection_job(log_job_id)
-                LOG.info(
-                    "Await logCollectionJobs state",
-                    log_job_id=log_job_id,
-                    status=job_status["status"],
-                    target_state=target_state)
+                LOG.info("Await logCollectionJobs state",
+                         log_job_id=log_job_id,
+                         status=job_status["status"],
+                         target_state=target_state)
                 if job_status["status"] == target_state:
                     return job_status
             except requests.exceptions.HTTPError:
-                LOG.exception(
-                    "In await state and get_log_collection_job() threw. Catching and moving on.")
+                LOG.exception("In await_idle state and get_log_collection_job() threw. "
+                              "Catching and moving on.")
             time.sleep(10)
             if time.time() > end_time:
                 raise AtlasTimeout("get_log_collection_job", target_state, job_status["stateName"],
@@ -318,26 +308,23 @@ class AtlasClient(object):
         url = "{}nds/customMongoDbBuild".format(self.private_root)
         LOG.debug("customMongoDbBuild input", json=configuration, url=url)
         response = requests.post(url, json=configuration, auth=self.auth)
-        LOG.debug(
-            "After customMongoDbBuild request",
-            headers=response.request.headers,
-            body=response.request.body)
+        LOG.debug("After customMongoDbBuild request",
+                  headers=response.request.headers,
+                  body=response.request.body)
         if not response.ok:
             response_body = response.json()
             # If build already exists, then all is well.
             if response_body.get("errorCode") == "DUPLICATE_MONGODB_BUILD_NAME":
                 existing_configuration = self.get_custom_build(configuration["trueName"])
                 if configuration["url"] == existing_configuration["url"]:
-                    LOG.info(
-                        "Custom build already exists. (This is ok.)",
-                        trueName=configuration["trueName"])
+                    LOG.info("Custom build already exists. (This is ok.)",
+                             trueName=configuration["trueName"])
                 else:
-                    LOG.error(
-                        "Custom build already exists for this trueName, but your " +
-                        "URL is different.",
-                        trueName=configuration["trueName"],
-                        your_url=configuration["url"],
-                        existing_url=existing_configuration["url"])
+                    LOG.error("Custom build already exists for this trueName, but your " +
+                              "URL is different.",
+                              trueName=configuration["trueName"],
+                              your_url=configuration["url"],
+                              existing_url=existing_configuration["url"])
                     LOG.error("HTTP error in create_custom_build", response=response_body)
                     response.raise_for_status()
             else:
@@ -358,9 +345,8 @@ class AtlasClient(object):
         LOG.debug("After GET customMongoDbBuild request", headers=response.request.headers)
         if not response.ok:
             LOG.error("HTTP error in get_custom_build", response=response.json())
-            response.raise_for_status()
-        else:
-            return response.json()
+            return response.raise_for_status()
+        return response.json()
 
     def create_custom_cluster(self, configuration):
         """
@@ -380,12 +366,10 @@ class AtlasClient(object):
         """
         url = "{}nds/groups/{}/clusters".format(self.private_root, self.group_id)
         response = requests.post(url, json=configuration, auth=self.auth)
-        LOG.debug(
-            "After create_custom_cluster request",
-            headers=response.request.headers,
-            body=response.request.body)
+        LOG.debug("After create_custom_cluster request",
+                  headers=response.request.headers,
+                  body=response.request.body)
         if not response.ok:
             LOG.error("HTTP error in create_custom_cluster", response=response.json())
-            response.raise_for_status()
-        else:
-            return response.json()
+            return response.raise_for_status()
+        return response.json()

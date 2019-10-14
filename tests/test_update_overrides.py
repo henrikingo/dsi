@@ -18,7 +18,6 @@ FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 class TestUpdateOverrides(TestRequestsParent):
     """Test class evaluates correctness of the update_overrides script.
     """
-
     def setUp(self):
         """Specifies the path to output the JSON files. Additionally,
         sets up the common parameters for each operation being tested.

@@ -31,7 +31,6 @@ def temp_file(path="mongodb.tgz", sanitize=lambda s: re.sub(r'[^A-Za-z0-9_\-.]',
 
 class DownloadMongodb(object):
     """Download and install mongodb_binary_archive on all nodes."""
-
     def __init__(self, config):
 
         self.config = config

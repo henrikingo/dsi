@@ -15,7 +15,6 @@ FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 class TestOverride(TestRequestsParent):
     """Test class evaluates correctness of operations to override rule JSON files.
     """
-
     def setUp(self):
         """Specifies the paths used to fetch JSON testing files. Additionally,
         sets up the common parameters for each operation being tested.
@@ -37,15 +36,14 @@ class TestOverride(TestRequestsParent):
         override_file = FIXTURE_FILES.fixture_file_path('perf_override.json')
         original_override_info = FIXTURE_FILES.load_json_file(override_file)
         ticket = 'PERF-REF'
-        update_obj = Override(
-            self.project,
-            override_info=override_file,
-            config_file=self.config_file,
-            reference=self.git_hash,
-            variants=variants.split('|'),
-            tasks=tasks.split('|'),
-            tests=tests_to_update.split('|'),
-            verbose=self.verbose)
+        update_obj = Override(self.project,
+                              override_info=override_file,
+                              config_file=self.config_file,
+                              reference=self.git_hash,
+                              variants=variants.split('|'),
+                              tasks=tasks.split('|'),
+                              tests=tests_to_update.split('|'),
+                              verbose=self.verbose)
 
         update_obj.update_override('reference', ticket=ticket)
 
@@ -74,15 +72,14 @@ class TestOverride(TestRequestsParent):
         original_override_info = FIXTURE_FILES.load_json_file(override_file)
         ticket = 'PERF-THRESH'
 
-        update_obj = Override(
-            self.project,
-            override_info=override_file,
-            config_file=self.config_file,
-            reference=self.git_hash,
-            variants=variants.split('|'),
-            tasks=tasks.split('|'),
-            tests=tests_to_update.split('|'),
-            verbose=self.verbose)
+        update_obj = Override(self.project,
+                              override_info=override_file,
+                              config_file=self.config_file,
+                              reference=self.git_hash,
+                              variants=variants.split('|'),
+                              tasks=tasks.split('|'),
+                              tests=tests_to_update.split('|'),
+                              verbose=self.verbose)
 
         new_override_val = {'threshold': threshold, 'thread_threshold': thread_threshold}
         update_obj.update_override('threshold', new_override_val=new_override_val, ticket=ticket)
@@ -111,15 +108,14 @@ class TestOverride(TestRequestsParent):
         tests_to_update = 'Commands.DistinctWithIndex'
         override_file = FIXTURE_FILES.fixture_file_path('perf_override.json')
 
-        update_obj = Override(
-            self.project,
-            override_info=override_file,
-            config_file=self.config_file,
-            reference=self.git_hash,
-            variants=variants.split('|'),
-            tasks=tasks.split('|'),
-            tests=tests_to_update.split('|'),
-            verbose=self.verbose)
+        update_obj = Override(self.project,
+                              override_info=override_file,
+                              config_file=self.config_file,
+                              reference=self.git_hash,
+                              variants=variants.split('|'),
+                              tasks=tasks.split('|'),
+                              tests=tests_to_update.split('|'),
+                              verbose=self.verbose)
 
         with self.assertRaises(UserWarning):
             update_obj.update_override('reference', ticket=ticket)
@@ -133,12 +129,11 @@ class TestOverride(TestRequestsParent):
         ticket = 'PERF-002'
         task = "misc"
 
-        update_obj = Override(
-            self.project,
-            override_info=override_file,
-            config_file=self.config_file,
-            reference=self.git_hash,
-            verbose=self.verbose)
+        update_obj = Override(self.project,
+                              override_info=override_file,
+                              config_file=self.config_file,
+                              reference=self.git_hash,
+                              verbose=self.verbose)
         update_obj.delete_overrides_by_ticket(ticket, rules, task)
 
         if self.regenerate_output_files:
@@ -157,11 +152,10 @@ class TestOverride(TestRequestsParent):
         rules = ['reference', 'ndays', 'threshold']
         ticket = 'PERF-002'
 
-        update_obj = Override(
-            self.project,
-            override_info=override_file,
-            config_file=self.config_file,
-            verbose=self.verbose)
+        update_obj = Override(self.project,
+                              override_info=override_file,
+                              config_file=self.config_file,
+                              verbose=self.verbose)
         update_obj.delete_overrides_by_ticket(ticket, rules)
 
         if self.regenerate_output_files:
@@ -181,11 +175,10 @@ class TestOverride(TestRequestsParent):
         rules = ['reference', 'ndays', 'threshold']
         ticket = 'PERF-002'
 
-        update_obj = Override(
-            self.project,
-            override_info=override_file,
-            config_file=self.config_file,
-            verbose=self.verbose)
+        update_obj = Override(self.project,
+                              override_info=override_file,
+                              config_file=self.config_file,
+                              verbose=self.verbose)
 
         with self.assertRaises(TestDataNotFound):
             update_obj.delete_overrides_by_ticket(ticket, rules)
@@ -238,11 +231,11 @@ class TestOverride(TestRequestsParent):
             }
         }
         override = Override("", override_dict)
-        expected_results = sorted([("variant1", "ndays", "test1", test1), ("variant1", "reference",
-                                                                           "test2", test2)])
+        expected_results = sorted([("variant1", "ndays", "test1", test1),
+                                   ("variant1", "reference", "test2", test2)])
         self.assertEqual(sorted(override.get_overrides_by_ticket("1")), expected_results)
-        expected_results = sorted([("variant1", "ndays", "test1", test1), ("variant2", "ndays",
-                                                                           "test3", test3)])
+        expected_results = sorted([("variant1", "ndays", "test1", test1),
+                                   ("variant2", "ndays", "test3", test3)])
         self.assertEqual(sorted(override.get_overrides_by_ticket("2")), expected_results)
 
     def test_rename_ticket(self):

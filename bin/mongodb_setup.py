@@ -26,7 +26,6 @@ LOG = logging.getLogger(__name__)
 
 class MongodbSetup(object):
     """Parse the mongodb_setup config"""
-
     def __init__(self, config):
         self.config = config
         self.mongodb_setup = self.config['mongodb_setup']
@@ -102,8 +101,9 @@ class MongodbSetup(object):
             LOG.error("Shutdown failed on restart.")
             return False
 
-        return self._start(
-            is_restart=True, restart_clean_db_dir=clean_db_dir, restart_clean_logs=clean_logs)
+        return self._start(is_restart=True,
+                           restart_clean_db_dir=clean_db_dir,
+                           restart_clean_logs=clean_logs)
 
     def _start(self, is_restart=False, restart_clean_db_dir=None, restart_clean_logs=None):
 
@@ -112,8 +112,10 @@ class MongodbSetup(object):
         if common.mongodb_setup_helpers.mongodb_auth_configured(
                 self.config) and (not is_restart or restart_clean_db_dir):
             LOG.info("Auth configured. Starting Cluster without Auth first")
-            self._start_auth_explicit(
-                is_restart, restart_clean_db_dir, restart_clean_logs, enable_auth=False)
+            self._start_auth_explicit(is_restart,
+                                      restart_clean_db_dir,
+                                      restart_clean_logs,
+                                      enable_auth=False)
             LOG.info("Adding default users for all clusters")
             self.add_default_users()
             self.shutdown(self.shutdown_ms)
@@ -146,17 +148,15 @@ class MongodbSetup(object):
         uses value from ConfigDict.
         """
         if not all(
-                run_threads(
-                    [
-                        partial(
-                            self.start_cluster,
+                run_threads([
+                    partial(self.start_cluster,
                             cluster=cluster,
                             is_restart=is_restart,
                             restart_clean_db_dir=restart_clean_db_dir,
                             restart_clean_logs=restart_clean_logs,
                             enable_auth=enable_auth) for cluster in self.clusters
-                    ],
-                    daemon=True)):
+                ],
+                            daemon=True)):
             LOG.error("Could not start clusters in _start. Shutting down...")
             self.shutdown(self.shutdown_ms)
             return False
@@ -191,8 +191,8 @@ class MongodbSetup(object):
         """
         LOG.info('-' * 72)
         LOG.info('starting topology: %s', cluster)
-        if not cluster.setup_host(
-                restart_clean_db_dir=restart_clean_db_dir, restart_clean_logs=restart_clean_logs):
+        if not cluster.setup_host(restart_clean_db_dir=restart_clean_db_dir,
+                                  restart_clean_logs=restart_clean_logs):
             LOG.error("Could not set up host in start_cluster")
             return False
         # Don't initialize if restarting mongodb and keeping (not cleaning) the db dir
@@ -223,8 +223,8 @@ class MongodbSetup(object):
         """
         LOG.info('calling destroy')
         result = all(
-            run_threads(
-                [partial(cluster.destroy, max_time_ms) for cluster in self.clusters], daemon=True))
+            run_threads([partial(cluster.destroy, max_time_ms) for cluster in self.clusters],
+                        daemon=True))
         if not result:
             LOG.warn('destroy: failed')
         return result

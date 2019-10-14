@@ -56,93 +56,78 @@ class MultiEvergreen(object):
         """Parse options in self.cli_args with argparse and put them in self.config."""
         self.parser = argparse.ArgumentParser(description="Submit multiple patch builds with the "
                                               "evergreen client")
-        self.parser.add_argument(
-            '-n',
-            type=int,
-            help="How many times to schedule this patch "
-            "(default: {})".format(self.config['n']))
-        self.parser.add_argument(
-            '--mongo-repo',
-            help="Path to mongo repository "
-            "(default: {})".format(self.config['mongo_repo']))
-        self.parser.add_argument(
-            '--dsi-repo',
-            help="Path to dsi repository. Only needed if you have changes "
-            "to be added with 'evergreen set-module'")
-        self.parser.add_argument(
-            '--workloads-repo',
-            help="Path to workloads repository. Only needed if you have "
-            "changes to be added with 'evergreen set-module'")
-        self.parser.add_argument(
-            '-c',
-            '--config',
-            action='append',
-            help="Config file that can be used to supply same options as "
-            "would be done on command line. Can be called multiple times "
-            "and combined. On conflicts the last file on the command "
-            "line wins")
-        self.parser.add_argument(
-            '-C',
-            '--continue',
-            help="Read state serialized as yaml from CONTINUE, to continue "
-            "operating on a series of submitted builds. Example: "
-            "'multi_patch_builds.py --continue 12345.yml "
-            "--analyze-results'")
-        self.parser.add_argument(
-            '-u',
-            '--result-urls',
-            action='store_true',
-            help="Force regeneration of urls to the json files with test "
-            "results. (Use this, for example, when builds were finalized "
-            "manually from UI.)")
+        self.parser.add_argument('-n',
+                                 type=int,
+                                 help="How many times to schedule this patch "
+                                 "(default: {})".format(self.config['n']))
+        self.parser.add_argument('--mongo-repo',
+                                 help="Path to mongo repository "
+                                 "(default: {})".format(self.config['mongo_repo']))
+        self.parser.add_argument('--dsi-repo',
+                                 help="Path to dsi repository. Only needed if you have changes "
+                                 "to be added with 'evergreen set-module'")
+        self.parser.add_argument('--workloads-repo',
+                                 help="Path to workloads repository. Only needed if you have "
+                                 "changes to be added with 'evergreen set-module'")
+        self.parser.add_argument('-c',
+                                 '--config',
+                                 action='append',
+                                 help="Config file that can be used to supply same options as "
+                                 "would be done on command line. Can be called multiple times "
+                                 "and combined. On conflicts the last file on the command "
+                                 "line wins")
+        self.parser.add_argument('-C',
+                                 '--continue',
+                                 help="Read state serialized as yaml from CONTINUE, to continue "
+                                 "operating on a series of submitted builds. Example: "
+                                 "'multi_patch_builds.py --continue 12345.yml "
+                                 "--analyze-results'")
+        self.parser.add_argument('-u',
+                                 '--result-urls',
+                                 action='store_true',
+                                 help="Force regeneration of urls to the json files with test "
+                                 "results. (Use this, for example, when builds were finalized "
+                                 "manually from UI.)")
 
         evergreen_options = self.parser.add_argument_group(
             "Evergreen options",
             "These options are passed to evergreen client. If omitted, values from your "
             "--evergreen-config is used. "
             "Note that --yes is always passed.")
-        evergreen_options.add_argument(
-            '--evergreen-config',
-            help="Evergreen config file "
-            "(default: {})".format(self.config['evergreen_config']))
-        evergreen_options.add_argument(
-            '-p',
-            '--project',
-            help="project to submit patch for "
-            "(default: {})".format(self.config['project']))
-        evergreen_options.add_argument(
-            '-v',
-            '--variants',
-            action='append',
-            help="variant(s) to submit patch for (repeat argument for "
-            "multiple variants)")
-        evergreen_options.add_argument(
-            '-t',
-            '--tasks',
-            action='append',
-            help="task(s) to submit patch for (repeat argument for "
-            "multiple tasks)")
-        evergreen_options.add_argument(
-            '-d',
-            '--description',
-            help="Patch description. When scheduling multiple builds "
-            "with -n, a sequence number is appended. (required)")
-        evergreen_options.add_argument(
-            '-f',
-            '--finalize',
-            action='store_true',
-            help="Schedule builds immediately. Note that this won't "
-            "actually pass --finalize to the 'evergreen patch' "
-            "call, rather 'evergreen finalize-patch' is called "
-            "separately. (default: no but recommended)")
-        evergreen_options.add_argument(
-            '--large',
-            action='store_true',
-            help="Enable submitting large patches (>16MB) (default: no)")
-        evergreen_options.add_argument(
-            '--cancel-patch',
-            action='store_true',
-            help="Run 'evergreen cancel-patch' at the end (aka dry run)")
+        evergreen_options.add_argument('--evergreen-config',
+                                       help="Evergreen config file "
+                                       "(default: {})".format(self.config['evergreen_config']))
+        evergreen_options.add_argument('-p',
+                                       '--project',
+                                       help="project to submit patch for "
+                                       "(default: {})".format(self.config['project']))
+        evergreen_options.add_argument('-v',
+                                       '--variants',
+                                       action='append',
+                                       help="variant(s) to submit patch for (repeat argument for "
+                                       "multiple variants)")
+        evergreen_options.add_argument('-t',
+                                       '--tasks',
+                                       action='append',
+                                       help="task(s) to submit patch for (repeat argument for "
+                                       "multiple tasks)")
+        evergreen_options.add_argument('-d',
+                                       '--description',
+                                       help="Patch description. When scheduling multiple builds "
+                                       "with -n, a sequence number is appended. (required)")
+        evergreen_options.add_argument('-f',
+                                       '--finalize',
+                                       action='store_true',
+                                       help="Schedule builds immediately. Note that this won't "
+                                       "actually pass --finalize to the 'evergreen patch' "
+                                       "call, rather 'evergreen finalize-patch' is called "
+                                       "separately. (default: no but recommended)")
+        evergreen_options.add_argument('--large',
+                                       action='store_true',
+                                       help="Enable submitting large patches (>16MB) (default: no)")
+        evergreen_options.add_argument('--cancel-patch',
+                                       action='store_true',
+                                       help="Run 'evergreen cancel-patch' at the end (aka dry run)")
         args = self.parser.parse_args(self.cli_args)
 
         # If one or more config files was specified, they have lowest precedence
@@ -224,11 +209,10 @@ class MultiEvergreen(object):
             print(" ".join(cmd))
             print("")
 
-            process = subprocess.Popen(
-                cmd,
-                cwd=os.path.expanduser(self.config['mongo_repo']),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT)
+            process = subprocess.Popen(cmd,
+                                       cwd=os.path.expanduser(self.config['mongo_repo']),
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.STDOUT)
             build_data = _parse_evg_output(process.stdout)
             # Self-referential, but could be useful. And can help readability of a 20 item list!
             build_data['index'] = i
@@ -249,11 +233,10 @@ class MultiEvergreen(object):
                 if repo in self.config:
                     cmd = ['evergreen', 'set-module', '-m', project, '-i', build['ID'], '--yes']
                     print(" ".join(cmd))
-                    process = subprocess.Popen(
-                        cmd,
-                        cwd=os.path.expanduser(self.config[repo]),
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.STDOUT)
+                    process = subprocess.Popen(cmd,
+                                               cwd=os.path.expanduser(self.config[repo]),
+                                               stdout=subprocess.PIPE,
+                                               stderr=subprocess.STDOUT)
                     for line in iter(process.stdout.readline, b''):
                         # pass thru
                         print(line.rstrip())

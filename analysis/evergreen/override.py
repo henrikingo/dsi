@@ -48,7 +48,6 @@ class TestDataNotFound(OverrideError):
 class Override(object):  # pylint: disable=too-many-instance-attributes
     """This class handles operations related to updating an override file.
     """
-
     def __init__(  # pylint: disable=too-many-arguments
             self,
             project,
@@ -178,8 +177,8 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
             for rule in self.summary:
                 LOGGER.info('The following tests were overridden for rule %s:', rule)
                 LOGGER.info(
-                    json.dumps(
-                        self.summary[rule], indent=2, separators=[',', ': '], sort_keys=True))
+                    json.dumps(self.summary[rule], indent=2, separators=[',', ': '],
+                               sort_keys=True))
         LOGGER.debug('Override update complete.')
 
     def _get_task_history(self, task_name, task_id):
@@ -335,11 +334,11 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
                         if test_name in variant_tests[variant]:
                             variant_tests_remaining[variant].remove(test_name)
                 except evergreen_client.Empty:
-                    LOGGER.warning("Caught evergreen_client. Empty exception in "
-                                   "_processing_revision in call to tests_from_task for task_id %s."
-                                   "Supressing error. This indicates something is wrong, but the "
-                                   "current operation can still complete correctly.",
-                                   task_info['task_id'])
+                    LOGGER.warning(
+                        "Caught evergreen_client. Empty exception in "
+                        "_processing_revision in call to tests_from_task for task_id %s."
+                        "Supressing error. This indicates something is wrong, but the "
+                        "current operation can still complete correctly.", task_info['task_id'])
 
             tests_remain = variant_tests_remaining[variant]
             num_tests_missing_data += len(tests_remain)
@@ -584,13 +583,15 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
             if ticket in check_tickets:
                 if isinstance(check_tickets, list):
                     check_tickets.remove(ticket)
-                    LOGGER.info('Deleting test %s from variant %s, task %s and rule %s, but '
-                                'override remains', test, variant, task, rule)
+                    LOGGER.info(
+                        'Deleting test %s from variant %s, task %s and rule %s, but '
+                        'override remains', test, variant, task, rule)
                     LOGGER.info('Remaining tickets are %s', str(check_tickets))
                     if rule == 'threshold':
-                        LOGGER.info('Threshold override for %s from variant %s and task %s '
-                                    'remains due to other outstanding '
-                                    'tickets.', test, variant, task)
+                        LOGGER.info(
+                            'Threshold override for %s from variant %s and task %s '
+                            'remains due to other outstanding '
+                            'tickets.', test, variant, task)
                     else:
                         # Note: task to update is passed in separately, and may be a regex even
                         # There's no need to include it in this hierarchy
@@ -647,16 +648,18 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         """
         if isinstance(file_or_filename, str):
             with open(file_or_filename, 'w') as file_ptr:
-                json.dump(
-                    self.overrides,
-                    file_ptr,
-                    file_or_filename,
-                    indent=4,
-                    separators=[',', ':'],
-                    sort_keys=True)
+                json.dump(self.overrides,
+                          file_ptr,
+                          file_or_filename,
+                          indent=4,
+                          separators=[',', ':'],
+                          sort_keys=True)
         elif isinstance(file_or_filename, file):
-            json.dump(
-                self.overrides, file_or_filename, indent=4, separators=[',', ':'], sort_keys=True)
+            json.dump(self.overrides,
+                      file_or_filename,
+                      indent=4,
+                      separators=[',', ':'],
+                      sort_keys=True)
         else:
             raise TypeError('Argument must be a file or filename')
 

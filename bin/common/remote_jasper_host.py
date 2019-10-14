@@ -99,13 +99,12 @@ class RemoteJasperHost(common.remote_host.RemoteHost):
         return self._do_exec_command(argv, logger)
 
     def _do_exec_command(self, argv, logger):
-        create_options = self.jasper_pb.CreateOptions(
-            args=argv,
-            working_directory=DEFAULT_REMOTE_HOME_DIR,
-            environment={},
-            override_environ=False,
-            timeout_seconds=0,
-            output=self._get_output_options())
+        create_options = self.jasper_pb.CreateOptions(args=argv,
+                                                      working_directory=DEFAULT_REMOTE_HOME_DIR,
+                                                      environment={},
+                                                      override_environ=False,
+                                                      timeout_seconds=0,
+                                                      output=self._get_output_options())
 
         logger.info('Creating process: %r', create_options)
         proc_info = self.stub.Create(create_options)

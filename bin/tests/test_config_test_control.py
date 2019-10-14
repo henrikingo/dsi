@@ -18,7 +18,6 @@ FIXTURE_FILES = FixtureFiles(dir_name=os.path.dirname(__file__), subdir_name='co
 
 class TestConfigTestControl(unittest.TestCase):
     ''' Test config_test_control.py'''
-
     def setUp(self):
         """
         Setup basic environment
@@ -40,10 +39,9 @@ class TestConfigTestControl(unittest.TestCase):
         test = self.config['test_control']['run'][0]
         mock_host = Mock(spec=RemoteHost)
         test_control.generate_config_file(test, FIXTURE_FILES.fixture_dir_path, mock_host)
-        self.assertEqual(
-            FIXTURE_FILES.load_yaml_file('workloads.yml'),
-            FIXTURE_FILES.load_yaml_file('workloads.benchrun.yml.ok'),
-            'workloads.yml doesn\'t match expected for test_control.yml')
+        self.assertEqual(FIXTURE_FILES.load_yaml_file('workloads.yml'),
+                         FIXTURE_FILES.load_yaml_file('workloads.benchrun.yml.ok'),
+                         'workloads.yml doesn\'t match expected for test_control.yml')
         mock_host.upload_file.assert_called_once_with(
             FIXTURE_FILES.fixture_file_path(test['config_filename']), test['config_filename'])
 
@@ -54,10 +52,9 @@ class TestConfigTestControl(unittest.TestCase):
         test = self.config['test_control']['run'][1]
         mock_host = Mock(spec=RemoteHost)
         test_control.generate_config_file(test, FIXTURE_FILES.fixture_dir_path, mock_host)
-        self.assertEqual(
-            FIXTURE_FILES.load_yaml_file('workloadEvergreen'),
-            FIXTURE_FILES.load_yaml_file('workloadEvergreen.ok'),
-            'workloadEvergreen doesn\'t match expected for test_control.yml')
+        self.assertEqual(FIXTURE_FILES.load_yaml_file('workloadEvergreen'),
+                         FIXTURE_FILES.load_yaml_file('workloadEvergreen.ok'),
+                         'workloadEvergreen doesn\'t match expected for test_control.yml')
         mock_host.upload_file.assert_called_once_with(
             FIXTURE_FILES.fixture_file_path(test['config_filename']), test['config_filename'])
 

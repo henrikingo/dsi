@@ -21,12 +21,12 @@ def main(args):
     arg_parser.add_argument("file", help="The path of the file to validate.")
 
     jira_creds_help = "Used to check if ticket names actually exist in the MongoDB JIRA server. "
-    arg_parser.add_argument(
-        "--jira-user",
-        help="JIRA username. Must be specified along with --jira-password. " + jira_creds_help)
-    arg_parser.add_argument(
-        "--jira-password",
-        help="JIRA password. Must be specified along with --jira-user. " + jira_creds_help)
+    arg_parser.add_argument("--jira-user",
+                            help="JIRA username. Must be specified along with --jira-password. " +
+                            jira_creds_help)
+    arg_parser.add_argument("--jira-password",
+                            help="JIRA password. Must be specified along with --jira-user. " +
+                            jira_creds_help)
     args = arg_parser.parse_args()
 
     j_user = args.jira_user
