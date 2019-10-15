@@ -18,28 +18,18 @@ from setuptools import setup
 # pylint: disable=invalid-name
 install_requirements = [
     'boto3==1.4.7',
-    'click~=7.0',
     'colorama==0.3.9',
-    'dnspython==1.15.0',
-    'enum34==1.1.6',
     'future==0.16.0',
     'jira==1.0.15',
     'jinja2==2.10',
-    'keyring==10.6.0',
-    'numpy==1.13.3',
     'pymongo==3.7.2',
     'python-dateutil~=2.7.0',
     'PyYAML~=5.1',
     'requests~=2.22.0',
-    'scipy==1.1.0',
     'signal-processing @ git+ssh://git@github.com/10gen/signal-processing'
     '@0.2.5',
     'structlog~=19.1.0',
-    'tenacity==5.0.4',
 ]
-extras_require = {
-    'Plotting': ['matplotlib==2.1.0']
-}
 setup(
     name='DSI',
     version='1.0',
@@ -52,7 +42,6 @@ setup(
               'analysis',
               'analysis.evergreen'],
     install_requires=install_requirements,
-    extras_require=extras_require,
     # Cannot zip due to usage of __file__.
     zip_safe=False,
     use_2to3=True,

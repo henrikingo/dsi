@@ -1,4 +1,3 @@
 -r requirements/provisioning.txt
 -r requirements/test.txt
 -r requirements/aws_cleanup.txt
--r requirements/analysis-cli.txt
