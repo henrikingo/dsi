@@ -25,6 +25,7 @@ run:
     # `${mongodb_setup.meta.mongodb_url}`.
     workload_config: &linkbench_config |
       url=${test_control.url.${mongodb_setup.meta.is_sharded}}
+      fle_enable=${mongodb_setup.meta.is_fle}
       data_file = config/Distribution.dat
       startid1 = 1
       maxid1 = ${test_control.linkbench_maxid1}
@@ -242,6 +243,8 @@ pre_task:
             print ("Non-sharded cluster");
           }
 
+  - on_workload_client:
+      exec: ${test_control.start_mongo_cryptd}
 
 between_tests:
   - restart_mongodb:

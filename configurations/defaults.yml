@@ -575,3 +575,10 @@ test_control:
 
 # add a delay before each test. Units are seconds but the value can be an int or float.
 #  test_delay_seconds: 1
+
+  start_mongo_cryptd: |
+    # Start mongocryptd separately so that it runs on a different cpu
+    pwd
+    if [ "${mongodb_setup.meta.is_fle}" == "True" ]; then
+      ${mongodb_setup.mongo_dir}/bin/mongocryptd --logpath $HOME/cryptd.log --pidfilepath=$HOME/mongocryptd.pid --fork
+    fi

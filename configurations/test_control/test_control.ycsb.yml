@@ -229,12 +229,7 @@ pre_task:
         # Shard the YCSB cluster if sharding is enabled
         script: ${test_control.ycsb_sharding_script}
   - on_workload_client:
-      exec: |
-        # Start mongocryptd separately so that it runs on a different cpu
-        pwd
-        if [ "${mongodb_setup.meta.is_fle}" == "True" ]; then
-          ${mongodb_setup.mongo_dir}/bin/mongocryptd --logpath $HOME/cryptd.log --pidfilepath=$HOME/mongocryptd.pid --fork
-        fi
+      exec: ${test_control.start_mongo_cryptd}
 
 post_task:
   - on_localhost:
