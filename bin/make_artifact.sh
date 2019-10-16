@@ -28,7 +28,8 @@ TAR_ARTIFACT="dsi-artifacts.tgz"
 echo "Creating $TAR_ARTIFACT"
 
 rm "$TAR_ARTIFACT" >/dev/null 2>&1 || true
-tar $TAR_EXCLUDE -zcf "$TAR_ARTIFACT" ./*
+cp ../pip-requirements.txt . || true
+tar $TAR_EXCLUDE -zcvf "$TAR_ARTIFACT" ./*
 
 # Kept for system_perf.yml backward compatibility (SERVER-32896). Safe to remove after 4.0 release.
 if [ -e reports.tgz ]; then
@@ -36,6 +37,7 @@ if [ -e reports.tgz ]; then
 else
     mkdir -p ./reports
     # move additional file here
+    cp ../pip-requirements.txt             ./reports || true
     cp infrastructure_provisioning.out.yml ./reports || true
     cp bootstrap.yml                       ./reports || true
     cp runtime.yml                         ./reports || true

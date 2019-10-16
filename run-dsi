@@ -29,6 +29,8 @@ if [[ ! -d "dsi_venv" ]]; then
     _pip install -e "${DIR}"
     _pip install -r "${DIR}/requirements.txt"
 
+    # This script runs in the work directory.
+    _pip freeze > "../pip-requirements.txt" 2>/dev/null
 fi
 
 
