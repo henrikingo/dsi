@@ -13,7 +13,7 @@ import argparse
 import json
 import logging
 
-from util import read_histories, compare_one_result, log_header, read_threshold_overrides
+from util import read_histories, compare_one_result, log_header
 import log_analysis
 import arg_parsing
 
@@ -21,6 +21,8 @@ logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
 
+# TODO: compare_results and related code is dead code and should be removed.
+# https://jira.mongodb.org/browse/TIG-2059
 def compare_results(  # pylint: disable=too-many-arguments,too-many-locals
         this_one,
         reference,
@@ -152,7 +154,7 @@ def main(args):  # pylint: disable=too-many-branches,too-many-locals,too-many-st
     arg_parsing.add_args(arg_parser, "reports analysis")
 
     args = arg_parser.parse_args(args)
-    (history, _, overrides) = read_histories(args.variant, args.task, ofile=args.overrideFile)
+    (history, _, _) = read_histories(args.variant, args.task, ofile=args.overrideFile)
     test_names = history.testnames()
     failed = 0
 
@@ -169,43 +171,11 @@ def main(args):  # pylint: disable=too-many-branches,too-many-locals,too-many-st
             'log_raw': ''
         }
         this_one = history.series_at_revision(test, args.rev)
-        test_failed = False
         result['log_raw'] = log_header(test)
 
         if not this_one:
             LOGGER.info("\tno data at this revision, skipping")
             continue
-
-        # Handle threshold overrides
-        (threshold, thread_threshold,
-         threshold_override) = read_threshold_overrides(test, args.threshold, args.thread_threshold,
-                                                        overrides)
-
-        previous = history.series_at_n_before(test, args.rev, 1)
-        if not previous:
-            LOGGER.info("\tno previous data, skipping")
-            continue
-
-        using_override = []
-        if threshold_override:
-            using_override.append("threshold")
-        cresult = compare_results(this_one, previous, threshold, "Previous",
-                                  history.noise_levels(test), args.noise, thread_threshold,
-                                  args.threadNoise, using_override)
-        result['PreviousCompare'] = cresult[0]
-        result['log_raw'] += cresult[1] + '\n'
-        if cresult[0]:
-            test_failed = True
-
-        if args.out_file is None:
-            print(result['log_raw'])
-
-        if test_failed:
-            result['status'] = 'fail'
-            failed += 1
-        else:
-            result['status'] = 'pass'
-        results.append(result)
 
     if args.reports_analysis is not None:
         log_analysis_results, _ = log_analysis.analyze_logs(args.reports_analysis, args.perf_file)

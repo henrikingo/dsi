@@ -234,6 +234,8 @@ def project_test_rules(project, variant, test):
 # Regression rules
 
 
+# TODO: copare_to_previous and some following code is dead now and should be removed.
+# https://jira.mongodb.org/browse/TIG-2059
 def compare_to_previous(test, threshold, thread_threshold):
     """Compare against the performance data from the previous run."""
 
@@ -359,7 +361,7 @@ QUARANTINED_RULES = [
 # we do during the PERF-580 perf_regression_check and post_run_check merge; right now they remain
 # in post_run_check because they currently access some number of global variables.
 
-REGRESSION_RULES = [compare_to_previous]
+REGRESSION_RULES = []
 
 PROJECT_TEST_RULES = {
     'sys-perf': {
@@ -370,7 +372,7 @@ PROJECT_TEST_RULES = {
         'linux-1-node-replSet-fle': REGRESSION_RULES,
     },
     'mongo-longevity': {
-        'default': [compare_to_previous]
+        'default': []
     }
 }
 
