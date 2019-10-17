@@ -29,7 +29,7 @@ echo "Creating $TAR_ARTIFACT"
 
 rm "$TAR_ARTIFACT" >/dev/null 2>&1 || true
 cp ../pip-requirements.txt . || true
-tar $TAR_EXCLUDE -zcvf "$TAR_ARTIFACT" ./*
+tar $TAR_EXCLUDE -zcf "$TAR_ARTIFACT" ./*
 
 # Kept for system_perf.yml backward compatibility (SERVER-32896). Safe to remove after 4.0 release.
 if [ -e reports.tgz ]; then
