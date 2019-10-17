@@ -4,4 +4,4 @@ PyYAML~=5.1
 requests~=2.22.0
 jira==1.0.15
 structlog~=19.1.0
-colorama==0.3.9
+colorama==0.4.1

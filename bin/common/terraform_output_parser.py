@@ -78,13 +78,11 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
     def _parse_terraform_output(self):
         """To parse terraform output, and extract proper IP address"""
         if self._terraform_output:
-            LOG.info("Parse from string")
             fread = self._terraform_output.splitlines()
         elif self._file is not None:
             LOG.info("Parse input file %s", self._file)
             fread = open(self._file, 'r')
         else:
-            LOG.info("Parse from stdin")
             fread = sys.stdin
 
         # Read file and parse it.

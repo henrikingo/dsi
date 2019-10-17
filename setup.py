@@ -17,8 +17,8 @@ from setuptools import setup
 # See 'requires v requirements<https://packaging.python.org/discussions/install-requires-vs-requirements/>'.
 # pylint: disable=invalid-name
 install_requirements = [
-    'boto3==1.4.7',
-    'colorama==0.3.9',
+    'boto3==1.9.243',
+    'colorama==0.4.1',
     'future==0.16.0',
     'jira==1.0.15',
     'jinja2==2.10',
