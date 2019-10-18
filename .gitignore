@@ -39,3 +39,7 @@ _e_divisive.so
 .vscode
 
 .ipynb_checkpoints/
+
+#Vim
+*.swp
+tags

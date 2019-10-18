@@ -29,7 +29,7 @@ DEFAULT_MEMBER_PRIORITY = 1
 DEFAULT_CSRS_NAME = 'configSvrRS'
 
 
-def create_cluster(topology, config):
+def create_cluster(topology, delay_graph, config):
     """
     Create MongoNode, ReplSet, or ShardCluster from topology config
     :param topology: topology config to create - see MongoNode, ReplSet, ShardedCluster docs
@@ -38,18 +38,18 @@ def create_cluster(topology, config):
     cluster_type = topology['cluster_type']
     LOG.info('creating topology: %s', cluster_type)
     if cluster_type == 'standalone':
-        return MongoNode(topology=topology, config=config)
+        return MongoNode(topology=topology, delay_graph=delay_graph, config=config)
     elif cluster_type == 'replset':
-        return ReplSet(topology=topology, config=config)
+        return ReplSet(topology=topology, delay_graph=delay_graph, config=config)
     elif cluster_type == 'sharded_cluster':
-        return ShardedCluster(topology=topology, config=config)
+        return ShardedCluster(topology=topology, delay_graph=delay_graph, config=config)
     LOG.fatal('unknown cluster_type: %s', cluster_type)
     return exit(1)
 
 
 class MongoCluster(object):
     """ Abstract base class for mongo clusters """
-    def __init__(self, topology, config):
+    def __init__(self, topology, delay_graph, config):
         """
         :param topology: Cluster specific configuration
         :param ConfigDict config: root ConfigDict
@@ -57,6 +57,7 @@ class MongoCluster(object):
         """
         self.config = config
         self.topology = topology
+        self.delay_graph = delay_graph
         self.spawn_using = config['test_control'].get('spawn_using', 'ssh')
 
     def wait_until_up(self):
@@ -106,6 +107,10 @@ class MongoCluster(object):
         """
         mongodb_setup_helpers.add_user(self, self.config)
 
+    def establish_delays(self):
+        """ Execute tc commands needed to establish delays between cluster hosts. """
+        raise NotImplementedError()
+
     def __str__(self):
         """ String describing the cluster """
         raise NotImplementedError()
@@ -117,7 +122,7 @@ class MongoCluster(object):
 
 class MongoNode(MongoCluster):
     """Represents a mongo[ds] program on a remote host."""
-    def __init__(self, topology, config, is_mongos=False):
+    def __init__(self, topology, delay_graph, config, is_mongos=False):
         """
         :param topology: Read-only options for mongo[ds], example:
         {
@@ -133,7 +138,7 @@ class MongoNode(MongoCluster):
         :param config: root ConfigDict
         :param is_mongos: True if this node is a mongos
         """
-        super(MongoNode, self).__init__(topology, config)
+        super(MongoNode, self).__init__(topology, delay_graph, config)
 
         self.mongo_program = 'mongos' if is_mongos else 'mongod'
         self.public_ip = topology['public_ip']
@@ -203,6 +208,11 @@ class MongoNode(MongoCluster):
                         private_ip=self.private_ip,
                         ssh_user=ssh_user,
                         ssh_key_file=ssh_key_file)
+
+    def establish_delays(self):
+        my_ip = self._compute_host_info().private_ip
+        delay_node = self.delay_graph.get_node(my_ip)
+        delay_node.establish_delays(self.host)
 
     def wait_until_up(self):
         """ Checks to make sure node is up and accessible"""
@@ -423,7 +433,7 @@ class ReplSet(MongoCluster):
 
     replsets = 0
     """Counts the number of ReplSets created."""
-    def __init__(self, topology, config):
+    def __init__(self, topology, delay_graph, config):
         """
         :param topology: Read-only options for  replSet, example:
         {
@@ -433,7 +443,7 @@ class ReplSet(MongoCluster):
         }
         :param config: root ConfigDict
         """
-        super(ReplSet, self).__init__(topology, config)
+        super(ReplSet, self).__init__(topology, delay_graph, config)
 
         self.name = topology.get('id')
         if not self.name:
@@ -465,7 +475,8 @@ class ReplSet(MongoCluster):
                 mongod_opt['use_journal_mnt'] = False
 
             mongod_opt['config_file'] = config_file
-            self.nodes.append(MongoNode(topology=mongod_opt, config=self.config))
+            self.nodes.append(
+                MongoNode(topology=mongod_opt, delay_graph=delay_graph, config=self.config))
 
     def highest_priority_node(self):
         """
@@ -481,6 +492,9 @@ class ReplSet(MongoCluster):
                 max_node = node
                 max_priority = member['priority']
         return max_node
+
+    def establish_delays(self):
+        run_threads([node.establish_delays for node in self.nodes], daemon=True)
 
     def wait_until_up(self):
         """ Checks and waits for all nodes in replica set to be either PRIMARY or SECONDARY"""
@@ -632,7 +646,7 @@ class ReplSet(MongoCluster):
 
 class ShardedCluster(MongoCluster):
     """Represents a sharded cluster on remote hosts."""
-    def __init__(self, topology, config):
+    def __init__(self, topology, delay_graph, config):
         """
         :param topology: Read-only options for a sharded cluster:
         {
@@ -644,7 +658,7 @@ class ShardedCluster(MongoCluster):
         }
         :param config: root ConfigDict
         """
-        super(ShardedCluster, self).__init__(topology, config)
+        super(ShardedCluster, self).__init__(topology, delay_graph, config)
 
         self.disable_balancer = topology.get('disable_balancer', True)
         self.mongos_opts = topology['mongos']
@@ -654,13 +668,14 @@ class ShardedCluster(MongoCluster):
             raise NotImplementedError('configsvr_type: {}'.format(config_type))
 
         config_opt = {'id': DEFAULT_CSRS_NAME, 'configsvr': True, 'mongod': topology['configsvr']}
-        self.config_svr = ReplSet(topology=config_opt, config=config)
+        self.config_svr = ReplSet(topology=config_opt, delay_graph=delay_graph, config=config)
 
         self.shards = []
         self.mongoses = []
 
         for topo in topology['shard']:
-            self.shards.append(create_cluster(topology=topo, config=config))
+            self.shards.append(create_cluster(topology=topo, delay_graph=delay_graph,
+                                              config=config))
 
         for topo in topology['mongos']:
             # add the connection string for the configdb
@@ -669,7 +684,11 @@ class ShardedCluster(MongoCluster):
             config_file = mongodb_setup_helpers.merge_dicts(config_file, configdb_yaml)
             mongos_opt = copy_obj(topo)
             mongos_opt['config_file'] = config_file
-            self.mongoses.append(MongoNode(topology=mongos_opt, config=self.config, is_mongos=True))
+            self.mongoses.append(
+                MongoNode(topology=mongos_opt,
+                          delay_graph=delay_graph,
+                          config=self.config,
+                          is_mongos=True))
 
     def wait_until_up(self):
         """Checks to make sure sharded cluster is up and
@@ -774,6 +793,10 @@ class ShardedCluster(MongoCluster):
         self.config_svr.add_default_users()
         for shard in self.shards:
             shard.add_default_users()
+
+    def establish_delays(self):
+        all_nodes = self.shards + self.mongoses + [self.config_svr]
+        run_threads([node.establish_delays for node in all_nodes], daemon=True)
 
     def shutdown(self, max_time_ms, auth_enabled=None, retries=20):
         """Shutdown the mongodb cluster gracefully.

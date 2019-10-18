@@ -20,6 +20,7 @@ import common.mongodb_cluster
 from common.log import setup_logging
 from common.config import ConfigDict
 from common.thread_runner import run_threads
+from delay import DelayGraph
 
 LOG = logging.getLogger(__name__)
 
@@ -37,13 +38,17 @@ class MongodbSetup(object):
         self.shutdown_ms = timeouts.get('shutdown_ms', 9 * common.host_utils.ONE_MINUTE_MILLIS)
         self.sigterm_ms = timeouts.get('sigterm_ms', common.host_utils.ONE_MINUTE_MILLIS)
 
-        self.parse_topologies()
+        self.parse_cluster()
         self.atlas = atlas_setup.AtlasSetup(config)
 
-    def parse_topologies(self):
-        """Create cluster for each topology"""
-        for topology in self.mongodb_setup.get('topology', []):
-            self.clusters.append(common.mongodb_cluster.create_cluster(topology, self.config))
+    def parse_cluster(self):
+        """Create cluster for each topology and delay"""
+        topologies = self.mongodb_setup.get('topology', [])
+        delay_configs = self.mongodb_setup.get('network_delays', [])
+        delays = DelayGraph.from_topologies(topologies, delay_configs)
+        for i in xrange(len(topologies)):
+            self.clusters.append(
+                common.mongodb_cluster.create_cluster(topologies[i], delays[i], self.config))
 
     def add_default_users(self):
         """
@@ -270,6 +275,10 @@ def main():
     mongo = MongodbSetup(config=config)
 
     start_cluster(mongo, config)
+
+    # Establish delays *after* the cluster is started so delays won't interfere with setup.
+    for cluster in mongo.clusters:
+        cluster.establish_delays()
 
 
 if __name__ == '__main__':

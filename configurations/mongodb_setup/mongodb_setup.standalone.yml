@@ -10,6 +10,11 @@ topology:
     public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
     private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
 
+network_delays:
+  - default:
+      delay_ms: 0
+      jitter_ms: 0
+
 # Meta data about this mongodb setup
 meta:
   # The list of hosts that can be used in a mongodb connection string
