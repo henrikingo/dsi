@@ -40,6 +40,6 @@ _e_divisive.so
 
 .ipynb_checkpoints/
 
-#Vim
+# Vim
 *.swp
 tags

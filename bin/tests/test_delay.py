@@ -1,8 +1,196 @@
 import unittest
-from mock import patch, call
-from delay import DelayGraph, DelaySpec
+from mock import MagicMock, call, patch
+from delay import DelayNode, DelayError, DelayGraph, DelaySpec
 
 BASIC_DELAY_CONFIG = {'default': {'delay_ms': 0, 'jitter_ms': 0}}
+
+
+class DelayNodeTestCase(unittest.TestCase):
+    def test_empty_node(self):
+        node = DelayNode()
+
+        expected = ["uname -r | cut -d '.' -f 1 | grep -q '4'", "sudo tc qdisc del dev eth0 root"]
+
+        # We only test that the actual comman strings are the same
+        # because the exception behavior is tested separately.
+        actual = node.generate_commands()
+        self.assertEqual(len(actual), len(expected))
+        for i in xrange(len(expected)):
+            self.assertEqual(actual[i].command, expected[i])
+
+    def test_zero_delays(self):
+        zero_delay_spec = DelaySpec({'delay_ms': 0, 'jitter_ms': 0})
+        node = DelayNode()
+        node.add("fake_ip_str_1", zero_delay_spec)
+        node.add("fake_ip_str_2", zero_delay_spec)
+        node.add("fake_ip_str_3", zero_delay_spec)
+
+        expected = ["uname -r | cut -d '.' -f 1 | grep -q '4'", "sudo tc qdisc del dev eth0 root"]
+
+        actual = node.generate_commands()
+        self.assertEqual(len(actual), len(expected))
+        for i in xrange(len(expected)):
+            self.assertEqual(actual[i].command, expected[i])
+
+    def test_one_nonzero_delay(self):
+        node = DelayNode()
+        zero_delay_spec = DelaySpec({'delay_ms': 0, 'jitter_ms': 0})
+        nonzero_delay_spec = DelaySpec({'delay_ms': 100, 'jitter_ms': 5})
+        node.add("fake_ip_str_1", zero_delay_spec)
+        node.add("fake_ip_str_2", nonzero_delay_spec)
+        node.add("fake_ip_str_3", zero_delay_spec)
+
+        expected = [
+            "uname -r | cut -d '.' -f 1 | grep -q '4'", "sudo tc qdisc del dev eth0 root",
+            "sudo tc qdisc add dev eth0 root handle 1: htb default 1",
+            "sudo tc class add dev eth0 parent 1: classid 1:1 htb rate 100tbit prio 0",
+            "sudo tc class add dev eth0 parent 1: classid 1:2 htb rate 100tbit prio 0",
+            "sudo tc qdisc add dev eth0 parent 1:2 netem delay 0ms 0ms",
+            "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_1 flowid 1:2",
+            "sudo tc class add dev eth0 parent 1: classid 1:3 htb rate 100tbit prio 0",
+            "sudo tc qdisc add dev eth0 parent 1:3 netem delay 100ms 5ms",
+            "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_2 flowid 1:3",
+            "sudo tc class add dev eth0 parent 1: classid 1:4 htb rate 100tbit prio 0",
+            "sudo tc qdisc add dev eth0 parent 1:4 netem delay 0ms 0ms",
+            "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_3 flowid 1:4"
+        ]
+
+        actual = node.generate_commands()
+        self.assertEqual(len(actual), len(expected))
+        for i in xrange(len(expected)):
+            self.assertEqual(actual[i].command, expected[i])
+
+    def test_differing_delays(self):
+        nonzero_delay_spec_1 = DelaySpec({'delay_ms': 200, 'jitter_ms': 30})
+        nonzero_delay_spec_2 = DelaySpec({'delay_ms': 100, 'jitter_ms': 5})
+        nonzero_delay_spec_3 = DelaySpec({'delay_ms': 500, 'jitter_ms': 50})
+        nonzero_delay_spec_4 = DelaySpec({'delay_ms': 10, 'jitter_ms': 0})
+
+        node = DelayNode()
+        node.add("fake_ip_str_1", nonzero_delay_spec_1)
+        node.add("fake_ip_str_2", nonzero_delay_spec_2)
+        node.add("fake_ip_str_3", nonzero_delay_spec_3)
+        node.add("fake_ip_str_4", nonzero_delay_spec_4)
+
+        expected = [
+            "uname -r | cut -d '.' -f 1 | grep -q '4'", "sudo tc qdisc del dev eth0 root",
+            "sudo tc qdisc add dev eth0 root handle 1: htb default 1",
+            "sudo tc class add dev eth0 parent 1: classid 1:1 htb rate 100tbit prio 0",
+            "sudo tc class add dev eth0 parent 1: classid 1:2 htb rate 100tbit prio 0",
+            "sudo tc qdisc add dev eth0 parent 1:2 netem delay 200ms 30ms",
+            "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_1 flowid 1:2",
+            "sudo tc class add dev eth0 parent 1: classid 1:3 htb rate 100tbit prio 0",
+            "sudo tc qdisc add dev eth0 parent 1:3 netem delay 100ms 5ms",
+            "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_2 flowid 1:3",
+            "sudo tc class add dev eth0 parent 1: classid 1:4 htb rate 100tbit prio 0",
+            "sudo tc qdisc add dev eth0 parent 1:4 netem delay 500ms 50ms",
+            "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_3 flowid 1:4",
+            "sudo tc class add dev eth0 parent 1: classid 1:5 htb rate 100tbit prio 0",
+            "sudo tc qdisc add dev eth0 parent 1:5 netem delay 10ms 0ms",
+            "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_4 flowid 1:5"
+        ]
+        actual = node.generate_commands()
+        self.assertEqual(len(actual), len(expected))
+        for i in xrange(len(expected)):
+            self.assertEqual(actual[i].command, expected[i])
+
+    def test_establish_delays_runs_commands(self):
+        mocked_host = MagicMock()
+        mocked_host.run = MagicMock()
+        mocked_host.run.return_value = True
+
+        nonzero_delay_spec_1 = DelaySpec({'delay_ms': 700, 'jitter_ms': 10})
+        nonzero_delay_spec_2 = DelaySpec({'delay_ms': 300, 'jitter_ms': 0})
+
+        delay = DelayNode()
+        delay.add("fake_ip_1", nonzero_delay_spec_1)
+        delay.add("fake_ip_2", nonzero_delay_spec_2)
+        delay.establish_delays(mocked_host)
+
+        expected_calls = [
+            call("uname -r | cut -d '.' -f 1 | grep -q '4'"),
+            call("sudo tc qdisc del dev eth0 root"),
+            call("sudo tc qdisc add dev eth0 root handle 1: htb default 1"),
+            call("sudo tc class add dev eth0 parent 1: classid 1:1 htb rate 100tbit prio 0"),
+            call("sudo tc class add dev eth0 parent 1: classid 1:2 htb rate 100tbit prio 0"),
+            call("sudo tc qdisc add dev eth0 parent 1:2 netem delay 700ms 10ms"),
+            call(
+                "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_1 flowid 1:2"
+            ),
+            call("sudo tc class add dev eth0 parent 1: classid 1:3 htb rate 100tbit prio 0"),
+            call("sudo tc qdisc add dev eth0 parent 1:3 netem delay 300ms 0ms"),
+            call(
+                "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_2 flowid 1:3"
+            ),
+        ]
+
+        self.assertEqual(mocked_host.run.call_count, len(expected_calls))
+        mocked_host.run.assert_has_calls(expected_calls)
+
+    def test_establish_delays_fails(self):
+        mocked_host = MagicMock()
+
+        def mocked_run(command):
+            if command == "sudo tc qdisc add dev eth0 root handle 1: htb default 1":
+                return False
+            return True
+
+        mocked_host.run = mocked_run
+
+        nonzero_delay_spec_1 = DelaySpec({'delay_ms': 700, 'jitter_ms': 10})
+        nonzero_delay_spec_2 = DelaySpec({'delay_ms': 300, 'jitter_ms': 0})
+
+        delay = DelayNode()
+        delay.add("fake_ip_1", nonzero_delay_spec_1)
+        delay.add("fake_ip_2", nonzero_delay_spec_2)
+
+        self.assertRaises(DelayError, delay.establish_delays, mocked_host)
+
+    def test_assert_kernel_fails(self):
+        mocked_host = MagicMock()
+
+        def mocked_run(command):
+            if command == "uname -r | cut -d '.' -f 1 | grep -q '4'":
+                return False
+            return True
+
+        mocked_host.run = mocked_run
+
+        nonzero_delay_spec_1 = DelaySpec({'delay_ms': 400, 'jitter_ms': 10})
+        nonzero_delay_spec_2 = DelaySpec({'delay_ms': 100, 'jitter_ms': 50})
+
+        delay = DelayNode()
+        delay.add("fake_ip_1", nonzero_delay_spec_1)
+        delay.add("fake_ip_2", nonzero_delay_spec_2)
+
+        self.assertRaises(DelayError, delay.establish_delays, mocked_host)
+
+    def test_already_defined_ip(self):
+        delay = DelayNode()
+        nonzero_delay_spec_1 = DelaySpec({'delay_ms': 700, 'jitter_ms': 10})
+        nonzero_delay_spec_2 = DelaySpec({'delay_ms': 300, 'jitter_ms': 0})
+        nonzero_delay_spec_3 = DelaySpec({'delay_ms': 200, 'jitter_ms': 0})
+        delay.add("fake_ip_1", nonzero_delay_spec_1)
+        delay.add("fake_ip_2", nonzero_delay_spec_2)
+        self.assertRaises(DelayError, delay.add, "fake_ip_1", nonzero_delay_spec_3)
+
+    def test_negative_delay(self):
+        delay = DelayNode()
+        nonzero_delay_spec_1 = DelaySpec({'delay_ms': 50, 'jitter_ms': 10})
+        nonzero_delay_spec_2 = DelaySpec({'delay_ms': 10, 'jitter_ms': 0})
+        negative_delay_spec = DelaySpec({'delay_ms': -20, 'jitter_ms': 5})
+        delay.add("fake_ip_1", nonzero_delay_spec_1)
+        delay.add("fake_ip_2", nonzero_delay_spec_2)
+        self.assertRaises(DelayError, delay.add, "fake_ip_3", negative_delay_spec)
+
+    def test_negative_jitter(self):
+        delay = DelayNode()
+        nonzero_delay_spec_1 = DelaySpec({'delay_ms': 10, 'jitter_ms': 3})
+        nonzero_delay_spec_2 = DelaySpec({'delay_ms': 10, 'jitter_ms': 10})
+        negative_jitter_spec = DelaySpec({'delay_ms': 50, 'jitter_ms': -5})
+        delay.add("fake_ip_1", nonzero_delay_spec_1)
+        delay.add("fake_ip_2", nonzero_delay_spec_2)
+        self.assertRaises(DelayError, delay.add, "fake_ip_3", negative_jitter_spec)
 
 
 class DelayGraphTestCase(unittest.TestCase):
