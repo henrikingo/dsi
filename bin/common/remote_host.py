@@ -1,13 +1,14 @@
 """
 Provide abstraction over running commands on remote machines, extending the base class in host.py
 """
-
+from contextlib import closing
 from stat import S_ISDIR
 import logging
 import tempfile
 import shutil
 import socket
 import os
+import sys
 
 import paramiko
 
@@ -44,7 +45,7 @@ class RemoteHost(common.host.Host):
             self.ftp = ftp
             self.user = username
         except (paramiko.SSHException, socket.error):
-            exit(1)
+            sys.exit(1)
 
     # pylint: disable=too-many-arguments
     def exec_command(self,
@@ -67,7 +68,8 @@ class RemoteHost(common.host.Host):
         """
         Creates a file on the remote host
         """
-        with self.ftp.file(remote_path, 'w') as remote_file:
+        remote_file = self.ftp.file(remote_path, 'w')
+        with closing(remote_file):
             remote_file.write(file_contents)
             remote_file.flush()
 

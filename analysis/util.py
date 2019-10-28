@@ -95,7 +95,7 @@ def _get_history(task, task_id, hfile):
     if hfile is not None:
         # As I write this, perf.yml will continue to use this old way for some time
         return History(get_json(hfile))
-    elif task_id is not None:
+    if task_id is not None:
         # system_perf.yml will use this, and avoid json.get_history failures
         # Query history json from Evergreen
         try:
@@ -114,7 +114,7 @@ def _get_tag_history(task, task_id, tfile):
     """
     if tfile:
         return History(get_json(tfile))
-    elif task_id is not None:
+    if task_id is not None:
         # Query tags json from Evergreen
         try:
             # Note: We don't need to authenticate for history plugin endpoints

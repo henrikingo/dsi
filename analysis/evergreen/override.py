@@ -35,14 +35,12 @@ def _setup_logging(verbose):
 
 class OverrideError(Exception):
     """Generic class for Override errors."""
-    pass
 
 
 class TestDataNotFound(OverrideError):
     """Indicates that test data for a desired override update could not be found in the latest
     project revisions.
     """
-    pass
 
 
 class Override(object):  # pylint: disable=too-many-instance-attributes
@@ -135,15 +133,15 @@ class Override(object):  # pylint: disable=too-many-instance-attributes
         delete ticket & update operation)
         """
         for unused_test in [test for test in self.tests if test not in self.tests_applied]:
-            WARNER.warn('Pattern not applied for tests: %s', unused_test)
+            WARNER.warning('Pattern not applied for tests: %s', unused_test)
 
         for unused_task in [task for task in self.tasks if task not in self.tasks_applied]:
-            WARNER.warn('Pattern not applied for tasks: %s', unused_task)
+            WARNER.warning('Pattern not applied for tasks: %s', unused_task)
 
         for unused_variant in [
                 variant for variant in self.variants if variant not in self.build_variants_applied
         ]:
-            WARNER.warn('Pattern not applied for build variants: %s', unused_variant)
+            WARNER.warning('Pattern not applied for build variants: %s', unused_variant)
         self._log_summary()
 
     def _log_summary(self):  # pylint: disable=too-many-branches

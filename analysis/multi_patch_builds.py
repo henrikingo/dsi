@@ -18,7 +18,6 @@ from evergreen import evergreen_client
 
 class OptionError(Exception):
     """Exception raised for erroneous command line options."""
-    pass
 
 
 class MultiEvergreen(object):
@@ -382,14 +381,14 @@ def main(cli_args):
         multi_evergreen.parser.print_usage(file=sys.stderr)
         print("", file=sys.stderr)
         print(err, file=sys.stderr)
-        exit(1)
+        sys.exit(1)
 
     try:
         multi_evergreen.execute()
     except subprocess.CalledProcessError as err:
         print("", file=sys.stderr)
         print(err, file=sys.stderr)
-        exit(1)
+        sys.exit(1)
 
 
 if __name__ == '__main__':

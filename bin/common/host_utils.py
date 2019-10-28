@@ -30,7 +30,6 @@ WARN_ADAPTER = IOLogAdapter(LOG, logging.WARN)
 
 class HostException(Exception):
     """ Raise for exec command timeouts and use it to wraps ssh exceptions. """
-    pass
 
 
 def setup_ssh_agent(config):

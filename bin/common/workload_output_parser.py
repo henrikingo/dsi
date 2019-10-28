@@ -12,8 +12,9 @@ import re
 
 from nose.tools import nottest
 
-import cedar
 from testcontrollib import test_runner
+
+import cedar
 
 LOG = logging.getLogger(__name__)
 
@@ -226,7 +227,6 @@ class ResultParser(object):
 
 class InvalidConfigurationException(ValueError):
     """We have bad configuration for the parser."""
-    pass
 
 
 class GennyResultsParser(ResultParser):
@@ -345,7 +345,7 @@ class LinkbenchResultParser(ResultParser):
             operation_type = 'load' if operation.startswith('LOAD_') else 'request'
             mean = float(row['mean'])
             if mean <= 0:
-                LOG.warn("Non-positive mean value reported for row %s", row)
+                LOG.warning("Non-positive mean value reported for row %s", row)
                 continue
 
             inverse = float(1000) / mean

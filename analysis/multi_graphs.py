@@ -21,7 +21,6 @@ import deep_dict
 
 class OptionError(Exception):
     """Exception raised for erroneous command line options."""
-    pass
 
 
 class MultiAnalysisGraphs(object):
@@ -71,7 +70,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
             # issue: If you'd set a boolean option in config file, then argparse will provide
             # the value False and overwrite it.
             # This is still not general purpose, but sufficient for this script.
-            if val is not None and val != False:
+            if val is not None and val is not False:
                 self.config[key] = val
 
         if self.config['json'] or self.config['yml']:
@@ -452,7 +451,7 @@ def main(cli_args=None):
         multi_graphs.parser.print_usage(file=sys.stderr)
         print("", file=sys.stderr)
         print(err, file=sys.stderr)
-        exit(1)
+        sys.exit(1)
 
     multi_graphs.read_agg_results()
     multi_graphs.bar_graphs()

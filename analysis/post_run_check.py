@@ -193,7 +193,7 @@ def check_core_file_exists(reports_dir_path, pattern="core.*"):
                     cores_lookup[mongo_dir_path].append(potential_corefile)
 
         for mongo_dir_path in sorted(cores_lookup.iterkeys()):
-            cores = [core for core in cores_lookup[mongo_dir_path]]
+            cores = cores_lookup[mongo_dir_path]
             mongo_host = os.path.basename(mongo_dir_path)
             test_id = os.path.basename(os.path.dirname(mongo_dir_path))
             results.append({
@@ -333,7 +333,7 @@ def _lookup_constant_value(project, variant, constant_name):
     project_constants = rules.CONSTANTS[project]
     if variant in project_constants and constant_name in project_constants[variant]:
         return project_constants[variant][constant_name]
-    elif constant_name in project_constants['default']:
+    if constant_name in project_constants['default']:
         return project_constants['default'][constant_name]
     return None
 

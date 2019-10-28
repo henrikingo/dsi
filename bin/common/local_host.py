@@ -69,12 +69,12 @@ class LocalHost(common.host.Host):
         if common.host_utils.stream_proc_logs(proc, stdout, stderr, is_timed_out):
             exit_status = proc.returncode
             if exit_status != 0:
-                logger.warn('%s \'%s\': Failed with exit status %s', self.alias, command,
-                            exit_status)
+                logger.warning('%s \'%s\': Failed with exit status %s', self.alias, command,
+                               exit_status)
         else:
             exit_status = 1
-            logger.warn('%s \'%s\': Timeout after %f seconds with exit status %s', self.alias,
-                        command, (datetime.now() - start).total_seconds(), exit_status)
+            logger.warning('%s \'%s\': Timeout after %f seconds with exit status %s', self.alias,
+                           command, (datetime.now() - start).total_seconds(), exit_status)
         return exit_status
 
     # pylint: disable=no-self-use

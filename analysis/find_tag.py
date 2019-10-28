@@ -17,7 +17,6 @@ from evergreen import evergreen_client
 
 class OptionError(Exception):
     """Exception raised for erroneous command line options."""
-    pass
 
 
 class FindByTag(object):

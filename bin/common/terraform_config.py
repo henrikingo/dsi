@@ -43,9 +43,8 @@ def is_placement_group_needed(node_type, tfvars):
             LOG.debug("node_type=%s instance_type=%s DOES support placement group", node_type,
                       instance_type)
             return True
-        else:
-            LOG.debug("node_type=%s instance_type=%s DOES NOT support placement group", node_type,
-                      instance_type)
+        LOG.debug("node_type=%s instance_type=%s DOES NOT support placement group", node_type,
+                  instance_type)
 
     return False
 

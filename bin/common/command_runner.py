@@ -357,10 +357,10 @@ def run_pre_post_commands(command_key,
                 print_trace(inspect.trace(), exception)
                 if exception_behavior == EXCEPTION_BEHAVIOR.RERAISE:
                     raise exception
-                elif exception_behavior == EXCEPTION_BEHAVIOR.EXIT:
+                if exception_behavior == EXCEPTION_BEHAVIOR.EXIT:
                     LOG.error("Exiting with status code: 1")
                     sys.exit(1)
-                elif exception_behavior == EXCEPTION_BEHAVIOR.CONTINUE:
+                if exception_behavior == EXCEPTION_BEHAVIOR.CONTINUE:
                     pass
                 else:
                     SLOG.error("Invalid exception_behavior entry",

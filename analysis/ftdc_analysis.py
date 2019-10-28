@@ -77,6 +77,7 @@ def failure_message(rule_info, task_run_time):
     return failure_msg
 
 
+# pylint: disable=too-many-locals
 def _failure_message(rule_info, task_run_time, member=None):
     """
     Standardize the way that we return a failure message.
@@ -156,10 +157,10 @@ def _failure_message(rule_info, task_run_time, member=None):
         report_all_values = True
 
     if report_all_values:
-        for failure_index in xrange(len(rule_info['times'])):
+        for (failure_index, value) in enumerate(rule_info['times']):
             failure_msg += '\n\tstart time: {0}'.format(
                 rules.ftdc_date_parse(rule_info['times'][failure_index] / rules.MS))
-            for value_index in xrange(len(rule_info['labels'])):
+            for (value_index, _) in enumerate(rule_info['labels']):
                 failure_msg += '\n\t{0}: {1}'.format(
                     rule_info['labels'][value_index],
                     rule_info['compared_values'][failure_index][value_index])
@@ -167,12 +168,12 @@ def _failure_message(rule_info, task_run_time, member=None):
     else:
         failure_msg += 'First failure occurred at time {0}'.format(first_failure_time)
         first_failure_values = rule_info['compared_values'][0]
-        for index in xrange(len(first_failure_values)):
+        for (index, value) in enumerate(first_failure_values):
             failure_msg += '\n\t{0}: {1}'.format(rule_info['labels'][index],
                                                  first_failure_values[index])
 
     if 'additional' in rule_info:
-        for key, value in rule_info['additional'].iteritems():
+        for key, value in rule_info['additional'].items():
             failure_msg += '\n\t{0}: {1}'.format(key, value)
 
     if not report_all_values:
@@ -337,13 +338,12 @@ def _process_ftdc_file(path_to_ftdc_file, project, variant, constant_values):  #
                                                               constant_values)
                 if len(build_args) < len(arguments_needed):
                     continue  # could not find all the necessary metrics in this chunk
-                else:
-                    output = chunk_rule(**build_args)
-                    if output:
-                        rule_name = chunk_rule.__name__
-                        if rule_name not in failures_per_chunk:
-                            failures_per_chunk[rule_name] = []
-                            failures_per_chunk[rule_name].append(output)
+                output = chunk_rule(**build_args)
+                if output:
+                    rule_name = chunk_rule.__name__
+                    if rule_name not in failures_per_chunk:
+                        failures_per_chunk[rule_name] = []
+                        failures_per_chunk[rule_name].append(output)
 
     # reader.py throws a general exception
     except Exception:  #pylint: disable=broad-except

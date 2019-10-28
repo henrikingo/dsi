@@ -203,7 +203,7 @@ class ConfigDict(dict):
         config_dicts = []
         if isinstance(obj, ConfigDict):
             return [obj]
-        elif isinstance(obj, list):
+        if isinstance(obj, list):
             for elem in obj:
                 config_dicts.extend(self.find_nested_config_dicts(elem))
 
@@ -409,7 +409,7 @@ class ConfigDict(dict):
             return_dict.path = list(self.path)
             return_dict.path.append(key)
             return return_dict
-        elif isinstance(value, list):
+        if isinstance(value, list):
             return_list = []
             for listvalue in value:
                 child = self.wrap_dict_as_config_dict(key, listvalue)
@@ -418,8 +418,7 @@ class ConfigDict(dict):
                     child.path.append(len(return_list))
                 return_list.append(child)
             return return_list
-        else:
-            return value
+        return value
 
     def variable_references(self, key, value):
         """
@@ -579,7 +578,7 @@ class ConfigDict(dict):
         random results if calling it from elsewhere."""
         if self.path[-2] in ('mongod', 'mongos', 'configsvr'):
             return self.path[-2]
-        elif is_integer(self.path[-1]):
+        if is_integer(self.path[-1]):
             return 'mongod'
         return None
 
@@ -615,18 +614,13 @@ class ConfigDict(dict):
         if len(self.path) >= 2 and \
                 self.path[0] == self.module and \
                 self.path[1] == 'out':
-
             return True
-
-        elif len(self.path) == 1 and \
+        if len(self.path) == 1 and \
                 self.path[0] == self.module and \
                 key == 'out':
-
             return True
-
-        else:
-            raise KeyError('Only values under self["' + self.module +
-                           '"]["out"] are settable in this object')
+        raise KeyError('Only values under self["' + self.module +
+                       '"]["out"] are settable in this object')
 
 
 def copy_obj(obj):
@@ -636,7 +630,7 @@ def copy_obj(obj):
         for key in obj.keys():
             new_dict[key] = copy_obj(obj[key])
         return new_dict
-    elif isinstance(obj, list):
+    if isinstance(obj, list):
         return [copy_obj(item) for item in obj]
     return obj
 

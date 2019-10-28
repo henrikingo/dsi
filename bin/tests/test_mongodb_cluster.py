@@ -435,7 +435,7 @@ class TestMongoNode(unittest.TestCase):
         Test shutdown.
         """
         mock_logger = mock.MagicMock(name='LOG')
-        common.mongodb_cluster.LOG.warn = mock_logger
+        common.mongodb_cluster.LOG.warning = mock_logger
         self.mongo_node.shutdown_options = '{}'
         self.mongo_node.run_mongo_shell = mock.MagicMock(name='run_mongo_shell')
         self.mongo_node.host.run = mock.MagicMock(name='run')
@@ -451,7 +451,7 @@ class TestMongoNode(unittest.TestCase):
         Test failed shutdown with options.
         """
         mock_logger = mock.MagicMock(name='LOG')
-        common.mongodb_cluster.LOG.warn = mock_logger
+        common.mongodb_cluster.LOG.warning = mock_logger
         self.mongo_node.shutdown_options = 'options'
         self.mongo_node.run_mongo_shell = mock.MagicMock(name='run_mongo_shell')
         self.mongo_node._host.run = mock.MagicMock(name='run')

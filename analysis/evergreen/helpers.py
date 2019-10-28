@@ -217,11 +217,10 @@ def file_as_json(file_or_filename):
     """
     if isinstance(file_or_filename, file):
         return json.load(file_or_filename)
-    elif isinstance(file_or_filename, str):
+    if isinstance(file_or_filename, str):
         with open(file_or_filename) as file_handle:
             return json.load(file_handle)
-    else:
-        raise TypeError('Argument must be a string or file pointer')
+    raise TypeError('Argument must be a string or file pointer')
 
 
 def file_as_yaml(file_or_filename):
@@ -232,11 +231,10 @@ def file_as_yaml(file_or_filename):
     """
     if isinstance(file_or_filename, file):
         return yaml.load(file_or_filename)
-    elif isinstance(file_or_filename, str):
+    if isinstance(file_or_filename, str):
         with open(file_or_filename) as file_handle:
             return yaml.load(file_handle)
-    else:
-        raise TypeError('Argument must be a string or file pointer')
+    raise TypeError('Argument must be a string or file pointer')
 
 
 def matches_any(obj, patterns):

@@ -22,12 +22,10 @@ TASK_STATUS_CANCELLED = 'cancelled'
 
 class EvergreenError(Exception):
     """Generic class for Evergreen errors."""
-    pass
 
 
 class Empty(EvergreenError):
     """Indicates that an empty response from Evergreen was not expected."""
-    pass
 
 
 class Client(object):

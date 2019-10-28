@@ -52,7 +52,7 @@ class LocalHostTestCase(unittest.TestCase):
 
         # test that the correct warning is issued
         mock_logger = MagicMock(name='LOG')
-        common.local_host.LOG.warn = mock_logger
+        common.local_host.LOG.warning = mock_logger
         self.assertEqual(local.exec_command('exit 1'), 1)
         mock_logger.assert_called_once_with(ANY_IN_STRING('Failed with exit status'), ANY, ANY, ANY)
 
@@ -105,7 +105,7 @@ class LocalHostTestCase(unittest.TestCase):
         command = "sleep 1"
 
         mock_logger = MagicMock(name='LOG')
-        common.local_host.LOG.warn = mock_logger
+        common.local_host.LOG.warning = mock_logger
         self.assertEqual(local.exec_command(command, out, err, max_time_ms=500), 1)
         mock_logger.assert_called_once_with(ANY_IN_STRING('Timeout after'), ANY, ANY, ANY, ANY)
 

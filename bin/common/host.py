@@ -308,4 +308,3 @@ class Host(object):
         """
         Cleanup any connections
         """
-        pass

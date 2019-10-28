@@ -61,8 +61,8 @@ class DownloadMongodb(object):
                       successfully on all servers.
         """
         if not self.mongodb_binary_archive:
-            LOG.warn("DownloadMongodb: download_and_extract() was called, " +
-                     "but mongodb_binary_archive isn't defined.")
+            LOG.warning("DownloadMongodb: download_and_extract() was called, "
+                        "but mongodb_binary_archive isn't defined.")
             return True
         to_download = []
         for host in self.hosts:

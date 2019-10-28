@@ -53,8 +53,8 @@ class RemoteSSHHost(common.remote_host.RemoteHost):
 
         if (max_time_ms is not None and no_output_timeout_ms is not None
                 and no_output_timeout_ms > max_time_ms):
-            logger.warn("Can't wait %s ms for output when max time is %s ms", no_output_timeout_ms,
-                        max_time_ms)
+            logger.warning("Can't wait %s ms for output when max time is %s ms",
+                           no_output_timeout_ms, max_time_ms)
 
         if stdout is None:
             stdout = INFO_ADAPTER
@@ -87,7 +87,8 @@ class RemoteSSHHost(common.remote_host.RemoteHost):
             host_utils.close_safely(ssh_stderr)
 
         if exit_status != 0:
-            logger.warn('%s \'%s\': Failed with exit status %s', self.alias, command, exit_status)
+            logger.warning('%s \'%s\': Failed with exit status %s', self.alias, command,
+                           exit_status)
         return exit_status
 
     # pylint: disable=no-self-use

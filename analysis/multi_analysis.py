@@ -24,7 +24,6 @@ from evergreen import evergreen_client
 
 class OptionError(Exception):
     """Exception raised for erroneous command line options."""
-    pass
 
 
 class MultiEvergreenAnalysis(object):
@@ -168,16 +167,12 @@ class MultiEvergreenAnalysis(object):
             build['result_ids'] = {}
             version_obj = self.evergreen_client.query_revision(build['ID'])
             for build_variant_id in version_obj['builds']:
-                build_variant_id = build_variant_id
-
                 build_variant_obj = self.evergreen_client.query_build_variant(build_variant_id)
                 variant_name = build_variant_obj['variant']
                 tasks_in_variant = {}
                 for task_name, task_obj in build_variant_obj['tasks'].iteritems():
                     if task_name == 'compile':
                         continue
-                    task_name = task_name
-
                     task_id = task_obj['task_id']
                     tasks_in_variant[task_name] = {
                         'task_id': task_id,
@@ -528,7 +523,7 @@ def main(cli_args=None):
         multi_analysis.parser.print_usage(file=sys.stderr)
         print("", file=sys.stderr)
         print(err, file=sys.stderr)
-        exit(1)
+        sys.exit(1)
 
     multi_analysis.evergreen_fetch_result_ids()
     multi_analysis.evergreen_fetch_results()

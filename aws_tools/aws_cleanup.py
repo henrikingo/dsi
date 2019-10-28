@@ -313,5 +313,4 @@ class AwsCleanup(object):
             except botocore.exceptions.ClientError as e:
                 if e.response['Error']['Code'] != "InvalidPlacementGroup.InUse":
                     raise e
-                else:
-                    LOG.debug("%s skipped, in use.", group)
+                LOG.debug("%s skipped, in use.", group)

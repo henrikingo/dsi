@@ -102,7 +102,7 @@ class RemoteSSHHostTestCase(unittest.TestCase):
         """Test RemoteHost.exec_command no warnings on success"""
 
         mock_logger = MagicMock(name='LOG')
-        common.remote_ssh_host.LOG.warn = mock_logger
+        common.remote_ssh_host.LOG.warning = mock_logger
         self.helper_remote_exec_command(command=['cowsay', 'Hello', 'World'])
         mock_logger.assert_not_called()
 
@@ -110,7 +110,7 @@ class RemoteSSHHostTestCase(unittest.TestCase):
         """Test RemoteHost.exec_command warning on failure"""
 
         mock_logger = MagicMock(name='LOG')
-        common.remote_ssh_host.LOG.warn = mock_logger
+        common.remote_ssh_host.LOG.warning = mock_logger
         self.helper_remote_exec_command(return_value=1, exit_status=1)
 
         mock_logger.assert_called_once_with(ANY_IN_STRING('with exit status'), ANY, ANY, ANY)

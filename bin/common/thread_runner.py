@@ -62,5 +62,5 @@ def wrap(command, thread_results, thread_exceptions_bucket, stop_thread_executio
     try:
         thread_results.put(command())
     except Exception:  # pylint: disable=broad-except
-        LOG.warn("Unexpected exception in thread", exc_info=1)
+        LOG.warning("Unexpected exception in thread", exc_info=1)
         thread_exceptions_bucket.put(sys.exc_info())

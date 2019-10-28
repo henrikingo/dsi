@@ -487,14 +487,13 @@ def _chunk_member_lag(chunk, repl_member_list, primary_optimedates, test_run_ind
         member_optimedate_key = ('replSetGetStatus', 'members', member, 'optimeDate')
         if member_optimedate_key not in chunk:
             break
-        else:
-            member_optimedate_values = chunk[member_optimedate_key]
-            member_lag = []
-            for index in test_run_indices:
-                secondary_optimedate = member_optimedate_values[index]
-                lag = primary_optimedates[index] - secondary_optimedate
-                member_lag.append(lag)
-            collect_chunk_lag[member] = member_lag
+        member_optimedate_values = chunk[member_optimedate_key]
+        member_lag = []
+        for index in test_run_indices:
+            secondary_optimedate = member_optimedate_values[index]
+            lag = primary_optimedates[index] - secondary_optimedate
+            member_lag.append(lag)
+        collect_chunk_lag[member] = member_lag
     return collect_chunk_lag
 
 

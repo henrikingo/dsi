@@ -7,18 +7,19 @@ import json
 import logging
 import os
 import signal
+import sys
 import time
 
 import yaml
-
-# pylint: disable=too-many-instance-attributes
-import mongodb_setup_helpers
 
 from common import host_factory
 from common.host_utils import ssh_user_and_key_file
 from common.models.host_info import HostInfo
 from common.config import copy_obj
 from common.thread_runner import run_threads
+
+# pylint: disable=too-many-instance-attributes
+import mongodb_setup_helpers
 
 LOG = logging.getLogger(__name__)
 
@@ -39,12 +40,12 @@ def create_cluster(topology, delay_graph, config):
     LOG.info('creating topology: %s', cluster_type)
     if cluster_type == 'standalone':
         return MongoNode(topology=topology, delay_graph=delay_graph, config=config)
-    elif cluster_type == 'replset':
+    if cluster_type == 'replset':
         return ReplSet(topology=topology, delay_graph=delay_graph, config=config)
-    elif cluster_type == 'sharded_cluster':
+    if cluster_type == 'sharded_cluster':
         return ShardedCluster(topology=topology, delay_graph=delay_graph, config=config)
     LOG.fatal('unknown cluster_type: %s', cluster_type)
-    return exit(1)
+    return sys.exit(1)
 
 
 class MongoCluster(object):
@@ -394,7 +395,7 @@ class MongoNode(MongoCluster):
                     self.shutdown_options),
                                      max_time_ms=max_time_ms)
                 if self.host.run(['pgrep -l', 'mongo']):
-                    LOG.warn("Mongo %s:%s did not shutdown yet", self.public_ip, self.port)
+                    LOG.warning("Mongo %s:%s did not shutdown yet", self.public_ip, self.port)
                 else:
                     return True
                 time.sleep(1)
