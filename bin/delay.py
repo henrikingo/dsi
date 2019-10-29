@@ -23,6 +23,14 @@ class DelaySpec(object):
         self.jitter_ms = delayspec_config['jitter_ms']
 
 
+class EdgeSpec(object):
+    """ Class representing a single edgewise delay specification. """
+    def __init__(self, edge_config):
+        self.node1 = edge_config['node1']
+        self.node2 = edge_config['node2']
+        self.delay = DelaySpec(edge_config['delay'])
+
+
 class DelayNode(object):
     """ Class representing delays present at a given node. """
     def __init__(self):
@@ -31,23 +39,28 @@ class DelayNode(object):
         """
         self.delays = OrderedDict()  # OrderedDict makes unit testing easier
 
-    def add(self, ip_address, delay_spec):
+    def add(self, ip_address, delay_spec, defer_to_edgewise=False):
         """
         Adds a planned delay to this node.
         :param ip_address: string IP address to which traffic will be delayed
         :param delay_ms: integer of the delay in milliseconds
         :param jitter_ms: integer of the jitter in milliseconds
+        :param defer_to_edgewise: false means we complain if there's a duplicate.
+        True with the existence of a duplicate IP makes this operation effectless.
         """
+
+        if ip_address in self.delays:
+            if defer_to_edgewise:
+                return
+            raise DelayError(
+                "Addition of delay failed: IP address already exists. Address: {ip_address}".format(
+                    ip_address=ip_address))
 
         if delay_spec.delay_ms < 0 or delay_spec.jitter_ms < 0:
             raise DelayError(
                 ("Addition of delay failed: invalid delay or jitter. Given "
                  "delay: {delay}. Given jitter: {jitter}").format(delay=str(delay_spec.delay_ms),
                                                                   jitter=str(delay_spec.jitter_ms)))
-        if ip_address in self.delays:
-            raise DelayError(
-                "Addition of delay failed: IP address already exists. Address: {ip_address}".format(
-                    ip_address=ip_address))
 
         self.delays[ip_address] = delay_spec
 
@@ -176,6 +189,8 @@ class DelayGraph(object):
 
         self._initialize_graph(topology, False)
         self._extract_delay_config(delay_config)
+
+        self._set_edgewise_delays()
         self._set_default_delays()
 
     @staticmethod
@@ -234,6 +249,12 @@ class DelayGraph(object):
         :param delay_config: A ConfigDict for a single cluster's delays.
         """
         self.default_delay = DelaySpec(delay_config['default'])
+        self.edgewise_delays = [EdgeSpec(edge) for edge in delay_config.get('edges', [])]
+
+    def _set_edgewise_delays(self):
+        for edge in self.edgewise_delays:
+            self.graph[edge.node1].add(edge.node2, edge.delay)
+            self.graph[edge.node2].add(edge.node1, edge.delay)
 
     def _set_default_delays(self):
         """
@@ -242,7 +263,8 @@ class DelayGraph(object):
         for ip_1 in self.graph:
             for ip_2 in self.graph:
                 if ip_1 != ip_2:
-                    self.graph[ip_1].add(ip_2, self.default_delay)
+                    # We defer to existing edgewise configurations with each addition.
+                    self.graph[ip_1].add(ip_2, self.default_delay, defer_to_edgewise=True)
 
 
 class DelayError(Exception):

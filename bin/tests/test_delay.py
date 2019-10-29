@@ -1,6 +1,6 @@
 import unittest
 from mock import MagicMock, call, patch
-from delay import DelayNode, DelayError, DelayGraph, DelaySpec
+from delay import DelayNode, DelayError, DelayGraph, DelaySpec, EdgeSpec
 
 BASIC_DELAY_CONFIG = {'default': {'delay_ms': 0, 'jitter_ms': 0}}
 
@@ -322,12 +322,12 @@ class DelayGraphTestCase(unittest.TestCase):
 
         # Each IP gets called twice: once for each of the other nodes.
         expected = [
-            call('10.2.0.1', delay_graph.default_delay),
-            call('10.2.0.1', delay_graph.default_delay),
-            call('10.2.0.2', delay_graph.default_delay),
-            call('10.2.0.2', delay_graph.default_delay),
-            call('10.2.0.3', delay_graph.default_delay),
-            call('10.2.0.3', delay_graph.default_delay),
+            call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
         ]
         self.assertEqual(mocked_delay_node.return_value.add.call_count, len(expected))
         mocked_delay_node.return_value.add.assert_has_calls(expected, any_order=True)
@@ -348,7 +348,7 @@ class DelayGraphTestCase(unittest.TestCase):
                 'private_ip': '10.2.0.3'
             }]
         }
-        delay_config = {'default': {'delay_ms': 100, 'jitter_ms': 10}}
+        delay_config = {'default': {'delay_ms': 100, 'jitter_ms': 10}, 'edges': []}
 
         delay_graph = DelayGraph(topology, delay_config)
         self.assertEqual(len(delay_graph.graph), 3)
@@ -358,12 +358,167 @@ class DelayGraphTestCase(unittest.TestCase):
 
         # Each IP gets called twice: once for each of the other nodes.
         expected = [
-            call('10.2.0.1', delay_graph.default_delay),
-            call('10.2.0.1', delay_graph.default_delay),
-            call('10.2.0.2', delay_graph.default_delay),
-            call('10.2.0.2', delay_graph.default_delay),
-            call('10.2.0.3', delay_graph.default_delay),
-            call('10.2.0.3', delay_graph.default_delay),
+            call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
+        ]
+        self.assertEqual(mocked_delay_node.return_value.add.call_count, len(expected))
+        mocked_delay_node.return_value.add.assert_has_calls(expected, any_order=True)
+
+    @patch('delay.DelayNode')
+    def test_zero_edgewise_delay(self, mocked_delay_node):
+        topology = {
+            'cluster_type':
+                'replset',
+            'mongod': [{
+                'public_ip': '1.2.3.4',
+                'private_ip': '10.2.0.1'
+            }, {
+                'public_ip': '2.3.4.5',
+                'private_ip': '10.2.0.2'
+            }, {
+                'public_ip': '3.4.5.6',
+                'private_ip': '10.2.0.3'
+            }]
+        }
+        delay_config = {
+            'default': {
+                'delay_ms': 100,
+                'jitter_ms': 10
+            },
+            'edges': [{
+                'node1': '10.2.0.1',
+                'node2': '10.2.0.2',
+                'delay': {
+                    'delay_ms': 0,
+                    'jitter_ms': 0
+                }
+            }]
+        }
+
+        delay_graph = DelayGraph(topology, delay_config)
+        self.assertEqual(len(delay_graph.graph), 3)
+
+        expected_edge_spec = EdgeSpec({
+            'node1': '10.2.0.1',
+            'node2': '10.2.0.2',
+            'delay': {
+                'delay_ms': 0,
+                'jitter_ms': 0
+            }
+        })
+        expected_delay_spec = expected_edge_spec.delay
+        actual_edge_spec = delay_graph.edgewise_delays[0]
+        actual_delay_spec = actual_edge_spec.delay
+        self.assertEqual(actual_edge_spec.node1, expected_edge_spec.node1)
+        self.assertEqual(actual_edge_spec.node2, expected_edge_spec.node2)
+        self.assertEqual(actual_delay_spec.delay_ms, expected_delay_spec.delay_ms)
+        self.assertEqual(actual_delay_spec.jitter_ms, expected_delay_spec.jitter_ms)
+
+        # Each IP gets called twice: once for each of the other nodes.
+        # The nodes along the edge each get called an additional time.
+        expected = [
+            call('10.2.0.1', actual_delay_spec),
+            call('10.2.0.2', actual_delay_spec),
+            call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
+        ]
+        self.assertEqual(mocked_delay_node.return_value.add.call_count, len(expected))
+        mocked_delay_node.return_value.add.assert_has_calls(expected, any_order=True)
+
+    @patch('delay.DelayNode')
+    def test_multiple_edgewise_delays(self, mocked_delay_node):
+        topology = {
+            'cluster_type':
+                'replset',
+            'mongod': [{
+                'public_ip': '1.2.3.4',
+                'private_ip': '10.2.0.1'
+            }, {
+                'public_ip': '2.3.4.5',
+                'private_ip': '10.2.0.2'
+            }, {
+                'public_ip': '3.4.5.6',
+                'private_ip': '10.2.0.3'
+            }]
+        }
+        delay_config = {
+            'default': {
+                'delay_ms': 100,
+                'jitter_ms': 10
+            },
+            'edges': [{
+                'node1': '10.2.0.1',
+                'node2': '10.2.0.2',
+                'delay': {
+                    'delay_ms': 100,
+                    'jitter_ms': 10
+                }
+            }, {
+                'node1': '10.2.0.2',
+                'node2': '10.2.0.3',
+                'delay': {
+                    'delay_ms': 10,
+                    'jitter_ms': 5
+                }
+            }]
+        }
+
+        delay_graph = DelayGraph(topology, delay_config)
+        self.assertEqual(len(delay_graph.graph), 3)
+
+        expected_edge_spec1 = EdgeSpec({
+            'node1': '10.2.0.1',
+            'node2': '10.2.0.2',
+            'delay': {
+                'delay_ms': 100,
+                'jitter_ms': 10
+            }
+        })
+        expected_delay_spec1 = expected_edge_spec1.delay
+        actual_edge_spec1 = delay_graph.edgewise_delays[0]
+        actual_delay_spec1 = actual_edge_spec1.delay
+        self.assertEqual(actual_edge_spec1.node1, expected_edge_spec1.node1)
+        self.assertEqual(actual_edge_spec1.node2, expected_edge_spec1.node2)
+        self.assertEqual(actual_delay_spec1.delay_ms, expected_delay_spec1.delay_ms)
+        self.assertEqual(actual_delay_spec1.jitter_ms, expected_delay_spec1.jitter_ms)
+
+        expected_edge_spec2 = EdgeSpec({
+            'node1': '10.2.0.2',
+            'node2': '10.2.0.3',
+            'delay': {
+                'delay_ms': 10,
+                'jitter_ms': 5
+            }
+        })
+        expected_delay_spec2 = expected_edge_spec2.delay
+        actual_edge_spec2 = delay_graph.edgewise_delays[1]
+        actual_delay_spec2 = actual_edge_spec2.delay
+        self.assertEqual(actual_edge_spec2.node1, expected_edge_spec2.node1)
+        self.assertEqual(actual_edge_spec2.node2, expected_edge_spec2.node2)
+        self.assertEqual(actual_delay_spec2.delay_ms, expected_delay_spec2.delay_ms)
+        self.assertEqual(actual_delay_spec2.jitter_ms, expected_delay_spec2.jitter_ms)
+
+        # Each IP gets called twice: once for each of the other nodes.
+        # The nodes along the edge each get called an additional time.
+        expected = [
+            call('10.2.0.1', actual_delay_spec1),
+            call('10.2.0.2', actual_delay_spec1),
+            call('10.2.0.2', actual_delay_spec2),
+            call('10.2.0.3', actual_delay_spec2),
+            call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
         ]
         self.assertEqual(mocked_delay_node.return_value.add.call_count, len(expected))
         mocked_delay_node.return_value.add.assert_has_calls(expected, any_order=True)

@@ -36,7 +36,7 @@ MONGOD_OPTS = {
     'rs_conf_member': {}
 }
 
-DELAY_CONFIG = {'network_delays': [{'default': {'delay_ms': 0, 'jitter_ms': 0}}]}
+DELAY_CONFIG = {'network_delays': [{'default': {'delay_ms': 0, 'jitter_ms': 0}, 'edges': []}]}
 
 DEFAULT_CONFIG = {
     'infrastructure_provisioning': {

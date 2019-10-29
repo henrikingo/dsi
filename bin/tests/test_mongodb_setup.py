@@ -53,7 +53,8 @@ DEFAULT_CONFIG = {
             'default': {
                 'delay_ms': 0,
                 'jitter_ms': 0
-            }
+            },
+            'edges': []
         }],
         'authentication': {
             'enabled': True,
