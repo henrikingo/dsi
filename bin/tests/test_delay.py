@@ -9,11 +9,11 @@ class DelayNodeTestCase(unittest.TestCase):
     def test_empty_node(self):
         node = DelayNode()
 
-        expected = ["uname -r | cut -d '.' -f 1 | grep -q '4'", "sudo tc qdisc del dev eth0 root"]
+        expected = []
 
         # We only test that the actual comman strings are the same
         # because the exception behavior is tested separately.
-        actual = node.generate_commands()
+        actual = node.generate_delay_commands()
         self.assertEqual(len(actual), len(expected))
         for i in xrange(len(expected)):
             self.assertEqual(actual[i].command, expected[i])
@@ -25,9 +25,9 @@ class DelayNodeTestCase(unittest.TestCase):
         node.add("fake_ip_str_2", zero_delay_spec)
         node.add("fake_ip_str_3", zero_delay_spec)
 
-        expected = ["uname -r | cut -d '.' -f 1 | grep -q '4'", "sudo tc qdisc del dev eth0 root"]
+        expected = []
 
-        actual = node.generate_commands()
+        actual = node.generate_delay_commands()
         self.assertEqual(len(actual), len(expected))
         for i in xrange(len(expected)):
             self.assertEqual(actual[i].command, expected[i])
@@ -41,7 +41,6 @@ class DelayNodeTestCase(unittest.TestCase):
         node.add("fake_ip_str_3", zero_delay_spec)
 
         expected = [
-            "uname -r | cut -d '.' -f 1 | grep -q '4'", "sudo tc qdisc del dev eth0 root",
             "sudo tc qdisc add dev eth0 root handle 1: htb default 1",
             "sudo tc class add dev eth0 parent 1: classid 1:1 htb rate 100tbit prio 0",
             "sudo tc class add dev eth0 parent 1: classid 1:2 htb rate 100tbit prio 0",
@@ -55,7 +54,7 @@ class DelayNodeTestCase(unittest.TestCase):
             "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_3 flowid 1:4"
         ]
 
-        actual = node.generate_commands()
+        actual = node.generate_delay_commands()
         self.assertEqual(len(actual), len(expected))
         for i in xrange(len(expected)):
             self.assertEqual(actual[i].command, expected[i])
@@ -73,7 +72,6 @@ class DelayNodeTestCase(unittest.TestCase):
         node.add("fake_ip_str_4", nonzero_delay_spec_4)
 
         expected = [
-            "uname -r | cut -d '.' -f 1 | grep -q '4'", "sudo tc qdisc del dev eth0 root",
             "sudo tc qdisc add dev eth0 root handle 1: htb default 1",
             "sudo tc class add dev eth0 parent 1: classid 1:1 htb rate 100tbit prio 0",
             "sudo tc class add dev eth0 parent 1: classid 1:2 htb rate 100tbit prio 0",
@@ -89,7 +87,7 @@ class DelayNodeTestCase(unittest.TestCase):
             "sudo tc qdisc add dev eth0 parent 1:5 netem delay 10ms 0ms",
             "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_4 flowid 1:5"
         ]
-        actual = node.generate_commands()
+        actual = node.generate_delay_commands()
         self.assertEqual(len(actual), len(expected))
         for i in xrange(len(expected)):
             self.assertEqual(actual[i].command, expected[i])
@@ -105,10 +103,12 @@ class DelayNodeTestCase(unittest.TestCase):
         delay = DelayNode()
         delay.add("fake_ip_1", nonzero_delay_spec_1)
         delay.add("fake_ip_2", nonzero_delay_spec_2)
+        delay.reset_delays(mocked_host)
         delay.establish_delays(mocked_host)
 
         expected_calls = [
             call("uname -r | cut -d '.' -f 1 | grep -q '4'"),
+            call("yum --version tc-iproute2 | head -n 1 | cut -d '.' -f 1 | grep -q '3'"),
             call("sudo tc qdisc del dev eth0 root"),
             call("sudo tc qdisc add dev eth0 root handle 1: htb default 1"),
             call("sudo tc class add dev eth0 parent 1: classid 1:1 htb rate 100tbit prio 0"),
@@ -163,7 +163,7 @@ class DelayNodeTestCase(unittest.TestCase):
         delay.add("fake_ip_1", nonzero_delay_spec_1)
         delay.add("fake_ip_2", nonzero_delay_spec_2)
 
-        self.assertRaises(DelayError, delay.establish_delays, mocked_host)
+        self.assertRaises(DelayError, delay.reset_delays, mocked_host)
 
     def test_already_defined_ip(self):
         delay = DelayNode()

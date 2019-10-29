@@ -108,6 +108,10 @@ class MongoCluster(object):
         """
         mongodb_setup_helpers.add_user(self, self.config)
 
+    def reset_delays(self):
+        """ Execute commands needed to reset a host's tc delays. """
+        raise NotImplementedError()
+
     def establish_delays(self):
         """ Execute tc commands needed to establish delays between cluster hosts. """
         raise NotImplementedError()
@@ -187,6 +191,9 @@ class MongoNode(MongoCluster):
         # Accessed via @property
         self._host = None
 
+        my_ip = self._compute_host_info().private_ip
+        self.delay_node = self.delay_graph.get_node(my_ip)
+
     # This is a @property versus a plain self.host var for 2 reasons:
     # 1. We don't need to be doing SSH stuff or be reading related
     #    configs if we never actually access the host var, and the host
@@ -210,10 +217,11 @@ class MongoNode(MongoCluster):
                         ssh_user=ssh_user,
                         ssh_key_file=ssh_key_file)
 
+    def reset_delays(self):
+        self.delay_node.reset_delays(self.host)
+
     def establish_delays(self):
-        my_ip = self._compute_host_info().private_ip
-        delay_node = self.delay_graph.get_node(my_ip)
-        delay_node.establish_delays(self.host)
+        self.delay_node.establish_delays(self.host)
 
     def wait_until_up(self):
         """ Checks to make sure node is up and accessible"""
@@ -493,6 +501,9 @@ class ReplSet(MongoCluster):
                 max_node = node
                 max_priority = member['priority']
         return max_node
+
+    def reset_delays(self):
+        run_threads([node.reset_delays for node in self.nodes], daemon=True)
 
     def establish_delays(self):
         run_threads([node.establish_delays for node in self.nodes], daemon=True)
@@ -794,6 +805,10 @@ class ShardedCluster(MongoCluster):
         self.config_svr.add_default_users()
         for shard in self.shards:
             shard.add_default_users()
+
+    def reset_delays(self):
+        all_nodes = self.shards + self.mongoses + [self.config_svr]
+        run_threads([node.reset_delays for node in all_nodes], daemon=True)
 
     def establish_delays(self):
         all_nodes = self.shards + self.mongoses + [self.config_svr]

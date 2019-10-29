@@ -10,7 +10,8 @@ Command = namedtuple('Command', 'command allow_fail error')
 
 # Network interface on which the delay should be established.
 INTERFACE = "eth0"
-EXPECTED_KERNEL = "4.15.0-1044-aws"
+EXPECTED_KERNEL_VERSION = "4.15.0-1044-aws"
+EXPECTED_TC_VERSION = "3.4.3"
 
 # We define htb qdiscs to have an absurdly high rate limit that is never hit.
 RATE = "100tbit"
@@ -64,20 +65,38 @@ class DelayNode(object):
 
         self.delays[ip_address] = delay_spec
 
-    def generate_commands(self):
+    def reset_delays(self, host):
+        """
+        Generates and executes commands needed to reset the host's tc settings.
+        :param host: the Host object corresponding to this node.
+        """
+        # We assert the kernel and tc version to protect against changes in how tc works
+        errors = []
+        kernel_assert = _generate_kernel_assert(self.delays)
+        supported_kernel_version = host.run(kernel_assert.command)
+        if not supported_kernel_version and not kernel_assert.allow_fail:
+            errors.append(kernel_assert.error)
+
+        tc_assert = _generate_tc_assert(self.delays)
+        supported_tc_version = host.run(tc_assert.command)
+        if not supported_tc_version and not tc_assert.allow_fail:
+            errors.append(tc_assert.error)
+
+        if supported_kernel_version and supported_tc_version:
+            # Deleting the root qdisc will fail if it doesn't exist; that's okay.
+            del_qdisc_command = "sudo tc qdisc del dev " + INTERFACE + " root"
+            host.run(del_qdisc_command)
+        elif errors:
+            message = "\n".join([error.message for error in errors])
+            raise DelayError(message)
+
+    def generate_delay_commands(self):
         """
         Generates all the tc commands needed to establish the delays.
         :return: a list of Commands, where each Command is a tuple of command string,
         whether that command is allowed to fail, and the exception to throw if it does.
         """
         commands = CommandList()
-
-        # We assert the kernel version to protect against changes in how tc works
-        _generate_kernel_assert(commands)
-
-        # Deleting the root qdisc will fail if it doesn't exist; that's okay.
-        del_qdisc_command = "sudo tc qdisc del dev " + INTERFACE + " root"
-        commands.append(del_qdisc_command, None, True)
 
         if all([t.delay_ms == 0 and t.jitter_ms == 0 for t in self.delays.values()]):
             return commands.get_list()
@@ -107,7 +126,7 @@ class DelayNode(object):
         Establishes all described delays on the connected host. Raises an exception if
         commands fail that shouldn't.
         """
-        for command in self.generate_commands():
+        for command in self.generate_delay_commands():
             if not host.run(command.command) and not command.allow_fail:
                 raise command.error
 
@@ -141,17 +160,37 @@ def _generate_filter_command(commands, classid, ip_address):
     commands.append(command, DelayError("Execution of tc command {command} failed.", command))
 
 
-def _generate_kernel_assert(commands):
+def _generate_kernel_assert(delays):
     kernel_assert_command = "uname -r | cut -d '.' -f 1 | grep -q '{major}'" \
-        .format(major=EXPECTED_KERNEL.split(".")[0])
+        .format(major=EXPECTED_KERNEL_VERSION.split(".")[0])
+
+    # We only complain about bad kernel versions if we are actually setting delays.
+    if all([t.delay_ms == 0 and t.jitter_ms == 0 for t in delays.values()]):
+        return Command(kernel_assert_command, error=None, allow_fail=True)
     kernel_assert_error = DelayError(
         ("Trying to use `tc` to simulate network delays, "
          "but found an unexpected kernel version. Expected version {kernel}. "
          "This means the system image was recently upgraded. Please manually "
-         "update `expected_kernel_version` in "
+         "update `EXPECTED_KERNEL_VERSION` in "
          "DSI and manually verify that `tc` is still setting the delays correctly. ").format(
-             kernel=EXPECTED_KERNEL))
-    commands.append(kernel_assert_command, kernel_assert_error)
+             kernel=EXPECTED_KERNEL_VERSION))
+    return Command(command=kernel_assert_command, error=kernel_assert_error, allow_fail=False)
+
+
+def _generate_tc_assert(delays):
+    tc_assert_command = ("yum --version tc-iproute2 | head -n 1 | cut -d '.' -f 1 "
+                         "| grep -q '{major}'").format(major=EXPECTED_TC_VERSION.split(".")[0])
+
+    # We only complain about bad tc versions if we are actually setting delays.
+    if all([t.delay_ms == 0 and t.jitter_ms == 0 for t in delays.values()]):
+        return Command(tc_assert_command, error=None, allow_fail=True)
+    tc_assert_error = DelayError(
+        ("Trying to use `tc` to simulate network delays, "
+         "but found an unexpected tc version. Expected version {tc}. "
+         "Please manually update `EXPECTED_TC_VERSION` in "
+         "DSI and manually verify that `tc` is still setting the delays correctly. ").format(
+             tc=EXPECTED_TC_VERSION))
+    return Command(command=tc_assert_command, error=tc_assert_error, allow_fail=False)
 
 
 class CommandList(object):

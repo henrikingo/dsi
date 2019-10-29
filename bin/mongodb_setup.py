@@ -274,6 +274,10 @@ def main():
     # Note: This also installs mongo client binary onto workload client.
     mongo = MongodbSetup(config=config)
 
+    # Reset delays before starting so delays don't break setup.
+    for cluster in mongo.clusters:
+        cluster.reset_delays()
+
     start_cluster(mongo, config)
 
     # Establish delays *after* the cluster is started so delays won't interfere with setup.
