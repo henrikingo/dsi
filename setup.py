@@ -27,7 +27,7 @@ install_requirements = [
     'PyYAML~=5.1',
     'requests~=2.22.0',
     'signal-processing @ git+ssh://git@github.com/10gen/signal-processing'
-    '@0.2.5',
+    '@0.2.6',
     'structlog~=19.1.0',
 ]
 setup(
