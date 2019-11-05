@@ -84,7 +84,7 @@ class DelayNode(object):
 
         if supported_kernel_version and supported_tc_version:
             # Deleting the root qdisc will fail if it doesn't exist; that's okay.
-            del_qdisc_command = ["bash", "-c", "sudo tc qdisc del dev " + INTERFACE + " root"]
+            del_qdisc_command = ["bash", "-c", "'sudo tc qdisc del dev " + INTERFACE + " root'"]
             host.run(del_qdisc_command)
         elif errors:
             message = "\n".join([error.message for error in errors])
@@ -103,8 +103,9 @@ class DelayNode(object):
 
         # Add the root qdisc
         add_root_qdisc_command = [
-            "bash", "-c", ("sudo tc qdisc add dev " + INTERFACE + " root handle 1: "
-                           "htb default 1")
+            "bash", "-c",
+            ("'sudo tc qdisc add dev " + INTERFACE + " root handle 1: "
+             "htb default 1'")
         ]
         commands.append(
             add_root_qdisc_command,
@@ -137,35 +138,34 @@ class DelayNode(object):
 
 
 def _generate_class_command(commands, classid):
-    command_str = ("sudo tc class add dev {interface} parent 1: classid 1:{classid} "
-                   "htb rate {rate} prio 0").format(interface=INTERFACE,
-                                                    classid=str(classid),
-                                                    rate=RATE)
+    command_str = ("'sudo tc class add dev {interface} parent 1: classid 1:{classid} "
+                   "htb rate {rate} prio 0'").format(interface=INTERFACE,
+                                                     classid=str(classid),
+                                                     rate=RATE)
     command = ["bash", "-c", command_str]
     commands.append(command, DelayError("Execution of tc command {command} failed.", command))
 
 
 def _generate_delay_command(commands, classid, ip_address, delays):
-    command_str = ("sudo tc qdisc add dev {interface} parent 1:{classid} netem delay {delay_ms}ms "
-                   "{jitter_ms}ms").format(interface=INTERFACE,
-                                           classid=classid,
-                                           delay_ms=str(delays[ip_address].delay_ms),
-                                           jitter_ms=str(delays[ip_address].jitter_ms))
+    command_str = ("'sudo tc qdisc add dev {interface} parent 1:{classid} netem delay {delay_ms}ms "
+                   "{jitter_ms}ms'").format(interface=INTERFACE,
+                                            classid=classid,
+                                            delay_ms=str(delays[ip_address].delay_ms),
+                                            jitter_ms=str(delays[ip_address].jitter_ms))
     command = ["bash", "-c", command_str]
     commands.append(command, DelayError("Execution of tc command {command} failed.", command))
 
 
 def _generate_filter_command(commands, classid, ip_address):
-    command_str = ("sudo tc filter add dev {interface} protocol ip parent 1:0 prio 1 "
-                   "u32 match ip dst {ip_address} flowid 1:{classid}").format(interface=INTERFACE,
-                                                                              ip_address=ip_address,
-                                                                              classid=classid)
+    command_str = ("'sudo tc filter add dev {interface} protocol ip parent 1:0 prio 1 "
+                   "u32 match ip dst {ip_address} flowid 1:{classid}'").format(
+                       interface=INTERFACE, ip_address=ip_address, classid=classid)
     command = ["bash", "-c", command_str]
     commands.append(command, DelayError("Execution of tc command {command} failed.", command))
 
 
 def _generate_kernel_assert(delays):
-    kernel_assert_command_str = "uname -r | cut -d '.' -f 1 | grep -q '{major}'" \
+    kernel_assert_command_str = "'uname -r | cut -d '.' -f 1 | grep -q '{major}''" \
         .format(major=EXPECTED_KERNEL_VERSION.split(".")[0])
     kernel_assert_command = ["bash", "-c", kernel_assert_command_str]
 
@@ -183,8 +183,8 @@ def _generate_kernel_assert(delays):
 
 
 def _generate_tc_assert(delays):
-    tc_assert_command_str = ("yum --version tc-iproute2 | head -n 1 | cut -d '.' -f 1 "
-                             "| grep -q '{major}'").format(major=EXPECTED_TC_VERSION.split(".")[0])
+    tc_assert_command_str = ("'yum --version tc-iproute2 | head -n 1 | cut -d '.' -f 1 "
+                             "| grep -q '{major}''").format(major=EXPECTED_TC_VERSION.split(".")[0])
     tc_assert_command = ["bash", "-c", tc_assert_command_str]
 
     # We only complain about bad tc versions if we are actually setting delays.

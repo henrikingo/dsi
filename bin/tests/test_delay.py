@@ -41,34 +41,34 @@ class DelayNodeTestCase(unittest.TestCase):
         node.add("fake_ip_str_3", zero_delay_spec)
 
         expected = [
-            ["bash", "-c", "sudo tc qdisc add dev eth0 root handle 1: htb default 1"],
+            ["bash", "-c", "'sudo tc qdisc add dev eth0 root handle 1: htb default 1'"],
             [
                 "bash", "-c",
-                "sudo tc class add dev eth0 parent 1: classid 1:1 htb rate 100tbit prio 0"
+                "'sudo tc class add dev eth0 parent 1: classid 1:1 htb rate 100tbit prio 0'"
             ],
             [
                 "bash", "-c",
-                "sudo tc class add dev eth0 parent 1: classid 1:2 htb rate 100tbit prio 0"
-            ], ["bash", "-c", "sudo tc qdisc add dev eth0 parent 1:2 netem delay 0ms 0ms"],
+                "'sudo tc class add dev eth0 parent 1: classid 1:2 htb rate 100tbit prio 0'"
+            ], ["bash", "-c", "'sudo tc qdisc add dev eth0 parent 1:2 netem delay 0ms 0ms'"],
             [
                 "bash", "-c",
-                "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_1 flowid 1:2"
+                "'sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_1 flowid 1:2'"
             ],
             [
                 "bash", "-c",
-                "sudo tc class add dev eth0 parent 1: classid 1:3 htb rate 100tbit prio 0"
-            ], ["bash", "-c", "sudo tc qdisc add dev eth0 parent 1:3 netem delay 100ms 5ms"],
+                "'sudo tc class add dev eth0 parent 1: classid 1:3 htb rate 100tbit prio 0'"
+            ], ["bash", "-c", "'sudo tc qdisc add dev eth0 parent 1:3 netem delay 100ms 5ms'"],
             [
                 "bash", "-c",
-                "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_2 flowid 1:3"
+                "'sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_2 flowid 1:3'"
             ],
             [
                 "bash", "-c",
-                "sudo tc class add dev eth0 parent 1: classid 1:4 htb rate 100tbit prio 0"
-            ], ["bash", "-c", "sudo tc qdisc add dev eth0 parent 1:4 netem delay 0ms 0ms"],
+                "'sudo tc class add dev eth0 parent 1: classid 1:4 htb rate 100tbit prio 0'"
+            ], ["bash", "-c", "'sudo tc qdisc add dev eth0 parent 1:4 netem delay 0ms 0ms'"],
             [
                 "bash", "-c",
-                "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_3 flowid 1:4"
+                "'sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_3 flowid 1:4'"
             ]
         ]
 
@@ -90,42 +90,42 @@ class DelayNodeTestCase(unittest.TestCase):
         node.add("fake_ip_str_4", nonzero_delay_spec_4)
 
         expected = [
-            ["bash", "-c", "sudo tc qdisc add dev eth0 root handle 1: htb default 1"],
+            ["bash", "-c", "'sudo tc qdisc add dev eth0 root handle 1: htb default 1'"],
             [
                 "bash", "-c",
-                "sudo tc class add dev eth0 parent 1: classid 1:1 htb rate 100tbit prio 0"
+                "'sudo tc class add dev eth0 parent 1: classid 1:1 htb rate 100tbit prio 0'"
             ],
             [
                 "bash", "-c",
-                "sudo tc class add dev eth0 parent 1: classid 1:2 htb rate 100tbit prio 0"
-            ], ["bash", "-c", "sudo tc qdisc add dev eth0 parent 1:2 netem delay 200ms 30ms"],
+                "'sudo tc class add dev eth0 parent 1: classid 1:2 htb rate 100tbit prio 0'"
+            ], ["bash", "-c", "'sudo tc qdisc add dev eth0 parent 1:2 netem delay 200ms 30ms'"],
             [
                 "bash", "-c",
-                "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_1 flowid 1:2"
+                "'sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_1 flowid 1:2'"
             ],
             [
                 "bash", "-c",
-                "sudo tc class add dev eth0 parent 1: classid 1:3 htb rate 100tbit prio 0"
-            ], ["bash", "-c", "sudo tc qdisc add dev eth0 parent 1:3 netem delay 100ms 5ms"],
+                "'sudo tc class add dev eth0 parent 1: classid 1:3 htb rate 100tbit prio 0'"
+            ], ["bash", "-c", "'sudo tc qdisc add dev eth0 parent 1:3 netem delay 100ms 5ms'"],
             [
                 "bash", "-c",
-                "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_2 flowid 1:3"
+                "'sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_2 flowid 1:3'"
             ],
             [
                 "bash", "-c",
-                "sudo tc class add dev eth0 parent 1: classid 1:4 htb rate 100tbit prio 0"
-            ], ["bash", "-c", "sudo tc qdisc add dev eth0 parent 1:4 netem delay 500ms 50ms"],
+                "'sudo tc class add dev eth0 parent 1: classid 1:4 htb rate 100tbit prio 0'"
+            ], ["bash", "-c", "'sudo tc qdisc add dev eth0 parent 1:4 netem delay 500ms 50ms'"],
             [
                 "bash", "-c",
-                "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_3 flowid 1:4"
+                "'sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_3 flowid 1:4'"
             ],
             [
                 "bash", "-c",
-                "sudo tc class add dev eth0 parent 1: classid 1:5 htb rate 100tbit prio 0"
-            ], ["bash", "-c", "sudo tc qdisc add dev eth0 parent 1:5 netem delay 10ms 0ms"],
+                "'sudo tc class add dev eth0 parent 1: classid 1:5 htb rate 100tbit prio 0'"
+            ], ["bash", "-c", "'sudo tc qdisc add dev eth0 parent 1:5 netem delay 10ms 0ms'"],
             [
                 "bash", "-c",
-                "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_4 flowid 1:5"
+                "'sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_str_4 flowid 1:5'"
             ]
         ]
         actual = node.generate_delay_commands()
@@ -148,34 +148,34 @@ class DelayNodeTestCase(unittest.TestCase):
         delay.establish_delays(mocked_host)
 
         expected_calls = [
-            call(["bash", "-c", "uname -r | cut -d '.' -f 1 | grep -q '4'"]),
+            call(["bash", "-c", "'uname -r | cut -d '.' -f 1 | grep -q '4''"]),
             call([
                 "bash", "-c",
-                "yum --version tc-iproute2 | head -n 1 | cut -d '.' -f 1 | grep -q '3'"
+                "'yum --version tc-iproute2 | head -n 1 | cut -d '.' -f 1 | grep -q '3''"
             ]),
-            call(["bash", "-c", "sudo tc qdisc del dev eth0 root"]),
-            call(["bash", "-c", "sudo tc qdisc add dev eth0 root handle 1: htb default 1"]),
+            call(["bash", "-c", "'sudo tc qdisc del dev eth0 root'"]),
+            call(["bash", "-c", "'sudo tc qdisc add dev eth0 root handle 1: htb default 1'"]),
             call([
                 "bash", "-c",
-                "sudo tc class add dev eth0 parent 1: classid 1:1 htb rate 100tbit prio 0"
-            ]),
-            call([
-                "bash", "-c",
-                "sudo tc class add dev eth0 parent 1: classid 1:2 htb rate 100tbit prio 0"
-            ]),
-            call(["bash", "-c", "sudo tc qdisc add dev eth0 parent 1:2 netem delay 700ms 10ms"]),
-            call([
-                "bash", "-c",
-                "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_1 flowid 1:2"
+                "'sudo tc class add dev eth0 parent 1: classid 1:1 htb rate 100tbit prio 0'"
             ]),
             call([
                 "bash", "-c",
-                "sudo tc class add dev eth0 parent 1: classid 1:3 htb rate 100tbit prio 0"
+                "'sudo tc class add dev eth0 parent 1: classid 1:2 htb rate 100tbit prio 0'"
             ]),
-            call(["bash", "-c", "sudo tc qdisc add dev eth0 parent 1:3 netem delay 300ms 0ms"]),
+            call(["bash", "-c", "'sudo tc qdisc add dev eth0 parent 1:2 netem delay 700ms 10ms'"]),
             call([
                 "bash", "-c",
-                "sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_2 flowid 1:3"
+                "'sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_1 flowid 1:2'"
+            ]),
+            call([
+                "bash", "-c",
+                "'sudo tc class add dev eth0 parent 1: classid 1:3 htb rate 100tbit prio 0'"
+            ]),
+            call(["bash", "-c", "'sudo tc qdisc add dev eth0 parent 1:3 netem delay 300ms 0ms'"]),
+            call([
+                "bash", "-c",
+                "'sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst fake_ip_2 flowid 1:3'"
             ]),
         ]
 
@@ -186,7 +186,9 @@ class DelayNodeTestCase(unittest.TestCase):
         mocked_host = MagicMock()
 
         def mocked_run(command):
-            if command == ["bash", "-c", "sudo tc qdisc add dev eth0 root handle 1: htb default 1"]:
+            if command == [
+                    "bash", "-c", "'sudo tc qdisc add dev eth0 root handle 1: htb default 1'"
+            ]:
                 return False
             return True
 
@@ -205,7 +207,7 @@ class DelayNodeTestCase(unittest.TestCase):
         mocked_host = MagicMock()
 
         def mocked_run(command):
-            if command == ["bash", "-c", "uname -r | cut -d '.' -f 1 | grep -q '4'"]:
+            if command == ["bash", "-c", "'uname -r | cut -d '.' -f 1 | grep -q '4''"]:
                 return False
             return True
 
