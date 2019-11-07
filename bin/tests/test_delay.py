@@ -1,6 +1,11 @@
+import os
+import shutil
+
 import unittest
+from contextlib import contextmanager
 from mock import MagicMock, call, patch
 from delay import DelayNode, DelayError, DelayGraph, DelaySpec, EdgeSpec
+from common.config import ConfigDict
 
 BASIC_DELAY_CONFIG = {'default': {'delay_ms': 0, 'jitter_ms': 0}}
 
@@ -579,3 +584,48 @@ class DelayGraphTestCase(unittest.TestCase):
         ]
         self.assertEqual(mocked_delay_node.return_value.add.call_count, len(expected))
         mocked_delay_node.return_value.add.assert_has_calls(expected, any_order=True)
+
+
+# Validates every delay configuration yml.
+class ConfigurationTestCase(unittest.TestCase):
+    def test_validate_delays(self):
+        blacklisted_configs = ['mongodb_setup.atlas.yml']  # Some configs don't have topologies.
+        directory = os.path.join("configurations", "mongodb_setup")
+        errors = []
+
+        # There are a few files that aren't configuration files.
+        names = [name for name in os.listdir(directory) if name.startswith("mongodb_setup")]
+
+        # We need references to provisioning output
+        infrastructure_provisioning = "docs/config-specs/infrastructure_provisioning.out.yml"
+        with copied_file(infrastructure_provisioning, "infrastructure_provisioning.out.yml"):
+            for conf_name in names:
+                if conf_name in blacklisted_configs:
+                    continue
+                with copied_file(os.path.join(directory, conf_name), "mongodb_setup.yml"):
+                    config = ConfigDict('mongodb_setup')
+                    config.load()
+                    mongodb_setup = config['mongodb_setup']
+
+                    topologies = mongodb_setup['topology']
+                    delay_configs = mongodb_setup['network_delays']
+
+                    try:
+                        # The DelayNodes throw exceptions when given bad delays, so we
+                        # can validate the configuration by simply constructing a DelayGraph
+                        # pylint: disable=unused-variable
+                        delays = DelayGraph.from_topologies(topologies, delay_configs)
+                    # pylint: disable=broad-except
+                    except Exception as e:
+                        errors.append(e)
+
+        self.assertEqual(errors, [])
+
+
+@contextmanager
+def copied_file(src, dest):
+    shutil.copyfile(src, dest)
+    try:
+        yield dest
+    finally:
+        os.remove(dest)

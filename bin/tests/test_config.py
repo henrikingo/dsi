@@ -558,8 +558,8 @@ class ConfigDictTestCase(unittest.TestCase):
         """Test that iterators .keys() and .values() work"""
         mycluster = self.conf['mongodb_setup']['topology'][0]
         self.assertEqual(self.conf.keys(), [
-            'system_setup', 'test_control', 'workload_setup', 'runtime_secret', 'bootstrap',
-            'mongodb_setup', 'analysis', 'infrastructure_provisioning', 'runtime'
+            'test_control', 'workload_setup', 'runtime_secret', 'bootstrap', 'mongodb_setup',
+            'analysis', 'infrastructure_provisioning', 'runtime'
         ])
 
         tfvars_dict = dict(
