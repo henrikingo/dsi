@@ -22,12 +22,12 @@ install_requirements = [
     'future==0.16.0',
     'jira==1.0.15',
     'jinja2==2.10',
+    "matplotlib==2.1.0",
+    "numpy==1.13.3",
     'pymongo==3.7.2',
     'python-dateutil~=2.7.0',
     'PyYAML~=5.1',
     'requests~=2.22.0',
-    'signal-processing @ git+ssh://git@github.com/10gen/signal-processing'
-    '@0.2.6',
     'structlog~=19.1.0',
 ]
 setup(
@@ -52,13 +52,6 @@ setup(
             'delete-runner-cluster = aws_tools.entry_points:delete_cluster_for_runner',
             'delete-task-cluster = aws_tools.entry_points:delete_cluster_for_task',
             'delete-placement-groups = aws_tools.entry_points:delete_placement_groups',
-            'detect-changes = analysis.signal_processing_entry_points:DETECT_CHANGES',
-            'detect-outliers = analysis.signal_processing_entry_points:DETECT_OUTLIERS',
-            'etl-jira-mongo = analysis.signal_processing_entry_points:ETL_JIRA_MONGO',
-            'change-points = analysis.signal_processing_entry_points:CHANGE_POINTS',
-            'outliers = analysis.signal_processing_entry_points:OUTLIERS',
-            'etl-evg-mongo = analysis.signal_processing_entry_points:ETL_EVG_MONGO',
-            'compare-algorithms = analysis.signal_processing_entry_points:COMPARE_ALGORITHMS',
         ]
     }
 )

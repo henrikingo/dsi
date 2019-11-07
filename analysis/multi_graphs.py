@@ -12,9 +12,9 @@ import json
 import os
 import sys
 
-import matplotlib.pyplot as pyplot
 import numpy
 import yaml
+import matplotlib.pyplot as pyplot
 
 import deep_dict
 

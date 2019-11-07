@@ -7,9 +7,9 @@ from subprocess import PIPE
 import tempfile
 
 import requests
+from mock import patch, MagicMock
 
 from evergreen import helpers
-from mock import patch, MagicMock
 
 from analysis.evergreen.helpers import GITHUB_API
 from test_lib.fixture_files import FixtureFiles

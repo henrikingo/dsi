@@ -4,8 +4,8 @@ Unit tests for `perf_regression_check.py`.
 
 import os
 import unittest
-from evergreen.history import History
 from mock import patch
+from evergreen.history import History
 
 from test_lib.fixture_files import FixtureFiles
 import perf_regression_check
