@@ -224,6 +224,12 @@ class DelayGraph(object):
     """
     Class representing a graph of delays.
     """
+
+    # The workload client is common to all clusters.
+    client_node = DelayNode()
+    # We need a ConfigDict to set this IP, can be set externally.
+    client_ip = 'workload_client'
+
     def __init__(self, topology, delay_config):
         """
         Extracts configuration information from the topology and delay_config dicts.
@@ -234,6 +240,7 @@ class DelayGraph(object):
 
         self._initialize_graph(topology, False)
         self._extract_delay_config(delay_config)
+        self.graph[DelayGraph.client_ip] = DelayGraph.client_node
 
         self._set_edgewise_delays()
         self._set_default_delays()
@@ -326,3 +333,22 @@ class DelayError(Exception):
               self).__init__(msg if command == "" else msg.format(command=" ".join(command)))
 
         self.command = command
+
+
+class HasDelay(object):
+    """
+    Abstract base class for things that can be delayed.
+    Unless the delay functions are overridden, this function needs a host
+    object to be set at some point. This isn't done at __init__ time to
+    save resources.
+    """
+    def __init__(self, delay_node):
+        self.delay_node = delay_node
+
+    def reset_delays(self):
+        """ Execute commands needed to reset a host's tc delays. """
+        raise NotImplementedError()
+
+    def establish_delays(self):
+        """ Execute tc commands needed to establish delays between cluster hosts. """
+        raise NotImplementedError()

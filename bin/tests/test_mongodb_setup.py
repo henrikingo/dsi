@@ -20,7 +20,12 @@ DEFAULT_CONFIG = {
             'ssh_key_file': '~/.ssh/user_ssh_key.pem'
         },
         'numactl_prefix': 'numactl test',
-        'out': []
+        'out': {
+            'workload_client': [{
+                'public_ip': '1.2.3.4',
+                'private_ip': '5.6.7.8'
+            }]
+        }
     },
     'mongodb_setup': {
         'shutdown_options': {
@@ -128,6 +133,7 @@ class TestMongodbSetup(unittest.TestCase):
                 }]
 
             setup = mongodb_setup.MongodbSetup(config=test_config)
+            setup.downloader = mock.MagicMock()
             setup.downloader.download_and_extract = mock.MagicMock(name='downloader')
 
             setup._start = mock.MagicMock(name='_start')

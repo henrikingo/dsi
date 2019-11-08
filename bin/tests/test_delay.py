@@ -263,7 +263,7 @@ class DelayGraphTestCase(unittest.TestCase):
             'private_ip': '10.2.0.1',
         }
         delay_graph = DelayGraph(topology, BASIC_DELAY_CONFIG)
-        expected = ['10.2.0.1']
+        expected = ['10.2.0.1', 'workload_client']
         for private_ip in delay_graph.graph:
             self.assertTrue(private_ip in expected)
         self.assertEqual(len(expected), len(delay_graph.graph))
@@ -284,7 +284,7 @@ class DelayGraphTestCase(unittest.TestCase):
             }]
         }
         delay_graph = DelayGraph(topology, BASIC_DELAY_CONFIG)
-        expected = ['10.2.0.1', '10.2.0.2', '10.2.0.3']
+        expected = ['10.2.0.1', '10.2.0.2', '10.2.0.3', 'workload_client']
         for private_ip in delay_graph.graph:
             self.assertTrue(private_ip in expected)
         self.assertEqual(len(expected), len(delay_graph.graph))
@@ -356,6 +356,7 @@ class DelayGraphTestCase(unittest.TestCase):
         }
         delay_graph = DelayGraph(topology, BASIC_DELAY_CONFIG)
         expected = ['10.2.0.{num}'.format(num=i) for i in xrange(1, 16)]
+        expected.append('workload_client')
         for private_ip in delay_graph.graph:
             self.assertTrue(private_ip in expected)
         self.assertEqual(len(expected), len(delay_graph.graph))
@@ -376,20 +377,28 @@ class DelayGraphTestCase(unittest.TestCase):
                 'private_ip': '10.2.0.3'
             }]
         }
+
+        DelayGraph.client_node = mocked_delay_node.return_value
         delay_graph = DelayGraph(topology, BASIC_DELAY_CONFIG)
-        self.assertEqual(len(delay_graph.graph), 3)
+        self.assertEqual(len(delay_graph.graph), 4)
         default_delay_spec = DelaySpec({'delay_ms': 0, 'jitter_ms': 0})
         self.assertEqual(delay_graph.default_delay.delay_ms, default_delay_spec.delay_ms)
         self.assertEqual(delay_graph.default_delay.jitter_ms, default_delay_spec.jitter_ms)
 
-        # Each IP gets called twice: once for each of the other nodes.
+        # Each IP gets called thrice: once for each of the other nodes.
         expected = [
             call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
+            call('workload_client', delay_graph.default_delay, defer_to_edgewise=True),
+            call('workload_client', delay_graph.default_delay, defer_to_edgewise=True),
+            call('workload_client', delay_graph.default_delay, defer_to_edgewise=True),
         ]
         self.assertEqual(mocked_delay_node.return_value.add.call_count, len(expected))
         mocked_delay_node.return_value.add.assert_has_calls(expected, any_order=True)
@@ -412,20 +421,27 @@ class DelayGraphTestCase(unittest.TestCase):
         }
         delay_config = {'default': {'delay_ms': 100, 'jitter_ms': 10}, 'edges': []}
 
+        DelayGraph.client_node = mocked_delay_node.return_value
         delay_graph = DelayGraph(topology, delay_config)
-        self.assertEqual(len(delay_graph.graph), 3)
+        self.assertEqual(len(delay_graph.graph), 4)
         delay_spec = DelaySpec({'delay_ms': 100, 'jitter_ms': 10})
         self.assertEqual(delay_graph.default_delay.delay_ms, delay_spec.delay_ms)
         self.assertEqual(delay_graph.default_delay.jitter_ms, delay_spec.jitter_ms)
 
-        # Each IP gets called twice: once for each of the other nodes.
+        # Each IP gets called thrice: once for each of the other nodes.
         expected = [
             call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
+            call('workload_client', delay_graph.default_delay, defer_to_edgewise=True),
+            call('workload_client', delay_graph.default_delay, defer_to_edgewise=True),
+            call('workload_client', delay_graph.default_delay, defer_to_edgewise=True),
         ]
         self.assertEqual(mocked_delay_node.return_value.add.call_count, len(expected))
         mocked_delay_node.return_value.add.assert_has_calls(expected, any_order=True)
@@ -461,8 +477,9 @@ class DelayGraphTestCase(unittest.TestCase):
             }]
         }
 
+        DelayGraph.client_node = mocked_delay_node.return_value
         delay_graph = DelayGraph(topology, delay_config)
-        self.assertEqual(len(delay_graph.graph), 3)
+        self.assertEqual(len(delay_graph.graph), 4)
 
         expected_edge_spec = EdgeSpec({
             'node1': '10.2.0.1',
@@ -480,17 +497,23 @@ class DelayGraphTestCase(unittest.TestCase):
         self.assertEqual(actual_delay_spec.delay_ms, expected_delay_spec.delay_ms)
         self.assertEqual(actual_delay_spec.jitter_ms, expected_delay_spec.jitter_ms)
 
-        # Each IP gets called twice: once for each of the other nodes.
+        # Each IP gets called once for each of the other nodes and the workload client.
         # The nodes along the edge each get called an additional time.
         expected = [
             call('10.2.0.1', actual_delay_spec),
             call('10.2.0.2', actual_delay_spec),
             call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
+            call('workload_client', delay_graph.default_delay, defer_to_edgewise=True),
+            call('workload_client', delay_graph.default_delay, defer_to_edgewise=True),
+            call('workload_client', delay_graph.default_delay, defer_to_edgewise=True)
         ]
         self.assertEqual(mocked_delay_node.return_value.add.call_count, len(expected))
         mocked_delay_node.return_value.add.assert_has_calls(expected, any_order=True)
@@ -533,8 +556,9 @@ class DelayGraphTestCase(unittest.TestCase):
             }]
         }
 
+        DelayGraph.client_node = mocked_delay_node.return_value
         delay_graph = DelayGraph(topology, delay_config)
-        self.assertEqual(len(delay_graph.graph), 3)
+        self.assertEqual(len(delay_graph.graph), 4)
 
         expected_edge_spec1 = EdgeSpec({
             'node1': '10.2.0.1',
@@ -568,7 +592,7 @@ class DelayGraphTestCase(unittest.TestCase):
         self.assertEqual(actual_delay_spec2.delay_ms, expected_delay_spec2.delay_ms)
         self.assertEqual(actual_delay_spec2.jitter_ms, expected_delay_spec2.jitter_ms)
 
-        # Each IP gets called twice: once for each of the other nodes.
+        # Each IP gets called thrice: once for each of the other nodes.
         # The nodes along the edge each get called an additional time.
         expected = [
             call('10.2.0.1', actual_delay_spec1),
@@ -577,10 +601,16 @@ class DelayGraphTestCase(unittest.TestCase):
             call('10.2.0.3', actual_delay_spec2),
             call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.1', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.2', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
             call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
+            call('10.2.0.3', delay_graph.default_delay, defer_to_edgewise=True),
+            call('workload_client', delay_graph.default_delay, defer_to_edgewise=True),
+            call('workload_client', delay_graph.default_delay, defer_to_edgewise=True),
+            call('workload_client', delay_graph.default_delay, defer_to_edgewise=True),
         ]
         self.assertEqual(mocked_delay_node.return_value.add.call_count, len(expected))
         mocked_delay_node.return_value.add.assert_has_calls(expected, any_order=True)

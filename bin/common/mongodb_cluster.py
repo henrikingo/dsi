@@ -3,20 +3,16 @@ Classes to control MongoDB clusters.
 """
 
 from functools import partial
-import json
 import logging
 import os
 import signal
 import sys
 import time
 
-import yaml
-
 from common import host_factory
-from common.host_utils import ssh_user_and_key_file
-from common.models.host_info import HostInfo
-from common.config import copy_obj
 from common.thread_runner import run_threads
+from common.mongo_config import NodeTopologyConfig, ReplTopologyConfig, ShardedTopologyConfig
+from delay import HasDelay
 
 # pylint: disable=too-many-instance-attributes
 import mongodb_setup_helpers
@@ -25,41 +21,45 @@ LOG = logging.getLogger(__name__)
 
 # Remote files that need to be created.
 # NB: these could/should come from defaults.yml
-DEFAULT_JOURNAL_DIR = '/media/ephemeral1/journal'
 DEFAULT_MEMBER_PRIORITY = 1
-DEFAULT_CSRS_NAME = 'configSvrRS'
 
 
 def create_cluster(topology, delay_graph, config):
     """
     Create MongoNode, ReplSet, or ShardCluster from topology config
     :param topology: topology config to create - see MongoNode, ReplSet, ShardedCluster docs
+    :param delay_graph: DelayGraph object for the cluster.
     :param config: root ConfigDict
     """
     cluster_type = topology['cluster_type']
     LOG.info('creating topology: %s', cluster_type)
     if cluster_type == 'standalone':
-        return MongoNode(topology=topology, delay_graph=delay_graph, config=config)
+        node_topology = NodeTopologyConfig(topology=topology,
+                                           root_config=config,
+                                           delay_graph=delay_graph)
+        return MongoNode(node_topology)
     if cluster_type == 'replset':
-        return ReplSet(topology=topology, delay_graph=delay_graph, config=config)
+        repl_topology = ReplTopologyConfig(topology=topology,
+                                           root_config=config,
+                                           delay_graph=delay_graph)
+        return ReplSet(repl_topology)
     if cluster_type == 'sharded_cluster':
-        return ShardedCluster(topology=topology, delay_graph=delay_graph, config=config)
+        sharded_topology = ShardedTopologyConfig(topology=topology,
+                                                 root_config=config,
+                                                 delay_graph=delay_graph)
+        return ShardedCluster(sharded_topology)
     LOG.fatal('unknown cluster_type: %s', cluster_type)
     return sys.exit(1)
 
 
-class MongoCluster(object):
+class MongoCluster(HasDelay):
     """ Abstract base class for mongo clusters """
-    def __init__(self, topology, delay_graph, config):
+    def __init__(self, auth_settings):
         """
-        :param topology: Cluster specific configuration
-        :param ConfigDict config: root ConfigDict
+        :param auth_settings: The username and password needed to connect to this cluster.
 
         """
-        self.config = config
-        self.topology = topology
-        self.delay_graph = delay_graph
-        self.spawn_using = config['test_control'].get('spawn_using', 'ssh')
+        self.auth_settings = auth_settings
 
     def wait_until_up(self):
         """ Checks to make sure node is up and accessible"""
@@ -106,15 +106,7 @@ class MongoCluster(object):
         users are added, the cluster is rebooted with authentication enabled and any connections
         from there on out must use the authentication string.
         """
-        mongodb_setup_helpers.add_user(self, self.config)
-
-    def reset_delays(self):
-        """ Execute commands needed to reset a host's tc delays. """
-        raise NotImplementedError()
-
-    def establish_delays(self):
-        """ Execute tc commands needed to establish delays between cluster hosts. """
-        raise NotImplementedError()
+        mongodb_setup_helpers.add_user(self, self.auth_settings)
 
     def __str__(self):
         """ String describing the cluster """
@@ -127,72 +119,21 @@ class MongoCluster(object):
 
 class MongoNode(MongoCluster):
     """Represents a mongo[ds] program on a remote host."""
-    def __init__(self, topology, delay_graph, config, is_mongos=False):
+    def __init__(self, topology):
         """
-        :param topology: Read-only options for mongo[ds], example:
-        {
-            'public_ip': '127.0.0.1',
-            'private_ip': '127.0.0.1',
-            'config_file': {},
-            'mongo_dir': '/usr/bin',
-            'priority': 10,
-            'clean_logs': True,
-            'clean_db_dir': True,
-            'use_journal_mnt': True
-        }
-        :param config: root ConfigDict
-        :param is_mongos: True if this node is a mongos
+        :param topology: A NodeTopologyConfig object.
         """
-        super(MongoNode, self).__init__(topology, delay_graph, config)
+        super(MongoNode, self).__init__(topology.auth_settings)
 
-        self.mongo_program = 'mongos' if is_mongos else 'mongod'
-        self.public_ip = topology['public_ip']
-        self.private_ip = topology.get('private_ip', self.public_ip)
-        mongodb_setup = self.config['mongodb_setup']
-        # Get the mongo_dir from the topology if set, otherwise from the mongo_dir.
-        # It now must come from configuration.
-        self.bin_dir = os.path.join(topology.get('mongo_dir', mongodb_setup.get('mongo_dir')),
-                                    'bin')
-        self.tls_settings = mongodb_setup_helpers.mongodb_tls_settings(topology['config_file'])
-
-        # NB: we could specify these defaults in default.yml if not already!
-        # TODO: https://jira.mongodb.org/browse/PERF-1246 For the next 3 configs, ConfigDict does
-        #       not "magically" combine the common setting with the node specific one (topology vs
-        #       mongodb_setup). We should add that to ConfigDict to make these lines as simple as
-        #       the rest.
-        self.clean_logs = topology.get('clean_logs', mongodb_setup.get('clean_logs', True))
-        self.clean_db_dir = topology.get('clean_db_dir', (not is_mongos)
-                                         and mongodb_setup.get('clean_db_dir', True))
-
-        self.use_journal_mnt = topology.get('use_journal_mnt', not is_mongos)
-        self.mongo_config_file = copy_obj(topology.get('config_file', {}))
-        self.logdir = os.path.dirname(self.mongo_config_file['systemLog']['path'])
-        self.port = self.mongo_config_file['net']['port']
+        self.mongo_config = topology.mongo_config
+        self.net_config = topology.net_config
 
         self.auth_enabled = False
-
-        if is_mongos:
-            self.dbdir = None
-        else:
-            self.dbdir = self.mongo_config_file['storage']['dbPath']
-
-        self.numactl_prefix = \
-            self.config['infrastructure_provisioning'].get('numactl_prefix', '')
-
-        # The numactl_prefix is used in shell scripts directly invoked from yaml configs as a shell
-        # variable, so it has to be a string. Ideally we want the configuration for numactl to
-        # already be a list of commandline arguments.
-        if isinstance(self.numactl_prefix, basestring):
-            self.numactl_prefix = self.numactl_prefix.split(' ')
-
-        self.shutdown_options = json.dumps(
-            copy_obj(self.config['mongodb_setup']['shutdown_options']))
 
         # Accessed via @property
         self._host = None
 
-        my_ip = self._compute_host_info().private_ip
-        self.delay_node = self.delay_graph.get_node(my_ip)
+        self.delay_node = topology.delay_node
 
     # This is a @property versus a plain self.host var for 2 reasons:
     # 1. We don't need to be doing SSH stuff or be reading related
@@ -203,24 +144,18 @@ class MongoNode(MongoCluster):
     def host(self):
         """Access to remote or local host."""
         if self._host is None:
-            host_info = self._compute_host_info()
+            host_info = self.net_config.compute_host_info()
             self._host = host_factory.make_host(host_info,
-                                                mongodb_tls_settings=self.tls_settings,
-                                                spawn_using=self.spawn_using)
+                                                mongodb_tls_settings=self.net_config.tls_settings,
+                                                spawn_using=self.net_config.spawn_using)
         return self._host
 
-    def _compute_host_info(self):
-        """Create host wrapper to run commands."""
-        (ssh_user, ssh_key_file) = ssh_user_and_key_file(self.config)
-        return HostInfo(public_ip=self.public_ip,
-                        private_ip=self.private_ip,
-                        ssh_user=ssh_user,
-                        ssh_key_file=ssh_key_file)
-
     def reset_delays(self):
+        """ Overrides the parent method to reset delays. """
         self.delay_node.reset_delays(self.host)
 
     def establish_delays(self):
+        """ Overrides the parent method to establish delays. """
         self.delay_node.establish_delays(self.host)
 
     def wait_until_up(self):
@@ -233,33 +168,19 @@ class MongoNode(MongoCluster):
                 i += 1; }}
             assert(db.serverStatus().ok == 1)'''
         i = 0
-        while not self.run_mongo_shell(js_string.format(self.public_ip)) and i < 10:
+        while not self.run_mongo_shell(js_string.format(self.net_config.public_ip)) and i < 10:
             i += 1
             time.sleep(1)
         if i == 10:
-            LOG.error("Node %s not up at end of wait_until_up", self.public_ip)
+            LOG.error("Node %s not up at end of wait_until_up", self.net_config.public_ip)
             return False
         return True
 
     def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None):
         self.host.kill_mongo_procs()
 
-        if restart_clean_db_dir is not None:
-            _clean_db_dir = restart_clean_db_dir
-        else:
-            _clean_db_dir = self.clean_db_dir
-        _clean_logs = restart_clean_logs if restart_clean_logs is not None else self.clean_logs
-
-        # NB: self.dbdir is None when self.is_mongos is True
-        setup_cmd_args = {
-            'clean_db_dir': _clean_db_dir,
-            'clean_logs': _clean_logs,
-            'dbdir': self.dbdir,
-            'journal_dir': self.config['mongodb_setup'].get('journal_dir', DEFAULT_JOURNAL_DIR),
-            'logdir': self.logdir,
-            'is_mongos': self.mongo_program == 'mongos',
-            'use_journal_mnt': self.use_journal_mnt
-        }
+        setup_cmd_args = self.mongo_config.get_setup_command_args(restart_clean_db_dir,
+                                                                  restart_clean_logs)
         commands = MongoNode._generate_setup_commands(setup_cmd_args)
         return self.host.run(commands)
 
@@ -313,18 +234,20 @@ class MongoNode(MongoCluster):
     # pylint: disable=unused-argument
     def launch_cmd(self, use_numactl=True, enable_auth=False):
         """Returns the command to start this node."""
-        remote_file_name = '/tmp/mongo_port_{0}.conf'.format(self.port)
-        config_contents = yaml.dump(self.mongo_config_file, default_flow_style=False)
-        self.host.create_file(remote_file_name, config_contents)
+        remote_file_name = '/tmp/mongo_port_{0}.conf'.format(self.net_config.port)
+        self.host.create_file(remote_file_name, self.mongo_config.contents)
         self.host.run(['cat', remote_file_name])
 
-        cmd = [os.path.join(self.bin_dir, self.mongo_program), "--config", remote_file_name]
+        cmd = [
+            os.path.join(self.mongo_config.bin_dir, self.mongo_config.mongo_program), "--config",
+            remote_file_name
+        ]
 
-        if use_numactl and self.numactl_prefix:
-            if not isinstance(self.numactl_prefix, list):
+        if use_numactl and self.mongo_config.numactl_prefix:
+            if not isinstance(self.mongo_config.numactl_prefix, list):
                 raise ValueError('numactl_prefix must be a list of commands, given: {}'.format(
-                    self.numactl_prefix))
-            cmd = self.numactl_prefix + cmd
+                    self.mongo_config.numactl_prefix))
+            cmd = self.mongo_config.numactl_prefix + cmd
 
         LOG.debug("cmd is %s", str(cmd))
         return cmd
@@ -354,18 +277,17 @@ class MongoNode(MongoCluster):
             :method:`Host.exec_command`
         :return: True if the mongo shell exits successfully
         """
-        remote_file_name = '/tmp/mongo_port_{0}.js'.format(self.port)
+        remote_file_name = '/tmp/mongo_port_{0}.js'.format(self.net_config.port)
         # Value of auth_enabled changes during the lifetime of a MongoNode, so we have to tell
         # the host about auth settings on a case by case basis.
         if self.auth_enabled:
-            self.host.mongodb_auth_settings = mongodb_setup_helpers.mongodb_auth_settings(
-                self.config)
+            self.host.mongodb_auth_settings = self.auth_settings
         else:
             self.host.mongodb_auth_settings = None
 
         if self.host.exec_mongo_command(js_string,
                                         remote_file_name=remote_file_name,
-                                        connection_string="localhost:" + str(self.port),
+                                        connection_string="localhost:" + str(self.net_config.port),
                                         max_time_ms=max_time_ms) != 0:
             self.dump_mongo_log()
             return False
@@ -374,17 +296,17 @@ class MongoNode(MongoCluster):
     def dump_mongo_log(self):
         """Dump the mongo[ds] log file to the process log"""
         LOG.info('Dumping log for node %s', self.hostport_public())
-        self.host.run(['tail', '-n', '100', self.mongo_config_file['systemLog']['path']])
+        self.host.run(['tail', '-n', '100', self.mongo_config.log_path])
 
     def hostport_private(self):
         """Returns the string representation this host/port."""
-        return '{0}:{1}'.format(self.private_ip, self.port)
+        return '{0}:{1}'.format(self.net_config.private_ip, self.net_config.port)
 
     connection_string_private = hostport_private
 
     def hostport_public(self):
         """Returns the string representation this host/port."""
-        return '{0}:{1}'.format(self.public_ip, self.port)
+        return '{0}:{1}'.format(self.net_config.public_ip, self.net_config.port)
 
     connection_string_public = hostport_public
 
@@ -400,15 +322,17 @@ class MongoNode(MongoCluster):
                 self.auth_enabled = auth_enabled
             for _ in range(retries):
                 self.run_mongo_shell('db.getSiblingDB("admin").shutdownServer({})'.format(
-                    self.shutdown_options),
+                    self.mongo_config.shutdown_options),
                                      max_time_ms=max_time_ms)
                 if self.host.run(['pgrep -l', 'mongo']):
-                    LOG.warning("Mongo %s:%s did not shutdown yet", self.public_ip, self.port)
+                    LOG.warning("Mongo %s:%s did not shutdown yet", self.net_config.public_ip,
+                                self.net_config.port)
                 else:
                     return True
                 time.sleep(1)
         except Exception:  # pylint: disable=broad-except
-            LOG.error("Error shutting down MongoNode at %s:%s", self.public_ip, self.port)
+            LOG.error("Error shutting down MongoNode at %s:%s", self.net_config.public_ip,
+                      self.net_config.port)
         return False
 
     def destroy(self, max_time_ms):
@@ -425,8 +349,8 @@ class MongoNode(MongoCluster):
             # ensure the processes are dead and cleanup
             self.host.kill_mongo_procs()
 
-            if self.dbdir:
-                self.host.run(['rm', '-rf', os.path.join(self.dbdir, 'mongod.lock')])
+            if self.mongo_config.dbdir:
+                self.host.run(['rm', '-rf', os.path.join(self.mongo_config.dbdir, 'mongod.lock')])
 
     def close(self):
         """Closes SSH connections to remote hosts."""
@@ -434,58 +358,23 @@ class MongoNode(MongoCluster):
 
     def __str__(self):
         """String describing this node"""
-        return '{}: {}'.format(self.mongo_program, self.hostport_public())
+        return '{}: {}'.format(self.mongo_config.mongo_program, self.hostport_public())
 
 
 class ReplSet(MongoCluster):
     """Represents a replica set on remote hosts."""
-
-    replsets = 0
-    """Counts the number of ReplSets created."""
-    def __init__(self, topology, delay_graph, config):
+    def __init__(self, topology):
         """
-        :param topology: Read-only options for  replSet, example:
-        {
-            'id': 'replSetName',
-            'configsvr': False,
-            'mongod': [MongoNode topology, ...],
-        }
-        :param config: root ConfigDict
+        :param topology: A ReplTopologyConfig object describing this replica set.
         """
-        super(ReplSet, self).__init__(topology, delay_graph, config)
+        super(ReplSet, self).__init__(topology.auth_settings)
 
-        self.name = topology.get('id')
-        if not self.name:
-            self.name = 'rs{}'.format(ReplSet.replsets)
-            ReplSet.replsets += 1
+        self.topology_config = topology
 
-        self.rs_conf = topology.get('rs_conf', {})
         self.rs_conf_members = []
         self.nodes = []
-
-        for opt in topology['mongod']:
-            # save replica set member configs
-            self.rs_conf_members.append(copy_obj(opt.get('rs_conf_member', {})))
-            # Must add replSetName and clusterRole
-            config_file = copy_obj(opt.get('config_file', {}))
-            config_file = mongodb_setup_helpers.merge_dicts(
-                config_file, {'replication': {
-                    'replSetName': self.name
-                }})
-
-            mongod_opt = copy_obj(opt)
-            if topology.get('configsvr', False):
-                config_file = mongodb_setup_helpers.merge_dicts(
-                    config_file, {'sharding': {
-                        'clusterRole': 'configsvr'
-                    }})
-                # The test infrastructure does not set up a separate journal dir for
-                # the config server machines.
-                mongod_opt['use_journal_mnt'] = False
-
-            mongod_opt['config_file'] = config_file
-            self.nodes.append(
-                MongoNode(topology=mongod_opt, delay_graph=delay_graph, config=self.config))
+        for node_opt in self.topology_config.node_opts:
+            self.nodes.append(MongoNode(node_opt))
 
     def highest_priority_node(self):
         """
@@ -496,16 +385,18 @@ class ReplSet(MongoCluster):
         """
         max_node = self.nodes[0]
         max_priority = -1
-        for node, member in zip(self.nodes, self.rs_conf_members):
+        for node, member in zip(self.nodes, self.topology_config.rs_conf_members):
             if 'priority' in member and member['priority'] > max_priority:
                 max_node = node
                 max_priority = member['priority']
         return max_node
 
     def reset_delays(self):
+        """ Overrides grandparent method for resetting delays. """
         run_threads([node.reset_delays for node in self.nodes], daemon=True)
 
     def establish_delays(self):
+        """ Overrides grandparent method for setting delays. """
         run_threads([node.establish_delays for node in self.nodes], daemon=True)
 
     def wait_until_up(self):
@@ -524,7 +415,7 @@ class ReplSet(MongoCluster):
         # Wait for Primary to be up
         primary = self.highest_priority_node()
         if not self.run_mongo_shell(primary_js_string):
-            LOG.error("RS Node %s not up as primary", primary.public_ip)
+            LOG.error("RS Node %s not up as primary", primary.net_config.public_ip)
             return False
 
         js_string = '''
@@ -535,8 +426,8 @@ class ReplSet(MongoCluster):
                 i += 1; }}'''
         # Make sure all nodes are primary or secondary
         for node in self.nodes:
-            if not node.run_mongo_shell(js_string.format(node.public_ip)):
-                LOG.error("RS Node %s not up at end of wait_until_up", node.public_ip)
+            if not node.run_mongo_shell(js_string.format(node.net_config.public_ip)):
+                LOG.error("RS Node %s not up at end of wait_until_up", node.net_config.public_ip)
                 return False
         return True
 
@@ -562,7 +453,8 @@ class ReplSet(MongoCluster):
             return False
         self._set_explicit_priorities()
         if initialize:
-            if not self.run_mongo_shell(self._init_replica_set()):
+            LOG.info('Configuring replica set: %s', self.topology_config.name)
+            if not self.run_mongo_shell(self.topology_config.get_init_code(self.nodes)):
                 return False
         # Wait for all nodes to be up
         return self.wait_until_up()
@@ -571,31 +463,11 @@ class ReplSet(MongoCluster):
         """To make other things easier, we set explicit priorities for all replica set nodes."""
         # Give the first host the highest priority so it will become
         # primary. This is the default behavior.
-        if not 'priority' in self.rs_conf_members[0]:
-            self.rs_conf_members[0]['priority'] = DEFAULT_MEMBER_PRIORITY + 1
-        for member in self.rs_conf_members:
+        if not 'priority' in self.topology_config.rs_conf_members[0]:
+            self.topology_config.rs_conf_members[0]['priority'] = DEFAULT_MEMBER_PRIORITY + 1
+        for member in self.topology_config.rs_conf_members:
             if not 'priority' in member:
                 member['priority'] = DEFAULT_MEMBER_PRIORITY
-
-    def _init_replica_set(self):
-        """Return the JavaScript code to configure the replica set."""
-        LOG.info('Configuring replica set: %s', self.name)
-        config = mongodb_setup_helpers.merge_dicts(self.rs_conf, {'_id': self.name, 'members': []})
-        if self.topology.get('configsvr', False):
-            config['configsvr'] = True
-        for i, node in enumerate(self.nodes):
-            member_conf = mongodb_setup_helpers.merge_dicts(self.rs_conf_members[i], {
-                '_id': i,
-                'host': node.hostport_private()
-            })
-            config['members'].append(member_conf)
-        json_config = json.dumps(config)
-        js_string = '''
-            config = {0};
-            assert.commandWorked(rs.initiate(config),
-                                 "Failed to initiate replica set!");
-            '''.format(json_config)
-        return js_string
 
     def run_mongo_shell(self, js_string, max_time_ms=None):
         """
@@ -614,7 +486,7 @@ class ReplSet(MongoCluster):
         On a replset we set the write conern to the total number of nodes in the replset to ensure
         the user is added to all nodes during setup.
         """
-        mongodb_setup_helpers.add_user(self, self.config, write_concern=len(self.nodes))
+        mongodb_setup_helpers.add_user(self, self.auth_settings, write_concern=len(self.nodes))
 
     def shutdown(self, max_time_ms, auth_enabled=None, retries=20):
         """Shutdown gracefully
@@ -638,7 +510,7 @@ class ReplSet(MongoCluster):
 
     def connection_string(self, hostport_fn):
         """Returns the connection string using the hostport_fn function"""
-        rs_str = ['{0}/{1}'.format(self.name, hostport_fn(self.nodes[0]))]
+        rs_str = ['{0}/{1}'.format(self.topology_config.name, hostport_fn(self.nodes[0]))]
         for node in self.nodes[1:]:
             rs_str.append(hostport_fn(node))
         return ','.join(rs_str)
@@ -658,49 +530,27 @@ class ReplSet(MongoCluster):
 
 class ShardedCluster(MongoCluster):
     """Represents a sharded cluster on remote hosts."""
-    def __init__(self, topology, delay_graph, config):
+    def __init__(self, topology):
         """
-        :param topology: Read-only options for a sharded cluster:
-        {
-            'disable_balancer': False,
-            'configsvr_type': 'csrs',
-            'mongos': [MongoNodeConfig, ...],
-            'configsvr': [MongoNodeConfig, ...],
-            'shard': [ReplSetConfig, ...]
-        }
-        :param config: root ConfigDict
+        :param topology: A ShardedTopologyConfig object representing this sharded cluster.
         """
-        super(ShardedCluster, self).__init__(topology, delay_graph, config)
+        super(ShardedCluster, self).__init__(topology.auth_settings)
 
-        self.disable_balancer = topology.get('disable_balancer', True)
-        self.mongos_opts = topology['mongos']
+        self.sharded_config = topology
 
-        config_type = topology.get('configsvr_type', 'csrs')
-        if config_type != 'csrs':
-            raise NotImplementedError('configsvr_type: {}'.format(config_type))
-
-        config_opt = {'id': DEFAULT_CSRS_NAME, 'configsvr': True, 'mongod': topology['configsvr']}
-        self.config_svr = ReplSet(topology=config_opt, delay_graph=delay_graph, config=config)
+        self.config_svr = ReplSet(self.sharded_config.config_svr_topology)
 
         self.shards = []
         self.mongoses = []
 
-        for topo in topology['shard']:
-            self.shards.append(create_cluster(topology=topo, delay_graph=delay_graph,
-                                              config=config))
+        for node_topology in self.sharded_config.node_shards:
+            self.shards.append(MongoNode(node_topology))
+        for replset_topology in self.sharded_config.repl_shards:
+            self.shards.append(ReplSet(replset_topology))
 
-        for topo in topology['mongos']:
-            # add the connection string for the configdb
-            config_file = copy_obj(topo.get('config_file', {}))
-            configdb_yaml = {'sharding': {'configDB': self.config_svr.connection_string_private()}}
-            config_file = mongodb_setup_helpers.merge_dicts(config_file, configdb_yaml)
-            mongos_opt = copy_obj(topo)
-            mongos_opt['config_file'] = config_file
-            self.mongoses.append(
-                MongoNode(topology=mongos_opt,
-                          delay_graph=delay_graph,
-                          config=self.config,
-                          is_mongos=True))
+        self.sharded_config.create_mongos_topologies(self.config_svr.connection_string_private())
+        for node_topology in self.sharded_config.mongos_topologies:
+            self.mongoses.append(MongoNode(node_topology))
 
     def wait_until_up(self):
         """Checks to make sure sharded cluster is up and
@@ -715,9 +565,10 @@ class ShardedCluster(MongoCluster):
                 i += 1; }}
             assert (db.shards.find().itcount() == {0}) '''
         for mongos in self.mongoses:
-            if not mongos.run_mongo_shell(js_string.format(num_shards, mongos.public_ip)):
+            if not mongos.run_mongo_shell(js_string.format(num_shards,
+                                                           mongos.net_config.public_ip)):
                 LOG.error("Mongos %s does not see right number of shards at end of wait_until_up",
-                          mongos.public_ip)
+                          mongos.net_config.public_ip)
                 return False
         return True
 
@@ -768,7 +619,7 @@ class ShardedCluster(MongoCluster):
         if initialize:
             if not self._add_shards():
                 return False
-        if self.disable_balancer and not self.run_mongo_shell('sh.stopBalancer();'):
+        if self.sharded_config.disable_balancer and not self.run_mongo_shell('sh.stopBalancer();'):
             return False
         return self.wait_until_up()
 
@@ -807,10 +658,12 @@ class ShardedCluster(MongoCluster):
             shard.add_default_users()
 
     def reset_delays(self):
+        """ Overrides grandparent method for establishing delays. """
         all_nodes = self.shards + self.mongoses + [self.config_svr]
         run_threads([node.reset_delays for node in all_nodes], daemon=True)
 
     def establish_delays(self):
+        """ Overrides grandparent method for establishing delays. """
         all_nodes = self.shards + self.mongoses + [self.config_svr]
         run_threads([node.establish_delays for node in all_nodes], daemon=True)
 

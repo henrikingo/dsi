@@ -74,7 +74,7 @@ def mongodb_tls_settings(config_file):
     return MongoDBTLSSettings(ssl['CAFile'], ssl['PEMKeyFile'])
 
 
-def add_user(cluster, config, write_concern=1):
+def add_user(cluster, auth_settings, write_concern=1):
     """
     Database command to add a root user to the given cluster. The username and password of the user
     are found in the config file.
@@ -95,10 +95,9 @@ def add_user(cluster, config, write_concern=1):
             wtimeout: 10000
           });''')
 
-    add_user_script = script_template.render(
-        user=config['mongodb_setup']['authentication']['username'],
-        password=config['mongodb_setup']['authentication']['password'],
-        wc=write_concern)
+    add_user_script = script_template.render(user=auth_settings.mongo_user,
+                                             password=auth_settings.mongo_password,
+                                             wc=write_concern)
     cluster.run_mongo_shell(add_user_script)
 
 
