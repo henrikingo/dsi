@@ -46,6 +46,12 @@ def parse_command_line(config, args=None):
     # These options are ignored but allowed for backward compatibility
     parser.add_argument('--production', action='store_true', default=False, help='(Ignored)')
     parser.add_argument('-v', '--verbose', action='store_true', help='(Ignored, use -d instead.)')
+
+    parser.add_argument('-l',
+                        '--symlink',
+                        action='store_true',
+                        default=False,
+                        help='Symlink files instead of copying them.')
     args = parser.parse_args(args)
 
     setup_logging(args.debug, args.log_file)  # pylint: disable=no-member
@@ -54,6 +60,8 @@ def parse_command_line(config, args=None):
         config['bootstrap_file'] = args.bootstrap_file
     if args.directory:
         config['directory'] = args.directory
+    if args.symlink:
+        config['symlink'] = args.symlink
     return config
 
 
@@ -85,7 +93,8 @@ def copy_config_files(dsipath, config, directory):
         _warn_if_overwriting(target_file)
         #pylint: disable=broad-except
         try:
-            shutil.copyfile(source_file, target_file)
+            copy_method = os.symlink if config['symlink'] else shutil.copyfile
+            copy_method(source_file, target_file)
             LOGGER.debug("Copied file to work directory",
                          source_file=source_file,
                          target_file=target_file)

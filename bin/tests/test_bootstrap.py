@@ -80,11 +80,12 @@ class TestBootstrap(unittest.TestCase):
         """
         args = [
             '--directory', 'test_directory', '--debug', '--bootstrap-file', './test/bootstrap.yml',
-            '--log-file', 'log.txt', '--verbose'
+            '--log-file', 'log.txt', '--verbose', '--symlink'
         ]
         master_config = {}
         master_config['directory'] = 'test_directory'
         master_config['bootstrap_file'] = './test/bootstrap.yml'
+        master_config['symlink'] = True
         test_config = {}
         test_config = bootstrap.parse_command_line(test_config, args)
         self.assertEqual(test_config, master_config)
@@ -95,11 +96,12 @@ class TestBootstrap(unittest.TestCase):
         """
         args = [
             '--directory', 'test_directory', '-d', '-b', './test/bootstrap.yml', '--log-file',
-            'log.txt', '-v'
+            'log.txt', '-v', '-l'
         ]
         master_config = {}
         master_config['directory'] = 'test_directory'
         master_config['bootstrap_file'] = './test/bootstrap.yml'
+        master_config['symlink'] = True
         test_config = {}
         test_config = bootstrap.parse_command_line(test_config, args)
         self.assertEqual(test_config, master_config)
@@ -112,7 +114,7 @@ class TestBootstrap(unittest.TestCase):
         """
         Testing copy_config_files moves between dummy directories
         """
-        test_config = {}
+        test_config = {'symlink': False}
         test_dsipath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_dsipath')
         test_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_directory')
         os.makedirs(os.path.join(test_dsipath, 'configurations', 'infrastructure_provisioning'))
