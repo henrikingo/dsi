@@ -93,7 +93,8 @@ def copy_config_files(dsipath, config, directory):
         _warn_if_overwriting(target_file)
         #pylint: disable=broad-except
         try:
-            copy_method = os.symlink if config['symlink'] else shutil.copyfile
+            copy_method = os.symlink if 'symlink' in config and config[
+                'symlink'] else shutil.copyfile
             copy_method(source_file, target_file)
             LOGGER.debug("Copied file to work directory",
                          source_file=source_file,
