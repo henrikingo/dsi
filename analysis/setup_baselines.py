@@ -73,8 +73,8 @@ def patch_perf_yaml_strings(perfyaml, version_link, shell_link):
     outyaml = copy.deepcopy(perfyaml)  # Don't change the input dictionary
 
     # Update download links
-    outyaml['functions']['start server'][1]['params']['remote_file'] = version_link
-    outyaml['functions']['start server'][2]['params']['remote_file'] = shell_link
+    outyaml['functions']['start server'][0]['params']['remote_file'] = version_link
+    outyaml['functions']['start server'][1]['params']['remote_file'] = shell_link
 
     return remove_dependencies(outyaml)
 

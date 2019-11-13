@@ -19,6 +19,7 @@
 # you have https:// in your link, you need to remove the leading
 # characters
 mongod_links:
+  4.2.1: perf/performance_4.2_edf6d45851c0b9ee15548f0f847df141764a317e/edf6d45851c0b9ee15548f0f847df141764a317e/mongod-performance_4.2_edf6d45851c0b9ee15548f0f847df141764a317e
   4.0.0: perf/performance_4.0_3b07af3d4f471ae89e8186d33bbb1d5259597d51/3b07af3d4f471ae89e8186d33bbb1d5259597d51/mongod-performance_4.0_3b07af3d4f471ae89e8186d33bbb1d5259597d51
   3.6.5: perf/performance_3.6_a20ecd3e3a174162052ff99913bc2ca9a839d618/a20ecd3e3a174162052ff99913bc2ca9a839d618/mongod-performance_3.6_a20ecd3e3a174162052ff99913bc2ca9a839d618
   3.4.15: perf-3.4/performance_3.4_52e5b5fbaa3a2a5b1a217f5e647b5061817475f9/52e5b5fbaa3a2a5b1a217f5e647b5061817475f9/mongod-performance_3.4_52e5b5fbaa3a2a5b1a217f5e647b5061817475f9
@@ -49,7 +50,8 @@ mongod_flags:
 
 # These shell versions should be updated to something recent when reused.
 mongo_shells:
-  performance: perf/performance_e09f62442c68cd55825aaae1a8901a400d7164a6/e09f62442c68cd55825aaae1a8901a400d7164a6/mongo-performance_e09f62442c68cd55825aaae1a8901a400d7164a6
+  performance: perf/performance_51cb15e996714418004016473ae3ce08c46455e7/51cb15e996714418004016473ae3ce08c46455e7/mongo-performance_51cb15e996714418004016473ae3ce08c46455e7
+  performance-4.2: perf/performance_4.2_edf6d45851c0b9ee15548f0f847df141764a317e/edf6d45851c0b9ee15548f0f847df141764a317e/mongo-performance_4.2_edf6d45851c0b9ee15548f0f847df141764a317e
   performance-4.0: perf/performance_4.0_b7ae2f196e132302fbd409bd6024a1f5063da2f0/b7ae2f196e132302fbd409bd6024a1f5063da2f0/mongo-performance_4.0_b7ae2f196e132302fbd409bd6024a1f5063da2f0
   performance-3.6: perf/performance_3.6_3b1d9e47493ca10fb99899cd5aa4a792249330c0/3b1d9e47493ca10fb99899cd5aa4a792249330c0/mongo-performance_3.6_3b1d9e47493ca10fb99899cd5aa4a792249330c0
   performance-3.4: perf-3.4/performance_3.4_0d6a9242c11b99ddadcfb6e86a850b6ba487530a/0d6a9242c11b99ddadcfb6e86a850b6ba487530a/mongo-performance_3.4_0d6a9242c11b99ddadcfb6e86a850b6ba487530a

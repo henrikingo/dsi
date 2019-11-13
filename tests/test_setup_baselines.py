@@ -3,7 +3,6 @@ Unit tests for `setup_baselines.py`.
 """
 
 from __future__ import print_function
-import copy
 import os
 import textwrap
 import unittest
@@ -32,166 +31,6 @@ class TestSetupBaselines(unittest.TestCase):
         '''
         self.perfyaml = FIXTURE_FILES.load_yaml_file('perf.yml')
         self.sysperfyaml = FIXTURE_FILES.load_yaml_file('system_perf.yml')
-
-    def test_remove_dependencies(self):
-        ''' Test remove_dependencies with simple input '''
-
-        input_object = {
-            'functions': {
-                'start server': [{
-                    'params': {
-                        'remote_file': 'original_mongod'
-                    }
-                }, {
-                    'params': {
-                        'remote_file': 'original_mongo'
-                    }
-                }]
-            },
-            'tasks': [{
-                'name':
-                    'perf test before',
-                'depends_on': [{
-                    'name': 'other dep before',
-                    'variant': 'some variant'
-                }, {
-                    'name': 'compile'
-                }, {
-                    'name': 'other dep after',
-                    'variant': 'some variant'
-                }]
-            }, {
-                'name': 'compile'
-            }, {
-                'name':
-                    'perf test after',
-                'depends_on': [{
-                    'name': 'other dep before'
-                }, {
-                    'name': 'compile',
-                    'variant': 'some variant'
-                }, {
-                    'name': 'other dep after'
-                }]
-            }, {
-                'name': 'perf test only depends on compile',
-                'depends_on': [{
-                    'name': 'compile',
-                    'variant': 'some variant'
-                }]
-            }],
-            'buildvariants': [{
-                'name': 'compile build variant',
-                'tasks': [{
-                    'name': 'compile'
-                }]
-            }, {
-                'name':
-                    'perf test build variant',
-                'tasks': [{
-                    'name': 'perf test'
-                }],
-                'depends_on': [{
-                    'name': 'other dep before'
-                }, {
-                    'name': 'compile',
-                    'variant': 'some variant'
-                }, {
-                    'name': 'other dep after',
-                    'variant': 'some variant'
-                }]
-            }, {
-                'name': 'perf test only depends on compile build variant',
-                'tasks': [{
-                    'name': 'perf test'
-                }],
-                'depends_on': [{
-                    'name': 'compile',
-                    'variant': 'some variant'
-                }, ]
-            }]
-        }
-
-        expected_output = {
-            'functions': {
-                'start server': [{
-                    'params': {
-                        'remote_file': 'original_mongod'
-                    }
-                }, {
-                    'params': {
-                        'remote_file': 'original_mongo'
-                    }
-                }]
-            },
-            'tasks': [
-                {
-                    'name':
-                        'perf test before',
-                    'depends_on': [{
-                        'name': 'other dep before',
-                        'variant': 'some variant'
-                    }, {
-                        'name': 'other dep after',
-                        'variant': 'some variant'
-                    }]
-                },
-                # The setup_baselines.remove_dependencies() function removes the "compile" task from
-                # the list of "depends_on" tasks but doesn't actually remove the "compile" task itself.
-                # This is acceptable because the actual etc/perf.yml and etc/system_perf.yml project
-                # configurations have a separate build variant for the "compile" task.
-                {
-                    'name': 'compile'
-                },
-                {
-                    'name': 'perf test after',
-                    'depends_on': [{
-                        'name': 'other dep before'
-                    }, {
-                        'name': 'other dep after'
-                    }]
-                },
-                {
-                    'name': 'perf test only depends on compile'
-                }
-            ],
-            'buildvariants': [{
-                'name': 'compile build variant',
-                'tasks': [{
-                    'name': 'compile'
-                }]
-            }, {
-                'name':
-                    'perf test build variant',
-                'tasks': [{
-                    'name': 'perf test'
-                }],
-                'depends_on': [{
-                    'name': 'other dep before'
-                }, {
-                    'name': 'other dep after',
-                    'variant': 'some variant'
-                }]
-            }, {
-                'name': 'perf test only depends on compile build variant',
-                'tasks': [{
-                    'name': 'perf test'
-                }]
-            }]
-        }
-
-        input_copy = copy.deepcopy(input_object)
-        output_object = setup_baselines.remove_dependencies(input_object)
-
-        # We want to show the full diff for the assertions we make below.
-        # pylint: disable=invalid-name
-        self.maxDiff = None
-
-        # Verify that the input wasn't modified.
-        self.assertEqual(input_object, input_copy)
-
-        # Check output is correct.
-        self.assertEqual(expected_output, output_object)
 
     def test_patch_sysperf_mongod_link(self):
         '''
@@ -254,54 +93,6 @@ class TestSetupBaselines(unittest.TestCase):
         print(script)
         self.assertEqual(script, expected)
 
-    def test_patchperfyamlstringssimple(self):
-        '''
-        Test patch_perf_yaml_strings with simple input
-        '''
-
-        input_object = {
-            'functions': {
-                'start server': [
-                    None, {
-                        'params': {
-                            'remote_file': 'original_mongod'
-                        }
-                    }, {
-                        'params': {
-                            'remote_file': 'original_mongo'
-                        }
-                    }
-                ]
-            },
-            'tasks': [{
-                'depends_on': [{
-                    'name': 'foo'
-                }, {
-                    'name': 'compile'
-                }]
-            }]
-        }
-        output_object = setup_baselines.patch_perf_yaml_strings(input_object, 'new_mongod',
-                                                                'new_mongo')
-        # Check that input is unchanged
-        self.assertEqual(input_object['functions']['start server'][1]['params']['remote_file'],
-                         'original_mongod')
-        self.assertEqual(input_object['functions']['start server'][2]['params']['remote_file'],
-                         'original_mongo')
-        self.assertEqual(input_object['tasks'][0]['depends_on'][0]['name'], 'foo')
-        self.assertEqual(input_object['tasks'][0]['depends_on'][1]['name'], 'compile')
-
-        # Check output is correct
-        self.assertTrue('functions' in output_object)
-        self.assertTrue('start server' in output_object['functions'])
-        self.assertEqual(output_object['functions']['start server'][1]['params']['remote_file'],
-                         'new_mongod')
-        self.assertEqual(output_object['functions']['start server'][2]['params']['remote_file'],
-                         'new_mongo')
-        self.assertEqual(output_object['tasks'][0]['depends_on'][0]['name'], 'foo')
-        # Length should be 1, because compile dependency was removed.
-        self.assertEqual(len(output_object['tasks'][0]['depends_on']), 1)
-
     def test_get_base_version(self):
         '''
         Test get_base_version
@@ -310,23 +101,6 @@ class TestSetupBaselines(unittest.TestCase):
         self.assertEqual(setup_baselines.get_base_version('3.2.1'), '3.2')
         self.assertEqual(setup_baselines.get_base_version('3.2'), '3.2')
         self.assertEqual(setup_baselines.get_base_version('3.4.2'), '3.4')
-
-    def test_patchstringwithfile(self):
-        '''
-        Test patch_perf_yam_strings with input from file
-        '''
-
-        # update version_link and shell_link
-        output_object = setup_baselines.patch_perf_yaml_strings(self.perfyaml, 'new_mongod',
-                                                                'new_mongo')
-        reference_out = FIXTURE_FILES.load_yaml_file('perf.yml.simple.patch.ok')
-        reference_in = FIXTURE_FILES.load_yaml_file('perf.yml')
-
-        # Check that input is unchanged
-        self.assertEqual(reference_in, self.perfyaml)
-
-        # Check that return result is properly changed.
-        self.assertEqual(reference_out, output_object)
 
     def test_patch_flags(self):
         '''
@@ -347,24 +121,6 @@ class TestSetupBaselines(unittest.TestCase):
         updater = BaselineUpdaterTest()
         with self.assertRaises(setup_baselines.UnsupportedBaselineError):
             updater.patch_perf_yaml(self.perfyaml, '1.6.0', 'performance')
-
-    def test_patch_all(self):
-        '''
-        Test the patch_perf_yaml method on BaselineUpdater
-        '''
-        updater = BaselineUpdaterTest()
-
-        modified = updater.patch_perf_yaml(self.perfyaml, '3.2.10', 'performance')
-        reference = FIXTURE_FILES.load_yaml_file('perf.yml.master.3.2.10.ok')
-        self.assertEqual(modified, reference, 'Patch for 3.2.10 on master')
-        modified = updater.patch_perf_yaml(self.perfyaml, '3.0.14', 'performance')
-        reference = FIXTURE_FILES.load_yaml_file('perf.yml.master.3.0.14.ok')
-        modified = updater.patch_perf_yaml(self.perfyaml, '3.2.10', 'performance-3.2')
-        reference = FIXTURE_FILES.load_yaml_file('perf.yml.perf-3.2.3.2.10.ok')
-        self.assertEqual(modified, reference, 'Patch for 3.2.10 on perf-3.2')
-        modified = updater.patch_perf_yaml(self.perfyaml, '3.0.14', 'performance-3.2')
-        reference = FIXTURE_FILES.load_yaml_file('perf.yml.perf-3.2.3.0.14.ok')
-        self.assertEqual(modified, reference, 'Patch for 3.0.14 on perf-3.2')
 
     def test_patch_sysperf_yaml(self):
         '''
