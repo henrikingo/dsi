@@ -20,7 +20,7 @@ pipeline:
     secrets: [prod_kubernetes_token]
     prefix: prod
     environment:
-      - API_SERVER=https://api.prod.mongodb.sh
+      - API_SERVER=https://api.prod.corp.mongodb.com
     helm_repos: mongodb=https://10gen-ops.github.io/helm-charts
     chart: mongodb/cronjobs
     chart-version: 1.2.0
