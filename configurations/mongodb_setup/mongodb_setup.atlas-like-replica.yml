@@ -55,10 +55,16 @@ topology:
       - public_ip: ${infrastructure_provisioning.out.mongod.2.public_ip}
         private_ip: ${infrastructure_provisioning.out.mongod.2.private_ip}
 
+# This adds delay to the cluster from the client. It adds 300us from client to cluster, and 300us
+# from cluster back to client, to approximately match observed Atlas latencies. It adds the same
+# delay to edges between cluster nodes.
+# See https://wiki.linuxfoundation.org/networking/netem for reference on TC.
 network_delays:
-  - default:
-      delay_ms: 0
-      jitter_ms: 0
+  version_flag: M60-like
+  clusters:
+    - default:
+        delay_ms: 0.3
+        jitter_ms: 0
 
 # Meta data about this mongodb setup
 meta:
@@ -83,27 +89,7 @@ meta:
 validate:
   primaries: []
 
-
-
 post_cluster_start:
-  # This adds delay to the cluster from the client. It adds 300us from client to cluster, and 300us
-  # from cluster back to client, to approximately match observed Atlas latencies. It does not add
-  # delay between nodes in the replica set.
-  # Note: tc to be replaced with mongobridge when mongobridge can go between client and server.
-  # See https://wiki.linuxfoundation.org/networking/netem for reference on TC.
-  - on_all_hosts:
-      exec: |
-        sudo yum -y -q install tc
-        sudo modprobe ifb
-        sudo ip link set dev ifb0 up
-        echo "Deleting old tc settings"
-        sudo tc qdisc del dev eth0 root || true # Delete any existing rules
-        sudo tc qdisc del dev eth0 ingress || true # Delete any existing rules
-        echo "Configuring network delay with tc"
-        sudo tc qdisc del dev ifb0 root || true
-        sudo tc qdisc add dev eth0 root handle 1: prio
-        sudo tc qdisc add dev eth0 parent 1:3 handle 30: netem  delay 0.3ms
-        sudo tc filter add dev eth0 protocol ip parent 1:0 prio 3 u32 match ip dst 10.2.0.0/24 flowid 1:3
   - on_workload_client:
       exec_mongo_shell:
         connection_string: ${mongodb_setup.meta.mongodb_shell_url}

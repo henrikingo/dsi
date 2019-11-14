@@ -36,7 +36,17 @@ MONGOD_OPTS = {
     'rs_conf_member': {}
 }
 
-DELAY_CONFIG = {'network_delays': [{'default': {'delay_ms': 0, 'jitter_ms': 0}, 'edges': []}]}
+DELAY_CONFIG = {
+    'network_delays': {
+        'clusters': [{
+            'default': {
+                'delay_ms': 0,
+                'jitter_ms': 0
+            },
+            'edges': []
+        }]
+    }
+}
 
 DEFAULT_CONFIG = {
     'infrastructure_provisioning': {
@@ -193,7 +203,7 @@ class TestMongoNode(unittest.TestCase):
         expected_ssh_key_file = os.path.expanduser(ssh_key_file)
 
         topology = self.config['mongodb_setup']['topology'][0]
-        delay_graph = DelayGraph(topology, DELAY_CONFIG['network_delays'][0])
+        delay_graph = DelayGraph(topology, DELAY_CONFIG['network_delays']['clusters'][0])
         node_topology = NodeTopologyConfig(topology, self.config, delay_graph)
         node = common.mongodb_cluster.MongoNode(node_topology)
         actual_user = node.net_config.ssh_user
@@ -408,7 +418,7 @@ class TestMongoNode(unittest.TestCase):
             config['infrastructure_provisioning']['numactl_prefix'] =\
                 'numactl --interleave=all --cpunodebind=1'
             delay_graph = DelayGraph(config['mongodb_setup']['topology'][0],
-                                     DELAY_CONFIG['network_delays'][0])
+                                     DELAY_CONFIG['network_delays']['clusters'][0])
             node_topology = NodeTopologyConfig(self.topology, config, delay_graph)
             node = common.mongodb_cluster.MongoNode(node_topology)
             node._host = mock.MagicMock(name='host')
@@ -598,7 +608,7 @@ class TestReplSet(unittest.TestCase):
         }
 
         # All default priorities repl_topology = ReplTopologyConfig(repl_set_opts, root_config=DEFAULT_CONFIG, delay_graph=delay_graph)
-        delay_graph = DelayGraph(repl_set_opts, DELAY_CONFIG['network_delays'][0])
+        delay_graph = DelayGraph(repl_set_opts, DELAY_CONFIG['network_delays']['clusters'][0])
         repl_topology = ReplTopologyConfig(repl_set_opts,
                                            root_config=DEFAULT_CONFIG,
                                            delay_graph=delay_graph)
@@ -669,7 +679,7 @@ class TestShardedCluster(unittest.TestCase):
                                       common.mongodb_setup_helpers.copy_obj(MONGOD_OPTS)]}]
             }
         self.config = DEFAULT_CONFIG
-        delay_graph = DelayGraph(self.cluster_opts, DELAY_CONFIG['network_delays'][0])
+        delay_graph = DelayGraph(self.cluster_opts, DELAY_CONFIG['network_delays']['clusters'][0])
         sharded_topology = ShardedTopologyConfig(self.cluster_opts, self.config, delay_graph)
         self.cluster = common.mongodb_cluster.ShardedCluster(sharded_topology)
 

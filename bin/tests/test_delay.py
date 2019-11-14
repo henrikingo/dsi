@@ -4,7 +4,7 @@ import shutil
 import unittest
 from contextlib import contextmanager
 from mock import MagicMock, call, patch
-from delay import DelayNode, DelayError, DelayGraph, DelaySpec, EdgeSpec
+from delay import DelayNode, DelayError, DelayGraph, DelaySpec, EdgeSpec, VersionFlag, str_to_version_flag
 from common.config import ConfigDict
 
 BASIC_DELAY_CONFIG = {'default': {'delay_ms': 0, 'jitter_ms': 0}}
@@ -153,10 +153,10 @@ class DelayNodeTestCase(unittest.TestCase):
         delay.establish_delays(mocked_host)
 
         expected_calls = [
-            call(["bash", "-c", "'uname -r | cut -d '.' -f 1 | grep -q '4''"]),
+            call(["bash", "-c", "'uname -r | cut -d \".\" -f 1 | grep -q \"4\"'"]),
             call([
                 "bash", "-c",
-                "'yum --version tc-iproute2 | head -n 1 | cut -d '.' -f 1 | grep -q '3''"
+                "'yum info iproute | grep \"Version\" | cut -d \":\" -f 2 | cut -d \" \" -f 2 | cut -d \".\" -f 1 | grep -q \"4\"'"
             ]),
             call(["bash", "-c", "'sudo tc qdisc del dev eth0 root'"]),
             call(["bash", "-c", "'sudo tc qdisc add dev eth0 root handle 1: htb default 1'"]),
@@ -212,7 +212,7 @@ class DelayNodeTestCase(unittest.TestCase):
         mocked_host = MagicMock()
 
         def mocked_run(command):
-            if command == ["bash", "-c", "'uname -r | cut -d '.' -f 1 | grep -q '4''"]:
+            if command == ["bash", "-c", "'uname -r | cut -d \".\" -f 1 | grep -q \"4\"'"]:
                 return False
             return True
 
@@ -222,6 +222,25 @@ class DelayNodeTestCase(unittest.TestCase):
         nonzero_delay_spec_2 = DelaySpec({'delay_ms': 100, 'jitter_ms': 50})
 
         delay = DelayNode()
+        delay.add("fake_ip_1", nonzero_delay_spec_1)
+        delay.add("fake_ip_2", nonzero_delay_spec_2)
+
+        self.assertRaises(DelayError, delay.reset_delays, mocked_host)
+
+    def test_assert_kernel_fails_m60_like(self):
+        mocked_host = MagicMock()
+
+        def mocked_run(command):
+            if command == ["bash", "-c", "'uname -r | cut -d \".\" -f 1 | grep -q \"3\"'"]:
+                return False
+            return True
+
+        mocked_host.run = mocked_run
+
+        nonzero_delay_spec_1 = DelaySpec({'delay_ms': 400, 'jitter_ms': 10})
+        nonzero_delay_spec_2 = DelaySpec({'delay_ms': 100, 'jitter_ms': 50})
+
+        delay = DelayNode(VersionFlag.M60_LIKE)
         delay.add("fake_ip_1", nonzero_delay_spec_1)
         delay.add("fake_ip_2", nonzero_delay_spec_2)
 
@@ -629,26 +648,36 @@ class ConfigurationTestCase(unittest.TestCase):
         # We need references to provisioning output
         infrastructure_provisioning = "docs/config-specs/infrastructure_provisioning.out.yml"
         with copied_file(infrastructure_provisioning, "infrastructure_provisioning.out.yml"):
+
             for conf_name in names:
                 if conf_name in blacklisted_configs:
                     continue
                 with copied_file(os.path.join(directory, conf_name), "mongodb_setup.yml"):
                     config = ConfigDict('mongodb_setup')
                     config.load()
-                    mongodb_setup = config['mongodb_setup']
 
-                    topologies = mongodb_setup['topology']
-                    delay_configs = mongodb_setup['network_delays']
+                    topologies = config['mongodb_setup']['topology']
+                    network_delays = config['mongodb_setup']['network_delays']
+                    delay_configs = network_delays['clusters']
 
                     try:
                         # The DelayNodes throw exceptions when given bad delays, so we
                         # can validate the configuration by simply constructing a DelayGraph
                         # pylint: disable=unused-variable
-                        delays = DelayGraph.from_topologies(topologies, delay_configs)
+                        DelayGraph.client_ip = config['infrastructure_provisioning']['out'] \
+                            ['workload_client'][0]['private_ip']
+
+                        version_flag = str_to_version_flag(
+                            network_delays.get('version_flag', 'default'))
+                        DelayGraph.client_node = DelayNode(version_flag)
+                        delays = DelayGraph.from_topologies(topologies, delay_configs, version_flag)
                     # pylint: disable=broad-except
                     except Exception as e:
                         errors.append(e)
 
+        # Reset the delay graph's client variables.
+        DelayGraph.client_node = DelayNode()
+        DelayGraph.client_ip = 'workload_client'
         self.assertEqual(errors, [])
 
 

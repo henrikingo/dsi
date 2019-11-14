@@ -21,7 +21,7 @@ from common.log import setup_logging
 from common.config import ConfigDict
 from common.client import ClientConfig, Client
 from common.thread_runner import run_threads
-from delay import DelayGraph
+from delay import DelayGraph, DelayNode, str_to_version_flag
 
 LOG = logging.getLogger(__name__)
 
@@ -53,10 +53,14 @@ class MongodbSetup(object):
         DelayGraph.client_ip = client_ip
 
         topologies = self.mongodb_setup.get('topology', [])
-        delay_configs = self.mongodb_setup.get('network_delays', [])
-        delays = DelayGraph.from_topologies(topologies, delay_configs)
+        network_delays = self.mongodb_setup.get('network_delays', {})
+        delay_configs = network_delays.get('clusters', [])
+        version_flag = str_to_version_flag(network_delays.get('version_flag', 'default'))
+        DelayGraph.client_node = DelayNode(version_flag)
+        delays = DelayGraph.from_topologies(topologies, delay_configs, version_flag)
         client_config = ClientConfig(self.config, delays[0])
         self.client = Client(client_config)
+
         for i in xrange(len(topologies)):
             self.clusters.append(
                 common.mongodb_cluster.create_cluster(topologies[i], delays[i], self.config))

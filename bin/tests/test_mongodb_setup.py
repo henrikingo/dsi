@@ -54,13 +54,15 @@ DEFAULT_CONFIG = {
                 }
             }
         }],
-        'network_delays': [{
-            'default': {
-                'delay_ms': 0,
-                'jitter_ms': 0
-            },
-            'edges': []
-        }],
+        'network_delays': {
+            'clusters': [{
+                'default': {
+                    'delay_ms': 0,
+                    'jitter_ms': 0
+                },
+                'edges': []
+            }]
+        },
         'authentication': {
             'enabled': True,
             'username': 'username',

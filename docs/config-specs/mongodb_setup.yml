@@ -184,6 +184,40 @@ topology:
     public_ip: ${infrastructure_provisioning.out.mongod.0.public_ip}
     private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
 
+# This defines the network latencies that will be established in the cluster using tc.
+network_delays:
+  # The version flag is an optional argument specifying what tc configuration the
+  # system uses. Currently supported flags are 'default' and 'M60-like'. In the
+  # absence of an explicitly-declared flag, 'default' is assumed.
+  version_flag: M60-like
+  # This is a list of cluster delays, where clusters[0] corresponds to topology[0]
+  clusters:
+    # Each cluster may have a cluster-wide 'default' delay that is established between all nodes in the cluster.
+    # Default delays also include the edge between this cluster and the workload client.
+    - default:
+        delay_ms: 5
+        jitter_ms: 0.2
+      # Users may also specify individual edges in the cluster and create delays along those edges.
+      # These edges override the cluster-wide default delay.
+      edges:
+        - node1: ${infrastructure_provisioning.out.mongod.0.private_ip}
+          node2: ${infrastructure_provisioning.out.mongod.1.private_ip}
+          delay:
+            delay_ms: 200
+            jitter_ms: 0
+        # Example of a delay between node 0 and the workload client.
+        - node1: ${infrastructure_provisioning.out.mongod.0.private_ip}
+          node2: ${infrastructure_provisioning.out.workload_client.0.private_ip}
+          delay:
+            delay_ms: 0
+            jitter_ms: 0
+    - default:
+        delay_ms: 0
+        jitter_ms: 0
+    - default:
+        delay_ms: 0
+        jitter_ms: 0
+
 
 # Meta data about this mongodb setup.
 # It is possible to provide meta data that is not used by mongodb_setup itself, but that can be

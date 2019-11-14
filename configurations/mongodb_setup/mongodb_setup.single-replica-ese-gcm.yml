@@ -22,9 +22,10 @@ topology:
         private_ip: ${infrastructure_provisioning.out.mongod.0.private_ip}
 
 network_delays:
-  - default:
-      delay_ms: 0
-      jitter_ms: 0
+  clusters:
+    - default:
+        delay_ms: 0
+        jitter_ms: 0
 
 # Meta data about this mongodb setup
 meta:
