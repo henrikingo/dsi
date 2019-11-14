@@ -83,6 +83,12 @@ def copy_config_files(dsipath, config, directory):
         "analysis": config.get("analysis", "")
     }
 
+    # If this task was generated with genny_auto_tasks, use the dynamic
+    # test_control.auto_genny_workload.yml file.
+    auto_workload = config.get("auto_genny_workload", "")
+    if auto_workload != "" and auto_workload is not None:
+        configs_to_copy["test_control"] = "auto_genny_workload"
+
     for config_module, bootstrap_variable in configs_to_copy.iteritems():
         # Example: ./mongodb_setup.yml
         target_file = os.path.join(directory, config_module + ".yml")
