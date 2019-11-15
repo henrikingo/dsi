@@ -51,6 +51,14 @@ mongodb_setup: standalone
 # $DSI_PATH/configurations/test_control for more information about each set of tests.
 test_control: ycsb.short
 
+# To run a *genny workload*, uncomment and fill in the 2 lines below with your workload.
+# test_name should be identical to test_control, and is conventionally the filename of the
+# workload in camel_case.
+# auto_genny_workload is the path to the workload you'd like to run, relative to the
+# src/workloads/ directory in the genny repository.
+# test_name: big_update
+# auto_genny_workload: scale/BigUpdate.yml
+
 
 # The following will be copied into a file overrides.yml. This is a handy way to set any other
 # config option you want. The below values will override what is set in the other files.
