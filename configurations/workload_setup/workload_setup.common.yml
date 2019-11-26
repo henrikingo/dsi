@@ -113,8 +113,8 @@ iperf:
       # TODO: This is very verbose. Please change this to yum install from EPEL instead.
       exec: |
         mkdir -p data/tmp; pushd data/tmp
-        sudo yum groupinstall -y --quiet "Development tools"
-        sudo yum install -y --quiet zlib-devel
+        sudo yum groupinstall -y "Development tools"
+        sudo yum install -y zlib-devel
         sudo yum install pmisc
         sudo pkill -15 iperf3
         rm -rf iperf
