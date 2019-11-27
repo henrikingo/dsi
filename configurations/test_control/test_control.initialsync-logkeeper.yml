@@ -7,6 +7,9 @@
 #
 # The full instructions can be found in https://docs.google.com/document/d/1qMH1ekgnqm5LfVp7pXsHSoUqfobgStdzMKgbj5Codh0
 #
+# ALERT: The new snapshot should be created on aws-kernel-performance account. Else, the evergreen sys-perf cannot access
+# the newly created snapshot due to permission issues.
+#
 # Note: a shell command with a '$ ' prompt is run on your local host, commands on a remote host will
 # have a shell prompt like '[ec2-user@ip-10-2-0-190 ~]$ '.
 #
@@ -81,11 +84,28 @@
 #
 # 8) Finally, update the value of mongod_seeded_ebs_snapshot_id in infrastructure_provisioning.initialsync-logkeeper.yml.
 #
-# Note: The logkeeper-short test uses pre-compressed data files (of a node that got restored from snapshot
-# "snap-09d40a2412085bc5a") to load primary data. And, the snapshot was taken out of this dataset
-# https://s3-us-west-2.amazon/usr/bin/aws.com/dsi-donot-remove/InitialSyncLogKeeper/logkeeper_slice.json.gz.
-# Periodically, usually when a new major version becomes available, the snapshot and its corresponding compressed data files
-# have to be updated. The most common update that needs to be  performed relates to the Feature Compatibility Version.
+# Note: The logkeeper-short test also uses pre-compressed data files (of a node that got restored from the snapshot of
+# seeded data) to load primary data. Periodically, usually when a new major version becomes available, the snapshot
+# and its corresponding compressed data files have to be updated. The most common update that needs to be  performed
+# relates to the Feature Compatibility Version.
+#
+# PLEASE update the below table once the new snapshot is created.
+# Logkeeper-short
+# -----------------------------------------------------------------------------------------------------------------------------------------------
+# |FCV |    Snapshot Id         |   Dataset Link                                                                                                |
+# |---------------------------------------------------------------------------------------------------------------------------------------------|
+# |4.4 | snap-0e1f89e6e069178f1 | https://s3-us-west-2.amazonaws.com/dsi-donot-remove/InitialSyncLogKeeper/logkeeper-slice-data-mongodb-4.4.tgz |
+# |4.0 | snap-09d40a2412085bc5a | https://s3-us-west-2.amazonaws.com/dsi-donot-remove/InitialSyncLogKeeper/logkeeper-slice-data.tgz             |
+# -----------------------------------------------------------------------------------------------------------------------------------------------
+# Logkeeper
+# -------------------------------
+# |FCV |    Snapshot Id         |
+# |-----------------------------|
+# |4.4 | snap-0b0b8b2ad16e8f14e |
+# |4.0 | snap-041c3c57a1a4f5bba |
+# |3.6 | snap-044cc4cf3f616ef5d |
+# |3.4 | snap-02f8fb5b88df90f13 |
+# -------------------------------
 #
 task_name: initialsync-logkeeper
 numactl_prefix_for_workload_client: ${infrastructure_provisioning.numactl_prefix}

@@ -9,7 +9,7 @@ tfvars:
 
   mongod_seeded_ebs_instance_count: 1
   mongod_seeded_ebs_instance_type: c3.8xlarge
-  mongod_seeded_ebs_snapshot_id: snap-041c3c57a1a4f5bba
+  mongod_seeded_ebs_snapshot_id: snap-0b0b8b2ad16e8f14e  # EBS logkeeper snapshot with FCV set to 4.4
   mongod_seeded_ebs_iops: 5500
 
   mongod_ebs_instance_count: 1
