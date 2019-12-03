@@ -21,7 +21,7 @@ class TestAtlasClient(unittest.TestCase):
             'private': 'https://cloud.mongodb.com/api/private/MOCK/URL',
             'group_id': 'mock_group_id'
         }
-        self.api_credentials = {'user': 'mock_user', 'key': 'mock_key'}
+        self.api_credentials = {'public_key': 'mock_user', 'private_key': 'mock_key'}
         self.auth = requests.auth.HTTPDigestAuth('mock_user', 'mock_key')
         self.atlas_client = atlas_client.AtlasClient(self.api, self.api_credentials)
 

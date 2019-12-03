@@ -74,9 +74,9 @@ class AtlasClient(object):
         self.private_root += "/" if self.private_root[-1] != "/" else ""
 
         # Check and fail early if credentials missing
-        assert credentials["user"]
-        assert credentials["key"]
-        self.auth = auth.HTTPDigestAuth(credentials["user"], credentials["key"])
+        assert credentials["public_key"]
+        assert credentials["private_key"]
+        self.auth = auth.HTTPDigestAuth(credentials["public_key"], credentials["private_key"])
 
     ### CLUSTER CREATION / LIFECYCLE
 

@@ -4,7 +4,7 @@ atlas:
   api:
     root: https://cloud-dev.mongodb.com/api/atlas/v1.0/
     private: https://cloud-dev.mongodb.com/api/private/
-    group_id: 5b991a4880eef5262645e0c7
+    group_id: 5dd68a88f10fab46624c09b7
     # atlas_api_user and atlas_api_key are given in runtime_secret.yml
 
   clusters: ${mongodb_setup.atlas_types.${mongodb_setup.atlas.setup}}

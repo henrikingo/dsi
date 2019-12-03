@@ -39,14 +39,17 @@ class AtlasSetup(object):
             LOG.debug("Atlas custom build config", custom_build=self.custom_build)
 
         self.api_credentials = {}
-        if ("atlas_api_user" in self.config["runtime_secret"]
-                and "atlas_api_key" in self.config["runtime_secret"]):
+        if ("atlas_api_public_key" in self.config["runtime_secret"]
+                and "atlas_api_private_key" in self.config["runtime_secret"]):
 
-            self.api_credentials["user"] = self.config["runtime_secret"].get("atlas_api_user", "")
-            self.api_credentials["key"] = self.config["runtime_secret"].get("atlas_api_key", "")
+            self.api_credentials["public_key"] = self.config["runtime_secret"].get(
+                "atlas_api_public_key", "")
+            self.api_credentials["private_key"] = self.config["runtime_secret"].get(
+                "atlas_api_private_key", "")
             LOG.debug("Atlas credentials",
-                      user=self.api_credentials["user"],
-                      key=(self.api_credentials["key"][0:5] if self.api_credentials["key"] else ""))
+                      user=self.api_credentials["public_key"],
+                      key=(self.api_credentials["private_key"][0:5]
+                           if self.api_credentials["private_key"] else ""))
 
         self.atlas_client = None
         if "root" in self.api and "group_id" in self.api and self.api_credentials:
