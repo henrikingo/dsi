@@ -155,7 +155,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         master_tf_str = ('provider "aws" {{    '
                          'access_key = "test_aws_access_key"    '
                          'secret_key = "test_aws_secret_key"    '
-                         'region = "${{var.region}}"'
+                         'region = var.region'
                          'version = "test_aws_version" }}'
                          'variable "key_name" {{    '
                          'default = "{}"}}'
@@ -450,11 +450,15 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                      stderr=provisioner.stderr),
                 call([
                     terraform, 'apply', '-var-file=cluster.json', provisioner.parallelism,
-                    '-var="mongod_ebs_instance_count=0"', '-var="workload_instance_count=0"'
+                    '-auto-approve', '-var="mongod_ebs_instance_count=0"',
+                    '-var="workload_instance_count=0"'
                 ],
                      stdout=provisioner.stdout,
                      stderr=provisioner.stderr),
-                call([terraform, 'apply', '-var-file=cluster.json', provisioner.parallelism],
+                call([
+                    terraform, 'apply', '-var-file=cluster.json', provisioner.parallelism,
+                    '-auto-approve'
+                ],
                      stdout=provisioner.stdout,
                      stderr=provisioner.stderr),
                 call([terraform, 'refresh', '-var-file=cluster.json'],

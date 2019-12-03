@@ -195,8 +195,12 @@ def validate_terraform(config):
             LOGGER.critical("See documentation for installing terraform: http://bit.ly/2ufjQ0R")
             assert False
         if not version == config['terraform_version_check']:
-            LOGGER.critical('You are using %s, but DSI requires %s.', version,
-                            config['terraform_version_check'])
+            LOGGER.critical('Wrong terraform version found in PATH.',
+                            installed_version=version,
+                            required_version=config['terraform_version_check'])
+            LOGGER.critical('Please download required version:\n',
+                            Linux=config['terraform_linux_download'],
+                            Mac=config['terraform_mac_download'])
             LOGGER.critical("See documentation for installing terraform: http://bit.ly/2ufjQ0R")
             assert False
 
@@ -228,8 +232,8 @@ def load_bootstrap(config, directory):
             if not bootstrap_path == os.path.abspath(os.path.join(directory, 'bootstrap.yml')):
                 if os.path.isfile(os.path.abspath(os.path.join(directory, 'bootstrap.yml'))):
                     LOGGER.critical(
-                        'Attempting to overwrite existing bootstrap.yml file in %s. '
-                        'Aborting.', directory)
+                        'Attempting to overwrite existing bootstrap.yml file. Aborting.',
+                        directory=directory)
                     assert False
                 shutil.copyfile(bootstrap_path, os.path.join(directory, 'bootstrap.yml'))
         else:
@@ -257,6 +261,10 @@ def load_bootstrap(config, directory):
     # terraform required_version must be specified, we fail hard if user has tried to unset
     config['terraform_version_check'] = \
         config_dict['infrastructure_provisioning']['terraform']['required_version']
+    config['terraform_linux_download'] = \
+        config_dict['infrastructure_provisioning']['terraform']['linux_download']
+    config['terraform_mac_download'] = \
+        config_dict['infrastructure_provisioning']['terraform']['mac_download']
 
     os.chdir(current_path)
 

@@ -380,21 +380,32 @@ class TestBootstrap(unittest.TestCase):
         """
         Testing validate_terraform fails on incorrect version
         """
+        # pylint: disable=line-too-long
         mock_check_output.return_value = "Terraform v0.6.16"
         config = {
-            'terraform': './terraform',
-            'terraform_version_check': 'Terraform v0.9.11',
-            'production': False
+            'terraform':
+                './terraform',
+            'terraform_version_check':
+                'Terraform v0.9.11',
+            'terraform_linux_download':
+                'https://releases.hashicorp.com/terraform/0.12.16/terraform_0.12.16_linux_amd64.zip',
+            'terraform_mac_download':
+                'https://releases.hashicorp.com/terraform/0.12.16/terraform_0.12.16_darwin_amd64.zip',
+            'production':
+                False
         }
         with LogCapture(level=logging.CRITICAL) as crit:
             with self.assertRaises(AssertionError):
                 bootstrap.validate_terraform(config)
-            crit.check(
-                ('bootstrap', 'CRITICAL',
-                 u'[critical ] You are using Terraform v0.6.16, but DSI requires Terraform v0.9.11. [bootstrap] '),
-                ('bootstrap', 'CRITICAL',
-                 u'[critical ] See documentation for installing terraform: http://bit.ly/2ufjQ0R [bootstrap] '
-                )) #yapf: disable
+            crit.check(('bootstrap',
+                        'CRITICAL',
+                        u"[critical ] Wrong terraform version found in PATH. [bootstrap] installed_version=u'Terraform v0.6.16' required_version=u'Terraform v0.9.11'"),
+                       ('bootstrap',
+                        'CRITICAL',
+                        u"[critical ] Please download required version:\n [bootstrap] Linux=u'https://releases.hashicorp.com/terraform/0.12.16/terraform_0.12.16_linux_amd64.zip' Mac=u'https://releases.hashicorp.com/terraform/0.12.16/terraform_0.12.16_darwin_amd64.zip'"),
+                       ('bootstrap',
+                        'CRITICAL',
+                        u'[critical ] See documentation for installing terraform: http://bit.ly/2ufjQ0R [bootstrap] ')) #yapf: disable
 
     @patch('subprocess.check_output')
     def test_terraform_call_fails(self, mock_check_output):
@@ -534,7 +545,7 @@ class TestBootstrap(unittest.TestCase):
         """
         Test we don't create a new expansions yaml file if already there
         """
-        mock_check_output.return_value = 'Terraform v0.10.4'
+        mock_check_output.return_value = 'Terraform v0.12.16'
 
         bootstrap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bootstrap.yml')
         directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'testdir/')
@@ -568,7 +579,7 @@ class TestBootstrap(unittest.TestCase):
         """
         Test we create an exansions.yml file
         """
-        mock_check_output.return_value = 'Terraform v0.10.4'
+        mock_check_output.return_value = 'Terraform v0.12.16'
 
         bootstrap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bootstrap.yml')
         directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'testdir/')
@@ -655,15 +666,28 @@ class TestBootstrap(unittest.TestCase):
         Testing that load_bootstrap loads defaults into config object without bootstrap.yml
         """
         master_config = {
-            'analysis': 'common',
-            'workload_setup': 'common',
-            'infrastructure_provisioning': 'single',
-            'mongodb_setup': 'standalone',
-            'platform': 'linux',
-            'production': False,
-            'storageEngine': 'wiredTiger',
-            'terraform_version_check': 'Terraform v0.10.4',
-            'test_control': 'core'
+            'analysis':
+                'common',
+            'workload_setup':
+                'common',
+            'infrastructure_provisioning':
+                'single',
+            'mongodb_setup':
+                'standalone',
+            'platform':
+                'linux',
+            'production':
+                False,
+            'storageEngine':
+                'wiredTiger',
+            'terraform_linux_download':
+                'https://releases.hashicorp.com/terraform/0.12.16/terraform_0.12.16_linux_amd64.zip',
+            'terraform_mac_download':
+                'https://releases.hashicorp.com/terraform/0.12.16/terraform_0.12.16_darwin_amd64.zip',
+            'terraform_version_check':
+                'Terraform v0.12.16',
+            'test_control':
+                'core'
         }
         test_config = {}
         bootstrap.load_bootstrap(test_config, '.')

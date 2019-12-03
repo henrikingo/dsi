@@ -40,10 +40,17 @@ variable mongod_ebs_size            { default = 100 }
 variable mongod_ebs_iops            { default = 240 }
 
 variable runner_hostname            { default = "missing" }
-variable runner_ip                  { default = "none" }
+variable runner_ip                  {}
 variable runner_instance_id         { default = "none" }
 variable status                     { default = "idle" }
 variable task_id                    { default = "none" }
+
+# These are unused, but for diagnostic purposes it's nice to keep them in the cluster.json file.
+# (...which gets printed to stdout.) Terraform 0.12 however requires that all incoming variables are
+# declared. Note that these are already written to security.tf, but it cannot take runtime variables.
+variable ssh_key_name               {}
+variable ssh_key_file               {}
+
 
 # A placement group causes the cluster nodes to be placed near each other in terms of networking
 # It should also help in getting assigned more homogeneous type of hardware
@@ -52,7 +59,7 @@ variable task_id                    { default = "none" }
 # We need to create this here at the top level, because depends_on doesn't work in modules.
 # Similarly, we will use -target in terraform destroy to destroy things in right order
 resource "aws_placement_group" "dsi_placement_group" {
-  name     = "${var.placement_group}"
+  name     = var.placement_group
   strategy = "cluster"
 }
 
@@ -61,57 +68,56 @@ module "cluster" {
     source = "./modules/cluster"
 
     # cluster details
-    mongod_instance_type    = "${var.mongod_instance_type}"
-    mongod_instance_count   = "${var.mongod_instance_count}"
-    workload_instance_count = "${var.workload_instance_count}"
-    workload_instance_type  = "${var.workload_instance_type}"
+    mongod_instance_type    = var.mongod_instance_type
+    mongod_instance_count   = var.mongod_instance_count
+    workload_instance_count = var.workload_instance_count
+    workload_instance_type  = var.workload_instance_type
 
     # shard special instances
-    mongos_instance_type        = "${var.mongos_instance_type}"
-    mongos_instance_count       = "${var.mongos_instance_count}"
-    configsvr_instance_type     = "${var.configsvr_instance_type}"
-    configsvr_instance_count    = "${var.configsvr_instance_count}"
+    mongos_instance_type        = var.mongos_instance_type
+    mongos_instance_count       = var.mongos_instance_count
+    configsvr_instance_type     = var.configsvr_instance_type
+    configsvr_instance_count    = var.configsvr_instance_count
 
     # Instances with 2 EBS disks attached
-    mongod_ebs_instance_type    = "${var.mongod_ebs_instance_type}"
-    mongod_ebs_instance_count   = "${var.mongod_ebs_instance_count}"
-    mongod_ebs_iops             = "${var.mongod_ebs_iops}"
-    mongod_ebs_size             = "${var.mongod_ebs_size}"
-
+    mongod_ebs_instance_type    = var.mongod_ebs_instance_type
+    mongod_ebs_instance_count   = var.mongod_ebs_instance_count
+    mongod_ebs_iops             = var.mongod_ebs_iops
+    mongod_ebs_size             = var.mongod_ebs_size
 
     # Seeded EBS instance support
-    mongod_seeded_ebs_instance_type    = "${var.mongod_seeded_ebs_instance_type}"
-    mongod_seeded_ebs_instance_count   = "${var.mongod_seeded_ebs_instance_count}"
-    mongod_seeded_ebs_iops             = "${var.mongod_seeded_ebs_iops}"
-    mongod_seeded_ebs_snapshot_id      = "${var.mongod_seeded_ebs_snapshot_id}"
+    mongod_seeded_ebs_instance_type    = var.mongod_seeded_ebs_instance_type
+    mongod_seeded_ebs_instance_count   = var.mongod_seeded_ebs_instance_count
+    mongod_seeded_ebs_iops             = var.mongod_seeded_ebs_iops
+    mongod_seeded_ebs_snapshot_id      = var.mongod_seeded_ebs_snapshot_id
 
-    image                              = "${var.image}"
-    ssh_user                           = "${var.ssh_user}"
+    image                              = var.image
+    ssh_user                           = var.ssh_user
 
-    workload_placement_group           = "${var.workload_placement_group}"
-    mongod_placement_group             = "${var.mongod_placement_group}"
-    mongod_ebs_placement_group         = "${var.mongod_ebs_placement_group}"
-    mongod_seeded_ebs_placement_group  = "${var.mongod_seeded_ebs_placement_group}"
-    mongos_placement_group             = "${var.mongos_placement_group}"
-    configsvr_placement_group          = "${var.configsvr_placement_group}"
+    workload_placement_group           = var.workload_placement_group
+    mongod_placement_group             = var.mongod_placement_group
+    mongod_ebs_placement_group         = var.mongod_ebs_placement_group
+    mongod_seeded_ebs_placement_group  = var.mongod_seeded_ebs_placement_group
+    mongos_placement_group             = var.mongos_placement_group
+    configsvr_placement_group          = var.configsvr_placement_group
 
-    topology            = "${var.cluster_name}"
+    topology            = var.cluster_name
 
     # AWS details
-    availability_zone   = "${var.availability_zone}"
-    region              = "${var.region}"
-    expire_on           = "${var.expire_on}"
+    availability_zone   = var.availability_zone
+    region              = var.region
+    expire_on           = var.expire_on
 
-    owner               = "${var.owner}"
+    owner               = var.owner
 
-    key_file            = "${var.key_file}"
-    key_name            = "${var.key_name}"
+    key_file            = var.key_file
+    key_name            = var.key_name
 
-    runner_hostname     = "${var.runner_hostname}"
-    runner_ip           = "${var.runner_ip}"
-    runner_instance_id  = "${var.runner_instance_id}"
-    status              = "${var.status}"
-    task_id             = "${var.task_id}"
+    runner_hostname     = var.runner_hostname
+    runner_ip           = var.runner_ip
+    runner_instance_id  = var.runner_instance_id
+    status              = var.status
+    task_id             = var.task_id
 
-    with_hyperthreading = "${var.with_hyperthreading}"
+    with_hyperthreading = var.with_hyperthreading
 }

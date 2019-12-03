@@ -31,7 +31,7 @@ CLUSTER_JSON = "cluster.json"
 # Increase this to force a teardown of clusters whose evg_data_dir is from a previous version.
 # You will also need to fix the tests (specifically the fixture files listed in
 # test_infrastructure_provisioning.py).
-VERSION = "9"
+VERSION = "10"
 
 
 def check_version(file_path):
@@ -116,7 +116,7 @@ class Provisioner(object):
             security.write('provider "aws" {\n')
             security.write('    access_key = "{0}"\n'.format(self.aws_access_key))
             security.write('    secret_key = "{0}"\n'.format(self.aws_secret_key))
-            security.write('    region = "${var.region}"\n')
+            security.write('    region = var.region\n')
             security.write('    version = "{}"\n'.format(
                 self.config['infrastructure_provisioning']['terraform']['aws_required_version']))
             security.write('}\n')
@@ -288,7 +288,10 @@ class Provisioner(object):
         else:
             LOG.info('Creating AWS cluster.', cluster=self.cluster)
         LOG.info('terraform: apply')
-        terraform_command = [self.terraform, 'apply', self.var_file, self.parallelism]
+        # -auto-approve is like -y for yum: Without it terraform will wait for someone to type "yes"
+        terraform_command = [
+            self.terraform, 'apply', self.var_file, self.parallelism, '-auto-approve'
+        ]
         # Disk warmup for initialsync-logkeeper takes about 4 hours. This will save
         # about $12 by delaying deployment of the two other nodes.
         if not self.existing and self.cluster == 'initialsync-logkeeper':
@@ -297,9 +300,10 @@ class Provisioner(object):
         try:
             subprocess.check_call(terraform_command, stdout=self.stdout, stderr=self.stderr)
             if not self.existing and self.cluster == 'initialsync-logkeeper':
-                subprocess.check_call([self.terraform, 'apply', self.var_file, self.parallelism],
-                                      stdout=self.stdout,
-                                      stderr=self.stderr)
+                subprocess.check_call(
+                    [self.terraform, 'apply', self.var_file, self.parallelism, '-auto-approve'],
+                    stdout=self.stdout,
+                    stderr=self.stderr)
             LOG.info('terraform: refresh')
             subprocess.check_call([self.terraform, 'refresh', self.var_file],
                                   stdout=self.stdout,

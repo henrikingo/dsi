@@ -1,6 +1,6 @@
 
 variable "amis" {
-    type = "map"
+    type = map(string)
     default = {
 
         #
@@ -33,7 +33,7 @@ variable "amis" {
 }
 
 variable "private_ips" {
-    type = "map"
+    type = map(string)
     default = {
         "workloadclient0" = "10.2.0.10"
         "workloadclient1" = "10.2.0.11"
