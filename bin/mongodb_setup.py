@@ -58,7 +58,7 @@ class MongodbSetup(object):
         version_flag = str_to_version_flag(network_delays.get('version_flag', 'default'))
         DelayGraph.client_node = DelayNode(version_flag)
         delays = DelayGraph.from_topologies(topologies, delay_configs, version_flag)
-        client_config = ClientConfig(self.config, delays[0])
+        client_config = ClientConfig(self.config)
         self.client = Client(client_config)
 
         for i in xrange(len(topologies)):

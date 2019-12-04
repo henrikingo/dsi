@@ -5,7 +5,7 @@ from common.host_utils import ssh_user_and_key_file
 from common import host_factory
 from common.models.host_info import HostInfo
 
-from delay import HasDelay
+from delay import HasDelay, DelayGraph
 
 
 # pylint: disable=too-many-instance-attributes
@@ -13,10 +13,9 @@ class ClientConfig(object):
     """
     Class representing the configuration for a workload client.
     """
-    def __init__(self, config, delay_graph):
+    def __init__(self, config):
         """
         :param config: The infrastructure_provisioning ConfigDict
-        :param delay_graph: DelayGraph object.
         """
         inf_prov_out = config['infrastructure_provisioning']
         client_config = inf_prov_out['out']['workload_client'][0]
@@ -24,7 +23,7 @@ class ClientConfig(object):
         self.private_ip = client_config['private_ip']
         (self.ssh_user, self.ssh_key_file) = ssh_user_and_key_file(config)
 
-        self.delay_node = delay_graph.get_node(self.private_ip)
+        self.delay_node = DelayGraph.client_node
 
     def compute_host_info(self):
         """Create host wrapper to run commands."""
