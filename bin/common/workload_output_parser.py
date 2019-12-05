@@ -560,6 +560,12 @@ class FioParser(ResultParser):
             for write_or_read in ['write', 'read']:
                 if write_or_read in job:
                     result = job[write_or_read]
+                    # FIO on centos reports clat_ns instead of clat
+                    # The clat results are is us instead of ns
+                    if 'clat_ns' in result and not 'clat' in result:
+                        result['clat'] = result['clat_ns']
+                        result['clat']['mean'] /= float(1000.0)
+                        result['clat']['stddev'] /= float(1000.0)
                     jobname = job['jobname']
                     if result['iops'] > 0:
                         name = self._format_name(jobname, write_or_read, "iops")

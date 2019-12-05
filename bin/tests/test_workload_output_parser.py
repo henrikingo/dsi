@@ -133,6 +133,18 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
                                               expect="{}.ok".format(self.perf_json_path),
                                               actual=self.perf_json_path)
 
+    def test_centos_fio_perf_json(self):
+        """Generate a perf.json from a "test results" that uses the fio.json from fio on centos """
+        LOG.debug("Parsing results for fio on centos")
+        test = {'id': 'fio-unittest', 'type': 'fio'}
+        self.config['test_control']['output_file']['fio'] = 'fio-centos.json'
+        parse_test_results(test, self.config, self.timer)
+
+        perf_json_path = FIXTURE_FILES.fixture_file_path('perf.unittest-out-fio-centos.json')
+        FIXTURE_FILES.assert_json_files_equal(self,
+                                              expect="{}.ok".format(perf_json_path),
+                                              actual=self.perf_json_path)
+
     def test_atlas_perf_json(self):
         """Generates a perf.json file but omitting fio and iperf."""
         self.config['mongodb_setup']['meta']['is_atlas'] = True
