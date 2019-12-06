@@ -450,8 +450,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                      stderr=provisioner.stderr),
                 call([
                     terraform, 'apply', '-var-file=cluster.json', provisioner.parallelism,
-                    '-auto-approve', '-var="mongod_ebs_instance_count=0"',
-                    '-var="workload_instance_count=0"'
+                    '-auto-approve', '-var=mongod_ebs_instance_count=0',
+                    '-var=workload_instance_count=0'
                 ],
                      stdout=provisioner.stdout,
                      stderr=provisioner.stderr),

@@ -296,7 +296,7 @@ class Provisioner(object):
         # about $12 by delaying deployment of the two other nodes.
         if not self.existing and self.cluster == 'initialsync-logkeeper':
             terraform_command.extend(
-                ['-var="mongod_ebs_instance_count=0"', '-var="workload_instance_count=0"'])
+                ['-var=mongod_ebs_instance_count=0', '-var=workload_instance_count=0'])
         try:
             subprocess.check_call(terraform_command, stdout=self.stdout, stderr=self.stderr)
             if not self.existing and self.cluster == 'initialsync-logkeeper':
