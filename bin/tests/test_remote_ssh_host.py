@@ -188,7 +188,7 @@ class RemoteSSHHostTestCase(unittest.TestCase):
             test_pem_file = 'test_pem_file'
             test_host = 'test_host'
             test_script = 'test_script'
-            expected_argv = ['bin/mongo', '--verbose']
+            expected_argv = ['bin/mongo', '--quiet']
             if mongodb_auth_settings is not None and expect_auth_command_line:
                 expected_argv.extend(
                     ['-u', 'username', '-p', 'password', '--authenticationDatabase', 'admin'])

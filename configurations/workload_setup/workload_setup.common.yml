@@ -110,12 +110,12 @@ fio:
 iperf:
   - on_all_hosts:
       # Install iperf3. It isn't available in yum on AWS instances
-      # TODO: This is very verbose. Please change this to yum install from EPEL instead.
+      # TODO: On Amazon2 this could probably be installed from yum, but I didn't try to change it in this commit.
       exec: |
         mkdir -p data/tmp; pushd data/tmp
-        sudo yum groupinstall -y "Development tools"
-        sudo yum install -y zlib-devel
-        sudo yum install pmisc
+        sudo yum groupinstall -y --quiet "Development tools"
+        sudo yum install -y --quiet zlib-devel
+        sudo yum install -y --quiet pmisc
         sudo pkill -15 iperf3
         rm -rf iperf
         git clone --quiet https://github.com/esnet/iperf

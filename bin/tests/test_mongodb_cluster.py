@@ -245,8 +245,7 @@ class TestMongoNode(unittest.TestCase):
              ['mkdir', '-p', 'some dir with spaces'],
              ['mv', '/ log/di r//diagnostic.data', 'some dir with spaces'],
              ['mkdir', '-p', '$journal_dir'],
-             ['ln', '-s', '$journal_dir', 'some dir with spaces/journal'],
-             ['ls', '-la', 'some dir with spaces'], ['ls', '-la']])
+             ['ln', '-s', '$journal_dir', 'some dir with spaces/journal']])
 
     def test_gen_setup_commands_ttf_t(self):
         """Proper output for _generate_setup_commands with
@@ -268,7 +267,7 @@ class TestMongoNode(unittest.TestCase):
                 ['mkdir', '-p', 'logdir'], ['mkdir', '-p', 'dbdir/diagnostic.data'],
                 ['rm', '-rf', 'logdir/diagnostic.data'], ['mv', 'dbdir/diagnostic.data', 'logdir'],
                 ['rm', '-rf', 'dbdir'], ['mkdir', '-p', 'dbdir'],
-                ['mv', 'logdir/diagnostic.data', 'dbdir'], ['ls', '-la', 'dbdir'], ['ls', '-la']])
+                ['mv', 'logdir/diagnostic.data', 'dbdir']])
 
     def test_gen_setup_commands_ttf_f(self):
         """Proper output for _generate_setup_commands with
@@ -290,8 +289,7 @@ class TestMongoNode(unittest.TestCase):
                 ['rm', '-rf', 'dbdir/diagnostic.data/*'], ['mkdir', '-p', 'logdir'],
                 ['mkdir', '-p', 'dbdir/diagnostic.data'], ['rm', '-rf', 'logdir/diagnostic.data'],
                 ['mv', 'dbdir/diagnostic.data', 'logdir'], ['rm', '-rf', 'dbdir'],
-                ['mkdir', '-p', 'dbdir'], ['mv', 'logdir/diagnostic.data', 'dbdir'],
-                ['ls', '-la', 'dbdir'], ['ls', '-la']])
+                ['mkdir', '-p', 'dbdir'], ['mv', 'logdir/diagnostic.data', 'dbdir']])
 
     def test_gen_setup_commands_tft(self):
         """Proper output for _generate_setup_commands with
@@ -313,7 +311,7 @@ class TestMongoNode(unittest.TestCase):
                 ['rm', '-rf', 'logdir/diagnostic.data'], ['mv', 'dbdir/diagnostic.data', 'logdir'],
                 ['rm', '-rf', 'dbdir'], ['rm', '-rf', 'journaldir'], ['mkdir', '-p', 'dbdir'],
                 ['mv', 'logdir/diagnostic.data', 'dbdir'], ['mkdir', '-p', 'journaldir'],
-                ['ln', '-s', 'journaldir', 'dbdir/journal'], ['ls', '-la', 'dbdir'], ['ls', '-la']])
+                ['ln', '-s', 'journaldir', 'dbdir/journal']])
 
     def test_gen_setup_commands_tff(self):
         """Proper output for _generate_setup_commands with
@@ -334,7 +332,7 @@ class TestMongoNode(unittest.TestCase):
             }, [['mkdir', '-p', 'logdir'], ['mkdir', '-p', 'dbdir/diagnostic.data'],
                 ['rm', '-rf', 'logdir/diagnostic.data'], ['mv', 'dbdir/diagnostic.data', 'logdir'],
                 ['rm', '-rf', 'dbdir'], ['mkdir', '-p', 'dbdir'],
-                ['mv', 'logdir/diagnostic.data', 'dbdir'], ['ls', '-la', 'dbdir'], ['ls', '-la']])
+                ['mv', 'logdir/diagnostic.data', 'dbdir']])
 
     def test_gen_setup_commands_ftt(self):
         """Proper output for _generate_setup_commands with
@@ -353,7 +351,7 @@ class TestMongoNode(unittest.TestCase):
                 'journal_dir': 'journaldir',
                 'logdir': 'logdir',
             }, [['rm', '-rf', 'logdir/*.log'], ['rm', '-rf', 'logdir/core.*'],
-                ['mkdir', '-p', 'logdir'], ['ls', '-la']])
+                ['mkdir', '-p', 'logdir']])
 
     def test_gen_setup_commands_ftf(self):
         """Proper output for _generate_setup_commands with
@@ -372,7 +370,7 @@ class TestMongoNode(unittest.TestCase):
                 'journal_dir': 'journaldir',
                 'logdir': 'logdir',
             }, [['rm', '-rf', 'logdir/*.log'], ['rm', '-rf', 'logdir/core.*'],
-                ['mkdir', '-p', 'logdir'], ['ls', '-la']])
+                ['mkdir', '-p', 'logdir']])
 
     def test_gen_setup_commands_fft(self):
         """Proper output for _generate_setup_commands with
@@ -390,7 +388,7 @@ class TestMongoNode(unittest.TestCase):
                 'dbdir': 'dbdir',
                 'journal_dir': 'journaldir',
                 'logdir': 'logdir',
-            }, [['mkdir', '-p', 'logdir'], ['ls', '-la']])
+            }, [['mkdir', '-p', 'logdir']])
 
     def test_gen_setup_commands_fff(self):
         """Proper output for _generate_setup_commands with
@@ -408,7 +406,7 @@ class TestMongoNode(unittest.TestCase):
                 'dbdir': 'dbdir',
                 'journal_dir': 'journaldir',
                 'logdir': 'logdir',
-            }, [['mkdir', '-p', 'logdir'], ['ls', '-la']])
+            }, [['mkdir', '-p', 'logdir']])
 
     def launch_cmd_helper(self, modified, enable_auth):
         """Test launch command uses proper config file."""

@@ -66,7 +66,7 @@ class RemoteSSHHost(common.remote_host.RemoteHost):
         else:
             command = argv
 
-        logger.info('[%s@%s]$ %s', self.user, self.hostname, command)
+        logger.debug('[%s@%s]$ %s', self.user, self.hostname, command)
 
         # scoping
         ssh_stdout, ssh_stderr = None, None

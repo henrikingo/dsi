@@ -226,9 +226,7 @@ class MongoNode(MongoCluster):
                     'ln', '-s', setup_args['journal_dir'],
                     os.path.join(setup_args['dbdir'], 'journal')
                 ])
-            commands.append(['ls', '-la', setup_args['dbdir']])
 
-        commands.append(['ls', '-la'])
         return commands
 
     # pylint: disable=unused-argument

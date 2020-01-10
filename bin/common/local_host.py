@@ -25,6 +25,7 @@ class LocalHost(common.host.Host):
     """
     def __init__(self, mongodb_auth_settings=None, mongodb_tls_settings=None):
         super(LocalHost, self).__init__("localhost", mongodb_auth_settings, mongodb_tls_settings)
+        self.user = "-"
 
     # pylint: disable=unused-argument
     # pylint: disable=too-many-arguments
@@ -60,7 +61,7 @@ class LocalHost(common.host.Host):
             command = ' '.join(argv)
 
         start = datetime.now()
-        logger.info('[localhost]$ %s', command)
+        logger.debug('[localhost]$ %s', command)
         proc = subprocess.Popen(['bash', '-c', command],
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,

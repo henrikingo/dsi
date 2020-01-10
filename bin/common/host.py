@@ -27,6 +27,7 @@ class Host(object):
     Base class for hosts
     """
     def __init__(self, hostname, mongodb_auth_settings=None, mongodb_tls_settings=None):
+        self.user = ""
         self._alias = None
         self.hostname = hostname
         self.mongodb_auth_settings = mongodb_auth_settings
@@ -98,6 +99,13 @@ class Host(object):
         """
         if not argvs or not isinstance(argvs, (list, basestring)):
             raise ValueError("Argument must be a nonempty list or string.")
+
+        # Log just the first line of what we are about to execute
+        command_prefix = str(argvs)[:50]
+        if command_prefix != str(argvs):
+            command_prefix = command_prefix + "  <cut>"
+        command_prefix = command_prefix.replace("\n", "\\n")
+        LOG.info('    [%s@%s]$ %s', self.user, self.hostname, command_prefix)
 
         if isinstance(argvs, basestring):
             return self.exec_command(argvs, quiet=quiet) == 0
@@ -178,7 +186,7 @@ class Host(object):
         :type max_time_ms: int, float, None
         :param bool quiet: don't log failures if set to True. Defaults to False.
         """
-        argv = ['bin/mongo', '--verbose']
+        argv = ['bin/mongo', '--quiet']
 
         (has_auth_settings, connection_string) = self._validate_connection_string(connection_string)
 
@@ -204,7 +212,8 @@ class Host(object):
         argv.extend([connection_string, remote_file_name])
 
         self.create_file(remote_file_name, script)
-        self.run(['cat', remote_file_name])
+        # TODO: Capture this output and redirect into LOG.debug()
+        #self.run(['cat', remote_file_name])
 
         status_code = self.exec_command(argv,
                                         stdout=stdout,

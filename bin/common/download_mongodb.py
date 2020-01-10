@@ -89,5 +89,4 @@ class DownloadMongodb(object):
                 ['ln', '-s', '${PWD}/' + mongo_dir + '/bin/*', 'bin/'],
                 ['ln', '-s', mongo_dir + '/jstests', 'jstests'],
                 ['bin/mongo', '--version'],
-                [mongo_dir + '/bin/mongod', '--version'],
-                ['ls', '-la']] # yapf: disable
+                [mongo_dir + '/bin/mongod', '--version']] # yapf: disable

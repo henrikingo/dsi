@@ -57,26 +57,25 @@ infrastructure_provisioning:
         for disk in ${infrastructure_provisioning.disks}; do
           if [[ -e $disk ]]; then
             sudo blockdev --setra ${infrastructure_provisioning.read_ahead} $disk;
-            sudo blockdev --getra $disk;
           fi;
         done;
     set_ulimits:
       exec: |
         # set ulimit nofile for user
-        echo "${infrastructure_provisioning.tfvars.ssh_user}           soft    nofile          65535" | sudo tee -a /etc/security/limits.conf
-        echo "${infrastructure_provisioning.tfvars.ssh_user}           hard    nofile          65535" | sudo tee -a /etc/security/limits.conf
-        echo "${infrastructure_provisioning.tfvars.ssh_user}   soft   core   unlimited" | sudo tee -a /etc/security/limits.conf
-        echo "${infrastructure_provisioning.tfvars.ssh_user}   hard   core   unlimited" | sudo tee -a /etc/security/limits.conf
+        echo "${infrastructure_provisioning.tfvars.ssh_user}           soft    nofile          65535" | sudo tee -a /etc/security/limits.conf > /dev/null
+        echo "${infrastructure_provisioning.tfvars.ssh_user}           hard    nofile          65535" | sudo tee -a /etc/security/limits.conf > /dev/null
+        echo "${infrastructure_provisioning.tfvars.ssh_user}   soft   core   unlimited" | sudo tee -a /etc/security/limits.conf > /dev/null
+        echo "${infrastructure_provisioning.tfvars.ssh_user}   hard   core   unlimited" | sudo tee -a /etc/security/limits.conf > /dev/null
         # For control of core dumps and file names:
         # http://man7.org/linux/man-pages/man5/core.5.html
         mkdir -p "$HOME/data/logs"
-        echo "$HOME/data/logs/core.%e.%p.%h.%t" |sudo tee -a  /proc/sys/kernel/core_pattern
+        echo "$HOME/data/logs/core.%e.%p.%h.%t" |sudo tee -a  /proc/sys/kernel/core_pattern > /dev/null
     production_settings:
       exec: |
         # mongodb production recommended configuration
         # https://docs.mongodb.com/manual/administration/production-notes/#recommended-configuration
-        echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled
-        echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag
+        echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled > /dev/null
+        echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag > /dev/null
 
   post_provisioning:
     - on_all_hosts: ${infrastructure_provisioning.post_provisioning_steps.set_readahead}
@@ -237,7 +236,6 @@ mongodb_setup:
   post_task:
     - on_all_servers:
         exec: |
-          set -v
           rm -rf ./mdiag
           mkdir -p ./mdiag
           wget -q -O-  https://raw.githubusercontent.com/mongodb/support-tools/master/mdiag/mdiag.sh > ./mdiag/mdiag.sh
@@ -248,7 +246,8 @@ mongodb_setup:
           # The output is written to "$TMPDIR/mdiag-$(hostname).json".
           # This json file is machine readable, rendering the
           # output to a more hunan friendly format is not done here.
-          sudo TMPDIR=./mdiag bash ./mdiag/mdiag.sh sys-perf
+          echo "Collecting config and perf metrics with mdiag. This will take a few minutes."
+          sudo TMPDIR=./mdiag bash ./mdiag/mdiag.sh sys-perf > /dev/null
     - on_all_servers:
         retrieve_files:
           - source: mdiag/

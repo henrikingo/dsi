@@ -83,13 +83,13 @@ class ConfigDict(dict):
         Note: exceptions may be raised by the lower layer, see :method:
         `ConfigDict.assert_valid_ids`, `_yaml_load`.
         """
-
+        loaded_files = []
         # defaults.yml
         file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..',
                                  'configurations', 'defaults.yml')
         with open(file_name) as file_handle:
             self.defaults = _yaml_load(file_handle, file_name)
-            LOG.info('ConfigDict: Loaded: %s', file_name)
+            loaded_files.append(file_name)
 
         # All module_name.yml and module_name.out.yml
         for module_name in self.modules:
@@ -97,7 +97,7 @@ class ConfigDict(dict):
             if os.path.isfile(file_name):
                 with open(file_name) as file_handle:
                     self.raw[module_name] = _yaml_load(file_handle, file_name)
-                    LOG.info('ConfigDict: Loaded: %s', file_name)
+                    loaded_files.append(file_name)
             elif module_name != '_internal':
                 # Allow code to assume that first level of keys always exists
                 self.raw[module_name] = {}
@@ -111,7 +111,7 @@ class ConfigDict(dict):
                             self.raw[module_name].update(out)
                         else:
                             self.raw.update({module_name: out})
-                        LOG.info('ConfigDict: Loaded: %s', file_name)
+                            loaded_files.append(file_name)
 
         # overrides.yml
         file_name = 'overrides.yml'
@@ -119,14 +119,11 @@ class ConfigDict(dict):
             file_handle = open(file_name)
             self.overrides = _yaml_load(file_handle, file_name)
             file_handle.close()
-            LOG.info('ConfigDict: Loaded: %s', file_name)
+            loaded_files.append(file_name)
 
+        LOG.info('Loaded DSI config files: %s', loaded_files)
         self.assert_valid_ids()
 
-        if 'bootstrap' in self.raw:
-            change_key_name(self.raw['bootstrap'], 'cluster_type', 'infrastructure_provisioning')
-            change_key_name(self.raw['bootstrap'], 'setup', 'mongodb_setup')
-            change_key_name(self.raw['bootstrap'], 'test', 'test_control')
         return self
 
     def save(self):
