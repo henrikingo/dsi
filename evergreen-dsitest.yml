@@ -90,13 +90,6 @@ functions:
         script: |
           ./run-dsi testscripts/compare_coverage.py
 
-  validate_overrides:
-    - command: shell.exec
-      type: test
-      params:
-        working_dir: src
-        script: |
-          perf_jira_user="${perf_jira_user}" perf_jira_pw="${perf_jira_pw}" ./run-dsi testscripts/validate-overrides.sh
 #######################################
 #               Tasks                 #
 #######################################
@@ -123,10 +116,6 @@ tasks:
     commands:
       - func: setup_tests
       - func: nosetests
-  - name: validate_overrides
-    commands:
-      - func: setup_tests
-      - func: validate_overrides
 
 
 #######################################
@@ -144,7 +133,6 @@ buildvariants:
       - name: lint_python_scripts
       - name: lint_yml
       - name: nosetests
-      - name: validate_overrides
   - name: osx-runner
     display_name: OSX
     run_on:
