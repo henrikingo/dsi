@@ -14,11 +14,14 @@ run:
           - agg_merge:
               - testDbName: bestbuy
                 testCollName: products
-                nDocsPerMerge: [1, 1000, 100000]
+                nDocsPerMerge: [1000, 100000]
                 matchRatio: [0, 0.5, 1.0]
-                # For pipeline modes, we omit the necessary $-prefix from the agg stage names. These will be added back in by the JS test code.
-                modes: [{whenMatched: "replace", whenNotMatched: "insert"}, {whenMatched: "fail", whenNotMatched: "insert"},
-                        {whenMatched: "merge", whenNotMatched: "insert"}, {whenMatched: [{replaceWith: "$$new"}], whenNotMatched: "insert"}]
+                # Here we limit the number of $merge configurations we test since this test is
+                # expensive to set up and tear down. We have coverage of various other $merge modes
+                # elsewhere which should detect if one of the modes regresses or is underperforming
+                # our expectations.
+                modes: [{whenMatched: "replace", whenNotMatched: "insert"},
+                        {whenMatched: "merge", whenNotMatched: "insert"}]
                 targets: ["hashed_id"]
                 targetDB: target
           - cpu_noise
