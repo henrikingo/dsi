@@ -1,7 +1,6 @@
 variable owner                          { default = "perf-terraform-alerts@10gen.com" }
 variable topology                       {}
 variable runner_hostname                { default = "missing" } # Hostname of the machine using DSI
-variable runner_ip                      {}
 variable runner_instance_id             { default = "none" }
 variable status                         { default = "idle" } #Idle, running
 variable task_id                        { default = "none" }
@@ -59,7 +58,6 @@ module "VPC" {
     owner               = var.owner
     expire_on           = var.expire_on
     runner_hostname     = var.runner_hostname
-    runner_ip           = var.runner_ip
     runner_instance_id  = var.runner_instance_id
     status              = var.status
     task_id             = var.task_id

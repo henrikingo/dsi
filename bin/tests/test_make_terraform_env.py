@@ -186,20 +186,18 @@ class TestTerraformConfiguration(unittest.TestCase):
     @patch('common.terraform_config.generate_expire_on_tag')
     @patch('common.terraform_config.uuid4')
     @patch('common.terraform_config.generate_runner_hostname')
-    @patch('common.terraform_config.generate_runner_ip')
     @patch('common.terraform_config.retrieve_runner_instance_id')
     # pylint: disable=invalid-name
     def test_default(self, mock_retrieve_runner_instance_id, mock_generate_runner_hostname,
-                     mock_generate_runner_ip, mock_uuid4, mock_generate_expire_on_tag):
+                     mock_uuid4, mock_generate_expire_on_tag):
         """Test default terraform configuration."""
         #pylint: disable=line-too-long
         mock_uuid4.return_value = "mock-uuid-1234"
         mock_retrieve_runner_instance_id.return_value = 'i-0c2aad81dfac5ca6e'
         mock_generate_runner_hostname.return_value = '111.111.111.111'
-        mock_generate_runner_ip.return_value = '111.111.111.111'
         mock_generate_expire_on_tag.return_value = "2018-10-13 14:19:51"
 
-        expected_string = '{"Project":"sys-perf","Variant":"Linux 3-shard cluster","availability_zone":"us-west-2a","cluster_name":"shard","configsvr_instance_count":3,"configsvr_instance_type":"t1.micro","expire_on":"2018-10-13 14:19:51","image":"amazon2","mongod_instance_count":9,"mongod_instance_type":"c3.8xlarge","mongod_placement_group":"shard-mock-uuid-1234","mongos_instance_count":3,"mongos_instance_type":"c3.8xlarge","mongos_placement_group":"shard-mock-uuid-1234","owner":"linus.torvalds@10gen.com","placement_group":"shard-mock-uuid-1234","region":"us-west-2","runner_hostname":"111.111.111.111","runner_ip":"111.111.111.111","ssh_key_file":"~/.ssh/linustorvalds.pem","ssh_key_name":"linus.torvalds","ssh_user":"ec2-user","status":"running","task_id":"123...","workload_instance_count":1,"workload_instance_type":"c3.8xlarge","workload_placement_group":"shard-mock-uuid-1234"}'
+        expected_string = '{"Project":"sys-perf","Variant":"Linux 3-shard cluster","availability_zone":"us-west-2a","cluster_name":"shard","configsvr_instance_count":3,"configsvr_instance_type":"t1.micro","expire_on":"2018-10-13 14:19:51","image":"amazon2","mongod_instance_count":9,"mongod_instance_type":"c3.8xlarge","mongod_placement_group":"shard-mock-uuid-1234","mongos_instance_count":3,"mongos_instance_type":"c3.8xlarge","mongos_placement_group":"shard-mock-uuid-1234","owner":"linus.torvalds@10gen.com","placement_group":"shard-mock-uuid-1234","region":"us-west-2","runner_hostname":"111.111.111.111","ssh_key_file":"~/.ssh/linustorvalds.pem","ssh_key_name":"linus.torvalds","ssh_user":"ec2-user","status":"running","task_id":"123...","workload_instance_count":1,"workload_instance_type":"c3.8xlarge","workload_placement_group":"shard-mock-uuid-1234"}'
         tf_config = terraform_config.TerraformConfiguration(self.config)
         json_string = tf_config.to_json(compact=True)
 

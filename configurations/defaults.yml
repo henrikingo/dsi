@@ -100,7 +100,6 @@ mongodb_setup:
   mongo_dir: mongodb
   journal_dir: /media/ephemeral1/journal
   clean_db_dir: true
-  spawn_using: ssh
   # Note: It's also allowed to upload your own binary. You can unset this by setting to the empty
   # string "" in mongodb_setup.yml or overrides.yml.
   # This URL is 4.0.6. We use the sys-perf build instead of official release to include the jstests/ directory that we copy in our compile task.
@@ -280,7 +279,6 @@ test_control:
     no_output_ms: 5400000  # 90 minutes
   numactl_prefix_for_workload_client: ""
   jstests_dir: ./jstests/hooks
-  spawn_using: ssh
   between_tests:
     - restart_mongodb:
         clean_logs: true

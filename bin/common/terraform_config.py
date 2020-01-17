@@ -96,13 +96,6 @@ def generate_runner_hostname():
     return _do_generate_runner('public-hostname')
 
 
-def generate_runner_ip():
-    """
-    Get the public IPv4 address of the runner.
-    """
-    return _do_generate_runner('public-ipv4')
-
-
 def _do_generate_runner(endpoint):
     """
     Get the hostname or IP of the runner.
@@ -181,7 +174,6 @@ class TerraformConfiguration(object):
             self.tfvars = generate_placement_group(self.tfvars, self.tfvars.get("cluster_name"))
             # Cluster metadata
             self.tfvars["runner_hostname"] = generate_runner_hostname()
-            self.tfvars["runner_ip"] = generate_runner_ip()
 
         self.refresh_tfvars()
 

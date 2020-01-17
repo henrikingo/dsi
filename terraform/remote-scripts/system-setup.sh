@@ -148,36 +148,6 @@ install_java() {
 }
 
 
-install_jasper() {
-    # Please refer to README.md in jasper.proto's directory on steps for updating jasper.proto and the
-    # curator binary.
-    curl -o curator.tar.gz --retry 10 -LsS https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-ac7e518bd8c8d18188330413db79704f9f0eb8a3.tar.gz
-    tar xvf curator.tar.gz
-
-    sudo cp ./curator /usr/local/bin/curator
-    curator --version
-
-    # Use `tee` here instead of `cat` to retain sudo privilege when writing the heredoc.
-    sudo tee /etc/systemd/system/jasper.service > /dev/null <<'EOF'
-[Unit]
-Description=Jasper Process Management Service
-After=network.target
-
-[Service]
-ExecStart=/usr/local/bin/curator jasper service run rpc --host 0.0.0.0
-ExecReload=/bin/kill -HUP $MAINPID
-Restart=always
-User=ec2-user
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-    sudo systemctl enable jasper
-    sudo systemctl start jasper
-}
-
 install_java
-install_jasper
 
 exit 0

@@ -40,7 +40,6 @@ variable mongod_ebs_size            { default = 100 }
 variable mongod_ebs_iops            { default = 240 }
 
 variable runner_hostname            { default = "missing" }
-variable runner_ip                  {}
 variable runner_instance_id         { default = "none" }
 variable status                     { default = "idle" }
 variable task_id                    { default = "none" }
@@ -114,7 +113,6 @@ module "cluster" {
     key_name            = var.key_name
 
     runner_hostname     = var.runner_hostname
-    runner_ip           = var.runner_ip
     runner_instance_id  = var.runner_instance_id
     status              = var.status
     task_id             = var.task_id

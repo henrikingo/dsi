@@ -146,8 +146,7 @@ class MongoNode(MongoCluster):
         if self._host is None:
             host_info = self.net_config.compute_host_info()
             self._host = host_factory.make_host(host_info,
-                                                mongodb_tls_settings=self.net_config.tls_settings,
-                                                spawn_using=self.net_config.spawn_using)
+                                                mongodb_tls_settings=self.net_config.tls_settings)
         return self._host
 
     def reset_delays(self):

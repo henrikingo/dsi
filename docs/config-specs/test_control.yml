@@ -4,12 +4,6 @@ task_name: core
 timeouts:
   no_output_ms: 5400000  # The amount of time run cmds are allowed to go without any output before timing out
 
-# How remote processes should be started and stopped. Valid options are "ssh" and "jasper"
-# (https://github.com/mongodb/jasper). Use Jasper if your workload needs to do process management
-# (e.g. restart mongod). Otherwise, SSH is the default option for the time being.
-spawn_using: ssh
-
-# This essentially ports dsi/clusters/*/*.json to yml. Additions are up for debate.
 # Note: unlike other files, this is a list of test runs. Hence, even if there's only a single entry,
 # it is a list.
 run:
