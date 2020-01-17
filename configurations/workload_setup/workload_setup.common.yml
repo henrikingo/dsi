@@ -150,8 +150,11 @@ linkbench:
   - on_workload_client:
       exec: |
         mkdir -p data/tmp; pushd data/tmp
-        curl --retry 10 -fsS  \
-          https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash
+        curl --retry 10 http://mirror.cc.columbia.edu/pub/software/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz | sudo tar zx -C /usr/local
+        cd /usr/local
+        sudo ln -s apache-maven-* maven
+        echo 'export M2_HOME=/usr/local/maven' | sudo tee -a /etc/profile.d/maven.sh
+        echo 'export PATH=$M2_HOME/bin:$PATH' | sudo tee -a /etc/profile.d/maven.sh
         rm *.rpm || true
         popd
 
@@ -182,8 +185,11 @@ ycsb:
   - on_workload_client:
       exec: |
         mkdir -p data/tmp; pushd data/tmp
-        curl --retry 10 -fsS \
-          https://s3-us-west-2.amazonaws.com/dsi-donot-remove/utils/install_maven.sh | sudo bash
+        curl --retry 10 http://mirror.cc.columbia.edu/pub/software/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz | sudo tar zx -C /usr/local
+        cd /usr/local
+        sudo ln -s apache-maven-* maven
+        echo 'export M2_HOME=/usr/local/maven' | sudo tee -a /etc/profile.d/maven.sh
+        echo 'export PATH=$M2_HOME/bin:$PATH' | sudo tee -a /etc/profile.d/maven.sh
         rm *.rpm || true
         popd
   - on_localhost:
