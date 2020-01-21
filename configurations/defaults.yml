@@ -237,16 +237,13 @@ mongodb_setup:
         exec: |
           rm -rf ./mdiag
           mkdir -p ./mdiag
-          wget -q -O-  https://raw.githubusercontent.com/mongodb/support-tools/master/mdiag/mdiag.sh > ./mdiag/mdiag.sh
-          # The "sys-perf" paramter to mdiag.sh is the 'reference'. As this is a support
-          # tool, the reference would normally be a support case identifier.
-          # For this example, it can be anything so that we don't
-          # get a warning.
+          # TODO: After the PR for --fast option is merged, this can be changed to upstream at mongodb/support-tools
+          wget -q -O- https://raw.githubusercontent.com/henrikingo/support-tools/a814f83324f5576aa00a01a0e8e8b74ffb600869/mdiag/mdiag.sh > ./mdiag/mdiag.sh
           # The output is written to "$TMPDIR/mdiag-$(hostname).json".
           # This json file is machine readable, rendering the
           # output to a more hunan friendly format is not done here.
-          echo "Collecting config and perf metrics with mdiag. This will take a few minutes."
-          sudo TMPDIR=./mdiag bash ./mdiag/mdiag.sh sys-perf > /dev/null
+          echo "Collecting config and perf metrics with mdiag."
+          sudo TMPDIR=./mdiag bash ./mdiag/mdiag.sh --inhibit-new-version-check --fast > /dev/null
     - on_all_servers:
         retrieve_files:
           - source: mdiag/
