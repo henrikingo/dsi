@@ -31,7 +31,7 @@ CLUSTER_JSON = "cluster.json"
 # Increase this to force a teardown of clusters whose evg_data_dir is from a previous version.
 # You will also need to fix the tests (specifically the fixture files listed in
 # test_infrastructure_provisioning.py).
-VERSION = "10"
+VERSION = "13"
 
 
 def check_version(file_path):
@@ -79,12 +79,8 @@ class Provisioner(object):
         self.existing = False
         self.var_file = None
         self.parallelism = '-parallelism=' + str(TERRAFORM_PARALLELISM)
-        # infrastructure_teardown.py cannot import ConfigDict, so we use environment variable
-        # for terraform location
-        if "TERRAFORM" in os.environ:
-            self.terraform = os.environ['TERRAFORM']
-        else:
-            self.terraform = './terraform'
+        self.terraform = common.utils.find_terraform()
+        LOG.info("Using terraform binary:", path=self.terraform)
         self.tf_log_path = TF_LOG_PATH
 
         os.environ['TF_LOG'] = 'DEBUG'
@@ -210,15 +206,15 @@ class Provisioner(object):
                      cluster=self.cluster)
             self.teardown_old_cluster()
 
-        tfstate_path = os.path.join(self.evg_data_dir, 'terraform/terraform.tfstate')
-        provision_cluster_path = os.path.join(self.evg_data_dir,
-                                              'terraform/provisioned.' + self.cluster)
+        tfstate_path = os.path.join(self.evg_data_dir, 'terraform', 'terraform.tfstate')
+        provision_cluster_path = os.path.join(self.evg_data_dir, 'terraform',
+                                              'provisioned.' + self.cluster)
         if os.path.isfile(tfstate_path):
             if check_version(provision_cluster_path):
                 self.existing = True
                 LOG.info("Retrieving terraform state for existing EC2 resources.",
                          path=tfstate_path)
-                shutil.copyfile(tfstate_path, "./terraform.tfstate")
+                shutil.copyfile(tfstate_path, "terraform.tfstate")
 
                 LOG.info("Retrieving variables for existing EC2 resources.", path=CLUSTER_JSON)
                 from_file = os.path.join(self.evg_data_dir, 'terraform', CLUSTER_JSON)
@@ -244,21 +240,18 @@ class Provisioner(object):
         if not os.path.isdir(self.evg_data_dir):
             LOG.info("Copying terraform binary to durable data directory on Evergreen host.",
                      target_path=self.evg_data_dir)
-            os.makedirs(self.evg_data_dir)
-            # While everything else is inside the work directory, setup-dsi-env.sh still downloads
-            # terraform into a directory that is parallel to work, not inside it.
-            # Also note that the below is the directory called "terraform". (Yes, it contains a
-            # binary called "terraform".)
-            shutil.copytree("../terraform", os.path.join(self.evg_data_dir, "terraform"))
-            shutil.copytree("./modules", os.path.join(self.evg_data_dir, "terraform/modules"))
+            os.makedirs(os.path.join(self.evg_data_dir, "terraform"))
+            # For historical reasons, we store a binary called `terraform` in a directory called
+            # `terraform`.
+            shutil.copy(self.terraform, os.path.join(self.evg_data_dir, "terraform", "terraform"))
+            shutil.copytree("modules", os.path.join(self.evg_data_dir, "terraform", "modules"))
 
             source_path = os.path.join(self.bin_dir, 'infrastructure_teardown.py')
-            target_path = os.path.join(self.evg_data_dir, 'terraform/infrastructure_teardown.py')
+            target_path = os.path.join(self.evg_data_dir, 'terraform', 'infrastructure_teardown.py')
             LOG.info("Copying infrastructure_teardown.py to Evergreen host.",
                      source_path=source_path,
                      target_path=target_path)
-            shutil.copyfile(source_path, target_path)
-            os.chmod(os.path.join(self.evg_data_dir, 'terraform/infrastructure_teardown.py'), 0755)
+            shutil.copy(source_path, target_path)
 
         LOG.info("Contents of Evergreen durable data directory.",
                  path=self.evg_data_dir,

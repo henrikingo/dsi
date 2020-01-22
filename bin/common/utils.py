@@ -5,6 +5,7 @@ import ConfigParser
 import os
 import errno
 import logging
+import subprocess
 
 LOG = logging.getLogger(__name__)
 
@@ -99,3 +100,35 @@ def get_dsi_bin_dir():
 
     """
     return os.path.join(get_dsi_path(), 'bin')
+
+
+class TerraformNotFound(IOError):
+    """
+    Raised if terraform binary not found.
+
+    This should be unlikely, since bootstrap.py checks that it existed when we started.
+    """
+    def __init__(self):
+        message = "Did not find terraform in PATH nor current directory."
+        super(TerraformNotFound, self).__init__(message)
+
+
+def find_terraform(work_directory="."):
+    """
+    Find terraform executable.
+
+    :param str work_directory: Like "current directory", but in bootstrap.py we're not yet in it.
+    :returns: Path to terraform executable file (not dir).
+    """
+    if "TERRAFORM" in os.environ:
+        return os.environ['TERRAFORM']
+    elif os.path.isfile('terraform'):
+        return os.path.join(work_directory, 'terraform')
+    else:
+        # Find terraform in path
+        try:
+            return subprocess.check_output(['which', 'terraform']).strip()
+        except subprocess.CalledProcessError:
+            raise TerraformNotFound()
+        except OSError:
+            raise TerraformNotFound()

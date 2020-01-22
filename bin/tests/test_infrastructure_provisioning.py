@@ -14,6 +14,7 @@ import unittest
 from mock import patch, call, mock_open, MagicMock, ANY
 from testfixtures import LogCapture, log_capture
 
+import common.utils
 import infrastructure_provisioning as ip
 from test_lib.fixture_files import FixtureFiles
 import test_lib.structlog_for_test as structlog_for_test
@@ -134,16 +135,18 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         # Check when TERRAFORM is not environment variable
         os_environ_missing_terraform = self.os_environ.copy()
         del os_environ_missing_terraform['TERRAFORM']
+        os_environ_missing_terraform['PATH'] = "/foo:/bar"
         self.mock_environ.__getitem__.side_effect = os_environ_missing_terraform.__getitem__
         self.mock_environ.__contains__.side_effect = os_environ_missing_terraform.__contains__
-        provisioner_missing_terraform = ip.Provisioner(self.config,
-                                                       provisioning_file=self.provision_log_path)
-        self.assertEqual(provisioner_missing_terraform.cluster, 'single')
-        self.assertFalse(provisioner_missing_terraform.reuse_cluster)
-        self.assertEqual(provisioner_missing_terraform.dsi_dir, self.dsi_path)
-        self.assertFalse(provisioner_missing_terraform.existing)
-        self.assertEqual(provisioner_missing_terraform.parallelism, '-parallelism=20')
-        self.assertEqual(provisioner_missing_terraform.terraform, './terraform')
+        with self.assertRaises(common.utils.TerraformNotFound):
+            provisioner_missing_terraform = ip.Provisioner(
+                self.config, provisioning_file=self.provision_log_path)
+            self.assertEqual(provisioner_missing_terraform.cluster, 'single')
+            self.assertFalse(provisioner_missing_terraform.reuse_cluster)
+            self.assertEqual(provisioner_missing_terraform.dsi_dir, self.dsi_path)
+            self.assertFalse(provisioner_missing_terraform.existing)
+            self.assertEqual(provisioner_missing_terraform.parallelism, '-parallelism=20')
+            self.assertEqual(provisioner_missing_terraform.terraform, './terraform')
         self.reset_mock_objects()
 
     def test_setup_security_tf(self):
@@ -233,7 +236,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             mock_isfile.assert_has_calls(isfile_calls)
             copyfile_calls = [
                 call(FIXTURE_FILES.fixture_file_path('terraform/terraform.tfstate'),
-                     './terraform.tfstate'),
+                     'terraform.tfstate'),
                 call(FIXTURE_FILES.fixture_file_path('terraform/cluster.json'), 'cluster.json')
             ]
             mock_copyfile.assert_has_calls(copyfile_calls)
@@ -369,8 +372,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     @patch('infrastructure_provisioning.shutil')
     @patch('infrastructure_provisioning.os.listdir')
     @patch('infrastructure_provisioning.os.path.isdir')
-    @patch('infrastructure_provisioning.os.chmod')
-    def test_setup_evg_dir(self, mock_chmod, mock_isdir, mock_listdir, mock_shutil):
+    def test_setup_evg_dir(self, mock_isdir, mock_listdir, mock_shutil):
         """
         Test Provisioner.setup_evg_dir
         """
@@ -381,23 +383,19 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             provisioner = ip.Provisioner(self.config, provisioning_file=self.provision_log_path)
             provisioner.bin_dir = 'test/bin'
             provisioner.setup_evg_dir()
-            mock_makedirs.assert_called_with(evg_data_dir)
-            copytree_calls = [
-                call('../terraform', evg_data_dir + 'terraform'),
-                call('./modules', evg_data_dir + 'terraform/modules')
-            ]
+            mock_makedirs.assert_called_with(evg_data_dir + 'terraform')
+            copytree_calls = [call('modules', evg_data_dir + 'terraform/modules')]
             mock_shutil.copytree.assert_has_calls(copytree_calls)
-            copyfile_calls = [
+            copy_calls = [
+                call('test/path/terraform', evg_data_dir + 'terraform/terraform'),
                 call(provisioner.bin_dir + '/infrastructure_teardown.py',
                      evg_data_dir + 'terraform/infrastructure_teardown.py')
             ]
-            mock_shutil.copyfile.assert_has_calls(copyfile_calls)
+            mock_shutil.copy.assert_has_calls(copy_calls)
             listdir_calls = [call(evg_data_dir), call(os.path.join(evg_data_dir, 'terraform'))]
             # any_order is set to True because when running nosetests, listdir has extra
             # __str__() calls due to logging
             mock_listdir.assert_has_calls(listdir_calls, any_order=True)
-            mock_chmod.assert_called_with(
-                os.path.join(evg_data_dir, 'terraform/infrastructure_teardown.py'), 0755)
 
         # Test when evergreen data directories do exist
         with patch('infrastructure_provisioning.os.makedirs') as mock_makedirs:
@@ -406,8 +404,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             provisioner.bin_dir = 'test/bin'
             provisioner.setup_evg_dir()
             self.assertFalse(mock_makedirs.called)
-            mock_chmod.assert_called_with(
-                os.path.join(evg_data_dir, 'terraform/infrastructure_teardown.py'), 0755)
         self.reset_mock_objects()
 
     @patch('infrastructure_provisioning.run_pre_post_commands')
@@ -660,6 +656,9 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         provisioner.print_terraform_errors()
 
         log_output.check(
+            ('infrastructure_provisioning',
+             'INFO',
+             u"[info     ] Using terraform binary:        [infrastructure_provisioning] path=u'test/path/terraform'"),
             ('infrastructure_provisioning',
              'INFO',
              u"[info     ] Redirecting terraform output to file [infrastructure_provisioning] path=u'{}'".format(FIXTURE_FILES.fixture_file_path('terraform.stdout.log'))),

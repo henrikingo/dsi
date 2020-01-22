@@ -4,12 +4,15 @@ Setup an work environment. Copy over the appropriate files.
 """
 
 from __future__ import print_function
-import sys
 import argparse
 import os
 import os.path
 import shutil
 import subprocess
+import sys
+import zipfile
+
+import requests
 import structlog
 import yaml
 
@@ -149,34 +152,54 @@ def setup_overrides(config_dict, directory):
             override_file.write(yaml.dump(overrides, default_flow_style=False))
 
 
-def find_terraform(config, directory):
+def _extract_zip(zip_bytes, directory):
+    """
+    Separate open() calls so they can be mocked in tests.
+    """
+    zip_file_path = os.path.join(directory, 'terraform.zip')
+    with open(zip_file_path, 'w') as zip_file_handle:
+        zip_file_handle.write(zip_bytes)
+    with zipfile.ZipFile(zip_file_path, 'r') as zip_file_handle:
+        zip_file_handle.extractall(directory)
+    os.chmod(os.path.join(directory, "terraform"), 0555)
+
+
+def download_terraform(directory, config):
+    """
+    Download terraform to directory (if it wasn't found in PATH).
+    """
+    if not 'terraform_url' in config:
+        LOGGER.critical(
+            "No Terraform download url found for your operating system. "
+            "Automatic terraform download is not supported.",
+            platform=sys.platform)
+        assert False
+    url = config['terraform_url']
+    LOGGER.info("Downloading terraform for you.", url=url)
+
+    response = requests.get(url)
+    if not response.ok:
+        response.raise_for_status()
+    _extract_zip(response.content, directory)
+
+
+def find_terraform(directory, config):
     """
     Returns the location of the terraform binary to use.
 
-    :param dict config: The bootstrap.py internal config.
     :param str directory: The work directory.
     """
+    terraform = None
     try:
-        system_tf = subprocess.check_output(['which', 'terraform']).strip()
-    except subprocess.CalledProcessError:
-        system_tf = None
-
-    if 'terraform' in config:
-        terraform = os.path.abspath(os.path.expanduser(config['terraform']))
-        LOGGER.debug('Using terraform binary specified by bootstrap.terraform',
-                     terraform=config['terraform'])
-    elif system_tf is not None:
-        terraform = os.path.abspath(system_tf)
-        LOGGER.debug('Using terraform binary specified by $(which terraform)', terraform=terraform)
-    else:
-        terraform = os.path.join(directory, 'terraform')
-        LOGGER.debug('Using terraform binary in default location', terraform=terraform)
-
-    LOGGER.info('Path to terraform binary', terraform=terraform)
+        terraform = common.utils.find_terraform(directory)
+    except common.utils.TerraformNotFound:
+        LOGGER.info('Terraform not found in PATH.')
+        download_terraform(directory, config)
+        terraform = os.path.join(directory, "terraform")
     return terraform
 
 
-def validate_terraform(config):
+def validate_terraform(directory, config):
     """
     Asserts that terraform is the correct version.
 
@@ -195,14 +218,23 @@ def validate_terraform(config):
             LOGGER.critical("See documentation for installing terraform: http://bit.ly/2ufjQ0R")
             assert False
         if not version == config['terraform_version_check']:
-            LOGGER.critical('Wrong terraform version found in PATH.',
-                            installed_version=version,
-                            required_version=config['terraform_version_check'])
-            LOGGER.critical('Please download required version:\n',
-                            Linux=config['terraform_linux_download'],
-                            Mac=config['terraform_mac_download'])
-            LOGGER.critical("See documentation for installing terraform: http://bit.ly/2ufjQ0R")
-            assert False
+            LOGGER.info('Wrong terraform version found in PATH.',
+                        installed_version=version,
+                        required_version=config['terraform_version_check'])
+            download_terraform(directory, config)
+            config['terraform'] = os.path.join(directory, "terraform")
+
+
+def symlink_bindir(directory):
+    """
+    Create symlink to dsi_repo/bin.
+
+    :param str directory: The work directory.
+    """
+    src = common.utils.get_dsi_bin_dir()
+    dest = os.path.join(directory, 'bin')
+    LOGGER.info("Creating symlink to binaries.", src=src, dest=dest)
+    os.symlink(src, dest)
 
 
 def write_dsienv(directory, terraform):
@@ -215,7 +247,9 @@ def write_dsienv(directory, terraform):
     """
     with open(os.path.join(directory, 'dsienv.sh'), 'w') as dsienv:
         dsienv.write('export PATH={0}:$PATH\n'.format(common.utils.get_dsi_bin_dir()))
-        dsienv.write('export TERRAFORM={0}'.format(terraform))
+        dsienv.write('export TERRAFORM={0}\n'.format(terraform))
+        dsienv.write('echo "Tip: Sourcing dsienv.sh is now optional. You can also just execute:"\n')
+        dsienv.write('echo "    ./bin/infrastructure_provisioning.py     # etc..."\n')
 
 
 def load_bootstrap(config, directory):
@@ -316,9 +350,17 @@ def run_bootstrap(config):
     # Checks for aws credentials, fails if cannot find them
     common.utils.read_aws_credentials(config_dict)
 
-    config['terraform'] = find_terraform(config, directory)
-    validate_terraform(config)
+    url = None
+    if sys.platform.startswith('linux'):
+        url = config_dict['infrastructure_provisioning']['terraform']['linux_download']
+    elif sys.platform.startswith('darwin'):
+        url = config_dict['infrastructure_provisioning']['terraform']['mac_download']
+    config['terraform_url'] = url
+    config['terraform'] = find_terraform(directory, config)
+    validate_terraform(directory, config)
+    LOGGER.info('Path to terraform binary', terraform=config['terraform'])
 
+    symlink_bindir(directory)
     write_dsienv(directory, config['terraform'])
 
     # copy necessary config files to the current directory

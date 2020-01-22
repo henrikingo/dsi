@@ -18,6 +18,28 @@ import sys
 LOG = logging.getLogger(__name__)
 
 
+# infrastructure_teardown.py can't import from common.
+# This is a copy of common.utils.find_terraform
+def find_terraform(work_directory="."):
+    """
+    Find terraform executable.
+
+    :param str work_directory: Like "current directory", but in bootstrap.py we're not yet in it.
+    :returns: Path to terraform executable file (not dir).
+    """
+    if "TERRAFORM" in os.environ:
+        return os.environ['TERRAFORM']
+    elif os.path.isfile('terraform'):
+        return os.path.join(work_directory, 'terraform')
+    else:
+        # Find terraform in path
+        try:
+            return subprocess.check_output(['which', 'terraform']).strip()
+        except:  # pylint: disable=broad-except
+            LOG.error("Did not find terraform in PATH nor current directory.")
+            raise
+
+
 def destroy_resources():
     """
     Destroys AWS resources using terraform.
@@ -29,10 +51,8 @@ def destroy_resources():
         previous_directory = os.getcwd()
         os.chdir(teardown_script_path)
 
-    if "TERRAFORM" in os.environ:
-        terraform = os.environ['TERRAFORM']
-    else:
-        terraform = './terraform'
+    terraform = find_terraform()
+    LOG.info("Using terraform binary: %s", terraform)
 
     var_file = ''
     if os.path.isfile('cluster.json'):

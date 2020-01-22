@@ -34,6 +34,7 @@ class TestBootstrap(unittest.TestCase):
         """
         # Setup logging so that structlog uses stdlib, and LogCapture works
         structlog_for_test.setup_logging()
+        self.directory = "WORK"
 
     def tearDown(self):
         """
@@ -333,47 +334,26 @@ class TestBootstrap(unittest.TestCase):
             pass
 
     @patch('subprocess.check_output')
-    def test_find_terraform_no_except_terraform_in_config(self, mock_check_output):
-        """
-        Testing find_terraform when no exception, val in config
-        """
-        mock_check_output.return_value = '/usr/bin/terraform'
-        config = {}
-        config['terraform'] = '/Users/testuser/config_override/terraform'
-        terraform = bootstrap.find_terraform(config, '/')
-        self.assertEqual(terraform, '/Users/testuser/config_override/terraform')
-
-    @patch('subprocess.check_output')
-    def test_find_terraform_exception_terraform_in_config(self, mock_check_output):
-        """
-        Testing find_terraform throws exception when val in config
-        """
-        mock_check_output.side_effect = subprocess.CalledProcessError('Test', 1)
-        config = {}
-        config['terraform'] = '/Users/testuser/config_override/terraform'
-        terraform = bootstrap.find_terraform(config, '/')
-        self.assertEqual(terraform, '/Users/testuser/config_override/terraform')
-
-    @patch('subprocess.check_output')
     def test_find_terraform_no_except_tf_not_in_config(self, mock_check_output):
         """
-        Testing find_terraform when no exception, val not in config
+        Testing find_terraform when terraform found in path.
         """
         mock_check_output.return_value = '/usr/bin/terraform'
-        config = {}
-        terraform = bootstrap.find_terraform(config, '/')
+        terraform = bootstrap.find_terraform('/', {})
         self.assertEqual(terraform, '/usr/bin/terraform')
 
     @patch('subprocess.check_output')
-    def test_find_terraform_exception_tf_not_in_config(self, mock_check_output):
+    @patch('bootstrap.requests')
+    @patch('bootstrap._extract_zip')
+    def test_find_terraform_download(self, mock_extract, mock_requests, mock_check_output):
         """
-        Testing find_terraform throws exception when val not in config
+        Testing find_terraform goes to download when not found in PATH.
         """
+        config = {'terraform_url': 'http://example.com/download/terraform'}
         mock_check_output.side_effect = subprocess.CalledProcessError('Test', 1)
-        config = {}
-        config.pop('terraform', None)
-        terraform = bootstrap.find_terraform(config, '/Users/testuser/default')
-        self.assertEqual(terraform, '/Users/testuser/default/terraform')
+        bootstrap.find_terraform('/Users/testuser/default', config)
+        mock_extract.assert_called()
+        mock_requests.get.assert_called_with(config['terraform_url'])
 
     @patch('subprocess.check_output')
     def test_terraform_wrong_version(self, mock_check_output):
@@ -396,16 +376,17 @@ class TestBootstrap(unittest.TestCase):
         }
         with LogCapture(level=logging.CRITICAL) as crit:
             with self.assertRaises(AssertionError):
-                bootstrap.validate_terraform(config)
-            crit.check(('bootstrap',
-                        'CRITICAL',
-                        u"[critical ] Wrong terraform version found in PATH. [bootstrap] installed_version=u'Terraform v0.6.16' required_version=u'Terraform v0.9.11'"),
-                       ('bootstrap',
-                        'CRITICAL',
-                        u"[critical ] Please download required version:\n [bootstrap] Linux=u'https://releases.hashicorp.com/terraform/0.12.16/terraform_0.12.16_linux_amd64.zip' Mac=u'https://releases.hashicorp.com/terraform/0.12.16/terraform_0.12.16_darwin_amd64.zip'"),
-                       ('bootstrap',
-                        'CRITICAL',
-                        u'[critical ] See documentation for installing terraform: http://bit.ly/2ufjQ0R [bootstrap] ')) #yapf: disable
+                bootstrap.validate_terraform(self.directory, config)
+            actual = crit.actual()
+            expected = (
+                'bootstrap', 'CRITICAL',
+                u"[critical ] No Terraform download url found for your operating system. Automatic terraform download is not supported."
+            )
+            import pprint
+            pprint.pprint(actual)
+            self.assertEqual(expected[0], crit.records[0].name)
+            self.assertEqual(expected[1], crit.records[0].levelname)
+            self.assertTrue(crit.records[0].getMessage().startswith(expected[2]))
 
     @patch('subprocess.check_output')
     def test_terraform_call_fails(self, mock_check_output):
@@ -421,7 +402,7 @@ class TestBootstrap(unittest.TestCase):
         }
         with LogCapture(level=logging.CRITICAL) as crit:
             with self.assertRaises(AssertionError):
-                bootstrap.validate_terraform(config)
+                bootstrap.validate_terraform(self.directory, config)
             crit_logs = set(crit.actual())
 
             message_1 = (u'[critical ] See documentation for installing terraform: '
@@ -443,7 +424,7 @@ class TestBootstrap(unittest.TestCase):
         config = copy.copy(self.TERRAFORM_CONFIG)
         with LogCapture(level=logging.CRITICAL) as crit:
             with self.assertRaises(AssertionError):
-                bootstrap.validate_terraform(config)
+                bootstrap.validate_terraform(self.directory, config)
             crit_logs = set(crit.actual())
             print crit_logs
             crit_expected = {(
@@ -465,7 +446,7 @@ class TestBootstrap(unittest.TestCase):
         config = copy.copy(self.TERRAFORM_CONFIG)
         with LogCapture(level=logging.CRITICAL) as crit:
             with self.assertRaises(AssertionError):
-                bootstrap.validate_terraform(config)
+                bootstrap.validate_terraform(self.directory, config)
             crit_logs = set(crit.actual())
             crit_expected = set([(
                 'bootstrap', 'CRITICAL',
@@ -483,7 +464,7 @@ class TestBootstrap(unittest.TestCase):
         """
         mock_check_output.return_value = 'Terraform v0.9.11'
         config = copy.copy(self.TERRAFORM_CONFIG)
-        bootstrap.validate_terraform(config)
+        bootstrap.validate_terraform(self.directory, config)
         self.assertEqual(config, config)
 
     @patch('common.utils.get_dsi_bin_dir')
@@ -495,12 +476,12 @@ class TestBootstrap(unittest.TestCase):
         directory = os.path.dirname(os.path.abspath(__file__))
         terraform = "/Users/test_user/terraform"
         master_dsienv = ('export PATH=/Users/test_user/dsipath/bin:$PATH\n'
-                         'export TERRAFORM=/Users/test_user/terraform')
+                         'export TERRAFORM=/Users/test_user/terraform\n')
         bootstrap.write_dsienv(directory, terraform)
 
         with open(os.path.join(directory, "dsienv.sh")) as dsienv:
             test_dsienv = dsienv.read()
-            self.assertEqual(test_dsienv, master_dsienv)
+            self.assertEqual(test_dsienv[:len(master_dsienv)], master_dsienv)
         os.remove(os.path.join(directory, "dsienv.sh"))
 
     def test_load_bootstrap_no_file(self):
