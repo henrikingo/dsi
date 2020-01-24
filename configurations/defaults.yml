@@ -46,7 +46,7 @@ infrastructure_provisioning:
     mac_download: https://releases.hashicorp.com/terraform/0.12.16/terraform_0.12.16_darwin_amd64.zip
 
   # Known disks in the system. This list is a superset. String list for use below
-  disks: "/dev/xvdc /dev/xvdd /dev/xvde /dev/xvdf /dev/nvme1n1 /dev/nvme2n1"
+  disks: "/dev/xvdc /dev/xvdd /dev/xvde /dev/xvdf /dev/nvme0n1 /dev/nvme1n1 /dev/nvme2n1 /dev/nvme0n1"
   read_ahead: 32
   post_provisioning_steps:
     # This is a dict of steps you might want to use. This is not used directly.

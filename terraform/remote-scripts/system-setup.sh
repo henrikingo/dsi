@@ -99,6 +99,10 @@ elif [ "${WITH_EBS}" == "with_seeded_ebs" ]; then
     sudo ln -s /media/ebs /data
 # Default to SSD only instance
 else
+    if [[ -e /dev/nvme0n1 ]]; then
+        prepare_disk "/dev/nvme0n1" "/media/ephemeral0"
+        prepare_disk "/dev/nvme1n1" "/media/ephemeral1"
+    fi
     if [[ -e /media/ephemeral0 ]]; then
         sudo ln -s /media/ephemeral0 /data
     else
