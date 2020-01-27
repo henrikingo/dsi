@@ -46,7 +46,7 @@ def run_threads(commands, daemon=False):
         stop_thread_execution.set()
         if not thread_exceptions_bucket.empty():
             exception_info = thread_exceptions_bucket.get()
-            raise exception_info[0], exception_info[1], exception_info[2]
+            raise (exception_info[0], exception_info[1], exception_info[2])
         return list(thread_results.queue)
     except Exception as exc:
         stop_thread_execution.set()

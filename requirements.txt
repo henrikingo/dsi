@@ -1,3 +1,4 @@
+six
 pytz==2019.3
 -r requirements/provisioning.txt
 -r requirements/test.txt

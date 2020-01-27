@@ -10,6 +10,7 @@ sequence of chunks. Each chunk is a map from tuples keys to lists, where
 the tuple key represents a path through a JSON document from root to leaf,
 and the list is a list of values for that path.
 """
+from __future__ import print_function
 
 import collections
 import mmap
@@ -21,7 +22,7 @@ import sys
 import json
 
 def _msg(*s):
-    print >>sys.stderr, ' '.join(s)
+    print(' '.join(s), file=sys.stderr)
 
 #
 # basic bson parser, to be extended as needed
@@ -165,7 +166,7 @@ def _decode_chunk(chunk_doc, first_only):
     nzeroes = 0
     for metric_values in metrics.values():
         value = metric_values[-1]
-        for _ in xrange(ndeltas):
+        for _ in range(ndeltas):
             if nzeroes:
                 delta = 0
                 nzeroes -= 1
@@ -264,10 +265,11 @@ def read(fn):
 # sniff test
 #
 
+
 if __name__ == '__main__':
     for chunk in read(sys.argv[1]):
         values = chunk.values()
         assert(all(len(values[0])==len(v) for v in values))
-        print 'chunk, %d keys, %d values, key 0: %s, key 0 value 0: %d' % (
+        print('chunk, %d keys, %d values, key 0: %s, key 0 value 0: %d' % (
             len(chunk.keys()), len(values[0]), chunk.keys()[0], chunk[chunk.keys()[0]][0]
-        )
+        ))

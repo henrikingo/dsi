@@ -347,11 +347,11 @@ class RunTestsTestCase(unittest.TestCase):
                 self.assertTrue(mock_make_host.called)
                 self.assertTrue(mock_ssh.called)
                 self.assertEqual(exception.exception.code, 1)
-        task = mock_command_dicts[0]['pre_task'][0].iterkeys().next()
+        task = mock_command_dicts[0]['pre_task'][0].keys()[0]
         command = mock_command_dicts[0]['pre_task'][0][task]
         error_regex_str = "Exception originated in: .+"
-        error_regex_str = error_regex_str + "\nException msg: Mock "
-        error_regex_str = error_regex_str + "Exception\nrun_pre_post_commands:\n    "
+        error_regex_str = error_regex_str + "\nException msg:.*?"
+        error_regex_str = error_regex_str + "\nrun_pre_post_commands:\n    "
         error_regex_str = error_regex_str + "in task: " + task + "\n        "
         error_regex_str = error_regex_str + "in command: " + re.escape(str(command))
         error_pattern = re.compile(error_regex_str)

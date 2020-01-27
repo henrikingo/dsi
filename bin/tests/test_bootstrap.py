@@ -1,6 +1,9 @@
 """
 Unit tests for 'bootstrap.py'.
 """
+
+from __future__ import print_function
+
 import copy
 import logging
 import os
@@ -144,10 +147,10 @@ class TestBootstrap(unittest.TestCase):
         test_config['workload_setup'] = 'core'
         test_config['production'] = False
         bootstrap.copy_config_files(test_dsipath, test_config, test_directory)
-        master_files = set([
+        master_files = {
             'infrastructure_provisioning.yml', 'mongodb_setup.yml', 'test_control.yml',
             'workload_setup.yml'
-        ])
+        }
         test_files = set(os.listdir(test_directory))
         self.assertEqual(test_files, master_files)
 
@@ -410,8 +413,6 @@ class TestBootstrap(unittest.TestCase):
             message_2 = u'[critical ] Call to terraform failed.      [bootstrap] '
             crit_expected = {('bootstrap', 'CRITICAL', message_1),
                              ('bootstrap', 'CRITICAL', message_2)}
-            print crit_logs
-            print crit_expected
             self.assertTrue(crit_expected.issubset(crit_logs))
 
     @patch('subprocess.check_output')
@@ -426,14 +427,12 @@ class TestBootstrap(unittest.TestCase):
             with self.assertRaises(AssertionError):
                 bootstrap.validate_terraform(self.directory, config)
             crit_logs = set(crit.actual())
-            print crit_logs
             crit_expected = {(
                 'bootstrap', 'CRITICAL',
                 u'[critical ] See documentation for installing terraform: http://bit.ly/2ufjQ0R [bootstrap] '
             ),
                              ('bootstrap', 'CRITICAL',
                               u'[critical ] Cannot execute terraform binary file. [bootstrap] ')}
-            print crit_expected
             self.assertTrue(crit_expected.issubset(crit_logs))
 
     @patch('subprocess.check_output')
@@ -448,13 +447,11 @@ class TestBootstrap(unittest.TestCase):
             with self.assertRaises(AssertionError):
                 bootstrap.validate_terraform(self.directory, config)
             crit_logs = set(crit.actual())
-            crit_expected = set([(
+            crit_expected = {(
                 'bootstrap', 'CRITICAL',
                 u'[critical ] See documentation for installing terraform: http://bit.ly/2ufjQ0R [bootstrap] '
             ), ('bootstrap', 'CRITICAL',
-                u'[critical ] No terraform binary file found. [bootstrap] ')])
-            print crit_logs
-            print crit_expected
+                u'[critical ] No terraform binary file found. [bootstrap] ')}
             self.assertTrue(crit_expected.issubset(crit_logs))
 
     @patch('subprocess.check_output')

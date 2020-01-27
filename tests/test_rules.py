@@ -1,5 +1,7 @@
 """Unit tests for the rules module. Run using nosetests."""
 
+from __future__ import print_function
+
 import os
 import unittest
 
@@ -327,7 +329,7 @@ class TestResourceRules(unittest.TestCase):
         observed = rules.repl_member_state(self.single_chunk_3node, self.times_3node,
                                            self.members_3node, None)  # no test times
         expected = {}
-        print observed
+        print(observed)
         self.assertEqual(observed, expected)
 
     def test_member_state_fail(self):

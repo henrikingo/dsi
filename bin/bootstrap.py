@@ -4,6 +4,7 @@ Setup an work environment. Copy over the appropriate files.
 """
 
 from __future__ import print_function
+
 import argparse
 import os
 import os.path
@@ -92,7 +93,7 @@ def copy_config_files(dsipath, config, directory):
     if auto_workload != "" and auto_workload is not None:
         configs_to_copy["test_control"] = "auto_genny_workload"
 
-    for config_module, bootstrap_variable in configs_to_copy.iteritems():
+    for config_module, bootstrap_variable in configs_to_copy.items():
         # Example: ./mongodb_setup.yml
         target_file = os.path.join(directory, config_module + ".yml")
         # Example: ../dsi/configurations/mongodb_setup/mongodb_setup.standalone.wiredTiger.yml
@@ -161,7 +162,7 @@ def _extract_zip(zip_bytes, directory):
         zip_file_handle.write(zip_bytes)
     with zipfile.ZipFile(zip_file_path, 'r') as zip_file_handle:
         zip_file_handle.extractall(directory)
-    os.chmod(os.path.join(directory, "terraform"), 0555)
+    os.chmod(os.path.join(directory, "terraform"), 0o0555)
 
 
 def download_terraform(directory, config):

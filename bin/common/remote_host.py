@@ -149,7 +149,7 @@ class RemoteHost(common.host.Host):
         self.ftp.put(local_path, remote_path)
 
         # Get standard permissions mask e.g. 0755
-        source_permissions = os.stat(local_path).st_mode & 0777
+        source_permissions = os.stat(local_path).st_mode & 0o0777
         self.ftp.chmod(remote_path, source_permissions)
 
     def remote_exists(self, remote_path):

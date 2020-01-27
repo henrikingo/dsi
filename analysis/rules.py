@@ -1,5 +1,6 @@
 """Module of constants and rules used in our resource sanity checks. Used in post_run_check.py.
 """
+from __future__ import print_function
 
 from datetime import datetime
 import logging
@@ -396,8 +397,8 @@ def find_primary(chunk, repl_member_list):
         member_state = set(chunk[member_state_key])
         if len(member_state) != 1:
             # No formal error logging here right now.
-            print 'State transition occurred mid-chunk. Member {0} states: {1}'.format(
-                member, str(member_state))
+            print('State transition occurred mid-chunk. Member {0} states: {1}'.format(
+                member, str(member_state)))
             continue
         if member_state.pop() == 1:
             return member
@@ -559,7 +560,7 @@ def _flag_unacceptable_lag(lag_info_dict, repl_member_list):  #pylint: disable=t
         is_lagging = False
         failure_dict = {}
 
-        for index in xrange(1, num_samples):
+        for index in range(1, num_samples):
             current_time = lag_info_dict['times'][index]
             current_lag = member_lag[index]
             time_delta = current_time - previous['time']

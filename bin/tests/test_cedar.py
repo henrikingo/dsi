@@ -73,7 +73,7 @@ class TestCedar(unittest.TestCase):
 
     def test_simple_serialize(self):
         report = self.base_report()
-        cedar_test = cedar.CedarTest('test34', 3839247974L, 93477879L)
+        cedar_test = cedar.CedarTest('test34', 3839247974, 93477879)
         report.add_test(cedar_test)
 
         actual = report.as_dict()
@@ -82,7 +82,7 @@ class TestCedar(unittest.TestCase):
 
     def test_no_runtime_still_writes_file(self):
         report = cedar.Report(runtime={})
-        cedar_test = cedar.CedarTest('test34', 3839247974L, 93477879L)
+        cedar_test = cedar.CedarTest('test34', 3839247974, 93477879)
         report.add_test(cedar_test)
 
         try:
@@ -114,7 +114,7 @@ class TestCedar(unittest.TestCase):
     def test_with_metrics(self):
         report = self.base_report()
 
-        test = cedar.CedarTest('test12', 3839247974L, 93477879L)
+        test = cedar.CedarTest('test12', 3839247974, 93477879)
 
         test.add_metric('ops', 'PERCENTILE_P99', 300, True)
         test.add_tag('one-tag')

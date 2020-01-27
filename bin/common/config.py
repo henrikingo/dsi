@@ -1,12 +1,16 @@
-# -*- coding: UTF-8 -*-
+# coding=utf-8
 """ConfigDict class reads yaml config files and presents a dict() get/set API to read configs."""
 # pylint: disable=too-many-public-methods
+
+from __future__ import print_function
 
 import copy
 import logging
 import os.path
 import re
 import sys
+import six
+
 import yaml
 
 LOG = logging.getLogger(__name__)
@@ -250,11 +254,11 @@ class ConfigDict(dict):
         for key in self.keys():
             if i > 0:
                 str_representation += ", "
-            if isinstance(key, basestring):
+            if isinstance(key, six.string_types):
                 str_representation += "'" + key + "': "
             else:
                 str_representation += str(key) + ": "
-            if isinstance(self[key], basestring):
+            if isinstance(self[key], six.string_types):
                 str_representation += "'" + str(self[key]) + "'"
             else:
                 str_representation += str(self[key])
@@ -278,8 +282,8 @@ class ConfigDict(dict):
         defaults_keys = set()
         # Magic key: In a mongodb_setup.topology, if this is a mongod/mongos/configsvr node
         # always return a config_file key.
-        config_file_key = set(['config_file']) if self.is_topology_node() else set()
-        rs_conf_key = set(['rs_conf']) if self.is_topology_replset() else set()
+        config_file_key = {'config_file'} if self.is_topology_node() else set()
+        rs_conf_key = {'rs_conf'} if self.is_topology_replset() else set()
         if isinstance(self.raw, dict):
             raw_keys = set(self.raw.keys())
         if isinstance(self.overrides, dict):
@@ -305,7 +309,7 @@ class ConfigDict(dict):
     # See http://stackoverflow.com/questions/18317905/overloaded-iter-is-bypassed-when-deriving-from-dict
     def __iter__(self):
         """Iterator over the keys"""
-        return self.iterkeys()
+        return six.iterkeys(self)
 
     def values(self):
         """Return list of values, taking into account overrides."""
@@ -360,7 +364,7 @@ class ConfigDict(dict):
         # For leaf nodes, check overrides and return it if specified
         if self.overrides and \
                 isinstance(self.overrides, dict) and \
-                (not isinstance(self.raw.get(key, "some string"), (list, dict)) or \
+                (not isinstance(self.raw.get(key, "some string"), (list, dict)) or
                  (key in self.overrides and self.overrides.get(key) is None)):
             value = self.overrides.get(key)
             key_exists = key_exists or key in self.overrides
@@ -440,7 +444,7 @@ class ConfigDict(dict):
                 ]
 
             # str and unicode strings have the common parent class basestring.
-            if not isinstance(value, basestring):
+            if not isinstance(value, six.string_types):
                 break
 
             values = []
@@ -546,13 +550,13 @@ class ConfigDict(dict):
                 self.path[0] == 'mongodb_setup' and \
                 self.path[1] == 'topology' and \
                 isinstance(self.path[2], int) and \
-                ((isinstance(self.raw, dict) and \
-                  self.raw.get('cluster_type') == 'standalone') \
-                 or \
-                 (isinstance(self.defaults, dict) and \
-                  self.defaults.get('cluster_type') == 'standalone') \
-                 or \
-                 (isinstance(self.overrides, dict) and \
+                ((isinstance(self.raw, dict) and
+                  self.raw.get('cluster_type') == 'standalone')
+                 or
+                 (isinstance(self.defaults, dict) and
+                  self.defaults.get('cluster_type') == 'standalone')
+                 or
+                 (isinstance(self.overrides, dict) and
                   self.overrides.get('cluster_type') == 'standalone')):
             return True
 
@@ -592,13 +596,13 @@ class ConfigDict(dict):
                 self.path[0] == 'mongodb_setup' and \
                 self.path[1] == 'topology' and \
                 isinstance(self.path[2], int) and \
-                ((isinstance(self.raw, dict) and \
-                  self.raw.get('cluster_type') == 'replset') \
-                 or \
-                 (isinstance(self.defaults, dict) and \
-                  self.defaults.get('cluster_type') == 'replset') \
-                 or \
-                 (isinstance(self.overrides, dict) and \
+                ((isinstance(self.raw, dict) and
+                  self.raw.get('cluster_type') == 'replset')
+                 or
+                 (isinstance(self.defaults, dict) and
+                  self.defaults.get('cluster_type') == 'replset')
+                 or
+                 (isinstance(self.overrides, dict) and
                   self.overrides.get('cluster_type') == 'replset')):
             return True
 
@@ -642,7 +646,7 @@ def is_integer(astring):
 
 def change_key_name(dictionary, old_key, new_key):
     """Change key names at top level of a dictionary"""
-    for key, val in dictionary.iteritems():
+    for key, val in six.iteritems(dictionary):
         if key == old_key:
             dictionary[new_key] = val
             del dictionary[old_key]
@@ -669,7 +673,7 @@ def validate_id(value, path, ids, errs, src_file):
     :param str src_file: Source file name.
     """
 
-    if not isinstance(value, basestring):
+    if not isinstance(value, six.string_types):
         errs.append({
             'err_type': 'Invalid Id Type',
             'src_file': src_file,
@@ -736,10 +740,10 @@ _VALID_KEY_REX_SRC = r'^[A-Za-z][A-Za-z0-9\-_]*$'
 _VALID_KEY_REX = re.compile(_VALID_KEY_REX_SRC)
 """Compiled version of `_VALID_KEY_REX_SRC`"""
 # pylint: disable=invalid-name
-_VALID_KEY_TYPES = basestring
+_VALID_KEY_TYPES = six.string_types
 """All ConfigDict keys must be one of these types."""
 
-_VALID_SCALAR_TYPES = (basestring, float, int, type(None))
+_VALID_SCALAR_TYPES = tuple(list(six.string_types) + [float, int, type(None)])
 """All ConfigDict values must be one of these or list/dict (recursive) types"""
 
 # Words matching /on_.*/ as well as those enumerated below (in alphabetical order) are reserved in
@@ -811,6 +815,6 @@ def _check_object(obj, src_file=None):
 
 if __name__ == '__main__':
     with open(sys.argv[1], 'r') as w:
-        print "CHECKING {}".format(sys.argv[1])
+        print("CHECKING {}".format(sys.argv[1]))
         _yaml_load(w, sys.argv[1])
-        print "OKAY {}".format(sys.argv[1])
+        print("OKAY {}".format(sys.argv[1]))
