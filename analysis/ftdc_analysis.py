@@ -33,11 +33,15 @@ RESOURCE_RULES_FTDC_CHUNK = {
                 rules.max_connections,  # rule not run for 3-shard or shard-lite
                 rules.repl_member_state,  # rule not run for initialsync
             ],
+        'linux-1-node-replSet-cwrwc':
+            COMMON_RULES + [rules.repl_member_state],
         'linux-1-node-replSet-fle':
             COMMON_RULES + [rules.repl_member_state],
         'linux-3-shard':
             COMMON_RULES + [rules.repl_member_state],
         'linux-shard-lite':
+            COMMON_RULES + [rules.repl_member_state],
+        'linux-shard-lite-cwrwc':
             COMMON_RULES + [rules.repl_member_state],
         'linux-3-node-replSet-initialsync':
             COMMON_RULES + [rules.max_connections]
