@@ -14,8 +14,10 @@ import unittest
 from mock import patch, call, mock_open, MagicMock, ANY
 from testfixtures import LogCapture, log_capture
 
+from common.config import ConfigDict
 import common.utils
 import infrastructure_provisioning as ip
+import test_config
 from test_lib.fixture_files import FixtureFiles
 import test_lib.structlog_for_test as structlog_for_test
 
@@ -45,6 +47,9 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 'infrastructure_provisioning': 'single'
             },
             'infrastructure_provisioning': {
+                'hostnames': {
+                    'method': '/etc/hosts'
+                },
                 'terraform': {
                     'aws_required_version': 'test_aws_version'
                 },
@@ -429,6 +434,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             provisioner = ip.Provisioner(self.config, provisioning_file=self.provision_log_path)
             provisioner.cluster = 'initialsync-logkeeper'
             provisioner.reuse_cluster = True
+            provisioner.hostnames_method = None
             provisioner.setup_cluster()
             mock_setup_security_tf.assert_called()
             mock_setup_terraform_tf.assert_called()
@@ -687,6 +693,55 @@ class TestInfrastructureProvisioning(unittest.TestCase):
              'ERROR',
              u"[error    ] For more info, see:            [infrastructure_provisioning] path=u'{}'".format(FIXTURE_FILES.fixture_file_path('terraform.stdout.log'))),
         ) # yapf: disable
+
+    @patch('paramiko.SSHClient')
+    @patch('common.remote_ssh_host.RemoteSSHHost.create_file')
+    @patch('common.remote_ssh_host.RemoteSSHHost.exec_command')
+    def test_setup_hostnames(self, mock_exec_command, mock_create_file, mock_ssh):
+        _ = mock_ssh
+        config_files = os.path.dirname(os.path.abspath(__file__)) + '/../../docs/config-specs/'
+        with test_config.in_dir(config_files):
+            real_config_dict = ConfigDict('infrastructure_provisioning')
+            real_config_dict.load()
+            real_config_dict.save = MagicMock(name='save')
+
+            provisioner = ip.Provisioner(real_config_dict)
+            provisioner.setup_hostnames()
+            out = provisioner.config['infrastructure_provisioning']['out']
+            self.assertEqual(out['mongod'][0]['private_hostname'], 'mongod0.dsitest.dev')
+            self.assertEqual(out['configsvr'][2]['private_hostname'], 'configsvr2.dsitest.dev')
+            self.assertEqual(mock_create_file.call_count, 16)
+            self.assertEqual(mock_exec_command.call_count, 16)
+
+    def test_build_hosts_file(self):
+        expected = [
+            '10.2.1.1\tmd md0 mongod0 mongod0.dsitest.dev',
+            '10.2.1.2\tmd1 mongod1 mongod1.dsitest.dev',
+            '10.2.1.3\tmd2 mongod2 mongod2.dsitest.dev',
+            '10.2.1.4\tmd3 mongod3 mongod3.dsitest.dev',
+            '10.2.1.5\tmd4 mongod4 mongod4.dsitest.dev',
+            '10.2.1.6\tmd5 mongod5 mongod5.dsitest.dev',
+            '10.2.1.7\tmd6 mongod6 mongod6.dsitest.dev',
+            '10.2.1.8\tmd7 mongod7 mongod7.dsitest.dev',
+            '10.2.1.9\tmd8 mongod8 mongod8.dsitest.dev',
+            '10.2.1.100\tms ms0 mongos0 mongos0.dsitest.dev',
+            '10.2.1.101\tms1 mongos1 mongos1.dsitest.dev',
+            '10.2.1.102\tms2 mongos2 mongos2.dsitest.dev',
+            '10.2.1.51\tcs cs0 configsvr0 configsvr0.dsitest.dev',
+            '10.2.1.52\tcs1 configsvr1 configsvr1.dsitest.dev',
+            '10.2.1.53\tcs2 configsvr2 configsvr2.dsitest.dev',
+            '10.2.1.10\twc wc0 workload_client0 workload_client0.dsitest.dev'
+        ]
+
+        config_files = os.path.dirname(os.path.abspath(__file__)) + '/../../docs/config-specs/'
+        with test_config.in_dir(config_files):
+            real_config_dict = ConfigDict('infrastructure_provisioning')
+            real_config_dict.load()
+            real_config_dict.save = MagicMock(name='save')
+
+            provisioner = ip.Provisioner(real_config_dict)
+            hosts_contents = provisioner._build_hosts_file()
+            self.assertEqual(expected, hosts_contents)
 
 
 if __name__ == '__main__':

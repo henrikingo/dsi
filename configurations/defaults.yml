@@ -16,6 +16,12 @@ runtime_secret:
   dsi_analysis_atlas_user: dsi_analysis
 
 infrastructure_provisioning:
+  # Write hostnames to /etc/hosts on deployed hosts. (Uses private ip:s when available.)
+  hostnames:
+    # Supported methods: /etc/hosts and null
+    method: /etc/hosts
+    domain: dsitest.dev
+  # Terraform variables
   tfvars:
     cluster_name: default_cluster_name
     mongod_instance_count: 1

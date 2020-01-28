@@ -104,7 +104,7 @@ class CommandRunnerTestCase(unittest.TestCase):
                 },
             ]
             common.command_runner.run_host_commands(commands, self.config, "test_id")
-            assert mongod.call_count == 2
+            self.assertEqual(mongod.call_count, 2)
 
     def test_run_host_command_map(self):
         """ Test run command map not known """

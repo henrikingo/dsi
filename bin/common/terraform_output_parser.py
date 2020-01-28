@@ -90,7 +90,7 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
             items = line.rstrip('\n').split(" ")
             if items[0] in self.INSTANCE_TYPES:
                 instance_type = items[0]
-                LOG.info("Found instance type %s", instance_type)
+                LOG.debug("Found instance type %s", instance_type)
                 self._ips[instance_type] = [item for item in items[2:] if item != '']
 
     def write_output_files(self):
@@ -99,4 +99,3 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
         """
         self._generate_output()
         self.config_obj.save()
-        LOG.info("Generate infrastructure_provisioning.out.yml")

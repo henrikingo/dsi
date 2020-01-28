@@ -3,19 +3,22 @@
 Provision AWS resources using terraform
 """
 import argparse
+import datetime
+from functools import partial
 import glob
 import os
 import re
 import shutil
 import subprocess
-import sys
 import structlog
 
 from common.log import setup_logging
 from common.config import ConfigDict
 from common.command_runner import run_pre_post_commands, EXCEPTION_BEHAVIOR
+from common.remote_host import RemoteHost
 from common.terraform_config import TerraformConfiguration
 from common.terraform_output_parser import TerraformOutputParser
+from common.thread_runner import run_threads
 import common.utils
 from infrastructure_teardown import destroy_resources
 
@@ -82,6 +85,8 @@ class Provisioner(object):
         self.terraform = common.utils.find_terraform()
         LOG.info("Using terraform binary:", path=self.terraform)
         self.tf_log_path = TF_LOG_PATH
+        self.hostnames_method = config['infrastructure_provisioning'].get('hostnames',
+                                                                          {}).get('method')
 
         os.environ['TF_LOG'] = 'DEBUG'
         os.environ['TF_LOG_PATH'] = TF_LOG_PATH
@@ -311,21 +316,24 @@ class Provisioner(object):
             tf_parser = TerraformOutputParser(config=self.config, terraform_output=terraform_output)
             tf_parser.write_output_files()
 
+            if self.reuse_cluster:
+                self.save_terraform_state()
+
+            # Write hostnames to /etc/hosts
+            self.setup_hostnames()
             with open('infrastructure_provisioning.out.yml', 'r') as provisioning_out_yaml:
                 LOG.info('Contents of infrastructure_provisioning.out.yml:')
                 LOG.info(provisioning_out_yaml.read())
             LOG.info("EC2 resources provisioned/updated successfully.")
-            if self.reuse_cluster:
-                self.save_terraform_state()
             # Run post provisioning scripts.
             run_pre_post_commands("post_provisioning", [self.config['infrastructure_provisioning']],
                                   self.config, EXCEPTION_BEHAVIOR.EXIT)
         except Exception as exception:
-            LOG.info("Failed to provision EC2 resources.")
+            LOG.error("Failed to provision EC2 resources.", exc_info=True)
             if self.stderr is not None:
                 self.stderr.close()
             self.print_terraform_errors()
-            LOG.info("Releasing any EC2 resources that did deploy.")
+            LOG.error("Releasing any EC2 resources that did deploy.")
             destroy_resources()
             rmtree_when_present(self.evg_data_dir)
             raise exception
@@ -414,6 +422,83 @@ class Provisioner(object):
             LOG.error(subprocess.check_output(["tail", "-n 100", self.provisioning_file]))
             LOG.error("For more info, see:", path=self.provisioning_file)
 
+    def setup_hostnames(self):
+        """
+        Write hostnames to /etc/hosts on deployed instances.
+
+        Example:
+
+            10.2.0.100  md md0 mongod0 mongod0.dsi.10gen.cc
+        """
+        if self.hostnames_method != '/etc/hosts':
+            LOG.debug("Not configuring hostnames.", method=self.hostnames_method)
+            return
+        LOG.info("Write hostnames to /etc/hosts on deployed instances.")
+
+        output = self._build_hosts_file()
+        self._write_hosts_file(output)
+        self.config.save()
+
+    def _build_hosts_file(self):
+        output = []
+        host_types = ['mongod', 'mongos', 'configsvr', 'workload_client']
+        short_names = {'mongod': 'md', 'mongos': 'ms', 'configsvr': 'cs', 'workload_client': 'wc'}
+        domain = self.config['infrastructure_provisioning']['hostnames']['domain']
+        out = self.config['infrastructure_provisioning'].get('out')
+        LOG.debug("infrastructure_provisioning.out", out=out)
+
+        if not isinstance(out, ConfigDict):
+            return output
+
+        for key in host_types:
+            i = 0
+            primary_hostname = ""
+            for host in out.get(key, {}):
+                # As usual, we use the private network address if available.
+                ip_addr = host['private_ip'] if 'private_ip' in host else host['public_ip']
+                # Example: 10.1.2.3\t
+                line = "{}\t".format(ip_addr)
+                if i == 0:
+                    # md is short for md0, ms for ms0, etc...
+                    # Example: 10.1.2.3    md
+                    line += short_names[key] + " "
+                # Example: 10.1.2.3    md md0
+                line += short_names[key] + str(i) + " "
+                # Example: 10.1.2.3    md md0 mongod0
+                line += key + str(i) + " "
+                primary_hostname = key + str(i) + " "
+                if domain:
+                    # Example: 10.1.2.3    md md0 mongod0 mongod0.dsitest.dev
+                    line += key + str(i) + "." + domain
+                    primary_hostname = key + str(i) + "." + domain
+                output.append(line)
+                # Also record the hostname in ConfigDict (out.yml)
+                self.config['infrastructure_provisioning']['out'][key][i]['private_hostname'] \
+                    = primary_hostname
+                i = i + 1
+
+        return output
+
+    def _write_hosts_file(self, output):
+        hosts = common.host_utils.extract_hosts('all_hosts', self.config)
+        LOG.debug("Write /etc/hosts on all hosts.", hosts=hosts)
+        run_threads([partial(_write_hosts_file_thread, host_info, output) for host_info in hosts])
+
+
+def _write_hosts_file_thread(host_info, output):
+    timestamp = datetime.datetime.now().isoformat('T')
+    upload_file = '/tmp/hosts.new.' + timestamp
+    bak_file = '/etc/hosts.bak.' + timestamp
+    argv = [['sudo', 'cp', '/etc/hosts', bak_file],
+            ['sudo', 'bash', '-c', "'cat {} >> /etc/hosts'".format(upload_file)]]
+
+    file_contents = "###### BELOW GENERATED BY DSI ####################\n"
+    file_contents += "\n".join(output) + "\n"
+    target_host = common.host_factory.make_host(host_info)
+    assert isinstance(target_host, RemoteHost), "/etc/hosts writer must be a RemoteHost"
+    target_host.create_file(upload_file, file_contents)
+    target_host.run(argv)
+
 
 # pylint: enable=too-many-instance-attributes
 
@@ -428,7 +513,7 @@ def run_and_save_output(command):
     # and is not buffered by subprocess.
     output = ''
     for line in iter(process.stdout.readline, ""):
-        sys.stdout.write(line)
+        LOG.debug(line)
         output = output + line
     process.communicate()
     if process.returncode != 0:
