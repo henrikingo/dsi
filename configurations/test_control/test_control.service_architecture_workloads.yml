@@ -39,5 +39,5 @@ run:
 
   - id: PrimaryRequiredReads
     type: genny
-    config_filename: ./genny/etc/genny/workloads/networking/PrimaryRequiredReads.yml
+    config_filename: ./genny/etc/genny/workloads/networking/ServiceArchitectureWorkloads.yml
 
