@@ -233,7 +233,10 @@ def symlink_bindir(directory):
     :param str directory: The work directory.
     """
     src = common.utils.get_dsi_bin_dir()
-    dest = os.path.join(directory, 'bin')
+    dest = os.path.join(directory, '.bin')
+    if os.path.exists(dest):
+        LOGGER.warning("Removing old symlink to binaries.", dest=dest)
+        os.remove(dest)
     LOGGER.info("Creating symlink to binaries.", src=src, dest=dest)
     os.symlink(src, dest)
 
@@ -250,7 +253,7 @@ def write_dsienv(directory, terraform):
         dsienv.write('export PATH={0}:$PATH\n'.format(common.utils.get_dsi_bin_dir()))
         dsienv.write('export TERRAFORM={0}\n'.format(terraform))
         dsienv.write('echo "Tip: Sourcing dsienv.sh is now optional. You can also just execute:"\n')
-        dsienv.write('echo "    ./bin/infrastructure_provisioning.py     # etc..."\n')
+        dsienv.write('echo "    ./.bin/infrastructure_provisioning.py     # etc..."\n')
 
 
 def load_bootstrap(config, directory):
