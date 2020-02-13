@@ -5,8 +5,8 @@ import argparse
 import logging
 import sys
 
-from bin.common import log
 import aws_cleanup
+import log
 
 REGIONS = ['us-west-2', 'us-east-1', 'eu-west-1']
 

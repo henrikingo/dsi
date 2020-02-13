@@ -3,8 +3,11 @@ Tests for bin/test_control.py
 """
 
 import logging
+import os
 import re
+import shutil
 import subprocess
+import tempfile
 import unittest
 
 from mock import patch, MagicMock, call, Mock
@@ -15,10 +18,15 @@ import common.host_utils
 from common.command_runner import EXCEPTION_BEHAVIOR
 from common.command_runner import print_trace
 from common.command_runner import run_pre_post_commands
+from common.config import ConfigDict
 from common.remote_host import RemoteHost
+from common.utils import mkdir_p
 from test_control import copy_timeseries
 from test_control import run_tests
 from test_control import run_test
+from test_lib.fixture_files import FixtureFiles
+
+FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 
 class RunTestTestCase(unittest.TestCase):
@@ -39,9 +47,21 @@ class RunTestTestCase(unittest.TestCase):
                 'timeouts': {
                     'no_output_ms': 100
                 },
-                'numactl_prefix_for_workload_client': 'dummy_numa_prefix'
+                'numactl_prefix_for_workload_client': 'dummy_numa_prefix',
+                'out': {
+                    'exit_codes': {}
+                }
             }
         }
+        # Change to a temporary directory for this test because the report
+        # file is generated as a relative path to the CWD.
+        self.original_cwd = os.getcwd()
+        self.tempdir = tempfile.mkdtemp()
+        os.chdir(self.tempdir)
+
+    def tearDown(self):
+        os.chdir(self.original_cwd)
+        shutil.rmtree(self.tempdir)
 
     @patch('common.command_runner.make_workload_runner_host')
     def test_run_test_success(self, mock_make_host):
@@ -97,7 +117,8 @@ class RunTestsTestCase(unittest.TestCase):
                          'private_ip': '10.2.1.53'}
                     ],
                     'workload_client': [
-                        {'public_ip': '53.1.1.101'}
+                        {'public_ip': '53.1.1.101',
+                         'private_ip': '10.2.1.200'}
                     ]
                 }
             },
@@ -162,8 +183,7 @@ class RunTestsTestCase(unittest.TestCase):
                     },
                     {'id': 'fio',
                      'type': 'fio',
-                     'cmd': '${test_control.numactl_prefix_for_workload_client} ./fio-test.sh' +
-                            '${mongodb_setup.meta.hostname}',
+                     'cmd': './fio-test.sh some_hostname',
                      'skip_validate': True
                     }
                 ],
@@ -174,9 +194,19 @@ class RunTestsTestCase(unittest.TestCase):
                             'workloads/workload_timestamps.csv': '../workloads_timestamps.csv'}
                         }
                     }
-                ]
+                ],
+                'out': {'exit_codes': {}}
             }
-        }  # yapf: disable
+        } # yapf: disable
+        self.reports_container = FIXTURE_FILES.fixture_file_path('container')
+        self.reports_path = os.path.join(self.reports_container, 'reports_tests')
+
+        mkdir_p(self.reports_path)
+
+    def tearDown(self):
+        shutil.rmtree(self.reports_container)
+        if os.path.exists('test_control.out.yml'):
+            os.remove('test_control.out.yml')
 
     @patch('os.walk')
     @patch('test_control.extract_hosts')
@@ -411,13 +441,15 @@ class RunTestsTestCase(unittest.TestCase):
     @patch('test_control.parse_test_results', return_value=['status', 'CedarTest'])
     @patch('test_control.prepare_reports_dir')
     @patch('subprocess.check_call')
-    @patch('test_control.legacy_copy_perf_output')
+    @patch('test_control.print_perf_json')
     @patch('test_control.cedar')
     def test_pre_post_commands_ordering(self, mock_cedar, mock_copy_perf, mock_check_call,
                                         mock_prep_rep, mock_parse_results, mock_run_test,
                                         mock_pre_post):
         """Test that pre and post commands are called in the right order"""
-        run_tests(self.config)
+        real_config_dict = ConfigDict('test_control')
+        real_config_dict.raw = self.config
+        run_tests(real_config_dict)
 
         # We will check that the calls to run_pre_post_commands() happened in expected order
         expected_args = [
@@ -429,10 +461,10 @@ class RunTestsTestCase(unittest.TestCase):
 
     # pylint: disable=unused-argument
     @patch('test_control.run_pre_post_commands')
-    @patch('test_control.parse_test_results', return_value=['status', 'CedarTest'])
+    @patch('test_control.parse_test_results', return_value=('status', ['CedarTest']))
     @patch('test_control.prepare_reports_dir')
     @patch('subprocess.check_call')
-    @patch('test_control.legacy_copy_perf_output')
+    @patch('test_control.print_perf_json')
     @patch('test_control.cedar')
     def test_run_test_exception(self, mock_cedar, mock_copy_perf, mock_check_call, mock_prep_rep,
                                 mock_parse_results, mock_pre_post):
@@ -440,41 +472,46 @@ class RunTestsTestCase(unittest.TestCase):
         Test CalledProcessErrors with cause run_tests return false but other errors will
         cause it to return true
         """
+        real_config_dict = ConfigDict('test_control')
+        real_config_dict.raw = self.config
 
         # pylint: disable=bad-continuation
         with patch('test_control.run_test',
                    side_effect=[subprocess.CalledProcessError(99, 'failed-cmd'), 0, 0]):
-            utter_failure = run_tests(self.config)
+            utter_failure = run_tests(real_config_dict)
             self.assertFalse(utter_failure)
 
         with patch('test_control.run_test', side_effect=[ValueError(), 0, 0]):
-            utter_failure = run_tests(self.config)
+            utter_failure = run_tests(real_config_dict)
             self.assertTrue(utter_failure)
 
     # pylint: disable=unused-argument
     @patch('test_control.run_pre_post_commands')
     @patch('test_control.run_test')
-    @patch('test_control.parse_test_results')
+    @patch('test_control.parse_test_results', return_value=('status', ['CedarTest']))
     @patch('test_control.prepare_reports_dir')
     @patch('subprocess.check_call')
-    @patch('test_control.legacy_copy_perf_output')
+    @patch('test_control.print_perf_json')
     @patch('common.cedar.Report')
     def test_cedar_report(self, mock_cedar_report, mock_copy_perf, mock_check_call, mock_prep_rep,
                           mock_parse_results, mock_run_test, mock_pre_post):
         """Test that cedar report is called the correct number of times"""
+        real_config_dict = ConfigDict('test_control')
+        real_config_dict.raw = self.config
+        run_tests(real_config_dict)
 
         mock_cedar_test = MagicMock()
         mock_parse_results.return_value = (True, [mock_cedar_test])
 
-        run_tests(self.config)
+        run_tests(real_config_dict)
 
-        mock_cedar_report.assert_called_once_with({'task_id': 'STAY IN YOUR VEHICLE CITIZEN'})
+        mock_cedar_report.assert_called()
         mock_cedar_report().add_test.assert_has_calls([
             call(mock_cedar_test),
             call(mock_cedar_test),
             call(mock_cedar_test),
         ])
-        mock_cedar_report().write_report.assert_called_once()
+        mock_cedar_report().write_report.assert_called()
 
 
 if __name__ == '__main__':

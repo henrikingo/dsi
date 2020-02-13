@@ -6,6 +6,8 @@ _pip() {
 }
 DIR=$(dirname "$0")
 
+
+
 if [[ $# -lt 1 ]]; then
     echo -e "Usage: \\n\\t$0 setup\\n\\t$0 command-provided-by-setup.py" >/dev/stderr
     exit 5
@@ -26,7 +28,7 @@ if [[ ! -d "dsi_venv" ]]; then
         source "${DIR}/dsi_venv/bin/activate"
     set -u
 
-    _pip install -e "${DIR}"
+    # Install DSI requirements
     _pip install -r "${DIR}/requirements.txt"
 
     # This script runs in the work directory.

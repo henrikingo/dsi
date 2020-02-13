@@ -15,18 +15,15 @@ source ${BUILDIR}/test-common.sh
 # this set of directories uses /pylintrc
 top_paths=(
     .
-    analysis
-    analysis/evergreen
     aws_tools
     bin
     bin/common
+    bin/evergreen
 )
 
-# this set of directories uses /tests/pylintrc
+# this set of directories uses /bin/tests/pylintrc
 test_paths=(
     bin/tests
-    tests
-    tests/test_evergreen
     testscripts
     test_lib
 )
@@ -46,6 +43,6 @@ run_pylint() {
 
 failed=0
 run_pylint pylintrc         "${top_paths[@]}"
-run_pylint tests/pylintrc   "${test_paths[@]}"
+run_pylint bin/tests/pylintrc   "${test_paths[@]}"
 
 exit $failed

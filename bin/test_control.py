@@ -29,15 +29,14 @@ from testcontrollib import test_runner
 LOG = logging.getLogger(__name__)
 
 
-def legacy_copy_perf_output():
-    """Put perf.json in the legacy place for backward compatibility"""
-    if os.path.exists('../perf.json'):
-        os.remove('../perf.json')
-    shutil.copyfile('perf.json', '../perf.json')
-    # Read perf.json into the log file
-    with open('../perf.json') as perf_file:
-        for line in perf_file:
-            LOG.info(line.rstrip())
+def print_perf_json(filename='perf.json'):
+    """
+    Read perf.json into the log file
+    """
+    if os.path.isfile(filename):
+        with open(filename) as perf_file:
+            for line in perf_file:
+                LOG.info(line.rstrip())
 
 
 def generate_config_file(test, local_dir, client_host):
@@ -114,6 +113,11 @@ def run_test(test, config):
 
     client_host.close()
 
+    # Store exit status for bin/analysis.py
+    config['test_control']['out']['exit_codes'][test['id']] = {
+        'status': status.status,
+        'message': status.message
+    }
     if status.status != EXIT_STATUS_OK:
         raise subprocess.CalledProcessError(status.status, test['id'], output=status.message)
 
@@ -135,6 +139,7 @@ def run_tests(config):
     :return: True if all tests failed or an error occurred.
              No more tests are run when an error is encountered.
     """
+    config['test_control']['out'] = {'exit_codes': {}}
     test_control_config = config['test_control']
     mongodb_setup_config = config['mongodb_setup']
 
@@ -227,14 +232,14 @@ def run_tests(config):
     except Exception as e:  # pylint: disable=broad-except
         LOG.error('Unexcepted exception: %s', repr(e), exc_info=1)
     finally:
+        # Save exit codes for analysis.py
+        config.save()
+        # Cedar
         report.write_report()
         run_pre_post_commands('post_task', [test_control_config, mongodb_setup_config], config,
                               EXCEPTION_BEHAVIOR.CONTINUE)
-        # Set perf.json to 555
-        # Todo: replace with os.chmod call or remove in general
-        # Previously this was set to 777. I can't come up with a good reason.
-        subprocess.check_call(['chmod', '555', 'perf.json'])
-        legacy_copy_perf_output()
+        # Print perf.json to screen
+        print_perf_json(config['test_control']['perf_json']['path'])
 
     LOG.info("%s of %s tests exited with an error.", num_tests_failed, num_tests_run)
 
@@ -266,11 +271,6 @@ def main(argv):
     :returns: int the exit status to return to the caller (0 for OK)
     """
     parser = argparse.ArgumentParser(description='DSI Test runner')
-
-    # These were left here for backward compatibility.]
-    parser.add_argument('foo', help='Ignored', nargs='?')
-    parser.add_argument('bar', help='Ignored', nargs='?')
-    parser.add_argument('czar', help='Ignored', nargs='?')
 
     parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
     parser.add_argument('--log-file', help='path to log file')

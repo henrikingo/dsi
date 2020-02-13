@@ -68,6 +68,6 @@ def regex_match_pattern(files_to_skip):
 
     return pattern + pattern_end
 if __name__ == '__main__':
-    DIRECTORIES_TO_CHECK = ['analysis', 'tests', 'bin', 'test_lib']
+    DIRECTORIES_TO_CHECK = ['bin', 'test_lib']
     FILES_TO_SKIP = ['readers']
     check_format(DIRECTORIES_TO_CHECK, FILES_TO_SKIP)

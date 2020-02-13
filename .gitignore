@@ -10,8 +10,6 @@ security.tf
 /coverage.xml
 
 # Python Shelve
-tests/unittest-files/override_responses
-tests/unittest-files/override_responses.gz
 bin/tests/unittest-files/override_responses
 bin/tests/unittest-files/override_responses.gz
 
@@ -21,16 +19,8 @@ bin/tests/unittest-files/override_responses.gz
 # Unit test config file
 /config.yml
 
-# Change points CLI defaults
-/.change-points
-
-detect_changes.log
-
 # Created by setup.py
 *.egg-info/
-/build
-/dist
-_e_divisive.so
 
 # Mac specific
 /tests/.DS_Store

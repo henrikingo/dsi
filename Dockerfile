@@ -17,4 +17,4 @@ RUN set -xe \
     && apk add py-pip
 RUN ln -s /usr/include/locale.h /usr/include/xlocale.h
 RUN pip install --upgrade pip
-RUN pip install -r requirements-dev.txt && python ./setup.py -q --no-user-cfg develop
+RUN pip install -r requirements-dev.txt && python aws_tools/setup.py -q --no-user-cfg develop

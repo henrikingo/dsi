@@ -5,3 +5,4 @@ requests~=2.22.0
 jira==1.0.15
 structlog~=19.1.0
 colorama==0.4.1
+numpy==1.13.3

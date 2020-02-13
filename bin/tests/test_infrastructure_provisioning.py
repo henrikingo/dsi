@@ -705,7 +705,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             real_config_dict.load()
             real_config_dict.save = MagicMock(name='save')
 
-            provisioner = ip.Provisioner(real_config_dict)
+            provisioner = ip.Provisioner(real_config_dict,
+                                         provisioning_file=self.provision_log_path)
             provisioner.setup_hostnames()
             out = provisioner.config['infrastructure_provisioning']['out']
             self.assertEqual(out['mongod'][0]['private_hostname'], 'mongod0.dsitest.dev')
@@ -739,7 +740,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             real_config_dict.load()
             real_config_dict.save = MagicMock(name='save')
 
-            provisioner = ip.Provisioner(real_config_dict)
+            provisioner = ip.Provisioner(real_config_dict,
+                                         provisioning_file=self.provision_log_path)
             hosts_contents = provisioner._build_hosts_file()
             self.assertEqual(expected, hosts_contents)
 

@@ -22,7 +22,7 @@ class FixtureFiles(object):
         :type subdir_path: str, None.
         :param bool is_unittest: If true use 'unittest-files' else 'systest-files'.
         """
-        dir_name = dir_name if dir_name is not None else 'tests'
+        dir_name = dir_name if dir_name is not None else 'bin/tests'
         subdir_name = subdir_name if subdir_name is not None else ''
         self.repo_root_dir = os.path.dirname(os.path.dirname(__file__))
         self.tests_root_dir = os.path.abspath(dir_name)
