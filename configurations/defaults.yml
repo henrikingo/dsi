@@ -108,8 +108,8 @@ mongodb_setup:
   clean_db_dir: true
   # Note: It's also allowed to upload your own binary. You can unset this by setting to the empty
   # string "" in mongodb_setup.yml or overrides.yml.
-  # This URL is 4.0.6. We use the sys-perf build instead of official release to include the jstests/ directory that we copy in our compile task.
-  mongodb_binary_archive: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_4.0_caa42a1f75a56c7643d0b68d3880444375ec42e3/caa42a1f75a56c7643d0b68d3880444375ec42e3/linux/mongodb-sys_perf_4.0_caa42a1f75a56c7643d0b68d3880444375ec42e3.tar.gz
+  # This URL is 4.0.16. We use the sys-perf build instead of official release to include the jstests/ directory that we copy in our compile task.
+  mongodb_binary_archive: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_4.0_2a5433168a53044cb6b4fa8083e4cfd7ba142221/2a5433168a53044cb6b4fa8083e4cfd7ba142221/linux/mongodb-sys_perf_4.0_2a5433168a53044cb6b4fa8083e4cfd7ba142221.tar.gz
 
   mongod_config_file:  # Note these defaults can be overridden by user, but not unset.
     net:
