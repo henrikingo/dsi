@@ -23,8 +23,8 @@ class LocalHost(common.host.Host):
     """
     Represents a connection to the local host
     """
-    def __init__(self, mongodb_auth_settings=None, mongodb_tls_settings=None):
-        super(LocalHost, self).__init__("localhost", mongodb_auth_settings, mongodb_tls_settings)
+    def __init__(self, mongodb_auth_settings=None, use_tls=False):
+        super(LocalHost, self).__init__("localhost", mongodb_auth_settings, use_tls)
         self.user = "-"
 
     # pylint: disable=unused-argument

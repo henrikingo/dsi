@@ -125,8 +125,7 @@ class MongoNode(MongoCluster):
         """
         super(MongoNode, self).__init__(topology.auth_settings)
 
-        self.mongo_config = topology.mongo_config
-        self.net_config = topology.net_config
+        self.topology_config = topology
 
         self.auth_enabled = False
 
@@ -134,6 +133,20 @@ class MongoNode(MongoCluster):
         self._host = None
 
         self.delay_node = topology.delay_node
+
+    @property
+    def mongo_config(self):
+        """
+        syntax sugar around the mongo_config from the topology_config
+        """
+        return self.topology_config.mongo_config
+
+    @property
+    def net_config(self):
+        """
+        syntax sugar around the net_config from the topology_config
+        """
+        return self.topology_config.net_config
 
     # This is a @property versus a plain self.host var for 2 reasons:
     # 1. We don't need to be doing SSH stuff or be reading related
@@ -145,8 +158,7 @@ class MongoNode(MongoCluster):
         """Access to remote or local host."""
         if self._host is None:
             host_info = self.net_config.compute_host_info()
-            self._host = host_factory.make_host(host_info,
-                                                mongodb_tls_settings=self.net_config.tls_settings)
+            self._host = host_factory.make_host(host_info, use_tls=self.topology_config.use_tls)
         return self._host
 
     def reset_delays(self):

@@ -50,7 +50,7 @@ def mongodb_tls_configured(config_file):
     :param config_file: ConfigDict key mongodb_setup.topology.*.config_file or equivalent structure
     :return: if tls is enabled
     """
-    if 'net' in config_file:
+    if config_file and 'net' in config_file:
         net = config_file['net']
         return 'ssl' in net and net['ssl']['mode'] in {'requireSSL', 'allowSSL', 'preferSSL'}
     return False

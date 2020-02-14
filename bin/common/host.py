@@ -26,12 +26,12 @@ class Host(object):
     """
     Base class for hosts
     """
-    def __init__(self, hostname, mongodb_auth_settings=None, mongodb_tls_settings=None):
+    def __init__(self, hostname, mongodb_auth_settings=None, use_tls=False):
         self.user = ""
         self._alias = None
         self.hostname = hostname
         self.mongodb_auth_settings = mongodb_auth_settings
-        self.mongodb_tls_settings = mongodb_tls_settings
+        self.use_tls = use_tls
 
     @property
     def alias(self):
@@ -196,13 +196,10 @@ class Host(object):
                 self.mongodb_auth_settings.mongo_password, '--authenticationDatabase', 'admin'
             ])
 
-        # TODO: This probably works with just `--ssl --sslAllowInvalidHostnames` and no files?
-        if self.mongodb_tls_settings:
-            argv.extend([
-                '--ssl', '--sslAllowInvalidHostnames', '--sslCAFile',
-                self.mongodb_tls_settings.ca_file, '--sslPEMKeyFile',
-                self.mongodb_tls_settings.pem_key_file
-            ])
+        # --sslAllowInvalidHostnames is necessary when we use ip addresses and localhost.
+        # TODO: Change all mongodb_setup code to use the hostnames instead.
+        if self.use_tls:
+            argv.extend(['--ssl', '--sslAllowInvalidHostnames'])
 
         # connection_string can contain ampersands, escape them.
         # Note that quoting doesn't work because gRPC is not a shell and treats quotes

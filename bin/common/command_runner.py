@@ -48,12 +48,7 @@ def prepare_reports_dir(reports_dir='reports'):
 
 
 # pylint: disable=too-many-arguments
-def make_host_runner(host_info,
-                     command,
-                     prefix,
-                     config,
-                     mongodb_auth_settings=None,
-                     mongodb_tls_settings=None):
+def make_host_runner(host_info, command, prefix, config, mongodb_auth_settings=None, use_tls=None):
     """
     For the host, make an appropriate RemoteHost or LocalHost Object and run the set of commands.
 
@@ -66,9 +61,9 @@ def make_host_runner(host_info,
     is not a specific test related to the current command, the value of prefix should reflect the
     hook that the command belongs to, such as between_tests, post_task, and so on.
     """
+
     # Create the appropriate host type
-    target_host = common.host_factory.make_host(host_info, mongodb_auth_settings,
-                                                mongodb_tls_settings)
+    target_host = common.host_factory.make_host(host_info, mongodb_auth_settings, use_tls)
     try:
         # If command is a string, pass it directly to run
         if isinstance(command, str):
@@ -103,14 +98,13 @@ def _run_host_command(host_list, command, config, prefix):
     mongodb_auth_settings = common.mongodb_setup_helpers.mongodb_auth_settings(config)
     # Note: This works because mongodb_setup.meta.net.ssl has the same structure as a mongo node
     # config file, even if it isn't otherwise a config file.
-    mongodb_tls_settings = common.mongodb_setup_helpers.mongodb_tls_settings(
-        config['mongodb_setup']['meta'])
+    use_tls = common.mongodb_setup_helpers.mongodb_tls_settings(config['mongodb_setup']['meta'])
 
     thread_commands = []
     for host_info in host_list:
         thread_commands.append(
             partial(make_host_runner, host_info, command, prefix, config, mongodb_auth_settings,
-                    mongodb_tls_settings))
+                    use_tls))
 
     run_threads(thread_commands, daemon=True)
 
@@ -259,9 +253,8 @@ def make_workload_runner_host(config):
     mongodb_auth_settings = common.mongodb_setup_helpers.mongodb_auth_settings(config)
     # Note: This works because mongodb_setup.meta.net.ssl has the same structure as a mongo node
     # config file, even if it isn't otherwise a config file.
-    mongodb_tls_settings = common.mongodb_setup_helpers.mongodb_tls_settings(
-        config['mongodb_setup']['meta'])
-    return common.host_factory.make_host(host_info, mongodb_auth_settings, mongodb_tls_settings)
+    use_tls = common.mongodb_setup_helpers.mongodb_tls_configured(config['mongodb_setup']['meta'])
+    return common.host_factory.make_host(host_info, mongodb_auth_settings, use_tls)
 
 
 def print_trace(trace, exception):

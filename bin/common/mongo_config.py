@@ -129,6 +129,8 @@ class NodeTopologyConfig(object):
         self.net_config = NetConfig(topology, root_config)
         self.delay_node = delay_graph.get_node(self.net_config.compute_host_info().private_ip)
         self.auth_settings = mongodb_setup_helpers.mongodb_auth_settings(root_config)
+        self.use_tls = mongodb_setup_helpers.mongodb_tls_configured(
+            root_config['mongodb_setup']['meta'])
 
 
 class ReplTopologyConfig(object):

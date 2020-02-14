@@ -131,28 +131,14 @@ mongodb_setup:
     username: username
     password: password
 
-  # Get necessary SSL keys (not used yet but no harm in uploading them)
+  # Upload SSL keys (not always used but no harm in uploading them)
   pre_cluster_start:
     - on_all_hosts:
         upload_repo_files:
-          - source: configurations/mongodb_setup/ssl/member.pem
+          - source: configurations/mongodb_setup/ssl/dsitest.dev.pem
             target: ${mongodb_setup.mongo_dir}/member.pem
-          - source: configurations/mongodb_setup/ssl/root.crt
+          - source: configurations/mongodb_setup/ssl/dsitest.dev.ca-bundle
             target: ${mongodb_setup.mongo_dir}/root.crt
-    - on_workload_client:
-        upload_repo_files:
-          - source: configurations/mongodb_setup/ssl/client.crt
-            target: ${mongodb_setup.mongo_dir}/client.crt
-          - source: configurations/mongodb_setup/ssl/client.key
-            target: ${mongodb_setup.mongo_dir}/client.key
-          - source: configurations/mongodb_setup/ssl/keystore.jks
-            target: ${mongodb_setup.mongo_dir}/keystore.jks
-          - source: configurations/mongodb_setup/ssl/root.crt
-            target: ${mongodb_setup.mongo_dir}/root.crt
-    - on_workload_client:
-        exec: |
-          export JAVA_HOME="/usr/java/jdk1.8.0_162"
-          sudo $JAVA_HOME/bin/keytool -importcert -trustcacerts -file ${mongodb_setup.mongo_dir}/root.crt -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -noprompt || true
 
   mongos_config_file:
     net: ${mongodb_setup.mongod_config_file.net}
