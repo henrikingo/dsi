@@ -88,7 +88,7 @@ functions:
       params:
         working_dir: src
         script: |
-          ./run-dsi testscripts/compare_coverage.py
+          PYTHONPATH=analysis:bin:. ./run-dsi testscripts/compare_coverage.py
 
 #######################################
 #               Tasks                 #
