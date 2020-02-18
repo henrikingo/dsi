@@ -483,13 +483,32 @@ class TestLogAnalysisRules(unittest.TestCase):
             "2016-07-14T01:00:04.000+0000 E err-type foo bar baz",
             "2016-07-14T01:00:04.000+0000 L err-type elecTIon suCCEeded",
             "2016-07-14T01:00:04.000+0000 D err-type transition TO PRIMARY",
-            "2016-07-14T01:00:04.000+0000 I err-type PosIx_FallocaTE FailEd"
+            "2016-07-14T01:00:04.000+0000 I err-type PosIx_FallocaTE FailEd",
+            "{\"t\":{\"$date\":\"2016-07-14T01:00:04.000Z\"},\"s\":\"F\", \"c\":\"COMMAND\", \"ctx\":\"conn7\","
+            "\"msg\":\"foo bar baz\"}",
+            "{\"t\":{\"$date\":\"2016-07-14T01:00:04.000Z\"},\"s\":\"E\", \"c\":\"COMMAND\", \"ctx\":\"conn7\","
+            "\"msg\":\"foo bar baz\"}",
+            "{\"t\":{\"$date\":\"2016-07-14T01:00:04.000Z\"},\"s\":\"L\", \"c\":\"ELECTION\", \"ctx\":\"conn7\","
+            "\"msg\":\"elecTIon suCCEeded\"}",
+            "{\"t\":{\"$date\":\"2016-07-14T01:00:04.000Z\"},\"s\":\"D\", \"c\":\"REPL\", \"ctx\":\"conn7\","
+            "\"msg\":\"transition TO PRIMARY\"}",
+            "{\"t\":{\"$date\":\"2016-07-14T01:00:04.000Z\"},\"s\":\"I\", \"c\":\"STORAGE\", \"ctx\":\"conn7\","
+            "\"msg\":\"PosIx_FallocaTE FailEd\"}",
+            "{\"t\":{\"$date\":\"2016-07-14T01:00:04.000Z\"},\"s\":\"D\", \"c\":\"REPL\", \"ctx\":\"conn7\","
+            "\"msg\":\"transition to {newState} from {memberState}\",\"attr\":{\"newState\":\"PRIMARY\","
+            "\"memberState\":\"SECONDARY\"}}"
         ]
 
         good_lines = [
             "2016-07-14T01:00:04.000+0000 L err-type nothing bad here",
             "2016-07-14T01:00:04.000+0000 L err-type or here",
-            "2016-07-14T01:00:04.000+0000 E err-type ttl query execution for index"
+            "2016-07-14T01:00:04.000+0000 E err-type ttl query execution for index",
+            "{\"t\":{\"$date\":\"2016-07-14T01:00:04.000Z\"},\"s\":\"L\", \"c\":\"COMMAND\", \"ctx\":\"conn7\","
+            "\"msg\":\"nothing bad here\"}",
+            "{\"t\":{\"$date\":\"2016-07-14T01:00:04.000Z\"},\"s\":\"L\", \"c\":\"COMMAND\", \"ctx\":\"conn7\","
+            "\"msg\":\"or here\"}",
+            "{\"t\":{\"$date\":\"2016-07-14T01:00:04.000Z\"},\"s\":\"E\", \"c\":\"COMMAND\", \"ctx\":\"conn7\","
+            "\"msg\":\"ttl query execution for index\"}"
         ]
 
         for line in bad_lines:

@@ -5,6 +5,7 @@ Module of constants and rules used in our resource sanity checks. Used in post_r
 from __future__ import print_function
 
 from datetime import datetime
+import json
 import logging
 import math
 import os
@@ -103,18 +104,38 @@ REPL_MEMBER_LAG_RESET_MS = REPL_MEMBER_LAG_RESET_S * MS
 
 def is_log_line_bad(log_line, rules, test_times=None, task=None):
     """
-    Return whether or not `log_line`, a line from a log file, is suspect (see `BAD_LOG_TYPES` and
-    `BAD_MESSAGES`). Only messages that were printed during the time a test was run (as specified in
-    `test_times`) are considered, unless `test_times` is None.
+    Return whether or not `log_line`, a line from a log file, is suspect. Only messages that were
+    printed during the time a test was run (as specified in `test_times`) are considered, unless
+    `test_times` is None.
     """
 
     log_line = log_line.strip()
-    line_components = log_line.split(" ", 3)
-    if len(line_components) != 4:
-        LOGGER.warning("Couldn't parse log line: `%s`", log_line)
-        return False
+    timestamp = err_type_char = log_msg = error = None
 
-    timestamp, err_type_char, _, log_msg = line_components
+    try:
+        log_json = json.loads(log_line)
+    # Older versions of MongoDB don't support structured logging; fall back to using legacy log parsing
+    except ValueError:
+        line_components = log_line.split(" ", 3)
+        if len(line_components) != 4:
+            error = Exception("Invalid number of components in log")
+        else:
+            timestamp, err_type_char, _, log_msg = line_components
+    except Exception as e:
+        error = e
+    else:
+        try:
+            timestamp = log_json['t']['$date']
+            err_type_char = log_json['s']
+            log_msg = log_json['msg']
+            if 'attr' in log_json:
+                log_msg = log_msg.format(**log_json['attr'])
+        except Exception as e:
+            error = e
+
+    if error is not None:
+        LOGGER.warning("Couldn't parse log line. Error: `%s`. Line: `%s`", error, log_line)
+        return False
 
     try:
         log_ts = date_parser.parse(timestamp)
