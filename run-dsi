@@ -4,7 +4,10 @@ set -eou pipefail
 _pip() {
     /usr/bin/env pip "$@" --isolated -q -q
 }
-DIR=$(dirname "$0")
+
+pushd "$(dirname "$0")" >/dev/null
+    DIR="$(pwd -P)"
+popd >/dev/null
 
 
 
@@ -15,7 +18,7 @@ fi
 
 # Check for dsi-setup-done which we create at the end of setup.
 # This prevents half-setup environments.
-if [[ ! -d "dsi_venv" || ! -e "dsi_venv/dsi-setup-done" ]]; then
+if [[ ! -d "${DIR}/dsi_venv" || ! -e "${DIR}/dsi_venv/dsi-setup-done" ]]; then
     rm -rf "dsi_venv"
 
     python_path=/opt/mongodbtoolchain/v2/bin/python2.7
@@ -41,14 +44,16 @@ if [[ ! -d "dsi_venv" || ! -e "dsi_venv/dsi-setup-done" ]]; then
     # Record that we've done setup at the current git sha.
     # (Don't use the sha for nwo but might in the future to determine
     # if we need to run pip install again or something.)
-    git rev-parse HEAD > "${DIR}/dsi_venv/dsi-setup-done"
+    pushd "${DIR}" >/dev/null
+        git rev-parse HEAD > "${DIR}/dsi_venv/dsi-setup-done"
+    popd >/dev/null
 fi
 
 
 if [[ "$1" != "setup" ]]; then
-    set +u
-        # shellcheck source=/dev/null
-        source "${DIR}/dsi_venv/bin/activate"
-    set -u
+    export VIRTUAL_ENV_DISABLE_PROMPT=1  # prevent undefined $PS1 variable
+    # shellcheck source=/dev/null
+    source "${DIR}/dsi_venv/bin/activate"
+
     /usr/bin/env "$@"
 fi
