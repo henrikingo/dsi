@@ -1,6 +1,4 @@
 #!/bin/bash
 
-CMD="yapf -i --style .style.yapf $(find bin test_lib -name '*.py' ! -name 'readers.py')"
-
-echo "Formatting python scripts"
-$CMD
+# TODO: TIG-2385 once we're moved to black, call something like
+#   black -l 100 --target-version py27 bin
