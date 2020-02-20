@@ -480,6 +480,7 @@ class RunTestsTestCase(unittest.TestCase):
                    side_effect=[subprocess.CalledProcessError(99, 'failed-cmd'), 0, 0]):
             utter_failure = run_tests(real_config_dict)
             self.assertFalse(utter_failure)
+            mock_copy_perf.assert_not_called()
 
         with patch('test_control.run_test', side_effect=[ValueError(), 0, 0]):
             utter_failure = run_tests(real_config_dict)

@@ -234,12 +234,14 @@ def run_tests(config):
     finally:
         # Save exit codes for analysis.py
         config.save()
-        # Cedar
-        report.write_report()
         run_pre_post_commands('post_task', [test_control_config, mongodb_setup_config], config,
                               EXCEPTION_BEHAVIOR.CONTINUE)
-        # Print perf.json to screen
-        print_perf_json(config['test_control']['perf_json']['path'])
+
+        if num_tests_failed == 0:
+            # Cedar
+            report.write_report()
+            # Print perf.json to screen
+            print_perf_json(config['test_control']['perf_json']['path'])
 
     LOG.info("%s of %s tests exited with an error.", num_tests_failed, num_tests_run)
 
