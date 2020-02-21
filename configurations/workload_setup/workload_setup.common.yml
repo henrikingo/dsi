@@ -21,7 +21,6 @@ genny: &compile_genny
         # Clean up any build artifacts that were copied up with the repo
         rm -rf ./data/genny/build/*
         mkdir -p data/tmp; pushd data/tmp
-        sudo yum update -y > ./yum-update.log
         if [[ "${infrastructure_provisioning.tfvars.image}" == "centos7" ]]; then
           # Install the toolchain
           mkdir -p ~/data/mongodbtoolchain
