@@ -12,7 +12,7 @@ WITH_HT="${2:-false}"
 
 # set -e
 
-sudo yum check-update -y
+sudo yum update -y
 sudo yum remove -y iptables iptables-libs
 sudo yum -y install tmux git wget sysstat dstat perf fio xfsprogs krb5-libs openldap-devel cyrus-sasl cyrus-sasl-devel cyrus-sasl-gssapi cyrus-sasl-lib cyrus-sasl-md5 net-snmp net-snmp-devel net-snmp-libs net-snmp-utils python2-pip numactl iproute-tc
 
