@@ -4,9 +4,9 @@ pylint==1.9.5
 # configparser is used by pylint and updates to it have caused failures, so pin it to a known
 # good version (see https://jira.mongodb.org/browse/BF-11962).
 configparser==3.5.0
-yapf==0.28.0
-testfixtures==5.3.1
-yamllint==1.10.0
+yapf==0.29.0
+testfixtures==6.13.0
+yamllint==1.20.0
 json_diff==1.3.3
-coverage==4.5.4
-future==0.16.0
+coverage==5.0.3
+future==0.18.2

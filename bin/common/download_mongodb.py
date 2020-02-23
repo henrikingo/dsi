@@ -6,7 +6,7 @@ import os
 import re
 from uuid import uuid4
 
-#pylint: disable=too-few-public-methods
+# pylint: disable=too-few-public-methods
 import common.host_factory
 import common.host_utils
 from thread_runner import run_threads
@@ -14,7 +14,7 @@ from thread_runner import run_threads
 LOG = logging.getLogger(__name__)
 
 
-def temp_file(path="mongodb.tgz", sanitize=lambda s: re.sub(r'[^A-Za-z0-9_\-.]', "", s)):
+def temp_file(path="mongodb.tgz", sanitize=lambda s: re.sub(r"[^A-Za-z0-9_\-.]", "", s)):
     """ create a temp file name based using the path as a suffix.
      The basename portion of the path will be sanitized and appended to a random UUID.
      If no path is provided then a name is generated using a default path. Worst case, the code will
@@ -31,10 +31,11 @@ def temp_file(path="mongodb.tgz", sanitize=lambda s: re.sub(r'[^A-Za-z0-9_\-.]',
 
 class DownloadMongodb(object):
     """Download and install mongodb_binary_archive on all nodes."""
+
     def __init__(self, config):
 
         self.config = config
-        self.mongodb_binary_archive = config['mongodb_setup'].get('mongodb_binary_archive', "")
+        self.mongodb_binary_archive = config["mongodb_setup"].get("mongodb_binary_archive", "")
 
         # If mongodb_binary_archive is set in runtime, use it instead. Previously we only did that
         # if the mongodb_binary_archive was "", but we have since added a useable default value.
@@ -42,13 +43,14 @@ class DownloadMongodb(object):
         # introducted in PERF-1044. It may be removed after all verions of system_perf.yml,
         # longevity.yml specify the mongodb_binary_archive in bootstrap.yml instead of runtime.yml.
 
-        if 'runtime' in config.keys():
-            self.mongodb_binary_archive = config['runtime'].get('mongodb_binary_archive',
-                                                                self.mongodb_binary_archive)
+        if "runtime" in list(config.keys()):
+            self.mongodb_binary_archive = config["runtime"].get(
+                "mongodb_binary_archive", self.mongodb_binary_archive
+            )
         LOG.info("Download url is %s", self.mongodb_binary_archive)
 
         self.hosts = []
-        for host_info in common.host_utils.extract_hosts('all_hosts', self.config):
+        for host_info in common.host_utils.extract_hosts("all_hosts", self.config):
             self.hosts.append(common.host_factory.make_host(host_info))
 
         if self.mongodb_binary_archive:
@@ -61,8 +63,10 @@ class DownloadMongodb(object):
                       successfully on all servers.
         """
         if not self.mongodb_binary_archive:
-            LOG.warning("DownloadMongodb: download_and_extract() was called, "
-                        "but mongodb_binary_archive isn't defined.")
+            LOG.warning(
+                "DownloadMongodb: download_and_extract() was called, "
+                "but mongodb_binary_archive isn't defined."
+            )
             return True
         to_download = []
         for host in self.hosts:
@@ -74,19 +78,20 @@ class DownloadMongodb(object):
     def _remote_commands(self, host):
         mongo_dir = self.config["mongodb_setup"]["mongo_dir"]
         tmp_file = os.path.join(mongo_dir, temp_file(self.mongodb_binary_archive))
-        return [['echo', 'Downloading {} to {}.'.format(self.mongodb_binary_archive,
-                                                        host.hostname)],
-                ['rm', '-rf', mongo_dir],
-                ['rm', '-rf', 'bin'],
-                ['rm', '-rf', 'jstests'],
-                ['mkdir', mongo_dir],
-                ['curl', '--retry', '10', '-fsS', self.mongodb_binary_archive, '-o', tmp_file],
-                ['tar', '-C', mongo_dir, '-zxf', tmp_file],
-                ['rm', '-f', tmp_file],
-                ['cd', '..'],
-                ['mv', mongo_dir + '/*/*', mongo_dir],
-                ['mkdir', '-p', 'bin'],
-                ['ln', '-s', '${PWD}/' + mongo_dir + '/bin/*', 'bin/'],
-                ['ln', '-s', mongo_dir + '/jstests', 'jstests'],
-                ['bin/mongo', '--version'],
-                [mongo_dir + '/bin/mongod', '--version']] # yapf: disable
+        return [
+            ["echo", "Downloading {} to {}.".format(self.mongodb_binary_archive, host.hostname)],
+            ["rm", "-rf", mongo_dir],
+            ["rm", "-rf", "bin"],
+            ["rm", "-rf", "jstests"],
+            ["mkdir", mongo_dir],
+            ["curl", "--retry", "10", "-fsS", self.mongodb_binary_archive, "-o", tmp_file],
+            ["tar", "-C", mongo_dir, "-zxf", tmp_file],
+            ["rm", "-f", tmp_file],
+            ["cd", ".."],
+            ["mv", mongo_dir + "/*/*", mongo_dir],
+            ["mkdir", "-p", "bin"],
+            ["ln", "-s", "${PWD}/" + mongo_dir + "/bin/*", "bin/"],
+            ["ln", "-s", mongo_dir + "/jstests", "jstests"],
+            ["bin/mongo", "--version"],
+            [mongo_dir + "/bin/mongod", "--version"],
+        ]  # yapf: disable

@@ -21,6 +21,7 @@ class Report(object):
     the "tests" field, with additional metadata common to all tests in the
     top-level fields of the Report structure.
     """
+
     def __init__(self, runtime=None):
         """
         :param runtime dict
@@ -35,16 +36,16 @@ class Report(object):
         """
         if runtime is None:
             runtime = {}
-        self.project = runtime.get('project')
-        self.version = runtime.get('version_id')
-        self.variant = runtime.get('build_variant')
-        self.task_name = runtime.get('task_name')
-        self.task_id = runtime.get('task_id')
-        self.execution_number = runtime.get('execution')
-        self.mainline = not runtime.get('is_patch', True)
+        self.project = runtime.get("project")
+        self.version = runtime.get("version_id")
+        self.variant = runtime.get("build_variant")
+        self.task_name = runtime.get("task_name")
+        self.task_id = runtime.get("task_id")
+        self.execution_number = runtime.get("execution")
+        self.mainline = not runtime.get("is_patch", True)
 
         try:
-            self.order = int(runtime.get('order'))
+            self.order = int(runtime.get("order"))
         except (ValueError, TypeError):
             self.order = None
 
@@ -62,7 +63,7 @@ class Report(object):
         """
         Write to cedar_report.json
         """
-        with open('cedar_report.json', 'w') as out:
+        with open("cedar_report.json", "w") as out:
             out.write(self.as_json())
 
     def as_json(self):
@@ -76,16 +77,16 @@ class Report(object):
         :return: dictionary representation of this entity. Recursively dict types.
         """
         return {
-            'project': self.project,
-            'version': self.version,
-            'order': self.order,
-            'variant': self.variant,
-            'task_name': self.task_name,
-            'task_id': self.task_id,
-            'execution_number': self.execution_number,
-            'mainline': self.mainline,
-            'tests': sorted([test.as_dict() for test in self.tests]),
-            'bucket': self.bucket.as_dict(),
+            "project": self.project,
+            "version": self.version,
+            "order": self.order,
+            "variant": self.variant,
+            "task_name": self.task_name,
+            "task_id": self.task_id,
+            "execution_number": self.execution_number,
+            "mainline": self.mainline,
+            "tests": sorted([test.as_dict() for test in self.tests]),
+            "bucket": self.bucket.as_dict(),
         }
 
 
@@ -97,6 +98,7 @@ class CedarTest(object):
     high level metadata that is, in this representation, stored in the report
     structure.
     """
+
     def __init__(self, name, created, completed):
         """
         :param str name: Name of the test.
@@ -105,11 +107,13 @@ class CedarTest(object):
         :param float completed: Time in seconds from the epoch to when the test
         ended (timestamp).
         """
-        self._raw_params = {'name': name, 'created': created, 'completed': completed}
-        self._created_at = datetime.fromtimestamp(created,
-                                                  tz=pytz.UTC).replace(tzinfo=pytz.UTC).isoformat()
-        self._completed_at = datetime.fromtimestamp(
-            completed, tz=pytz.UTC).replace(tzinfo=pytz.UTC).isoformat()
+        self._raw_params = {"name": name, "created": created, "completed": completed}
+        self._created_at = (
+            datetime.fromtimestamp(created, tz=pytz.UTC).replace(tzinfo=pytz.UTC).isoformat()
+        )
+        self._completed_at = (
+            datetime.fromtimestamp(completed, tz=pytz.UTC).replace(tzinfo=pytz.UTC).isoformat()
+        )
 
         self.info = TestInfo(name)
         self.metrics = []
@@ -126,10 +130,9 @@ class CedarTest(object):
 
         For the parameters see `TestMetric.__init__`.
         """
-        metric = TestMetric(name=name,
-                            rollup_type=rollup_type,
-                            value=value,
-                            user_submitted=user_submitted)
+        metric = TestMetric(
+            name=name, rollup_type=rollup_type, value=value, user_submitted=user_submitted
+        )
         self.metrics.append(metric)
 
     def add_tag(self, tag):
@@ -146,7 +149,7 @@ class CedarTest(object):
 
         :param int thread_level: The thread level to set.
         """
-        self.set_argument('thread_level', thread_level)
+        self.set_argument("thread_level", thread_level)
 
     def set_argument(self, argument, value):
         """
@@ -162,12 +165,12 @@ class CedarTest(object):
         :return: dictionary representation of this entity. Recursively dict types.
         """
         return {
-            'info': self.info.as_dict(),
-            'created_at': self._created_at,
-            'completed_at': self._completed_at,
-            'artifacts': [],  # use TestArtifact below when we support it
-            'metrics': sorted([metric.as_dict() for metric in self.metrics]),
-            'sub_tests': sorted([test.as_dict() for test in self.sub_tests]),
+            "info": self.info.as_dict(),
+            "created_at": self._created_at,
+            "completed_at": self._completed_at,
+            "artifacts": [],  # use TestArtifact below when we support it
+            "metrics": sorted([metric.as_dict() for metric in self.metrics]),
+            "sub_tests": sorted([test.as_dict() for test in self.sub_tests]),
         }
 
 
@@ -179,6 +182,7 @@ class TestInfo(object):
     tests, and should be populated automatically by the client when uploading
     results.
     """
+
     def __init__(self, name, trial=0):
         """
         :param str name: Name of the test.
@@ -194,10 +198,10 @@ class TestInfo(object):
         :return: dictionary representation of this entity. Recursively dict types.
         """
         return {
-            'test_name': self.test_name,
-            'trial': self.trial,
-            'tags': sorted(list(self.tags)),
-            'args': self.args,
+            "test_name": self.test_name,
+            "trial": self.trial,
+            "tags": sorted(list(self.tags)),
+            "args": self.args,
         }
 
 
@@ -208,6 +212,7 @@ class TestMetric(object):
     in the case that test harnesses need or want to report their own test
     outcomes.
     """
+
     def __init__(self, name, rollup_type, value, user_submitted=False):
         """
         :param str name: Name of the metric.
@@ -227,10 +232,10 @@ class TestMetric(object):
         :return: dictionary representation of this entity. Recursively dict types.
         """
         return {
-            'name': self.name,
-            'type': self.type,
-            'value': self.value,
-            'user_submitted': self.user_submitted,
+            "name": self.name,
+            "type": self.type,
+            "value": self.value,
+            "user_submitted": self.user_submitted,
         }
 
 
@@ -240,25 +245,26 @@ class BucketConfiguration(object):
     BucketConfiguration describes the configuration information for an AWS s3
     bucket for uploading test artifacts for this report.
     """
+
     def __init__(self):
-        self.api_key = ''
-        self.api_secret = ''
-        self.api_token = ''
-        self.region = ''
-        self.name = ''
-        self.prefix = ''
+        self.api_key = ""
+        self.api_secret = ""
+        self.api_token = ""
+        self.region = ""
+        self.name = ""
+        self.prefix = ""
 
     def as_dict(self):
         """
         :return: dictionary representation of this entity. Recursively dict types.
         """
         return {
-            'api_key': self.api_key,
-            'api_secret': self.api_secret,
-            'api_token': self.api_token,
-            'region': self.region,
-            'name': self.name,
-            'prefix': self.prefix,
+            "api_key": self.api_key,
+            "api_secret": self.api_secret,
+            "api_token": self.api_token,
+            "region": self.region,
+            "name": self.name,
+            "prefix": self.prefix,
         }
 
 
@@ -323,24 +329,27 @@ def _create_curator_runner(value, host, config):
     :param config: top-level config-dict. used for runtime_secret to get ldap config
     :return: CuratorRunner
     """
-    if value != 'normal':
-        raise NotImplementedError('Curator of type ' + value + ' not supported')
-    if 'runtime_secret' in config and 'perf_jira_user' in config['runtime_secret']:
+    if value != "normal":
+        raise NotImplementedError("Curator of type " + value + " not supported")
+    if "runtime_secret" in config and "perf_jira_user" in config["runtime_secret"]:
         return ShellCuratorRunner(value, host, config)
     return NopCuratorRunner(value, host, config)
 
 
 class CertRetriever(object):
     """Retrieves certs/keys from the cedar API."""
+
     def __init__(self, config):
         """
         :param config: top-level ConfigDict
         """
         self.config = config
-        self.auth = json.dumps({
-            'username': self.config['runtime_secret']['perf_jira_user'],
-            'password': self.config['runtime_secret']['perf_jira_pw']
-        })
+        self.auth = json.dumps(
+            {
+                "username": self.config["runtime_secret"]["perf_jira_user"],
+                "password": self.config["runtime_secret"]["perf_jira_pw"],
+            }
+        )
 
     @staticmethod
     def _fetch(url, output, **kwargs):
@@ -356,7 +365,7 @@ class CertRetriever(object):
             return output
         resp = requests.get(url, **kwargs)
         resp.raise_for_status()
-        with open(output, 'w') as pem:
+        with open(output, "w") as pem:
             pem.write(resp.text)
         return output
 
@@ -364,28 +373,33 @@ class CertRetriever(object):
         """
         :return: the root cert authority pem file from cedar
         """
-        return self._fetch('https://cedar.mongodb.com/rest/v1/admin/ca', 'cedar.ca.pem')
+        return self._fetch("https://cedar.mongodb.com/rest/v1/admin/ca", "cedar.ca.pem")
 
     def user_cert(self):
         """
         :return: the user-level pem
         """
-        return self._fetch('https://cedar.mongodb.com/rest/v1/admin/users/certificate',
-                           'cedar.user.crt',
-                           data=self.auth)
+        return self._fetch(
+            "https://cedar.mongodb.com/rest/v1/admin/users/certificate",
+            "cedar.user.crt",
+            data=self.auth,
+        )
 
     def user_key(self):
         """
         :return: the user-level key
         """
-        return self._fetch('https://cedar.mongodb.com/rest/v1/admin/users/certificate/key',
-                           'cedar.user.key',
-                           data=self.auth)
+        return self._fetch(
+            "https://cedar.mongodb.com/rest/v1/admin/users/certificate/key",
+            "cedar.user.key",
+            data=self.auth,
+        )
 
 
 # pylint: disable=too-few-public-methods
 class CuratorRunner(object):
     """Runs curator via a host.py host"""
+
     def __init__(self, value, host, config):
         """
         :param value: the run_curator type
@@ -401,12 +415,13 @@ class CuratorRunner(object):
         Do your magic.
         :return: output from host.run_command(the-generated-command)
         """
-        raise NotImplementedError('Must be implemented in subclasses')
+        raise NotImplementedError("Must be implemented in subclasses")
 
 
 # pylint: disable=too-few-public-methods
 class NopCuratorRunner(CuratorRunner):
     """Does nothing. Used when no runtime_secret in config (e..g when running DSI locally)"""
+
     def run_curator(self):
         pass
 
@@ -414,6 +429,7 @@ class NopCuratorRunner(CuratorRunner):
 # pylint: disable=too-few-public-methods
 class ShellCuratorRunner(CuratorRunner):
     """Runs curator for realsies."""
+
     def __init__(self, value, host, config, retriever=None):
         """
         :param value: the run_curator type
@@ -430,23 +446,26 @@ class ShellCuratorRunner(CuratorRunner):
         :return: output from host.run_command(the-generated-command)
         """
         # allow ${bootstrap.curator} if running DSI locally
-        curator = self.config['bootstrap']['curator'] if 'bootstrap' in self.config \
-            and 'curator' in self.config['bootstrap'] else './curator'
+        curator = (
+            self.config["bootstrap"]["curator"]
+            if "bootstrap" in self.config and "curator" in self.config["bootstrap"]
+            else "./curator"
+        )
 
         command = [
             curator,
-            'poplar',
-            'send',
-            '--service',
-            'cedar.mongodb.com:7070',
-            '--cert',
+            "poplar",
+            "send",
+            "--service",
+            "cedar.mongodb.com:7070",
+            "--cert",
             self.retriever.user_cert(),
-            '--key',
+            "--key",
             self.retriever.user_key(),
-            '--ca',
+            "--ca",
             self.retriever.root_ca(),
-            '--path',
-            'cedar_report.json',
+            "--path",
+            "cedar_report.json",
         ]
         return self.host.run(command)
 

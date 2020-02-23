@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+
 """
 Utility to expand aliases to ip addresses, either as full dotted names or shorter aliases.
 
@@ -69,12 +70,12 @@ from common.log import setup_logging
 from common.config import ConfigDict
 
 ALIASES = {
-    'md': 'mongod',
-    'ms': 'mongos',
-    'cs': 'configsvr',
+    "md": "mongod",
+    "ms": "mongos",
+    "cs": "configsvr",
     # I'm pretty sure I will transpose the following
-    'configsrv': 'configsvr',
-    'wc': 'workload_client'
+    "configsrv": "configsvr",
+    "wc": "workload_client",
 }
 
 
@@ -99,7 +100,7 @@ def unalias(host, aliases=None):
     if aliases is None:
         aliases = ALIASES
     path = host
-    pos = host.find('.')
+    pos = host.find(".")
     if pos != -1:
         path = host[:pos]
 
@@ -129,14 +130,14 @@ def expand(host):
     :raises ValueError if there are more than 2 dot's
     """
 
-    nesting = host.count('.') + 1
+    nesting = host.count(".") + 1
     if nesting > 3:
         raise ValueError("The max level of nesting is 3: '{}'".format(host))
 
     if nesting == 1:
-        host += '.0.public_ip'
+        host += ".0.public_ip"
     if nesting == 2:
-        host += '.public_ip'
+        host += ".public_ip"
 
     return host
 
@@ -146,15 +147,14 @@ def parse_args(args):
 
     :returns tuple of parser and parsed arguments
     """
-    parser = argparse.ArgumentParser(description='Expand an alias to a server ip address.')
+    parser = argparse.ArgumentParser(description="Expand an alias to a server ip address.")
 
-    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
-    parser.add_argument('-e', '--export', action='store_true', help='enable output as shell export')
-    parser.add_argument('--log-file', default='/tmp/expand.log', help='path to log file')
-    parser.add_argument('host',
-                        metavar='host',
-                        type=str,
-                        help='the alias to expand and convert to an ip')
+    parser.add_argument("-d", "--debug", action="store_true", help="enable debug output")
+    parser.add_argument("-e", "--export", action="store_true", help="enable output as shell export")
+    parser.add_argument("--log-file", default="/tmp/expand.log", help="path to log file")
+    parser.add_argument(
+        "host", metavar="host", type=str, help="the alias to expand and convert to an ip"
+    )
 
     arguments = parser.parse_args(args)
     setup_logging(arguments.debug, arguments.log_file)
@@ -180,7 +180,7 @@ def main(argv):
     sys.argv[1:]
     """
     args = parse_args(argv)
-    config = ConfigDict('infrastructure_provisioning').load()
+    config = ConfigDict("infrastructure_provisioning").load()
 
     host = args.host
     expanded = expand(host)
@@ -193,5 +193,5 @@ def main(argv):
     print(template.format(host=host, ip_address=ip_address))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(sys.argv[1:])

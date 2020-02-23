@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+
 """ Test runner in DSI Framework """
 
 from __future__ import print_function
@@ -29,7 +30,7 @@ from testcontrollib import test_runner
 LOG = logging.getLogger(__name__)
 
 
-def print_perf_json(filename='perf.json'):
+def print_perf_json(filename="perf.json"):
     """
     Read perf.json into the log file
     """
@@ -49,21 +50,23 @@ def generate_config_file(test, local_dir, client_host):
     :param Host client_host: The client host to which the configuration file will be uploaded
     """
     try:
-        filepath = os.path.join(local_dir, test['config_filename'])
-        workload_config = test['workload_config']
-        with open(filepath, 'w') as workloads_file:
+        filepath = os.path.join(local_dir, test["config_filename"])
+        workload_config = test["workload_config"]
+        with open(filepath, "w") as workloads_file:
             if isinstance(workload_config, ConfigDict):
                 # Can't assign into config dict. Need an actual dictionary
                 workload_config_dict = workload_config.as_dict()
-                if 'scale_factor' in workload_config_dict and isinstance(
-                        workload_config_dict['scale_factor'], str):
+                if "scale_factor" in workload_config_dict and isinstance(
+                    workload_config_dict["scale_factor"], str
+                ):
                     # pylint: disable=eval-used
-                    workload_config_dict['scale_factor'] = eval(
-                        workload_config_dict['scale_factor'])
+                    workload_config_dict["scale_factor"] = eval(
+                        workload_config_dict["scale_factor"]
+                    )
                 workloads_file.write(yaml.dump(workload_config_dict))
             elif isinstance(workload_config, str):
                 workloads_file.write(workload_config)
-        client_host.upload_file(filepath, test['config_filename'])
+        client_host.upload_file(filepath, test["config_filename"])
     except KeyError:
         LOG.warn("No workload config in test control")
 
@@ -75,8 +78,8 @@ def copy_timeseries(config):
     :param dict(ConfigDict) config: The system configuration
 
     """
-    hosts = extract_hosts('all_servers', config)
-    for root, _, files in os.walk('./reports'):
+    hosts = extract_hosts("all_servers", config)
+    for root, _, files in os.walk("./reports"):
         for name in files:
             # The following generator find the first host with an ip that matches
             # the filename. The (.. for in if in ) generator will return 0 or more
@@ -90,8 +93,9 @@ def copy_timeseries(config):
                 alias = "{category}.{offset}".format(category=host.category, offset=host.offset)
 
                 destination = "{}-{}".format(
-                    os.path.basename(source).split('--')[0], os.path.basename(root))
-                destination = os.path.join('reports', alias, destination)
+                    os.path.basename(source).split("--")[0], os.path.basename(root)
+                )
+                destination = os.path.join("reports", alias, destination)
                 shutil.copyfile(source, destination)
 
 
@@ -103,7 +107,7 @@ def run_test(test, config):
     :param test ConfigDict: The ConfigDict object for the test to run
     :param config ConfigDict: The top level ConfigDict
     """
-    runner = test_runner.get_test_runner(test, config['test_control'])
+    runner = test_runner.get_test_runner(test, config["test_control"])
     client_host = common.command_runner.make_workload_runner_host(config)
 
     # Generate and upload the test's configuration file if there is one.
@@ -114,21 +118,22 @@ def run_test(test, config):
     client_host.close()
 
     # Store exit status for bin/analysis.py
-    config['test_control']['out']['exit_codes'][test['id']] = {
-        'status': status.status,
-        'message': status.message
+    config["test_control"]["out"]["exit_codes"][test["id"]] = {
+        "status": status.status,
+        "message": status.message,
     }
     if status.status != EXIT_STATUS_OK:
-        raise subprocess.CalledProcessError(status.status, test['id'], output=status.message)
+        raise subprocess.CalledProcessError(status.status, test["id"], output=status.message)
 
     return status
 
 
 class TestStatus(object):
     """Status of this script."""
-    FAILED = 'failed'
-    SUCCESS = 'succeeded'
-    ERROR = 'failed with unknown error'
+
+    FAILED = "failed"
+    SUCCESS = "succeeded"
+    ERROR = "failed with unknown error"
 
 
 # pylint: disable=too-many-branches,too-many-statements,too-many-nested-blocks
@@ -139,19 +144,20 @@ def run_tests(config):
     :return: True if all tests failed or an error occurred.
              No more tests are run when an error is encountered.
     """
-    config['test_control']['out'] = {'exit_codes': {}}
-    test_control_config = config['test_control']
-    mongodb_setup_config = config['mongodb_setup']
+    config["test_control"]["out"] = {"exit_codes": {}}
+    test_control_config = config["test_control"]
+    mongodb_setup_config = config["mongodb_setup"]
 
     setup_ssh_agent(config)
     prepare_reports_dir()
 
     validate_config(config)
-    run_pre_post_commands('pre_task', [mongodb_setup_config, test_control_config], config,
-                          EXCEPTION_BEHAVIOR.EXIT)
+    run_pre_post_commands(
+        "pre_task", [mongodb_setup_config, test_control_config], config, EXCEPTION_BEHAVIOR.EXIT
+    )
 
-    if 'test_delay_seconds' in test_control_config:
-        test_delay_seconds = test_control_config['test_delay_seconds']
+    if "test_delay_seconds" in test_control_config:
+        test_delay_seconds = test_control_config["test_delay_seconds"]
     else:
         test_delay_seconds = 0
 
@@ -159,59 +165,72 @@ def run_tests(config):
     num_tests_failed = 0
 
     # cedar reporting
-    report = cedar.Report(config.get('runtime'))
+    report = cedar.Report(config.get("runtime"))
 
     # Default the status to ERROR to catch unexpected failures.
     # If a tests succeeds, the status is explicitly set to SUCCESS.
     cur_test_status = TestStatus.ERROR
 
     try:
-        if os.path.exists('perf.json'):
-            os.remove('perf.json')
+        if os.path.exists("perf.json"):
+            os.remove("perf.json")
             LOG.warning("Found old perf.json file. Overwriting.")
 
-        for test in test_control_config['run']:
-            LOG.info('running test %s', test)
+        for test in test_control_config["run"]:
+            LOG.info("running test %s", test)
             timer = {}
             try:
                 # Only run between_tests after the first test.
                 if num_tests_run > 0:
-                    run_pre_post_commands('between_tests',
-                                          [mongodb_setup_config, test_control_config], config,
-                                          EXCEPTION_BEHAVIOR.RERAISE)
-                run_pre_post_commands('pre_test', [mongodb_setup_config, test_control_config, test],
-                                      config, EXCEPTION_BEHAVIOR.RERAISE, test['id'])
+                    run_pre_post_commands(
+                        "between_tests",
+                        [mongodb_setup_config, test_control_config],
+                        config,
+                        EXCEPTION_BEHAVIOR.RERAISE,
+                    )
+                run_pre_post_commands(
+                    "pre_test",
+                    [mongodb_setup_config, test_control_config, test],
+                    config,
+                    EXCEPTION_BEHAVIOR.RERAISE,
+                    test["id"],
+                )
 
                 if test_delay_seconds:
-                    LOG.info("Sleeping for %s seconds before test %s", test_delay_seconds,
-                             test['id'])
+                    LOG.info(
+                        "Sleeping for %s seconds before test %s", test_delay_seconds, test["id"]
+                    )
                     time.sleep(test_delay_seconds)
 
-                LOG.info("Starting test %s", test['id'])
-                timer['start'] = time.time()
+                LOG.info("Starting test %s", test["id"])
+                timer["start"] = time.time()
                 # Run the actual test
                 run_test(test, config)
             except subprocess.CalledProcessError:
-                LOG.error("test %s failed.", test['id'], exc_info=1)
+                LOG.error("test %s failed.", test["id"], exc_info=1)
                 cur_test_status = TestStatus.FAILED
             except:  # pylint: disable=bare-except
-                LOG.error("Unexpected failure in test %s.", test['id'], exc_info=1)
+                LOG.error("Unexpected failure in test %s.", test["id"], exc_info=1)
                 cur_test_status = TestStatus.ERROR
             else:
                 cur_test_status = TestStatus.SUCCESS
 
             num_tests_run += 1
-            timer['end'] = time.time()
+            timer["end"] = time.time()
 
             try:
-                if 'skip_validate' not in test or not test['skip_validate']:
-                    run_validate(config, test['id'])
-                run_pre_post_commands('post_test',
-                                      [test, test_control_config, mongodb_setup_config], config,
-                                      EXCEPTION_BEHAVIOR.CONTINUE, test['id'])
+                if "skip_validate" not in test or not test["skip_validate"]:
+                    run_validate(config, test["id"])
+                run_pre_post_commands(
+                    "post_test",
+                    [test, test_control_config, mongodb_setup_config],
+                    config,
+                    EXCEPTION_BEHAVIOR.CONTINUE,
+                    test["id"],
+                )
             except:  # pylint: disable=bare-except
                 # The post test activities failing implies the test failing.
-                LOG.error("Post-test activities failed after test %s.", test['id'], exc_info=1)
+                LOG.error("Post-test activities failed after test %s.", test["id"], exc_info=1)
 
                 # Don't "downgrade" from ERROR to FAILED.
                 if cur_test_status != TestStatus.ERROR:
@@ -219,29 +238,33 @@ def run_tests(config):
 
             if cur_test_status == TestStatus.FAILED:
                 num_tests_failed += 1
-                LOG.warn("Unsuccessful test run for test %s. Parsing results now", test['id'])
+                LOG.warn("Unsuccessful test run for test %s. Parsing results now", test["id"])
             elif cur_test_status == TestStatus.ERROR:
-                LOG.warn("Unknown error in test %s, exiting early.", test['id'])
+                LOG.warn("Unknown error in test %s, exiting early.", test["id"])
                 break
             else:
-                LOG.info("Successful test run for test %s. Parsing results now", test['id'])
+                LOG.info("Successful test run for test %s. Parsing results now", test["id"])
 
             _, cedar_tests = parse_test_results(test, config, timer)
             for cedar_test in cedar_tests:
                 report.add_test(cedar_test)
     except Exception as e:  # pylint: disable=broad-except
-        LOG.error('Unexcepted exception: %s', repr(e), exc_info=1)
+        LOG.error("Unexcepted exception: %s", repr(e), exc_info=1)
     finally:
         # Save exit codes for analysis.py
         config.save()
-        run_pre_post_commands('post_task', [test_control_config, mongodb_setup_config], config,
-                              EXCEPTION_BEHAVIOR.CONTINUE)
+        run_pre_post_commands(
+            "post_task",
+            [test_control_config, mongodb_setup_config],
+            config,
+            EXCEPTION_BEHAVIOR.CONTINUE,
+        )
 
         if num_tests_failed == 0:
             # Cedar
             report.write_report()
             # Print perf.json to screen
-            print_perf_json(config['test_control']['perf_json']['path'])
+            print_perf_json(config["test_control"]["perf_json"]["path"])
 
     LOG.info("%s of %s tests exited with an error.", num_tests_failed, num_tests_run)
 
@@ -262,9 +285,9 @@ def validate_config(config):
 
     :param ConfigDict config: A full ConfigDict
     """
-    for test in config['test_control']['run']:
-        if not test['type'] in get_supported_parser_types():
-            raise NotImplementedError("No parser exists for test type {}".format(test['type']))
+    for test in config["test_control"]["run"]:
+        if not test["type"] in get_supported_parser_types():
+            raise NotImplementedError("No parser exists for test type {}".format(test["type"]))
 
 
 def main(argv):
@@ -272,19 +295,19 @@ def main(argv):
 
     :returns: int the exit status to return to the caller (0 for OK)
     """
-    parser = argparse.ArgumentParser(description='DSI Test runner')
+    parser = argparse.ArgumentParser(description="DSI Test runner")
 
-    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
-    parser.add_argument('--log-file', help='path to log file')
+    parser.add_argument("-d", "--debug", action="store_true", help="enable debug output")
+    parser.add_argument("--log-file", help="path to log file")
     args = parser.parse_args(argv)
     common.log.setup_logging(args.debug, args.log_file)
 
-    config = ConfigDict('test_control')
+    config = ConfigDict("test_control")
     config.load()
 
     error = run_tests(config)
     return 1 if error else 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))

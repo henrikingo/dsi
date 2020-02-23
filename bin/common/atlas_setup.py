@@ -1,4 +1,3 @@
-#!/usr/bin/env python2.7
 """
 MongoDB Setup but for Atlas clusters
 
@@ -11,6 +10,7 @@ import pymongo
 import structlog
 
 import atlas_client
+from six.moves import range
 
 LOG = structlog.get_logger(__name__)
 
@@ -29,7 +29,7 @@ class AtlasSetup(object):
         :param ConfigDict config: The DSI config.
         """
         self.config = config
-        self.mongodb_setup = self.config['mongodb_setup']
+        self.mongodb_setup = self.config["mongodb_setup"]
         # Note that both for api and api_credentials, they will only exist
         self.api = {}
         if "atlas" in self.mongodb_setup and "api" in self.mongodb_setup["atlas"]:
@@ -39,17 +39,26 @@ class AtlasSetup(object):
             LOG.debug("Atlas custom build config", custom_build=self.custom_build)
 
         self.api_credentials = {}
-        if ("atlas_api_public_key" in self.config["runtime_secret"]
-                and "atlas_api_private_key" in self.config["runtime_secret"]):
+        if (
+            "atlas_api_public_key" in self.config["runtime_secret"]
+            and "atlas_api_private_key" in self.config["runtime_secret"]
+        ):
 
             self.api_credentials["public_key"] = self.config["runtime_secret"].get(
-                "atlas_api_public_key", "")
+                "atlas_api_public_key", ""
+            )
             self.api_credentials["private_key"] = self.config["runtime_secret"].get(
-                "atlas_api_private_key", "")
-            LOG.debug("Atlas credentials",
-                      user=self.api_credentials["public_key"],
-                      key=(self.api_credentials["private_key"][0:5]
-                           if self.api_credentials["private_key"] else ""))
+                "atlas_api_private_key", ""
+            )
+            LOG.debug(
+                "Atlas credentials",
+                user=self.api_credentials["public_key"],
+                key=(
+                    self.api_credentials["private_key"][0:5]
+                    if self.api_credentials["private_key"]
+                    else ""
+                ),
+            )
 
         self.atlas_client = None
         if "root" in self.api and "group_id" in self.api and self.api_credentials:
@@ -84,14 +93,11 @@ class AtlasSetup(object):
             LOG.info("AtlasSetup.start")
             if not self.atlas_client:
                 LOG.error("Trying to start Atlas Clusters, but self.atlas_client not initialized")
-                raise (UserWarning(
-                    "Atlas_setup trying to start clusters, but self.atlas_client not initialized\n"
-                    "Do you have a runtime_secret.yml file with atlas api information?\n See "
-                    "https://github.com/10gen/dsi/blob/master/docs/config-specs/runtime_secret.yml")
-                      ) #yapf: disable
+                raise UserWarning  # yapf: disable
             return all(
                 self.create_cluster(atlas_cluster)
-                for atlas_cluster in self.mongodb_setup["atlas"]["clusters"])
+                for atlas_cluster in self.mongodb_setup["atlas"]["clusters"]
+            )
 
         # else
         LOG.debug("AtlasSetup.start: Nothing to do.")
@@ -102,8 +108,10 @@ class AtlasSetup(object):
         Destroy the cluster(s) listed in `mongodb_setup.out.atlas.clusters`.
         """
         clusters_list = self.mongodb_setup.get("out", {}).get("atlas", {}).get("clusters", [])
-        LOG.info("About to shutdown Atlas clusters",
-                 clusters=[atlas_cluster["name"] for atlas_cluster in clusters_list])
+        LOG.info(
+            "About to shutdown Atlas clusters",
+            clusters=[atlas_cluster["name"] for atlas_cluster in clusters_list],
+        )
         return all(self.delete_cluster(atlas_cluster) for atlas_cluster in clusters_list)
 
     def create_cluster(self, atlas_cluster):
@@ -123,20 +131,24 @@ class AtlasSetup(object):
 
         LOG.debug("Atlas custom build config", custom_build=self.custom_build)
         if self.custom_build is not None:
-            LOG.info("Create Atlas CUSTOM BUILD Cluster",
-                     instance_size_name=body["providerSettings"]["instanceSizeName"],
-                     cluster_type=body["clusterType"],
-                     name=body["name"],
-                     custom_build_config=self.custom_build)
+            LOG.info(
+                "Create Atlas CUSTOM BUILD Cluster",
+                instance_size_name=body["providerSettings"]["instanceSizeName"],
+                cluster_type=body["clusterType"],
+                name=body["name"],
+                custom_build_config=self.custom_build,
+            )
             self.atlas_client.create_custom_build(self.custom_build)
             body.pop("mongoDBMajorVersion", None)
             body["mongoDBVersion"] = self.custom_build["trueName"]
             response = self.atlas_client.create_custom_cluster(body)
         else:
-            LOG.info("Create Atlas Cluster",
-                     instance_size_name=body["providerSettings"]["instanceSizeName"],
-                     cluster_type=body["clusterType"],
-                     name=body["name"])
+            LOG.info(
+                "Create Atlas Cluster",
+                instance_size_name=body["providerSettings"]["instanceSizeName"],
+                cluster_type=body["clusterType"],
+                name=body["name"],
+            )
             response = self.atlas_client.create_cluster(body)
 
         LOG.debug("Create cluster response", response=response)
@@ -146,24 +158,34 @@ class AtlasSetup(object):
         LOG.debug("After cluster await_idle", response=response)
         # Save MongoDB URI and such to mongodb_setup.out.yml
         self._save_create_response(response)
-        LOG.info("Done creating Atlas cluster",
-                 instance_size_name=body["providerSettings"]["instanceSizeName"],
-                 cluster_type=body["clusterType"],
-                 name=body["name"])
+        LOG.info(
+            "Done creating Atlas cluster",
+            instance_size_name=body["providerSettings"]["instanceSizeName"],
+            cluster_type=body["clusterType"],
+            name=body["name"],
+        )
         return True
 
     @staticmethod
     def _generate_unique_name(atlas_cluster):
         chars = "abcdefghijklmnopqrstuvwxyz"
-        unique = ''.join([random.choice(chars) for _ in range(7)])
+        unique = "".join([random.choice(chars) for _ in range(7)])
         return "dsi-{}-{}".format(
-            atlas_cluster["providerSettings"]["instanceSizeName"].replace('_', ''), unique)
+            atlas_cluster["providerSettings"]["instanceSizeName"].replace("_", ""), unique
+        )
 
     def _save_create_response(self, response):
         self._init_config_out()
         new_object = {}
-        save_fields = ("log_job_id", "mongoURI", "mongoURIWithOptions", "mongoURIUpdated", "name",
-                       "stateName", "clusterType")
+        save_fields = (
+            "log_job_id",
+            "mongoURI",
+            "mongoURIWithOptions",
+            "mongoURIUpdated",
+            "name",
+            "stateName",
+            "clusterType",
+        )
         prefix = len("mongodb://")
         for key in save_fields:
             if key in response:
@@ -298,7 +320,7 @@ class AtlasSetup(object):
                 "resourceName": atlas_cluster["name"] + "-shard-0",
                 "sizeRequestedPerFileBytes": 999999999,
                 "redacted": False,
-                "logTypes": ["FTDC", "MONGODB", "AUTOMATION_AGENT"]
+                "logTypes": ["FTDC", "MONGODB", "AUTOMATION_AGENT"],
             }
             log_job_id = self.atlas_client.create_log_collection_job(options)
             self.atlas_client.await_log_job(log_job_id)

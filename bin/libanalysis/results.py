@@ -7,6 +7,7 @@ import os.path
 import re
 
 import structlog
+import six
 
 LOG = structlog.get_logger(__name__)
 
@@ -15,13 +16,14 @@ class ResultsFile(object):
     """
     Class for reading and writing results.json.
     """
+
     def __init__(self, config):
         """
         :param ConfigDict config: The global configuration.
         """
         self.config = config
         self.data = self.read()
-        self.results_json = config['analysis']['results_json']['path']
+        self.results_json = config["analysis"]["results_json"]["path"]
 
     def read(self):
         """
@@ -31,31 +33,33 @@ class ResultsFile(object):
         file and then we add to it.
         :return: A dict with results.json contents, or empty, depending on config.
         """
-        empty = {'failures': 0, 'results': []}
-        mode = self.config['analysis']['results_json']['mode']
-        if mode == 'overwrite':
+        empty = {"failures": 0, "results": []}
+        mode = self.config["analysis"]["results_json"]["mode"]
+        if mode == "overwrite":
             return empty
 
-        if mode == 'append':
+        if mode == "append":
             if os.path.isfile(self.results_json):
                 with open(self.results_json) as results_file:
-                    LOG.info('Read results file.', file_name=self.results_json)
+                    LOG.info("Read results file.", file_name=self.results_json)
                     return json.load(results_file)
             else:
                 return empty
 
-        raise ValueError('analysis.results_json.mode configuration is not supported.',
-                         allowed_modes=['overwrite', 'append'],
-                         actual_mode=mode)
+        raise ValueError(
+            "analysis.results_json.mode configuration is not supported.",
+            allowed_modes=["overwrite", "append"],
+            actual_mode=mode,
+        )
 
     def write(self):
         """
         Write the results.json file.
         """
         num_failures = self.count_failures()
-        with open(self.results_json, 'w') as results_file:
-            json.dump(self.data, results_file, indent=4, separators=(',', ': '))
-            LOG.info('Wrote results file.', file_name=self.results_json)
+        with open(self.results_json, "w") as results_file:
+            json.dump(self.data, results_file, indent=4, separators=(",", ": "))
+            LOG.info("Wrote results file.", file_name=self.results_json)
         return num_failures
 
     def count_failures(self):
@@ -63,16 +67,17 @@ class ResultsFile(object):
         Set the 'failures' field, but don't count quarantined rules.
         """
         num_failures = 0
-        quarantined_rules = self.config['analysis']['rules'].get('quarantined_rules', [])
-        for test_result in self.data['results']:
+        quarantined_rules = self.config["analysis"]["rules"].get("quarantined_rules", [])
+        for test_result in self.data["results"]:
             match_on_rule = any(
-                re.match(rule_regex, test_result['test_file']) for rule_regex in quarantined_rules)
-            if test_result['status'] == 'fail' and not match_on_rule:
+                re.match(rule_regex, test_result["test_file"]) for rule_regex in quarantined_rules
+            )
+            if test_result["status"] == "fail" and not match_on_rule:
                 num_failures += 1
-        self.data['failures'] = num_failures
+        self.data["failures"] = num_failures
         return num_failures
 
-    def add(self, test_file, status, start=0, end=0, log_raw='', exit_code=0, **kwargs):
+    def add(self, test_file, status, start=0, end=0, log_raw="", exit_code=0, **kwargs):
         """
         Add one result object.
 
@@ -104,24 +109,24 @@ class ResultsFile(object):
         :param str log_raw:   Arbitrary text string.
         :param int exit_code: Exit code of the test execution. (0 for pass)
         """
-        assert status in ('pass', 'fail')
-        if status == 'pass':
+        assert status in ("pass", "fail")
+        if status == "pass":
             assert exit_code == 0, "exit_code must be 0 if test/check passed"
-        elif status == 'fail':
+        elif status == "fail":
             assert exit_code != 0, "exit_code must be non-zero if test/check failed"
         new_result = {
-            'test_file': test_file,
-            'status': status,
-            'start': start,
-            'end': end,
-            'log_raw': log_raw,
-            'exit_code': exit_code
+            "test_file": test_file,
+            "status": status,
+            "start": start,
+            "end": end,
+            "log_raw": log_raw,
+            "exit_code": exit_code,
         }
-        for key, value in kwargs.iteritems():
+        for key, value in six.iteritems(kwargs):
             new_result[key] = value
-        self.data['results'].append(new_result)
-        #if status == 'fail':
-        #self.data['failures'] = self.data['failures'] + 1
+        self.data["results"].append(new_result)
+        # if status == 'fail':
+        # self.data['failures'] = self.data['failures'] + 1
 
     def extend(self, results):
         """
@@ -134,9 +139,9 @@ class ResultsFile(object):
         :param list results: A list of results, ready to be written.
         """
         if isinstance(results, list):
-            self.data['results'].extend(results)
+            self.data["results"].extend(results)
         elif isinstance(results, dict):
-            self.data['results'].append(results)
+            self.data["results"].append(results)
         else:
             LOG.error("Results must be a list or dict.", results=results)
             raise ValueError("Results must be a list or dict.")

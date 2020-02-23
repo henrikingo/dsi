@@ -4,10 +4,10 @@ import requests
 
 NETWORK_TIMEOUT_SECS = 120
 GIT_HASH_LEN = 40
-GITHUB_API = 'https://api.github.com'
-GH_USER = 'mongodb'
-GH_REPO = 'mongo'
-GH_BASIC_AUTH = 'x-oauth-basic'
+GITHUB_API = "https://api.github.com"
+GH_USER = "mongodb"
+GH_REPO = "mongo"
+GH_BASIC_AUTH = "x-oauth-basic"
 
 
 def get_full_git_commit_hash(prefix, token=None):
@@ -21,13 +21,12 @@ def get_full_git_commit_hash(prefix, token=None):
     """
     if len(prefix) == GIT_HASH_LEN:
         return prefix
-    request = '{url}/repos/{user}/{repo}/commits/{prefix}'.format(url=GITHUB_API,
-                                                                  user=GH_USER,
-                                                                  repo=GH_REPO,
-                                                                  prefix=prefix)
+    request = "{url}/repos/{user}/{repo}/commits/{prefix}".format(
+        url=GITHUB_API, user=GH_USER, repo=GH_REPO, prefix=prefix
+    )
     if token is not None:
-        if 'token' in token:  # sent as a header 'token: OAUTH_TOKEN'
-            response = requests.get(request, headers={'Authorization': token})
+        if "token" in token:  # sent as a header 'token: OAUTH_TOKEN'
+            response = requests.get(request, headers={"Authorization": token})
         else:
             response = requests.get(request, auth=(token, GH_BASIC_AUTH))
     else:  # no authentication token
@@ -35,7 +34,7 @@ def get_full_git_commit_hash(prefix, token=None):
 
     if response.ok:
         commit_info = response.json()
-        return str(commit_info['sha'])
+        return str(commit_info["sha"])
 
     return response.raise_for_status()
 

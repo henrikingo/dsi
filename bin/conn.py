@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+
 """
 Thin wrapper around ssh. This script *should* allow ease of access to remote
 provisioned servers, either as full dotted names or shorter aliases.
@@ -78,29 +79,33 @@ def parse_args(args):
 
     :returns tuple of parser and parsed arguments
     """
-    parser = argparse.ArgumentParser(description='Create a connection to the remote server.\
-                                     For instructions on setting up dsi locally')
+    parser = argparse.ArgumentParser(
+        description="Create a connection to the remote server.\
+                                     For instructions on setting up dsi locally"
+    )
 
-    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
-    parser.add_argument('--dryrun',
-                        action='store_true',
-                        default=False,
-                        help='Do not run the command, just evaluate it.')
-    parser.add_argument('--log-file', help='path to log file')
-    parser.add_argument('-s', '--ssh', default='ssh', help='the ssh location')
-    parser.add_argument('host',
-                        metavar='host',
-                        nargs='+',
-                        type=str,
-                        help='the path of the host to connect to')
+    parser.add_argument("-d", "--debug", action="store_true", help="enable debug output")
+    parser.add_argument(
+        "--dryrun",
+        action="store_true",
+        default=False,
+        help="Do not run the command, just evaluate it.",
+    )
+    parser.add_argument("--log-file", help="path to log file")
+    parser.add_argument("-s", "--ssh", default="ssh", help="the ssh location")
+    parser.add_argument(
+        "host", metavar="host", nargs="+", type=str, help="the path of the host to connect to"
+    )
 
-    parser.add_argument('-c',
-                        '--command',
-                        metavar='command',
-                        nargs='?',
-                        action='append',
-                        default=[],
-                        help='the remote command to run')
+    parser.add_argument(
+        "-c",
+        "--command",
+        metavar="command",
+        nargs="?",
+        action="append",
+        default=[],
+        help="the remote command to run",
+    )
 
     arguments = parser.parse_args(args)
     setup_logging(arguments.debug, arguments.log_file)
@@ -117,16 +122,20 @@ def remote_cmd(host, command, config, args):
     :param config object the root config dict
     :param args object the parsed arguments
     """
-    pemfile = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+    pemfile = config["infrastructure_provisioning"]["tfvars"]["ssh_key_file"]
     pemfile = os.path.expanduser(pemfile)
-    sshuser = config['infrastructure_provisioning']['tfvars']['ssh_user']
+    sshuser = config["infrastructure_provisioning"]["tfvars"]["ssh_user"]
     ip_address = config["infrastructure_provisioning"]["out"].lookup_path(host)
 
     if not command:
         command = ""
     cmd = [
-        args.ssh, "-A", "-i", pemfile, "@".join(x for x in [sshuser, ip_address] if x),
-        "\'{}\'".format(command)
+        args.ssh,
+        "-A",
+        "-i",
+        pemfile,
+        "@".join(x for x in [sshuser, ip_address] if x),
+        "'{}'".format(command),
     ]
 
     LOGGER.info("conn: %s", " ".join(cmd))
@@ -141,12 +150,12 @@ def main(argv):
     sys.argv[1:]
     """
     parser, args = parse_args(argv)
-    config = ConfigDict('infrastructure_provisioning').load()
+    config = ConfigDict("infrastructure_provisioning").load()
 
     if len(args.host) == 1:
         host = alias.expand(args.host[0])
         host = alias.unalias(host)
-        cmd = ';'.join(args.command)
+        cmd = ";".join(args.command)
         remote_cmd(host, cmd, config, args)
     else:
 
@@ -155,22 +164,17 @@ def main(argv):
             parser.print_help()
             sys.exit(1)
 
-        cmd = ';'.join(args.command)
+        cmd = ";".join(args.command)
         threads = []
         for host in args.host:
             host = alias.expand(host)
             host = alias.unalias(host)
-            thread = threading.Thread(target=remote_cmd, args=(
-                host,
-                cmd,
-                config,
-                args,
-            ))
+            thread = threading.Thread(target=remote_cmd, args=(host, cmd, config, args))
             threads.append(thread)
             thread.start()
         for thread in threads:
             thread.join()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(sys.argv[1:])

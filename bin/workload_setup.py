@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+
 """
 Setup hosts for running various kinds of workload types
 """
@@ -19,6 +20,7 @@ class WorkloadSetupRunner(object):
     """
     Responsible for invoking workload_setup.yml commands before test_control
     """
+
     def __init__(self, config):
         """
         Constructor.
@@ -34,7 +36,7 @@ class WorkloadSetupRunner(object):
         :return: Test-types for which we need to run the associated workload_setup blocks
         :rtype: set(string)
         """
-        return set([run['type'] for run in self.config['test_control']['run']])
+        return set([run["type"] for run in self.config["test_control"]["run"]])
 
     def setup_workloads(self):
         """
@@ -51,28 +53,28 @@ class WorkloadSetupRunner(object):
         :param string test_type: Workload_setup key listing commands to run
         """
         LOG.info("Starting workload_setup for test_type %s", test_type)
-        steps = self.config['workload_setup'][test_type]
-        common.command_runner.run_host_commands(steps, self.config, 'workload_setup')
+        steps = self.config["workload_setup"][test_type]
+        common.command_runner.run_host_commands(steps, self.config, "workload_setup")
 
 
 def main(argv):
     """
     Parse args and call workload_setup.yml operations
     """
-    parser = argparse.ArgumentParser(description='Workload Setup')
+    parser = argparse.ArgumentParser(description="Workload Setup")
 
-    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
-    parser.add_argument('--log-file', help='path to log file')
+    parser.add_argument("-d", "--debug", action="store_true", help="enable debug output")
+    parser.add_argument("--log-file", help="path to log file")
 
     args = parser.parse_args(argv)
     setup_logging(args.debug, args.log_file)
 
-    config = ConfigDict('workload_setup')
+    config = ConfigDict("workload_setup")
     config.load()
 
     setup = WorkloadSetupRunner(config)
     setup.setup_workloads()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(sys.argv[1:])

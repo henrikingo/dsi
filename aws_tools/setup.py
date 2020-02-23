@@ -1,4 +1,3 @@
-#!/usr/bin/env python2.7
 """
 AWS tools for cleaning up stranded EC2 resources deployed by DSI
 
@@ -16,24 +15,24 @@ from setuptools import setup
 # See 'requires v requirements<https://packaging.python.org/discussions/install-requires-vs-requirements/>'.
 # pylint: disable=invalid-name
 install_requirements = [
-    'boto3==1.9.243',
-    'requests~=2.22.0',
+    "boto3==1.9.243",
+    "requests~=2.22.0",
 ]
 setup(
-    name='AWS tools for DSI',
-    version='1.1',
-    description='AWS tools for cleaning up stranded EC2 resources deployed by DSI',
+    name="AWS tools for DSI",
+    version="1.1",
+    description="AWS tools for cleaning up stranded EC2 resources deployed by DSI",
     install_requires=install_requirements,
     # Cannot zip due to usage of __file__.
     zip_safe=False,
     use_2to3=True,
     entry_points={
-        'console_scripts': [
-            'delete-stranded-vpcs = aws_tools.entry_points:delete_stranded_vpcs',
-            'delete-cluster = aws_tools.entry_points:delete_cluster_by_tag',
-            'delete-runner-cluster = aws_tools.entry_points:delete_cluster_for_runner',
-            'delete-task-cluster = aws_tools.entry_points:delete_cluster_for_task',
-            'delete-placement-groups = aws_tools.entry_points:delete_placement_groups',
+        "console_scripts": [
+            "delete-stranded-vpcs = aws_tools.entry_points:delete_stranded_vpcs",
+            "delete-cluster = aws_tools.entry_points:delete_cluster_by_tag",
+            "delete-runner-cluster = aws_tools.entry_points:delete_cluster_for_runner",
+            "delete-task-cluster = aws_tools.entry_points:delete_cluster_for_task",
+            "delete-placement-groups = aws_tools.entry_points:delete_placement_groups",
         ]
-    }
+    },
 )

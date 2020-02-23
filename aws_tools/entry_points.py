@@ -8,7 +8,7 @@ import sys
 import aws_cleanup
 import log
 
-REGIONS = ['us-west-2', 'us-east-1', 'eu-west-1']
+REGIONS = ["us-west-2", "us-east-1", "eu-west-1"]
 
 LOG = logging.getLogger(__name__)
 
@@ -21,10 +21,11 @@ def base_arg_parsing(description):
     """
 
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
-    parser.add_argument('--log-file', help='path to log file')
+    parser.add_argument("-d", "--debug", action="store_true", help="enable debug output")
+    parser.add_argument("--log-file", help="path to log file")
     parser.add_argument(
-        '-n', '--dry-run', action='store_true', help='Dry run only. Show what we would do.')
+        "-n", "--dry-run", action="store_true", help="Dry run only. Show what we would do."
+    )
     return parser
 
 
@@ -57,16 +58,20 @@ def delete_cluster_by_tag(argv=None):
     if argv is None:
         argv = sys.argv[1:]
 
-    parser = base_arg_parsing('Delete Cluster by Tag')
-    parser.add_argument('-k', '--key', required=True, help='Tag key to use to identify cluster')
-    parser.add_argument('-v', '--value', required=True, help='Tag value to use to identify cluster')
+    parser = base_arg_parsing("Delete Cluster by Tag")
+    parser.add_argument("-k", "--key", required=True, help="Tag key to use to identify cluster")
+    parser.add_argument("-v", "--value", required=True, help="Tag value to use to identify cluster")
     args = parser.parse_args(argv)
 
     log.setup_logging(args.debug, args.log_file)
 
     for region in REGIONS:
-        LOG.info("Checking for cluster with tag %s and value %s in region  %s", args.key,
-                 args.value, region)
+        LOG.info(
+            "Checking for cluster with tag %s and value %s in region  %s",
+            args.key,
+            args.value,
+            region,
+        )
         cleanup = aws_cleanup.AwsCleanup(region_name=region)
         cleanup.delete_cluster_by_tag(args.key, args.value, args.dry_run)
 
@@ -81,8 +86,8 @@ def delete_cluster_for_task(argv=None):
     if argv is None:
         argv = sys.argv[1:]
 
-    parser = base_arg_parsing('Delete Cluster for a Task ID')
-    parser.add_argument('-t', '--task', required=True, help='TaskID of clusters to delete')
+    parser = base_arg_parsing("Delete Cluster for a Task ID")
+    parser.add_argument("-t", "--task", required=True, help="TaskID of clusters to delete")
     args = parser.parse_args(argv)
 
     log.setup_logging(args.debug, args.log_file)
@@ -90,7 +95,7 @@ def delete_cluster_for_task(argv=None):
     for region in REGIONS:
         LOG.info("Checking for cluster for task %s in region  %s", args.task, region)
         cleanup = aws_cleanup.AwsCleanup(region_name=region)
-        cleanup.delete_cluster_by_tag('task_id', args.task, args.dry_run)
+        cleanup.delete_cluster_by_tag("task_id", args.task, args.dry_run)
 
 
 def delete_cluster_for_runner(argv=None):
@@ -103,8 +108,8 @@ def delete_cluster_for_runner(argv=None):
     if argv is None:
         argv = sys.argv[1:]
 
-    parser = base_arg_parsing('Delete Cluster for a runner')
-    parser.add_argument('-r', '--runner', required=True, help='Runner')
+    parser = base_arg_parsing("Delete Cluster for a runner")
+    parser.add_argument("-r", "--runner", required=True, help="Runner")
     args = parser.parse_args(argv)
 
     log.setup_logging(args.debug, args.log_file)
@@ -112,7 +117,7 @@ def delete_cluster_for_runner(argv=None):
     for region in REGIONS:
         LOG.info("Checking for cluster for runner %s in region  %s", args.runner, region)
         cleanup = aws_cleanup.AwsCleanup(region_name=region)
-        cleanup.delete_cluster_by_tag('runner', args.runner, args.dry_run)
+        cleanup.delete_cluster_by_tag("runner", args.runner, args.dry_run)
 
 
 def delete_placement_groups(argv=None):
@@ -125,7 +130,7 @@ def delete_placement_groups(argv=None):
     if argv is None:
         argv = sys.argv[1:]
 
-    parser = base_arg_parsing('Delete Placement groups')
+    parser = base_arg_parsing("Delete Placement groups")
     args = parser.parse_args(argv)
 
     log.setup_logging(args.debug, args.log_file)

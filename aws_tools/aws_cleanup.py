@@ -23,7 +23,7 @@ def make_aws_filter(name, value):
     :rtype: list
     """
 
-    return ([{'Name': '{}'.format(name), 'Values': [value]}])
+    return [{"Name": "{}".format(name), "Values": [value]}]
 
 
 def make_aws_filter_tags(tag_name, tag_value):
@@ -36,7 +36,7 @@ def make_aws_filter_tags(tag_name, tag_value):
     :rtype: list
     """
 
-    return make_aws_filter('tag:{}'.format(tag_name), tag_value)
+    return make_aws_filter("tag:{}".format(tag_name), tag_value)
 
 
 class AwsCleanup(object):
@@ -47,7 +47,7 @@ class AwsCleanup(object):
     def __init__(self, region_name=None):
         if region_name:
             boto3.setup_default_session(region_name=region_name)
-        self.client = boto3.client('ec2')
+        self.client = boto3.client("ec2")
 
     def get_all_instances(self):
         """ Get a list of all the instances in the region.
@@ -57,8 +57,8 @@ class AwsCleanup(object):
         """
         return [
             instance
-            for reservation in self.client.describe_instances()['Reservations']
-            for instance in reservation['Instances']
+            for reservation in self.client.describe_instances()["Reservations"]
+            for instance in reservation["Instances"]
         ]
 
     def find_instances_tagged(self, tag_key, tag_value):
@@ -74,8 +74,8 @@ class AwsCleanup(object):
         LOG.debug("Finding instances with filters %s", filters)
         return [
             instance
-            for reservation in self.client.describe_instances(Filters=filters)['Reservations']
-            for instance in reservation['Instances']
+            for reservation in self.client.describe_instances(Filters=filters)["Reservations"]
+            for instance in reservation["Instances"]
         ]
 
     def _find_instances_tagged_not_terminated(self, tag_key, tag_value):
@@ -89,8 +89,9 @@ class AwsCleanup(object):
         :rtype: list(str)
         """
         return [
-            instance['InstanceId'] for instance in self.find_instances_tagged(tag_key, tag_value)
-            if instance['State']['Name'] != 'terminated'
+            instance["InstanceId"]
+            for instance in self.find_instances_tagged(tag_key, tag_value)
+            if instance["State"]["Name"] != "terminated"
         ]
 
     def get_active_vpcs(self):
@@ -101,7 +102,8 @@ class AwsCleanup(object):
         :rtype: list(str)
         """
         return set(
-            instance['VpcId'] for instance in self.get_all_instances() if 'VpcId' in instance)
+            instance["VpcId"] for instance in self.get_all_instances() if "VpcId" in instance
+        )
 
     def get_vpcs_tagged(self, tag_key, tag_value):
         """
@@ -111,9 +113,12 @@ class AwsCleanup(object):
 
         :rtype: list(str)
         """
-        return set(vpc['VpcId']
-                   for vpc in self.client.describe_vpcs(
-                       Filters=make_aws_filter_tags(tag_key, tag_value))['Vpcs'])
+        return set(
+            vpc["VpcId"]
+            for vpc in self.client.describe_vpcs(Filters=make_aws_filter_tags(tag_key, tag_value))[
+                "Vpcs"
+            ]
+        )
 
     def get_placement_groups(self, dry_run=False):
         """
@@ -122,13 +127,12 @@ class AwsCleanup(object):
         """
         groups = self.client.describe_placement_groups(DryRun=dry_run)
         return [
-            group['GroupName']
-            for group in groups['PlacementGroups'] if groups['PlacementGroups']
+            group["GroupName"] for group in groups["PlacementGroups"] if groups["PlacementGroups"]
         ]
 
-    def find_stranded_vpcs_tagged(self,
-                                  tag_key='owner',
-                                  tag_value='perf-terraform-alerts@10gen.com'):
+    def find_stranded_vpcs_tagged(
+        self, tag_key="owner", tag_value="perf-terraform-alerts@10gen.com"
+    ):
         """
         Find stranded vpcs. A vpc is stranded if it exists, but is not associated with any
         instances.
@@ -148,10 +152,13 @@ class AwsCleanup(object):
         :returns: The GroupIds of the matching security groups.
         :rtype: list(str)
         """
-        return set(sg['GroupId']
-                   for sg in self.client.describe_security_groups(
-                       Filters=make_aws_filter('vpc-id', vpcid))['SecurityGroups']
-                   if sg['GroupName'] != "default")
+        return set(
+            sg["GroupId"]
+            for sg in self.client.describe_security_groups(
+                Filters=make_aws_filter("vpc-id", vpcid)
+            )["SecurityGroups"]
+            if sg["GroupName"] != "default"
+        )
 
     def find_subnets_vpc(self, vpcid):
         """
@@ -161,9 +168,12 @@ class AwsCleanup(object):
         :returns: The SubnetIds of the matching security groups.
         :rtype: list(str)
         """
-        return set(subnet['SubnetId']
-                   for subnet in self.client.describe_subnets(
-                       Filters=make_aws_filter('vpc-id', vpcid))['Subnets'])
+        return set(
+            subnet["SubnetId"]
+            for subnet in self.client.describe_subnets(Filters=make_aws_filter("vpc-id", vpcid))[
+                "Subnets"
+            ]
+        )
 
     def find_route_tables_vpc(self, vpcid):
         """
@@ -173,9 +183,12 @@ class AwsCleanup(object):
         :returns: The RouteTableIds of the matching security groups.
         :rtype: list(str)
         """
-        return set(route['RouteTableId']
-                   for route in self.client.describe_route_tables(
-                       Filters=make_aws_filter('vpc-id', vpcid))['RouteTables'])
+        return set(
+            route["RouteTableId"]
+            for route in self.client.describe_route_tables(
+                Filters=make_aws_filter("vpc-id", vpcid)
+            )["RouteTables"]
+        )
 
     def find_internet_gateways_vpc(self, vpcid):
         """
@@ -185,9 +198,12 @@ class AwsCleanup(object):
         :returns: The InternetGatewayIds of the matching security groups.
         :rtype: list(str)
         """
-        return set(gateway['InternetGatewayId']
-                   for gateway in self.client.describe_internet_gateways(
-                       Filters=make_aws_filter('attachment.vpc-id', vpcid))['InternetGateways'])
+        return set(
+            gateway["InternetGatewayId"]
+            for gateway in self.client.describe_internet_gateways(
+                Filters=make_aws_filter("attachment.vpc-id", vpcid)
+            )["InternetGateways"]
+        )
 
     def delete_security_groups_vpc(self, vpcid):
         """
@@ -218,10 +234,11 @@ class AwsCleanup(object):
             try:
                 self.client.delete_route_table(RouteTableId=routeid)
             # I don't know the correct exception list to catch here. The documenation is lacking.
-            except Exception as e:  #pylint: disable=broad-except
+            except Exception as e:  # pylint: disable=broad-except
                 LOG.warning(
                     "Unable to delete route table %s. If there are no ERRORS this can be ignored.",
-                    routeid)
+                    routeid,
+                )
                 LOG.warning(e)
 
     def delete_internet_gateways_vpc(self, vpcid):
@@ -260,8 +277,10 @@ class AwsCleanup(object):
 
         :param bool dry_run: If true, don't actually delete the vpcs.
         """
-        LOG.info("There are %i stranded vpcs to delete. Deleting...",
-                 len(self.find_stranded_vpcs_tagged()))
+        LOG.info(
+            "There are %i stranded vpcs to delete. Deleting...",
+            len(self.find_stranded_vpcs_tagged()),
+        )
         for vpcid in self.find_stranded_vpcs_tagged():
             LOG.info("Deleting VPC with id %s", vpcid)
             if not dry_run:
@@ -287,8 +306,9 @@ class AwsCleanup(object):
             # This is in a loop with a sleep because the client.terminate_instances is non-blocking
             # and we need to make sure the instances have actually been terminated.
             while instance_ids and count < 180:
-                LOG.info("Not all instances in terminated state yet. Waiting on %s",
-                         str(instance_ids))
+                LOG.info(
+                    "Not all instances in terminated state yet. Waiting on %s", str(instance_ids)
+                )
                 self.client.terminate_instances(InstanceIds=instance_ids)
                 time.sleep(1)
                 count += 1
@@ -311,6 +331,6 @@ class AwsCleanup(object):
                 self.client.delete_placement_group(GroupName=group, DryRun=dry_run)
                 LOG.info("%s deleted", group)
             except botocore.exceptions.ClientError as e:
-                if e.response['Error']['Code'] != "InvalidPlacementGroup.InUse":
+                if e.response["Error"]["Code"] != "InvalidPlacementGroup.InUse":
                     raise e
                 LOG.debug("%s skipped, in use.", group)

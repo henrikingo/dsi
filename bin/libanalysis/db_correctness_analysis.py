@@ -17,5 +17,5 @@ def db_correctness(config, results):
     :param ResultsFile results: Object to add results to.
     """
     LOG.info("Checking results from db-correctness validation.")
-    path = config['test_control']['reports_dir_basename']
+    path = config["test_control"]["reports_dir_basename"]
     results.extend(rules.db_correctness_analysis(path))

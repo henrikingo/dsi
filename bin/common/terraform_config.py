@@ -11,6 +11,7 @@ import socket
 from uuid import uuid4
 
 import requests
+
 # RequestException is the parent exception for all requests.exceptions.*
 # http://docs.python-requests.org/en/master/_modules/requests/exceptions/
 from requests.exceptions import RequestException
@@ -19,8 +20,27 @@ LOG = logging.getLogger(__name__)
 
 # http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/placement-groups.html#concepts-placement-groups
 INSTANCE_CLASSES_SUPPORT_PG = [
-    "c3", "c4", "c5", "cc2", "m4", "m5", "r3", "r4", "x1", "x1e", "cr1", "d2", "i2", "i3", "hi1",
-    "hs1", "f1", "g2", "g3", "p2", "p3"
+    "c3",
+    "c4",
+    "c5",
+    "cc2",
+    "m4",
+    "m5",
+    "r3",
+    "r4",
+    "x1",
+    "x1e",
+    "cr1",
+    "d2",
+    "i2",
+    "i3",
+    "hi1",
+    "hs1",
+    "f1",
+    "g2",
+    "g3",
+    "p2",
+    "p3",
 ]
 TF_NODE_TYPES_TO_CHECK = ["mongod", "mongod_ebs", "mongod_seeded_ebs", "mongos", "workload"]
 
@@ -40,11 +60,17 @@ def is_placement_group_needed(node_type, tfvars):
         instance_type = tfvars[node_type + "_instance_type"]
         instance_class = instance_type[0:2]
         if instance_class in INSTANCE_CLASSES_SUPPORT_PG:
-            LOG.debug("node_type=%s instance_type=%s DOES support placement group", node_type,
-                      instance_type)
+            LOG.debug(
+                "node_type=%s instance_type=%s DOES support placement group",
+                node_type,
+                instance_type,
+            )
             return True
-        LOG.debug("node_type=%s instance_type=%s DOES NOT support placement group", node_type,
-                  instance_type)
+        LOG.debug(
+            "node_type=%s instance_type=%s DOES NOT support placement group",
+            node_type,
+            instance_type,
+        )
 
     return False
 
@@ -63,12 +89,12 @@ def generate_placement_group(tfvars, prefix="dsi"):
     """
 
     unique_placement_group = "-".join([prefix, str(uuid4())])
-    tfvars['placement_group'] = unique_placement_group
+    tfvars["placement_group"] = unique_placement_group
     LOG.debug("Generated new placement group: %s", unique_placement_group)
 
     for node_type in TF_NODE_TYPES_TO_CHECK:
         if is_placement_group_needed(node_type, tfvars):
-            tfvars[node_type + '_placement_group'] = unique_placement_group
+            tfvars[node_type + "_placement_group"] = unique_placement_group
 
     return tfvars
 
@@ -93,7 +119,7 @@ def generate_runner_hostname():
     """
     Get the hostname of the runner.
     """
-    return _do_generate_runner('public-hostname')
+    return _do_generate_runner("public-hostname")
 
 
 def _do_generate_runner(endpoint):
@@ -107,22 +133,27 @@ def _do_generate_runner(endpoint):
     :rtype: str
     """
     try:
-        response = requests.get('http://169.254.169.254/latest/meta-data/%s' % endpoint,
-                                timeout=0.01)
+        response = requests.get(
+            "http://169.254.169.254/latest/meta-data/%s" % endpoint, timeout=0.01
+        )
         response.raise_for_status()
         return response.text
     except RequestException as exception:
-        LOG.info("Terraform_config.py _do_generate_runner could not access AWS"
-                 "meta-data. Falling back to other methods")
+        LOG.info(
+            "Terraform_config.py _do_generate_runner could not access AWS"
+            "meta-data. Falling back to other methods"
+        )
         LOG.info(repr(exception))
 
     try:
-        response = requests.get('http://ip.42.pl/raw', timeout=1)
+        response = requests.get("http://ip.42.pl/raw", timeout=1)
         response.raise_for_status()
         return response.text
     except RequestException as exception:
-        LOG.info("Terraform_config.py _do_generate_runner could not access ip.42.pl "
-                 "to get public IP. Falling back to gethostname")
+        LOG.info(
+            "Terraform_config.py _do_generate_runner could not access ip.42.pl "
+            "to get public IP. Falling back to gethostname"
+        )
         LOG.info(repr(exception))
 
     return socket.gethostname()
@@ -133,12 +164,13 @@ def retrieve_runner_instance_id():
 
     """
     try:
-        response = requests.get('http://169.254.169.254/latest/meta-data/instance-id', timeout=0.01)
+        response = requests.get("http://169.254.169.254/latest/meta-data/instance-id", timeout=0.01)
         response.raise_for_status()
         return response.text
     except RequestException as exception:
-        LOG.info("Terraform_config.py retrieve_runner_instance_id could not access AWS"
-                 "instance id.")
+        LOG.info(
+            "Terraform_config.py retrieve_runner_instance_id could not access AWS" "instance id."
+        )
         LOG.info(repr(exception))
         return "deploying host is not an EC2 instance"
 
@@ -147,6 +179,7 @@ class TerraformConfiguration(object):
     """
     DSI Terraform configuration
     """
+
     def __init__(self, config, file_name="cluster.json"):
         """
         Instantiate a TerraformConfiguration object
@@ -157,8 +190,9 @@ class TerraformConfiguration(object):
         self.config = config
 
         # Note: self.tfvars is initialized by self.get_json()
-        if (self.config["infrastructure_provisioning"]["evergreen"]["reuse_cluster"]
-                and self.get_json(file_name)):
+        if self.config["infrastructure_provisioning"]["evergreen"][
+            "reuse_cluster"
+        ] and self.get_json(file_name):
 
             # Note: the new config provided should be identical to what we read from get_json().
             # (Which is the point of reusing a cluster.) But just in case it isn't, then the new
@@ -199,7 +233,8 @@ class TerraformConfiguration(object):
         # Careful there: The tag looked at by the reaper is "expire-on". To match, the yaml file
         # config option is expire-on-delta. However, terraform variable is expire_on.
         self.tfvars["expire_on"] = generate_expire_on_tag(
-            self.config["infrastructure_provisioning"]["tfvars"]["tags"]["expire-on-delta"])
+            self.config["infrastructure_provisioning"]["tfvars"]["tags"]["expire-on-delta"]
+        )
 
         # Cluster metadata
         self.tfvars["status"] = "running"
@@ -219,14 +254,14 @@ class TerraformConfiguration(object):
         """
         json_str = ""
         if compact:
-            json_str = json.dumps(self.tfvars, sort_keys=True, separators=(',', ':'))
+            json_str = json.dumps(self.tfvars, sort_keys=True, separators=(",", ":"))
         else:
             json_str = json.dumps(self.tfvars, sort_keys=True, indent=4)
 
         LOG.info(json_str)
         if file_name is not None:
             # write to file as well
-            with open(file_name, 'w') as file_handle:
+            with open(file_name, "w") as file_handle:
                 file_handle.write(json_str)
         return json_str
 
@@ -241,7 +276,7 @@ class TerraformConfiguration(object):
         :return: True if file_name existed and was read
         """
         if os.path.isfile(file_name):
-            with open(file_name, 'r') as file_handle:
+            with open(file_name, "r") as file_handle:
                 LOG.info("Reusing terraform variables from existing %s file.", file_name)
                 self.tfvars = json.load(file_handle)
                 return True

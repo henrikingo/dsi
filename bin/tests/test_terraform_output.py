@@ -14,13 +14,14 @@ FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 class TestTerraformOutputParser(unittest.TestCase):
     """To test terraform configuration"""
+
     def setUp(self):
         """Setup so config dict works properly"""
         self.old_dir = os.getcwd()  # Save the old path to restore Note
         # that this chdir only works without breaking relative imports
         # because it's at the same directory depth
-        os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/../../docs/config-specs/')
-        self.config = ConfigDict('infrastructure_provisioning')
+        os.chdir(os.path.dirname(os.path.abspath(__file__)) + "/../../docs/config-specs/")
+        self.config = ConfigDict("infrastructure_provisioning")
         self.config.load()
 
     def tearDown(self):
@@ -31,7 +32,8 @@ class TestTerraformOutputParser(unittest.TestCase):
         """Test parsing single cluster value is correct."""
         output = tf_output.TerraformOutputParser(
             config=self.config,
-            input_file=FIXTURE_FILES.fixture_file_path('terraform_single_cluster_output.txt'))
+            input_file=FIXTURE_FILES.fixture_file_path("terraform_single_cluster_output.txt"),
+        )
 
         print(output._ips)
 
@@ -44,7 +46,8 @@ class TestTerraformOutputParser(unittest.TestCase):
         """Test parsing replica_ebs cluster."""
         output = tf_output.TerraformOutputParser(
             config=self.config,
-            input_file=FIXTURE_FILES.fixture_file_path('terraform_replica_with_ebs_output.txt'))
+            input_file=FIXTURE_FILES.fixture_file_path("terraform_replica_with_ebs_output.txt"),
+        )
 
         print(output._ips)
 
@@ -60,7 +63,8 @@ class TestTerraformOutputParser(unittest.TestCase):
         """Test parsing shard cluster value is correct."""
         output = tf_output.TerraformOutputParser(
             config=self.config,
-            input_file=FIXTURE_FILES.fixture_file_path('terraform_shard_cluster_output.txt'))
+            input_file=FIXTURE_FILES.fixture_file_path("terraform_shard_cluster_output.txt"),
+        )
 
         print(output._ips)
 
@@ -89,28 +93,32 @@ class TestTerraformOutputParser(unittest.TestCase):
         """Test parsing single cluster YML file is correct."""
         output = tf_output.TerraformOutputParser(
             config=self.config,
-            input_file=FIXTURE_FILES.fixture_file_path('terraform_single_cluster_output.txt'))
+            input_file=FIXTURE_FILES.fixture_file_path("terraform_single_cluster_output.txt"),
+        )
         output._generate_output()
         reference = {}
-        with open(FIXTURE_FILES.fixture_file_path('terraform_single.out.yml')) as fread:
+        with open(FIXTURE_FILES.fixture_file_path("terraform_single.out.yml")) as fread:
             reference = yaml.safe_load(fread)
 
-        print(reference['out'])
-        print(output.config_obj['infrastructure_provisioning']['out'])
-        self.assertEqual(output.config_obj['infrastructure_provisioning']['out'].as_dict(),
-                         reference['out'])
+        print(reference["out"])
+        print(output.config_obj["infrastructure_provisioning"]["out"])
+        self.assertEqual(
+            output.config_obj["infrastructure_provisioning"]["out"].as_dict(), reference["out"]
+        )
 
     def test_shard_cluster_yml(self):
         """Test parsing single cluster YML file is correct."""
         output = tf_output.TerraformOutputParser(
             config=self.config,
-            input_file=FIXTURE_FILES.fixture_file_path('terraform_shard_cluster_output.txt'))
+            input_file=FIXTURE_FILES.fixture_file_path("terraform_shard_cluster_output.txt"),
+        )
 
         output._generate_output()
-        with open(FIXTURE_FILES.fixture_file_path('terraform_shard.out.yml')) as fread:
+        with open(FIXTURE_FILES.fixture_file_path("terraform_shard.out.yml")) as fread:
             reference = yaml.safe_load(fread)
 
-        print(reference['out'])
-        print(output.config_obj['infrastructure_provisioning']['out'])
-        self.assertEqual(output.config_obj['infrastructure_provisioning']['out'].as_dict(),
-                         reference['out'])
+        print(reference["out"])
+        print(output.config_obj["infrastructure_provisioning"]["out"])
+        self.assertEqual(
+            output.config_obj["infrastructure_provisioning"]["out"].as_dict(), reference["out"]
+        )

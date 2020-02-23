@@ -7,64 +7,70 @@ from collections import OrderedDict
 from collections import namedtuple
 
 from enum import Enum
+from six.moves import range
 
 
 class VersionFlag(Enum):
     """
     Class containing enums defining version flags.
     """
+
     DEFAULT = 1
     M60_LIKE = 2
 
 
-Command = namedtuple('Command', ['command', 'allow_fail', 'error'])
+Command = namedtuple("Command", ["command", "allow_fail", "error"])
 SysConfig = namedtuple(
-    'SysConfig',
+    "SysConfig",
     [
-        'kernel_version',
-        'tc_version',
+        "kernel_version",
+        "tc_version",
         # Maximum allowed transmission rate. Required by tc.
-        'rate'
-    ])
+        "rate",
+    ],
+)
 
 # Dictionary mapping yml version flags to allowed systems.
 ALLOWED_SYS_CONFIGS = {
-    VersionFlag.DEFAULT:
-        SysConfig(
-            kernel_version='4.15.0-1044-aws',
-            tc_version='4.15.0',
-            # In the normal case, we use an absurdly high rate limit that is
-            # never hit.
-            rate='100tbit'),
-    VersionFlag.M60_LIKE:
-        SysConfig(
-            kernel_version='3.10.0-327.22.2.el7.x86_64',
-            tc_version='4.11.0',
-            # This kernel/tc version only allows this max rate.
-            rate='4.2gbps')
+    VersionFlag.DEFAULT: SysConfig(
+        kernel_version="4.15.0-1044-aws",
+        tc_version="4.15.0",
+        # In the normal case, we use an absurdly high rate limit that is
+        # never hit.
+        rate="100tbit",
+    ),
+    VersionFlag.M60_LIKE: SysConfig(
+        kernel_version="3.10.0-327.22.2.el7.x86_64",
+        tc_version="4.11.0",
+        # This kernel/tc version only allows this max rate.
+        rate="4.2gbps",
+    ),
 }
 
 # Constant representing the network interface to set delays on.
-INTERFACE = 'eth0'
+INTERFACE = "eth0"
 
 
 class DelaySpec(object):
     """ Class representing a single delay edge specification. """
+
     def __init__(self, delayspec_config):
-        self.delay_ms = delayspec_config['delay_ms']
-        self.jitter_ms = delayspec_config['jitter_ms']
+        self.delay_ms = delayspec_config["delay_ms"]
+        self.jitter_ms = delayspec_config["jitter_ms"]
 
 
 class EdgeSpec(object):
     """ Class representing a single edgewise delay specification. """
+
     def __init__(self, edge_config):
-        self.node1 = edge_config['node1']
-        self.node2 = edge_config['node2']
-        self.delay = DelaySpec(edge_config['delay'])
+        self.node1 = edge_config["node1"]
+        self.node2 = edge_config["node2"]
+        self.delay = DelaySpec(edge_config["delay"])
 
 
 class DelayNode(object):
     """ Class representing delays present at a given node. """
+
     def __init__(self, version_flag=VersionFlag.DEFAULT):
         """
         :param host: a Host object connecting this node to the host it represents.
@@ -88,13 +94,17 @@ class DelayNode(object):
                 return
             raise DelayError(
                 "Addition of delay failed: IP address already exists. Address: {ip_address}".format(
-                    ip_address=ip_address))
+                    ip_address=ip_address
+                )
+            )
 
         if delay_spec.delay_ms < 0 or delay_spec.jitter_ms < 0:
             raise DelayError(
-                ("Addition of delay failed: invalid delay or jitter. Given "
-                 "delay: {delay}. Given jitter: {jitter}").format(delay=str(delay_spec.delay_ms),
-                                                                  jitter=str(delay_spec.jitter_ms)))
+                (
+                    "Addition of delay failed: invalid delay or jitter. Given "
+                    "delay: {delay}. Given jitter: {jitter}"
+                ).format(delay=str(delay_spec.delay_ms), jitter=str(delay_spec.jitter_ms))
+            )
 
         self.delays[ip_address] = delay_spec
 
@@ -136,13 +146,14 @@ class DelayNode(object):
 
         # Add the root qdisc
         add_root_qdisc_command = [
-            "bash", "-c",
-            ("'sudo tc qdisc add dev " + INTERFACE + " root handle 1: "
-             "htb default 1'")
+            "bash",
+            "-c",
+            ("'sudo tc qdisc add dev " + INTERFACE + " root handle 1: " "htb default 1'"),
         ]
         commands.append(
             add_root_qdisc_command,
-            DelayError("Failed to add root qdisc. Command: {command}", add_root_qdisc_command[2]))
+            DelayError("Failed to add root qdisc. Command: {command}", add_root_qdisc_command[2]),
+        )
 
         _generate_class_command(commands, 1, self.sys_config.rate)
 
@@ -171,76 +182,89 @@ class DelayNode(object):
 
 
 def _generate_class_command(commands, classid, rate):
-    command_str = ("'sudo tc class add dev {interface} parent 1: classid 1:{classid} "
-                   "htb rate {rate} prio 0'").format(interface=INTERFACE,
-                                                     classid=str(classid),
-                                                     rate=rate)
+    command_str = (
+        "'sudo tc class add dev {interface} parent 1: classid 1:{classid} "
+        "htb rate {rate} prio 0'"
+    ).format(interface=INTERFACE, classid=str(classid), rate=rate)
     command = ["bash", "-c", command_str]
     commands.append(command, DelayError("Execution of tc command {command} failed.", command))
 
 
 def _generate_delay_command(commands, classid, ip_address, delays):
-    command_str = ("'sudo tc qdisc add dev {interface} parent 1:{classid} netem delay {delay_ms}ms "
-                   "{jitter_ms}ms'").format(interface=INTERFACE,
-                                            classid=classid,
-                                            delay_ms=str(delays[ip_address].delay_ms),
-                                            jitter_ms=str(delays[ip_address].jitter_ms))
+    command_str = (
+        "'sudo tc qdisc add dev {interface} parent 1:{classid} netem delay {delay_ms}ms "
+        "{jitter_ms}ms'"
+    ).format(
+        interface=INTERFACE,
+        classid=classid,
+        delay_ms=str(delays[ip_address].delay_ms),
+        jitter_ms=str(delays[ip_address].jitter_ms),
+    )
     command = ["bash", "-c", command_str]
     commands.append(command, DelayError("Execution of tc command {command} failed.", command))
 
 
 def _generate_filter_command(commands, classid, ip_address):
-    command_str = ("'sudo tc filter add dev {interface} protocol ip parent 1:0 prio 1 "
-                   "u32 match ip dst {ip_address} flowid 1:{classid}'").format(
-                       interface=INTERFACE, ip_address=ip_address, classid=classid)
+    command_str = (
+        "'sudo tc filter add dev {interface} protocol ip parent 1:0 prio 1 "
+        "u32 match ip dst {ip_address} flowid 1:{classid}'"
+    ).format(interface=INTERFACE, ip_address=ip_address, classid=classid)
     command = ["bash", "-c", command_str]
     commands.append(command, DelayError("Execution of tc command {command} failed.", command))
 
 
 def _generate_kernel_assert(delays, expected_kernel_version):
-    kernel_assert_command_str = "'uname -r | cut -d \".\" -f 1 | grep -q \"{major}\"'" \
-        .format(major=expected_kernel_version.split(".")[0])
+    kernel_assert_command_str = '\'uname -r | cut -d "." -f 1 | grep -q "{major}"\''.format(
+        major=expected_kernel_version.split(".")[0]
+    )
     kernel_assert_command = ["bash", "-c", kernel_assert_command_str]
 
     # We only complain about bad kernel versions if we are actually setting delays.
     if all([t.delay_ms == 0 and t.jitter_ms == 0 for t in delays.values()]):
         return Command(kernel_assert_command, error=None, allow_fail=True)
     kernel_assert_error = DelayError(
-        ("Trying to use `tc` to simulate network delays, "
-         "but found an unexpected kernel version. Expected version {kernel}. "
-         "This means the system image was recently upgraded, or that the wrong "
-         "system configuration is specified in mongodb_setup.yml. Please set the "
-         "version flag in the mongodb_setup.yml file to the correct value. Advanced users "
-         "may modify the ALLOWED_SYS_CONFIGS variable at the top of delay.py in DSI to "
-         "account for this system configuration and verify that tc works correctly.").format(
-             kernel=expected_kernel_version))
+        (
+            "Trying to use `tc` to simulate network delays, "
+            "but found an unexpected kernel version. Expected version {kernel}. "
+            "This means the system image was recently upgraded, or that the wrong "
+            "system configuration is specified in mongodb_setup.yml. Please set the "
+            "version flag in the mongodb_setup.yml file to the correct value. Advanced users "
+            "may modify the ALLOWED_SYS_CONFIGS variable at the top of delay.py in DSI to "
+            "account for this system configuration and verify that tc works correctly."
+        ).format(kernel=expected_kernel_version)
+    )
     return Command(command=kernel_assert_command, error=kernel_assert_error, allow_fail=False)
 
 
 def _generate_tc_assert(delays, expected_tc_version):
-    tc_assert_command_str = ("'yum info iproute | grep \"Version\" | cut -d \":\" -f 2 | "
-                             "cut -d \" \" -f 2 | cut -d \".\" -f 1 "
-                             "| grep -q \"{major}\"'").format(
-                                 major=expected_tc_version.split(".")[0])
+    tc_assert_command_str = (
+        '\'yum info iproute | grep "Version" | cut -d ":" -f 2 | '
+        'cut -d " " -f 2 | cut -d "." -f 1 '
+        '| grep -q "{major}"\''
+    ).format(major=expected_tc_version.split(".")[0])
     tc_assert_command = ["bash", "-c", tc_assert_command_str]
 
     # We only complain about bad tc versions if we are actually setting delays.
     if all([t.delay_ms == 0 and t.jitter_ms == 0 for t in delays.values()]):
         return Command(tc_assert_command, error=None, allow_fail=True)
     tc_assert_error = DelayError(
-        ("Trying to use `tc` to simulate network delays, "
-         "but found an unexpected tc version. Expected version {tc}. "
-         "This means the system's packages were recently upgraded, or that the wrong "
-         "system configuration is specified in mongodb_setup.yml. "
-         "Please set the version flag in the mongodb_setup.yml file to the correct value. "
-         "Advanced users may modify the ALLOWED_SYS_CONFIGS variable at the top of delay.py "
-         "in DSI to account for this system configuration and verify that "
-         "tc works correctly.").format(tc=expected_tc_version))
+        (
+            "Trying to use `tc` to simulate network delays, "
+            "but found an unexpected tc version. Expected version {tc}. "
+            "This means the system's packages were recently upgraded, or that the wrong "
+            "system configuration is specified in mongodb_setup.yml. "
+            "Please set the version flag in the mongodb_setup.yml file to the correct value. "
+            "Advanced users may modify the ALLOWED_SYS_CONFIGS variable at the top of delay.py "
+            "in DSI to account for this system configuration and verify that "
+            "tc works correctly."
+        ).format(tc=expected_tc_version)
+    )
     return Command(command=tc_assert_command, error=tc_assert_error, allow_fail=False)
 
 
 class CommandList(object):
     """ Mini class making it easier to manage command lists."""
+
     def __init__(self):
         self.commands = []
 
@@ -268,7 +292,7 @@ class DelayGraph(object):
     # The workload client is common to all clusters.
     client_node = DelayNode()
     # We need a ConfigDict to set this IP, can be set externally.
-    client_ip = 'workload_client'
+    client_ip = "workload_client"
 
     def __init__(self, topology, delay_config, version_flag=VersionFlag.DEFAULT):
         """
@@ -313,8 +337,10 @@ class DelayGraph(object):
         try:
             return self.graph[ip_address]
         except KeyError:
-            raise DelayError("Tried to retrieve node for {ip_address}, but that IP address has "
-                             "no delay specification.")
+            raise DelayError(
+                "Tried to retrieve node for {ip_address}, but that IP address has "
+                "no delay specification."
+            )
 
     def _initialize_graph(self, topology, is_standalone_list):
         """
@@ -326,19 +352,19 @@ class DelayGraph(object):
         """
         if is_standalone_list:
             for node in topology:
-                private_ip = node['private_ip']
+                private_ip = node["private_ip"]
                 self.graph[private_ip] = DelayNode(self.version_flag)
             return
 
-        if topology['cluster_type'] == 'sharded_cluster':
-            self._initialize_graph(topology['configsvr'], True)
-            self._initialize_graph(topology['mongos'], True)
-            for replset in topology['shard']:
+        if topology["cluster_type"] == "sharded_cluster":
+            self._initialize_graph(topology["configsvr"], True)
+            self._initialize_graph(topology["mongos"], True)
+            for replset in topology["shard"]:
                 self._initialize_graph(replset, False)
-        elif topology['cluster_type'] == 'replset':
-            self._initialize_graph(topology['mongod'], True)
-        elif topology['cluster_type'] == 'standalone':
-            private_ip = topology['private_ip']
+        elif topology["cluster_type"] == "replset":
+            self._initialize_graph(topology["mongod"], True)
+        elif topology["cluster_type"] == "standalone":
+            private_ip = topology["private_ip"]
             self.graph[private_ip] = DelayNode(self.version_flag)
 
     def _extract_delay_config(self, delay_config):
@@ -346,8 +372,8 @@ class DelayGraph(object):
         Performs all actions needed to extract information from the delay ConfigDict.
         :param delay_config: A ConfigDict for a single cluster's delays.
         """
-        self.default_delay = DelaySpec(delay_config['default'])
-        self.edgewise_delays = [EdgeSpec(edge) for edge in delay_config.get('edges', [])]
+        self.default_delay = DelaySpec(delay_config["default"])
+        self.edgewise_delays = [EdgeSpec(edge) for edge in delay_config.get("edges", [])]
 
     def _set_edgewise_delays(self):
         for edge in self.edgewise_delays:
@@ -369,14 +395,16 @@ class DelayError(Exception):
     """
     Class representing an error in establishing delays.
     """
+
     def __init__(self, msg, command=""):
         """
         :param msg: The message associated with this error. Include `{command}` in the string
         if a command is also passed in.
         :param command: The tc command responsible for this error.
         """
-        super(DelayError,
-              self).__init__(msg if command == "" else msg.format(command=" ".join(command)))
+        super(DelayError, self).__init__(
+            msg if command == "" else msg.format(command=" ".join(command))
+        )
 
         self.command = command
 
@@ -388,6 +416,7 @@ class HasDelay(object):
     object to be set at some point. This isn't done at __init__ time to
     save resources.
     """
+
     def __init__(self, delay_node):
         self.delay_node = delay_node
 
@@ -405,9 +434,9 @@ def str_to_version_flag(flag_str):
     Converts a string to the VersionFlag enum it represents.
     :param flag_str: A string representation of the version flag.
     """
-    if flag_str == 'default':
+    if flag_str == "default":
         return VersionFlag.DEFAULT
-    elif flag_str == 'M60-like':
+    elif flag_str == "M60-like":
         return VersionFlag.M60_LIKE
     else:
         raise DelayError("Unrecognized version flag {flag}.".format(flag=flag_str))

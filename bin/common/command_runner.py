@@ -21,14 +21,15 @@ import common.utils
 import common.mongodb_setup_helpers
 
 from thread_runner import run_threads
+import six
 
 LOG = logging.getLogger(__name__)
 SLOG = structlog.get_logger(__name__)
 
-EXCEPTION_BEHAVIOR = Enum('Exception Behavior', 'CONTINUE RERAISE EXIT')
+EXCEPTION_BEHAVIOR = Enum("Exception Behavior", "CONTINUE RERAISE EXIT")
 
 
-def prepare_reports_dir(reports_dir='reports'):
+def prepare_reports_dir(reports_dir="reports"):
     """ Prepare the reports directory to receive test data (logs, diagnostics etc).
     Unlink the current reports directory and remove any tar ball. Then create a timestamped
     directory and sym link to reports_dir
@@ -39,8 +40,8 @@ def prepare_reports_dir(reports_dir='reports'):
     if os.path.exists(reports_dir):
         os.remove(reports_dir)
 
-    if os.path.exists('../reports.tgz'):
-        os.remove('../reports.tgz')
+    if os.path.exists("../reports.tgz"):
+        os.remove("../reports.tgz")
 
     real_reports_dir = "{}-{}".format(reports_dir, datetime.datetime.now(tz.tzlocal()).isoformat())
     common.utils.mkdir_p(real_reports_dir)
@@ -93,18 +94,20 @@ def _run_host_command(host_list, command, config, prefix):
     if not host_list:
         return
 
-    LOG.debug('Calling run command for %s with command %s', str(host_list), str(command))
+    LOG.debug("Calling run command for %s with command %s", str(host_list), str(command))
 
     mongodb_auth_settings = common.mongodb_setup_helpers.mongodb_auth_settings(config)
     # Note: This works because mongodb_setup.meta.net.ssl has the same structure as a mongo node
     # config file, even if it isn't otherwise a config file.
-    use_tls = common.mongodb_setup_helpers.mongodb_tls_settings(config['mongodb_setup']['meta'])
+    use_tls = common.mongodb_setup_helpers.mongodb_tls_settings(config["mongodb_setup"]["meta"])
 
     thread_commands = []
     for host_info in host_list:
         thread_commands.append(
-            partial(make_host_runner, host_info, command, prefix, config, mongodb_auth_settings,
-                    use_tls))
+            partial(
+                make_host_runner, host_info, command, prefix, config, mongodb_auth_settings, use_tls
+            )
+        )
 
     run_threads(thread_commands, daemon=True)
 
@@ -123,49 +126,51 @@ def _run_host_command_map(target_host, command, prefix, config):
     **Note: retrieve_files does not directly raise exceptions on error**.
     """
     # pylint: disable=too-many-branches
-    for key, value in command.iteritems():
+    for key, value in six.iteritems(command):
         if key == "upload_repo_files":
             for paths in value:
-                source = os.path.join(common.utils.get_dsi_path(), paths['source'])
-                target = paths['target']
-                LOG.debug('Uploading file %s to %s', source, target)
+                source = os.path.join(common.utils.get_dsi_path(), paths["source"])
+                target = paths["target"]
+                LOG.debug("Uploading file %s to %s", source, target)
                 target_host.upload_file(source, target)
         elif key == "upload_files":
             for paths in value:
-                LOG.debug('Uploading file %s to %s', paths['source'], paths['target'])
-                target_host.upload_file(paths['source'], paths['target'])
+                LOG.debug("Uploading file %s to %s", paths["source"], paths["target"])
+                target_host.upload_file(paths["source"], paths["target"])
         elif key == "retrieve_files":
             for paths in value:
-                source = paths['source']
-                target = paths['target']
+                source = paths["source"]
+                target = paths["target"]
                 if prefix:
-                    target = os.path.join('reports', prefix, target_host.alias,
-                                          os.path.normpath(target))
+                    target = os.path.join(
+                        "reports", prefix, target_host.alias, os.path.normpath(target)
+                    )
                 else:
-                    target = os.path.join('reports', target_host.alias, os.path.normpath(target))
+                    target = os.path.join("reports", target_host.alias, os.path.normpath(target))
 
-                LOG.debug('Retrieving file %s from %s', source, target)
+                LOG.debug("Retrieving file %s from %s", source, target)
                 target_host.retrieve_path(source, target)
         elif key == "exec":
-            LOG.debug('Executing command %s', value)
+            LOG.debug("Executing command %s", value)
             success = target_host.run(value)
             common.host_utils.raise_if_not_success(success, value)
         elif key == "run_curator":
-            LOG.info('Executing curator in %s', os.getcwd())
+            LOG.info("Executing curator in %s", os.getcwd())
             common.cedar.run_curator(value, target_host, config)
         elif key == "exec_mongo_shell":
-            LOG.debug('Executing command %s in mongo shell', value)
-            connection_string = value.get('connection_string', "")
-            exit_status = target_host.exec_mongo_command(value['script'],
-                                                         connection_string=connection_string)
+            LOG.debug("Executing command %s in mongo shell", value)
+            connection_string = value.get("connection_string", "")
+            exit_status = target_host.exec_mongo_command(
+                value["script"], connection_string=connection_string
+            )
             common.host_utils.raise_if_not_ok(exit_status, value)
         elif key == "checkout_repos":
             for paths in value:
-                source = paths['source']
-                target = paths['target']
-                branch = paths['branch'] if 'branch' in paths else None
-                verbose = paths['verbose'] if 'verbose' in paths else False
-                LOG.debug('Checking out git repository %s to %s', target, source)
+                source = paths["source"]
+                target = paths["target"]
+                branch = paths["branch"] if "branch" in paths else None
+                verbose = paths["verbose"] if "verbose" in paths else False
+                LOG.debug("Checking out git repository %s to %s", target, source)
                 target_host.checkout_repos(source, target, str(branch), verbose=verbose)
         else:
             raise UserWarning("Invalid command type")
@@ -184,9 +189,9 @@ def run_host_command(target, command, config, prefix):
     """
 
     assert isinstance(command, MutableMapping), "command isn't a dict"
-    assert target.startswith('on_')
+    assert target.startswith("on_")
 
-    keys = command.keys()
+    keys = list(command.keys())
     target = target[3:]
     hosts = common.host_utils.extract_hosts(target, config)
     LOG.info("Running command(s) %s on %s", keys, target)
@@ -207,7 +212,7 @@ def run_atlas_command(target, command, config, prefix):
     """
     assert target == "on_atlas"
 
-    keys = command.keys()
+    keys = list(command.keys())
     LOG.info("Running command(s) %s on %s", keys, target)
     atlas = atlas_setup.AtlasSetup(config)
     for key in keys:
@@ -237,9 +242,9 @@ def run_host_commands(commands, config, prefix):
     for command in commands:
         # Item should be a map with one entry
         assert isinstance(command, MutableMapping), "command in list isn't a dict"
-        assert len(command.keys()) == 1, "command has more than one entry"
-        for target, target_command in command.iteritems():
-            target = command.keys()[0]
+        assert len(list(command.keys())) == 1, "command has more than one entry"
+        for target, target_command in six.iteritems(command):
+            target = list(command.keys())[0]
             run_host_command(target, target_command, config, prefix)
 
 
@@ -249,11 +254,11 @@ def make_workload_runner_host(config):
 
     :param ConfigDict config: The system configuration
     """
-    host_info = common.host_utils.extract_hosts('workload_client', config)[0]
+    host_info = common.host_utils.extract_hosts("workload_client", config)[0]
     mongodb_auth_settings = common.mongodb_setup_helpers.mongodb_auth_settings(config)
     # Note: This works because mongodb_setup.meta.net.ssl has the same structure as a mongo node
     # config file, even if it isn't otherwise a config file.
-    use_tls = common.mongodb_setup_helpers.mongodb_tls_configured(config['mongodb_setup']['meta'])
+    use_tls = common.mongodb_setup_helpers.mongodb_tls_configured(config["mongodb_setup"]["meta"])
     return common.host_factory.make_host(host_info, mongodb_auth_settings, use_tls)
 
 
@@ -282,21 +287,21 @@ def print_trace(trace, exception):
     bottom_function_file = trace[-1][1]
     bottom_function_line = str(trace[-1][2])
     # This conditional does not cause any errors due to lazy evaluation
-    if len(trace) > 1 and 'target' in trace[1][0].f_locals:
-        executed_task = trace[1][0].f_locals['target']
+    if len(trace) > 1 and "target" in trace[1][0].f_locals:
+        executed_task = trace[1][0].f_locals["target"]
     else:
         executed_task = ""
     executed_command = {}
     for frame in trace:
         if frame[3] == "run_host_command" and executed_command == {}:
-            executed_command = frame[0].f_locals['command']
+            executed_command = frame[0].f_locals["command"]
         if frame[3] == "_run_host_command_map":
-            executed_command[frame[0].f_locals['key']] = frame[0].f_locals['value']
+            executed_command[frame[0].f_locals["key"]] = frame[0].f_locals["value"]
     error_msg = "Exception originated in: " + bottom_function_file
     error_msg = error_msg + ":" + bottom_function + ":" + bottom_function_line
     error_msg = error_msg + "\n" + "Exception msg: " + str(exception)
     error_msg = error_msg + "\n" + top_function + ":"
-    if executed_task != '':
+    if executed_task != "":
         error_msg = error_msg + "\n    in task: " + executed_task
     if executed_command != {}:
         error_msg = error_msg + "\n" + "        in command: " + str(executed_command)
@@ -317,16 +322,15 @@ def run_upon_error(task, command_dicts, config, exception_behavior=EXCEPTION_BEH
     Note: see :method: `run_pre_post_commands` for more detailed behaviour.
     """
     prepare_reports_dir()
-    run_pre_post_commands('upon_error', command_dicts, config, exception_behavior,
-                          'upon_error/{}'.format(task))
+    run_pre_post_commands(
+        "upon_error", command_dicts, config, exception_behavior, "upon_error/{}".format(task)
+    )
 
 
-def run_pre_post_commands(command_key,
-                          command_dicts,
-                          config,
-                          exception_behavior,
-                          current_test_id=None):
-    ''' Runs all commands with the specified command key. If exit on exception is
+def run_pre_post_commands(
+    command_key, command_dicts, config, exception_behavior, current_test_id=None
+):
+    """ Runs all commands with the specified command key. If exit on exception is
     true, exit from the script. Otherwise, print the trace and continue.
 
     :param str command_key: The key to use to find a command list to execute in each of the
@@ -339,14 +343,14 @@ def run_pre_post_commands(command_key,
     :param str current_test_id: Indicates the id for the test related to the current set of
     commands. If there is not a specific test related to the current set of commands, the value of
     current_test_id will be None.
-    '''
+    """
     SLOG.info("run_pre_post_commands", command_key=command_key, current_test_id=current_test_id)
     for command_dict in command_dicts:
         if command_key in command_dict:
             SLOG.debug("in loop", command_dict=command_dict, command_key=command_key)
             try:
                 dispatch_commands(command_key, command_dict[command_key], config, current_test_id)
-            except Exception as exception:  #pylint: disable=broad-except
+            except Exception as exception:  # pylint: disable=broad-except
                 print_trace(inspect.trace(), exception)
                 if exception_behavior == EXCEPTION_BEHAVIOR.RERAISE:
                     raise exception
@@ -356,15 +360,17 @@ def run_pre_post_commands(command_key,
                 if exception_behavior == EXCEPTION_BEHAVIOR.CONTINUE:
                     pass
                 else:
-                    SLOG.error("Invalid exception_behavior entry",
-                               command_dict=command_dict,
-                               command_key=command_key,
-                               exception_behavior=exception_behavior,
-                               exception=exception)
+                    SLOG.error(
+                        "Invalid exception_behavior entry",
+                        command_dict=command_dict,
+                        command_key=command_key,
+                        exception_behavior=exception_behavior,
+                        exception=exception,
+                    )
 
 
 def dispatch_commands(command_key, command_list, config, current_test_id=None):
-    ''' Routes commands to the appropriate command runner. The command runner will run the command.
+    """ Routes commands to the appropriate command runner. The command runner will run the command.
 
     :param str command_key: The key to use to find a command list to execute in each of the
     command_dicts. Used for error handling only.
@@ -373,30 +379,33 @@ def dispatch_commands(command_key, command_list, config, current_test_id=None):
     :param str current_test_id: Indicates the id for the test related to the current set of
     commands. If there is not a specific test related to the current set of commands, the value of
     current_test_id will be None.
-    '''
+    """
 
-    SLOG.debug("dispatch_commands",
-               command_key=command_key,
-               command_list=command_list,
-               current_test_id=current_test_id)
+    SLOG.debug(
+        "dispatch_commands",
+        command_key=command_key,
+        command_list=command_list,
+        current_test_id=current_test_id,
+    )
     # Most notably, the prefix is used for directory name under reports/.
     # It is either the test id (fio, ycsb_load...) or the command itself (post_task).
     prefix = current_test_id if current_test_id else command_key
 
     for item in command_list:
         # Item should be a map with one entry
-        assert isinstance(item, MutableMapping), 'item in list isn\'t a dict'
-        assert len(item.keys()) == 1, 'item has more than one entry'
-        for target, command in item.iteritems():
+        assert isinstance(item, MutableMapping), "item in list isn't a dict"
+        assert len(list(item.keys())) == 1, "item has more than one entry"
+        for target, command in six.iteritems(item):
             if target == "on_atlas":
                 run_atlas_command(target, command, config, prefix)
-            elif target.startswith('on_'):
+            elif target.startswith("on_"):
                 run_host_command(target, command, config, prefix)
             elif target == "restart_mongodb":
                 import mongodb_setup
+
                 mongo_controller = mongodb_setup.MongodbSetup(config)
-                clean_db_dir = command['clean_db_dir']
-                clean_logs = command['clean_logs']
+                clean_db_dir = command["clean_db_dir"]
+                clean_logs = command["clean_logs"]
                 if not mongo_controller.restart(clean_db_dir, clean_logs):
                     raise Exception("Error restarting mongodb")
             else:

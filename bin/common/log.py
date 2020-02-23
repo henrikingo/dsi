@@ -24,19 +24,21 @@ def setup_logging(verbose=False, filename=None, explicit_log_level=None):
     # The following sets the minimum level that we will see for the given component. So we will
     # only see warnings and higher for paramiko, boto3 and botocore. We will only see errors / fatal
     # / critical log messages for /dev/null
-    logging.getLogger('paramiko').setLevel(logging.WARNING)
-    logging.getLogger('boto3').setLevel(logging.WARNING)
-    logging.getLogger('botocore').setLevel(logging.WARNING)
-    logging.getLogger('error_only').setLevel(logging.ERROR)
+    logging.getLogger("paramiko").setLevel(logging.WARNING)
+    logging.getLogger("boto3").setLevel(logging.WARNING)
+    logging.getLogger("botocore").setLevel(logging.WARNING)
+    logging.getLogger("error_only").setLevel(logging.ERROR)
 
     structlog.configure(
         processors=[
-            structlog.stdlib.filter_by_level, structlog.stdlib.add_logger_name,
+            structlog.stdlib.filter_by_level,
+            structlog.stdlib.add_logger_name,
             structlog.stdlib.add_log_level,
             structlog.processors.StackInfoRenderer(),
-            structlog.processors.TimeStamper(fmt="iso"), structlog.processors.format_exc_info,
+            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.processors.format_exc_info,
             structlog.processors.UnicodeDecoder(),
-            structlog.dev.ConsoleRenderer()
+            structlog.dev.ConsoleRenderer(),
         ],
         context_class=dict,
         logger_factory=structlog.stdlib.LoggerFactory(),
@@ -51,6 +53,7 @@ class IOLogAdapter(StringIO):
     It derives from StringIO in order to get stubbed base implementations
     of methods like flush and close.
     """
+
     def __init__(self, logger, level=None):
         StringIO.__init__(self)
         self.logger = logger
@@ -92,6 +95,7 @@ class UTF8WrapperStream(object):
 
     This hopefully goes away when DSI moves to Python 3.
     """
+
     def __init__(self, child):
         """
         :param child: child io-stream or file-like object.
@@ -99,12 +103,11 @@ class UTF8WrapperStream(object):
         self._child = child
         if sys.version_info[0] > 2:
             # can't rely on logging yet!
-            print("UTF8WrapperStream is only necessary in Python versions prior to 3.0",
-                  file=sys.stderr)
+            sys.stderr.write("UTF8WrapperStream is only necessary in Python versions prior to 3.0")
 
     def write(self, line):
         """Write to the underlying stream first converting to utf-8."""
-        self._child.write(line.encode('utf-8', 'ignore'))
+        self._child.write(line.encode("utf-8", "ignore"))
         # ignore means ignore any characters can't couldn't be converted to
         # utf-8 and continue on with the rest
         # https://docs.python.org/2/library/codecs.html#codec-base-classes
@@ -152,6 +155,7 @@ class TeeStream(object):
     :see https://docs.python.org/2/library/io.html#io.IOBase for the
     interface it should implement.
     """
+
     def __init__(self, *streams):
         self.streams = list(streams)
         self.closed = False

@@ -9,7 +9,7 @@ from common.log import IOLogAdapter
 
 LOG = logging.getLogger(__name__)
 # This stream only log error or above messages
-ERROR_ONLY = logging.getLogger('error_only')
+ERROR_ONLY = logging.getLogger("error_only")
 
 INFO_ADAPTER = IOLogAdapter(LOG, logging.INFO)
 WARN_ADAPTER = IOLogAdapter(LOG, logging.WARN)
@@ -29,13 +29,18 @@ def make_host(host_info, mongodb_auth_settings=None, use_tls=False):
 
     host = None
 
-    if host_info.public_ip in ['localhost', '127.0.0.1', '0.0.0.0']:
+    if host_info.public_ip in ["localhost", "127.0.0.1", "0.0.0.0"]:
         LOG.debug("Making localhost for %s", host_info.public_ip)
         host = LocalHost(mongodb_auth_settings, use_tls)
     else:
         LOG.debug("Making remote host for %s using ssh", host_info.public_ip)
-        host = RemoteSSHHost(host_info.public_ip, host_info.ssh_user, host_info.ssh_key_file,
-                             mongodb_auth_settings, use_tls)
+        host = RemoteSSHHost(
+            host_info.public_ip,
+            host_info.ssh_user,
+            host_info.ssh_key_file,
+            mongodb_auth_settings,
+            use_tls,
+        )
 
     host.alias = "{category}.{offset}".format(category=host_info.category, offset=host_info.offset)
     return host

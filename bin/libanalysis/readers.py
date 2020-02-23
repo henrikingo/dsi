@@ -1,4 +1,4 @@
-#pylint: skip-file
+# pylint: skip-file
 """
 NOTE: This is a local copy of the readers module, taken from the
 support-tools/timeseries repository.
@@ -21,9 +21,12 @@ import struct
 import zlib
 import sys
 import json
+from six.moves import range
+
 
 def _msg(*s):
-    print(' '.join(s), file=sys.stderr)
+    sys.stderr.write(" ".join(s))
+
 
 #
 # basic bson parser, to be extended as needed
@@ -33,19 +36,22 @@ def _msg(*s):
 # returns result as tree of OrderedDict, preserving order
 #
 
-_int32 = struct.Struct('<i')
-_uint32 = struct.Struct('<I')
-_int64 = struct.Struct('<q')
-_uint64 = struct.Struct('<Q')
-_double = struct.Struct('<d')
+_int32 = struct.Struct("<i")
+_uint32 = struct.Struct("<I")
+_int64 = struct.Struct("<q")
+_uint64 = struct.Struct("<Q")
+_double = struct.Struct("<d")
 
 BSON = collections.OrderedDict
+
 
 class BsonReaderException(Exception):
     """
     General exception when parsin bson.
     """
+
     pass
+
 
 def _read_bson_doc(buf, at, ftdc=False):
     doc = BSON()
@@ -56,99 +62,102 @@ def _read_bson_doc(buf, at, ftdc=False):
     while at < doc_end:
         bson_type = ord(buf[at])
         at += 1
-        name_end = buf.find('\0', at)
-        n = buf[at : name_end]
+        name_end = buf.find("\0", at)
+        n = buf[at:name_end]
         at = name_end + 1
-        if bson_type==0: # eoo
+        if bson_type == 0:  # eoo
             return doc
-        elif bson_type==1: # _double
+        elif bson_type == 1:  # _double
             v = _double.unpack_from(buf, at)[0]
-            if ftdc: v = int(v)
+            if ftdc:
+                v = int(v)
             l = 8
-        elif bson_type==2: # string
+        elif bson_type == 2:  # string
             l = _uint32.unpack_from(buf, at)[0]
             at += 4
-            v = buf[at : at+l-1] if not ftdc else None
-        elif bson_type==3: # subdoc
+            v = buf[at : at + l - 1] if not ftdc else None
+        elif bson_type == 3:  # subdoc
             v = _read_bson_doc(buf, at, ftdc)
             l = v.bson_len
-        elif bson_type==4: # array
+        elif bson_type == 4:  # array
             v = _read_bson_doc(buf, at, ftdc)
             l = v.bson_len
-            if not ftdc: v = v.values() # return as array
-        elif bson_type==8: # bool
+            if not ftdc:
+                v = list(v.values())  # return as array
+        elif bson_type == 8:  # bool
             v = ord(buf[at])
             l = 1
-        elif bson_type==5: # bindata
+        elif bson_type == 5:  # bindata
             l = _uint32.unpack_from(buf, at)[0]
-            at += 5 # length plus subtype
-            v = buf[at : at+l] if not ftdc else None
-        elif bson_type==7: # objectid
-            v = None # xxx always ignore for now
+            at += 5  # length plus subtype
+            v = buf[at : at + l] if not ftdc else None
+        elif bson_type == 7:  # objectid
+            v = None  # xxx always ignore for now
             l = 12
-        elif bson_type==9: # datetime
+        elif bson_type == 9:  # datetime
             v = _uint64.unpack_from(buf, at)[0]
             v = int(v) if ftdc else v / 1000.0
             l = 8
-        elif bson_type==16: # _int32
+        elif bson_type == 16:  # _int32
             v = _int32.unpack_from(buf, at)[0]
-            if ftdc: v = int(v)
+            if ftdc:
+                v = int(v)
             l = 4
-        elif bson_type==17: # timestamp
+        elif bson_type == 17:  # timestamp
             v = BSON()
-            v['t'] = int(_uint32.unpack_from(buf, at)[0]) # seconds
-            v['i'] = int(_uint32.unpack_from(buf, at+4)[0]) # increment
+            v["t"] = int(_uint32.unpack_from(buf, at)[0])  # seconds
+            v["i"] = int(_uint32.unpack_from(buf, at + 4)[0])  # increment
             l = 8
-        elif bson_type==18: # _int64
+        elif bson_type == 18:  # _int64
             v = int(_int64.unpack_from(buf, at)[0])
             l = 8
-        elif bson_type==0xff or bson_type==0x7f: # minkey, maxkey
-            v = None # xxx always ignore for now
+        elif bson_type == 0xFF or bson_type == 0x7F:  # minkey, maxkey
+            v = None  # xxx always ignore for now
             l = 0
         else:
-            err_msg = 'unknown type %d(%x) at %d(%x)'
+            err_msg = "unknown type %d(%x) at %d(%x)"
             raise BsonReaderException(err_msg % (bson_type, bson_type, at, at))
         if v != None:
             doc[n] = v
         at += l
-    assert(not 'eoo not found') # should have seen an eoo and returned
+    assert not "eoo not found"  # should have seen an eoo and returned
 
 
 def _decode_chunk(chunk_doc, first_only):
-    
+
     # our result is a map from metric keys to list of values for each metric key
     # a metric key is a path through the sample document represented as a tuple
     metrics = collections.OrderedDict()
 
     # decompress chunk data field
-    data = chunk_doc['data']
+    data = chunk_doc["data"]
     metrics.chunk_len = len(data)
-    data = data[4:] # skip uncompressed length, we don't need it
+    data = data[4:]  # skip uncompressed length, we don't need it
     data = zlib.decompress(data)
 
     # read reference doc from chunk data, ignoring non-metric fields
     ref_doc = _read_bson_doc(data, 0, ftdc=True)
-    #print_bson_doc(ref_doc)
+    # print_bson_doc(ref_doc)
 
     # traverse the reference document and extract map from metrics keys to values
     def extract_keys(doc, n=()):
         for k, v in doc.items():
             nn = n + (k,)
-            if type(v)==BSON:
+            if type(v) == BSON:
                 extract_keys(v, nn)
             else:
                 metrics[nn] = [v]
+
     extract_keys(ref_doc)
 
     # get nmetrics, ndeltas
     nmetrics = _uint32.unpack_from(data, ref_doc.bson_len)[0]
-    ndeltas = _uint32.unpack_from(data, ref_doc.bson_len+4)[0]
+    ndeltas = _uint32.unpack_from(data, ref_doc.bson_len + 4)[0]
     nsamples = ndeltas + 1
     at = ref_doc.bson_len + 8
     if nmetrics != len(metrics):
         # xxx remove when SERVER-20602 is fixed
-        _msg('ignoring bad chunk: nmetrics=%d, len(metrics)=%d' % (
-            nmetrics, len(metrics)))
+        _msg("ignoring bad chunk: nmetrics=%d, len(metrics)=%d" % (nmetrics, len(metrics)))
         return None
     metrics.nsamples = nsamples
 
@@ -162,11 +171,11 @@ def _decode_chunk(chunk_doc, first_only):
         shift = 0
         while True:
             b = ord(data[at])
-            res |= (b&0x7F) << shift
+            res |= (b & 0x7F) << shift
             at += 1
-            if not (b&0x80):
-                if res > 0x7fffffffffffffff: # negative 64-bit value
-                    res = int(res-0x10000000000000000)
+            if not (b & 0x80):
+                if res > 0x7FFFFFFFFFFFFFFF:  # negative 64-bit value
+                    res = int(res - 0x10000000000000000)
                 return res, at
             shift += 7
 
@@ -180,17 +189,17 @@ def _decode_chunk(chunk_doc, first_only):
                 nzeroes -= 1
             else:
                 delta, at = unpack(data, at)
-                if delta==0:
+                if delta == 0:
                     nzeroes, at = unpack(data, at)
             value += delta
             metric_values.append(value)
-    assert(at==len(data))
+    assert at == len(data)
 
     # our result
     return metrics
 
 
-def read_ftdc(fn, first_only = False):
+def read_ftdc(fn, first_only=False):
 
     """
     Read an ftdc file. fn may be either a single metrics file, or a
@@ -216,48 +225,53 @@ def read_ftdc(fn, first_only = False):
             try:
                 chunk_doc = _read_bson_doc(buf, at)
                 at += chunk_doc.bson_len
-                if chunk_doc['type']==1:
+                if chunk_doc["type"] == 1:
                     yield _decode_chunk(chunk_doc, first_only)
             except Exception as e:
-                raise Exception('bad bson doc: ' + str(e))
+                raise Exception("bad bson doc: " + str(e))
 
         # bson docs should exactly cover file
-        assert(at==len(buf))
+        assert at == len(buf)
+
 
 #
 # xxx does not correctly handle schema change from one line to the next
 #
 
+
 def _parse(j, result, key):
     for k, v in j.items():
         kk = key
-        if k != 'floatApprox':
+        if k != "floatApprox":
             kk += (k,)
-        if type(v)==dict:
+        if type(v) == dict:
             _parse(v, result, kk)
         else:
             result[kk].append(v)
+
 
 def read_ss(fn):
     """Read a sequence of serverStatus JSON documents, one per line"""
     result = collections.defaultdict(list)
     for i, line in enumerate(open(fn)):
         j = json.loads(line)
-        _parse(j, result, ('serverStatus',))
-        if i>0 and i%100==0:
+        _parse(j, result, ("serverStatus",))
+        if i > 0 and i % 100 == 0:
             yield result
             result.clear()
     yield result
 
+
 #
 #
 #
+
 
 def read(fn):
 
     """Try all readers until one succeeds"""
 
-    for f, name in ((read_ss,'ss'), (read_ftdc,'ftdc')):
+    for f, name in ((read_ss, "ss"), (read_ftdc, "ftdc")):
         generator = f(fn)
         try:
             chunk = next(generator)
@@ -266,17 +280,24 @@ def read(fn):
                     yield chunk
                 break
         except Exception as e:
-            print >>sys.stderr, 'does not appear to be %s: %s' % (name, str(e))
+            print >>sys.stderr, "does not appear to be %s: %s" % (name, str(e))
+
 
 #
 # sniff test
 #
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     for chunk in read(sys.argv[1]):
-        values = chunk.values()
-        assert(all(len(values[0])==len(v) for v in values))
-        print('chunk, %d keys, %d values, key 0: %s, key 0 value 0: %d' % (
-            len(chunk.keys()), len(values[0]), chunk.keys()[0], chunk[chunk.keys()[0]][0]
-        ))
+        values = list(chunk.values())
+        assert all(len(values[0]) == len(v) for v in values)
+        print(
+            "chunk, %d keys, %d values, key 0: %s, key 0 value 0: %d"
+            % (
+                len(list(chunk.keys())),
+                len(values[0]),
+                list(chunk.keys())[0],
+                chunk[list(chunk.keys())[0]][0],
+            )
+        )

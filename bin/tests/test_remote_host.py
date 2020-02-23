@@ -13,218 +13,224 @@ import common.command_runner
 import common.remote_host
 import common.remote_ssh_host
 
-FakeStat = collections.namedtuple('FakeStat', 'st_mode')
+FakeStat = collections.namedtuple("FakeStat", "st_mode")
 
 
 class RemoteHostTestCase(unittest.TestCase):
     """ Unit Test for RemoteHost library """
-    @patch('common.remote_host.RemoteHost.connected_ssh')
+
+    @patch("common.remote_host.RemoteHost.connected_ssh")
     def test_upload_files_dir(self, mock_connected_ssh):
         """We can upload directories of files"""
 
-        ssh = mock.MagicMock(name='ssh')
-        ftp = mock.MagicMock(name='ftp')
-        channel = mock.MagicMock(name='channel')
+        ssh = mock.MagicMock(name="ssh")
+        ftp = mock.MagicMock(name="ftp")
+        channel = mock.MagicMock(name="channel")
         ssh.exec_command.return_value = channel, channel, channel
 
         mock_connected_ssh.return_value = (ssh, ftp)
 
         remote = common.remote_ssh_host.RemoteSSHHost(hostname=None, username=None, pem_file=None)
-        remote._perform_exec = mock.MagicMock(name='_perform_exec')
+        remote._perform_exec = mock.MagicMock(name="_perform_exec")
         remote._perform_exec.return_value = 0
 
         local_path = os.path.abspath(os.path.dirname(__file__))
-        remote_path = '/foo/bar'
+        remote_path = "/foo/bar"
 
         remote.upload_file(local_path, remote_path)
 
-        ssh.exec_command.assert_has_calls([
-            call('mkdir -p /foo/bar', get_pty=False),
-            call('tar xf /foo/bar.tar -C /foo/bar', get_pty=False),
-            call('rm /foo/bar.tar', get_pty=False)
-        ],
-                                          any_order=False)
+        ssh.exec_command.assert_has_calls(
+            [
+                call("mkdir -p /foo/bar", get_pty=False),
+                call("tar xf /foo/bar.tar -C /foo/bar", get_pty=False),
+                call("rm /foo/bar.tar", get_pty=False),
+            ],
+            any_order=False,
+        )
 
-        ftp.assert_has_calls([call.put(ANY, '/foo/bar.tar'),
-                              call.chmod('/foo/bar.tar', ANY)],
-                             any_order=False)
+        ftp.assert_has_calls(
+            [call.put(ANY, "/foo/bar.tar"), call.chmod("/foo/bar.tar", ANY)], any_order=False
+        )
 
-    @patch('common.remote_host.RemoteHost.connected_ssh')
+    @patch("common.remote_host.RemoteHost.connected_ssh")
     def test_upload_single_file(self, mock_connected_ssh):
         """We can upload a single file"""
-        ssh = mock.MagicMock(name='ssh')
-        ftp = mock.MagicMock(name='ftp')
+        ssh = mock.MagicMock(name="ssh")
+        ftp = mock.MagicMock(name="ftp")
         mock_connected_ssh.return_value = (ssh, ftp)
 
         remote = common.remote_host.RemoteHost(hostname=None, username=None, pem_file=None)
 
         local_path = os.path.abspath(__file__)
-        remote_path = '/foo/bar/idk.py'
+        remote_path = "/foo/bar/idk.py"
 
         remote.upload_file(local_path, remote_path)
 
         ssh.assert_not_called()
 
-        ftp.assert_has_calls([call.put(ANY, '/foo/bar/idk.py'),
-                              call.chmod('/foo/bar/idk.py', ANY)],
-                             any_order=False)
+        ftp.assert_has_calls(
+            [call.put(ANY, "/foo/bar/idk.py"), call.chmod("/foo/bar/idk.py", ANY)], any_order=False
+        )
 
-    @patch('paramiko.SSHClient')
+    @patch("paramiko.SSHClient")
     def test__upload_files_host_ex(self, ssh_client):
         """ Test run command map exception """
 
-        with self.assertRaisesRegexp(common.host_utils.HostException, r'wrapped exception'):
-            remote = common.remote_ssh_host.RemoteSSHHost('53.1.1.1', "ssh_user", "ssh_key_file")
+        with self.assertRaisesRegexp(common.host_utils.HostException, r"wrapped exception"):
+            remote = common.remote_ssh_host.RemoteSSHHost("53.1.1.1", "ssh_user", "ssh_key_file")
             command = {"upload_files": [{"target": "remote_path", "source": "."}]}
-            remote.exec_command = MagicMock(name='exec_command')
+            remote.exec_command = MagicMock(name="exec_command")
             remote.exec_command.return_value = 0
 
-            remote._upload_dir = MagicMock(name='_upload_single_file')
+            remote._upload_dir = MagicMock(name="_upload_single_file")
             remote._upload_dir.side_effect = common.host_utils.HostException("wrapped exception")
 
-            remote._upload_single_file = MagicMock(name='_upload_single_file')
+            remote._upload_single_file = MagicMock(name="_upload_single_file")
             remote._upload_single_file.side_effect = common.host_utils.HostException(
-                "wrapped exception")
+                "wrapped exception"
+            )
             common.command_runner._run_host_command_map(remote, command, "test_id", {})
 
-    @patch('paramiko.SSHClient')
+    @patch("paramiko.SSHClient")
     def test__upload_files_wrapped_ex(self, ssh_client):
         """ Test run command map exception """
 
-        with self.assertRaisesRegexp(common.host_utils.HostException,
-                                     r"'mkdir', '-p', 'remote_path'"):
-            remote = common.remote_ssh_host.RemoteSSHHost('53.1.1.1', "ssh_user", "ssh_key_file")
+        with self.assertRaisesRegexp(
+            common.host_utils.HostException, r"'mkdir', '-p', 'remote_path'"
+        ):
+            remote = common.remote_ssh_host.RemoteSSHHost("53.1.1.1", "ssh_user", "ssh_key_file")
             command = {"upload_files": [{"target": "remote_path", "source": "."}]}
-            remote.exec_command = MagicMock(name='exec_command')
+            remote.exec_command = MagicMock(name="exec_command")
             remote.exec_command.return_value = 1
 
-            remote._upload_single_file = MagicMock(name='_upload_single_file')
+            remote._upload_single_file = MagicMock(name="_upload_single_file")
             remote._upload_single_file.side_effect = paramiko.ssh_exception.SSHException(
-                "wrapped exception")
+                "wrapped exception"
+            )
             common.command_runner._run_host_command_map(remote, command, "test_id", {})
 
-    @patch('paramiko.SSHClient')
+    @patch("paramiko.SSHClient")
     def test_remote_host_isdir(self, mock_ssh):
         """ Test remote_isdir """
 
-        remote = common.remote_ssh_host.RemoteSSHHost('53.1.1.1', "ssh_user", "ssh_key_file")
+        remote = common.remote_ssh_host.RemoteSSHHost("53.1.1.1", "ssh_user", "ssh_key_file")
         remote.ftp.stat.return_value = FakeStat(st_mode=stat.S_IFDIR)
-        isdir = remote.remote_isdir('/true')
+        isdir = remote.remote_isdir("/true")
 
         self.assertTrue(isdir, "expected true")
-        remote.ftp.stat.assert_called_with('/true')
+        remote.ftp.stat.assert_called_with("/true")
 
         remote.ftp.stat.return_value = FakeStat(st_mode=stat.S_IFLNK)
-        isdir = remote.remote_isdir('/false')
+        isdir = remote.remote_isdir("/false")
 
         self.assertFalse(isdir, "expected False")
-        remote.ftp.stat.assert_called_with('/false')
+        remote.ftp.stat.assert_called_with("/false")
 
         remote.ftp = mock_ssh
-        mock_ssh.stat.side_effect = os.error(2, 'No such file or directory:')
-        isdir = remote.remote_isdir('/exception')
+        mock_ssh.stat.side_effect = os.error(2, "No such file or directory:")
+        isdir = remote.remote_isdir("/exception")
 
         self.assertFalse(isdir, "expected False")
-        remote.ftp.stat.assert_called_with('/exception')
+        remote.ftp.stat.assert_called_with("/exception")
 
-    @patch('paramiko.SSHClient')
+    @patch("paramiko.SSHClient")
     def test_exists_os_error(self, mock_ssh):
         """ Test run RemoteHost.exists """
 
-        remote = common.remote_host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
-        exists = remote.remote_exists('true_path')
+        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        exists = remote.remote_exists("true_path")
 
         self.assertTrue(exists, "expected true")
-        remote.ftp.stat.assert_called_with('true_path')
+        remote.ftp.stat.assert_called_with("true_path")
 
         remote.ftp = mock_ssh
-        mock_ssh.stat.side_effect = os.error(2, 'No such file or directory:')
-        exists = remote.remote_exists('os_exception_path')
+        mock_ssh.stat.side_effect = os.error(2, "No such file or directory:")
+        exists = remote.remote_exists("os_exception_path")
 
         self.assertFalse(exists, "expected False")
-        remote.ftp.stat.assert_called_with('os_exception_path')
+        remote.ftp.stat.assert_called_with("os_exception_path")
 
-    @patch('paramiko.SSHClient')
+    @patch("paramiko.SSHClient")
     def test_exists_io_error(self, mock_ssh):
         """ Test run RemoteHost.exists """
 
-        remote = common.remote_host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
-        exists = remote.remote_exists('true_path')
+        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        exists = remote.remote_exists("true_path")
 
         self.assertTrue(exists, "expected true")
-        remote.ftp.stat.assert_called_with('true_path')
+        remote.ftp.stat.assert_called_with("true_path")
 
         remote.ftp = mock_ssh
-        mock_ssh.stat.side_effect = IOError('IOError')
-        exists = remote.remote_exists('io_exception_path')
+        mock_ssh.stat.side_effect = IOError("IOError")
+        exists = remote.remote_exists("io_exception_path")
 
         self.assertFalse(exists, "expected False")
-        remote.ftp.stat.assert_called_with('io_exception_path')
+        remote.ftp.stat.assert_called_with("io_exception_path")
 
-    @patch('paramiko.SSHClient')
+    @patch("paramiko.SSHClient")
     def test_exists_paramiko_error(self, mock_ssh):
         """ Test run RemoteHost.exists """
 
-        remote = common.remote_host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
-        exists = remote.remote_exists('true_path')
+        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        exists = remote.remote_exists("true_path")
 
         self.assertTrue(exists, "expected true")
-        remote.ftp.stat.assert_called_with('true_path')
+        remote.ftp.stat.assert_called_with("true_path")
 
         remote.ftp = mock_ssh
-        mock_ssh.stat.side_effect = paramiko.SFTPError('paramiko.SFTPError')
-        exists = remote.remote_exists('paramiko_exception_path')
+        mock_ssh.stat.side_effect = paramiko.SFTPError("paramiko.SFTPError")
+        exists = remote.remote_exists("paramiko_exception_path")
 
         self.assertFalse(exists, "expected False")
-        remote.ftp.stat.assert_called_with('paramiko_exception_path')
+        remote.ftp.stat.assert_called_with("paramiko_exception_path")
 
-    @patch('paramiko.SSHClient')
-    @patch('os.makedirs')
-    @patch('os.path.exists')
+    @patch("paramiko.SSHClient")
+    @patch("os.makedirs")
+    @patch("os.path.exists")
     def test__retrieve_file(self, mock_exists, mock_makedirs, mock_ssh):
         """ Test run RemoteHost.exists """
 
         mock_exists.return_value = True
-        remote = common.remote_host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
-        remote._retrieve_file('remote_file', 'reports/local_file')
+        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        remote._retrieve_file("remote_file", "reports/local_file")
 
-        remote.ftp.get.assert_called_with('remote_file', 'reports/local_file')
+        remote.ftp.get.assert_called_with("remote_file", "reports/local_file")
         mock_makedirs.assert_not_called()
 
         mock_exists.return_value = True
-        remote = common.remote_host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
-        remote._retrieve_file('remote_file', 'reports/mongod.0/local_file')
+        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        remote._retrieve_file("remote_file", "reports/mongod.0/local_file")
 
-        remote.ftp.get.assert_called_with('remote_file', 'reports/mongod.0/local_file')
+        remote.ftp.get.assert_called_with("remote_file", "reports/mongod.0/local_file")
         mock_makedirs.assert_not_called()
 
         mock_exists.return_value = True
-        remote = common.remote_host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
-        remote._retrieve_file('remote_file', 'reports/../local_file')
+        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        remote._retrieve_file("remote_file", "reports/../local_file")
 
-        remote.ftp.get.assert_called_with('remote_file', 'local_file')
+        remote.ftp.get.assert_called_with("remote_file", "local_file")
         mock_makedirs.assert_not_called()
 
         mock_exists.return_value = False
-        remote = common.remote_host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
-        remote._retrieve_file('remote_file', 'reports/local_file')
+        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        remote._retrieve_file("remote_file", "reports/local_file")
 
-        remote.ftp.get.assert_called_with('remote_file', 'reports/local_file')
-        mock_makedirs.assert_called_with('reports')
+        remote.ftp.get.assert_called_with("remote_file", "reports/local_file")
+        mock_makedirs.assert_called_with("reports")
 
-    @patch('paramiko.SSHClient')
+    @patch("paramiko.SSHClient")
     def test_retrieve_file_for_files(self, mock_ssh):
         """ Test run RemoteHost.exists """
 
         # remote path does not exist
-        remote = common.remote_host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
+        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
         remote.remote_exists = Mock()
         remote.remote_isdir = Mock()
         remote._retrieve_file = Mock()
         remote.ftp.listdir = Mock()
 
         remote.remote_exists.return_value = False
-        remote.retrieve_path('remote_file', 'reports/local_file')
+        remote.retrieve_path("remote_file", "reports/local_file")
 
         remote.remote_isdir.assert_not_called()
 
@@ -236,8 +242,8 @@ class RemoteHostTestCase(unittest.TestCase):
 
         remote.remote_exists.return_value = True
         remote.remote_isdir.return_value = False
-        remote.retrieve_path('remote_file', 'reports/local_file')
-        remote._retrieve_file.assert_called_with('remote_file', 'reports/local_file')
+        remote.retrieve_path("remote_file", "reports/local_file")
+        remote._retrieve_file.assert_called_with("remote_file", "reports/local_file")
 
         # remote path is a directory containing a single file
         remote.remote_exists.reset_mock()
@@ -246,15 +252,16 @@ class RemoteHostTestCase(unittest.TestCase):
         remote.ftp.listdir.reset_mock()
 
         remote.remote_exists.return_value = True
-        isdir_map = {'remote_dir': True}
+        isdir_map = {"remote_dir": True}
         remote.remote_isdir.side_effect = lambda name: isdir_map.get(name, False)
-        remote.ftp.listdir.return_value = ['mongod.log']
+        remote.ftp.listdir.return_value = ["mongod.log"]
 
-        remote.retrieve_path('remote_dir', 'reports/local_dir')
+        remote.retrieve_path("remote_dir", "reports/local_dir")
 
-        remote.ftp.listdir.assert_called_with('remote_dir')
-        remote._retrieve_file.assert_called_with('remote_dir/mongod.log',
-                                                 'reports/local_dir/mongod.log')
+        remote.ftp.listdir.assert_called_with("remote_dir")
+        remote._retrieve_file.assert_called_with(
+            "remote_dir/mongod.log", "reports/local_dir/mongod.log"
+        )
 
         # remote path is a directory, with multiple files
         remote.remote_exists.reset_mock()
@@ -263,27 +270,34 @@ class RemoteHostTestCase(unittest.TestCase):
         remote.ftp.listdir.reset_mock()
 
         remote.remote_exists.return_value = True
-        isdir_map = {'remote_dir': True}
+        isdir_map = {"remote_dir": True}
         remote.remote_isdir.side_effect = lambda name: isdir_map.get(name, False)
         remote.ftp.listdir.return_value = [
-            'mongod.log', 'metrics.2017-04-27T09-14-33Z-00000', 'metrics.interim'
+            "mongod.log",
+            "metrics.2017-04-27T09-14-33Z-00000",
+            "metrics.interim",
         ]
 
-        remote.retrieve_path('remote_dir', 'reports/local_dir')
+        remote.retrieve_path("remote_dir", "reports/local_dir")
 
-        remote.ftp.listdir.assert_called_with('remote_dir')
-        self.assertTrue(remote._retrieve_file.mock_calls == [
-            mock.call('remote_dir/mongod.log', 'reports/local_dir/mongod.log'),
-            mock.call('remote_dir/metrics.2017-04-27T09-14-33Z-00000',
-                      'reports/local_dir/metrics.2017-04-27T09-14-33Z-00000'),
-            mock.call('remote_dir/metrics.interim', 'reports/local_dir/metrics.interim')
-        ])
+        remote.ftp.listdir.assert_called_with("remote_dir")
+        self.assertTrue(
+            remote._retrieve_file.mock_calls
+            == [
+                mock.call("remote_dir/mongod.log", "reports/local_dir/mongod.log"),
+                mock.call(
+                    "remote_dir/metrics.2017-04-27T09-14-33Z-00000",
+                    "reports/local_dir/metrics.2017-04-27T09-14-33Z-00000",
+                ),
+                mock.call("remote_dir/metrics.interim", "reports/local_dir/metrics.interim"),
+            ]
+        )
 
-    @patch('paramiko.SSHClient')
+    @patch("paramiko.SSHClient")
     def test_retrieve_file_with_dirs(self, mock_ssh):
         """ Test run RemoteHost.exists """
 
-        remote = common.remote_host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
+        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
         remote.remote_exists = Mock()
         remote.remote_isdir = Mock()
         remote._retrieve_file = Mock()
@@ -296,16 +310,16 @@ class RemoteHostTestCase(unittest.TestCase):
         remote.ftp.listdir.reset_mock()
 
         remote.remote_exists.return_value = True
-        isdir_map = {'remote_dir': True, 'remote_dir/data': True}
+        isdir_map = {"remote_dir": True, "remote_dir/data": True}
         remote.remote_isdir.side_effect = lambda name: isdir_map.get(name, False)
 
-        listdir_map = {'remote_dir': ['data']}
+        listdir_map = {"remote_dir": ["data"]}
         remote.ftp.listdir.side_effect = lambda name: listdir_map.get(name, [])
 
-        remote.retrieve_path('remote_dir', 'reports/local_dir')
+        remote.retrieve_path("remote_dir", "reports/local_dir")
         self.assertTrue(
-            remote.ftp.listdir.mock_calls ==
-            [mock.call('remote_dir'), mock.call('remote_dir/data')])
+            remote.ftp.listdir.mock_calls == [mock.call("remote_dir"), mock.call("remote_dir/data")]
+        )
         # remote.ftp.listdir.assert_called_with('remote_dir')
         remote._retrieve_file.assert_not_called()
 
@@ -316,19 +330,20 @@ class RemoteHostTestCase(unittest.TestCase):
         remote.ftp.listdir.reset_mock()
 
         remote.remote_exists.return_value = True
-        isdir_map = {'remote_dir': True, 'remote_dir/data': True}
+        isdir_map = {"remote_dir": True, "remote_dir/data": True}
         remote.remote_isdir.side_effect = lambda name: isdir_map.get(name, False)
 
-        listdir_map = {'remote_dir': ['data'], 'remote_dir/data': ['metrics.interim']}
+        listdir_map = {"remote_dir": ["data"], "remote_dir/data": ["metrics.interim"]}
         remote.ftp.listdir.side_effect = lambda name: listdir_map.get(name, [])
 
-        remote.retrieve_path('remote_dir', 'reports/local_dir')
+        remote.retrieve_path("remote_dir", "reports/local_dir")
         self.assertTrue(
-            remote.ftp.listdir.mock_calls ==
-            [mock.call('remote_dir'), mock.call('remote_dir/data')])
+            remote.ftp.listdir.mock_calls == [mock.call("remote_dir"), mock.call("remote_dir/data")]
+        )
         # remote.ftp.listdir.assert_called_with('remote_dir')
-        remote._retrieve_file.assert_called_with('remote_dir/data/metrics.interim',
-                                                 'reports/local_dir/data/metrics.interim')
+        remote._retrieve_file.assert_called_with(
+            "remote_dir/data/metrics.interim", "reports/local_dir/data/metrics.interim"
+        )
 
         # remote path is a directory, with multiple files
         remote.remote_exists.reset_mock()
@@ -337,24 +352,27 @@ class RemoteHostTestCase(unittest.TestCase):
         remote.ftp.listdir.reset_mock()
 
         remote.remote_exists.return_value = True
-        isdir_map = {'remote_dir': True}
+        isdir_map = {"remote_dir": True}
         remote.remote_isdir.side_effect = lambda name: isdir_map.get(name, False)
 
-        listdir_map = {'remote_dir': ['data', 'logs']}
+        listdir_map = {"remote_dir": ["data", "logs"]}
         remote.ftp.listdir.side_effect = lambda name: listdir_map.get(name, [])
 
-        remote.retrieve_path('remote_dir', 'reports/local_dir')
-        remote.ftp.listdir.assert_called_with('remote_dir')
-        self.assertTrue(remote._retrieve_file.mock_calls == [
-            mock.call('remote_dir/data', 'reports/local_dir/data'),
-            mock.call('remote_dir/logs', 'reports/local_dir/logs')
-        ])
+        remote.retrieve_path("remote_dir", "reports/local_dir")
+        remote.ftp.listdir.assert_called_with("remote_dir")
+        self.assertTrue(
+            remote._retrieve_file.mock_calls
+            == [
+                mock.call("remote_dir/data", "reports/local_dir/data"),
+                mock.call("remote_dir/logs", "reports/local_dir/logs"),
+            ]
+        )
 
-    @patch('paramiko.SSHClient')
+    @patch("paramiko.SSHClient")
     def test_retrieve_files_and_dirs(self, mock_ssh):
         """ Test run RemoteHost.exists """
 
-        remote = common.remote_host.RemoteHost('53.1.1.1', "ssh_user", "ssh_key_file")
+        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
         remote.remote_exists = Mock()
         remote.remote_isdir = Mock()
         remote._retrieve_file = Mock()
@@ -369,32 +387,39 @@ class RemoteHostTestCase(unittest.TestCase):
         remote.remote_exists.return_value = True
 
         isdir_map = {
-            'remote_dir': True,
-            'remote_dir/data': True,
-            'remote_dir/empty': True,
-            'remote_dir/logs': True
+            "remote_dir": True,
+            "remote_dir/data": True,
+            "remote_dir/empty": True,
+            "remote_dir/logs": True,
         }
 
         remote.remote_isdir.side_effect = lambda name: isdir_map.get(name, False)
 
         listdir_map = {
-            'remote_dir': ['data', 'empty', 'file', 'logs'],
-            'remote_dir/data': ['metrics.interim', 'metrics.2017-04-27T09-14-33Z-00000'],
-            'remote_dir/logs': ['mongod.log']
+            "remote_dir": ["data", "empty", "file", "logs"],
+            "remote_dir/data": ["metrics.interim", "metrics.2017-04-27T09-14-33Z-00000"],
+            "remote_dir/logs": ["mongod.log"],
         }
         remote.ftp.listdir.side_effect = lambda name: listdir_map.get(name, [])
 
-        remote.retrieve_path('remote_dir', 'reports/local_dir')
+        remote.retrieve_path("remote_dir", "reports/local_dir")
 
         # note empty is not here so it was not called
-        self.assertTrue(remote._retrieve_file.mock_calls == [
-            mock.call('remote_dir/data/metrics.interim', 'reports/local_dir/data/metrics.interim'),
-            mock.call('remote_dir/data/metrics.2017-04-27T09-14-33Z-00000',
-                      'reports/local_dir/data/metrics.2017-04-27T09-14-33Z-00000'),
-            mock.call('remote_dir/file', 'reports/local_dir/file'),
-            mock.call('remote_dir/logs/mongod.log', 'reports/local_dir/logs/mongod.log')
-        ])
+        self.assertTrue(
+            remote._retrieve_file.mock_calls
+            == [
+                mock.call(
+                    "remote_dir/data/metrics.interim", "reports/local_dir/data/metrics.interim"
+                ),
+                mock.call(
+                    "remote_dir/data/metrics.2017-04-27T09-14-33Z-00000",
+                    "reports/local_dir/data/metrics.2017-04-27T09-14-33Z-00000",
+                ),
+                mock.call("remote_dir/file", "reports/local_dir/file"),
+                mock.call("remote_dir/logs/mongod.log", "reports/local_dir/logs/mongod.log"),
+            ]
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

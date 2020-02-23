@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+
 """
 Analyze results from test_control.py
 
@@ -30,6 +31,7 @@ class ResultsAnalyzer(object):
     """
     Analyze results from test_control.py.
     """
+
     def __init__(self, config):
         self.failures = 0
         self.config = config
@@ -44,7 +46,7 @@ class ResultsAnalyzer(object):
         # Example: from libanalysis.core_files import core_files
         plugins = self._get_plugins()
         for plugin in plugins:
-            module = __import__('libanalysis')
+            module = __import__("libanalysis")
             func = getattr(module, plugin)
             func(self.config, self.results)
 
@@ -53,7 +55,7 @@ class ResultsAnalyzer(object):
 
     def _get_plugins(self):
         plugins = []
-        plugins.extend(self.config['analysis'].get('checks', []))
+        plugins.extend(self.config["analysis"].get("checks", []))
         return plugins
 
 
@@ -65,14 +67,14 @@ def main(argv):
 
     :returns: int the exit status to return to the caller (0 for OK)
     """
-    parser = argparse.ArgumentParser(description='Analyze DSI test results.')
+    parser = argparse.ArgumentParser(description="Analyze DSI test results.")
 
-    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
-    parser.add_argument('--log-file', help='path to log file')
+    parser.add_argument("-d", "--debug", action="store_true", help="enable debug output")
+    parser.add_argument("--log-file", help="path to log file")
     args = parser.parse_args(argv)
     setup_logging(args.debug, args.log_file)
 
-    config = ConfigDict('analysis')
+    config = ConfigDict("analysis")
     config.load()
 
     analyzer = ResultsAnalyzer(config)
@@ -80,5 +82,5 @@ def main(argv):
     return 1 if analyzer.failures > 0 else 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))

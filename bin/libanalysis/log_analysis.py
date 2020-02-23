@@ -23,10 +23,10 @@ def log(config, results):
     :param ResultsFile results: Object to add results to.
     """
     LOGGER.info("Checking log files.")
-    reports = config['test_control']['reports_dir_basename']
-    perf_json = config['test_control']['perf_json']['path']
-    task = config['test_control']['task_name']
-    rules = config['analysis']['rules']
+    reports = config["test_control"]["reports_dir_basename"]
+    perf_json = config["test_control"]["perf_json"]["path"]
+    task = config["test_control"]["task_name"]
+    rules = config["analysis"]["rules"]
     new_results, _ = analyze_logs(reports, rules, perf_file_path=perf_json, task=task)
     results.extend(new_results)
 
@@ -60,7 +60,7 @@ def analyze_logs(reports_dir_path, rules, perf_file_path=None, task=None):
             "log_raw": _format_log_raw(log_path, bad_lines),
             "test_file": log_path[8:],  # Remove "reports/" prefix
             "start": 0,
-            "exit_code": 1 if bad_lines else 0
+            "exit_code": 1 if bad_lines else 0,
         }
         results.append(result)
 
@@ -77,9 +77,13 @@ def _format_log_raw(path, bad_lines):
     """
 
     msg_path_header = "\nLog file: {0}\n".format(path)
-    msg_body = "No bad messages found" if not bad_lines else \
-        "Number of bad lines: {0}\nBad lines below: \n{1}\n{2}".format(
-            path, len(bad_lines), "".join(bad_lines))
+    msg_body = (
+        "No bad messages found"
+        if not bad_lines
+        else "Number of bad lines: {0}\nBad lines below: \n{1}\n{2}".format(
+            path, len(bad_lines), "".join(bad_lines)
+        )
+    )
     return msg_path_header + msg_body
 
 
@@ -129,7 +133,7 @@ def _print_keepalive_msg(path):
        parameterize the time interval, add unit tests, and that would also make the use of a
        global variable go away.
     """
-    global KEEPALIVE_TIME  #pylint: disable=global-statement
+    global KEEPALIVE_TIME  # pylint: disable=global-statement
     quarter = 60 * 15
     now = time.time()
     if now > KEEPALIVE_TIME + quarter:

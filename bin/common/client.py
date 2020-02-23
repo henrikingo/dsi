@@ -13,30 +13,34 @@ class ClientConfig(object):
     """
     Class representing the configuration for a workload client.
     """
+
     def __init__(self, config):
         """
         :param config: The infrastructure_provisioning ConfigDict
         """
-        inf_prov_out = config['infrastructure_provisioning']
-        client_config = inf_prov_out['out']['workload_client'][0]
-        self.public_ip = client_config['public_ip']
-        self.private_ip = client_config['private_ip']
+        inf_prov_out = config["infrastructure_provisioning"]
+        client_config = inf_prov_out["out"]["workload_client"][0]
+        self.public_ip = client_config["public_ip"]
+        self.private_ip = client_config["private_ip"]
         (self.ssh_user, self.ssh_key_file) = ssh_user_and_key_file(config)
 
         self.delay_node = DelayGraph.client_node
 
     def compute_host_info(self):
         """Create host wrapper to run commands."""
-        return HostInfo(public_ip=self.public_ip,
-                        private_ip=self.private_ip,
-                        ssh_user=self.ssh_user,
-                        ssh_key_file=self.ssh_key_file)
+        return HostInfo(
+            public_ip=self.public_ip,
+            private_ip=self.private_ip,
+            ssh_user=self.ssh_user,
+            ssh_key_file=self.ssh_key_file,
+        )
 
 
 class Client(HasDelay):
     """
     Class representing a connection to a workload client.
     """
+
     def __init__(self, client_config):
         """
         :param client_config: The ClientConfig for this client.

@@ -23,19 +23,19 @@ def exit(config, results):
     :param ResultsFile results: Object to add results to.
     """
     LOG.info("Checking exit codes.")
-    run = config['test_control']['run']
-    exit_codes = config['test_control']['out']['exit_codes']
+    run = config["test_control"]["run"]
+    exit_codes = config["test_control"]["out"]["exit_codes"]
     # We want to check that all tests actually ran. So start by iterating over test_control.run
     for test in run:
         # Then check exit_codes in test_control.out for all of them
-        exit = exit_codes.get(test['id'])
+        exit = exit_codes.get(test["id"])
         if exit is None:
             message = "No exit code found in test_control.out.exit_codes for test. Did it not run?"
             # Not using LOG.error() because there's no error in THIS code, even if some test result
             # is missing.
-            LOG.warning(message, test_id=test['id'])
-            results.add(test['id'], 'fail', exit_code=EXIT_STATUS_ERR, log_raw=message)
+            LOG.warning(message, test_id=test["id"])
+            results.add(test["id"], "fail", exit_code=EXIT_STATUS_ERR, log_raw=message)
         else:
-            passfail = 'pass' if exit['status'] == 0 else 'fail'
-            LOG.debug("Found exit_code for test", test_id=test['id'], exit_code=exit['status'])
-            results.add(test['id'], passfail, exit_code=exit['status'], log_raw=exit['message'])
+            passfail = "pass" if exit["status"] == 0 else "fail"
+            LOG.debug("Found exit_code for test", test_id=test["id"], exit_code=exit["status"])
+            results.add(test["id"], passfail, exit_code=exit["status"], log_raw=exit["message"])

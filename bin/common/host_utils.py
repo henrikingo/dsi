@@ -22,7 +22,7 @@ TEN_MINUTE_MILLIS = 10 * ONE_MINUTE_MILLIS
 
 LOG = logging.getLogger(__name__)
 # This stream only log error or above messages
-ERROR_ONLY = logging.getLogger('error_only')
+ERROR_ONLY = logging.getLogger("error_only")
 
 INFO_ADAPTER = IOLogAdapter(LOG, logging.INFO)
 WARN_ADAPTER = IOLogAdapter(LOG, logging.WARN)
@@ -38,13 +38,13 @@ def setup_ssh_agent(config):
 
     :param ConfigDict config: The system configuration
     """
-    ssh_agent_info = subprocess.check_output(['ssh-agent', '-s'])
+    ssh_agent_info = subprocess.check_output(["ssh-agent", "-s"])
     # This expansion updates our environment by parsing the info from the previous line. It splits
     # the data into lines, and then for any line of the form "key=value", adds {key: value} to the
     # environment.
-    os.environ.update(dict([line.split('=') for line in ssh_agent_info.split(';') if '=' in line]))
+    os.environ.update(dict([line.split("=") for line in ssh_agent_info.split(";") if "=" in line]))
     (_, ssh_key_file) = ssh_user_and_key_file(config)
-    subprocess.check_call(['ssh-add', ssh_key_file])
+    subprocess.check_call(["ssh-add", ssh_key_file])
 
 
 # https://stackoverflow.com/questions/23064636/python-subprocess-popen-blocks-with-shell-and-pipe
@@ -52,7 +52,7 @@ def restore_signals():
     """
     Restore signals in the child process or the process block forever
     """
-    signals = ('SIGPIPE', 'SIGXFZ', 'SIGXFSZ')
+    signals = ("SIGPIPE", "SIGXFZ", "SIGXFSZ")
     for sig in signals:
         if hasattr(signal, sig):
             signal.signal(getattr(signal, sig), signal.SIG_DFL)
@@ -102,16 +102,18 @@ def _extract_hosts(category, config):
     :param ConfigDict config: The system configuration
     :rtype: list of HostInfo objects
     """
-    if category in config['infrastructure_provisioning']['out']:
+    if category in config["infrastructure_provisioning"]["out"]:
         ssh_user, ssh_key_file = ssh_user_and_key_file(config)
         return [
-            HostInfo(public_ip=host_info['public_ip'],
-                     private_ip=host_info['private_ip'],
-                     ssh_user=ssh_user,
-                     ssh_key_file=ssh_key_file,
-                     category=category,
-                     offset=i)
-            for i, host_info in enumerate(config['infrastructure_provisioning']['out'][category])
+            HostInfo(
+                public_ip=host_info["public_ip"],
+                private_ip=host_info["private_ip"],
+                ssh_user=ssh_user,
+                ssh_key_file=ssh_key_file,
+                category=category,
+                offset=i,
+            )
+            for i, host_info in enumerate(config["infrastructure_provisioning"]["out"][category])
         ]
     return list()
 
@@ -124,20 +126,26 @@ def extract_hosts(key, config):
     :param ConfigDict config: The system configuration
     """
 
-    if key == 'localhost':
+    if key == "localhost":
         # `offset` is arbitrary for localhost, for other hosts, it represents the index of a node.
         return [
-            HostInfo(public_ip='localhost', private_ip='localhost', category='localhost', offset=0)
+            HostInfo(public_ip="localhost", private_ip="localhost", category="localhost", offset=0)
         ]
-    if key == 'all_servers':
+    if key == "all_servers":
         return list(
             itertools.chain.from_iterable(
-                (_extract_hosts(key, config) for key in ['mongod', 'mongos', 'configsvr'])))
-    if key == 'all_hosts':
+                (_extract_hosts(key, config) for key in ["mongod", "mongos", "configsvr"])
+            )
+        )
+    if key == "all_hosts":
         return list(
             itertools.chain.from_iterable(
-                (_extract_hosts(key, config)
-                 for key in ['mongod', 'mongos', 'configsvr', 'workload_client'])))
+                (
+                    _extract_hosts(key, config)
+                    for key in ["mongod", "mongos", "configsvr", "workload_client"]
+                )
+            )
+        )
     return _extract_hosts(key, config)
 
 
@@ -178,7 +186,7 @@ def create_timer(start, max_time_ms):
 
 
 # pylint: disable=too-many-arguments
-def stream_proc_logs(proc, out, err, is_timedout, timeout_s=.5):
+def stream_proc_logs(proc, out, err, is_timedout, timeout_s=0.5):
     """
     Stream proc.stdout and proc.stderr to out and err.
 
@@ -243,7 +251,7 @@ def ssh_user_and_key_file(config):
     :param ConfigDict config: the config dictionary.
     :return: 2-tuple of strings for the ssh user and ssh key file.
     """
-    ssh_user = config['infrastructure_provisioning']['tfvars']['ssh_user']
-    ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+    ssh_user = config["infrastructure_provisioning"]["tfvars"]["ssh_user"]
+    ssh_key_file = config["infrastructure_provisioning"]["tfvars"]["ssh_key_file"]
     ssh_key_file = os.path.expanduser(ssh_key_file)
     return ssh_user, ssh_key_file

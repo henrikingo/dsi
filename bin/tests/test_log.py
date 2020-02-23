@@ -13,13 +13,14 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/
 
 class LogTestCase(unittest.TestCase):
     """ Unit Test for Host library """
+
     def test_tee_write(self):
         """ Test TeeStream write """
 
         first = StringIO()
         second = StringIO()
         subject = TeeStream(first, second)
-        expected = 'this is a test'
+        expected = "this is a test"
         subject.write(expected)
 
         self.assertEqual(first.getvalue(), expected)
@@ -31,7 +32,7 @@ class LogTestCase(unittest.TestCase):
         first = StringIO()
         second = StringIO()
         subject = TeeStream(first, second)
-        expected = 'this is a test'
+        expected = "this is a test"
         subject.writelines([expected, expected])
 
         self.assertEqual(first.getvalue(), expected * 2)
@@ -40,11 +41,11 @@ class LogTestCase(unittest.TestCase):
         first = StringIO()
         second = StringIO()
         subject = TeeStream(first, second)
-        expected = 'this is a test'
-        subject.writelines([expected + '\n', expected])
+        expected = "this is a test"
+        subject.writelines([expected + "\n", expected])
 
-        self.assertEqual(first.getvalue(), expected + '\n' + expected)
-        self.assertEqual(second.getvalue(), expected + '\n' + expected)
+        self.assertEqual(first.getvalue(), expected + "\n" + expected)
+        self.assertEqual(second.getvalue(), expected + "\n" + expected)
 
     def test_tee_flush(self):
         """ Test TeeStream flush """
@@ -79,5 +80,5 @@ class LogTestCase(unittest.TestCase):
         self.assertTrue(subject.closed)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

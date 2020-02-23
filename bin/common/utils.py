@@ -1,7 +1,7 @@
 """
 Utility function.
 """
-import ConfigParser
+import six.moves.configparser
 import os
 import errno
 import logging
@@ -30,7 +30,7 @@ def touch(filename):
     create directories
     :type filename: string the full path to the filename
     """
-    open(filename, 'a').close()
+    open(filename, "a").close()
 
 
 def read_aws_credentials(config):
@@ -43,19 +43,21 @@ def read_aws_credentials(config):
 
     # environment variables should supersede config file reading
     read_env_vars(aws_config)
-    if 'runtime_secret' in config:
-        if 'aws_access_key' in config['runtime_secret']:
-            aws_config['aws_access_key'] = config['runtime_secret']['aws_access_key']
-        if 'aws_secret_key' in config['runtime_secret']:
-            aws_config['aws_secret_key'] = config['runtime_secret']['aws_secret_key']
+    if "runtime_secret" in config:
+        if "aws_access_key" in config["runtime_secret"]:
+            aws_config["aws_access_key"] = config["runtime_secret"]["aws_access_key"]
+        if "aws_secret_key" in config["runtime_secret"]:
+            aws_config["aws_secret_key"] = config["runtime_secret"]["aws_secret_key"]
 
-    if 'aws_access_key' not in aws_config or 'aws_secret_key' not in aws_config:
-        LOG.critical('AWS credentials not found. Please ensure that they are present in '
-                     '~/.aws/credentials or are present in your environment as AWS_ACCESS_KEY_ID'
-                     ' and AWS_SECRET_ACCESS_KEY.')
+    if "aws_access_key" not in aws_config or "aws_secret_key" not in aws_config:
+        LOG.critical(
+            "AWS credentials not found. Please ensure that they are present in "
+            "~/.aws/credentials or are present in your environment as AWS_ACCESS_KEY_ID"
+            " and AWS_SECRET_ACCESS_KEY."
+        )
         assert False
 
-    return aws_config['aws_access_key'], aws_config['aws_secret_key']
+    return aws_config["aws_access_key"], aws_config["aws_secret_key"]
 
 
 def read_aws_credentials_file(aws_config):
@@ -63,23 +65,23 @@ def read_aws_credentials_file(aws_config):
     Read AWS credentials from the 'default' field of ~/.aws/credentials, if it exists
     """
     defaults = {}
-    credential_path = os.path.expanduser('~/.aws/credentials')
-    section = 'default'
-    config_parser = ConfigParser.ConfigParser(defaults=defaults)
+    credential_path = os.path.expanduser("~/.aws/credentials")
+    section = "default"
+    config_parser = six.moves.configparser.ConfigParser(defaults=defaults)
     config_parser.read(credential_path)
     if config_parser.has_section(section):
-        aws_config['aws_access_key'] = config_parser.get(section, 'aws_access_key_id')
-        aws_config['aws_secret_key'] = config_parser.get(section, 'aws_secret_access_key')
+        aws_config["aws_access_key"] = config_parser.get(section, "aws_access_key_id")
+        aws_config["aws_secret_key"] = config_parser.get(section, "aws_secret_access_key")
 
 
 def read_env_vars(aws_config):
     """
     Read AWS access key id and and secret access key from environment variables
     """
-    if 'AWS_ACCESS_KEY_ID' in os.environ:
-        aws_config['aws_access_key'] = os.environ.get('AWS_ACCESS_KEY_ID')
-    if 'AWS_SECRET_ACCESS_KEY' in os.environ:
-        aws_config['aws_secret_key'] = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    if "AWS_ACCESS_KEY_ID" in os.environ:
+        aws_config["aws_access_key"] = os.environ.get("AWS_ACCESS_KEY_ID")
+    if "AWS_SECRET_ACCESS_KEY" in os.environ:
+        aws_config["aws_secret_key"] = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
 
 def get_dsi_path():
@@ -99,7 +101,7 @@ def get_dsi_bin_dir():
     :rtype: str
 
     """
-    return os.path.join(get_dsi_path(), 'bin')
+    return os.path.join(get_dsi_path(), "bin")
 
 
 class TerraformNotFound(IOError):
@@ -108,6 +110,7 @@ class TerraformNotFound(IOError):
 
     This should be unlikely, since bootstrap.py checks that it existed when we started.
     """
+
     def __init__(self):
         message = "Did not find terraform in PATH nor current directory."
         super(TerraformNotFound, self).__init__(message)
@@ -121,13 +124,13 @@ def find_terraform(work_directory="."):
     :returns: Path to terraform executable file (not dir).
     """
     if "TERRAFORM" in os.environ:
-        return os.environ['TERRAFORM']
-    elif os.path.isfile('terraform'):
-        return os.path.join(work_directory, 'terraform')
+        return os.environ["TERRAFORM"]
+    elif os.path.isfile("terraform"):
+        return os.path.join(work_directory, "terraform")
     else:
         # Find terraform in path
         try:
-            return subprocess.check_output(['which', 'terraform']).strip()
+            return subprocess.check_output(["which", "terraform"]).strip()
         except subprocess.CalledProcessError:
             raise TerraformNotFound()
         except OSError:

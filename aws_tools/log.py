@@ -22,5 +22,5 @@ def setup_logging(verbose=False, filename=None, explicit_log_level=None):
     # The following sets the minimum level that we will see for the given component. So we will
     # only see warnings and higher for paramiko, boto3 and botocore. We will only see errors / fatal
     # / critical log messages for /dev/null
-    logging.getLogger('boto3').setLevel(logging.WARNING)
-    logging.getLogger('botocore').setLevel(logging.WARNING)
+    logging.getLogger("boto3").setLevel(logging.WARNING)
+    logging.getLogger("botocore").setLevel(logging.WARNING)

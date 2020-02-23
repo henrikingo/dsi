@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+
 """
 Provision AWS resources using terraform
 """
@@ -28,7 +29,7 @@ LOG = structlog.get_logger(__name__)
 # The number determines the number it can create at a time together
 TERRAFORM_PARALLELISM = 20
 TF_LOG_PATH = "terraform.debug.log"
-PROVISION_LOG_PATH = 'terraform.stdout.log'
+PROVISION_LOG_PATH = "terraform.stdout.log"
 CLUSTER_JSON = "cluster.json"
 
 # Increase this to force a teardown of clusters whose evg_data_dir is from a previous version.
@@ -63,33 +64,35 @@ def rmtree_when_present(tree_path):
 # pylint: disable=too-many-instance-attributes
 class Provisioner(object):
     """ Used to provision AWS resources """
-    def __init__(self,
-                 config,
-                 log_file=TF_LOG_PATH,
-                 provisioning_file=PROVISION_LOG_PATH,
-                 verbose=False):
+
+    def __init__(
+        self, config, log_file=TF_LOG_PATH, provisioning_file=PROVISION_LOG_PATH, verbose=False
+    ):
         self.config = config
-        ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
+        ssh_key_file = config["infrastructure_provisioning"]["tfvars"]["ssh_key_file"]
         ssh_key_file = os.path.expanduser(ssh_key_file)
         self.ssh_key_file = ssh_key_file
-        self.ssh_key_name = config['infrastructure_provisioning']['tfvars']['ssh_key_name']
+        self.ssh_key_name = config["infrastructure_provisioning"]["tfvars"]["ssh_key_name"]
         self.aws_access_key, self.aws_secret_key = common.utils.read_aws_credentials(config)
-        self.cluster = config['infrastructure_provisioning']['tfvars'].get(
-            'cluster_name', 'missing_cluster_name')
-        self.reuse_cluster = config['infrastructure_provisioning']['evergreen'].get(
-            'reuse_cluster', False)
-        self.evg_data_dir = config['infrastructure_provisioning']['evergreen'].get('data_dir')
+        self.cluster = config["infrastructure_provisioning"]["tfvars"].get(
+            "cluster_name", "missing_cluster_name"
+        )
+        self.reuse_cluster = config["infrastructure_provisioning"]["evergreen"].get(
+            "reuse_cluster", False
+        )
+        self.evg_data_dir = config["infrastructure_provisioning"]["evergreen"].get("data_dir")
         self.existing = False
         self.var_file = None
-        self.parallelism = '-parallelism=' + str(TERRAFORM_PARALLELISM)
+        self.parallelism = "-parallelism=" + str(TERRAFORM_PARALLELISM)
         self.terraform = common.utils.find_terraform()
         LOG.info("Using terraform binary:", path=self.terraform)
         self.tf_log_path = TF_LOG_PATH
-        self.hostnames_method = config['infrastructure_provisioning'].get('hostnames',
-                                                                          {}).get('method')
+        self.hostnames_method = (
+            config["infrastructure_provisioning"].get("hostnames", {}).get("method")
+        )
 
-        os.environ['TF_LOG'] = 'DEBUG'
-        os.environ['TF_LOG_PATH'] = TF_LOG_PATH
+        os.environ["TF_LOG"] = "DEBUG"
+        os.environ["TF_LOG_PATH"] = TF_LOG_PATH
 
         self.dsi_dir = common.utils.get_dsi_path()
         self.bin_dir = common.utils.get_dsi_bin_dir()
@@ -106,27 +109,30 @@ class Provisioner(object):
             self.stdout = self.stderr = None
         else:
             LOG.info("Redirecting terraform output to file", path=self.provisioning_file)
-            self.stdout = self.stderr = open(self.provisioning_file, 'w')
+            self.stdout = self.stderr = open(self.provisioning_file, "w")
 
     def setup_security_tf(self):
         """
         Generate the security.tf file
         """
         # Write security.tf.
-        with open(os.path.join('security.tf'), 'w') as security:
+        with open(os.path.join("security.tf"), "w") as security:
             security.write('provider "aws" {\n')
             security.write('    access_key = "{0}"\n'.format(self.aws_access_key))
             security.write('    secret_key = "{0}"\n'.format(self.aws_secret_key))
-            security.write('    region = var.region\n')
-            security.write('    version = "{}"\n'.format(
-                self.config['infrastructure_provisioning']['terraform']['aws_required_version']))
-            security.write('}\n')
+            security.write("    region = var.region\n")
+            security.write(
+                '    version = "{}"\n'.format(
+                    self.config["infrastructure_provisioning"]["terraform"]["aws_required_version"]
+                )
+            )
+            security.write("}\n")
             security.write('variable "key_name" {\n')
             security.write('    default = "{0}"\n'.format(self.ssh_key_name))
-            security.write('}\n')
+            security.write("}\n")
             security.write('variable "key_file" {\n')
             security.write('    default = "{0}"\n'.format(self.ssh_key_file))
-            security.write('}')
+            security.write("}")
 
     def setup_terraform_tf(self):
         """
@@ -134,32 +140,36 @@ class Provisioner(object):
         """
         # Copy terraform files and remote-scripts to work directory
         directory = os.getcwd()
-        cluster_path = os.path.join(self.dsi_dir, 'terraform', 'default')
-        remote_scripts_path = os.path.join(self.dsi_dir, 'terraform', 'remote-scripts')
-        LOG.debug('Cluster path is', path=cluster_path)
-        for filename in glob.glob(os.path.join(cluster_path, '*')):
+        cluster_path = os.path.join(self.dsi_dir, "terraform", "default")
+        remote_scripts_path = os.path.join(self.dsi_dir, "terraform", "remote-scripts")
+        LOG.debug("Cluster path is", path=cluster_path)
+        for filename in glob.glob(os.path.join(cluster_path, "*")):
             shutil.copy(filename, directory)
             LOG.debug("Copied file to work directory.", source_path=filename, target_path=directory)
-        remote_scripts_target = os.path.join(directory, 'remote-scripts')
-        LOG.debug("Create fresh directory and copy remote scripts.",
-                  source_path=remote_scripts_path,
-                  target_path=remote_scripts_target)
+        remote_scripts_target = os.path.join(directory, "remote-scripts")
+        LOG.debug(
+            "Create fresh directory and copy remote scripts.",
+            source_path=remote_scripts_path,
+            target_path=remote_scripts_target,
+        )
         rmtree_when_present(remote_scripts_target)
         os.mkdir(remote_scripts_target)
-        for filename in glob.glob(os.path.join(remote_scripts_path, '*')):
+        for filename in glob.glob(os.path.join(remote_scripts_path, "*")):
             shutil.copy(filename, remote_scripts_target)
-            LOG.debug("Copied file to work directory.",
-                      source_path=filename,
-                      target_path=remote_scripts_target)
+            LOG.debug(
+                "Copied file to work directory.",
+                source_path=filename,
+                target_path=remote_scripts_target,
+            )
 
         # Copy modules
-        modules_path = os.path.join(self.dsi_dir, 'terraform', 'modules')
-        modules_target = os.path.join(directory, 'modules')
+        modules_path = os.path.join(self.dsi_dir, "terraform", "modules")
+        modules_target = os.path.join(directory, "modules")
         rmtree_when_present(modules_target)
         shutil.copytree(modules_path, modules_target)
-        LOG.debug("Copied file to work directory.",
-                  source_path=modules_path,
-                  target_path=modules_target)
+        LOG.debug(
+            "Copied file to work directory.", source_path=modules_path, target_path=modules_target
+        )
 
     def provision_resources(self):
         """
@@ -180,18 +190,22 @@ class Provisioner(object):
             # in the same directory. The teardown script in evg_data_dir is used to ensure
             # the terraform in that directory is used.
             temp_environ = os.environ.copy()
-            if 'TERRAFORM' in temp_environ:
-                del temp_environ['TERRAFORM']
+            if "TERRAFORM" in temp_environ:
+                del temp_environ["TERRAFORM"]
 
-            teardown_py = os.path.join(self.evg_data_dir, 'terraform/infrastructure_teardown.py')
+            teardown_py = os.path.join(self.evg_data_dir, "terraform/infrastructure_teardown.py")
             if os.path.isfile(teardown_py):
-                subprocess.check_call(['python', teardown_py],
-                                      env=temp_environ,
-                                      stdout=self.stdout,
-                                      stderr=self.stderr)
+                subprocess.check_call(
+                    ["python", teardown_py],
+                    env=temp_environ,
+                    stdout=self.stdout,
+                    stderr=self.stderr,
+                )
         except subprocess.CalledProcessError as exception:
-            LOG.error("Teardown of existing resources failed. Catching exception and continuing.",
-                      exception=str(exception))
+            LOG.error(
+                "Teardown of existing resources failed. Catching exception and continuing.",
+                exception=str(exception),
+            )
 
         # Delete all state files so that this looks like a fresh evergreen runner
         rmtree_when_present(self.evg_data_dir)
@@ -206,29 +220,33 @@ class Provisioner(object):
         Properly sets up the environment on Evergreen to use the existing
         state files.
         """
-        if os.path.isdir(self.evg_data_dir) and self.cluster == 'initialsync-logkeeper':
-            LOG.info("Force re-creation of instances by executing teardown now.",
-                     cluster=self.cluster)
+        if os.path.isdir(self.evg_data_dir) and self.cluster == "initialsync-logkeeper":
+            LOG.info(
+                "Force re-creation of instances by executing teardown now.", cluster=self.cluster
+            )
             self.teardown_old_cluster()
 
-        tfstate_path = os.path.join(self.evg_data_dir, 'terraform', 'terraform.tfstate')
-        provision_cluster_path = os.path.join(self.evg_data_dir, 'terraform',
-                                              'provisioned.' + self.cluster)
+        tfstate_path = os.path.join(self.evg_data_dir, "terraform", "terraform.tfstate")
+        provision_cluster_path = os.path.join(
+            self.evg_data_dir, "terraform", "provisioned." + self.cluster
+        )
         if os.path.isfile(tfstate_path):
             if check_version(provision_cluster_path):
                 self.existing = True
-                LOG.info("Retrieving terraform state for existing EC2 resources.",
-                         path=tfstate_path)
+                LOG.info(
+                    "Retrieving terraform state for existing EC2 resources.", path=tfstate_path
+                )
                 shutil.copyfile(tfstate_path, "terraform.tfstate")
 
                 LOG.info("Retrieving variables for existing EC2 resources.", path=CLUSTER_JSON)
-                from_file = os.path.join(self.evg_data_dir, 'terraform', CLUSTER_JSON)
+                from_file = os.path.join(self.evg_data_dir, "terraform", CLUSTER_JSON)
                 shutil.copyfile(from_file, CLUSTER_JSON)
             else:
                 LOG.info(
                     "Existing EC2 resources found, but state files are wrong version. "
                     "Force re-creation of cluster now...",
-                    path=provision_cluster_path)
+                    path=provision_cluster_path,
+                )
                 self.teardown_old_cluster()
                 self.existing = False
 
@@ -243,27 +261,35 @@ class Provisioner(object):
         data directory.
         """
         if not os.path.isdir(self.evg_data_dir):
-            LOG.info("Copying terraform binary to durable data directory on Evergreen host.",
-                     target_path=self.evg_data_dir)
+            LOG.info(
+                "Copying terraform binary to durable data directory on Evergreen host.",
+                target_path=self.evg_data_dir,
+            )
             os.makedirs(os.path.join(self.evg_data_dir, "terraform"))
             # For historical reasons, we store a binary called `terraform` in a directory called
             # `terraform`.
             shutil.copy(self.terraform, os.path.join(self.evg_data_dir, "terraform", "terraform"))
             shutil.copytree("modules", os.path.join(self.evg_data_dir, "terraform", "modules"))
 
-            source_path = os.path.join(self.bin_dir, 'infrastructure_teardown.py')
-            target_path = os.path.join(self.evg_data_dir, 'terraform', 'infrastructure_teardown.py')
-            LOG.info("Copying infrastructure_teardown.py to Evergreen host.",
-                     source_path=source_path,
-                     target_path=target_path)
+            source_path = os.path.join(self.bin_dir, "infrastructure_teardown.py")
+            target_path = os.path.join(self.evg_data_dir, "terraform", "infrastructure_teardown.py")
+            LOG.info(
+                "Copying infrastructure_teardown.py to Evergreen host.",
+                source_path=source_path,
+                target_path=target_path,
+            )
             shutil.copy(source_path, target_path)
 
-        LOG.info("Contents of Evergreen durable data directory.",
-                 path=self.evg_data_dir,
-                 contents=os.listdir(self.evg_data_dir))
-        LOG.info("Contents of terraform/ sub directory.",
-                 path=os.path.join(self.evg_data_dir, "terraform"),
-                 contents=os.listdir(os.path.join(self.evg_data_dir, "terraform")))
+        LOG.info(
+            "Contents of Evergreen durable data directory.",
+            path=self.evg_data_dir,
+            contents=os.listdir(self.evg_data_dir),
+        )
+        LOG.info(
+            "Contents of terraform/ sub directory.",
+            path=os.path.join(self.evg_data_dir, "terraform"),
+            contents=os.listdir(os.path.join(self.evg_data_dir, "terraform")),
+        )
 
     def setup_cluster(self):
         """
@@ -274,44 +300,52 @@ class Provisioner(object):
         self.setup_terraform_tf()
         if self.reuse_cluster:
             self.setup_evg_dir()
-        LOG.info('terraform: init')
-        subprocess.check_call([self.terraform, 'init', '-upgrade'],
-                              stdout=self.stdout,
-                              stderr=self.stderr)
+        LOG.info("terraform: init")
+        subprocess.check_call(
+            [self.terraform, "init", "-upgrade"], stdout=self.stdout, stderr=self.stderr
+        )
         tf_config = TerraformConfiguration(self.config)
         tf_config.to_json(file_name=CLUSTER_JSON)  # pylint: disable=no-member
-        self.var_file = '-var-file={}'.format(CLUSTER_JSON)
+        self.var_file = "-var-file={}".format(CLUSTER_JSON)
         if self.existing:
-            LOG.info('Reusing AWS cluster.', cluster=self.cluster)
+            LOG.info("Reusing AWS cluster.", cluster=self.cluster)
         else:
-            LOG.info('Creating AWS cluster.', cluster=self.cluster)
-        LOG.info('terraform: apply')
+            LOG.info("Creating AWS cluster.", cluster=self.cluster)
+        LOG.info("terraform: apply")
         # -auto-approve is like -y for yum: Without it terraform will wait for someone to type "yes"
         terraform_command = [
-            self.terraform, 'apply', self.var_file, self.parallelism, '-auto-approve'
+            self.terraform,
+            "apply",
+            self.var_file,
+            self.parallelism,
+            "-auto-approve",
         ]
         # Disk warmup for initialsync-logkeeper takes about 4 hours. This will save
         # about $12 by delaying deployment of the two other nodes.
-        if not self.existing and self.cluster == 'initialsync-logkeeper':
+        if not self.existing and self.cluster == "initialsync-logkeeper":
             terraform_command.extend(
-                ['-var=mongod_ebs_instance_count=0', '-var=workload_instance_count=0'])
+                ["-var=mongod_ebs_instance_count=0", "-var=workload_instance_count=0"]
+            )
         try:
             subprocess.check_call(terraform_command, stdout=self.stdout, stderr=self.stderr)
-            if not self.existing and self.cluster == 'initialsync-logkeeper':
+            if not self.existing and self.cluster == "initialsync-logkeeper":
                 subprocess.check_call(
-                    [self.terraform, 'apply', self.var_file, self.parallelism, '-auto-approve'],
+                    [self.terraform, "apply", self.var_file, self.parallelism, "-auto-approve"],
                     stdout=self.stdout,
-                    stderr=self.stderr)
-            LOG.info('terraform: refresh')
-            subprocess.check_call([self.terraform, 'refresh', self.var_file],
-                                  stdout=self.stdout,
-                                  stderr=self.stderr)
-            LOG.info('terraform: plan')
-            subprocess.check_call([self.terraform, 'plan', '-detailed-exitcode', self.var_file],
-                                  stdout=self.stdout,
-                                  stderr=self.stderr)
-            LOG.info('terraform: output')
-            terraform_output = run_and_save_output([self.terraform, 'output'])
+                    stderr=self.stderr,
+                )
+            LOG.info("terraform: refresh")
+            subprocess.check_call(
+                [self.terraform, "refresh", self.var_file], stdout=self.stdout, stderr=self.stderr
+            )
+            LOG.info("terraform: plan")
+            subprocess.check_call(
+                [self.terraform, "plan", "-detailed-exitcode", self.var_file],
+                stdout=self.stdout,
+                stderr=self.stderr,
+            )
+            LOG.info("terraform: output")
+            terraform_output = run_and_save_output([self.terraform, "output"])
             LOG.debug(terraform_output)
             tf_parser = TerraformOutputParser(config=self.config, terraform_output=terraform_output)
             tf_parser.write_output_files()
@@ -321,13 +355,17 @@ class Provisioner(object):
 
             # Write hostnames to /etc/hosts
             self.setup_hostnames()
-            with open('infrastructure_provisioning.out.yml', 'r') as provisioning_out_yaml:
-                LOG.info('Contents of infrastructure_provisioning.out.yml:')
+            with open("infrastructure_provisioning.out.yml", "r") as provisioning_out_yaml:
+                LOG.info("Contents of infrastructure_provisioning.out.yml:")
                 LOG.info(provisioning_out_yaml.read())
             LOG.info("EC2 resources provisioned/updated successfully.")
             # Run post provisioning scripts.
-            run_pre_post_commands("post_provisioning", [self.config['infrastructure_provisioning']],
-                                  self.config, EXCEPTION_BEHAVIOR.EXIT)
+            run_pre_post_commands(
+                "post_provisioning",
+                [self.config["infrastructure_provisioning"]],
+                self.config,
+                EXCEPTION_BEHAVIOR.EXIT,
+            )
         except Exception as exception:
             LOG.error("Failed to provision EC2 resources.", exc_info=True)
             if self.stderr is not None:
@@ -343,11 +381,13 @@ class Provisioner(object):
         Saved the terraform state to the Evergreen data directory and also
         copy over the ssh key.
         """
-        LOG.info("Will now save terraform state needed for "
-                 "teardown when triggered by the Evergreen runner.")
-        terraform_dir = os.path.join(self.evg_data_dir, 'terraform')
-        files_to_copy = ['terraform.tfstate', 'cluster.tf', 'security.tf', CLUSTER_JSON]
-        LOG.info('Copying files.', files=files_to_copy)
+        LOG.info(
+            "Will now save terraform state needed for "
+            "teardown when triggered by the Evergreen runner."
+        )
+        terraform_dir = os.path.join(self.evg_data_dir, "terraform")
+        files_to_copy = ["terraform.tfstate", "cluster.tf", "security.tf", CLUSTER_JSON]
+        LOG.info("Copying files.", files=files_to_copy)
         for to_copy in files_to_copy:
             shutil.copyfile(to_copy, os.path.join(terraform_dir, to_copy))
         # If ssh_key_file is a relative path, copy it too
@@ -356,22 +396,24 @@ class Provisioner(object):
         if not os.path.isabs(self.ssh_key_file):
             source_path = self.ssh_key_file
             target_path = os.path.join(terraform_dir, self.ssh_key_file)
-            LOG.info('Copying:', source_path=source_path, target_path=target_path)
+            LOG.info("Copying:", source_path=source_path, target_path=target_path)
             shutil.copyfile(source_path, target_path)
 
         previous_working_directory = os.getcwd()
         os.chdir(terraform_dir)
-        LOG.info('terraform: init in Evergreen data dir.', path=terraform_dir)
-        subprocess.check_call(['./terraform', 'init', '-upgrade'],
-                              stdout=self.stdout,
-                              stderr=self.stderr)
-        for file_path in glob.glob('provisioned.*'):
+        LOG.info("terraform: init in Evergreen data dir.", path=terraform_dir)
+        subprocess.check_call(
+            ["./terraform", "init", "-upgrade"], stdout=self.stdout, stderr=self.stderr
+        )
+        for file_path in glob.glob("provisioned.*"):
             os.remove(file_path)
-        with open('provisioned.' + self.cluster, 'w') as file_handle:
+        with open("provisioned." + self.cluster, "w") as file_handle:
             file_handle.write(VERSION)
-            LOG.info('Created version file to denote the version of terraform state files.',
-                     path='provisioned.' + self.cluster,
-                     version=VERSION)
+            LOG.info(
+                "Created version file to denote the version of terraform state files.",
+                path="provisioned." + self.cluster,
+                version=VERSION,
+            )
         os.chdir(previous_working_directory)
         LOG.info("EC2 provisioning state saved on Evergreen host.")
 
@@ -405,7 +447,7 @@ class Provisioner(object):
                         # error multiple times, and the verbose log is then full with the same
                         # error. We print each kind of error only once. So we need to keep track
                         # of them.
-                        result = re.search(r'\<Code\>(.+)\</Code\>', line)
+                        result = re.search(r"\<Code\>(.+)\</Code\>", line)
                         if result:
                             error_code = result.group(1)
                             if error_code not in seen_errors:
@@ -430,7 +472,7 @@ class Provisioner(object):
 
             10.2.0.100  md md0 mongod0 mongod0.dsi.10gen.cc
         """
-        if self.hostnames_method != '/etc/hosts':
+        if self.hostnames_method != "/etc/hosts":
             LOG.debug("Not configuring hostnames.", method=self.hostnames_method)
             return
         LOG.info("Write hostnames to /etc/hosts on deployed instances.")
@@ -441,10 +483,10 @@ class Provisioner(object):
 
     def _build_hosts_file(self):
         output = []
-        host_types = ['mongod', 'mongos', 'configsvr', 'workload_client']
-        short_names = {'mongod': 'md', 'mongos': 'ms', 'configsvr': 'cs', 'workload_client': 'wc'}
-        domain = self.config['infrastructure_provisioning']['hostnames']['domain']
-        out = self.config['infrastructure_provisioning'].get('out')
+        host_types = ["mongod", "mongos", "configsvr", "workload_client"]
+        short_names = {"mongod": "md", "mongos": "ms", "configsvr": "cs", "workload_client": "wc"}
+        domain = self.config["infrastructure_provisioning"]["hostnames"]["domain"]
+        out = self.config["infrastructure_provisioning"].get("out")
         LOG.debug("infrastructure_provisioning.out", out=out)
 
         if not isinstance(out, ConfigDict):
@@ -455,7 +497,7 @@ class Provisioner(object):
             primary_hostname = ""
             for host in out.get(key, {}):
                 # As usual, we use the private network address if available.
-                ip_addr = host['private_ip'] if 'private_ip' in host else host['public_ip']
+                ip_addr = host["private_ip"] if "private_ip" in host else host["public_ip"]
                 # Example: 10.1.2.3\t
                 line = "{}\t".format(ip_addr)
                 if i == 0:
@@ -473,24 +515,27 @@ class Provisioner(object):
                     primary_hostname = key + str(i) + "." + domain
                 output.append(line)
                 # Also record the hostname in ConfigDict (out.yml)
-                self.config['infrastructure_provisioning']['out'][key][i]['private_hostname'] \
-                    = primary_hostname
+                self.config["infrastructure_provisioning"]["out"][key][i][
+                    "private_hostname"
+                ] = primary_hostname
                 i = i + 1
 
         return output
 
     def _write_hosts_file(self, output):
-        hosts = common.host_utils.extract_hosts('all_hosts', self.config)
+        hosts = common.host_utils.extract_hosts("all_hosts", self.config)
         LOG.debug("Write /etc/hosts on all hosts.", hosts=hosts)
         run_threads([partial(_write_hosts_file_thread, host_info, output) for host_info in hosts])
 
 
 def _write_hosts_file_thread(host_info, output):
-    timestamp = datetime.datetime.now().isoformat('T')
-    upload_file = '/tmp/hosts.new.' + timestamp
-    bak_file = '/etc/hosts.bak.' + timestamp
-    argv = [['sudo', 'cp', '/etc/hosts', bak_file],
-            ['sudo', 'bash', '-c', "'cat {} >> /etc/hosts'".format(upload_file)]]
+    timestamp = datetime.datetime.now().isoformat("T")
+    upload_file = "/tmp/hosts.new." + timestamp
+    bak_file = "/etc/hosts.bak." + timestamp
+    argv = [
+        ["sudo", "cp", "/etc/hosts", bak_file],
+        ["sudo", "bash", "-c", "'cat {} >> /etc/hosts'".format(upload_file)],
+    ]
 
     file_contents = "###### BELOW GENERATED BY DSI ####################\n"
     file_contents += "\n".join(output) + "\n"
@@ -511,7 +556,7 @@ def run_and_save_output(command):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     # This ensures that as subprocess runs the command, the output is caught in real time
     # and is not buffered by subprocess.
-    output = ''
+    output = ""
     for line in iter(process.stdout.readline, ""):
         LOG.debug(line)
         output = output + line
@@ -523,9 +568,9 @@ def run_and_save_output(command):
 
 def parse_command_line():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description='Provision EC2 instances on AWS using terraform.')
-    parser.add_argument('--log-file', help='path to log file')
-    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
+    parser = argparse.ArgumentParser(description="Provision EC2 instances on AWS using terraform.")
+    parser.add_argument("--log-file", help="path to log file")
+    parser.add_argument("-d", "--debug", action="store_true", help="enable debug output")
     args = parser.parse_args()
     return args
 
@@ -534,11 +579,11 @@ def main():
     """ Main function """
     args = parse_command_line()
     setup_logging(args.debug, args.log_file)
-    config = ConfigDict('infrastructure_provisioning')
+    config = ConfigDict("infrastructure_provisioning")
     config.load()
     provisioner = Provisioner(config, verbose=args.debug)
     provisioner.provision_resources()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

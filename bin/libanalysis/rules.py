@@ -14,6 +14,8 @@ from dateutil import parser as date_parser
 
 import readers
 import util
+import six
+from six.moves import range
 
 LOGGER = logging.getLogger(__name__)
 
@@ -21,25 +23,16 @@ LOGGER = logging.getLogger(__name__)
 # will likely involve refactoring to address this global constants vs. config file issue.
 
 CONSTANTS = {
-    'sys-perf': {
-        'default': {
-            'threshold': 0.2,
-            'thread_threshold': 0.3,
-            'lag_threshold': 15.0,
-            'ndays': 7.0
-        },
-        'linux-3-node-replSet-initialsync': {
+    "sys-perf": {
+        "default": {"threshold": 0.2, "thread_threshold": 0.3, "lag_threshold": 15.0, "ndays": 7.0},
+        "linux-3-node-replSet-initialsync": {
             # from Judah: initial sync uses 16 threads to put data into the database
-            'max_thread_level': 32.0
-        }
+            "max_thread_level": 32.0
+        },
     },
-    'mongo-longevity': {
-        'default': {
-            'threshold': 0.25,
-            'thread_threshold': 0.25,
-            'lag_threshold': 15.0
-        }
-    }
+    "mongo-longevity": {
+        "default": {"threshold": 0.25, "thread_threshold": 0.25, "lag_threshold": 15.0}
+    },
 }
 
 # mongod.log analysis rules
@@ -55,39 +48,42 @@ def get_bad_messages(rules, task):
     if task == "service_architecture_workloads":
         return ["posix_fallocate failed"]
 
-    return rules['bad_messages']
+    return rules["bad_messages"]
 
 
 # Whitelisting message "Not starting an election": BF-4019
 # Whitelisting message "older than oldest timestamp" until SERVER-38871 is done (TODO: TIG-1357)
 MESSAGE_WHITELIST = [
-    msg.lower() for msg in [
-        "ttl query execution for index", "not starting an election", "older than oldest timestamp",
-        "less than the oldest timestamp"
+    msg.lower()
+    for msg in [
+        "ttl query execution for index",
+        "not starting an election",
+        "older than oldest timestamp",
+        "less than the oldest timestamp",
     ]
 ]
 
 # Resource sanity check rules
 
 FTDC_KEYS = {
-    'cache_size': ('serverStatus', 'wiredTiger', 'cache', 'bytes currently in the cache'),
-    'heap_size': ('serverStatus', 'tcmalloc', 'generic', 'heap_size'),
-    'oplog_size': ('local.oplog.rs.stats', 'size'),
-    'curr_connections': ('serverStatus', 'connections', 'current'),
-    'max_cache_size': ('serverStatus', 'wiredTiger', 'cache', 'maximum bytes configured'),
-    'max_oplog_size': ('local.oplog.rs.stats', 'maxSize'),
-    'time': ('start', ),
-    'repl_set_status': ('replSetGetStatus', 'members', '([0-9])+')
+    "cache_size": ("serverStatus", "wiredTiger", "cache", "bytes currently in the cache"),
+    "heap_size": ("serverStatus", "tcmalloc", "generic", "heap_size"),
+    "oplog_size": ("local.oplog.rs.stats", "size"),
+    "curr_connections": ("serverStatus", "connections", "current"),
+    "max_cache_size": ("serverStatus", "wiredTiger", "cache", "maximum bytes configured"),
+    "max_oplog_size": ("local.oplog.rs.stats", "maxSize"),
+    "time": ("start",),
+    "repl_set_status": ("replSetGetStatus", "members", "([0-9])+"),
 }
 
-FLAG_MEMBER_STATES = {3: 'RECOVERING', 6: 'UNKNOWN', 8: 'DOWN', 9: 'ROLLBACK', 10: 'REMOVED'}
-STARTUP_MEMBER_STATES = {0: 'STARTUP', 5: 'STARTUP2'}
+FLAG_MEMBER_STATES = {3: "RECOVERING", 6: "UNKNOWN", 8: "DOWN", 9: "ROLLBACK", 10: "REMOVED"}
+STARTUP_MEMBER_STATES = {0: "STARTUP", 5: "STARTUP2"}
 
 # cache size must be below (1 + CACHE_ALLOCATOR_OVERHEAD) * heap size.
-CACHE_ALLOCATOR_OVERHEAD = .08
+CACHE_ALLOCATOR_OVERHEAD = 0.08
 
 # current oplog size must be below (1 + WT_OPLOG_BUFFER)
-WT_OPLOG_BUFFER = .10
+WT_OPLOG_BUFFER = 0.10
 
 # in seconds, when is the member lag too large?
 REPL_MEMBER_LAG_THRESHOLD_S = 15.0
@@ -125,11 +121,11 @@ def is_log_line_bad(log_line, rules, test_times=None, task=None):
         error = e
     else:
         try:
-            timestamp = log_json['t']['$date']
-            err_type_char = log_json['s']
-            log_msg = log_json['msg']
-            if 'attr' in log_json:
-                log_msg = log_msg.format(**log_json['attr'])
+            timestamp = log_json["t"]["$date"]
+            err_type_char = log_json["s"]
+            log_msg = log_json["msg"]
+            if "attr" in log_json:
+                log_msg = log_msg.format(**log_json["attr"])
         except Exception as e:
             error = e
 
@@ -153,8 +149,9 @@ def is_log_line_bad(log_line, rules, test_times=None, task=None):
     if any(whitelist_msg in log_msg for whitelist_msg in MESSAGE_WHITELIST):
         return False
 
-    return err_type_char in rules['bad_log_types'] or any(
-        bad_msg in log_msg for bad_msg in get_bad_messages(rules, task))
+    return err_type_char in rules["bad_log_types"] or any(
+        bad_msg in log_msg for bad_msg in get_bad_messages(rules, task)
+    )
 
 
 def ftdc_date_parse(time_in_s):
@@ -164,14 +161,12 @@ def ftdc_date_parse(time_in_s):
     :type time_in_s: int
     :rtype: str
     """
-    return datetime.utcfromtimestamp(time_in_s).strftime('%Y-%m-%d %H:%M:%SZ')
+    return datetime.utcfromtimestamp(time_in_s).strftime("%Y-%m-%d %H:%M:%SZ")
 
 
-def failure_collection(failure_times,
-                       compared_values,
-                       labels,
-                       other_rule_info=None,
-                       report_all_values=False):
+def failure_collection(
+    failure_times, compared_values, labels, other_rule_info=None, report_all_values=False
+):
     """Helper function to standardize the dictionary data structure that stores failure information.
     TODO: Each rule currently needs to initialize variables to collect the following parameters.
           Currently, this means any modification to the structure requires code updates in
@@ -193,13 +188,13 @@ def failure_collection(failure_times,
     if not failure_times:
         return {}
     rule_info = {}
-    rule_info['times'] = failure_times
-    rule_info['compared_values'] = compared_values
-    rule_info['labels'] = labels
+    rule_info["times"] = failure_times
+    rule_info["compared_values"] = compared_values
+    rule_info["labels"] = labels
     if other_rule_info:
-        rule_info['additional'] = other_rule_info
+        rule_info["additional"] = other_rule_info
     if report_all_values:
-        rule_info['report_all_values'] = True
+        rule_info["report_all_values"] = True
     return rule_info
 
 
@@ -217,7 +212,7 @@ def get_configured_cache_size(chunk):
     :param collection.OrderedDict chunk: FTDC JSON chunk
     :rtype: int|None if chunk does not contain the needed key.
     """
-    return _fetch_constant(chunk, FTDC_KEYS['max_cache_size'])
+    return _fetch_constant(chunk, FTDC_KEYS["max_cache_size"])
 
 
 def get_configured_oplog_size(chunk):
@@ -226,7 +221,7 @@ def get_configured_oplog_size(chunk):
     :param collection.OrderedDict chunk: FTDC JSON chunk
     :rtype: int|None if chunk does not contain the needed key.
     """
-    return _fetch_constant(chunk, FTDC_KEYS['max_oplog_size'])
+    return _fetch_constant(chunk, FTDC_KEYS["max_oplog_size"])
 
 
 def get_repl_members(chunk):
@@ -235,10 +230,10 @@ def get_repl_members(chunk):
     :param collection.OrderedDict chunk: FTDC JSON chunk
     :rtype: list[str]
     """
-    match_on_member_key = ';'.join(FTDC_KEYS['repl_set_status'])
+    match_on_member_key = ";".join(FTDC_KEYS["repl_set_status"])
     members = set()
     for key in chunk:
-        re_key = ';'.join(key)
+        re_key = ";".join(key)
         match = re.match(match_on_member_key, re_key)
         if match:
             member = match.group(1)
@@ -250,9 +245,9 @@ def get_repl_members(chunk):
 # Map each of the helper functions to the parameter their return values will correspond to in the
 # resource rules.
 FETCH_CONSTANTS = {
-    'configured_cache_size': get_configured_cache_size,
-    'configured_oplog_size': get_configured_oplog_size,
-    'repl_member_list': get_repl_members
+    "configured_cache_size": get_configured_cache_size,
+    "configured_oplog_size": get_configured_oplog_size,
+    "repl_member_list": get_repl_members,
 }
 
 
@@ -264,20 +259,20 @@ def below_configured_cache_size(chunk, times, configured_cache_size):
     :param int configured_cache_size: specified cache size configuration in bytes
     :rtype: dict
     """
-    if FTDC_KEYS['cache_size'] not in chunk:
+    if FTDC_KEYS["cache_size"] not in chunk:
         return {}
 
-    cache_size_values = chunk[FTDC_KEYS['cache_size']]
+    cache_size_values = chunk[FTDC_KEYS["cache_size"]]
 
     failure_times = []
-    labels = ('current cache size (bytes)', )
+    labels = ("current cache size (bytes)",)
     compared_values = []
-    additional = {'WT configured cache size (bytes)': configured_cache_size}
+    additional = {"WT configured cache size (bytes)": configured_cache_size}
 
     for index, cache_size in enumerate(cache_size_values):
         if cache_size > (1 + CACHE_ALLOCATOR_OVERHEAD) * configured_cache_size:
             failure_times.append(times[index])
-            compared_values.append((cache_size, ))
+            compared_values.append((cache_size,))
     return failure_collection(failure_times, compared_values, labels, additional)
 
 
@@ -295,9 +290,9 @@ def max_connections(chunk, times, max_thread_level, repl_member_list):
     :param list[str]: for replSets, the upper bound depends on the number of members
     :rtype: dict
     """
-    if FTDC_KEYS['curr_connections'] not in chunk:
+    if FTDC_KEYS["curr_connections"] not in chunk:
         return {}
-    curr_connection_values = chunk[FTDC_KEYS['curr_connections']]
+    curr_connection_values = chunk[FTDC_KEYS["curr_connections"]]
 
     if not repl_member_list:  # standalone
         upper_bound_factor = 0
@@ -309,26 +304,22 @@ def max_connections(chunk, times, max_thread_level, repl_member_list):
     if max_thread_level > fudge_factor:
         fudge_factor = int(math.ceil(max_thread_level * 1.8))
     failure_times = []
-    labels = ('number of current connections', )
+    labels = ("number of current connections",)
     compared_values = []
     additional = {
-        'max thread level for this task':
-            max_thread_level,
-        'connections between members? (4 * N)':
-            upper_bound_factor,
-        'connections to MC and shell':
-            2,
-        'fudge_factor':
-            fudge_factor,
-        'rule':
-            '# connections <= (2 * max thread level + 2 + {0} + {1})'.format(
-                upper_bound_factor, fudge_factor)
+        "max thread level for this task": max_thread_level,
+        "connections between members? (4 * N)": upper_bound_factor,
+        "connections to MC and shell": 2,
+        "fudge_factor": fudge_factor,
+        "rule": "# connections <= (2 * max thread level + 2 + {0} + {1})".format(
+            upper_bound_factor, fudge_factor
+        ),
     }
     threshold = (max_thread_level * 2) + 2 + upper_bound_factor + fudge_factor
     for index, num_connections in enumerate(curr_connection_values):
         if num_connections > threshold:
             failure_times.append(times[index])
-            compared_values.append((num_connections, ))
+            compared_values.append((num_connections,))
     return failure_collection(failure_times, compared_values, labels, additional)
 
 
@@ -340,23 +331,23 @@ def below_configured_oplog_size(chunk, times, configured_oplog_size):
     :param int configured_oplog_size: specified oplog size configuration in MB
     :rtype: dict
     """
-    if FTDC_KEYS['oplog_size'] not in chunk:
+    if FTDC_KEYS["oplog_size"] not in chunk:
         return {}
-    oplog_size_values = chunk[FTDC_KEYS['oplog_size']]
-    upper_bound_factor = (1 + WT_OPLOG_BUFFER)
+    oplog_size_values = chunk[FTDC_KEYS["oplog_size"]]
+    upper_bound_factor = 1 + WT_OPLOG_BUFFER
 
     failure_times = []
-    labels = ('current oplog size (MB)', )
+    labels = ("current oplog size (MB)",)
     compared_values = []
     additional = {
-        'WT configured max oplog size (MB)': configured_oplog_size,
-        'rule': 'current size <= (max size * {0})'.format(upper_bound_factor)
+        "WT configured max oplog size (MB)": configured_oplog_size,
+        "rule": "current size <= (max size * {0})".format(upper_bound_factor),
     }
 
     for index, oplog_size in enumerate(oplog_size_values):
         if oplog_size > configured_oplog_size * upper_bound_factor:
             failure_times.append(times[index])
-            compared_values.append((oplog_size, ))
+            compared_values.append((oplog_size,))
     return failure_collection(failure_times, compared_values, labels, additional)
 
 
@@ -376,25 +367,25 @@ def repl_member_state(chunk, times, repl_member_list, test_times=None):
 
     member_states = {}
     for member in repl_member_list:
-        member_state_key = ('replSetGetStatus', 'members', member, 'state')
+        member_state_key = ("replSetGetStatus", "members", member, "state")
         if member_state_key not in chunk:
             continue
         member_state_values = chunk[member_state_key]
 
         failure_times = []
-        labels = ('member ' + member + ' state', )
+        labels = ("member " + member + " state",)
         compared_values = []
 
         for index in test_run_indices:
             state = member_state_values[index]
             if state in FLAG_MEMBER_STATES:
                 failure_times.append(times[index])
-                compared_values.append((FLAG_MEMBER_STATES[state], ))
+                compared_values.append((FLAG_MEMBER_STATES[state],))
         failure = failure_collection(failure_times, compared_values, labels)
         if failure:
             member_states[member] = failure
     if member_states:
-        return {'members': member_states}
+        return {"members": member_states}
     return {}
 
 
@@ -406,14 +397,17 @@ def find_primary(chunk, repl_member_list):
     :rtype: str|None
     """
     for member in repl_member_list:
-        member_state_key = ('replSetGetStatus', 'members', member, 'state')
+        member_state_key = ("replSetGetStatus", "members", member, "state")
         if member_state_key not in chunk:
             return None
         member_state = set(chunk[member_state_key])
         if len(member_state) != 1:
             # No formal error logging here right now.
-            print('State transition occurred mid-chunk. Member {0} states: {1}'.format(
-                member, str(member_state)))
+            print(
+                "State transition occurred mid-chunk. Member {0} states: {1}".format(
+                    member, str(member_state)
+                )
+            )
             continue
         if member_state.pop() == 1:
             return member
@@ -433,7 +427,7 @@ def ftdc_replica_lag_check(path_to_ftdc_file, test_times=None):
     repl_member_list = []
     collect_by_primary = []  # in case election occurs, lag info is specific to each primary
 
-    lag_info_dict = {'times': []}
+    lag_info_dict = {"times": []}
     current_primary = None
 
     for chunk in readers.read_ftdc(path_to_ftdc_file):
@@ -453,10 +447,10 @@ def ftdc_replica_lag_check(path_to_ftdc_file, test_times=None):
             # using our currently declared primary and reset the necessary variables as we move
             # forward with the newly named primary
             collect_by_primary.append(lag_info_dict)
-            lag_info_dict = {'times': []}
+            lag_info_dict = {"times": []}
             current_primary = primary
 
-        primary_optimedate_key = ('replSetGetStatus', 'members', current_primary, 'optimeDate')
+        primary_optimedate_key = ("replSetGetStatus", "members", current_primary, "optimeDate")
         if primary_optimedate_key not in chunk:  # skip if no optimeDate data for primary
             continue
 
@@ -469,18 +463,19 @@ def ftdc_replica_lag_check(path_to_ftdc_file, test_times=None):
                 lag_info_dict[member] = []
 
         test_run_indices = _get_whitelist_from_test_times(chunk, test_times)
-        collect_lag = _chunk_member_lag(chunk, secondary_members, chunk[primary_optimedate_key],
-                                        test_run_indices)
+        collect_lag = _chunk_member_lag(
+            chunk, secondary_members, chunk[primary_optimedate_key], test_run_indices
+        )
 
         # the two lengths may not be equivalent if, for whatever reason, optimeDate data for some
         # member is missing for this chunk. shouldn't happen, but if it does, we want to ignore
         # the data from this chunk.
-        if len(collect_lag.keys()) == len(secondary_members):
+        if len(list(collect_lag.keys())) == len(secondary_members):
             # `times` is an array of timestamps corresponding to when each sample was collected.
             # note that each chunk contains samples collected over some duration.
-            lag_info_dict['primary'] = current_primary
-            lag_info_dict['times'] += [chunk[FTDC_KEYS['time']][i] for i in test_run_indices]
-            for member, member_lag in collect_lag.iteritems():
+            lag_info_dict["primary"] = current_primary
+            lag_info_dict["times"] += [chunk[FTDC_KEYS["time"]][i] for i in test_run_indices]
+            for member, member_lag in six.iteritems(collect_lag):
                 lag_info_dict[member] += member_lag
 
     # after processing the whole file, append the remaining lag info dictionary
@@ -500,7 +495,7 @@ def _chunk_member_lag(chunk, repl_member_list, primary_optimedates, test_run_ind
     """
     collect_chunk_lag = {}
     for member in repl_member_list:
-        member_optimedate_key = ('replSetGetStatus', 'members', member, 'optimeDate')
+        member_optimedate_key = ("replSetGetStatus", "members", member, "optimeDate")
         if member_optimedate_key not in chunk:
             break
         member_optimedate_values = chunk[member_optimedate_key]
@@ -524,14 +519,14 @@ def _lag_failures_per_primary(lag_info_per_primary, repl_member_list):
     """
     failures = []
     for lag_info_dict in lag_info_per_primary:
-        if lag_info_dict['times']:  # check that lag information was indeed collected...
+        if lag_info_dict["times"]:  # check that lag information was indeed collected...
             flagged = _flag_unacceptable_lag(lag_info_dict, repl_member_list)
             if flagged:
                 failures.append(flagged)
     return failures
 
 
-def _flag_unacceptable_lag(lag_info_dict, repl_member_list):  #pylint: disable=too-many-locals
+def _flag_unacceptable_lag(lag_info_dict, repl_member_list):  # pylint: disable=too-many-locals
     """Helper function to analyze lag times and flag potential problems
 
        When there's a write after an idle period, we can observe lag that's equal to the duration
@@ -560,26 +555,26 @@ def _flag_unacceptable_lag(lag_info_dict, repl_member_list):  #pylint: disable=t
     :rtype: dict (failure information)
     """
     failure_by_member = {}
-    num_samples = len(lag_info_dict['times'])
+    num_samples = len(lag_info_dict["times"])
     if num_samples <= 1:  # if lag is too large at beginning, it could just be a false positive.
         return {}
     for member in repl_member_list:
-        if lag_info_dict['primary'] is member:
+        if lag_info_dict["primary"] is member:
             continue
 
         failure_times = []
         compared_values = []
         member_lag = lag_info_dict[member]
 
-        previous = {'lag': 0, 'time': member_lag[0]}
+        previous = {"lag": 0, "time": member_lag[0]}
         is_lagging = False
         failure_dict = {}
 
         for index in range(1, num_samples):
-            current_time = lag_info_dict['times'][index]
+            current_time = lag_info_dict["times"][index]
             current_lag = member_lag[index]
-            time_delta = current_time - previous['time']
-            bounded_lag = min(current_lag, previous['lag'] + time_delta)
+            time_delta = current_time - previous["time"]
+            bounded_lag = min(current_lag, previous["lag"] + time_delta)
 
             if not is_lagging:
                 if bounded_lag > REPL_MEMBER_LAG_THRESHOLD_MS:
@@ -589,16 +584,20 @@ def _flag_unacceptable_lag(lag_info_dict, repl_member_list):  #pylint: disable=t
                     # index_build. Characteristic for index_build is that the lag grows exactly
                     # 1 sec / sec, because the secondary is completely blocked.
                     # FIXME: if can be removed when PERF-1031 is implemented.
-                    if bounded_lag - previous['lag'] < time_delta:
+                    if bounded_lag - previous["lag"] < time_delta:
                         LOGGER.debug("lag start")
-                        LOGGER.debug("bounded_lag > threshold %s %s %s", current_lag,
-                                     previous['lag'], current_time)
+                        LOGGER.debug(
+                            "bounded_lag > threshold %s %s %s",
+                            current_lag,
+                            previous["lag"],
+                            current_time,
+                        )
                         is_lagging = True
                         failure_dict = {
-                            'start_time': current_time,
-                            'start_value': current_lag,
-                            'max_value': current_lag,
-                            'max_time': current_time
+                            "start_time": current_time,
+                            "start_value": current_lag,
+                            "max_value": current_lag,
+                            "max_time": current_time,
                         }
             else:
                 # We want to capture consecutive ranges of lag happening. Therefore the thershold
@@ -606,36 +605,40 @@ def _flag_unacceptable_lag(lag_info_dict, repl_member_list):  #pylint: disable=t
                 if current_lag < REPL_MEMBER_LAG_RESET_MS:
                     LOGGER.debug("lag end")
                     is_lagging = False
-                    failure_dict['end_value'] = previous['lag']
-                    failure_dict['end_time'] = previous['time']
+                    failure_dict["end_value"] = previous["lag"]
+                    failure_dict["end_time"] = previous["time"]
 
-                    failure_times.append(failure_dict['start_time'])
-                    compared_values.append((failure_dict['start_value'] / MS,
-                                            ftdc_date_parse(failure_dict['max_time'] / MS),
-                                            failure_dict['max_value'] / MS,
-                                            ftdc_date_parse(failure_dict['end_time'] / MS),
-                                            failure_dict['end_value'] / MS))
+                    failure_times.append(failure_dict["start_time"])
+                    compared_values.append(
+                        (
+                            failure_dict["start_value"] / MS,
+                            ftdc_date_parse(failure_dict["max_time"] / MS),
+                            failure_dict["max_value"] / MS,
+                            ftdc_date_parse(failure_dict["end_time"] / MS),
+                            failure_dict["end_value"] / MS,
+                        )
+                    )
                 else:
                     # lag continues
-                    if current_lag > failure_dict['max_value']:
-                        failure_dict['max_value'] = current_lag
-                        failure_dict['max_time'] = current_time
+                    if current_lag > failure_dict["max_value"]:
+                        failure_dict["max_value"] = current_lag
+                        failure_dict["max_time"] = current_time
 
-            previous['lag'] = bounded_lag
-            previous['time'] = current_time
+            previous["lag"] = bounded_lag
+            previous["time"] = current_time
 
-        labels = ('start value (s)', 'max time', 'max value (s)', 'end time', 'end value (s)')
+        labels = ("start value (s)", "max time", "max value (s)", "end time", "end value (s)")
         failure = failure_collection(failure_times, compared_values, labels, None, True)
         if failure:
             failure_by_member[member] = failure
     if failure_by_member:
         return {
-            'members': failure_by_member,
-            'additional': {
-                'lag start threshold (s)': REPL_MEMBER_LAG_THRESHOLD_S,
-                'lag end threshold (s)': REPL_MEMBER_LAG_RESET_S,
-                'primary member': lag_info_dict['primary']
-            }
+            "members": failure_by_member,
+            "additional": {
+                "lag start threshold (s)": REPL_MEMBER_LAG_THRESHOLD_S,
+                "lag end threshold (s)": REPL_MEMBER_LAG_RESET_S,
+                "primary member": lag_info_dict["primary"],
+            },
         }
     return {}
 
@@ -653,9 +656,9 @@ def _get_whitelist_from_test_times(chunk, test_times=None):
     :rtype: list[int]
     """
     test_run_indices = []
-    times = chunk[FTDC_KEYS['time']]
+    times = chunk[FTDC_KEYS["time"]]
     if not test_times:
-        test_run_indices = range(len(times))
+        test_run_indices = list(range(len(times)))
     else:
         chunk_times_in_s = [time_in_ms / MS for time_in_ms in times]
         for index, time_in_s in enumerate(chunk_times_in_s):
@@ -678,16 +681,16 @@ def db_correctness_analysis(dir_path):
     :rtype: list[dict], a list of result dictionaries to be written to report.json
 
     """
-    find_directory = 'db-correctness'
+    find_directory = "db-correctness"
     # The directories in db-correctness. Same as the name of the test on Evergreen.
-    db_correctness_log_directories = ['db-hash-check', 'validate-indexes-and-collections']
+    db_correctness_log_directories = ["db-hash-check", "validate-indexes-and-collections"]
     report_results = []
     for root_directory, sub_directory, _ in os.walk(dir_path):
         if find_directory in sub_directory:
             path_to_target = os.path.join(root_directory, find_directory)
             for log_directory in db_correctness_log_directories:
                 path_to_directory = os.path.join(path_to_target, log_directory)
-                log_name = log_directory + '.' + os.path.basename(root_directory)
+                log_name = log_directory + "." + os.path.basename(root_directory)
                 if os.path.exists(path_to_directory):
                     log_files = os.listdir(path_to_directory)
                     if log_files:
@@ -705,10 +708,10 @@ def _report_js_test_result(test_name, path_to_file, filename_list):
     :type filename_list: list[str]
     :rtype: dict
     """
-    js_test_failure_output = ''
+    js_test_failure_output = ""
     for filename in filename_list:
         path_to_logfile = os.path.join(path_to_file, filename)
-        log_output = ''
+        log_output = ""
         last_line = None
         with open(path_to_logfile) as file_handle:
             for line in file_handle:
@@ -717,18 +720,19 @@ def _report_js_test_result(test_name, path_to_file, filename_list):
         try:
             exit_status = int(last_line)
             if exit_status:
-                js_test_failure_output += '\nFAILURE: (logfile `{0}`)\n'.format(filename)
+                js_test_failure_output += "\nFAILURE: (logfile `{0}`)\n".format(filename)
                 js_test_failure_output += log_output
         except ValueError:
-            js_test_failure_output = ('\nFAILURE: logfile `{0}` did not record a valid exit '
-                                      'code. Output:\n {1}').format(filename, log_output)
-    result = {'test_file': test_name, 'start': 0}
+            js_test_failure_output = (
+                "\nFAILURE: logfile `{0}` did not record a valid exit " "code. Output:\n {1}"
+            ).format(filename, log_output)
+    result = {"test_file": test_name, "start": 0}
     if js_test_failure_output:
-        result['status'] = 'fail'
-        result['log_raw'] = js_test_failure_output
-        result['exit_code'] = 1
+        result["status"] = "fail"
+        result["log_raw"] = js_test_failure_output
+        result["exit_code"] = 1
     else:
-        result['status'] = 'pass'
-        result['log_raw'] = '\nPassed {0} JS test.'.format(test_name)
-        result['exit_code'] = 0
+        result["status"] = "pass"
+        result["log_raw"] = "\nPassed {0} JS test.".format(test_name)
+        result["exit_code"] = 0
     return result

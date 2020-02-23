@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
+
 """
 Teardown AWS resources using terraform.
 It is important this python file can be used without any dependencies on our own other python files
@@ -28,13 +29,13 @@ def find_terraform(work_directory="."):
     :returns: Path to terraform executable file (not dir).
     """
     if "TERRAFORM" in os.environ:
-        return os.environ['TERRAFORM']
-    elif os.path.isfile('terraform'):
-        return os.path.join(work_directory, 'terraform')
+        return os.environ["TERRAFORM"]
+    elif os.path.isfile("terraform"):
+        return os.path.join(work_directory, "terraform")
     else:
         # Find terraform in path
         try:
-            return subprocess.check_output(['which', 'terraform']).strip()
+            return subprocess.check_output(["which", "terraform"]).strip()
         except:  # pylint: disable=broad-except
             LOG.error("Did not find terraform in PATH nor current directory.")
             raise
@@ -47,34 +48,33 @@ def destroy_resources():
     teardown_script_path = os.path.dirname(os.path.abspath(__file__))
     previous_directory = None
     terraform = None
-    if glob.glob(teardown_script_path + '/provisioned.*'):
+    if glob.glob(teardown_script_path + "/provisioned.*"):
         previous_directory = os.getcwd()
         os.chdir(teardown_script_path)
 
     terraform = find_terraform()
     LOG.info("Using terraform binary: %s", terraform)
 
-    var_file = ''
-    if os.path.isfile('cluster.json'):
-        var_file = '-var-file=cluster.json'
+    var_file = ""
+    if os.path.isfile("cluster.json"):
+        var_file = "-var-file=cluster.json"
     else:
         LOG.critical("In infrastructure_teardown.py and cluster.json does not exist. Giving up.")
         if previous_directory is not None:
             os.chdir(previous_directory)
-        raise (UserWarning(
-            "In infrastructure_teardown.py and cluster.json does not exist. Giving up."))
+        raise UserWarning
 
-    LOG.info('Destroy starting')
+    LOG.info("Destroy starting")
     try:
         # Destroy instances first.
-        subprocess.check_call([terraform, 'destroy', var_file, '-force', '-target=module.cluster'])
+        subprocess.check_call([terraform, "destroy", var_file, "-force", "-target=module.cluster"])
         # Then destroy the rest, which is the placement group.
         # This is a workaround for the fact that depends_on doesn't work with modules.
-        LOG.info('Attempting to destroy remaining resources')
-        subprocess.check_call([terraform, 'destroy', var_file, '-force'])
+        LOG.info("Attempting to destroy remaining resources")
+        subprocess.check_call([terraform, "destroy", var_file, "-force"])
     except CalledProcessError:
-        LOG.warn('Failed destroying resources, retrying')
-        subprocess.check_call([terraform, 'destroy', var_file, '-force'])
+        LOG.warn("Failed destroying resources, retrying")
+        subprocess.check_call([terraform, "destroy", var_file, "-force"])
     if previous_directory is not None:
         os.chdir(previous_directory)
 
@@ -96,7 +96,7 @@ def destroy_atlas_resources():
         return True
 
     # AtlasSetup.destroy() will write to mongodb_setup.out.yml
-    config = common.config.ConfigDict('mongodb_setup')
+    config = common.config.ConfigDict("mongodb_setup")
     config.load()
 
     # start a mongodb configuration using config
@@ -110,9 +110,9 @@ def parse_command_line():
     """
     Parse command line arguments.
     """
-    parser = argparse.ArgumentParser(description='Destroy EC2 & Atlas resources.')
-    parser.add_argument('--log-file', help='path to log file')
-    parser.add_argument('-d', '--debug', action='store_true', help='enable debug output')
+    parser = argparse.ArgumentParser(description="Destroy EC2 & Atlas resources.")
+    parser.add_argument("--log-file", help="path to log file")
+    parser.add_argument("-d", "--debug", action="store_true", help="enable debug output")
     args = parser.parse_args()
     return args
 
@@ -125,7 +125,7 @@ def setup_logging(verbose, filename=None):
     loglevel = logging.DEBUG if verbose else logging.INFO
     handler = logging.FileHandler(filename) if filename else logging.StreamHandler()
     handler.setLevel(loglevel)
-    handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
+    handler.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
     root_logger = logging.getLogger()
     root_logger.setLevel(loglevel)
     root_logger.addHandler(handler)
@@ -157,5 +157,5 @@ def main():
     return return_value
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

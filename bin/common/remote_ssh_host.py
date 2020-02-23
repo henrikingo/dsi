@@ -11,10 +11,11 @@ import common.host_utils as host_utils
 from common.host_utils import LOG
 
 from common.log import IOLogAdapter
+import six
 
 LOG = logging.getLogger(__name__)
 # This stream only log error or above messages
-ERROR_ONLY = logging.getLogger('error_only')
+ERROR_ONLY = logging.getLogger("error_only")
 
 INFO_ADAPTER = IOLogAdapter(LOG, logging.INFO)
 WARN_ADAPTER = IOLogAdapter(LOG, logging.WARN)
@@ -28,14 +29,16 @@ class RemoteSSHHost(common.remote_host.RemoteHost):
 
     # pylint: disable=too-many-arguments
     # pylint: disable=too-many-locals
-    def exec_command(self,
-                     argv,
-                     stdout=None,
-                     stderr=None,
-                     get_pty=False,
-                     max_time_ms=None,
-                     no_output_timeout_ms=None,
-                     quiet=False):
+    def exec_command(
+        self,
+        argv,
+        stdout=None,
+        stderr=None,
+        get_pty=False,
+        max_time_ms=None,
+        no_output_timeout_ms=None,
+        quiet=False,
+    ):
         """
         Execute the argv command on the remote host and log the output.
 
@@ -48,13 +51,19 @@ class RemoteSSHHost(common.remote_host.RemoteHost):
             logger = LOG
 
         # pylint: disable=too-many-branches
-        if not argv or not isinstance(argv, (list, basestring)):
+        if not argv or not isinstance(argv, (list, six.string_types)):
             raise ValueError("Argument must be a nonempty list or string.")
 
-        if (max_time_ms is not None and no_output_timeout_ms is not None
-                and no_output_timeout_ms > max_time_ms):
-            logger.warning("Can't wait %s ms for output when max time is %s ms",
-                           no_output_timeout_ms, max_time_ms)
+        if (
+            max_time_ms is not None
+            and no_output_timeout_ms is not None
+            and no_output_timeout_ms > max_time_ms
+        ):
+            logger.warning(
+                "Can't wait %s ms for output when max time is %s ms",
+                no_output_timeout_ms,
+                max_time_ms,
+            )
 
         if stdout is None:
             stdout = INFO_ADAPTER
@@ -62,11 +71,11 @@ class RemoteSSHHost(common.remote_host.RemoteHost):
             stderr = WARN_ADAPTER
 
         if isinstance(argv, list):
-            command = ' '.join(argv)
+            command = " ".join(argv)
         else:
             command = argv
 
-        logger.debug('[%s@%s]$ %s', self.user, self.hostname, command)
+        logger.debug("[%s@%s]$ %s", self.user, self.hostname, command)
 
         # scoping
         ssh_stdout, ssh_stderr = None, None
@@ -76,26 +85,28 @@ class RemoteSSHHost(common.remote_host.RemoteHost):
             ssh_stdin.channel.shutdown_write()
             ssh_stdin.close()
 
-            exit_status = self._perform_exec(command, stdout, stderr, ssh_stdout, ssh_stderr,
-                                             max_time_ms, no_output_timeout_ms)
+            exit_status = self._perform_exec(
+                command, stdout, stderr, ssh_stdout, ssh_stderr, max_time_ms, no_output_timeout_ms
+            )
 
         except paramiko.SSHException as e:
-            raise host_utils.HostException("failed to exec '{}' on {}@{}: '{}'".format(
-                command, self.user, self.hostname, e))
+            raise host_utils.HostException(
+                "failed to exec '{}' on {}@{}: '{}'".format(command, self.user, self.hostname, e)
+            )
         finally:
             host_utils.close_safely(ssh_stdout)
             host_utils.close_safely(ssh_stderr)
 
         if exit_status != 0:
-            logger.warning('%s \'%s\': Failed with exit status %s', self.alias, command,
-                           exit_status)
+            logger.warning("%s '%s': Failed with exit status %s", self.alias, command, exit_status)
         return exit_status
 
     # pylint: disable=no-self-use
     # pylint: disable=too-many-arguments
     # pylint: disable=too-many-locals
-    def _perform_exec(self, command, stdout, stderr, ssh_stdout, ssh_stderr, max_time_ms,
-                      no_output_timeout_ms):
+    def _perform_exec(
+        self, command, stdout, stderr, ssh_stdout, ssh_stderr, max_time_ms, no_output_timeout_ms
+    ):
         """
         For parameters/returns, see :method: `Host.exec_command`.
 
@@ -112,8 +123,11 @@ class RemoteSSHHost(common.remote_host.RemoteHost):
         ssh_stdout.channel.settimeout(0.1)
 
         # Stream the output of the command to the log
-        while (not total_operation_is_timed_out() and not no_output_timed_out()
-               and not ssh_stdout.channel.exit_status_ready()):
+        while (
+            not total_operation_is_timed_out()
+            and not no_output_timed_out()
+            and not ssh_stdout.channel.exit_status_ready()
+        ):
             any_lines = host_utils.stream_lines(ssh_stdout, stdout)
             if any_lines:
                 no_output_timed_out = host_utils.create_timer(datetime.now(), no_output_timeout_ms)
@@ -132,15 +146,15 @@ class RemoteSSHHost(common.remote_host.RemoteHost):
             time_taken = (datetime.now() - total_operation_start).total_seconds()
             if no_output_timed_out():
                 no_output = no_output_timeout_ms / host_utils.ONE_SECOND_MILLIS
-                msg = "No Output in {} s (see test_control.timeouts.no_output_ms). {} s elapsed " \
-                      "on {} for '{}'".format(no_output,
-                                              time_taken,
-                                              self.alias,
-                                              command)
+                msg = (
+                    "No Output in {} s (see test_control.timeouts.no_output_ms). {} s elapsed "
+                    "on {} for '{}'".format(no_output, time_taken, self.alias, command)
+                )
             else:
                 max_time = max_time_ms / host_utils.ONE_SECOND_MILLIS
                 msg = "{} exceeded {} allowable seconds on {} for '{}'".format(
-                    time_taken, max_time, self.alias, command)
+                    time_taken, max_time, self.alias, command
+                )
             raise host_utils.HostException(msg)
 
         return exit_status

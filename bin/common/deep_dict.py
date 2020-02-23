@@ -1,4 +1,3 @@
-#!/usr/bin/env python2.7
 """
 Utility functions to iterate, set and get on deep dict objects.
 """
@@ -16,7 +15,7 @@ def iterate(deep_dict, path=None, to_return=None):
     if to_return is None:
         to_return = []
     if isinstance(deep_dict, dict):
-        #pylint: disable=unused-variable
+        # pylint: disable=unused-variable
         for key in sorted_keys(deep_dict):
             pair = iterate(deep_dict[key], path + [key], to_return)
             # Avoid circular references on the way back
@@ -56,7 +55,7 @@ def del_value(deep_dict, path):
 
 def sorted_iter(a_dict):
     """Like dict.iteritems(), but sorts keys first."""
-    keys = a_dict.keys()
+    keys = list(a_dict.keys())
     keys.sort()
     for key in keys:
         yield key, a_dict[key]
@@ -64,7 +63,7 @@ def sorted_iter(a_dict):
 
 def sorted_keys(a_dict):
     """Like dict.keys(), but sorts keys first."""
-    keys = a_dict.keys()
+    keys = list(a_dict.keys())
     keys.sort()
     for key in keys:
         yield key

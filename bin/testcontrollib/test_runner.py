@@ -24,12 +24,15 @@ class _BaseRunner(object):
     There is a catch-all _ShellRunner for running shell commands of frameworks that
     don't have their own dedicated runners.
     """
-    def __init__(self,
-                 test_name=None,
-                 output_files=None,
-                 is_production=None,
-                 timeout=None,
-                 numactl_prefix_for_workload_client=None):
+
+    def __init__(
+        self,
+        test_name=None,
+        output_files=None,
+        is_production=None,
+        timeout=None,
+        numactl_prefix_for_workload_client=None,
+    ):
         """
         :param test_name: the name of the test suite. obtained from test_control.id.
         :param output_files: the list of output files a test suite generates. Used for uploading
@@ -39,10 +42,10 @@ class _BaseRunner(object):
         :param timeout: test timeout
         :param numactl_prefix_for_workload_client: whether the test should be started with numactl.
         """
-        self.report_dir = os.path.join('reports', test_name)
+        self.report_dir = os.path.join("reports", test_name)
         common.utils.mkdir_p(self.report_dir)
 
-        self.report_file_name = os.path.join(self.report_dir, 'test_output.log')
+        self.report_file_name = os.path.join(self.report_dir, "test_output.log")
 
         self.output_files = output_files
         self.is_production = is_production
@@ -57,7 +60,7 @@ class _BaseRunner(object):
         :param host: Host object to run this test on
         :return: status of the command run
         """
-        with open(self.report_file_name, 'wb+', 0) as out:
+        with open(self.report_file_name, "wb+", 0) as out:
             safe_out = common.log.UTF8WrapperStream(out)
             tee_out = common.log.TeeStream(INFO_ADAPTER, safe_out)
             try:
@@ -84,19 +87,26 @@ class _BaseRunner(object):
         return []
 
     def _do_run(self, host, out):  # pylint: disable=unused-argument
-        raise ValueError('run method must be implemented by the subclass: ',
-                         self.__class__.__name__)
+        raise ValueError(
+            "run method must be implemented by the subclass: ", self.__class__.__name__
+        )
 
     def _retrieve_test_output(self, host):
         for output_file in self.output_files:
             # TODO: TIG-1130: if remote file doesn't exist, this will silently fail
-            host.retrieve_path(output_file,
-                               os.path.join(self.report_dir, os.path.basename(output_file)))
+            host.retrieve_path(
+                output_file, os.path.join(self.report_dir, os.path.basename(output_file))
+            )
 
     @staticmethod
     def _log_status(stream, exit_status):
-        stream.write("\n{} {} '{}'\n".format(EXIT_STATUS_LINE_PREFIX, exit_status.status,
-                                             exit_status.message.encode('string_escape')))
+        stream.write(
+            "\n{} {} '{}'\n".format(
+                EXIT_STATUS_LINE_PREFIX,
+                exit_status.status,
+                exit_status.message.encode("string_escape"),
+            )
+        )
         stream.flush()
 
 
@@ -106,11 +116,9 @@ class _ShellRunner(_BaseRunner):
         self.test_cmd = test_cmd
 
     def _do_run(self, host, out):
-        exit_code = host.exec_command(self.test_cmd,
-                                      stdout=out,
-                                      stderr=out,
-                                      no_output_timeout_ms=self.timeout,
-                                      get_pty=True)
+        exit_code = host.exec_command(
+            self.test_cmd, stdout=out, stderr=out, no_output_timeout_ms=self.timeout, get_pty=True
+        )
         return StatusWithMessage(exit_code, self.test_cmd)
 
 
@@ -118,6 +126,7 @@ class GennyRunner(_BaseRunner):
     """
     Class for running genny tests.
     """
+
     def __init__(self, workload_config, db_url, **kwargs):
         super(GennyRunner, self).__init__(**kwargs)
         self.workload_config = workload_config
@@ -135,45 +144,47 @@ class GennyRunner(_BaseRunner):
         """
         See _BaseRunner.get_default_output_files()
         """
-        return ['data/genny-perf.json', 'data/genny-perf.csv', 'data/genny-cedar-report.json']
+        return ["data/genny-perf.json", "data/genny-perf.csv", "data/genny-cedar-report.json"]
 
     def _do_run(self, host, out):
         commands = [
-            'mkdir -p metrics',
+            "mkdir -p metrics",
             '{} genny/bin/genny run -u "{}" -m cedar-csv -o ./genny-perf.csv {}'.format(
-                self.numactl_prefix_for_workload_client, self.db_url, self.workload_config),
-            'genny-metrics-legacy-report --report-file genny-perf.json genny-perf.csv'
+                self.numactl_prefix_for_workload_client, self.db_url, self.workload_config
+            ),
+            "genny-metrics-legacy-report --report-file genny-perf.json genny-perf.csv",
         ]
 
         if self.is_production:
             # Only generate the cedar report in production. The Cedar certificates are
             # not available elsewhere.
-            commands.append('genny-metrics-report --report-file genny-cedar-report.json '
-                            'genny-perf.csv metrics')
+            commands.append(
+                "genny-metrics-report --report-file genny-cedar-report.json "
+                "genny-perf.csv metrics"
+            )
 
         for command in commands:
             # Write the output of genny to the ephemeral drive (mounted on ~/data)
             # to ensure it has enough disk space.
-            command = 'cd ./data; ' + command
+            command = "cd ./data; " + command
 
-            exit_code = host.exec_command(command,
-                                          stdout=out,
-                                          stderr=out,
-                                          no_output_timeout_ms=self.timeout,
-                                          get_pty=True)
+            exit_code = host.exec_command(
+                command, stdout=out, stderr=out, no_output_timeout_ms=self.timeout, get_pty=True
+            )
 
             # Fail early and log the exact command that failed.
             if exit_code:
                 return StatusWithMessage(exit_code, command)
 
         # Log a short message on success.
-        return StatusWithMessage(0, 'GennyRunner.run()')
+        return StatusWithMessage(0, "GennyRunner.run()")
 
 
 class GennyCanariesRunner(_BaseRunner):
     """
     Class for running Genny performance self tests.
     """
+
     def __init__(self, db_url, **kwargs):
         super(GennyCanariesRunner, self).__init__(**kwargs)
         self.db_url = db_url
@@ -184,32 +195,31 @@ class GennyCanariesRunner(_BaseRunner):
         """
         See _BaseRunner.get_default_output_files()
         """
-        return ['data/nop.csv', 'data/ping.csv']
+        return ["data/nop.csv", "data/ping.csv"]
 
     def _do_run(self, host, out):
         commands = [
-            'genny/bin/genny-canaries nop -o nop.csv',
+            "genny/bin/genny-canaries nop -o nop.csv",
             'genny/bin/genny-canaries ping -u "{}" -i 10000 -o ping.csv'.format(self.db_url),
         ]
 
         for command in commands:
             # Write the output of genny to the ephemeral drive (mounted on ~/data)
             # to ensure it has enough disk space.
-            command = '{} && {} {}'.format('cd ./data', self.numactl_prefix_for_workload_client,
-                                           command)
+            command = "{} && {} {}".format(
+                "cd ./data", self.numactl_prefix_for_workload_client, command
+            )
 
-            exit_code = host.exec_command(command,
-                                          stdout=out,
-                                          stderr=out,
-                                          no_output_timeout_ms=self.timeout,
-                                          get_pty=True)
+            exit_code = host.exec_command(
+                command, stdout=out, stderr=out, no_output_timeout_ms=self.timeout, get_pty=True
+            )
 
             # Fail early and log the exact command that failed.
             if exit_code:
                 return StatusWithMessage(exit_code, command)
 
         # Log a short message on success.
-        return StatusWithMessage(0, 'GennyCanariesRunner.run()')
+        return StatusWithMessage(0, "GennyCanariesRunner.run()")
 
 
 @nottest
@@ -223,29 +233,29 @@ def get_test_runner(test_config, test_control_config):
     :return: an instance of a _BaseRunner subclass.
     """
     # Options from test_config.
-    name = test_config['id']
-    test_type = test_config['type']
-    output_files = test_config.get('output_files', [])
+    name = test_config["id"]
+    test_type = test_config["type"]
+    output_files = test_config.get("output_files", [])
 
     # Options from test_control_config.
-    is_production = test_control_config['is_production']
-    timeout = test_control_config['timeouts']['no_output_ms']
-    numactl_prefix = test_control_config['numactl_prefix_for_workload_client']
+    is_production = test_control_config["is_production"]
+    timeout = test_control_config["timeouts"]["no_output_ms"]
+    numactl_prefix = test_control_config["numactl_prefix_for_workload_client"]
 
     runner_config = {
-        'test_name': name,
-        'output_files': output_files,
-        'is_production': is_production,
-        'timeout': timeout,
-        'numactl_prefix_for_workload_client': numactl_prefix
+        "test_name": name,
+        "output_files": output_files,
+        "is_production": is_production,
+        "timeout": timeout,
+        "numactl_prefix_for_workload_client": numactl_prefix,
     }
 
-    db_url = test_control_config['mongodb_url']
+    db_url = test_control_config["mongodb_url"]
 
-    if test_type == 'genny':
-        workload_config_path = test_config['config_filename']
+    if test_type == "genny":
+        workload_config_path = test_config["config_filename"]
         return GennyRunner(workload_config_path, db_url, **runner_config)
-    elif test_type == 'genny_canaries':
+    elif test_type == "genny_canaries":
         return GennyCanariesRunner(db_url, **runner_config)
 
-    return _ShellRunner(test_config['cmd'], **runner_config)
+    return _ShellRunner(test_config["cmd"], **runner_config)

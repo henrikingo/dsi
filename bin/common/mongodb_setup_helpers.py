@@ -8,8 +8,8 @@ import jinja2
 
 from config import copy_obj
 
-MongoDBAuthSettings = namedtuple('MongoDBAuthSettings', ['mongo_user', 'mongo_password'])
-MongoDBTLSSettings = namedtuple('MongoDBTLSSettings', ['ca_file', 'pem_key_file'])
+MongoDBAuthSettings = namedtuple("MongoDBAuthSettings", ["mongo_user", "mongo_password"])
+MongoDBTLSSettings = namedtuple("MongoDBTLSSettings", ["ca_file", "pem_key_file"])
 
 
 def mongodb_auth_configured(config):
@@ -21,7 +21,7 @@ def mongodb_auth_configured(config):
     :rtype: boolean.
     """
 
-    return config['mongodb_setup']['authentication']['enabled']
+    return config["mongodb_setup"]["authentication"]["enabled"]
 
 
 def mongodb_auth_settings(config):
@@ -35,8 +35,10 @@ def mongodb_auth_settings(config):
 
     if not mongodb_auth_configured(config):
         return None
-    return MongoDBAuthSettings(config['mongodb_setup']['authentication']['username'],
-                               config['mongodb_setup']['authentication']['password'])
+    return MongoDBAuthSettings(
+        config["mongodb_setup"]["authentication"]["username"],
+        config["mongodb_setup"]["authentication"]["password"],
+    )
 
 
 def mongodb_tls_configured(config_file):
@@ -50,9 +52,9 @@ def mongodb_tls_configured(config_file):
     :param config_file: ConfigDict key mongodb_setup.topology.*.config_file or equivalent structure
     :return: if tls is enabled
     """
-    if config_file and 'net' in config_file:
-        net = config_file['net']
-        return 'ssl' in net and net['ssl']['mode'] in {'requireSSL', 'allowSSL', 'preferSSL'}
+    if config_file and "net" in config_file:
+        net = config_file["net"]
+        return "ssl" in net and net["ssl"]["mode"] in {"requireSSL", "allowSSL", "preferSSL"}
     return False
 
 
@@ -70,8 +72,8 @@ def mongodb_tls_settings(config_file):
     if not mongodb_tls_configured(config_file):
         return None
 
-    ssl = config_file['net']['ssl']
-    return MongoDBTLSSettings(ssl['CAFile'], ssl['PEMKeyFile'])
+    ssl = config_file["net"]["ssl"]
+    return MongoDBTLSSettings(ssl["CAFile"], ssl["PEMKeyFile"])
 
 
 def add_user(cluster, auth_settings, write_concern=1):
@@ -83,7 +85,8 @@ def add_user(cluster, auth_settings, write_concern=1):
     :param int write_concern: The number of nodes in the cluster that should acknowlege write
     operations requested by the client. The default is 1.
     """
-    script_template = jinja2.Template('''
+    script_template = jinja2.Template(
+        """
         db.getSiblingDB("admin").createUser(
           {
             user: {{user|tojson}},
@@ -93,11 +96,12 @@ def add_user(cluster, auth_settings, write_concern=1):
           {
             w: {{wc|tojson}},
             wtimeout: 10000
-          });''')
+          });"""
+    )
 
-    add_user_script = script_template.render(user=auth_settings.mongo_user,
-                                             password=auth_settings.mongo_password,
-                                             wc=write_concern)
+    add_user_script = script_template.render(
+        user=auth_settings.mongo_user, password=auth_settings.mongo_password, wc=write_concern
+    )
     cluster.run_mongo_shell(add_user_script)
 
 

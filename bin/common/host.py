@@ -13,10 +13,11 @@ import pymongo.uri_parser
 import common.host_utils
 from common.utils import mkdir_p
 from common.log import IOLogAdapter
+import six
 
 LOG = logging.getLogger(__name__)
 # This stream only log error or above messages
-ERROR_ONLY = logging.getLogger('error_only')
+ERROR_ONLY = logging.getLogger("error_only")
 
 INFO_ADAPTER = IOLogAdapter(LOG, logging.INFO)
 WARN_ADAPTER = IOLogAdapter(LOG, logging.WARN)
@@ -26,6 +27,7 @@ class Host(object):
     """
     Base class for hosts
     """
+
     def __init__(self, hostname, mongodb_auth_settings=None, use_tls=False):
         self.user = ""
         self._alias = None
@@ -49,14 +51,16 @@ class Host(object):
         self._alias = alias
 
     # pylint: disable=too-many-arguments
-    def exec_command(self,
-                     argv,
-                     stdout=None,
-                     stderr=None,
-                     get_pty=False,
-                     max_time_ms=None,
-                     no_output_timeout_ms=None,
-                     quiet=False):
+    def exec_command(
+        self,
+        argv,
+        stdout=None,
+        stderr=None,
+        get_pty=False,
+        max_time_ms=None,
+        no_output_timeout_ms=None,
+        quiet=False,
+    ):
         """
         Execute the command and log the output.
 
@@ -97,7 +101,7 @@ class Host(object):
         is not an error / exceptional.
         Note: exceptions may be raised by the lower layer, see :method: `Host.exec_command`.
         """
-        if not argvs or not isinstance(argvs, (list, basestring)):
+        if not argvs or not isinstance(argvs, (list, six.string_types)):
             raise ValueError("Argument must be a nonempty list or string.")
 
         # Log just the first line of what we are about to execute
@@ -105,9 +109,9 @@ class Host(object):
         if command_prefix != str(argvs):
             command_prefix = command_prefix + "  <cut>"
         command_prefix = command_prefix.replace("\n", "\\n")
-        LOG.info('    [%s@%s]$ %s', self.user, self.hostname, command_prefix)
+        LOG.info("    [%s@%s]$ %s", self.user, self.hostname, command_prefix)
 
-        if isinstance(argvs, basestring):
+        if isinstance(argvs, six.string_types):
             return self.exec_command(argvs, quiet=quiet) == 0
 
         if not isinstance(argvs[0], list):
@@ -151,29 +155,37 @@ class Host(object):
                 if self.mongodb_auth_settings.mongo_user != parsed_options.get("username"):
                     raise ValueError(
                         "Username '{}' in mongodb_auth_settings doesn't match username '{}' in"
-                        " connection string".format(self.mongodb_auth_settings.mongo_user,
-                                                    parsed_options.get("username")))
+                        " connection string".format(
+                            self.mongodb_auth_settings.mongo_user, parsed_options.get("username")
+                        )
+                    )
                 if self.mongodb_auth_settings.mongo_password != parsed_options.get("password"):
                     raise ValueError(
                         "Password '{}' in mongodb_auth_settings doesn't match password '{}' in"
-                        " connection string".format(self.mongodb_auth_settings.mongo_password,
-                                                    parsed_options.get("password")))
+                        " connection string".format(
+                            self.mongodb_auth_settings.mongo_password,
+                            parsed_options.get("password"),
+                        )
+                    )
             return (True, connection_string)
 
         if parsed_options.get("username") or parsed_options.get("password"):
             raise ValueError(
-                "Must specify both username and password in connection string, or neither")
+                "Must specify both username and password in connection string, or neither"
+            )
 
         return (False, connection_string)
 
-    def exec_mongo_command(self,
-                           script,
-                           remote_file_name="script.js",
-                           connection_string="",
-                           stdout=None,
-                           stderr=None,
-                           max_time_ms=None,
-                           quiet=False):
+    def exec_mongo_command(
+        self,
+        script,
+        remote_file_name="script.js",
+        connection_string="",
+        stdout=None,
+        stderr=None,
+        max_time_ms=None,
+        quiet=False,
+    ):
         """
         Executes script in the mongo on the connection string. Returns the status code of executing
         the script.
@@ -186,44 +198,50 @@ class Host(object):
         :type max_time_ms: int, float, None
         :param bool quiet: don't log failures if set to True. Defaults to False.
         """
-        argv = ['bin/mongo', '--quiet']
+        argv = ["bin/mongo", "--quiet"]
 
         (has_auth_settings, connection_string) = self._validate_connection_string(connection_string)
 
         if self.mongodb_auth_settings and not has_auth_settings:
-            argv.extend([
-                '-u', self.mongodb_auth_settings.mongo_user, '-p',
-                self.mongodb_auth_settings.mongo_password, '--authenticationDatabase', 'admin'
-            ])
+            argv.extend(
+                [
+                    "-u",
+                    self.mongodb_auth_settings.mongo_user,
+                    "-p",
+                    self.mongodb_auth_settings.mongo_password,
+                    "--authenticationDatabase",
+                    "admin",
+                ]
+            )
 
         # --sslAllowInvalidHostnames is necessary when we use ip addresses and localhost.
         # TODO: Change all mongodb_setup code to use the hostnames instead.
         if self.use_tls:
-            argv.extend(['--ssl', '--sslAllowInvalidHostnames'])
+            argv.extend(["--ssl", "--sslAllowInvalidHostnames"])
 
         # connection_string can contain ampersands, escape them.
         # Note that quoting doesn't work because gRPC is not a shell and treats quotes
         # around strings as just literal quote characters.
-        connection_string = connection_string.replace('&', r'\&')
+        connection_string = connection_string.replace("&", r"\&")
 
         argv.extend([connection_string, remote_file_name])
 
         self.create_file(remote_file_name, script)
         # TODO: Capture this output and redirect into LOG.debug()
-        #self.run(['cat', remote_file_name])
+        # self.run(['cat', remote_file_name])
 
-        status_code = self.exec_command(argv,
-                                        stdout=stdout,
-                                        stderr=stderr,
-                                        max_time_ms=max_time_ms,
-                                        quiet=quiet)
+        status_code = self.exec_command(
+            argv, stdout=stdout, stderr=stderr, max_time_ms=max_time_ms, quiet=quiet
+        )
         return status_code
 
-    def kill_remote_procs(self,
-                          name,
-                          signal_number=signal.SIGKILL,
-                          delay_ms=common.host_utils.ONE_SECOND_MILLIS,
-                          max_time_ms=common.host_utils.TEN_MINUTE_MILLIS):
+    def kill_remote_procs(
+        self,
+        name,
+        signal_number=signal.SIGKILL,
+        delay_ms=common.host_utils.ONE_SECOND_MILLIS,
+        max_time_ms=common.host_utils.TEN_MINUTE_MILLIS,
+    ):
         """
         Kills all processes on the host matching name pattern.
 
@@ -237,7 +255,7 @@ class Host(object):
         to None (no timeout)
         :type max_time_ms: int, float, None
         """
-        signal_number = '-' + str(signal_number)
+        signal_number = "-" + str(signal_number)
         delay_seconds = delay_ms / common.host_utils.ONE_SECOND_MILLIS
         if max_time_ms == 0:
             max_time_ms = delay_ms
@@ -245,16 +263,16 @@ class Host(object):
         is_timed_out = common.host_utils.create_timer(datetime.now(), max_time_ms)
 
         while not is_timed_out():
-            self.run(['pkill', signal_number, name], quiet=True)
-            if not self.run(['pgrep', name], quiet=True):
+            self.run(["pkill", signal_number, name], quiet=True)
+            if not self.run(["pgrep", name], quiet=True):
                 return True
             time.sleep(delay_seconds)
 
         return False
 
-    def kill_mongo_procs(self,
-                         signal_number=signal.SIGKILL,
-                         max_time_ms=30 * common.host_utils.ONE_SECOND_MILLIS):
+    def kill_mongo_procs(
+        self, signal_number=signal.SIGKILL, max_time_ms=30 * common.host_utils.ONE_SECOND_MILLIS
+    ):
         """
         Kills all processes matching the patterm 'mongo' (includes 'mongo', 'mongos', 'mongod') on
         the host by sending signal_number every second until there are no matching processes or the
@@ -266,7 +284,7 @@ class Host(object):
         to None (no timeout)
         :type max_time_ms: int, float, None
         """
-        return self.kill_remote_procs('mongo', signal_number, max_time_ms=max_time_ms)
+        return self.kill_remote_procs("mongo", signal_number, max_time_ms=max_time_ms)
 
     def create_file(self, remote_path, file_contents):
         """
@@ -298,17 +316,17 @@ class Host(object):
         :param bool verbose: Use the --quiet flag for clone and checkout if verbose is False.
         Defaults to False.
         """
-        quiet_arg = '' if verbose else '--quiet'
+        quiet_arg = "" if verbose else "--quiet"
         if not os.path.isdir(target):
-            LOG.info('checkout_repos target directory %s does not exist', target)
+            LOG.info("checkout_repos target directory %s does not exist", target)
             mkdir_p(os.path.dirname(target))
-            self.exec_command(['git', 'clone', quiet_arg, source, target])
+            self.exec_command(["git", "clone", quiet_arg, source, target])
             if branch is not None:
-                self.exec_command(['cd', target, '&&', 'git', 'checkout', quiet_arg, branch])
-        elif self.exec_command(['cd', target, '&&', 'git', 'status']) != 0:
-            raise UserWarning('{} exists and is not a git repository'.format(target))
+                self.exec_command(["cd", target, "&&", "git", "checkout", quiet_arg, branch])
+        elif self.exec_command(["cd", target, "&&", "git", "status"]) != 0:
+            raise UserWarning("{} exists and is not a git repository".format(target))
         else:
-            LOG.info('checkout_repos target directory %s exists and is a git repository', target)
+            LOG.info("checkout_repos target directory %s exists and is a git repository", target)
 
     def close(self):
         """

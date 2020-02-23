@@ -8,6 +8,7 @@ import fnmatch
 import os
 
 import structlog
+import six
 
 LOG = structlog.get_logger(__name__)
 
@@ -20,7 +21,7 @@ def core(config, results):
     :param ResultsFile results: Object to add results to.
     """
     LOG.info("Checking core files.")
-    path = config['test_control']['reports_dir_basename']
+    path = config["test_control"]["reports_dir_basename"]
     results.extend(check_core_file_exists(path))
 
 
@@ -81,14 +82,19 @@ def check_core_file_exists(reports_dir_path, pattern="core.*"):
         if os.path.isdir(test_dir_path):
             for mongo_name in os.listdir(test_dir_path):
                 mongo_dir_path = os.path.join(test_dir_path, mongo_name)
-                if (os.path.isdir(mongo_dir_path) and fnmatch.fnmatch(mongo_name, 'mongo?.[0-9]')
-                        or fnmatch.fnmatch(mongo_name, 'configsvr.[0-9]')):
+                if (
+                    os.path.isdir(mongo_dir_path)
+                    and fnmatch.fnmatch(mongo_name, "mongo?.[0-9]")
+                    or fnmatch.fnmatch(mongo_name, "configsvr.[0-9]")
+                ):
                     mongo_dir_paths.append(mongo_dir_path)
 
     def _format_msg_body(basenames=None):
-        msg_body = "\nNo core files found" if not basenames else \
-            "\ncore files found: {}\nNames: \n{}".format(
-                len(basenames), ", ".join(basenames))
+        msg_body = (
+            "\nNo core files found"
+            if not basenames
+            else "\ncore files found: {}\nNames: \n{}".format(len(basenames), ", ".join(basenames))
+        )
         return msg_body
 
     results = []
@@ -101,17 +107,19 @@ def check_core_file_exists(reports_dir_path, pattern="core.*"):
                 if fnmatch.fnmatch(potential_corefile, pattern):
                     cores_lookup[mongo_dir_path].append(potential_corefile)
 
-        for mongo_dir_path in sorted(cores_lookup.iterkeys()):
+        for mongo_dir_path in sorted(six.iterkeys(cores_lookup)):
             cores = cores_lookup[mongo_dir_path]
             mongo_host = os.path.basename(mongo_dir_path)
             test_id = os.path.basename(os.path.dirname(mongo_dir_path))
             message = _format_msg_body(cores)
-            results.append({
-                "status": "fail" if cores else "pass",
-                "test_file": 'core.{}.{}'.format(test_id, mongo_host),
-                "log_raw": message,
-                "start": 0,
-                "exit_code": 1 if cores else 0
-            })
+            results.append(
+                {
+                    "status": "fail" if cores else "pass",
+                    "test_file": "core.{}.{}".format(test_id, mongo_host),
+                    "log_raw": message,
+                    "start": 0,
+                    "exit_code": 1 if cores else 0,
+                }
+            )
             LOG.debug(message, cores=cores, test_id=test_id, mongo_host=mongo_host)
     return results

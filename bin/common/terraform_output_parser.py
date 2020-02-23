@@ -6,6 +6,7 @@ private IP addresses. This file will generate the file "infrastructure_provision
 from __future__ import print_function
 import logging
 import sys
+from six.moves import range
 
 LOG = logging.getLogger(__name__)
 
@@ -15,9 +16,16 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
     DSI Terraform output, this class takes input from stdin or file, parses it and generates
     YML infrastructure_provisioning.out.yml.
     """
+
     INSTANCE_TYPES = [
-        "private_config_ip", "private_ip_mc", "private_member_ip", "private_mongos_ip",
-        "public_config_ip", "public_ip_mc", "public_member_ip", "public_mongos_ip"
+        "private_config_ip",
+        "private_ip_mc",
+        "private_member_ip",
+        "private_mongos_ip",
+        "public_config_ip",
+        "public_ip_mc",
+        "public_member_ip",
+        "public_mongos_ip",
     ]
     """Constructor. Uses either data from a file (input_file), data passed in as a string
     (terraform_output), or from stdin if neither are set.
@@ -27,6 +35,7 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
     :param terraform_output: (Optional) String of terraform output to parse.
 
     """
+
     def __init__(self, config, input_file=None, terraform_output=None):
         self._file = input_file
         self._terraform_output = terraform_output
@@ -45,16 +54,15 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
                 # found category and IP address is not empty
                 # IP address could be empty if category instance count is set to 0
                 out_data[category] = []
-                LOG.debug('_get_ips and non-empty pub in self._ips for category %s', category)
+                LOG.debug("_get_ips and non-empty pub in self._ips for category %s", category)
             else:
                 # no ip address for this category, return the same back
                 return out_data
 
             for i in range(len(self._ips[priv])):
-                out_data[category].append({
-                    "public_ip": self._ips[pub][i],
-                    "private_ip": self._ips[priv][i]
-                })
+                out_data[category].append(
+                    {"public_ip": self._ips[pub][i], "private_ip": self._ips[priv][i]}
+                )
 
         return out_data
 
@@ -73,7 +81,7 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
         # configsvr IP addresses
         out_data = self._get_ips("public_config_ip", "private_config_ip", "configsvr", out_data)
 
-        self.config_obj['infrastructure_provisioning']['out'] = out_data
+        self.config_obj["infrastructure_provisioning"]["out"] = out_data
 
     def _parse_terraform_output(self):
         """To parse terraform output, and extract proper IP address"""
@@ -81,17 +89,17 @@ class TerraformOutputParser(object):  # pylint: disable=too-few-public-methods
             fread = self._terraform_output.splitlines()
         elif self._file is not None:
             LOG.info("Parse input file %s", self._file)
-            fread = open(self._file, 'r')
+            fread = open(self._file, "r")
         else:
             fread = sys.stdin
 
         # Read file and parse it.
         for line in fread:
-            items = line.rstrip('\n').split(" ")
+            items = line.rstrip("\n").split(" ")
             if items[0] in self.INSTANCE_TYPES:
                 instance_type = items[0]
                 LOG.debug("Found instance type %s", instance_type)
-                self._ips[instance_type] = [item for item in items[2:] if item != '']
+                self._ips[instance_type] = [item for item in items[2:] if item != ""]
 
     def write_output_files(self):
         """

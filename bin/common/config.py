@@ -35,15 +35,15 @@ class ConfigDict(dict):
 
     modules = [
         # These are in the order in which they are used
-        'bootstrap',
-        'runtime',
-        'runtime_secret',
-        'infrastructure_provisioning',
-        'workload_setup',
-        'mongodb_setup',
-        'test_control',
-        'analysis',
-        '_internal'
+        "bootstrap",
+        "runtime",
+        "runtime_secret",
+        "infrastructure_provisioning",
+        "workload_setup",
+        "mongodb_setup",
+        "test_control",
+        "analysis",
+        "_internal",
     ]
 
     def __init__(self, which_module_am_i):
@@ -89,23 +89,24 @@ class ConfigDict(dict):
         """
         loaded_files = []
         # defaults.yml
-        file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..',
-                                 'configurations', 'defaults.yml')
+        file_name = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "..", "..", "configurations", "defaults.yml"
+        )
         with open(file_name) as file_handle:
             self.defaults = _yaml_load(file_handle, file_name)
             loaded_files.append(file_name)
 
         # All module_name.yml and module_name.out.yml
         for module_name in self.modules:
-            file_name = module_name + '.yml'
+            file_name = module_name + ".yml"
             if os.path.isfile(file_name):
                 with open(file_name) as file_handle:
                     self.raw[module_name] = _yaml_load(file_handle, file_name)
                     loaded_files.append(file_name)
-            elif module_name != '_internal':
+            elif module_name != "_internal":
                 # Allow code to assume that first level of keys always exists
                 self.raw[module_name] = {}
-            file_name = module_name + '.out.yml'
+            file_name = module_name + ".out.yml"
             if os.path.isfile(file_name):
                 with open(file_name) as file_handle:
                     # Note: The .out.yml files will add a single key: ['module_name']['out']
@@ -118,32 +119,32 @@ class ConfigDict(dict):
                             loaded_files.append(file_name)
 
         # overrides.yml
-        file_name = 'overrides.yml'
+        file_name = "overrides.yml"
         if os.path.isfile(file_name):
             file_handle = open(file_name)
             self.overrides = _yaml_load(file_handle, file_name)
             file_handle.close()
             loaded_files.append(file_name)
 
-        LOG.info('Loaded DSI config files: %s', loaded_files)
+        LOG.info("Loaded DSI config files: %s", loaded_files)
         self.assert_valid_ids()
 
         return self
 
     def save(self):
         """Write contents of self.raw[self.module]['out'] to module_name.out.yml"""
-        file_name = self.module + '.out.yml'
-        file_handle = open(file_name, 'w')
-        out = {'out': self.raw[self.module]['out']}
+        file_name = self.module + ".out.yml"
+        file_handle = open(file_name, "w")
+        out = {"out": self.raw[self.module]["out"]}
         # yaml.safe_dump() handles unicode strings as if they were normal text. As they are!
         file_handle.write(yaml.safe_dump(out, default_flow_style=False))
         file_handle.close()
-        LOG.info('ConfigDict: Wrote file: %s', file_name)
+        LOG.info("ConfigDict: Wrote file: %s", file_name)
 
     def assert_valid_module(self, module_name):
         """Check that module_name is one of Distributed Performance 2.0 modules, or _internal."""
         if module_name not in self.modules:
-            raise ValueError('This is not a valid DSI module: ' + module_name)
+            raise ValueError("This is not a valid DSI module: " + module_name)
 
     def assert_valid_ids(self):
         """
@@ -184,7 +185,7 @@ class ConfigDict(dict):
                 # key, they will likewise get a ValueError.
                 continue
 
-            if key == 'id':
+            if key == "id":
                 validate_id(value, path, seen_ids, errs, self.module)
             else:
                 if isinstance(value, ConfigDict):
@@ -231,25 +232,30 @@ class ConfigDict(dict):
         current = self
         keys = ()
         for key in path:
-            keys += (str(key), )
+            keys += (str(key),)
             try:
                 current = current[key]
             except TypeError:
-                raise KeyError("ConfigDict: Key not found: {} in path {}".format(
-                    ".".join(keys), path))
+                raise KeyError(
+                    "ConfigDict: Key not found: {} in path {}".format(".".join(keys), path)
+                )
             except KeyError:
-                raise KeyError("ConfigDict: Key not found: {} in path {}".format(
-                    ".".join(keys), path))
+                raise KeyError(
+                    "ConfigDict: Key not found: {} in path {}".format(".".join(keys), path)
+                )
             except IndexError:
-                raise KeyError("ConfigDict: list index out of range: {} in path {}".format(
-                    ".".join(keys), path))
+                raise KeyError(
+                    "ConfigDict: list index out of range: {} in path {}".format(
+                        ".".join(keys), path
+                    )
+                )
 
         return current
 
     # Implementation of dict API
 
     def __repr__(self):
-        str_representation = '{'
+        str_representation = "{"
         i = 0
         for key in self.keys():
             if i > 0:
@@ -263,11 +269,11 @@ class ConfigDict(dict):
             else:
                 str_representation += str(self[key])
             i += 1
-        str_representation += '}'
+        str_representation += "}"
         return str_representation
 
     def __contains__(self, key):
-        return key in self.keys()
+        return key in list(self.keys())
 
     def get(self, key, default=None):
         try:
@@ -282,8 +288,8 @@ class ConfigDict(dict):
         defaults_keys = set()
         # Magic key: In a mongodb_setup.topology, if this is a mongod/mongos/configsvr node
         # always return a config_file key.
-        config_file_key = {'config_file'} if self.is_topology_node() else set()
-        rs_conf_key = {'rs_conf'} if self.is_topology_replset() else set()
+        config_file_key = {"config_file"} if self.is_topology_node() else set()
+        rs_conf_key = {"rs_conf"} if self.is_topology_replset() else set()
         if isinstance(self.raw, dict):
             raw_keys = set(self.raw.keys())
         if isinstance(self.overrides, dict):
@@ -362,10 +368,14 @@ class ConfigDict(dict):
             return value
 
         # For leaf nodes, check overrides and return it if specified
-        if self.overrides and \
-                isinstance(self.overrides, dict) and \
-                (not isinstance(self.raw.get(key, "some string"), (list, dict)) or
-                 (key in self.overrides and self.overrides.get(key) is None)):
+        if (
+            self.overrides
+            and isinstance(self.overrides, dict)
+            and (
+                not isinstance(self.raw.get(key, "some string"), (list, dict))
+                or (key in self.overrides and self.overrides.get(key) is None)
+            )
+        ):
             value = self.overrides.get(key)
             key_exists = key_exists or key in self.overrides
 
@@ -467,18 +477,17 @@ class ConfigDict(dict):
                 except:
                     path_from_root = copy.copy(self.path)
                     path_from_root.append(key)
-                    raise ValueError("ConfigDict error at {}: Cannot resolve variable "
-                                     "reference '{}', error at '{}': {} {}".format(
-                                         path_from_root, path, path,
-                                         sys.exc_info()[0],
-                                         sys.exc_info()[1]))
+                    raise ValueError(
+                        "ConfigDict error at {}: Cannot resolve variable "
+                        "reference '{}', error at '{}': {} {}".format(
+                            path_from_root, path, path, sys.exc_info()[0], sys.exc_info()[1]
+                        )
+                    )
             between_values = re.split(r"\$\{[^\{]*?\}", value)
 
             # If the variable reference is the entire value, then return the referenced value as it
             # is, including preserving type. Otherwise, concatenate back into a string.
-            if len(between_values) == 2 and \
-                    between_values[0] == '' and \
-                    between_values[1] == '':
+            if len(between_values) == 2 and between_values[0] == "" and between_values[1] == "":
                 value = values[0]
             else:
                 value = between_values.pop(0)
@@ -492,7 +501,7 @@ class ConfigDict(dict):
         """Split path.like.0.this into parts and return the list."""
         # pylint: disable=no-self-use
 
-        parts = path.split('.')
+        parts = path.split(".")
         # If an element in the path converts to integer, do so
         for i, element in enumerate(parts):
             if is_integer(element):
@@ -509,17 +518,18 @@ class ConfigDict(dict):
            This function does a similar merge for the rs_conf value for replsets."""
         # pylint: disable=too-many-boolean-expressions
 
-        if self.is_topology_node() and key == 'config_file':
+        if self.is_topology_node() and key == "config_file":
             # Note: In the below 2 lines, overrides and ${variables} are already applied
-            common_config = self.root['mongodb_setup'].get(self.topology_node_type() +
-                                                           '_config_file')
+            common_config = self.root["mongodb_setup"].get(
+                self.topology_node_type() + "_config_file"
+            )
             node_specific_config = self.raw.get(key, {})
             return self.get_merged_config_dict_value(common_config, node_specific_config, key), True
 
-        if self.is_topology_replset() and key == 'rs_conf':
+        if self.is_topology_replset() and key == "rs_conf":
             # Note: In the below 2 lines, overrides and ${variables} are already applied
-            common_rs_conf = self.root['mongodb_setup'].get('rs_conf')
-            replset_rs_conf = self.raw.get('rs_conf', {})
+            common_rs_conf = self.root["mongodb_setup"].get("rs_conf")
+            replset_rs_conf = self.raw.get("rs_conf", {})
             return self.get_merged_config_dict_value(common_rs_conf, replset_rs_conf, key), True
 
         return None, False
@@ -529,7 +539,7 @@ class ConfigDict(dict):
         """Merge config_dict1[key] and config_dict2[key] into a single ConfigDict object."""
         # Technically this works the same as if config_dict1 was the raw value
         # and config_dict2 is a dict with overrides. So let's reuse some code...
-        helper = ConfigDict('_internal')
+        helper = ConfigDict("_internal")
         helper.raw = {key: config_dict1}
         helper.overrides = {key: config_dict2}
         return helper[key]
@@ -546,27 +556,34 @@ class ConfigDict(dict):
         """
         # pylint: disable=too-many-boolean-expressions
         # Standalone nodes have a different path
-        if len(self.path) >= 3 and \
-                self.path[0] == 'mongodb_setup' and \
-                self.path[1] == 'topology' and \
-                isinstance(self.path[2], int) and \
-                ((isinstance(self.raw, dict) and
-                  self.raw.get('cluster_type') == 'standalone')
-                 or
-                 (isinstance(self.defaults, dict) and
-                  self.defaults.get('cluster_type') == 'standalone')
-                 or
-                 (isinstance(self.overrides, dict) and
-                  self.overrides.get('cluster_type') == 'standalone')):
+        if (
+            len(self.path) >= 3
+            and self.path[0] == "mongodb_setup"
+            and self.path[1] == "topology"
+            and isinstance(self.path[2], int)
+            and (
+                (isinstance(self.raw, dict) and self.raw.get("cluster_type") == "standalone")
+                or (
+                    isinstance(self.defaults, dict)
+                    and self.defaults.get("cluster_type") == "standalone"
+                )
+                or (
+                    isinstance(self.overrides, dict)
+                    and self.overrides.get("cluster_type") == "standalone"
+                )
+            )
+        ):
             return True
 
         # replset and sharded_cluster topologies
-        if len(self.path) >= 3 and \
-                self.path[0] == 'mongodb_setup' and \
-                self.path[1] == 'topology' and \
-                isinstance(self.path[2], int) and \
-                self.path[-2] in ('mongod', 'mongos', 'configsvr') and \
-                isinstance(self.path[-1], int):
+        if (
+            len(self.path) >= 3
+            and self.path[0] == "mongodb_setup"
+            and self.path[1] == "topology"
+            and isinstance(self.path[2], int)
+            and self.path[-2] in ("mongod", "mongos", "configsvr")
+            and isinstance(self.path[-1], int)
+        ):
             return True
 
         return False
@@ -576,34 +593,39 @@ class ConfigDict(dict):
 
         Note: This only works when called from get_node_mongo_config(). We don't guard against
         random results if calling it from elsewhere."""
-        if self.path[-2] in ('mongod', 'mongos', 'configsvr'):
+        if self.path[-2] in ("mongod", "mongos", "configsvr"):
             return self.path[-2]
         if is_integer(self.path[-1]):
-            return 'mongod'
+            return "mongod"
         return None
 
     def is_topology_replset(self):
-        '''Returns true if self.path is a cluster_type: replset node under mongodb_setup.topology.
+        """Returns true if self.path is a cluster_type: replset node under mongodb_setup.topology.
 
         Note: We cannot call self['cluster_type'] or self.get('cluster_type') in this function, as
         that would cause recursion. This causes a small restriction on defining topologies in the
         Yaml files: For a standalone node, the 'cluster_type' value must be a literal word, it
         cannot be a ${variable.reference}. It can however be defined in any of defaults.yml,
-        mongodb_setup.yml or overrides.yml.'''
+        mongodb_setup.yml or overrides.yml."""
         # pylint: disable=too-many-boolean-expressions
         # replset and sharded_cluster topologies
-        if len(self.path) >= 3 and \
-                self.path[0] == 'mongodb_setup' and \
-                self.path[1] == 'topology' and \
-                isinstance(self.path[2], int) and \
-                ((isinstance(self.raw, dict) and
-                  self.raw.get('cluster_type') == 'replset')
-                 or
-                 (isinstance(self.defaults, dict) and
-                  self.defaults.get('cluster_type') == 'replset')
-                 or
-                 (isinstance(self.overrides, dict) and
-                  self.overrides.get('cluster_type') == 'replset')):
+        if (
+            len(self.path) >= 3
+            and self.path[0] == "mongodb_setup"
+            and self.path[1] == "topology"
+            and isinstance(self.path[2], int)
+            and (
+                (isinstance(self.raw, dict) and self.raw.get("cluster_type") == "replset")
+                or (
+                    isinstance(self.defaults, dict)
+                    and self.defaults.get("cluster_type") == "replset"
+                )
+                or (
+                    isinstance(self.overrides, dict)
+                    and self.overrides.get("cluster_type") == "replset"
+                )
+            )
+        ):
             return True
 
         return False
@@ -611,16 +633,13 @@ class ConfigDict(dict):
     ### __setitem__() helpers
     def assert_writeable_path(self, key):
         """ConfigDict is read-only, except for self[self.module]['out'] namespace."""
-        if len(self.path) >= 2 and \
-                self.path[0] == self.module and \
-                self.path[1] == 'out':
+        if len(self.path) >= 2 and self.path[0] == self.module and self.path[1] == "out":
             return True
-        if len(self.path) == 1 and \
-                self.path[0] == self.module and \
-                key == 'out':
+        if len(self.path) == 1 and self.path[0] == self.module and key == "out":
             return True
-        raise KeyError('Only values under self["' + self.module +
-                       '"]["out"] are settable in this object')
+        raise KeyError(
+            'Only values under self["' + self.module + '"]["out"] are settable in this object'
+        )
 
 
 def copy_obj(obj):
@@ -674,52 +693,67 @@ def validate_id(value, path, ids, errs, src_file):
     """
 
     if not isinstance(value, six.string_types):
-        errs.append({
-            'err_type': 'Invalid Id Type',
-            'src_file': src_file,
-            'item': value,
-            'item_type': type(value),
-            'path': copy.deepcopy(path)
-        })
+        errs.append(
+            {
+                "err_type": "Invalid Id Type",
+                "src_file": src_file,
+                "item": value,
+                "item_type": type(value),
+                "path": copy.deepcopy(path),
+            }
+        )
     else:
         # check reserved words
         if is_reserved_word(value):
-            errs.append({
-                'err_type': 'Id is Reserved',
-                'src_file': src_file,
-                'item': value,
-                'item_type': type(value),
-                'path': copy.deepcopy(path)
-            })
+            errs.append(
+                {
+                    "err_type": "Id is Reserved",
+                    "src_file": src_file,
+                    "item": value,
+                    "item_type": type(value),
+                    "path": copy.deepcopy(path),
+                }
+            )
 
         # check uniqueness
         if value in ids:
-            errs.append({
-                'err_type': 'Duplicate Id',
-                'src_file': src_file,
-                'item': value,
-                'item_type': type(value),
-                'path': copy.deepcopy(path)
-            })
+            errs.append(
+                {
+                    "err_type": "Duplicate Id",
+                    "src_file": src_file,
+                    "item": value,
+                    "item_type": type(value),
+                    "path": copy.deepcopy(path),
+                }
+            )
         else:
             ids.add(value)
 
 
 class InvalidConfigurationException(Exception):
     """Indicates invalid configuration either from YAML or from user modifying 'out' config."""
+
     def __init__(self, errors):
         self.errors = errors
         key_info = "Keys must be strings and match {}.".format(_VALID_KEY_REX_SRC)
         value_info = "Values must be of type {}.".format(
-            list((it.__name__ for it in _VALID_SCALAR_TYPES)))
+            list((it.__name__ for it in _VALID_SCALAR_TYPES))
+        )
         id_info = "Id fields must be unique in a file and cannot be reserved words."
-        errs = ", ".join([
-            u"😱 {} [{}] of type [{}] at path [{}] in file [{}]".format(
-                err['err_type'], err['item'], err['item_type'].__name__,
-                ".".join(str(p) for p in err['path']), err['src_file']) for err in self.errors
-        ])
+        errs = ", ".join(
+            [
+                u"😱 {} [{}] of type [{}] at path [{}] in file [{}]".format(
+                    err["err_type"],
+                    err["item"],
+                    err["item_type"].__name__,
+                    ".".join(str(p) for p in err["path"]),
+                    err["src_file"],
+                )
+                for err in self.errors
+            ]
+        )
         message = " ".join([key_info, value_info, id_info, errs])
-        super(InvalidConfigurationException, self).__init__(message.encode('utf-8'))
+        super(InvalidConfigurationException, self).__init__(message.encode("utf-8"))
 
 
 def _yaml_load(handle, path):
@@ -734,7 +768,7 @@ def _yaml_load(handle, path):
     return loaded
 
 
-_VALID_KEY_REX_SRC = r'^[A-Za-z][A-Za-z0-9\-_]*$'
+_VALID_KEY_REX_SRC = r"^[A-Za-z][A-Za-z0-9\-_]*$"
 """All ConfigDict keys must match this regex."""
 # Create a separate object since str() of a compiled regex doesn't give you the text.
 _VALID_KEY_REX = re.compile(_VALID_KEY_REX_SRC)
@@ -748,12 +782,22 @@ _VALID_SCALAR_TYPES = tuple(list(six.string_types) + [float, int, type(None)])
 
 # Words matching /on_.*/ as well as those enumerated below (in alphabetical order) are reserved in
 # config files. Use is_reserved_word to test if a word is reserved.
-_RESERVED_REX = re.compile(r'on_.*')
+_RESERVED_REX = re.compile(r"on_.*")
 
 _RESERVED_WORDS = [
-    'between_tests', 'post_cluster_restart', 'post_cluster_start', 'post_cluster_stop', 'post_task',
-    'post_test', 'pre_cluster_restart', 'pre_cluster_start', 'pre_cluster_stop', 'pre_task',
-    'pre_test', 'workload_setup', 'upon_error'
+    "between_tests",
+    "post_cluster_restart",
+    "post_cluster_start",
+    "post_cluster_stop",
+    "post_task",
+    "post_test",
+    "pre_cluster_restart",
+    "pre_cluster_start",
+    "pre_cluster_stop",
+    "pre_task",
+    "pre_test",
+    "workload_setup",
+    "upon_error",
 ]
 
 
@@ -766,6 +810,7 @@ def _check_object(obj, src_file=None):
     :param obj: object to check for validity as use as a ConfigDict entry.
     :raises InvalidConfigurationExcetion if keys or types are insuitable.
     """
+
     def explore(obj, path, ids, errs):
         """
         :param obj: object (scalar or complex type) we're traversing
@@ -778,14 +823,16 @@ def _check_object(obj, src_file=None):
             for key in iter(obj.keys()):
                 path.append(key)
                 if not isinstance(key, _VALID_KEY_TYPES) or not _VALID_KEY_REX.match(key):
-                    errs.append({
-                        'err_type': 'Invalid Key',
-                        'src_file': src_file,
-                        'item': key,
-                        'item_type': type(key),
-                        'path': copy.deepcopy(path),
-                    })
-                if key == 'id':
+                    errs.append(
+                        {
+                            "err_type": "Invalid Key",
+                            "src_file": src_file,
+                            "item": key,
+                            "item_type": type(key),
+                            "path": copy.deepcopy(path),
+                        }
+                    )
+                if key == "id":
                     validate_id(obj[key], path, ids, errs, src_file)
                 explore(obj[key], path, ids, errs)
                 path.pop()
@@ -797,13 +844,15 @@ def _check_object(obj, src_file=None):
                 path.pop()
                 index = index + 1
         elif not isinstance(obj, _VALID_SCALAR_TYPES):
-            errs.append({
-                'err_type': 'Invalid Value Type',
-                'src_file': src_file,
-                'item': obj,
-                'item_type': type(obj),
-                'path': copy.deepcopy(path)
-            })
+            errs.append(
+                {
+                    "err_type": "Invalid Value Type",
+                    "src_file": src_file,
+                    "item": obj,
+                    "item_type": type(obj),
+                    "path": copy.deepcopy(path),
+                }
+            )
 
     path = []
     ids = set()
@@ -813,8 +862,8 @@ def _check_object(obj, src_file=None):
         raise InvalidConfigurationException(errs)
 
 
-if __name__ == '__main__':
-    with open(sys.argv[1], 'r') as w:
+if __name__ == "__main__":
+    with open(sys.argv[1], "r") as w:
         print("CHECKING {}".format(sys.argv[1]))
         _yaml_load(w, sys.argv[1])
         print("OKAY {}".format(sys.argv[1]))

@@ -1,4 +1,3 @@
-#!/usr/bin/env python2.7
 """Module of utility functions for analysis"""
 
 from __future__ import print_function
@@ -10,6 +9,7 @@ import json
 import os
 
 from dateutil import tz, parser as date_parser
+import six
 
 
 def get_project_variant_rules(config, variant, rule):
@@ -22,9 +22,9 @@ def get_project_variant_rules(config, variant, rule):
     :type rule: str
     :rtype: list(str)
     """
-    value = config['analysis']['rules'][rule]['default']
-    if variant in config['analysis']['rules'][rule]:
-        value = config['analysis']['rules'][rule][variant]
+    value = config["analysis"]["rules"][rule]["default"]
+    if variant in config["analysis"]["rules"][rule]:
+        value = config["analysis"]["rules"][rule][variant]
     return value
 
 
@@ -49,8 +49,11 @@ def get_test_times(perf_json_or_path):
         return [(num_or_str_to_date(perf_json["start"]), num_or_str_to_date(perf_json["end"]))]
 
     except KeyError:
-        return [(num_or_str_to_date(test["start"]), num_or_str_to_date(test["end"]))
-                for test in perf_json["results"] if "start" in test and "end" in test]
+        return [
+            (num_or_str_to_date(test["start"]), num_or_str_to_date(test["end"]))
+            for test in perf_json["results"]
+            if "start" in test and "end" in test
+        ]
 
 
 def num_or_str_to_date(ts_or_date_str):
@@ -59,8 +62,11 @@ def num_or_str_to_date(ts_or_date_str):
     string, to a `datetime` object.
     """
 
-    conv_func = date_parser.parse if isinstance(ts_or_date_str, basestring) else \
-        _unix_ts_to_utc_datetime
+    conv_func = (
+        date_parser.parse
+        if isinstance(ts_or_date_str, six.string_types)
+        else _unix_ts_to_utc_datetime
+    )
     return conv_func(ts_or_date_str)
 
 
@@ -91,8 +97,8 @@ def get_thread_sum(perf_json="perf.json"):
     threads = 0
     if os.path.isfile(perf_json):
         task_results = get_json(perf_json)
-        for test_obj in task_results.get('results', []):
-            threads += max(int(x) for x in test_obj['results'].keys())
+        for test_obj in task_results.get("results", []):
+            threads += max(int(x) for x in test_obj["results"].keys())
         return threads
     return 999999999999
 

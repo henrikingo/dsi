@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 Given a list of commands, run threads and return the results as a list. If you want to give
 argument to a command, wrap it in a partial using functools.
@@ -7,7 +6,7 @@ example:
    2. partial(work, arg1, arg2)
 """
 
-import Queue
+import six.moves.queue
 import logging
 import sys
 import threading
@@ -24,14 +23,15 @@ def run_threads(commands, daemon=False):
     if not commands:
         return []
     threads = []
-    thread_results = Queue.Queue(maxsize=len(commands))
-    thread_exceptions_bucket = Queue.Queue()
+    thread_results = six.moves.queue.Queue(maxsize=len(commands))
+    thread_exceptions_bucket = six.moves.queue.Queue()
     stop_thread_execution = threading.Event()
     try:
         for command in commands:
-            thread = threading.Thread(target=wrap,
-                                      args=(command, thread_results, thread_exceptions_bucket,
-                                            stop_thread_execution))
+            thread = threading.Thread(
+                target=wrap,
+                args=(command, thread_results, thread_exceptions_bucket, stop_thread_execution),
+            )
             thread.daemon = daemon
             threads.append(thread)
             thread.start()
@@ -46,7 +46,7 @@ def run_threads(commands, daemon=False):
         stop_thread_execution.set()
         if not thread_exceptions_bucket.empty():
             exception_info = thread_exceptions_bucket.get()
-            raise (exception_info[0], exception_info[1], exception_info[2])
+            raise exception_info[0]
         return list(thread_results.queue)
     except Exception as exc:
         stop_thread_execution.set()

@@ -17,7 +17,7 @@ import common.host
 
 LOG = logging.getLogger(__name__)
 # This stream only log error or above messages
-ERROR_ONLY = logging.getLogger('error_only')
+ERROR_ONLY = logging.getLogger("error_only")
 
 
 class RemoteHost(common.host.Host):
@@ -33,7 +33,7 @@ class RemoteHost(common.host.Host):
         :param pem_file: ssh pem file
         """
         super(RemoteHost, self).__init__(hostname, mongodb_auth_settings, use_tls)
-        LOG.debug('hostname: %s, username: %s, pem_file: %s', hostname, username, pem_file)
+        LOG.debug("hostname: %s, username: %s, pem_file: %s", hostname, username, pem_file)
         try:
             ssh, ftp = self.connected_ssh(hostname, username, pem_file)
             self._ssh = ssh
@@ -43,14 +43,16 @@ class RemoteHost(common.host.Host):
             sys.exit(1)
 
     # pylint: disable=too-many-arguments
-    def exec_command(self,
-                     argv,
-                     stdout=None,
-                     stderr=None,
-                     get_pty=False,
-                     max_time_ms=None,
-                     no_output_timeout_ms=None,
-                     quiet=False):
+    def exec_command(
+        self,
+        argv,
+        stdout=None,
+        stderr=None,
+        get_pty=False,
+        max_time_ms=None,
+        no_output_timeout_ms=None,
+        quiet=False,
+    ):
         """
         Execute the argv command on the remote host and log the output.
 
@@ -63,7 +65,7 @@ class RemoteHost(common.host.Host):
         """
         Creates a file on the remote host
         """
-        remote_file = self.ftp.file(remote_path, 'w')
+        remote_file = self.ftp.file(remote_path, "w")
         with closing(remote_file):
             remote_file.write(file_contents)
             remote_file.flush()
@@ -107,15 +109,16 @@ class RemoteHost(common.host.Host):
         :param temp_dir: Temporary directory to store intermediary tarball
         :raises: HostException on error
         """
-        tarball_name = '{}.tar'.format(os.path.basename(remote_path))
+        tarball_name = "{}.tar".format(os.path.basename(remote_path))
         remote_parent_dir = os.path.dirname(remote_path)
         remote_tarball_path = os.path.join(remote_parent_dir, tarball_name)
 
-        tarball_path = shutil.make_archive(os.path.join(temp_dir, tarball_name), 'tar', local_path,
-                                           '.')
+        tarball_path = shutil.make_archive(
+            os.path.join(temp_dir, tarball_name), "tar", local_path, "."
+        )
 
         # Make way and upload it
-        cmd = ['mkdir', '-p', remote_path]
+        cmd = ["mkdir", "-p", remote_path]
         exit_status = self.exec_command(cmd)
         host_utils.raise_if_not_ok(exit_status, cmd)
 
@@ -126,12 +129,12 @@ class RemoteHost(common.host.Host):
             host_utils.reraise_as_host_exception(e)
 
         # Untar it. Have to rely on shell because tarfile doesn't operate remotely.
-        cmd = ['tar', 'xf', remote_tarball_path, '-C', remote_path]
+        cmd = ["tar", "xf", remote_tarball_path, "-C", remote_path]
         exit_status = self.exec_command(cmd)
         host_utils.raise_if_not_ok(exit_status, cmd)
 
         # Cleanup remote
-        self.exec_command(['rm', remote_tarball_path])
+        self.exec_command(["rm", remote_tarball_path])
 
     def _upload_single_file(self, local_path, remote_path):
         """
@@ -244,8 +247,8 @@ class RemoteHost(common.host.Host):
             # https://stackoverflow.com/questions/23666600/ssh-key-forwarding-using-python-paramiko
             session = ssh.get_transport().open_session()
             paramiko.agent.AgentRequestHandler(session)
-            LOG.info('Successfully connected to %s', host)
+            LOG.info("Successfully connected to %s", host)
         except (paramiko.SSHException, socket.error) as err:
-            LOG.exception('Failed to connect to %s@%s', user, host)
+            LOG.exception("Failed to connect to %s@%s", user, host)
             raise err
         return ssh, ftp

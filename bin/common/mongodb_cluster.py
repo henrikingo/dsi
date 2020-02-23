@@ -16,6 +16,8 @@ from delay import HasDelay
 
 # pylint: disable=too-many-instance-attributes
 import mongodb_setup_helpers
+from six.moves import range
+from six.moves import zip
 
 LOG = logging.getLogger(__name__)
 
@@ -31,29 +33,30 @@ def create_cluster(topology, delay_graph, config):
     :param delay_graph: DelayGraph object for the cluster.
     :param config: root ConfigDict
     """
-    cluster_type = topology['cluster_type']
-    LOG.info('creating topology: %s', cluster_type)
-    if cluster_type == 'standalone':
-        node_topology = NodeTopologyConfig(topology=topology,
-                                           root_config=config,
-                                           delay_graph=delay_graph)
+    cluster_type = topology["cluster_type"]
+    LOG.info("creating topology: %s", cluster_type)
+    if cluster_type == "standalone":
+        node_topology = NodeTopologyConfig(
+            topology=topology, root_config=config, delay_graph=delay_graph
+        )
         return MongoNode(node_topology)
-    if cluster_type == 'replset':
-        repl_topology = ReplTopologyConfig(topology=topology,
-                                           root_config=config,
-                                           delay_graph=delay_graph)
+    if cluster_type == "replset":
+        repl_topology = ReplTopologyConfig(
+            topology=topology, root_config=config, delay_graph=delay_graph
+        )
         return ReplSet(repl_topology)
-    if cluster_type == 'sharded_cluster':
-        sharded_topology = ShardedTopologyConfig(topology=topology,
-                                                 root_config=config,
-                                                 delay_graph=delay_graph)
+    if cluster_type == "sharded_cluster":
+        sharded_topology = ShardedTopologyConfig(
+            topology=topology, root_config=config, delay_graph=delay_graph
+        )
         return ShardedCluster(sharded_topology)
-    LOG.fatal('unknown cluster_type: %s', cluster_type)
+    LOG.fatal("unknown cluster_type: %s", cluster_type)
     return sys.exit(1)
 
 
 class MongoCluster(HasDelay):
     """ Abstract base class for mongo clusters """
+
     def __init__(self, auth_settings):
         """
         :param auth_settings: The username and password needed to connect to this cluster.
@@ -119,6 +122,7 @@ class MongoCluster(HasDelay):
 
 class MongoNode(MongoCluster):
     """Represents a mongo[ds] program on a remote host."""
+
     def __init__(self, topology):
         """
         :param topology: A NodeTopologyConfig object.
@@ -171,13 +175,13 @@ class MongoNode(MongoCluster):
 
     def wait_until_up(self):
         """ Checks to make sure node is up and accessible"""
-        js_string = '''
+        js_string = """
             i = 0
             while (db.serverStatus().ok != 1 && i < 20) {{
                 print ("Waiting for node {} to come up");
                 sleep(1000);
                 i += 1; }}
-            assert(db.serverStatus().ok == 1)'''
+            assert(db.serverStatus().ok == 1)"""
         i = 0
         while not self.run_mongo_shell(js_string.format(self.net_config.public_ip)) and i < 10:
             i += 1
@@ -190,8 +194,9 @@ class MongoNode(MongoCluster):
     def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None):
         self.host.kill_mongo_procs()
 
-        setup_cmd_args = self.mongo_config.get_setup_command_args(restart_clean_db_dir,
-                                                                  restart_clean_logs)
+        setup_cmd_args = self.mongo_config.get_setup_command_args(
+            restart_clean_db_dir, restart_clean_logs
+        )
         commands = MongoNode._generate_setup_commands(setup_cmd_args)
         return self.host.run(commands)
 
@@ -199,63 +204,71 @@ class MongoNode(MongoCluster):
     def _generate_setup_commands(setup_args):
         commands = []
         # Clean the logs and diagnostic data
-        if setup_args['clean_logs']:
-            commands.append(['rm', '-rf', os.path.join(setup_args['logdir'], '*.log')])
-            commands.append(['rm', '-rf', os.path.join(setup_args['logdir'], 'core.*')])
-            if not setup_args['is_mongos']:
+        if setup_args["clean_logs"]:
+            commands.append(["rm", "-rf", os.path.join(setup_args["logdir"], "*.log")])
+            commands.append(["rm", "-rf", os.path.join(setup_args["logdir"], "core.*")])
+            if not setup_args["is_mongos"]:
                 commands.append(
-                    ['rm', '-rf',
-                     os.path.join(setup_args['dbdir'], 'diagnostic.data', '*')])
+                    ["rm", "-rf", os.path.join(setup_args["dbdir"], "diagnostic.data", "*")]
+                )
         # Create the data/logs directories
-        commands.append(['mkdir', '-p', setup_args['logdir']])
+        commands.append(["mkdir", "-p", setup_args["logdir"]])
 
-        if setup_args['dbdir'] and setup_args['clean_db_dir']:
+        if setup_args["dbdir"] and setup_args["clean_db_dir"]:
             # Deleting diagnostic.data is governed by clean_logs. Don't delete it here.
             # When diagnostic.data doesn't exist, just create an empty one to avoid errors
-            commands.append(['mkdir', '-p', os.path.join(setup_args['dbdir'], 'diagnostic.data')])
-            commands.append(['rm', '-rf', os.path.join(setup_args['logdir'], 'diagnostic.data')])
+            commands.append(["mkdir", "-p", os.path.join(setup_args["dbdir"], "diagnostic.data")])
+            commands.append(["rm", "-rf", os.path.join(setup_args["logdir"], "diagnostic.data")])
             commands.append(
-                ['mv',
-                 os.path.join(setup_args['dbdir'], 'diagnostic.data'), setup_args['logdir']])
+                ["mv", os.path.join(setup_args["dbdir"], "diagnostic.data"), setup_args["logdir"]]
+            )
 
-            commands.append(['rm', '-rf', setup_args['dbdir']])
+            commands.append(["rm", "-rf", setup_args["dbdir"]])
 
-            if setup_args['use_journal_mnt']:
-                commands.append(['rm', '-rf', setup_args['journal_dir']])
+            if setup_args["use_journal_mnt"]:
+                commands.append(["rm", "-rf", setup_args["journal_dir"]])
 
-            commands.append(['mkdir', '-p', setup_args['dbdir']])
+            commands.append(["mkdir", "-p", setup_args["dbdir"]])
 
             commands.append(
-                ['mv',
-                 os.path.join(setup_args['logdir'], 'diagnostic.data'), setup_args['dbdir']])
+                ["mv", os.path.join(setup_args["logdir"], "diagnostic.data"), setup_args["dbdir"]]
+            )
 
             # If not clean_db_dir assume that this has already been done.
             # Create separate journal directory and link to the database
-            if setup_args['use_journal_mnt']:
-                commands.append(['mkdir', '-p', setup_args['journal_dir']])
-                commands.append([
-                    'ln', '-s', setup_args['journal_dir'],
-                    os.path.join(setup_args['dbdir'], 'journal')
-                ])
+            if setup_args["use_journal_mnt"]:
+                commands.append(["mkdir", "-p", setup_args["journal_dir"]])
+                commands.append(
+                    [
+                        "ln",
+                        "-s",
+                        setup_args["journal_dir"],
+                        os.path.join(setup_args["dbdir"], "journal"),
+                    ]
+                )
 
         return commands
 
     # pylint: disable=unused-argument
     def launch_cmd(self, use_numactl=True, enable_auth=False):
         """Returns the command to start this node."""
-        remote_file_name = '/tmp/mongo_port_{0}.conf'.format(self.net_config.port)
+        remote_file_name = "/tmp/mongo_port_{0}.conf".format(self.net_config.port)
         self.host.create_file(remote_file_name, self.mongo_config.contents)
-        self.host.run(['cat', remote_file_name])
+        self.host.run(["cat", remote_file_name])
 
         cmd = [
-            os.path.join(self.mongo_config.bin_dir, self.mongo_config.mongo_program), "--config",
-            remote_file_name
+            os.path.join(self.mongo_config.bin_dir, self.mongo_config.mongo_program),
+            "--config",
+            remote_file_name,
         ]
 
         if use_numactl and self.mongo_config.numactl_prefix:
             if not isinstance(self.mongo_config.numactl_prefix, list):
-                raise ValueError('numactl_prefix must be a list of commands, given: {}'.format(
-                    self.mongo_config.numactl_prefix))
+                raise ValueError(
+                    "numactl_prefix must be a list of commands, given: {}".format(
+                        self.mongo_config.numactl_prefix
+                    )
+                )
             cmd = self.mongo_config.numactl_prefix + cmd
 
         LOG.debug("cmd is %s", str(cmd))
@@ -286,7 +299,7 @@ class MongoNode(MongoCluster):
             :method:`Host.exec_command`
         :return: True if the mongo shell exits successfully
         """
-        remote_file_name = '/tmp/mongo_port_{0}.js'.format(self.net_config.port)
+        remote_file_name = "/tmp/mongo_port_{0}.js".format(self.net_config.port)
         # Value of auth_enabled changes during the lifetime of a MongoNode, so we have to tell
         # the host about auth settings on a case by case basis.
         if self.auth_enabled:
@@ -294,28 +307,33 @@ class MongoNode(MongoCluster):
         else:
             self.host.mongodb_auth_settings = None
 
-        if self.host.exec_mongo_command(js_string,
-                                        remote_file_name=remote_file_name,
-                                        connection_string="localhost:" + str(self.net_config.port),
-                                        max_time_ms=max_time_ms) != 0:
+        if (
+            self.host.exec_mongo_command(
+                js_string,
+                remote_file_name=remote_file_name,
+                connection_string="localhost:" + str(self.net_config.port),
+                max_time_ms=max_time_ms,
+            )
+            != 0
+        ):
             self.dump_mongo_log()
             return False
         return True
 
     def dump_mongo_log(self):
         """Dump the mongo[ds] log file to the process log"""
-        LOG.info('Dumping log for node %s', self.hostport_public())
-        self.host.run(['tail', '-n', '100', self.mongo_config.log_path])
+        LOG.info("Dumping log for node %s", self.hostport_public())
+        self.host.run(["tail", "-n", "100", self.mongo_config.log_path])
 
     def hostport_private(self):
         """Returns the string representation this host/port."""
-        return '{0}:{1}'.format(self.net_config.private_ip, self.net_config.port)
+        return "{0}:{1}".format(self.net_config.private_ip, self.net_config.port)
 
     connection_string_private = hostport_private
 
     def hostport_public(self):
         """Returns the string representation this host/port."""
-        return '{0}:{1}'.format(self.net_config.public_ip, self.net_config.port)
+        return "{0}:{1}".format(self.net_config.public_ip, self.net_config.port)
 
     connection_string_public = hostport_public
 
@@ -330,18 +348,27 @@ class MongoNode(MongoCluster):
             if auth_enabled is not None:
                 self.auth_enabled = auth_enabled
             for _ in range(retries):
-                self.run_mongo_shell('db.getSiblingDB("admin").shutdownServer({})'.format(
-                    self.mongo_config.shutdown_options),
-                                     max_time_ms=max_time_ms)
-                if self.host.run(['pgrep -l', 'mongo']):
-                    LOG.warning("Mongo %s:%s did not shutdown yet", self.net_config.public_ip,
-                                self.net_config.port)
+                self.run_mongo_shell(
+                    'db.getSiblingDB("admin").shutdownServer({})'.format(
+                        self.mongo_config.shutdown_options
+                    ),
+                    max_time_ms=max_time_ms,
+                )
+                if self.host.run(["pgrep -l", "mongo"]):
+                    LOG.warning(
+                        "Mongo %s:%s did not shutdown yet",
+                        self.net_config.public_ip,
+                        self.net_config.port,
+                    )
                 else:
                     return True
                 time.sleep(1)
         except Exception:  # pylint: disable=broad-except
-            LOG.error("Error shutting down MongoNode at %s:%s", self.net_config.public_ip,
-                      self.net_config.port)
+            LOG.error(
+                "Error shutting down MongoNode at %s:%s",
+                self.net_config.public_ip,
+                self.net_config.port,
+            )
         return False
 
     def destroy(self, max_time_ms):
@@ -359,7 +386,7 @@ class MongoNode(MongoCluster):
             self.host.kill_mongo_procs()
 
             if self.mongo_config.dbdir:
-                self.host.run(['rm', '-rf', os.path.join(self.mongo_config.dbdir, 'mongod.lock')])
+                self.host.run(["rm", "-rf", os.path.join(self.mongo_config.dbdir, "mongod.lock")])
 
     def close(self):
         """Closes SSH connections to remote hosts."""
@@ -367,11 +394,12 @@ class MongoNode(MongoCluster):
 
     def __str__(self):
         """String describing this node"""
-        return '{}: {}'.format(self.mongo_config.mongo_program, self.hostport_public())
+        return "{}: {}".format(self.mongo_config.mongo_program, self.hostport_public())
 
 
 class ReplSet(MongoCluster):
     """Represents a replica set on remote hosts."""
+
     def __init__(self, topology):
         """
         :param topology: A ReplTopologyConfig object describing this replica set.
@@ -395,9 +423,9 @@ class ReplSet(MongoCluster):
         max_node = self.nodes[0]
         max_priority = -1
         for node, member in zip(self.nodes, self.topology_config.rs_conf_members):
-            if 'priority' in member and member['priority'] > max_priority:
+            if "priority" in member and member["priority"] > max_priority:
                 max_node = node
-                max_priority = member['priority']
+                max_priority = member["priority"]
         return max_node
 
     def reset_delays(self):
@@ -410,7 +438,7 @@ class ReplSet(MongoCluster):
 
     def wait_until_up(self):
         """ Checks and waits for all nodes in replica set to be either PRIMARY or SECONDARY"""
-        primary_js_string = '''
+        primary_js_string = """
             i = 0;
             while (!rs.isMaster().ismaster && i < 120) {{
                 print("Waiting for expected primary to become master... attempt = " + i);
@@ -420,19 +448,19 @@ class ReplSet(MongoCluster):
             assert(rs.isMaster().ismaster);
             rs.slaveOk();
             print("rs.status(): " + tojson(rs.status()));
-            print("rs.config(): " + tojson(rs.config()));'''
+            print("rs.config(): " + tojson(rs.config()));"""
         # Wait for Primary to be up
         primary = self.highest_priority_node()
         if not self.run_mongo_shell(primary_js_string):
             LOG.error("RS Node %s not up as primary", primary.net_config.public_ip)
             return False
 
-        js_string = '''
+        js_string = """
             i = 0
             while(!rs.isMaster().ismaster && !rs.isMaster().secondary && i < 20) {{
                 print ("Waiting for node {} to come up");
                 sleep(1000);
-                i += 1; }}'''
+                i += 1; }}"""
         # Make sure all nodes are primary or secondary
         for node in self.nodes:
             if not node.run_mongo_shell(js_string.format(node.net_config.public_ip)):
@@ -442,27 +470,37 @@ class ReplSet(MongoCluster):
 
     def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None):
         return all(
-            run_threads([
-                partial(node.setup_host,
+            run_threads(
+                [
+                    partial(
+                        node.setup_host,
                         restart_clean_db_dir=restart_clean_db_dir,
-                        restart_clean_logs=restart_clean_logs) for node in self.nodes
-            ],
-                        daemon=True))
+                        restart_clean_logs=restart_clean_logs,
+                    )
+                    for node in self.nodes
+                ],
+                daemon=True,
+            )
+        )
 
     def launch(self, initialize=True, use_numactl=True, enable_auth=False):
         """Starts the replica set.
         :param boolean initialize: Initialize the replica set"""
         if not all(
-                run_threads([
+            run_threads(
+                [
                     partial(
-                        node.launch, initialize, use_numactl=use_numactl, enable_auth=enable_auth)
+                        node.launch, initialize, use_numactl=use_numactl, enable_auth=enable_auth
+                    )
                     for node in self.nodes
                 ],
-                            daemon=True)):
+                daemon=True,
+            )
+        ):
             return False
         self._set_explicit_priorities()
         if initialize:
-            LOG.info('Configuring replica set: %s', self.topology_config.name)
+            LOG.info("Configuring replica set: %s", self.topology_config.name)
             if not self.run_mongo_shell(self.topology_config.get_init_code(self.nodes)):
                 return False
         # Wait for all nodes to be up
@@ -472,11 +510,11 @@ class ReplSet(MongoCluster):
         """To make other things easier, we set explicit priorities for all replica set nodes."""
         # Give the first host the highest priority so it will become
         # primary. This is the default behavior.
-        if not 'priority' in self.topology_config.rs_conf_members[0]:
-            self.topology_config.rs_conf_members[0]['priority'] = DEFAULT_MEMBER_PRIORITY + 1
+        if not "priority" in self.topology_config.rs_conf_members[0]:
+            self.topology_config.rs_conf_members[0]["priority"] = DEFAULT_MEMBER_PRIORITY + 1
         for member in self.topology_config.rs_conf_members:
-            if not 'priority' in member:
-                member['priority'] = DEFAULT_MEMBER_PRIORITY
+            if not "priority" in member:
+                member["priority"] = DEFAULT_MEMBER_PRIORITY
 
     def run_mongo_shell(self, js_string, max_time_ms=None):
         """
@@ -503,8 +541,11 @@ class ReplSet(MongoCluster):
             :method:`Host.exec_command`
         """
         return all(
-            run_threads([partial(node.shutdown, max_time_ms, auth_enabled) for node in self.nodes],
-                        daemon=True))
+            run_threads(
+                [partial(node.shutdown, max_time_ms, auth_enabled) for node in self.nodes],
+                daemon=True,
+            )
+        )
 
     def destroy(self, max_time_ms):
         """Kills the remote replica members.
@@ -519,10 +560,10 @@ class ReplSet(MongoCluster):
 
     def connection_string(self, hostport_fn):
         """Returns the connection string using the hostport_fn function"""
-        rs_str = ['{0}/{1}'.format(self.topology_config.name, hostport_fn(self.nodes[0]))]
+        rs_str = ["{0}/{1}".format(self.topology_config.name, hostport_fn(self.nodes[0]))]
         for node in self.nodes[1:]:
             rs_str.append(hostport_fn(node))
-        return ','.join(rs_str)
+        return ",".join(rs_str)
 
     def connection_string_private(self):
         """Returns the string representation this replica set."""
@@ -534,11 +575,12 @@ class ReplSet(MongoCluster):
 
     def __str__(self):
         """String describing this ReplSet"""
-        return 'ReplSet: {}'.format(self.connection_string_public())
+        return "ReplSet: {}".format(self.connection_string_public())
 
 
 class ShardedCluster(MongoCluster):
     """Represents a sharded cluster on remote hosts."""
+
     def __init__(self, topology):
         """
         :param topology: A ShardedTopologyConfig object representing this sharded cluster.
@@ -565,40 +607,49 @@ class ShardedCluster(MongoCluster):
         """Checks to make sure sharded cluster is up and
         accessible. Specifically checking that the mognos's are up"""
         num_shards = len(self.shards)
-        js_string = '''
+        js_string = """
             db = db.getSiblingDB("config");
             i = 0;
             while (db.shards.find().itcount() < {0} && i < 10) {{
                 print ("Waiting for mongos {1} to see {0} shards attempt= " + i);
                 sleep(1000);
                 i += 1; }}
-            assert (db.shards.find().itcount() == {0}) '''
+            assert (db.shards.find().itcount() == {0}) """
         for mongos in self.mongoses:
-            if not mongos.run_mongo_shell(js_string.format(num_shards,
-                                                           mongos.net_config.public_ip)):
-                LOG.error("Mongos %s does not see right number of shards at end of wait_until_up",
-                          mongos.net_config.public_ip)
+            if not mongos.run_mongo_shell(
+                js_string.format(num_shards, mongos.net_config.public_ip)
+            ):
+                LOG.error(
+                    "Mongos %s does not see right number of shards at end of wait_until_up",
+                    mongos.net_config.public_ip,
+                )
                 return False
         return True
 
     def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None):
         commands = [
-            partial(self.config_svr.setup_host,
-                    restart_clean_db_dir=restart_clean_db_dir,
-                    restart_clean_logs=restart_clean_logs)
+            partial(
+                self.config_svr.setup_host,
+                restart_clean_db_dir=restart_clean_db_dir,
+                restart_clean_logs=restart_clean_logs,
+            )
         ]
         commands.extend(
             partial(
                 shard.setup_host,
                 restart_clean_db_dir=restart_clean_db_dir,
                 restart_clean_logs=restart_clean_logs,
-            ) for shard in self.shards)
+            )
+            for shard in self.shards
+        )
         commands.extend(
             partial(
                 mongos.setup_host,
                 restart_clean_db_dir=restart_clean_db_dir,
                 restart_clean_logs=restart_clean_logs,
-            ) for mongos in self.mongoses)
+            )
+            for mongos in self.mongoses
+        )
         return all(run_threads(commands, daemon=True))
 
     def launch(self, initialize=True, use_numactl=True, enable_auth=False):
@@ -606,42 +657,55 @@ class ShardedCluster(MongoCluster):
 
         :param boolean initialize: Initialize the cluster
         """
-        LOG.info('Launching sharded cluster...')
+        LOG.info("Launching sharded cluster...")
         commands = [
-            partial(self.config_svr.launch,
-                    initialize=initialize,
-                    use_numactl=False,
-                    enable_auth=enable_auth)
+            partial(
+                self.config_svr.launch,
+                initialize=initialize,
+                use_numactl=False,
+                enable_auth=enable_auth,
+            )
         ]
         commands.extend(
-            partial(shard.launch,
-                    initialize=initialize,
-                    use_numactl=use_numactl,
-                    enable_auth=enable_auth) for shard in self.shards)
+            partial(
+                shard.launch,
+                initialize=initialize,
+                use_numactl=use_numactl,
+                enable_auth=enable_auth,
+            )
+            for shard in self.shards
+        )
         commands.extend(
-            partial(mongos.launch,
-                    initialize=initialize,
-                    use_numactl=use_numactl,
-                    enable_auth=enable_auth) for mongos in self.mongoses)
+            partial(
+                mongos.launch,
+                initialize=initialize,
+                use_numactl=use_numactl,
+                enable_auth=enable_auth,
+            )
+            for mongos in self.mongoses
+        )
         if not all(run_threads(commands, daemon=True)):
             return False
         if initialize:
             if not self._add_shards():
                 return False
-        if self.sharded_config.disable_balancer and not self.run_mongo_shell('sh.stopBalancer();'):
+        if self.sharded_config.disable_balancer and not self.run_mongo_shell("sh.stopBalancer();"):
             return False
         return self.wait_until_up()
 
     def _add_shards(self):
         """Adds each shard to the cluster."""
-        LOG.info('Configuring sharded cluster...')
+        LOG.info("Configuring sharded cluster...")
         # Add shard to mongos
         js_add_shards = []
         for shard in self.shards:
-            js_add_shards.append('assert.commandWorked(sh.addShard("{0}"));'.format(
-                shard.connection_string_private()))
-        if not self.run_mongo_shell('\n'.join(js_add_shards)):
-            LOG.error('Failed to add shards!')
+            js_add_shards.append(
+                'assert.commandWorked(sh.addShard("{0}"));'.format(
+                    shard.connection_string_private()
+                )
+            )
+        if not self.run_mongo_shell("\n".join(js_add_shards)):
+            LOG.error("Failed to add shards!")
             return False
         return True
 
@@ -685,7 +749,8 @@ class ShardedCluster(MongoCluster):
         commands.extend(partial(shard.shutdown, max_time_ms, auth_enabled) for shard in self.shards)
         commands.append(partial(self.config_svr.shutdown, max_time_ms, auth_enabled))
         commands.extend(
-            partial(mongos.shutdown, max_time_ms, auth_enabled) for mongos in self.mongoses)
+            partial(mongos.shutdown, max_time_ms, auth_enabled) for mongos in self.mongoses
+        )
         return all(run_threads(commands, daemon=True))
 
     def destroy(self, max_time_ms):
@@ -705,9 +770,9 @@ class ShardedCluster(MongoCluster):
 
     def __str__(self):
         """String describing the sharded cluster"""
-        description = ['ShardedCluster:', 'configsvr: {}'.format(self.config_svr)]
+        description = ["ShardedCluster:", "configsvr: {}".format(self.config_svr)]
         for shard in self.shards:
-            description.append('shard: {}'.format(shard))
+            description.append("shard: {}".format(shard))
         for mongos in self.mongoses:
             description.append(str(mongos))
-        return '\n'.join(description)
+        return "\n".join(description)

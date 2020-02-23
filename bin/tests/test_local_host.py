@@ -18,10 +18,11 @@ FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 
 class LocalHostTestCase(unittest.TestCase):
     """ Unit Test for LocalHost library """
+
     def _delete_fixtures(self):
         """ delete fixture path and set filename attribute """
-        local_host_path = FIXTURE_FILES.fixture_file_path('fixtures')
-        self.filename = os.path.join(local_host_path, 'file')
+        local_host_path = FIXTURE_FILES.fixture_file_path("fixtures")
+        self.filename = os.path.join(local_host_path, "file")
         shutil.rmtree(os.path.dirname(self.filename), ignore_errors=True)
 
     def setUp(self):
@@ -29,10 +30,10 @@ class LocalHostTestCase(unittest.TestCase):
         self.old_dir = os.getcwd()  # Save the old path to restore
         # Note that this chdir only works without breaking relative imports
         # because it's at the same directory depth
-        os.chdir(os.path.dirname(os.path.abspath(__file__)) + '/../../docs/config-specs/')
-        self.config = ConfigDict('mongodb_setup')
+        os.chdir(os.path.dirname(os.path.abspath(__file__)) + "/../../docs/config-specs/")
+        self.config = ConfigDict("mongodb_setup")
         self.config.load()
-        self.parent_dir = os.path.join(os.path.expanduser('~'), 'checkout_repos_test')
+        self.parent_dir = os.path.join(os.path.expanduser("~"), "checkout_repos_test")
 
         self._delete_fixtures()
 
@@ -48,44 +49,46 @@ class LocalHostTestCase(unittest.TestCase):
         local = common.local_host.LocalHost()
         common.utils.mkdir_p(os.path.dirname(self.filename))
 
-        self.assertEqual(local.exec_command('exit 0'), 0)
+        self.assertEqual(local.exec_command("exit 0"), 0)
 
         # test that the correct warning is issued
-        mock_logger = MagicMock(name='LOG')
+        mock_logger = MagicMock(name="LOG")
         common.local_host.LOG.warning = mock_logger
-        self.assertEqual(local.exec_command('exit 1'), 1)
-        mock_logger.assert_called_once_with(ANY_IN_STRING('Failed with exit status'), ANY, ANY, ANY)
+        self.assertEqual(local.exec_command("exit 1"), 1)
+        mock_logger.assert_called_once_with(ANY_IN_STRING("Failed with exit status"), ANY, ANY, ANY)
 
-        local.exec_command('touch {}'.format(self.filename))
+        local.exec_command("touch {}".format(self.filename))
         self.assertTrue(os.path.isfile(self.filename))
 
-        local.exec_command('touch {}'.format(self.filename))
+        local.exec_command("touch {}".format(self.filename))
         self.assertTrue(os.path.isfile(self.filename))
 
-        with open(self.filename, 'w+') as the_file:
-            the_file.write('Hello\n')
-            the_file.write('World\n')
+        with open(self.filename, "w+") as the_file:
+            the_file.write("Hello\n")
+            the_file.write("World\n")
         out = StringIO()
         err = StringIO()
-        local.exec_command('cat {}'.format(self.filename), out, err)
+        local.exec_command("cat {}".format(self.filename), out, err)
         self.assertEqual(out.getvalue(), "Hello\nWorld\n")
 
         out = StringIO()
         err = StringIO()
-        self.assertEqual(local.exec_command('cat {}; exit 1'.format(self.filename), out, err), 1)
+        self.assertEqual(local.exec_command("cat {}; exit 1".format(self.filename), out, err), 1)
         self.assertEqual(out.getvalue(), "Hello\nWorld\n")
         self.assertEqual(err.getvalue(), "")
 
         out = StringIO()
         err = StringIO()
-        local.exec_command('cat {} >&2; exit 1'.format(self.filename), out, err)
+        local.exec_command("cat {} >&2; exit 1".format(self.filename), out, err)
         self.assertEqual(out.getvalue(), "")
         self.assertEqual(err.getvalue(), "Hello\nWorld\n")
 
         out = StringIO()
         err = StringIO()
         command = """cat {filename} && cat -n {filename} >&2; \
-        exit 1""".format(filename=self.filename)
+        exit 1""".format(
+            filename=self.filename
+        )
         local.exec_command(command, out, err)
         self.assertEqual(out.getvalue(), "Hello\nWorld\n")
         self.assertEqual(err.getvalue(), "     1\tHello\n     2\tWorld\n")
@@ -104,10 +107,10 @@ class LocalHostTestCase(unittest.TestCase):
         err = StringIO()
         command = "sleep 1"
 
-        mock_logger = MagicMock(name='LOG')
+        mock_logger = MagicMock(name="LOG")
         common.local_host.LOG.warning = mock_logger
         self.assertEqual(local.exec_command(command, out, err, max_time_ms=500), 1)
-        mock_logger.assert_called_once_with(ANY_IN_STRING('Timeout after'), ANY, ANY, ANY, ANY)
+        mock_logger.assert_called_once_with(ANY_IN_STRING("Timeout after"), ANY, ANY, ANY, ANY)
 
     def test_local_host_tee(self):
         """ Test run command map retrieve_files """
@@ -131,5 +134,5 @@ class LocalHostTestCase(unittest.TestCase):
             self.assertEqual(expected, "".join(the_file.readlines()))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

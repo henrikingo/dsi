@@ -7,6 +7,7 @@ import collections
 import math
 
 import structlog
+from six.moves import range
 
 LOGGER = structlog.get_logger(__name__)
 
@@ -24,7 +25,7 @@ def ycsb_throughput(config, results):
     :param ResultsFile results: Object to add results to.
     """
     LOGGER.info("Checking YCSB throughput.")
-    path = config['test_control']['reports_dir_basename']
+    path = config["test_control"]["reports_dir_basename"]
     results.extend(analyze_ycsb_throughput(path))
 
 
@@ -42,10 +43,11 @@ def analyze_ycsb_throughput(reports_dir_path):
         # Check that this is a ycsb output file
         ycsb_in_file = True
         with open(path) as ycsb_file:
-            if max((line.find('YCSB Client') for line in ycsb_file)) == -1:
+            if max((line.find("YCSB Client") for line in ycsb_file)) == -1:
                 ycsb_in_file = False
-                LOGGER.warning('YCSB Throughput analysis called on file without YCSB Call for file',
-                               path=path)
+                LOGGER.warning(
+                    "YCSB Throughput analysis called on file without YCSB Call for file", path=path
+                )
         if ycsb_in_file:
             with open(path) as ycsb_file:
                 throughputs = _throughputs_from_lines(ycsb_file)
@@ -57,13 +59,15 @@ def analyze_ycsb_throughput(reports_dir_path):
                 result_message = "No throughput data found in: {0}".format(path)
                 LOGGER.error(result_message)
 
-            results.append({
-                "status": "pass" if pass_test else "fail",
-                "log_raw": "File: {0}\n".format(path) + result_message,
-                "test_file": "ycsb-throughput-analysis." + str(num),
-                "start": 0,
-                "exit_code": 0 if pass_test else 1
-            })
+            results.append(
+                {
+                    "status": "pass" if pass_test else "fail",
+                    "log_raw": "File: {0}\n".format(path) + result_message,
+                    "test_file": "ycsb-throughput-analysis." + str(num),
+                    "start": 0,
+                    "exit_code": 0 if pass_test else 1,
+                }
+            )
 
     return results
 
@@ -131,7 +135,9 @@ def _analyze_throughputs(throughputs):
     return passed, "No problems detected." if passed else "\n".join(err_messages)
 
 
-def _analyze_spiky_throughput(throughputs, max_drop=0.5, min_duration=10, skip_initial_seconds=10):  # pylint: disable=too-many-locals
+def _analyze_spiky_throughput(
+    throughputs, max_drop=0.5, min_duration=10, skip_initial_seconds=10
+):  # pylint: disable=too-many-locals
     """
     Analyze throughput data for periods of reduced throughput. Any throughput value that is less
     than the average throughput of the entire run multiplied by `max_drop` is considered a "low"
@@ -152,9 +158,13 @@ def _analyze_spiky_throughput(throughputs, max_drop=0.5, min_duration=10, skip_i
         throughputs = throughputs[1:]
 
     if not throughputs:
-        return True, (
-            "Insufficient data to perform throughput analysis (less than {0} seconds of data "
-            "was present).")
+        return (
+            True,
+            (
+                "Insufficient data to perform throughput analysis (less than {0} seconds of data "
+                "was present)."
+            ),
+        )
 
     avg_throughput = float(sum(pair.ops for pair in throughputs)) / len(throughputs)
     min_acceptable_throughput = avg_throughput * max_drop
@@ -166,8 +176,10 @@ def _analyze_spiky_throughput(throughputs, max_drop=0.5, min_duration=10, skip_i
 
             # Search until the point where performance numbers return to normal.
             low_throughputs = list(
-                itertools.takewhile(lambda throughput: throughput.ops < min_acceptable_throughput,
-                                    throughputs_iter))
+                itertools.takewhile(
+                    lambda throughput: throughput.ops < min_acceptable_throughput, throughputs_iter
+                )
+            )
 
             # If there aren't at least two consecutive low throughputs there aren't enough
             # datapoints to confidently flag a regression, no matter what the reporting interval is.
@@ -179,16 +191,23 @@ def _analyze_spiky_throughput(throughputs, max_drop=0.5, min_duration=10, skip_i
             if duration >= min_duration:
                 # We've detected a long-enough period of reduced throughput.
 
-                low_throughputs_str = "\n".join("    {0} sec: {1} ops/sec".format(time, throughput)
-                                                for time, throughput in low_throughputs)
+                low_throughputs_str = "\n".join(
+                    "    {0} sec: {1} ops/sec".format(time, throughput)
+                    for time, throughput in low_throughputs
+                )
                 err_msg = (
                     "spiky throughput: Detected low throughput for {0} seconds, starting at {1} "
                     "seconds and ending at {2} seconds. The minimum acceptable throughput is {3} "
                     "ops/sec (the average throughput for the test was {4}ops/sec ), and the low "
-                    "throughputs were: \n{5}\n").format(duration, first_low_throughput_time,
-                                                        last_low_throughput_time,
-                                                        min_acceptable_throughput, avg_throughput,
-                                                        low_throughputs_str)
+                    "throughputs were: \n{5}\n"
+                ).format(
+                    duration,
+                    first_low_throughput_time,
+                    last_low_throughput_time,
+                    min_acceptable_throughput,
+                    avg_throughput,
+                    low_throughputs_str,
+                )
                 err_messages.append(err_msg)
 
     return err_messages
@@ -225,23 +244,33 @@ def _analyze_long_term_degradation(throughputs, duration_seconds=10 * 60, max_dr
     if len(throughputs) > data_window_width:
         # This computes the max throughput over any data_window_width period of time
         max_throughput = max(
-            average_throughput(throughputs[x:x + data_window_width])
-            for x in range(len(throughputs) - data_window_width))
+            average_throughput(throughputs[x : x + data_window_width])
+            for x in range(len(throughputs) - data_window_width)
+        )
         min_acceptable_throughput = max_throughput * max_drop
         failures = [
-            x for x in range(len(throughputs) - data_window_width)
-            if average_throughput(throughputs[x:x + data_window_width]) < min_acceptable_throughput
+            x
+            for x in range(len(throughputs) - data_window_width)
+            if average_throughput(throughputs[x : x + data_window_width])
+            < min_acceptable_throughput
         ]
         for failure in failures:
-            avg_throughput = average_throughput(throughputs[failure:failure + data_window_width])
+            avg_throughput = average_throughput(throughputs[failure : failure + data_window_width])
             start_time = throughputs[failure].time
             end_time = throughputs[failure + data_window_width].time
             err_message = (
                 "long term throughput degradation: Detected a low average throughput of {0} "
                 "starting at {1} and ending at {2} (total duration of {3} seconds). The maximum "
                 "throughput of the run was {4}, so the minimum acceptable throughput was "
-                "{5}.\n").format(avg_throughput, start_time, end_time, end_time - start_time,
-                                 max_throughput, min_acceptable_throughput)
+                "{5}.\n"
+            ).format(
+                avg_throughput,
+                start_time,
+                end_time,
+                end_time - start_time,
+                max_throughput,
+                min_acceptable_throughput,
+            )
             err_messages.append(err_message)
 
     return err_messages
