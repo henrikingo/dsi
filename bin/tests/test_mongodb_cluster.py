@@ -4,17 +4,17 @@ import os
 import os.path
 import unittest
 
-from mock import MagicMock, mock
+from mock import MagicMock
+import mock
 
-import common.mongodb_cluster
-import common.mongodb_setup_helpers
-import common.host
+import common.mongodb_cluster as mongodb_cluster
+import common.mongodb_setup_helpers as mongodb_setup_helpers
 from common.mongo_config import NodeTopologyConfig, ReplTopologyConfig, ShardedTopologyConfig
 from delay import DelayGraph
 from test_lib.comparator_utils import ANY_IN_STRING
 
 # Mock the remote host module.
-common.mongodb_cluster.RemoteHost = mock.MagicMock()
+mongodb_cluster.RemoteHost = mock.MagicMock()
 
 MONGOD_OPTS = {
     "public_ip": "1.2.3.4",
@@ -66,12 +66,12 @@ class TestMongoNode(unittest.TestCase):
 
     def setUp(self):
         """Create a MongoNode instance to use throughout tests."""
-        topology = common.mongodb_setup_helpers.copy_obj(MONGOD_OPTS)
+        topology = mongodb_setup_helpers.copy_obj(MONGOD_OPTS)
         self.topology = topology
         self.config = DEFAULT_CONFIG
         self.delay_graph = MagicMock()
         node_topology = NodeTopologyConfig(self.topology, self.config, self.delay_graph)
-        self.mongo_node = common.mongodb_cluster.MongoNode(node_topology)
+        self.mongo_node = mongodb_cluster.MongoNode(node_topology)
         mock_host = mock.MagicMock(name="host")
         self.mongo_node._host = mock_host
 
@@ -171,7 +171,7 @@ class TestMongoNode(unittest.TestCase):
         """Runs _generate_setup_commands with given args
         and asserts the output == expected. If not, prints it out in a form
         that you can copy/paste into an 'expected' var"""
-        actual = common.mongodb_cluster.MongoNode._generate_setup_commands(
+        actual = mongodb_cluster.MongoNode._generate_setup_commands(
             generate_setup_commands_args
         )
         self.assertEqual(actual, expected, msg=",\n".join([str(x) for x in actual]))
@@ -184,7 +184,7 @@ class TestMongoNode(unittest.TestCase):
         topology = self.config["mongodb_setup"]["topology"][0]
         delay_graph = DelayGraph(topology, DELAY_CONFIG["network_delays"]["clusters"][0])
         node_topology = NodeTopologyConfig(topology, self.config, delay_graph)
-        node = common.mongodb_cluster.MongoNode(node_topology)
+        node = mongodb_cluster.MongoNode(node_topology)
         actual_user = node.net_config.ssh_user
         actual_key = node.net_config.ssh_key_file
         self.assertEqual(actual_key, expected_ssh_key_file)
@@ -443,7 +443,7 @@ class TestMongoNode(unittest.TestCase):
         """Test launch command uses proper config file."""
 
         if modified:
-            config = common.mongodb_setup_helpers.copy_obj(DEFAULT_CONFIG)
+            config = mongodb_setup_helpers.copy_obj(DEFAULT_CONFIG)
             config["infrastructure_provisioning"][
                 "numactl_prefix"
             ] = "numactl --interleave=all --cpunodebind=1"
@@ -452,7 +452,7 @@ class TestMongoNode(unittest.TestCase):
                 DELAY_CONFIG["network_delays"]["clusters"][0],
             )
             node_topology = NodeTopologyConfig(self.topology, config, delay_graph)
-            node = common.mongodb_cluster.MongoNode(node_topology)
+            node = mongodb_cluster.MongoNode(node_topology)
             node._host = mock.MagicMock(name="host")
             numa_prefix = config["infrastructure_provisioning"]["numactl_prefix"]
         else:
@@ -485,7 +485,7 @@ class TestMongoNode(unittest.TestCase):
         Test shutdown.
         """
         mock_logger = mock.MagicMock(name="LOG")
-        common.mongodb_cluster.LOG.warning = mock_logger
+        mongodb_cluster.LOG.warning = mock_logger
         self.mongo_node.mongo_config.shutdown_options = "{}"
         self.mongo_node.run_mongo_shell = mock.MagicMock(name="run_mongo_shell")
         self.mongo_node.host.run = mock.MagicMock(name="run")
@@ -502,7 +502,7 @@ class TestMongoNode(unittest.TestCase):
         Test failed shutdown with options.
         """
         mock_logger = mock.MagicMock(name="LOG")
-        common.mongodb_cluster.LOG.warning = mock_logger
+        mongodb_cluster.LOG.warning = mock_logger
         self.mongo_node.mongo_config.shutdown_options = "options"
         self.mongo_node.run_mongo_shell = mock.MagicMock(name="run_mongo_shell")
         self.mongo_node._host.run = mock.MagicMock(name="run")
@@ -520,7 +520,7 @@ class TestMongoNode(unittest.TestCase):
         Test shutdown with exeception from `run_mongo_shell`.
         """
         mock_logger = mock.MagicMock(name="LOG")
-        common.mongodb_cluster.LOG.error = mock_logger
+        mongodb_cluster.LOG.error = mock_logger
         self.mongo_node.run_mongo_shell = mock.MagicMock(name="run_mongo_shell")
         self.mongo_node.host.run = mock.MagicMock(name="run")
         self.mongo_node.run_mongo_shell.side_effect = Exception()
@@ -564,7 +564,7 @@ class TestMongoNode(unittest.TestCase):
         Test that add_default_users adds users on the correct clusters for a mongo node.
         """
         mock_add_user = MagicMock(name="add_user")
-        common.mongodb_cluster.mongodb_setup_helpers.add_user = mock_add_user
+        mongodb_cluster.mongodb_setup_helpers.add_user = mock_add_user
         self.mongo_node.add_default_users()
         mock_add_user.assert_called_once_with(self.mongo_node, self.mongo_node.auth_settings)
 
@@ -577,8 +577,8 @@ class TestReplSet(unittest.TestCase):
             "cluster_type": "replset",
             "name": "rs",
             "mongod": [
-                common.mongodb_setup_helpers.copy_obj(MONGOD_OPTS),
-                common.mongodb_setup_helpers.copy_obj(MONGOD_OPTS),
+                mongodb_setup_helpers.copy_obj(MONGOD_OPTS),
+                mongodb_setup_helpers.copy_obj(MONGOD_OPTS),
             ],
         }
         self.config = DEFAULT_CONFIG
@@ -586,7 +586,7 @@ class TestReplSet(unittest.TestCase):
         repl_topology = ReplTopologyConfig(
             topology=self.repl_set_opts, root_config=self.config, delay_graph=self.delay_graph
         )
-        self.replset = common.mongodb_cluster.ReplSet(repl_topology)
+        self.replset = mongodb_cluster.ReplSet(repl_topology)
 
     def test_establish_delays(self):
         with mock.patch("common.mongodb_cluster.run_threads") as mock_run_threads:
@@ -643,10 +643,10 @@ class TestReplSet(unittest.TestCase):
             "cluster_type": "replset",
             "name": "rs",
             "mongod": [
-                common.mongodb_setup_helpers.copy_obj(MONGOD_OPTS),
-                common.mongodb_setup_helpers.copy_obj(MONGOD_OPTS),
-                common.mongodb_setup_helpers.copy_obj(MONGOD_OPTS),
-                common.mongodb_setup_helpers.copy_obj(MONGOD_OPTS),
+                mongodb_setup_helpers.copy_obj(MONGOD_OPTS),
+                mongodb_setup_helpers.copy_obj(MONGOD_OPTS),
+                mongodb_setup_helpers.copy_obj(MONGOD_OPTS),
+                mongodb_setup_helpers.copy_obj(MONGOD_OPTS),
             ],
         }
 
@@ -655,7 +655,7 @@ class TestReplSet(unittest.TestCase):
         repl_topology = ReplTopologyConfig(
             repl_set_opts, root_config=DEFAULT_CONFIG, delay_graph=delay_graph
         )
-        replset = common.mongodb_cluster.ReplSet(repl_topology)
+        replset = mongodb_cluster.ReplSet(repl_topology)
         replset._set_explicit_priorities()
         self.assertEqual(replset.highest_priority_node(), replset.nodes[0])
         self.assertEqual(replset.topology_config.rs_conf_members[0]["priority"], 2)
@@ -668,7 +668,7 @@ class TestReplSet(unittest.TestCase):
         repl_topology = ReplTopologyConfig(
             repl_set_opts, root_config=DEFAULT_CONFIG, delay_graph=delay_graph
         )
-        replset = common.mongodb_cluster.ReplSet(repl_topology)
+        replset = mongodb_cluster.ReplSet(repl_topology)
 
         replset._set_explicit_priorities()
         self.assertEqual(replset.highest_priority_node(), replset.nodes[1])
@@ -685,7 +685,7 @@ class TestReplSet(unittest.TestCase):
         repl_topology = ReplTopologyConfig(
             repl_set_opts, root_config=DEFAULT_CONFIG, delay_graph=delay_graph
         )
-        replset = common.mongodb_cluster.ReplSet(repl_topology)
+        replset = mongodb_cluster.ReplSet(repl_topology)
 
         replset._set_explicit_priorities()
         self.assertEqual(replset.highest_priority_node(), replset.nodes[3])
@@ -699,7 +699,7 @@ class TestReplSet(unittest.TestCase):
         Test that add_default_users adds users on the correct nodes in a replset.
         """
         mock_add_user = MagicMock(name="add_user")
-        common.mongodb_cluster.mongodb_setup_helpers.add_user = mock_add_user
+        mongodb_cluster.mongodb_setup_helpers.add_user = mock_add_user
         self.replset.add_default_users()
         mock_add_user.assert_called_once_with(
             self.replset, self.replset.auth_settings, write_concern=len(self.replset.nodes)
@@ -714,15 +714,15 @@ class TestShardedCluster(unittest.TestCase):
             "cluster_type": "sharded_cluster",
             "disable_balancer": False,
             "configsvr_type": "csrs",
-            "mongos": [common.mongodb_setup_helpers.copy_obj(MONGOD_OPTS)],
-            "configsvr": [common.mongodb_setup_helpers.copy_obj(MONGOD_OPTS)],
+            "mongos": [mongodb_setup_helpers.copy_obj(MONGOD_OPTS)],
+            "configsvr": [mongodb_setup_helpers.copy_obj(MONGOD_OPTS)],
             "shard": [
                 {
                     "id": "shard",
                     "cluster_type": "replset",
                     "mongod": [
-                        common.mongodb_setup_helpers.copy_obj(MONGOD_OPTS),
-                        common.mongodb_setup_helpers.copy_obj(MONGOD_OPTS),
+                        mongodb_setup_helpers.copy_obj(MONGOD_OPTS),
+                        mongodb_setup_helpers.copy_obj(MONGOD_OPTS),
                     ],
                 }
             ],
@@ -730,7 +730,7 @@ class TestShardedCluster(unittest.TestCase):
         self.config = DEFAULT_CONFIG
         delay_graph = DelayGraph(self.cluster_opts, DELAY_CONFIG["network_delays"]["clusters"][0])
         sharded_topology = ShardedTopologyConfig(self.cluster_opts, self.config, delay_graph)
-        self.cluster = common.mongodb_cluster.ShardedCluster(sharded_topology)
+        self.cluster = mongodb_cluster.ShardedCluster(sharded_topology)
 
     def test_establish_delays(self):
         with mock.patch("common.mongodb_cluster.run_threads") as mock_run_threads:
@@ -799,8 +799,8 @@ class TestShardedCluster(unittest.TestCase):
         """
         mock_add_user = MagicMock(name="add_user")
         mock_add_default_users = MagicMock("add_default_users")
-        common.mongodb_cluster.mongodb_setup_helpers.add_user = mock_add_user
-        common.mongodb_cluster.add_default_users = mock_add_default_users
+        mongodb_cluster.mongodb_setup_helpers.add_user = mock_add_user
+        mongodb_cluster.add_default_users = mock_add_default_users
         self.cluster.add_default_users()
         add_user_calls = [mock.call(self.cluster, self.cluster.auth_settings)]
         add_default_users_calls = [

@@ -7,7 +7,8 @@ from StringIO import StringIO
 
 from mock import MagicMock, ANY
 
-import common.local_host
+import common.local_host as local_host
+import common.utils as utils
 from common.log import TeeStream
 from common.config import ConfigDict
 from test_lib.fixture_files import FixtureFiles
@@ -46,14 +47,14 @@ class LocalHostTestCase(unittest.TestCase):
     def test_local_host_exec_command(self):
         """ Test LocalHost.exec_command """
 
-        local = common.local_host.LocalHost()
-        common.utils.mkdir_p(os.path.dirname(self.filename))
+        local = local_host.LocalHost()
+        utils.mkdir_p(os.path.dirname(self.filename))
 
         self.assertEqual(local.exec_command("exit 0"), 0)
 
         # test that the correct warning is issued
         mock_logger = MagicMock(name="LOG")
-        common.local_host.LOG.warning = mock_logger
+        local_host.LOG.warning = mock_logger
         self.assertEqual(local.exec_command("exit 1"), 1)
         mock_logger.assert_called_once_with(ANY_IN_STRING("Failed with exit status"), ANY, ANY, ANY)
 
@@ -108,15 +109,15 @@ class LocalHostTestCase(unittest.TestCase):
         command = "sleep 1"
 
         mock_logger = MagicMock(name="LOG")
-        common.local_host.LOG.warning = mock_logger
+        local_host.LOG.warning = mock_logger
         self.assertEqual(local.exec_command(command, out, err, max_time_ms=500), 1)
         mock_logger.assert_called_once_with(ANY_IN_STRING("Timeout after"), ANY, ANY, ANY, ANY)
 
     def test_local_host_tee(self):
         """ Test run command map retrieve_files """
 
-        local = common.local_host.LocalHost()
-        common.utils.mkdir_p(os.path.dirname(self.filename))
+        local = local_host.LocalHost()
+        utils.mkdir_p(os.path.dirname(self.filename))
 
         expected = "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\nblast off!\n"
         with open(self.filename, "w") as the_file:

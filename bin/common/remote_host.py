@@ -13,14 +13,14 @@ import sys
 import paramiko
 
 import common.host_utils as host_utils
-import common.host
+import common.host as host
 
 LOG = logging.getLogger(__name__)
 # This stream only log error or above messages
 ERROR_ONLY = logging.getLogger("error_only")
 
 
-class RemoteHost(common.host.Host):
+class RemoteHost(host.Host):
     """
     Represents a remote host
     """

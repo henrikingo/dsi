@@ -15,7 +15,7 @@ from mock import patch, call, mock_open, MagicMock, ANY
 from testfixtures import LogCapture, log_capture
 
 from common.config import ConfigDict
-import common.utils
+import common.utils as utils
 import infrastructure_provisioning as ip
 import test_config
 from test_lib.fixture_files import FixtureFiles
@@ -139,7 +139,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         os_environ_missing_terraform["PATH"] = "/foo:/bar"
         self.mock_environ.__getitem__.side_effect = os_environ_missing_terraform.__getitem__
         self.mock_environ.__contains__.side_effect = os_environ_missing_terraform.__contains__
-        with self.assertRaises(common.utils.TerraformNotFound):
+        with self.assertRaises(utils.TerraformNotFound):
             provisioner_missing_terraform = ip.Provisioner(
                 self.config, provisioning_file=self.provision_log_path
             )

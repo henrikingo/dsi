@@ -10,7 +10,7 @@ import time
 
 import pymongo.uri_parser
 
-import common.host_utils
+import common.host_utils as host_utils
 from common.utils import mkdir_p
 from common.log import IOLogAdapter
 import six
@@ -239,8 +239,8 @@ class Host(object):
         self,
         name,
         signal_number=signal.SIGKILL,
-        delay_ms=common.host_utils.ONE_SECOND_MILLIS,
-        max_time_ms=common.host_utils.TEN_MINUTE_MILLIS,
+        delay_ms=host_utils.ONE_SECOND_MILLIS,
+        max_time_ms=host_utils.TEN_MINUTE_MILLIS,
     ):
         """
         Kills all processes on the host matching name pattern.
@@ -256,11 +256,11 @@ class Host(object):
         :type max_time_ms: int, float, None
         """
         signal_number = "-" + str(signal_number)
-        delay_seconds = delay_ms / common.host_utils.ONE_SECOND_MILLIS
+        delay_seconds = delay_ms / host_utils.ONE_SECOND_MILLIS
         if max_time_ms == 0:
             max_time_ms = delay_ms
 
-        is_timed_out = common.host_utils.create_timer(datetime.now(), max_time_ms)
+        is_timed_out = host_utils.create_timer(datetime.now(), max_time_ms)
 
         while not is_timed_out():
             self.run(["pkill", signal_number, name], quiet=True)
@@ -271,7 +271,7 @@ class Host(object):
         return False
 
     def kill_mongo_procs(
-        self, signal_number=signal.SIGKILL, max_time_ms=30 * common.host_utils.ONE_SECOND_MILLIS
+        self, signal_number=signal.SIGKILL, max_time_ms=30 * host_utils.ONE_SECOND_MILLIS
     ):
         """
         Kills all processes matching the patterm 'mongo' (includes 'mongo', 'mongos', 'mongod') on

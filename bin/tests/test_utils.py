@@ -6,9 +6,7 @@ import sys
 import unittest
 from mock import patch
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
-
-from utils import read_aws_credentials, read_aws_credentials_file, read_env_vars
+from common.utils import read_aws_credentials, read_aws_credentials_file, read_env_vars
 
 
 class TestUtils(unittest.TestCase):
@@ -30,8 +28,8 @@ class TestUtils(unittest.TestCase):
     def tearDown(self):
         os.remove(self.test_cred_path)
 
-    @patch("utils.read_aws_credentials_file")
-    @patch("utils.read_env_vars")
+    @patch("common.utils.read_aws_credentials_file")
+    @patch("common.utils.read_env_vars")
     def test_read_aws_credentials_fails(self, mock_read_env_vars, mock_read_aws_credentials_file):
         """
         Testing that read_aws_credentials fails correctly when it cannot find AWS keys

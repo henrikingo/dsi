@@ -3,7 +3,8 @@
 import copy
 import unittest
 
-from mock import MagicMock, call, mock, patch
+from mock import MagicMock, call, patch
+import mock
 
 import workload_setup
 
@@ -32,7 +33,7 @@ class TestWorkloadSetup(unittest.TestCase):
         self.config = copy.deepcopy(BASIC_CONFIG)
         self.mock_run_host = MagicMock()
 
-    @patch("workload_setup.common.host_utils.setup_ssh_agent")
+    @patch("workload_setup.host_utils.setup_ssh_agent")
     def test_ignore_done_check(self, mock_setup_ssh_agent):
         """We don't check for done-ness unless told to"""
         runner = new_runner(
@@ -46,7 +47,7 @@ class TestWorkloadSetup(unittest.TestCase):
             self.mock_run_host.assert_called_once()
             mock_setup_ssh_agent.assert_called()
 
-    @patch("workload_setup.common.host_utils.setup_ssh_agent")
+    @patch("workload_setup.host_utils.setup_ssh_agent")
     def test_runs_two_types(self, mock_setup_ssh_agent):
         """Two distinct test types"""
         runner = new_runner(self.config)

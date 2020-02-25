@@ -13,11 +13,11 @@ import logging
 import argparse
 
 import common.atlas_setup as atlas_setup
-import common.host_utils
+import common.host_utils as host_utils
 from common.command_runner import run_pre_post_commands, EXCEPTION_BEHAVIOR, run_upon_error
 from common.download_mongodb import DownloadMongodb
-import common.mongodb_setup_helpers
-import common.mongodb_cluster
+import common.mongodb_setup_helpers as mongodb_setup_helpers
+import common.mongodb_cluster as mongodb_cluster
 from common.log import setup_logging
 from common.config import ConfigDict
 from common.client import ClientConfig, Client
@@ -40,8 +40,8 @@ class MongodbSetup(object):
         self._downloader = None
 
         timeouts = self.config["mongodb_setup"].get("timeouts", {})
-        self.shutdown_ms = timeouts.get("shutdown_ms", 9 * common.host_utils.ONE_MINUTE_MILLIS)
-        self.sigterm_ms = timeouts.get("sigterm_ms", common.host_utils.ONE_MINUTE_MILLIS)
+        self.shutdown_ms = timeouts.get("shutdown_ms", 9 * host_utils.ONE_MINUTE_MILLIS)
+        self.sigterm_ms = timeouts.get("sigterm_ms", host_utils.ONE_MINUTE_MILLIS)
 
         self.parse_cluster()
 
@@ -66,7 +66,7 @@ class MongodbSetup(object):
 
         for i in range(len(topologies)):
             self.clusters.append(
-                common.mongodb_cluster.create_cluster(topologies[i], delays[i], self.config)
+                mongodb_cluster.create_cluster(topologies[i], delays[i], self.config)
             )
 
     def add_default_users(self):
@@ -127,7 +127,7 @@ class MongodbSetup(object):
           See :method:`start` if this is a clean start.
         """
         shutdown = self.shutdown(
-            self.shutdown_ms, common.mongodb_setup_helpers.mongodb_auth_configured(self.config)
+            self.shutdown_ms, mongodb_setup_helpers.mongodb_auth_configured(self.config)
         )
         self.destroy(self.sigterm_ms)
         if not shutdown:
@@ -142,7 +142,7 @@ class MongodbSetup(object):
 
         # For a start or restart with restart_clean_db_dir True, and if Auth is configured, we need
         # to bring the cluster up twice. First without auth, then add user, then with auth
-        if common.mongodb_setup_helpers.mongodb_auth_configured(self.config) and (
+        if mongodb_setup_helpers.mongodb_auth_configured(self.config) and (
             not is_restart or restart_clean_db_dir
         ):
             LOG.info("Auth configured. Starting Cluster without Auth first")
@@ -163,7 +163,7 @@ class MongodbSetup(object):
             is_restart=is_restart,
             restart_clean_db_dir=restart_clean_db_dir,
             restart_clean_logs=restart_clean_logs,
-            enable_auth=common.mongodb_setup_helpers.mongodb_auth_configured(self.config),
+            enable_auth=mongodb_setup_helpers.mongodb_auth_configured(self.config),
         )
 
     def _start_auth_explicit(

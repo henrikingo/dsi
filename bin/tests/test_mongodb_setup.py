@@ -4,10 +4,10 @@ import unittest
 
 import mock
 
-import common.host
-import common.mongodb_cluster
-import common.command_runner
-import mongodb_setup
+import common.host as host
+import common.mongodb_cluster as mongodb_cluster
+import common.command_runner as command_runner
+import mongodb_setup as mongodb_setup
 
 # Mock the remote host module.
 mongodb_setup.RemoteHost = mock.MagicMock()
@@ -65,7 +65,7 @@ class TestMongodbSetup(unittest.TestCase):
         self.assertEqual(setup.shutdown_ms, "shutdown")
         self.assertEqual(setup.sigterm_ms, "sigterm")
 
-    @mock.patch.object(common.host, "Host", autospec=True)
+    @mock.patch.object(host, "Host", autospec=True)
     def test_start1(self, host):
         """Starting ignores shutdown fails """
         setup = mongodb_setup.MongodbSetup(config=self.config)
@@ -73,7 +73,7 @@ class TestMongodbSetup(unittest.TestCase):
         setup.downloader = mock.MagicMock()
 
         host.run = mock.MagicMock()
-        common.mongodb_cluster.MongoNode.wait_until_up = mock.MagicMock()
+        mongodb_cluster.MongoNode.wait_until_up = mock.MagicMock()
         setup.destroy = mock.MagicMock(name="destroy")
         setup.shutdown = mock.MagicMock(name="shutdown")
         setup.shutdown.return_value = True
@@ -165,7 +165,7 @@ class TestMongodbSetup(unittest.TestCase):
         setup = mongodb_setup.MongodbSetup(config=self.config)
         setup.downloader = mock.MagicMock()
         setup.downloader.download_and_extract.return_value = False
-        common.mongodb_cluster.MongoNode.wait_until_up = mock.MagicMock()
+        mongodb_cluster.MongoNode.wait_until_up = mock.MagicMock()
         setup.destroy = mock.MagicMock(name="destroy")
         setup.shutdown = mock.MagicMock(name="shutdown")
         setup.shutdown.return_value = False

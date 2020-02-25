@@ -20,7 +20,7 @@ import yaml
 
 from common.config import ConfigDict
 from common.log import setup_logging
-import common.utils
+import common.utils as utils
 
 LOGGER = structlog.get_logger(__name__)
 
@@ -207,8 +207,8 @@ def find_terraform(directory, config):
     """
     terraform = None
     try:
-        terraform = common.utils.find_terraform(directory)
-    except common.utils.TerraformNotFound:
+        terraform = utils.find_terraform(directory)
+    except utils.TerraformNotFound:
         LOGGER.info("Terraform not found in PATH.")
         download_terraform(directory, config)
         terraform = os.path.join(directory, "terraform")
@@ -249,7 +249,7 @@ def symlink_bindir(directory):
 
     :param str directory: The work directory.
     """
-    src = common.utils.get_dsi_bin_dir()
+    src = utils.get_dsi_bin_dir()
     dest = os.path.join(directory, ".bin")
     if os.path.exists(dest):
         LOGGER.warning("Removing old symlink to binaries.", dest=dest)
@@ -267,7 +267,7 @@ def write_dsienv(directory, terraform):
 
     """
     with open(os.path.join(directory, "dsienv.sh"), "w") as dsienv:
-        dsienv.write("export PATH={0}:$PATH\n".format(common.utils.get_dsi_bin_dir()))
+        dsienv.write("export PATH={0}:$PATH\n".format(utils.get_dsi_bin_dir()))
         dsienv.write("export TERRAFORM={0}\n".format(terraform))
         dsienv.write('echo "Tip: Sourcing dsienv.sh is now optional. You can also just execute:"\n')
         dsienv.write('echo "    ./.bin/infrastructure_provisioning.py     # etc..."\n')
@@ -378,7 +378,7 @@ def run_bootstrap(config):
     config_dict = load_bootstrap(config, directory)
 
     # Checks for aws credentials, fails if cannot find them
-    common.utils.read_aws_credentials(config_dict)
+    utils.read_aws_credentials(config_dict)
 
     url = None
     if sys.platform.startswith("linux"):
@@ -394,7 +394,7 @@ def run_bootstrap(config):
     write_dsienv(directory, config["terraform"])
 
     # copy necessary config files to the current directory
-    copy_config_files(common.utils.get_dsi_path(), config, directory)
+    copy_config_files(utils.get_dsi_path(), config, directory)
 
     # This writes an overrides.yml with the ssh_key_file, ssh_key_name and owner, if given in
     # bootstrap.yml, and with expire-on-delta if running DSI locally.

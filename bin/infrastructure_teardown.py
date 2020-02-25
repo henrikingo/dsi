@@ -87,7 +87,7 @@ def destroy_atlas_resources():
     # It will cause ImportError when run from an Evergreen teardown hook.
     # This means Atlas clusters must be shut down at the end of the task, they are not reused.
     try:
-        import common.config
+        import common.config as config
         import common.atlas_setup as atlas_setup
     except ImportError as error:
         LOG.info(error)
@@ -96,11 +96,11 @@ def destroy_atlas_resources():
         return True
 
     # AtlasSetup.destroy() will write to mongodb_setup.out.yml
-    config = common.config.ConfigDict("mongodb_setup")
-    config.load()
+    configdict = config.ConfigDict("mongodb_setup")
+    configdict.load()
 
     # start a mongodb configuration using config
-    atlas = atlas_setup.AtlasSetup(config)
+    atlas = atlas_setup.AtlasSetup(configdict)
     atlas.destroy()
 
     return True

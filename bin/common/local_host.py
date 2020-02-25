@@ -7,8 +7,8 @@ import shutil
 import subprocess
 import logging
 
-import common.host_utils
-import common.host
+import common.host_utils as host_utils
+import common.host as host
 from common.log import IOLogAdapter
 import six
 
@@ -20,7 +20,7 @@ INFO_ADAPTER = IOLogAdapter(LOG, logging.INFO)
 WARN_ADAPTER = IOLogAdapter(LOG, logging.WARN)
 
 
-class LocalHost(common.host.Host):
+class LocalHost(host.Host):
     """
     Represents a connection to the local host
     """
@@ -70,10 +70,10 @@ class LocalHost(common.host.Host):
             ["bash", "-c", command],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            preexec_fn=common.host_utils.restore_signals,
+            preexec_fn=host_utils.restore_signals,
         )
-        is_timed_out = common.host_utils.create_timer(start, max_time_ms)
-        if common.host_utils.stream_proc_logs(proc, stdout, stderr, is_timed_out):
+        is_timed_out = host_utils.create_timer(start, max_time_ms)
+        if host_utils.stream_proc_logs(proc, stdout, stderr, is_timed_out):
             exit_status = proc.returncode
             if exit_status != 0:
                 logger.warning(

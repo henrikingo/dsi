@@ -9,8 +9,8 @@ import subprocess
 
 from nose.tools import nottest
 
-import common.log
-import common.utils
+import common.log as log
+import common.utils as utils
 
 from common.exit_status import StatusWithMessage, EXIT_STATUS_LINE_PREFIX
 from common.host import INFO_ADAPTER
@@ -43,7 +43,7 @@ class _BaseRunner(object):
         :param numactl_prefix_for_workload_client: whether the test should be started with numactl.
         """
         self.report_dir = os.path.join("reports", test_name)
-        common.utils.mkdir_p(self.report_dir)
+        utils.mkdir_p(self.report_dir)
 
         self.report_file_name = os.path.join(self.report_dir, "test_output.log")
 
@@ -61,8 +61,8 @@ class _BaseRunner(object):
         :return: status of the command run
         """
         with open(self.report_file_name, "wb+", 0) as out:
-            safe_out = common.log.UTF8WrapperStream(out)
-            tee_out = common.log.TeeStream(INFO_ADAPTER, safe_out)
+            safe_out = log.UTF8WrapperStream(out)
+            tee_out = log.TeeStream(INFO_ADAPTER, safe_out)
             try:
                 status = self._do_run(host, tee_out)
             except subprocess.CalledProcessError as e:

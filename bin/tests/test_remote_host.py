@@ -1,4 +1,4 @@
-"""Tests for bin/common/remote_host.py"""
+"""Tests for bin/remote_host.py"""
 
 import collections
 import os
@@ -6,12 +6,13 @@ import stat
 import unittest
 
 import paramiko
-from mock import patch, call, mock, ANY, MagicMock, Mock
+from mock import patch, call, ANY, MagicMock, Mock
+import mock
 
-import common.host_utils
-import common.command_runner
-import common.remote_host
-import common.remote_ssh_host
+import common.host_utils as host_utils
+import common.command_runner as command_runner
+import common.remote_host as remote_host
+import common.remote_ssh_host as remote_ssh_host
 
 FakeStat = collections.namedtuple("FakeStat", "st_mode")
 
@@ -30,7 +31,7 @@ class RemoteHostTestCase(unittest.TestCase):
 
         mock_connected_ssh.return_value = (ssh, ftp)
 
-        remote = common.remote_ssh_host.RemoteSSHHost(hostname=None, username=None, pem_file=None)
+        remote = remote_ssh_host.RemoteSSHHost(hostname=None, username=None, pem_file=None)
         remote._perform_exec = mock.MagicMock(name="_perform_exec")
         remote._perform_exec.return_value = 0
 
@@ -59,7 +60,7 @@ class RemoteHostTestCase(unittest.TestCase):
         ftp = mock.MagicMock(name="ftp")
         mock_connected_ssh.return_value = (ssh, ftp)
 
-        remote = common.remote_host.RemoteHost(hostname=None, username=None, pem_file=None)
+        remote = remote_host.RemoteHost(hostname=None, username=None, pem_file=None)
 
         local_path = os.path.abspath(__file__)
         remote_path = "/foo/bar/idk.py"
@@ -76,29 +77,29 @@ class RemoteHostTestCase(unittest.TestCase):
     def test__upload_files_host_ex(self, ssh_client):
         """ Test run command map exception """
 
-        with self.assertRaisesRegexp(common.host_utils.HostException, r"wrapped exception"):
-            remote = common.remote_ssh_host.RemoteSSHHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        with self.assertRaisesRegexp(host_utils.HostException, r"wrapped exception"):
+            remote = remote_ssh_host.RemoteSSHHost("53.1.1.1", "ssh_user", "ssh_key_file")
             command = {"upload_files": [{"target": "remote_path", "source": "."}]}
             remote.exec_command = MagicMock(name="exec_command")
             remote.exec_command.return_value = 0
 
             remote._upload_dir = MagicMock(name="_upload_single_file")
-            remote._upload_dir.side_effect = common.host_utils.HostException("wrapped exception")
+            remote._upload_dir.side_effect = host_utils.HostException("wrapped exception")
 
             remote._upload_single_file = MagicMock(name="_upload_single_file")
-            remote._upload_single_file.side_effect = common.host_utils.HostException(
+            remote._upload_single_file.side_effect = host_utils.HostException(
                 "wrapped exception"
             )
-            common.command_runner._run_host_command_map(remote, command, "test_id", {})
+            command_runner._run_host_command_map(remote, command, "test_id", {})
 
     @patch("paramiko.SSHClient")
     def test__upload_files_wrapped_ex(self, ssh_client):
         """ Test run command map exception """
 
         with self.assertRaisesRegexp(
-            common.host_utils.HostException, r"'mkdir', '-p', 'remote_path'"
+            host_utils.HostException, r"'mkdir', '-p', 'remote_path'"
         ):
-            remote = common.remote_ssh_host.RemoteSSHHost("53.1.1.1", "ssh_user", "ssh_key_file")
+            remote = remote_ssh_host.RemoteSSHHost("53.1.1.1", "ssh_user", "ssh_key_file")
             command = {"upload_files": [{"target": "remote_path", "source": "."}]}
             remote.exec_command = MagicMock(name="exec_command")
             remote.exec_command.return_value = 1
@@ -107,13 +108,13 @@ class RemoteHostTestCase(unittest.TestCase):
             remote._upload_single_file.side_effect = paramiko.ssh_exception.SSHException(
                 "wrapped exception"
             )
-            common.command_runner._run_host_command_map(remote, command, "test_id", {})
+            command_runner._run_host_command_map(remote, command, "test_id", {})
 
     @patch("paramiko.SSHClient")
     def test_remote_host_isdir(self, mock_ssh):
         """ Test remote_isdir """
 
-        remote = common.remote_ssh_host.RemoteSSHHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        remote = remote_ssh_host.RemoteSSHHost("53.1.1.1", "ssh_user", "ssh_key_file")
         remote.ftp.stat.return_value = FakeStat(st_mode=stat.S_IFDIR)
         isdir = remote.remote_isdir("/true")
 
@@ -137,7 +138,7 @@ class RemoteHostTestCase(unittest.TestCase):
     def test_exists_os_error(self, mock_ssh):
         """ Test run RemoteHost.exists """
 
-        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        remote = remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
         exists = remote.remote_exists("true_path")
 
         self.assertTrue(exists, "expected true")
@@ -154,7 +155,7 @@ class RemoteHostTestCase(unittest.TestCase):
     def test_exists_io_error(self, mock_ssh):
         """ Test run RemoteHost.exists """
 
-        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        remote = remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
         exists = remote.remote_exists("true_path")
 
         self.assertTrue(exists, "expected true")
@@ -171,7 +172,7 @@ class RemoteHostTestCase(unittest.TestCase):
     def test_exists_paramiko_error(self, mock_ssh):
         """ Test run RemoteHost.exists """
 
-        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        remote = remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
         exists = remote.remote_exists("true_path")
 
         self.assertTrue(exists, "expected true")
@@ -191,28 +192,28 @@ class RemoteHostTestCase(unittest.TestCase):
         """ Test run RemoteHost.exists """
 
         mock_exists.return_value = True
-        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        remote = remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
         remote._retrieve_file("remote_file", "reports/local_file")
 
         remote.ftp.get.assert_called_with("remote_file", "reports/local_file")
         mock_makedirs.assert_not_called()
 
         mock_exists.return_value = True
-        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        remote = remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
         remote._retrieve_file("remote_file", "reports/mongod.0/local_file")
 
         remote.ftp.get.assert_called_with("remote_file", "reports/mongod.0/local_file")
         mock_makedirs.assert_not_called()
 
         mock_exists.return_value = True
-        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        remote = remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
         remote._retrieve_file("remote_file", "reports/../local_file")
 
         remote.ftp.get.assert_called_with("remote_file", "local_file")
         mock_makedirs.assert_not_called()
 
         mock_exists.return_value = False
-        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        remote = remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
         remote._retrieve_file("remote_file", "reports/local_file")
 
         remote.ftp.get.assert_called_with("remote_file", "reports/local_file")
@@ -223,7 +224,7 @@ class RemoteHostTestCase(unittest.TestCase):
         """ Test run RemoteHost.exists """
 
         # remote path does not exist
-        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        remote = remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
         remote.remote_exists = Mock()
         remote.remote_isdir = Mock()
         remote._retrieve_file = Mock()
@@ -297,7 +298,7 @@ class RemoteHostTestCase(unittest.TestCase):
     def test_retrieve_file_with_dirs(self, mock_ssh):
         """ Test run RemoteHost.exists """
 
-        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        remote = remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
         remote.remote_exists = Mock()
         remote.remote_isdir = Mock()
         remote._retrieve_file = Mock()
@@ -372,7 +373,7 @@ class RemoteHostTestCase(unittest.TestCase):
     def test_retrieve_files_and_dirs(self, mock_ssh):
         """ Test run RemoteHost.exists """
 
-        remote = common.remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
+        remote = remote_host.RemoteHost("53.1.1.1", "ssh_user", "ssh_key_file")
         remote.remote_exists = Mock()
         remote.remote_isdir = Mock()
         remote._retrieve_file = Mock()

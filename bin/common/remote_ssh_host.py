@@ -6,7 +6,7 @@ import logging
 
 import paramiko
 
-import common.remote_host
+import common.remote_host as remote_host
 import common.host_utils as host_utils
 from common.host_utils import LOG
 
@@ -22,7 +22,7 @@ WARN_ADAPTER = IOLogAdapter(LOG, logging.WARN)
 
 
 # pylint: disable=too-few-public-methods
-class RemoteSSHHost(common.remote_host.RemoteHost):
+class RemoteSSHHost(remote_host.RemoteHost):
     """
     Represents a remote host that executes commands via SSH.
     """

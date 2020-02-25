@@ -21,7 +21,8 @@ from common.config import ConfigDict
 from common.host_utils import extract_hosts, setup_ssh_agent
 from common.command_runner import run_pre_post_commands, EXCEPTION_BEHAVIOR, prepare_reports_dir
 from common.jstests import run_validate
-import common.log
+import common.log as log
+import common.command_runner as command_runner
 import common.cedar as cedar
 from common.workload_output_parser import parse_test_results, get_supported_parser_types
 
@@ -108,7 +109,7 @@ def run_test(test, config):
     :param config ConfigDict: The top level ConfigDict
     """
     runner = test_runner.get_test_runner(test, config["test_control"])
-    client_host = common.command_runner.make_workload_runner_host(config)
+    client_host = command_runner.make_workload_runner_host(config)
 
     # Generate and upload the test's configuration file if there is one.
     generate_config_file(test, runner.report_dir, client_host)
@@ -300,7 +301,7 @@ def main(argv):
     parser.add_argument("-d", "--debug", action="store_true", help="enable debug output")
     parser.add_argument("--log-file", help="path to log file")
     args = parser.parse_args(argv)
-    common.log.setup_logging(args.debug, args.log_file)
+    log.setup_logging(args.debug, args.log_file)
 
     config = ConfigDict("test_control")
     config.load()

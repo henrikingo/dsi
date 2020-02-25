@@ -4,13 +4,14 @@ import unittest
 from StringIO import StringIO
 
 import paramiko
-from mock import patch, mock, ANY, MagicMock, Mock
+from mock import patch, ANY, MagicMock, Mock
+import mock
 
 from test_lib.comparator_utils import ANY_IN_STRING
 
-import common.host_utils
-import common.remote_host
-import common.remote_ssh_host
+import common.host_utils as host_utils
+import common.remote_host as remote_host
+import common.remote_ssh_host as remote_ssh_host
 
 from common.mongodb_setup_helpers import MongoDBAuthSettings
 
@@ -49,8 +50,8 @@ class RemoteSSHHostTestCase(unittest.TestCase):
         out=StringIO(),
         err=StringIO(),
     ):
-        """ test common code with """
-        remote = common.remote_ssh_host.RemoteSSHHost("test_host", "test_user", "test_pem_file")
+        """ test code with """
+        remote = remote_ssh_host.RemoteSSHHost("test_host", "test_user", "test_pem_file")
 
         ssh_instance = mock_ssh.return_value
         stdin = Mock(name="stdin")
@@ -78,7 +79,7 @@ class RemoteSSHHostTestCase(unittest.TestCase):
         """Test RemoteHost.exec_command"""
         # Exceptions
         with patch("paramiko.SSHClient"):
-            remote = common.remote_ssh_host.RemoteSSHHost("test_host", "test_user", "test_pem_file")
+            remote = remote_ssh_host.RemoteSSHHost("test_host", "test_user", "test_pem_file")
             self.assertRaises(exception, remote.exec_command, params)
 
     def test_remote_exec_command_ex_str(self):
@@ -105,7 +106,7 @@ class RemoteSSHHostTestCase(unittest.TestCase):
         """Test RemoteHost.exec_command no warnings on success"""
 
         mock_logger = MagicMock(name="LOG")
-        common.remote_ssh_host.LOG.warning = mock_logger
+        remote_ssh_host.LOG.warning = mock_logger
         self.helper_remote_exec_command(command=["cowsay", "Hello", "World"])
         mock_logger.assert_not_called()
 
@@ -113,7 +114,7 @@ class RemoteSSHHostTestCase(unittest.TestCase):
         """Test RemoteHost.exec_command warning on failure"""
 
         mock_logger = MagicMock(name="LOG")
-        common.remote_ssh_host.LOG.warning = mock_logger
+        remote_ssh_host.LOG.warning = mock_logger
         self.helper_remote_exec_command(return_value=1, exit_status=1)
 
         mock_logger.assert_called_once_with(ANY_IN_STRING("with exit status"), ANY, ANY, ANY)
@@ -124,7 +125,7 @@ class RemoteSSHHostTestCase(unittest.TestCase):
 
         with patch("paramiko.SSHClient") as mock_ssh:
             # Test a command as list
-            remote = common.remote_ssh_host.RemoteSSHHost("test_host", "test_user", "test_pem_file")
+            remote = remote_ssh_host.RemoteSSHHost("test_host", "test_user", "test_pem_file")
 
             ssh_instance = mock_ssh.return_value
             stdin = Mock(name="stdin")
@@ -158,12 +159,12 @@ class RemoteSSHHostTestCase(unittest.TestCase):
             stderr.close.assert_called()
 
             if out is None:
-                expected_out = common.remote_ssh_host.INFO_ADAPTER
+                expected_out = remote_ssh_host.INFO_ADAPTER
             else:
                 expected_out = out
 
             if err is None:
-                expected_err = common.remote_ssh_host.WARN_ADAPTER
+                expected_err = remote_ssh_host.WARN_ADAPTER
             else:
                 expected_err = err
 
@@ -205,7 +206,7 @@ class RemoteSSHHostTestCase(unittest.TestCase):
                     ["-u", "username", "-p", "password", "--authenticationDatabase", "admin"]
                 )
             expected_argv.extend([connection_string, test_file])
-            remote = common.remote_host.RemoteHost(
+            remote = remote_host.RemoteHost(
                 test_host, test_user, test_pem_file, mongodb_auth_settings
             )
             status_code = remote.exec_mongo_command(test_script, test_file, connection_string)
@@ -303,17 +304,17 @@ class RemoteSSHHostTestCase(unittest.TestCase):
         ssh_stdout.channel.exit_status_ready.return_value = given["and_exit_status"][0]
         ssh_stdout.channel.recv_exit_status.return_value = given["and_exit_status"][1]
 
-        stream_before = common.host_utils.stream_lines
+        stream_before = host_utils.stream_lines
         with patch("paramiko.SSHClient", autospec=True):
             try:
                 # monkey-patch here because @patch doesn't let us (easily) change
                 # the actual behavior of the method, just set canned return values and
                 # assert interactions. We actually want _stream() to sleep as well
-                common.host_utils.stream_lines = sleepy_streamer(
+                host_utils.stream_lines = sleepy_streamer(
                     float(given["ssh_interrupt_after_ms"]) / 1000, given["with_output"]
                 )
 
-                remote = common.remote_ssh_host.RemoteSSHHost(
+                remote = remote_ssh_host.RemoteSSHHost(
                     "test_host", "test_user", "test_pem_file"
                 )
                 exit_status = remote._perform_exec(
@@ -329,7 +330,7 @@ class RemoteSSHHostTestCase(unittest.TestCase):
                 if then:
                     self.assertEqual(then, {"exit_status": exit_status})
             finally:
-                common.host_utils.stream_lines = stream_before
+                host_utils.stream_lines = stream_before
 
     def test_perform_exec_no_timeout(self):
         """test_perform_exec_no_timeout"""
@@ -355,7 +356,7 @@ class RemoteSSHHostTestCase(unittest.TestCase):
         output, so it's a timeout.
         """
 
-        with self.assertRaisesRegexp(common.host_utils.HostException, r"^No Output"):
+        with self.assertRaisesRegexp(host_utils.HostException, r"^No Output"):
             self.when_perform_exec(
                 {
                     "given": {
@@ -378,7 +379,7 @@ class RemoteSSHHostTestCase(unittest.TestCase):
         """
 
         with self.assertRaisesRegexp(
-            common.host_utils.HostException, r"exceeded [0-9\.]+ allowable seconds on"
+            host_utils.HostException, r"exceeded [0-9\.]+ allowable seconds on"
         ):
             self.when_perform_exec(
                 {
@@ -411,7 +412,7 @@ class RemoteSSHHostTestCase(unittest.TestCase):
 
     def test_perform_exec_total_timeout_no_output(self):
         """test_perform_exec_total_timeout_no_output"""
-        with self.assertRaisesRegexp(common.host_utils.HostException, r"^No Output"):
+        with self.assertRaisesRegexp(host_utils.HostException, r"^No Output"):
             self.when_perform_exec(
                 {
                     "given": {
@@ -461,7 +462,7 @@ class RemoteSSHHostTestCase(unittest.TestCase):
             mock_paramiko.return_value = mock_ssh
 
             mock_ssh.connect.side_effect = exception
-            common.remote_ssh_host.RemoteSSHHost("test_host", "test_user", "test_pem_file")
+            remote_ssh_host.RemoteSSHHost("test_host", "test_user", "test_pem_file")
 
 
 if __name__ == "__main__":

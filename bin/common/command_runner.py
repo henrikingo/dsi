@@ -14,11 +14,11 @@ import structlog
 from dateutil import tz
 
 import common.atlas_setup as atlas_setup
-import common.cedar
-import common.host_factory
-import common.host_utils
-import common.utils
-import common.mongodb_setup_helpers
+import common.cedar as cedar
+import common.host_factory as host_factory
+import common.host_utils as host_utils
+import common.utils as utils
+import common.mongodb_setup_helpers as mongodb_setup_helpers
 
 from thread_runner import run_threads
 import six
@@ -44,7 +44,7 @@ def prepare_reports_dir(reports_dir="reports"):
         os.remove("../reports.tgz")
 
     real_reports_dir = "{}-{}".format(reports_dir, datetime.datetime.now(tz.tzlocal()).isoformat())
-    common.utils.mkdir_p(real_reports_dir)
+    utils.mkdir_p(real_reports_dir)
     os.symlink(real_reports_dir, reports_dir)
 
 
@@ -64,7 +64,7 @@ def make_host_runner(host_info, command, prefix, config, mongodb_auth_settings=N
     """
 
     # Create the appropriate host type
-    target_host = common.host_factory.make_host(host_info, mongodb_auth_settings, use_tls)
+    target_host = host_factory.make_host(host_info, mongodb_auth_settings, use_tls)
     try:
         # If command is a string, pass it directly to run
         if isinstance(command, str):
@@ -96,10 +96,10 @@ def _run_host_command(host_list, command, config, prefix):
 
     LOG.debug("Calling run command for %s with command %s", str(host_list), str(command))
 
-    mongodb_auth_settings = common.mongodb_setup_helpers.mongodb_auth_settings(config)
+    mongodb_auth_settings = mongodb_setup_helpers.mongodb_auth_settings(config)
     # Note: This works because mongodb_setup.meta.net.ssl has the same structure as a mongo node
     # config file, even if it isn't otherwise a config file.
-    use_tls = common.mongodb_setup_helpers.mongodb_tls_settings(config["mongodb_setup"]["meta"])
+    use_tls = mongodb_setup_helpers.mongodb_tls_settings(config["mongodb_setup"]["meta"])
 
     thread_commands = []
     for host_info in host_list:
@@ -129,7 +129,7 @@ def _run_host_command_map(target_host, command, prefix, config):
     for key, value in six.iteritems(command):
         if key == "upload_repo_files":
             for paths in value:
-                source = os.path.join(common.utils.get_dsi_path(), paths["source"])
+                source = os.path.join(utils.get_dsi_path(), paths["source"])
                 target = paths["target"]
                 LOG.debug("Uploading file %s to %s", source, target)
                 target_host.upload_file(source, target)
@@ -153,17 +153,17 @@ def _run_host_command_map(target_host, command, prefix, config):
         elif key == "exec":
             LOG.debug("Executing command %s", value)
             success = target_host.run(value)
-            common.host_utils.raise_if_not_success(success, value)
+            host_utils.raise_if_not_success(success, value)
         elif key == "run_curator":
             LOG.info("Executing curator in %s", os.getcwd())
-            common.cedar.run_curator(value, target_host, config)
+            cedar.run_curator(value, target_host, config)
         elif key == "exec_mongo_shell":
             LOG.debug("Executing command %s in mongo shell", value)
             connection_string = value.get("connection_string", "")
             exit_status = target_host.exec_mongo_command(
                 value["script"], connection_string=connection_string
             )
-            common.host_utils.raise_if_not_ok(exit_status, value)
+            host_utils.raise_if_not_ok(exit_status, value)
         elif key == "checkout_repos":
             for paths in value:
                 source = paths["source"]
@@ -193,7 +193,7 @@ def run_host_command(target, command, config, prefix):
 
     keys = list(command.keys())
     target = target[3:]
-    hosts = common.host_utils.extract_hosts(target, config)
+    hosts = host_utils.extract_hosts(target, config)
     LOG.info("Running command(s) %s on %s", keys, target)
     _run_host_command(hosts, command, config, prefix)
     LOG.debug("Done running command(s) %s on %s", keys, target)
@@ -254,12 +254,12 @@ def make_workload_runner_host(config):
 
     :param ConfigDict config: The system configuration
     """
-    host_info = common.host_utils.extract_hosts("workload_client", config)[0]
-    mongodb_auth_settings = common.mongodb_setup_helpers.mongodb_auth_settings(config)
+    host_info = host_utils.extract_hosts("workload_client", config)[0]
+    mongodb_auth_settings = mongodb_setup_helpers.mongodb_auth_settings(config)
     # Note: This works because mongodb_setup.meta.net.ssl has the same structure as a mongo node
     # config file, even if it isn't otherwise a config file.
-    use_tls = common.mongodb_setup_helpers.mongodb_tls_configured(config["mongodb_setup"]["meta"])
-    return common.host_factory.make_host(host_info, mongodb_auth_settings, use_tls)
+    use_tls = mongodb_setup_helpers.mongodb_tls_configured(config["mongodb_setup"]["meta"])
+    return host_factory.make_host(host_info, mongodb_auth_settings, use_tls)
 
 
 def print_trace(trace, exception):

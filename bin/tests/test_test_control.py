@@ -13,8 +13,7 @@ import unittest
 from mock import patch, MagicMock, call, Mock
 from testfixtures import LogCapture
 
-import common.cedar
-import common.host_utils
+import common.host_utils as host_utils
 from common.command_runner import EXCEPTION_BEHAVIOR
 from common.command_runner import print_trace
 from common.command_runner import run_pre_post_commands
@@ -206,7 +205,7 @@ class RunTestsTestCase(unittest.TestCase):
 
         mock_walk.return_value = [("/dirpath", ("dirnames",), ())]
 
-        dummy_host_info = common.host_utils.HostInfo(
+        dummy_host_info = host_utils.HostInfo(
             public_ip="10.0.0.0", category="mongod", offset=0
         )
 

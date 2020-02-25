@@ -4,7 +4,8 @@ import logging
 import os
 import unittest
 
-from mock import mock, patch
+from mock import patch
+import mock
 
 from test_control import validate_config
 

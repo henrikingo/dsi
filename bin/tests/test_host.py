@@ -4,7 +4,8 @@ import os
 import shutil
 import unittest
 
-from mock import patch, mock, MagicMock, call, ANY
+from mock import patch, MagicMock, call, ANY
+import mock
 from nose.tools import nottest
 
 from common.config import ConfigDict

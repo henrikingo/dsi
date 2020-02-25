@@ -7,8 +7,8 @@ import re
 from uuid import uuid4
 
 # pylint: disable=too-few-public-methods
-import common.host_factory
-import common.host_utils
+import common.host_factory as host_factory
+import common.host_utils as host_utils
 from thread_runner import run_threads
 
 LOG = logging.getLogger(__name__)
@@ -50,8 +50,8 @@ class DownloadMongodb(object):
         LOG.info("Download url is %s", self.mongodb_binary_archive)
 
         self.hosts = []
-        for host_info in common.host_utils.extract_hosts("all_hosts", self.config):
-            self.hosts.append(common.host_factory.make_host(host_info))
+        for host_info in host_utils.extract_hosts("all_hosts", self.config):
+            self.hosts.append(host_factory.make_host(host_info))
 
         if self.mongodb_binary_archive:
             LOG.debug("DownloadMongodb initialized with url: %s", self.mongodb_binary_archive)

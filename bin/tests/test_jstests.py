@@ -3,7 +3,7 @@ import unittest
 
 from mock import patch, call
 
-import common.jstests
+import common.jstests as jstests
 
 
 class JSTestsTestCase(unittest.TestCase):
@@ -25,7 +25,7 @@ class JSTestsTestCase(unittest.TestCase):
         """
         # Clear the jstests_dir setting
         del self.config["test_control"]["jstests_dir"]
-        common.jstests.run_validate(self.config, "UnitTest")
+        jstests.run_validate(self.config, "UnitTest")
         mock_jstest_one_host.assert_not_called()
 
     @patch("common.jstests.jstest_one_host")
@@ -37,7 +37,7 @@ class JSTestsTestCase(unittest.TestCase):
         There should be one validate-indexes-and-collections call to jstest_one_host.
         """
         mock_remote_exists.return_value = True
-        common.jstests.run_validate(self.config, "UnitTest")
+        jstests.run_validate(self.config, "UnitTest")
         self.assertEqual(1, mock_jstest_one_host.call_count)
         mock_jstest_one_host.assert_has_calls(
             [
@@ -66,7 +66,7 @@ class JSTestsTestCase(unittest.TestCase):
             "primaries": ["10.10.10.10:27017", "10.10.10.11:27017"]
         }
 
-        common.jstests.run_validate(self.config, "UnitTest")
+        jstests.run_validate(self.config, "UnitTest")
         self.assertEqual(4, mock_jstest_one_host.call_count)
 
         # Because of the use of threading, the order of the calls between the primaries is
@@ -105,5 +105,5 @@ class JSTestsTestCase(unittest.TestCase):
         self.config["mongodb_setup"]["validate"] = {
             "primaries": ["10.10.10.10:27017", "10.10.10.11:27017"]
         }
-        common.jstests.run_validate(self.config, "UnitTest")
+        jstests.run_validate(self.config, "UnitTest")
         mock_jstest_one_host.assert_not_called()

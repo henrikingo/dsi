@@ -8,8 +8,8 @@ import argparse
 import logging
 import sys
 
-import common.host_utils
-import common.command_runner
+import common.host_utils as host_utils
+import common.command_runner as command_runner
 from common.config import ConfigDict
 from common.log import setup_logging
 
@@ -42,7 +42,7 @@ class WorkloadSetupRunner(object):
         """
         Perform setup for all the required workload types
         """
-        common.host_utils.setup_ssh_agent(self.config)
+        host_utils.setup_ssh_agent(self.config)
         for test_type in self.test_types():
             self.run_setup_for_test_type(test_type)
 
@@ -54,7 +54,7 @@ class WorkloadSetupRunner(object):
         """
         LOG.info("Starting workload_setup for test_type %s", test_type)
         steps = self.config["workload_setup"][test_type]
-        common.command_runner.run_host_commands(steps, self.config, "workload_setup")
+        command_runner.run_host_commands(steps, self.config, "workload_setup")
 
 
 def main(argv):

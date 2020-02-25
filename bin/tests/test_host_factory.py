@@ -5,7 +5,7 @@ import unittest
 from mock import patch
 
 import common.models.host_info as host_info
-import common.host_factory
+import common.host_factory as host_factory
 
 
 class HostFactoryTestCase(unittest.TestCase):
@@ -20,18 +20,18 @@ class HostFactoryTestCase(unittest.TestCase):
         )
 
         my_host_info.category = "mongod"
-        mongod = common.host_factory.make_host(my_host_info)
+        mongod = host_factory.make_host(my_host_info)
         self.assertEqual(mongod.alias, "mongod.0", "alias not set as expected")
 
         my_host_info.category = "mongos"
         my_host_info.offset = 1
-        mongos = common.host_factory.make_host(my_host_info)
+        mongos = host_factory.make_host(my_host_info)
         self.assertEqual(mongos.alias, "mongos.1", "alias not set as expected")
 
         my_host_info.category = "localhost"
         for my_ip in ["localhost", "127.0.0.1", "0.0.0.0"]:
             my_host_info.public_ip = my_ip
-            localhost = common.host_factory.make_host(my_host_info)
+            localhost = host_factory.make_host(my_host_info)
             self.assertEqual(localhost.alias, "localhost.1", "alias not set as expected")
 
 

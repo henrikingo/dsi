@@ -10,7 +10,7 @@ from StringIO import StringIO
 
 from mock import patch, MagicMock, call
 
-import common.host_utils
+import common.host_utils as host_utils
 from common.config import ConfigDict
 from test_lib.fixture_files import FixtureFiles
 from six.moves import range
@@ -47,30 +47,30 @@ class HostUtilsTestCase(unittest.TestCase):
 
     def test_never_timeout(self):
         """ test never_timeout"""
-        self.assertFalse(common.host_utils.never_timeout())
-        self.assertFalse(common.host_utils.never_timeout())
+        self.assertFalse(host_utils.never_timeout())
+        self.assertFalse(host_utils.never_timeout())
 
     def test_check_timed_out(self):
         """ test check_timed_out"""
         start = datetime.now()
-        self.assertFalse(common.host_utils.check_timed_out(start, 50))
+        self.assertFalse(host_utils.check_timed_out(start, 50))
         time.sleep(51 / 1000.0)
-        self.assertTrue(common.host_utils.check_timed_out(start, 50))
+        self.assertTrue(host_utils.check_timed_out(start, 50))
 
     def test_create_timer(self):
         """ test create_timer """
         start = datetime.now()
         self.assertEqual(
-            common.host_utils.create_timer(start, None), common.host_utils.never_timeout
+            host_utils.create_timer(start, None), host_utils.never_timeout
         )
         with patch("common.host_utils.partial") as mock_partial:
-            self.assertTrue(common.host_utils.create_timer(start, 50))
-            mock_partial.assert_called_once_with(common.host_utils.check_timed_out, start, 50)
+            self.assertTrue(host_utils.create_timer(start, 50))
+            mock_partial.assert_called_once_with(host_utils.check_timed_out, start, 50)
 
     def test_extract_hosts(self):
         """ Test extract hosts using config info """
 
-        default_host_info = common.host_utils.HostInfo(
+        default_host_info = host_utils.HostInfo(
             public_ip=None,
             # These are the user and key files used by this test.
             ssh_user="ec2-user",
@@ -95,22 +95,22 @@ class HostUtilsTestCase(unittest.TestCase):
         ]
         workload_clients = [customize_host_info("53.1.1.101", "workload_client", 0)]
         localhost = [
-            common.host_utils.HostInfo(public_ip="localhost", category="localhost", offset=0)
+            host_utils.HostInfo(public_ip="localhost", category="localhost", offset=0)
         ]
 
-        self.assertEqual(common.host_utils.extract_hosts("localhost", self.config), localhost)
+        self.assertEqual(host_utils.extract_hosts("localhost", self.config), localhost)
         self.assertEqual(
-            common.host_utils.extract_hosts("workload_client", self.config), workload_clients
+            host_utils.extract_hosts("workload_client", self.config), workload_clients
         )
-        self.assertEqual(common.host_utils.extract_hosts("mongod", self.config), mongods)
-        self.assertEqual(common.host_utils.extract_hosts("mongos", self.config), mongos)
-        self.assertEqual(common.host_utils.extract_hosts("configsvr", self.config), configsvrs)
+        self.assertEqual(host_utils.extract_hosts("mongod", self.config), mongods)
+        self.assertEqual(host_utils.extract_hosts("mongos", self.config), mongos)
+        self.assertEqual(host_utils.extract_hosts("configsvr", self.config), configsvrs)
         self.assertEqual(
-            common.host_utils.extract_hosts("all_servers", self.config),
+            host_utils.extract_hosts("all_servers", self.config),
             mongods + mongos + configsvrs,
         )
         self.assertEqual(
-            common.host_utils.extract_hosts("all_hosts", self.config),
+            host_utils.extract_hosts("all_hosts", self.config),
             mongods + mongos + configsvrs + workload_clients,
         )
 
@@ -121,14 +121,14 @@ class HostUtilsTestCase(unittest.TestCase):
         destination = MagicMock(name="destination")
         source.next = MagicMock(name="in")
         source.next.side_effect = socket.timeout("args")
-        any_lines = common.host_utils.stream_lines(source, destination)
+        any_lines = host_utils.stream_lines(source, destination)
         self.assertEqual(False, any_lines)
         destination.write.assert_not_called()
 
         destination = MagicMock(name="destination")
         source.next = MagicMock(name="in")
         source.next.side_effect = ["first", "second", socket.timeout("args"), "third"]
-        any_lines = common.host_utils.stream_lines(source, destination)
+        any_lines = host_utils.stream_lines(source, destination)
         self.assertEqual(True, any_lines)
 
         calls = [call("first"), call("second")]
