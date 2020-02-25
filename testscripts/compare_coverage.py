@@ -1,3 +1,5 @@
+#!/usr/bin/env python2.7
+
 """
 Compare a new coverage.xml file against a previous one.
 
