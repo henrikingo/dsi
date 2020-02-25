@@ -53,17 +53,17 @@ genny: &compile_genny
           distro="amazon2";
         fi
         cd ./data/genny
-        ./scripts/lamp --linux-distro $distro -DGENNY_INSTALL_DIR="$PWD"
+        ./scripts/lamp --linux-distro $distro -DGENNY_INSTALL_DIR="$PWD/dist"
 
   # Make sure the genny executable is reasonable
   - on_workload_client:
       exec: |
         set -eou pipefail
 
-        cd ./data
+        cd ./data/genny
 
-        ldd genny/bin/genny
-        genny/bin/genny list-actors
+        ldd dist/bin/genny_core
+        ./scripts/genny list-actors
 
   # Build Genny's Python Component
   - on_workload_client:

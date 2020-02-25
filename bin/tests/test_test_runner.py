@@ -97,9 +97,9 @@ class GetTestRunnerTestCase(unittest.TestCase):
 
         report_str = "\nexit_status: 0 'GennyRunner.run()'\n"
         output_file_calls = [
-            call("data/genny-perf.json", "reports/dummy_test/genny-perf.json"),
-            call("data/genny-perf.csv", "reports/dummy_test/genny-perf.csv"),
-            call("data/genny-cedar-report.json", "reports/dummy_test/genny-cedar-report.json"),
+            call("data/genny/genny-perf.json", "reports/dummy_test/genny-perf.json"),
+            call("data/genny/genny-perf.csv", "reports/dummy_test/genny-perf.csv"),
+            call("data/genny/genny-cedar-report.json", "reports/dummy_test/genny-cedar-report.json")
         ]
         self.call_runner_run(runner, report_str, output_file_calls)
 
@@ -115,7 +115,7 @@ class GetTestRunnerTestCase(unittest.TestCase):
         report_str = "\nexit_status: 0 'GennyCanariesRunner.run()'\n"
         output_file_calls = [
             call("data/nop.csv", "reports/dummy_test/nop.csv"),
-            call("data/ping.csv", "reports/dummy_test/ping.csv"),
+            call("data/ping.csv", "reports/dummy_test/ping.csv")
         ]
         self.call_runner_run(runner, report_str, output_file_calls)
 
@@ -129,12 +129,12 @@ class GetTestRunnerTestCase(unittest.TestCase):
         # Local Environment
         runner = get_test_runner(self.get_test_config("genny"), self.get_test_control_config(False))
         call_args = [
-            "cd ./data; mkdir -p metrics",
+            "cd ./data/genny; mkdir -p metrics",
             (
-                "cd ./data; numactl --interleave=all --cpunodebind=1 genny/bin/genny run "
+                "cd ./data/genny; numactl --interleave=all --cpunodebind=1 ./scripts/genny run "
                 '-u "dummy_mongodb_url" -m cedar-csv -o ./genny-perf.csv dummy_config_filename'
             ),
-            "cd ./data; genny-metrics-legacy-report --report-file genny-perf.json genny-perf.csv",
+            "cd ./data/genny; genny-metrics-legacy-report --report-file genny-perf.json genny-perf.csv",
         ]
         mock_host = Mock(spec=RemoteHost)
         mock_host.exec_command = Mock(return_value=0)
@@ -147,7 +147,7 @@ class GetTestRunnerTestCase(unittest.TestCase):
         runner = get_test_runner(self.get_test_config("genny"), self.get_test_control_config(False))
         args = call_args[:]
         args.append(
-            "cd ./data; genny-metrics-report --report-file "
+            "cd ./data/genny; genny-metrics-report --report-file "
             "genny-cedar-report.json genny-perf.csv metrics"
         )
         mock_host.exec_command = Mock(return_value=0)
@@ -162,7 +162,7 @@ class GetTestRunnerTestCase(unittest.TestCase):
         )
         args = call_args[:]
         args[1] = (
-            'cd ./data;  genny/bin/genny run -u "dummy_mongodb_url" -m cedar-csv -o ./genny-perf.csv '
+            'cd ./data/genny;  ./scripts/genny run -u "dummy_mongodb_url" -m cedar-csv -o ./genny-perf.csv '
             "dummy_config_filename"
         )  # Remove the numactl line.
         mock_host.exec_command = Mock(return_value=0)

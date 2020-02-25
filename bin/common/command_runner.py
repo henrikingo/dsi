@@ -171,7 +171,7 @@ def _run_host_command_map(target_host, command, prefix, config):
                 branch = paths["branch"] if "branch" in paths else None
                 verbose = paths["verbose"] if "verbose" in paths else False
                 LOG.debug("Checking out git repository %s to %s", target, source)
-                target_host.checkout_repos(source, target, str(branch), verbose=verbose)
+                target_host.checkout_repos(source, target, branch, verbose=verbose)
         else:
             raise UserWarning("Invalid command type")
 

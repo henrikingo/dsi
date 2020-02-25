@@ -2,7 +2,7 @@ task_name: out_of_cache_scanner
 run:
   - id: OutOfCacheScanner
     type: genny
-    config_filename: ./genny/etc/genny/workloads/scale/OutOfCacheScanner.yml
+    config_filename: ./dist/etc/genny/workloads/scale/OutOfCacheScanner.yml
 
   - id: benchRun
     type: mongoshell

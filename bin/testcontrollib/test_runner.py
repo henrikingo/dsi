@@ -144,29 +144,29 @@ class GennyRunner(_BaseRunner):
         """
         See _BaseRunner.get_default_output_files()
         """
-        return ["data/genny-perf.json", "data/genny-perf.csv", "data/genny-cedar-report.json"]
+        return ["data/genny/genny-perf.json", "data/genny/genny-perf.csv", "data/genny/genny-cedar-report.json"]
 
     def _do_run(self, host, out):
         commands = [
             "mkdir -p metrics",
-            '{} genny/bin/genny run -u "{}" -m cedar-csv -o ./genny-perf.csv {}'.format(
+            '{} ./scripts/genny run -u "{}" -m cedar-csv -o ./genny-perf.csv {}'.format(
                 self.numactl_prefix_for_workload_client, self.db_url, self.workload_config
             ),
-            "genny-metrics-legacy-report --report-file genny-perf.json genny-perf.csv",
+            'genny-metrics-legacy-report --report-file genny-perf.json genny-perf.csv'
         ]
 
         if self.is_production:
             # Only generate the cedar report in production. The Cedar certificates are
             # not available elsewhere.
             commands.append(
-                "genny-metrics-report --report-file genny-cedar-report.json "
+                "genny-metrics-report --expansions-file ../expansions.yml --report-file genny-cedar-report.json "
                 "genny-perf.csv metrics"
             )
 
         for command in commands:
             # Write the output of genny to the ephemeral drive (mounted on ~/data)
             # to ensure it has enough disk space.
-            command = "cd ./data; " + command
+            command = "cd ./data/genny; " + command
 
             exit_code = host.exec_command(
                 command, stdout=out, stderr=out, no_output_timeout_ms=self.timeout, get_pty=True
@@ -199,8 +199,8 @@ class GennyCanariesRunner(_BaseRunner):
 
     def _do_run(self, host, out):
         commands = [
-            "genny/bin/genny-canaries nop -o nop.csv",
-            'genny/bin/genny-canaries ping -u "{}" -i 10000 -o ping.csv'.format(self.db_url),
+            "genny/dist/bin/genny-canaries nop -o nop.csv",
+            'genny/dist/bin/genny-canaries ping -u "{}" -i 10000 -o ping.csv'.format(self.db_url),
         ]
 
         for command in commands:
