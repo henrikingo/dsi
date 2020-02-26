@@ -1,5 +1,6 @@
 """Tests for the mongodb_setup module"""
 
+from __future__ import absolute_import
 import os
 import os.path
 import unittest
@@ -7,10 +8,10 @@ import unittest
 from mock import MagicMock
 import mock
 
-import common.mongodb_cluster as mongodb_cluster
-import common.mongodb_setup_helpers as mongodb_setup_helpers
-from common.mongo_config import NodeTopologyConfig, ReplTopologyConfig, ShardedTopologyConfig
-from delay import DelayGraph
+from ..common import mongodb_cluster
+from ..common import mongodb_setup_helpers
+from ..common.mongo_config import NodeTopologyConfig, ReplTopologyConfig, ShardedTopologyConfig
+from ..delay import DelayGraph
 from test_lib.comparator_utils import ANY_IN_STRING
 
 # Mock the remote host module.
@@ -589,14 +590,14 @@ class TestReplSet(unittest.TestCase):
         self.replset = mongodb_cluster.ReplSet(repl_topology)
 
     def test_establish_delays(self):
-        with mock.patch("common.mongodb_cluster.run_threads") as mock_run_threads:
+        with mock.patch("bin.common.mongodb_cluster.run_threads") as mock_run_threads:
             self.replset.establish_delays()
             mock_run_threads.assert_called_once()
 
     def test_shutdown(self):
         """Test shutdown."""
-        with mock.patch("common.mongodb_cluster.run_threads") as mock_run_threads, mock.patch(
-            "common.mongodb_cluster.partial"
+        with mock.patch("bin.common.mongodb_cluster.run_threads") as mock_run_threads, mock.patch(
+            "bin.common.mongodb_cluster.partial"
         ) as mock_partial:
             mock_run_threads.return_value = [True]
             self.assertTrue(self.replset.shutdown(1))
@@ -607,8 +608,8 @@ class TestReplSet(unittest.TestCase):
                 ]
             )
 
-        with mock.patch("common.mongodb_cluster.run_threads") as mock_run_threads, mock.patch(
-            "common.mongodb_cluster.partial"
+        with mock.patch("bin.common.mongodb_cluster.run_threads") as mock_run_threads, mock.patch(
+            "bin.common.mongodb_cluster.partial"
         ) as mock_partial:
             mock_run_threads.return_value = [True, False]
             self.assertFalse(self.replset.shutdown(2))
@@ -618,8 +619,8 @@ class TestReplSet(unittest.TestCase):
 
     def test_destroy(self):
         """Test destroy."""
-        with mock.patch("common.mongodb_cluster.run_threads") as mock_run_threads, mock.patch(
-            "common.mongodb_cluster.partial"
+        with mock.patch("bin.common.mongodb_cluster.run_threads") as mock_run_threads, mock.patch(
+            "bin.common.mongodb_cluster.partial"
         ) as mock_partial:
             mock_run_threads.return_value = [True]
             self.replset.destroy(1)
@@ -630,8 +631,8 @@ class TestReplSet(unittest.TestCase):
                 ]
             )
 
-        with mock.patch("common.mongodb_cluster.run_threads") as mock_run_threads, mock.patch(
-            "common.mongodb_cluster.partial"
+        with mock.patch("bin.common.mongodb_cluster.run_threads") as mock_run_threads, mock.patch(
+            "bin.common.mongodb_cluster.partial"
         ) as mock_partial:
             mock_run_threads.return_value = [True, False]
             self.replset.destroy(2)
@@ -733,14 +734,14 @@ class TestShardedCluster(unittest.TestCase):
         self.cluster = mongodb_cluster.ShardedCluster(sharded_topology)
 
     def test_establish_delays(self):
-        with mock.patch("common.mongodb_cluster.run_threads") as mock_run_threads:
+        with mock.patch("bin.common.mongodb_cluster.run_threads") as mock_run_threads:
             self.cluster.establish_delays()
             mock_run_threads.assert_called_once()
 
     def test_shutdown(self):
         """Test shutdown."""
-        with mock.patch("common.mongodb_cluster.run_threads") as mock_run_threads, mock.patch(
-            "common.mongodb_cluster.partial"
+        with mock.patch("bin.common.mongodb_cluster.run_threads") as mock_run_threads, mock.patch(
+            "bin.common.mongodb_cluster.partial"
         ) as mock_partial:
             mock_run_threads.return_value = [True]
             self.assertTrue(self.cluster.shutdown(1))
@@ -752,8 +753,8 @@ class TestShardedCluster(unittest.TestCase):
                 ]
             )
 
-        with mock.patch("common.mongodb_cluster.run_threads") as mock_run_threads, mock.patch(
-            "common.mongodb_cluster.partial"
+        with mock.patch("bin.common.mongodb_cluster.run_threads") as mock_run_threads, mock.patch(
+            "bin.common.mongodb_cluster.partial"
         ) as mock_partial:
             mock_run_threads.return_value = [True, False]
             self.assertFalse(self.cluster.shutdown(2))
@@ -767,8 +768,8 @@ class TestShardedCluster(unittest.TestCase):
 
     def test_destroy(self):
         """Test destroy."""
-        with mock.patch("common.mongodb_cluster.run_threads") as mock_run_threads, mock.patch(
-            "common.mongodb_cluster.partial"
+        with mock.patch("bin.common.mongodb_cluster.run_threads") as mock_run_threads, mock.patch(
+            "bin.common.mongodb_cluster.partial"
         ) as mock_partial:
             mock_run_threads.return_value = [True]
             self.cluster.config_svr.destroy = mock.MagicMock(name="config")
@@ -782,8 +783,8 @@ class TestShardedCluster(unittest.TestCase):
             )
             self.cluster.config_svr.destroy.assert_called_once_with(1)
 
-        with mock.patch("common.mongodb_cluster.run_threads") as mock_run_threads, mock.patch(
-            "common.mongodb_cluster.partial"
+        with mock.patch("bin.common.mongodb_cluster.run_threads") as mock_run_threads, mock.patch(
+            "bin.common.mongodb_cluster.partial"
         ) as mock_partial:
             mock_run_threads.return_value = [True, False]
             self.cluster.config_svr.destroy = mock.MagicMock(name="config")

@@ -1,6 +1,7 @@
 """
 Unit tests for 'cedar.py'.
 """
+from __future__ import absolute_import
 import json
 import unittest
 import copy
@@ -8,7 +9,7 @@ import os
 
 from mock import patch, MagicMock, call
 
-import common.cedar as cedar
+from ..common import cedar
 
 
 class TestCedar(unittest.TestCase):

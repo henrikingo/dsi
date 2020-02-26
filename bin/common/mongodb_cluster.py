@@ -2,6 +2,7 @@
 Classes to control MongoDB clusters.
 """
 
+from __future__ import absolute_import
 from functools import partial
 import logging
 import os
@@ -9,13 +10,13 @@ import signal
 import sys
 import time
 
-from common import host_factory
-from common.thread_runner import run_threads
-from common.mongo_config import NodeTopologyConfig, ReplTopologyConfig, ShardedTopologyConfig
-from delay import HasDelay
+from . import host_factory
+from .thread_runner import run_threads
+from .mongo_config import NodeTopologyConfig, ReplTopologyConfig, ShardedTopologyConfig
+from ..delay import HasDelay
 
 # pylint: disable=too-many-instance-attributes
-import mongodb_setup_helpers
+from . import mongodb_setup_helpers
 from six.moves import range
 from six.moves import zip
 

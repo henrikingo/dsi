@@ -1,6 +1,7 @@
 """
 Unit test for atlas_setup.py
 """
+from __future__ import absolute_import
 import copy
 import logging
 import unittest
@@ -9,10 +10,10 @@ import os
 from mock import patch, MagicMock, ANY
 from testfixtures import LogCapture
 
-import common.atlas_setup as atlas_setup
+from ..common import atlas_setup
 
 # Note that below functions only work because test_config.py is in the same directory as this file.
-from test_config import load_config_dict, in_dir
+from .test_config import load_config_dict, in_dir
 from test_lib.fixture_files import FixtureFiles
 import test_lib.structlog_for_test as structlog_for_test
 
@@ -59,7 +60,7 @@ class TestAtlasSetup(unittest.TestCase):
             self.config = load_config_dict("mongodb_setup")
             self._test_start(expected_url)
 
-    @patch("common.atlas_client.AtlasClient.create_custom_build")
+    @patch("bin.common.atlas_client.AtlasClient.create_custom_build")
     def test_start_custom_build(self, mock_create_custom_build):
         expected_url = (
             "https://cloud.mongodb.com/api/private/MOCK/URL/nds/groups/test_group_id/clusters"
@@ -69,9 +70,9 @@ class TestAtlasSetup(unittest.TestCase):
             self._test_start(expected_url)
         mock_create_custom_build.assert_called()
 
-    @patch("common.atlas_client.AtlasClient.get_one_cluster")
-    @patch("common.atlas_setup.AtlasSetup._generate_unique_name")
-    @patch("common.atlas_setup.AtlasSetup._get_primary")
+    @patch("bin.common.atlas_client.AtlasClient.get_one_cluster")
+    @patch("bin.common.atlas_setup.AtlasSetup._generate_unique_name")
+    @patch("bin.common.atlas_setup.AtlasSetup._get_primary")
     @patch("requests.post")
     def _test_start(
         self, expected_url, mock_post, mock_get_primary, mock_generate, mock_get_one_cluster
@@ -134,8 +135,8 @@ class TestAtlasSetup(unittest.TestCase):
                         ),
                     )  # yapf: disable
 
-    @patch("common.atlas_client.AtlasClient.get_one_cluster")
-    @patch("common.atlas_setup.AtlasSetup._generate_unique_name")
+    @patch("bin.common.atlas_client.AtlasClient.get_one_cluster")
+    @patch("bin.common.atlas_setup.AtlasSetup._generate_unique_name")
     @patch("requests.delete")
     def test_destroy(self, mock_delete, mock_generate, mock_get_one_cluster):
         with in_dir(FIXTURE_FILES.fixture_file_path("atlas-config")):
@@ -166,9 +167,9 @@ class TestAtlasSetup(unittest.TestCase):
         self.assertEqual(len(name), 15)
 
     @patch("time.sleep")
-    @patch("common.atlas_client.AtlasClient.download_logs")
-    @patch("common.atlas_client.AtlasClient.get_log_collection_job")
-    @patch("common.atlas_client.AtlasClient.create_log_collection_job")
+    @patch("bin.common.atlas_client.AtlasClient.download_logs")
+    @patch("bin.common.atlas_client.AtlasClient.get_log_collection_job")
+    @patch("bin.common.atlas_client.AtlasClient.create_log_collection_job")
     def test_log_collection(self, mock_create, mock_get, mock_download, mock_sleep):
         mock_create.return_value = "12345abcdef"
         mock_get.side_effect = [{"status": "FOO"}, {"status": "SUCCESS"}]

@@ -1,5 +1,6 @@
 """Tests for bin/common/host.py"""
 
+from __future__ import absolute_import
 import os
 import shutil
 import unittest
@@ -8,9 +9,9 @@ from mock import patch, MagicMock, call, ANY
 import mock
 from nose.tools import nottest
 
-from common.config import ConfigDict
-from common.local_host import LocalHost
-from common.remote_host import RemoteHost
+from ..common.config import ConfigDict
+from ..common.local_host import LocalHost
+from ..common.remote_host import RemoteHost
 from test_lib.fixture_files import FixtureFiles
 
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
@@ -55,21 +56,21 @@ class HostTestCase(unittest.TestCase):
 
         local.run.assert_has_calls(calls)
 
-        with patch("common.host_utils.create_timer") as mock_create_watchdog:
+        with patch("bin.common.host_utils.create_timer") as mock_create_watchdog:
 
             local.run = MagicMock(name="run")
             local.run.return_value = False
             local.kill_remote_procs("mongo", max_time_ms=None)
             mock_create_watchdog.assert_called_once_with(ANY, None)
 
-        with patch("common.host_utils.create_timer") as mock_create_watchdog:
+        with patch("bin.common.host_utils.create_timer") as mock_create_watchdog:
 
             local.run = MagicMock(name="run")
             local.run.return_value = False
             local.kill_remote_procs("mongo", max_time_ms=0, delay_ms=99)
             mock_create_watchdog.assert_called_once_with(ANY, 99)
 
-        with patch("common.host_utils.create_timer") as mock_create_watchdog:
+        with patch("bin.common.host_utils.create_timer") as mock_create_watchdog:
             local = LocalHost()
             local.run = MagicMock(name="run")
             local.run.return_value = True
@@ -175,8 +176,8 @@ class HostTestCase(unittest.TestCase):
 
         # Test with non-existing target
         self.assertFalse(os.path.exists(target))
-        with patch("common.host.mkdir_p") as mock_mkdir_p, patch(
-            "common.local_host.LocalHost.exec_command"
+        with patch("bin.common.host.mkdir_p") as mock_mkdir_p, patch(
+            "bin.common.local_host.LocalHost.exec_command"
         ) as mock_exec_command:
             local.checkout_repos(source, target, verbose=verbose, branch=branch)
             mock_mkdir_p.assert_called_with(self.parent_dir)
@@ -199,8 +200,8 @@ class HostTestCase(unittest.TestCase):
         source = "git@github.com:mongodb/mongo.git"
         target = os.path.expanduser("~")
         command = ["cd", target, "&&", "git", "status"]
-        with patch("common.host.mkdir_p") as mock_mkdir_p, patch(
-            "common.local_host.LocalHost.exec_command"
+        with patch("bin.common.host.mkdir_p") as mock_mkdir_p, patch(
+            "bin.common.local_host.LocalHost.exec_command"
         ) as mock_exec_command:
             self.assertRaises(UserWarning, local.checkout_repos, source, target)
             mock_mkdir_p.assert_not_called()
@@ -211,7 +212,7 @@ class HostTestCase(unittest.TestCase):
 
         # # Test with non-existing target
         source = "https://github.com/mongodb/stitch-js-sdk.git"
-        target = os.path.join(self.parent_dir, "stitch-js-sdk")
+        target = os.path.join(self.parent_dir, "bin.stitch-js-sdk")
         commands = [["git", "clone", "", source, target]]
         self.helper_test_checkout_repos(source, target, commands, verbose=True)
 
@@ -222,7 +223,7 @@ class HostTestCase(unittest.TestCase):
 
         # Test with specified branch
         source = "https://github.com/mongodb/stitch-js-sdk.git"
-        target = os.path.join(self.parent_dir, "stitch-js-sdk")
+        target = os.path.join(self.parent_dir, "bin.stitch-js-sdk")
         branch = "2.x.x"
         commands = [
             ["git", "clone", "--quiet", source, target],
@@ -238,9 +239,9 @@ class HostTestCase(unittest.TestCase):
         source = "https://github.com/mongodb/stitch-js-sdk.git"
         target = os.path.join(self.parent_dir, "stitch-js-sdk")
         command = ["cd", target, "&&", "git", "status"]
-        with patch("common.host.os.path.isdir") as mock_isdir, patch(
-            "common.host.mkdir_p"
-        ) as mock_mkdir_p, patch("common.local_host.LocalHost.exec_command") as mock_exec_command:
+        with patch("bin.common.host.os.path.isdir") as mock_isdir, patch(
+            "bin.common.host.mkdir_p"
+        ) as mock_mkdir_p, patch("bin.common.local_host.LocalHost.exec_command") as mock_exec_command:
             mock_isdir.return_value = True
             mock_exec_command.return_value = 0
             local.checkout_repos(source, target)

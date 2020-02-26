@@ -1,17 +1,18 @@
 """ Run javascript tests to check correctness """
 
+from __future__ import absolute_import
 from functools import partial
 import logging
 import os
 
 import jinja2
 
-from mongodb_setup_helpers import mongodb_tls_configured
-from command_runner import make_workload_runner_host
-from host_factory import make_host
-from host_utils import extract_hosts
-from thread_runner import run_threads
-from utils import mkdir_p
+from .mongodb_setup_helpers import mongodb_tls_configured
+from .command_runner import make_workload_runner_host
+from .host_factory import make_host
+from .host_utils import extract_hosts
+from .thread_runner import run_threads
+from .utils import mkdir_p
 
 LOG = logging.getLogger(__name__)
 

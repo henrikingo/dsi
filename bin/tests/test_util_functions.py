@@ -1,10 +1,11 @@
 """Unit tests for utility functions in analysis/util.py. Run using nosetests."""
 
+from __future__ import absolute_import
 import unittest
 
 import datetime
 
-import libanalysis.util as util
+from ..libanalysis import util
 
 
 class TestUtilFunctions(unittest.TestCase):

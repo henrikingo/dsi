@@ -2,6 +2,7 @@
 DSI's interaction with Cedar (aka "Curator" aka "Expanded Metrics")
 """
 
+from __future__ import absolute_import
 import logging
 import os
 

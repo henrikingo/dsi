@@ -6,6 +6,7 @@ Setup an work environment. Copy over the appropriate files.
 
 from __future__ import print_function
 
+from __future__ import absolute_import
 import argparse
 import os
 import os.path
@@ -18,9 +19,9 @@ import requests
 import structlog
 import yaml
 
-from common.config import ConfigDict
-from common.log import setup_logging
-import common.utils as utils
+from .common.config import ConfigDict
+from .common.log import setup_logging
+from .common import utils
 
 LOGGER = structlog.get_logger(__name__)
 

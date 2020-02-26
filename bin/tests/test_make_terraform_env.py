@@ -1,5 +1,6 @@
 """test file for terraform_env"""
 
+from __future__ import absolute_import
 from __future__ import print_function
 import datetime
 import logging
@@ -11,8 +12,8 @@ import requests
 import requests.exceptions
 from testfixtures import LogCapture
 
-from common.config import ConfigDict
-from common import terraform_config
+from ..common.config import ConfigDict
+from ..common import terraform_config
 
 
 class TestTerraformConfiguration(unittest.TestCase):
@@ -67,19 +68,19 @@ class TestTerraformConfiguration(unittest.TestCase):
             self.assertEqual(terraform_config.generate_runner_hostname(), "HostName")
             log_output.check(
                 (
-                    "common.terraform_config",
+                    "bin.common.terraform_config",
                     "INFO",
                     "Terraform_config.py _do_generate_runner could not access AWS"
                     "meta-data. Falling back to other methods",
                 ),
-                ("common.terraform_config", "INFO", "Timeout()"),
+                ("bin.common.terraform_config", "INFO", "Timeout()"),
                 (
-                    "common.terraform_config",
+                    "bin.common.terraform_config",
                     "INFO",
                     "Terraform_config.py _do_generate_runner could not access"
                     " ip.42.pl to get public IP. Falling back to gethostname",
                 ),
-                ("common.terraform_config", "INFO", "Timeout()"),
+                ("bin.common.terraform_config", "INFO", "Timeout()"),
             )
 
     @patch("socket.gethostname")
@@ -110,12 +111,12 @@ class TestTerraformConfiguration(unittest.TestCase):
             self.assertEqual(terraform_config.generate_runner_hostname(), "ip.42.hostname")
             log_output.check(
                 (
-                    "common.terraform_config",
+                    "bin.common.terraform_config",
                     "INFO",
                     "Terraform_config.py _do_generate_runner could not access AWS"
                     "meta-data. Falling back to other methods",
                 ),
-                ("common.terraform_config", "INFO", "Timeout()"),
+                ("bin.common.terraform_config", "INFO", "Timeout()"),
             )
 
     @patch("socket.gethostname")
@@ -131,20 +132,20 @@ class TestTerraformConfiguration(unittest.TestCase):
             self.assertEqual(terraform_config.generate_runner_hostname(), "HostName")
             log_output.check(
                 (
-                    "common.terraform_config",
+                    "bin.common.terraform_config",
                     "INFO",
                     "Terraform_config.py _do_generate_runner could not access AWS"
                     "meta-data. Falling back to other methods",
                 ),
-                ("common.terraform_config", "INFO", "Timeout()"),
+                ("bin.common.terraform_config", "INFO", "Timeout()"),
                 (
-                    "common.terraform_config",
+                    "bin.common.terraform_config",
                     "INFO",
                     "Terraform_config.py _do_generate_runner could not access ip.42.pl to"
                     " get public IP. Falling back to gethostname",
                 ),
                 (
-                    "common.terraform_config",
+                    "bin.common.terraform_config",
                     "INFO",
                     "HTTPError(u'404 Client Error: OK for url: http://ip.42.pl/raw',)",
                 ),
@@ -168,24 +169,24 @@ class TestTerraformConfiguration(unittest.TestCase):
             self.assertEqual(terraform_config.generate_runner_hostname(), "HostName")
             log_output.check(
                 (
-                    "common.terraform_config",
+                    "bin.common.terraform_config",
                     "INFO",
                     "Terraform_config.py _do_generate_runner could not access AWSmeta-data."
                     " Falling back to other methods",
                 ),
                 (
-                    "common.terraform_config",
+                    "bin.common.terraform_config",
                     "INFO",
                     "HTTPError(u'404 Client Error: OK for url: "
                     "http://169.254.169.254/latest/meta-data/public-hostname',)",
                 ),
                 (
-                    "common.terraform_config",
+                    "bin.common.terraform_config",
                     "INFO",
                     "Terraform_config.py _do_generate_runner could not access ip.42.pl to get"
                     " public IP. Falling back to gethostname",
                 ),
-                ("common.terraform_config", "INFO", "Timeout()"),
+                ("bin.common.terraform_config", "INFO", "Timeout()"),
             )
 
     @patch("socket.gethostname")
@@ -219,18 +220,18 @@ class TestTerraformConfiguration(unittest.TestCase):
             )
             log_output.check(
                 (
-                    "common.terraform_config",
+                    "bin.common.terraform_config",
                     "INFO",
                     "Terraform_config.py retrieve_runner_instance_id could not access AWS"
                     "instance id.",
                 ),
-                ("common.terraform_config", "INFO", "Timeout()"),
+                ("bin.common.terraform_config", "INFO", "Timeout()"),
             )
 
-    @patch("common.terraform_config.generate_expire_on_tag")
-    @patch("common.terraform_config.uuid4")
-    @patch("common.terraform_config.generate_runner_hostname")
-    @patch("common.terraform_config.retrieve_runner_instance_id")
+    @patch("bin.common.terraform_config.generate_expire_on_tag")
+    @patch("bin.common.terraform_config.uuid4")
+    @patch("bin.common.terraform_config.generate_runner_hostname")
+    @patch("bin.common.terraform_config.retrieve_runner_instance_id")
     # pylint: disable=invalid-name
     def test_default(
         self,

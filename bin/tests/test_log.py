@@ -1,4 +1,5 @@
 """Tests for bin/common/host.py"""
+from __future__ import absolute_import
 import os
 import sys
 import unittest
@@ -6,7 +7,7 @@ from StringIO import StringIO
 
 from mock import MagicMock
 
-from bin.common.log import TeeStream
+from ..common.log import TeeStream
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/common")
 

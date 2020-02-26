@@ -4,6 +4,7 @@ Parser classes for parsing test output into a perf.json file. One parser for eac
 See SUPPORTED_TYPES below for a list of types you can use.
 """
 
+from __future__ import absolute_import
 import csv
 import json
 import logging
@@ -12,9 +13,9 @@ import re
 
 from nose.tools import nottest
 
-from testcontrollib import test_runner
+from ..testcontrollib import test_runner
 
-import cedar
+from . import cedar
 import six
 
 LOG = logging.getLogger(__name__)

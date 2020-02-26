@@ -1,4 +1,5 @@
 """Tests for bin/common/host_utils.py"""
+from __future__ import absolute_import
 import copy
 import os
 import shutil
@@ -10,8 +11,8 @@ from StringIO import StringIO
 
 from mock import patch, MagicMock, call
 
-import common.host_utils as host_utils
-from common.config import ConfigDict
+from ..common import host_utils
+from ..common.config import ConfigDict
 from test_lib.fixture_files import FixtureFiles
 from six.moves import range
 
@@ -63,7 +64,7 @@ class HostUtilsTestCase(unittest.TestCase):
         self.assertEqual(
             host_utils.create_timer(start, None), host_utils.never_timeout
         )
-        with patch("common.host_utils.partial") as mock_partial:
+        with patch("bin.common.host_utils.partial") as mock_partial:
             self.assertTrue(host_utils.create_timer(start, 50))
             mock_partial.assert_called_once_with(host_utils.check_timed_out, start, 50)
 

@@ -1,12 +1,13 @@
 """test file for terraform_env"""
 
 from __future__ import print_function
+from __future__ import absolute_import
 import unittest
 import os
 import yaml
 
-from bin.common.config import ConfigDict
-from bin.common import terraform_output_parser as tf_output
+from ..common.config import ConfigDict
+from ..common import terraform_output_parser as tf_output
 from test_lib.fixture_files import FixtureFiles
 
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))

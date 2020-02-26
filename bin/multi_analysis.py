@@ -9,6 +9,7 @@ write back to that file. This script only prints out a csv file (or optionally w
 
 from __future__ import print_function
 
+from __future__ import absolute_import
 import argparse
 import copy
 import json
@@ -19,8 +20,8 @@ from requests.exceptions import HTTPError
 import numpy
 import yaml
 
-import common.deep_dict as deep_dict
-from evergreen import evergreen_client
+from .common import deep_dict
+from .evergreen import evergreen_client
 import six
 
 

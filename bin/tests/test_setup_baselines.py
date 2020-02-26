@@ -2,13 +2,14 @@
 Unit tests for `setup_baselines.py`.
 """
 
+from __future__ import absolute_import
 from __future__ import print_function
 import os
 import textwrap
 import unittest
 
 from test_lib.fixture_files import FixtureFiles
-import setup_baselines
+from .. import setup_baselines
 
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 

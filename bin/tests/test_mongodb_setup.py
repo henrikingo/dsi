@@ -1,13 +1,13 @@
 """Tests for the mongodb_setup module"""
+from __future__ import absolute_import
 import copy
 import unittest
 
 import mock
 
-import common.host as host
-import common.mongodb_cluster as mongodb_cluster
-import common.command_runner as command_runner
-import mongodb_setup as mongodb_setup
+from ..common import host
+from ..common import mongodb_cluster
+from .. import mongodb_setup
 
 # Mock the remote host module.
 mongodb_setup.RemoteHost = mock.MagicMock()
@@ -79,7 +79,7 @@ class TestMongodbSetup(unittest.TestCase):
         setup.shutdown.return_value = True
         setup.downloader = mock.MagicMock()
 
-        with mock.patch("mongodb_setup.run_threads") as mock_run_threads:
+        with mock.patch("bin.mongodb_setup.run_threads") as mock_run_threads:
             mock_run_threads.return_value = [True]
             self.assertTrue(setup.restart())
             setup.destroy.assert_called_once_with(60000)
@@ -90,7 +90,7 @@ class TestMongodbSetup(unittest.TestCase):
     def test_start(self):
         """ test start"""
 
-        @mock.patch("mongodb_setup.run_pre_post_commands")
+        @mock.patch("bin.mongodb_setup.run_pre_post_commands")
         def _test_start(mock_run_pre_post_commands, download_status=False, pre_cluster_start=False):
             test_config = copy.deepcopy(self.config)
             if pre_cluster_start:
@@ -170,9 +170,9 @@ class TestMongodbSetup(unittest.TestCase):
         setup.shutdown = mock.MagicMock(name="shutdown")
         setup.shutdown.return_value = False
 
-        with mock.patch("mongodb_setup.run_threads") as mock_run_threads, mock.patch(
-            "mongodb_setup.partial"
-        ) as mock_partial, mock.patch("common.mongodb_cluster.MongoNode.run_mongo_shell"):
+        with mock.patch("bin.mongodb_setup.run_threads") as mock_run_threads, mock.patch(
+            "bin.mongodb_setup.partial"
+        ) as mock_partial, mock.patch("bin.common.mongodb_cluster.MongoNode.run_mongo_shell"):
             mock_run_threads.return_value = run_threads
             mock_partial.return_value = "threads"
 
@@ -218,8 +218,8 @@ class TestMongodbSetup(unittest.TestCase):
         mock_shutdown = mock.MagicMock(name="shutdown")
         setup.add_default_users = mock_add_default_users
         setup.shutdown = mock_shutdown
-        with mock.patch("mongodb_setup.run_threads") as mock_run_threads, mock.patch(
-            "mongodb_setup.partial"
+        with mock.patch("bin.mongodb_setup.run_threads") as mock_run_threads, mock.patch(
+            "bin.mongodb_setup.partial"
         ) as mock_partial:
             mock_run_threads.return_value = [True, True]
             mock_partial.return_value = "threads"
@@ -255,8 +255,8 @@ class TestMongodbSetup(unittest.TestCase):
         mock_shutdown = mock.MagicMock(name="shutdown")
         setup.add_default_users = mock_add_default_users
         setup.shutdown = mock_shutdown
-        with mock.patch("mongodb_setup.run_threads") as mock_run_threads, mock.patch(
-            "mongodb_setup.partial"
+        with mock.patch("bin.mongodb_setup.run_threads") as mock_run_threads, mock.patch(
+            "bin.mongodb_setup.partial"
         ) as mock_partial:
             mock_run_threads.return_value = [True, True]
             mock_partial.return_value = "threads"
@@ -295,8 +295,8 @@ class TestMongodbSetup(unittest.TestCase):
         mock_shutdown = mock.MagicMock(name="shutdown")
         setup.add_default_users = mock_add_default_users
         setup.shutdown = mock_shutdown
-        with mock.patch("mongodb_setup.run_threads") as mock_run_threads, mock.patch(
-            "mongodb_setup.partial"
+        with mock.patch("bin.mongodb_setup.run_threads") as mock_run_threads, mock.patch(
+            "bin.mongodb_setup.partial"
         ) as mock_partial:
             mock_run_threads.return_value = [True, True]
             mock_partial.return_value = "threads"
@@ -338,8 +338,8 @@ class TestMongodbSetup(unittest.TestCase):
         mock_cluster1 = mock.MagicMock(name="cluster1")
         mock_cluster2 = mock.MagicMock(name="cluster2")
         setup.clusters = [mock_cluster1, mock_cluster2]
-        with mock.patch("mongodb_setup.run_threads") as mock_run_threads, mock.patch(
-            "mongodb_setup.partial"
+        with mock.patch("bin.mongodb_setup.run_threads") as mock_run_threads, mock.patch(
+            "bin.mongodb_setup.partial"
         ) as mock_partial:
 
             mock_run_threads.return_value = [True]
@@ -358,8 +358,8 @@ class TestMongodbSetup(unittest.TestCase):
         mock_cluster1 = mock.MagicMock(name="cluster1")
         mock_cluster2 = mock.MagicMock(name="cluster2")
         setup.clusters = [mock_cluster1, mock_cluster2]
-        with mock.patch("mongodb_setup.run_threads") as mock_run_threads, mock.patch(
-            "mongodb_setup.partial"
+        with mock.patch("bin.mongodb_setup.run_threads") as mock_run_threads, mock.patch(
+            "bin.mongodb_setup.partial"
         ) as mock_partial:
 
             mock_run_threads.return_value = [True]
@@ -372,7 +372,7 @@ class TestMongodbSetup(unittest.TestCase):
         """ test start and correctly handles run on error"""
 
         @mock.patch("sys.exit")
-        @mock.patch("mongodb_setup.run_upon_error")
+        @mock.patch("bin.mongodb_setup.run_upon_error")
         def _test_start_cluster(success, mock_run_upon_error, mock_exit):
 
             mongo = mock.MagicMock(name="mongo")

@@ -2,8 +2,8 @@
 Unit tests for 'bootstrap.py'.
 """
 
+from __future__ import absolute_import
 from __future__ import print_function
-
 import copy
 import logging
 import os
@@ -15,8 +15,8 @@ import yaml
 from mock import patch
 from testfixtures import LogCapture
 
-import bootstrap
-from common.config import ConfigDict
+from .. import bootstrap
+from ..common.config import ConfigDict
 import test_lib.structlog_for_test as structlog_for_test
 
 
@@ -370,8 +370,8 @@ class TestBootstrap(unittest.TestCase):
         self.assertEqual(terraform, "/usr/bin/terraform")
 
     @patch("subprocess.check_output")
-    @patch("bootstrap.requests")
-    @patch("bootstrap._extract_zip")
+    @patch("bin.bootstrap.requests")
+    @patch("bin.bootstrap._extract_zip")
     def test_find_terraform_download(self, mock_extract, mock_requests, mock_check_output):
         """
         Testing find_terraform goes to download when not found in PATH.
@@ -401,7 +401,7 @@ class TestBootstrap(unittest.TestCase):
                 bootstrap.validate_terraform(self.directory, config)
             actual = crit.actual()
             expected = (
-                "bootstrap",
+                "bin.bootstrap",
                 "CRITICAL",
                 u"[critical ] No Terraform download url found for your operating system. Automatic terraform download is not supported.",
             )
@@ -431,12 +431,12 @@ class TestBootstrap(unittest.TestCase):
 
             message_1 = (
                 u"[critical ] See documentation for installing terraform: "
-                u"http://bit.ly/2ufjQ0R [bootstrap] "
+                u"http://bit.ly/2ufjQ0R [bin.bootstrap] "
             )
-            message_2 = u"[critical ] Call to terraform failed.      [bootstrap] "
+            message_2 = u"[critical ] Call to terraform failed.      [bin.bootstrap] "
             crit_expected = {
-                ("bootstrap", "CRITICAL", message_1),
-                ("bootstrap", "CRITICAL", message_2),
+                ("bin.bootstrap", "CRITICAL", message_1),
+                ("bin.bootstrap", "CRITICAL", message_2),
             }
             self.assertTrue(crit_expected.issubset(crit_logs))
 
@@ -454,14 +454,14 @@ class TestBootstrap(unittest.TestCase):
             crit_logs = set(crit.actual())
             crit_expected = {
                 (
-                    "bootstrap",
+                    "bin.bootstrap",
                     "CRITICAL",
-                    u"[critical ] See documentation for installing terraform: http://bit.ly/2ufjQ0R [bootstrap] ",
+                    u"[critical ] See documentation for installing terraform: http://bit.ly/2ufjQ0R [bin.bootstrap] ",
                 ),
                 (
-                    "bootstrap",
+                    "bin.bootstrap",
                     "CRITICAL",
-                    u"[critical ] Cannot execute terraform binary file. [bootstrap] ",
+                    u"[critical ] Cannot execute terraform binary file. [bin.bootstrap] ",
                 ),
             }
             self.assertTrue(crit_expected.issubset(crit_logs))
@@ -480,14 +480,14 @@ class TestBootstrap(unittest.TestCase):
             crit_logs = set(crit.actual())
             crit_expected = {
                 (
-                    "bootstrap",
+                    "bin.bootstrap",
                     "CRITICAL",
-                    u"[critical ] See documentation for installing terraform: http://bit.ly/2ufjQ0R [bootstrap] ",
+                    u"[critical ] See documentation for installing terraform: http://bit.ly/2ufjQ0R [bin.bootstrap] ",
                 ),
                 (
-                    "bootstrap",
+                    "bin.bootstrap",
                     "CRITICAL",
-                    u"[critical ] No terraform binary file found. [bootstrap] ",
+                    u"[critical ] No terraform binary file found. [bin.bootstrap] ",
                 ),
             }
             self.assertTrue(crit_expected.issubset(crit_logs))
@@ -502,7 +502,7 @@ class TestBootstrap(unittest.TestCase):
         bootstrap.validate_terraform(self.directory, config)
         self.assertEqual(config, config)
 
-    @patch("common.utils.get_dsi_bin_dir")
+    @patch("bin.common.utils.get_dsi_bin_dir")
     def test_write_dsienv(self, mock_dsi_bin_dir):
         """
         Testing write_dsienv
@@ -532,9 +532,9 @@ class TestBootstrap(unittest.TestCase):
                 bootstrap.load_bootstrap(config, directory)
             crit.check(
                 (
-                    "bootstrap",
+                    "bin.bootstrap",
                     "CRITICAL",
-                    u"[critical ] Location specified for bootstrap.yml is invalid. [bootstrap] ",
+                    u"[critical ] Location specified for bootstrap.yml is invalid. [bin.bootstrap] ",
                 )
             )
 

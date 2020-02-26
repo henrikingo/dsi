@@ -6,13 +6,14 @@ and also a checked out mongo git repo, and we don't want to create such complex 
 But some superficial unit testing is still possible and meaningful to execute.
 """
 
+from __future__ import absolute_import
 import os
 import unittest
 import yaml
 
 from test_lib.fixture_files import FixtureFiles
 from test_lib.test_requests_parent import TestRequestsParent
-from multi_patch_builds import MultiEvergreen
+from ..multi_patch_builds import MultiEvergreen
 
 FIXTURE = FixtureFiles(os.path.dirname(__file__))
 

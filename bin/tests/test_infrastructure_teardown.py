@@ -2,12 +2,13 @@
 Unit test for infrastructure_teardown.py
 """
 
+from __future__ import absolute_import
 import unittest
 import logging
 from mock import patch, call, MagicMock
 from testfixtures import LogCapture
 
-import infrastructure_teardown
+from .. import infrastructure_teardown
 
 
 class TestInfrastructureTeardown(unittest.TestCase):
@@ -16,9 +17,9 @@ class TestInfrastructureTeardown(unittest.TestCase):
     def setUp(self):
         self.os_environ = {"TERRAFORM": "test/path/terraform"}
 
-    @patch("infrastructure_teardown.subprocess.check_call")
-    @patch("infrastructure_teardown.glob.glob")
-    @patch("infrastructure_teardown.os")
+    @patch("bin.infrastructure_teardown.subprocess.check_call")
+    @patch("bin.infrastructure_teardown.glob.glob")
+    @patch("bin.infrastructure_teardown.os")
     def test_destroy_resources(self, mock_os, mock_glob, mock_check_call):
         """ Test infrastructure_teardown.destroy_resources """
         mock_os.path.dirname.return_value = "teardown/script/path"
@@ -39,8 +40,8 @@ class TestInfrastructureTeardown(unittest.TestCase):
             [self.os_environ["TERRAFORM"], "destroy", "-var-file=cluster.json", "-force"]
         )
 
-    @patch("infrastructure_teardown.glob.glob")
-    @patch("infrastructure_teardown.os")
+    @patch("bin.infrastructure_teardown.glob.glob")
+    @patch("bin.infrastructure_teardown.os")
     def test_destroy_resources_no_cluster_json(self, mock_os, mock_glob):
         """ Test infrastructure_teardown.destroy_resources when there is no cluster.json file """
         mock_os.path.dirname.return_value = "teardown/script/path"
@@ -56,7 +57,7 @@ class TestInfrastructureTeardown(unittest.TestCase):
 
             critical.check(
                 (
-                    "infrastructure_teardown",
+                    "bin.infrastructure_teardown",
                     "CRITICAL",
                     "In infrastructure_teardown.py and cluster.json does not exist. Giving up.",
                 )
@@ -66,7 +67,7 @@ class TestInfrastructureTeardown(unittest.TestCase):
         mock_os.chdir.assert_has_calls(chdir_calls)
         mock_os.path.isfile.assert_called_with("cluster.json")
 
-    @patch("common.atlas_setup.AtlasSetup")
+    @patch("bin.common.atlas_setup.AtlasSetup")
     def test_destroy_atlas_resources(self, mock_atlas_setup):
         mock_atlas = MagicMock(name="atlas", autospec=True)
         mock_atlas_setup.return_value = mock_atlas

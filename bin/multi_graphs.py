@@ -8,6 +8,7 @@ Note: No unit tests for this file, the pyplot module is heavy on dependencies.
 
 from __future__ import print_function
 
+from __future__ import absolute_import
 import argparse
 import json
 import os
@@ -17,7 +18,7 @@ import numpy
 import yaml
 import matplotlib.pyplot as pyplot
 
-import common.deep_dict as deep_dict
+from .common import deep_dict
 import six
 from six.moves import range
 

@@ -1,11 +1,12 @@
 """Unit tests for `ycsb_throughput_analysis.py`."""
 
+from __future__ import absolute_import
 from os import path
 
 import unittest
 
 from test_lib.fixture_files import FixtureFiles
-import libanalysis.ycsb_throughput_analysis as ycsb_throughput
+from ..libanalysis import ycsb_throughput_analysis as ycsb_throughput
 from six.moves import range
 from six.moves import zip
 

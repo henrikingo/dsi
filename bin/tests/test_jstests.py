@@ -1,9 +1,10 @@
 """Tests for bin/common/config.py"""
+from __future__ import absolute_import
 import unittest
 
 from mock import patch, call
 
-import common.jstests as jstests
+from ..common import jstests
 
 
 class JSTestsTestCase(unittest.TestCase):
@@ -16,7 +17,7 @@ class JSTestsTestCase(unittest.TestCase):
             "test_control": {"jstests_dir": "./jstests/hooks", "task_name": "test_config"},
         }
 
-    @patch("common.jstests.jstest_one_host")
+    @patch("bin.common.jstests.jstest_one_host")
     def test_validate_no_jstests_dir(self, mock_jstest_one_host):
         """
         Test the run_validate script when there are no jstests_dir.
@@ -28,8 +29,8 @@ class JSTestsTestCase(unittest.TestCase):
         jstests.run_validate(self.config, "UnitTest")
         mock_jstest_one_host.assert_not_called()
 
-    @patch("common.jstests.jstest_one_host")
-    @patch("common.jstests._remote_exists")
+    @patch("bin.common.jstests.jstest_one_host")
+    @patch("bin.common.jstests._remote_exists")
     def test_validate_standalone(self, mock_remote_exists, mock_jstest_one_host):
         """
         Test the run_validate script when called on a list of standalones.
@@ -51,8 +52,8 @@ class JSTestsTestCase(unittest.TestCase):
             ]
         )
 
-    @patch("common.jstests.jstest_one_host")
-    @patch("common.jstests._remote_exists")
+    @patch("bin.common.jstests.jstest_one_host")
+    @patch("bin.common.jstests._remote_exists")
     def test_validate_primaries(self, mock_remote_exists, mock_jstest_one_host):
         """
         Test the run_validate script when called on a list of primaries.
@@ -93,8 +94,8 @@ class JSTestsTestCase(unittest.TestCase):
             any_order=True,
         )
 
-    @patch("common.jstests.jstest_one_host")
-    @patch("common.jstests._remote_exists")
+    @patch("bin.common.jstests.jstest_one_host")
+    @patch("bin.common.jstests._remote_exists")
     def test_validate_jstests_not_found(self, mock_remote_exists, mock_jstest_one_host):
         """
         Test the run_validate script when jstests_dir is not found.

@@ -1,16 +1,17 @@
 """
 RemoteHost implementation that uses SSH.
 """
+from __future__ import absolute_import
 from datetime import datetime
 import logging
 
 import paramiko
 
-import common.remote_host as remote_host
-import common.host_utils as host_utils
-from common.host_utils import LOG
+from . import remote_host
+from . import host_utils
+from .host_utils import LOG
 
-from common.log import IOLogAdapter
+from .log import IOLogAdapter
 import six
 
 LOG = logging.getLogger(__name__)

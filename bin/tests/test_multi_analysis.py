@@ -1,12 +1,13 @@
 """Unit tests for util/multi_analysis.py"""
 
+from __future__ import absolute_import
 from __future__ import print_function
 import os
 import unittest
 
 from test_lib.fixture_files import FixtureFiles
 from test_lib.test_requests_parent import TestRequestsParent
-from multi_analysis import MultiEvergreenAnalysis, main
+from ..multi_analysis import MultiEvergreenAnalysis, main
 
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
 

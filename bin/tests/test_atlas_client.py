@@ -2,13 +2,14 @@
 Unit test for atlas_client.py
 """
 
+from __future__ import absolute_import
 import os
 import unittest
 
 from mock import patch, MagicMock
 import requests
 
-import common.atlas_client as atlas_client
+from ..common import atlas_client
 from test_lib.fixture_files import FixtureFiles
 
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
@@ -73,7 +74,7 @@ class TestAtlasClient(unittest.TestCase):
         )
 
     @patch("time.sleep")
-    @patch("common.atlas_client.AtlasClient.get_one_cluster")
+    @patch("bin.common.atlas_client.AtlasClient.get_one_cluster")
     def test_await_idle(self, mock_get_one_cluster, mock_time):
         state_names = [{"stateName": "CREATING"}, {"stateName": "CREATING"}, {"stateName": "IDLE"}]
         # Note: When given an iterable, side_effect returns one element for each call.
@@ -84,7 +85,7 @@ class TestAtlasClient(unittest.TestCase):
         mock_time.assert_called()
 
     @patch("time.sleep")
-    @patch("common.atlas_client.AtlasClient.get_one_cluster")
+    @patch("bin.common.atlas_client.AtlasClient.get_one_cluster")
     def test_await_state_timeout(self, mock_get_one_cluster, mock_time):
         mock_get_one_cluster.side_effect = [{"stateName": "CREATING"}]
 
@@ -93,8 +94,8 @@ class TestAtlasClient(unittest.TestCase):
         mock_get_one_cluster.assert_called_with("test_cluster_name")
         mock_time.assert_called()
 
-    @patch("common.atlas_client.shutil.copyfileobj")
-    @patch("common.atlas_client.mkdir_p")
+    @patch("bin.common.atlas_client.shutil.copyfileobj")
+    @patch("bin.common.atlas_client.mkdir_p")
     @patch("requests.get")
     @patch("requests.post")
     def test_log_collection(self, mock_post, mock_get, mock_mkdir_p, mock_copy):
@@ -119,7 +120,7 @@ class TestAtlasClient(unittest.TestCase):
         mock_mkdir_p.assert_called_with(os.path.dirname(self.download_file))
 
     @patch("time.sleep")
-    @patch("common.atlas_client.AtlasClient.get_log_collection_job")
+    @patch("bin.common.atlas_client.AtlasClient.get_log_collection_job")
     def test_await_log_job(self, mock_get, mock_time):
         mock_get.side_effect = [{"status": "FOO"}, {"status": "SUCCESS"}]
 

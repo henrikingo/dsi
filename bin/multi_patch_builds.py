@@ -6,6 +6,7 @@ Submit multiple patch builds using the evergreen client, and finalize them.
 
 from __future__ import print_function
 
+from __future__ import absolute_import
 import argparse
 import os
 import subprocess
@@ -14,7 +15,7 @@ import time
 
 import yaml
 
-from evergreen import evergreen_client
+from .evergreen import evergreen_client
 import six
 from six.moves import range
 

@@ -2,6 +2,7 @@
 Provide abstraction over running commands on remote or local machines
 """
 
+from __future__ import absolute_import
 from datetime import datetime
 import logging
 import os
@@ -10,9 +11,9 @@ import time
 
 import pymongo.uri_parser
 
-import common.host_utils as host_utils
-from common.utils import mkdir_p
-from common.log import IOLogAdapter
+from . import host_utils
+from .utils import mkdir_p
+from .log import IOLogAdapter
 import six
 
 LOG = logging.getLogger(__name__)

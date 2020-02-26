@@ -2,10 +2,11 @@
 Unit tests for analysis.py, the main analysis entry point.
 """
 
+from __future__ import absolute_import
 import os
 import unittest
 
-import bin.analysis as analysis
+from .. import analysis
 from test_lib.fixture_files import FixtureFiles
 
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))

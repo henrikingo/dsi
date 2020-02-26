@@ -1,12 +1,13 @@
 """Tests for bin/alias.py"""
 
+from __future__ import absolute_import
 import os
 import sys
 import unittest
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from alias import unalias, expand, ALIASES
+from ..alias import unalias, expand, ALIASES
 
 
 class AliasTestCase(unittest.TestCase):

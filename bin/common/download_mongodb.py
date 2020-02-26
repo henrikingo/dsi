@@ -1,5 +1,6 @@
 """Download and install mongodb_binary_archive on all nodes."""
 
+from __future__ import absolute_import
 from functools import partial
 import logging
 import os
@@ -7,9 +8,9 @@ import re
 from uuid import uuid4
 
 # pylint: disable=too-few-public-methods
-import common.host_factory as host_factory
-import common.host_utils as host_utils
-from thread_runner import run_threads
+from . import host_factory
+from . import host_utils
+from .thread_runner import run_threads
 
 LOG = logging.getLogger(__name__)
 

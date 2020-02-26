@@ -13,10 +13,10 @@ and the list is a list of values for that path.
 
 from __future__ import print_function
 
+from __future__ import absolute_import
 import collections
 import mmap
 import os
-import re
 import struct
 import zlib
 import sys

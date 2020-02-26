@@ -1,11 +1,12 @@
 """Tests for bin/common/host.py"""
 
+from __future__ import absolute_import
 import unittest
 
 from mock import patch
 
-import common.models.host_info as host_info
-import common.host_factory as host_factory
+from ..common.models import host_info
+from ..common import host_factory
 
 
 class HostFactoryTestCase(unittest.TestCase):

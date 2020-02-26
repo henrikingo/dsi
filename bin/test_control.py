@@ -4,6 +4,7 @@
 
 from __future__ import print_function
 
+from __future__ import absolute_import
 import argparse
 
 import logging
@@ -16,17 +17,17 @@ import yaml
 
 from nose.tools import nottest
 
-from common.exit_status import EXIT_STATUS_OK
-from common.config import ConfigDict
-from common.host_utils import extract_hosts, setup_ssh_agent
-from common.command_runner import run_pre_post_commands, EXCEPTION_BEHAVIOR, prepare_reports_dir
-from common.jstests import run_validate
-import common.log as log
-import common.command_runner as command_runner
-import common.cedar as cedar
-from common.workload_output_parser import parse_test_results, get_supported_parser_types
+from .common.exit_status import EXIT_STATUS_OK
+from .common.config import ConfigDict
+from .common.host_utils import extract_hosts, setup_ssh_agent
+from .common.command_runner import run_pre_post_commands, EXCEPTION_BEHAVIOR, prepare_reports_dir
+from .common.jstests import run_validate
+from .common import log
+from .common import command_runner
+from .common import cedar
+from .common.workload_output_parser import parse_test_results, get_supported_parser_types
 
-from testcontrollib import test_runner
+from .testcontrollib import test_runner
 
 LOG = logging.getLogger(__name__)
 

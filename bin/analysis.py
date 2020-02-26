@@ -15,14 +15,15 @@ results.json, but execute independently.
 Note: Analysis.py doesn't connect to the cluster anymore. It only operates on files in work
 directory, and especially reports/.
 """
+from __future__ import absolute_import
 import argparse
 import sys
 
 import structlog
 
-from libanalysis.results import ResultsFile
-from common.log import setup_logging
-from common.config import ConfigDict
+from .libanalysis.results import ResultsFile
+from .common.log import setup_logging
+from .common.config import ConfigDict
 
 LOG = structlog.get_logger(__name__)
 

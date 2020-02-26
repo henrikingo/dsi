@@ -1,6 +1,7 @@
 """
 Utility function.
 """
+from __future__ import absolute_import
 import six.moves.configparser
 import os
 import errno

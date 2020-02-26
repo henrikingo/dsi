@@ -4,14 +4,15 @@
 Setup hosts for running various kinds of workload types
 """
 
+from __future__ import absolute_import
 import argparse
 import logging
 import sys
 
-import common.host_utils as host_utils
-import common.command_runner as command_runner
-from common.config import ConfigDict
-from common.log import setup_logging
+from .common import host_utils
+from .common import command_runner
+from .common.config import ConfigDict
+from .common.log import setup_logging
 
 LOG = logging.getLogger(__name__)
 

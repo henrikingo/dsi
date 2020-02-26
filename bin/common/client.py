@@ -1,11 +1,12 @@
 """
 Classes representing workload clients and their configuration.
 """
-from common.host_utils import ssh_user_and_key_file
-from common import host_factory
-from common.models.host_info import HostInfo
+from __future__ import absolute_import
+from .host_utils import ssh_user_and_key_file
+from . import host_factory
+from .models.host_info import HostInfo
 
-from delay import HasDelay, DelayGraph
+from ..delay import HasDelay, DelayGraph
 
 
 # pylint: disable=too-many-instance-attributes

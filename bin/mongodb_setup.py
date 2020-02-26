@@ -6,23 +6,24 @@ MongoDB Setup
 This file takes as input a YAML configuration of the AWS instances and
 MongoDB cluster topology and brings up a cluster on the remote machines.
 """
+from __future__ import absolute_import
 import sys
 from functools import partial
 import logging
 
 import argparse
 
-import common.atlas_setup as atlas_setup
-import common.host_utils as host_utils
-from common.command_runner import run_pre_post_commands, EXCEPTION_BEHAVIOR, run_upon_error
-from common.download_mongodb import DownloadMongodb
-import common.mongodb_setup_helpers as mongodb_setup_helpers
-import common.mongodb_cluster as mongodb_cluster
-from common.log import setup_logging
-from common.config import ConfigDict
-from common.client import ClientConfig, Client
-from common.thread_runner import run_threads
-from delay import DelayGraph, DelayNode, str_to_version_flag
+from .common import atlas_setup
+from .common import host_utils
+from .common.command_runner import run_pre_post_commands, EXCEPTION_BEHAVIOR, run_upon_error
+from .common.download_mongodb import DownloadMongodb
+from .common import mongodb_setup_helpers
+from .common import mongodb_cluster
+from .common.log import setup_logging
+from .common.config import ConfigDict
+from .common.client import ClientConfig, Client
+from .common.thread_runner import run_threads
+from .delay import DelayGraph, DelayNode, str_to_version_flag
 from six.moves import range
 
 LOG = logging.getLogger(__name__)

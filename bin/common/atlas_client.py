@@ -4,6 +4,7 @@ A thin client around Atlas REST API calls we use.
 Not complete, rather add calls as you need them.
 """
 
+from __future__ import absolute_import
 import os
 import shutil
 import time
@@ -12,7 +13,7 @@ import requests
 import requests.auth as auth
 import structlog
 
-from utils import mkdir_p
+from .utils import mkdir_p
 
 LOG = structlog.get_logger(__name__)
 

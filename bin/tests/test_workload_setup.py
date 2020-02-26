@@ -1,12 +1,13 @@
 """Test workload_setup module"""
 
+from __future__ import absolute_import
 import copy
 import unittest
 
 from mock import MagicMock, call, patch
 import mock
 
-import workload_setup
+from .. import workload_setup
 
 BASIC_CONFIG = {
     "test_control": {"run": [{"id": x, "type": x} for x in ["foo", "bar"]]},
@@ -33,7 +34,7 @@ class TestWorkloadSetup(unittest.TestCase):
         self.config = copy.deepcopy(BASIC_CONFIG)
         self.mock_run_host = MagicMock()
 
-    @patch("workload_setup.host_utils.setup_ssh_agent")
+    @patch("bin.workload_setup.host_utils.setup_ssh_agent")
     def test_ignore_done_check(self, mock_setup_ssh_agent):
         """We don't check for done-ness unless told to"""
         runner = new_runner(
@@ -42,12 +43,12 @@ class TestWorkloadSetup(unittest.TestCase):
                 "workload_setup": {"x": [{"foo": "bar"}]},
             }
         )
-        with mock.patch("common.command_runner.run_host_command", self.mock_run_host):
+        with mock.patch("bin.common.command_runner.run_host_command", self.mock_run_host):
             runner.setup_workloads()
             self.mock_run_host.assert_called_once()
             mock_setup_ssh_agent.assert_called()
 
-    @patch("workload_setup.host_utils.setup_ssh_agent")
+    @patch("bin.workload_setup.host_utils.setup_ssh_agent")
     def test_runs_two_types(self, mock_setup_ssh_agent):
         """Two distinct test types"""
         runner = new_runner(self.config)
@@ -57,7 +58,7 @@ class TestWorkloadSetup(unittest.TestCase):
         # and mock interactions aren't call-by-value.
         expected_call_config = copy.deepcopy(BASIC_CONFIG)
 
-        with mock.patch("common.command_runner.run_host_command", self.mock_run_host):
+        with mock.patch("bin.common.command_runner.run_host_command", self.mock_run_host):
             # run the thing
             runner.setup_workloads()
 

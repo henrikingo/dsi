@@ -8,6 +8,7 @@ occurs when it is used from within the Evergreen data directory which stores ter
 Furthermore, this file does not have any pip package dependencies.
 
 """
+from __future__ import absolute_import
 import argparse
 import glob
 import logging
@@ -87,8 +88,8 @@ def destroy_atlas_resources():
     # It will cause ImportError when run from an Evergreen teardown hook.
     # This means Atlas clusters must be shut down at the end of the task, they are not reused.
     try:
-        import common.config as config
-        import common.atlas_setup as atlas_setup
+        from .common import config
+        from .common import atlas_setup
     except ImportError as error:
         LOG.info(error)
         LOG.info("Cannot import ConfigDict or AtlasSetup. Skipping Atlas teardown.")

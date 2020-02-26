@@ -2,9 +2,10 @@
 analysis.py plugin: Check the output of the db-correctness validation.
 """
 
+from __future__ import absolute_import
 import structlog
 
-import rules
+from . import rules
 
 LOG = structlog.get_logger(__name__)
 

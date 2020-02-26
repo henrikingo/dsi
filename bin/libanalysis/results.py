@@ -2,6 +2,7 @@
 Class for reading and writing results.json.
 """
 
+from __future__ import absolute_import
 import json
 import os.path
 import re

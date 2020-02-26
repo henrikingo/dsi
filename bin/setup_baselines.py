@@ -2,6 +2,7 @@
 
 """ Script to stage and run baselines for mongo-perf and sys-perf"""
 
+from __future__ import absolute_import
 import argparse
 import copy
 from itertools import chain

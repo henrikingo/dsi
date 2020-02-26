@@ -1,13 +1,14 @@
 """
 Unit tests for `ftdc_analysis.py`
 """
+from __future__ import absolute_import
 import os
 import six.moves.queue
 import shutil
 import unittest
 
 from test_lib.fixture_files import FixtureFiles
-import libanalysis.ftdc_analysis as ftdc_analysis
+from ..libanalysis import ftdc_analysis
 
 FIXTURE_FILES = FixtureFiles(os.path.join(os.path.dirname(__file__)), "analysis")
 

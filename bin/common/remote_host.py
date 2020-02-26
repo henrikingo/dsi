@@ -1,6 +1,7 @@
 """
 Provide abstraction over running commands on remote machines, extending the base class in host.py
 """
+from __future__ import absolute_import
 from contextlib import closing
 from stat import S_ISDIR
 import logging
@@ -12,8 +13,8 @@ import sys
 
 import paramiko
 
-import common.host_utils as host_utils
-import common.host as host
+from . import host_utils
+from . import host
 
 LOG = logging.getLogger(__name__)
 # This stream only log error or above messages

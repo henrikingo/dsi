@@ -3,6 +3,7 @@ Paser output from terraform and generate necessary cluster definition files to t
 private IP addresses. This file will generate the file "infrastructure_provisioning.out.yml"
 """
 
+from __future__ import absolute_import
 from __future__ import print_function
 import logging
 import sys

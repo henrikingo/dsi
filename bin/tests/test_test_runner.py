@@ -1,6 +1,7 @@
 """
 Tests for bin/test_runner.py
 """
+from __future__ import absolute_import
 import os
 import shutil
 import subprocess
@@ -9,10 +10,10 @@ import unittest
 
 from mock import Mock, call
 
-from common.remote_host import RemoteHost
+from ..common.remote_host import RemoteHost
 
-from testcontrollib import test_runner
-from testcontrollib.test_runner import get_test_runner
+from ..testcontrollib import test_runner
+from ..testcontrollib.test_runner import get_test_runner
 
 
 class GetTestRunnerTestCase(unittest.TestCase):

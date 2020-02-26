@@ -1,8 +1,9 @@
 """Tests for the mongodb_setup_helpers module"""
 
+from __future__ import absolute_import
 import unittest
 
-import common.mongodb_setup_helpers as mongodb_setup_helpers
+from ..common import mongodb_setup_helpers
 
 
 class TestHelperFunctions(unittest.TestCase):

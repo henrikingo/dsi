@@ -3,6 +3,7 @@ Classes that represent and allow establishment of
 delays between hosts.
 """
 
+from __future__ import absolute_import
 from collections import OrderedDict
 from collections import namedtuple
 

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import socket
 import time
 import unittest
@@ -9,11 +10,11 @@ import mock
 
 from test_lib.comparator_utils import ANY_IN_STRING
 
-import common.host_utils as host_utils
-import common.remote_host as remote_host
-import common.remote_ssh_host as remote_ssh_host
+from ..common import host_utils
+from ..common import remote_host
+from ..common import remote_ssh_host
 
-from common.mongodb_setup_helpers import MongoDBAuthSettings
+from ..common.mongodb_setup_helpers import MongoDBAuthSettings
 
 
 def sleepy_streamer(sleep_time_sec, outval):
@@ -188,8 +189,8 @@ class RemoteSSHHostTestCase(unittest.TestCase):
 
         # We define an extra function for setting up the mocked values in order to make the
         # 'connection_string' and 'mongodb_auth_settings' parameters optional.
-        @patch("common.remote_host.RemoteHost.exec_command")
-        @patch("common.remote_host.RemoteHost.create_file")
+        @patch("bin.common.remote_host.RemoteHost.exec_command")
+        @patch("bin.common.remote_host.RemoteHost.create_file")
         @patch("paramiko.SSHClient")
         def run_test(mock_ssh, mock_create_file, mock_exec_command):
             _ = mock_ssh

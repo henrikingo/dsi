@@ -4,16 +4,17 @@ Test runners for different types of test frameworks.
 
 from __future__ import print_function
 
+from __future__ import absolute_import
 import os
 import subprocess
 
 from nose.tools import nottest
 
-import common.log as log
-import common.utils as utils
+from ..common import log
+from ..common import utils
 
-from common.exit_status import StatusWithMessage, EXIT_STATUS_LINE_PREFIX
-from common.host import INFO_ADAPTER
+from ..common.exit_status import StatusWithMessage, EXIT_STATUS_LINE_PREFIX
+from ..common.host import INFO_ADAPTER
 
 
 class _BaseRunner(object):

@@ -5,15 +5,16 @@ Functions for analyzing `FTDC` diagnostic data. Parse files to do some resource 
 """
 
 from __future__ import print_function
+from __future__ import absolute_import
 import copy
 import inspect
 import os
 
 import structlog
 
-import readers
-import rules
-import util
+from . import readers
+from . import rules
+from . import util
 import six
 from six.moves import range
 

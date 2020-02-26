@@ -1,5 +1,6 @@
 """Tests for bin/common/local_host.py"""
 
+from __future__ import absolute_import
 import os
 import shutil
 import unittest
@@ -7,10 +8,10 @@ from StringIO import StringIO
 
 from mock import MagicMock, ANY
 
-import common.local_host as local_host
-import common.utils as utils
-from common.log import TeeStream
-from common.config import ConfigDict
+from ..common import local_host
+from ..common import utils
+from ..common.log import TeeStream
+from ..common.config import ConfigDict
 from test_lib.fixture_files import FixtureFiles
 from test_lib.comparator_utils import ANY_IN_STRING
 

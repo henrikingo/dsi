@@ -2,6 +2,7 @@
 Utilities shared by different types of host objects
 """
 
+from __future__ import absolute_import
 from datetime import datetime
 from functools import partial
 import itertools
@@ -12,9 +13,9 @@ import socket
 import subprocess
 import os
 
-from common.exit_status import EXIT_STATUS_OK
-from common.log import IOLogAdapter
-from common.models.host_info import HostInfo
+from .exit_status import EXIT_STATUS_OK
+from .log import IOLogAdapter
+from .models.host_info import HostInfo
 
 ONE_SECOND_MILLIS = 1000.0
 ONE_MINUTE_MILLIS = 60 * ONE_SECOND_MILLIS

@@ -1,5 +1,6 @@
 """Unit tests for the rules module. Run using nosetests."""
 
+from __future__ import absolute_import
 from __future__ import print_function
 import os
 import unittest
@@ -7,9 +8,9 @@ import unittest
 from dateutil import parser as date_parser
 from nose.tools import nottest
 
-import libanalysis.rules as rules
-import libanalysis.readers as readers
-import libanalysis.util as util
+from ..libanalysis import rules
+from ..libanalysis import readers
+from ..libanalysis import util
 
 from test_lib.fixture_files import FixtureFiles
 

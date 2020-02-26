@@ -6,9 +6,9 @@ Dummy plugin that does nothing. Used for unit testing.
 
 from __future__ import print_function
 
+from __future__ import absolute_import
 import structlog
 
-import analysis
 from six.moves import range
 
 LOGGER = structlog.get_logger(__name__)

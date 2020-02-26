@@ -4,6 +4,7 @@ analysis.py plugin: Check core files.
 Copied from analysis/post_run_check.py
 """
 
+from __future__ import absolute_import
 import fnmatch
 import os
 

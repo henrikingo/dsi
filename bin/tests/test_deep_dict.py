@@ -1,8 +1,9 @@
 """Unit tests for util/multi_analysis.py"""
 
+from __future__ import absolute_import
 import unittest
 
-import common.deep_dict as deep_dict
+from ..common import deep_dict
 
 
 class TestDeepDict(unittest.TestCase):

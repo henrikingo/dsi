@@ -3,13 +3,14 @@ MongoDB Setup but for Atlas clusters
 
 Instead of creating our own MongoDB clusters, we make REST calls to Atlas instead.
 """
+from __future__ import absolute_import
 import copy
 import random
 
 import pymongo
 import structlog
 
-import atlas_client
+from . import atlas_client
 from six.moves import range
 
 LOG = structlog.get_logger(__name__)

@@ -6,6 +6,7 @@ example:
    2. partial(work, arg1, arg2)
 """
 
+from __future__ import absolute_import
 import six.moves.queue
 import logging
 import sys

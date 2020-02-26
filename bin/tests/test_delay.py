@@ -1,10 +1,11 @@
+from __future__ import absolute_import
 import os
 import shutil
 
 import unittest
 from contextlib import contextmanager
 from mock import MagicMock, call, patch
-from delay import (
+from ..delay import (
     DelayNode,
     DelayError,
     DelayGraph,
@@ -13,7 +14,7 @@ from delay import (
     VersionFlag,
     str_to_version_flag,
 )
-from common.config import ConfigDict
+from ..common.config import ConfigDict
 from six.moves import range
 
 BASIC_DELAY_CONFIG = {"default": {"delay_ms": 0, "jitter_ms": 0}}
@@ -397,7 +398,7 @@ class DelayGraphTestCase(unittest.TestCase):
             self.assertTrue(private_ip in expected)
         self.assertEqual(len(expected), len(delay_graph.graph))
 
-    @patch("delay.DelayNode")
+    @patch("bin.delay.DelayNode")
     def test_zero_default_delays(self, mocked_delay_node):
         topology = {
             "cluster_type": "replset",
@@ -433,7 +434,7 @@ class DelayGraphTestCase(unittest.TestCase):
         self.assertEqual(mocked_delay_node.return_value.add.call_count, len(expected))
         mocked_delay_node.return_value.add.assert_has_calls(expected, any_order=True)
 
-    @patch("delay.DelayNode")
+    @patch("bin.delay.DelayNode")
     def test_nonzero_default_delays(self, mocked_delay_node):
         topology = {
             "cluster_type": "replset",
@@ -470,7 +471,7 @@ class DelayGraphTestCase(unittest.TestCase):
         self.assertEqual(mocked_delay_node.return_value.add.call_count, len(expected))
         mocked_delay_node.return_value.add.assert_has_calls(expected, any_order=True)
 
-    @patch("delay.DelayNode")
+    @patch("bin.delay.DelayNode")
     def test_zero_edgewise_delay(self, mocked_delay_node):
         topology = {
             "cluster_type": "replset",
@@ -523,7 +524,7 @@ class DelayGraphTestCase(unittest.TestCase):
         self.assertEqual(mocked_delay_node.return_value.add.call_count, len(expected))
         mocked_delay_node.return_value.add.assert_has_calls(expected, any_order=True)
 
-    @patch("delay.DelayNode")
+    @patch("bin.delay.DelayNode")
     def test_multiple_edgewise_delays(self, mocked_delay_node):
         topology = {
             "cluster_type": "replset",

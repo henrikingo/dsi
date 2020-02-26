@@ -1,5 +1,6 @@
 """ Test config_test_control.py """
 
+from __future__ import absolute_import
 import logging
 import os
 import unittest
@@ -7,10 +8,10 @@ import unittest
 from mock import Mock, patch
 from testfixtures import LogCapture
 
-import test_control
+from .. import test_control
 
-from common.config import ConfigDict
-from common.remote_host import RemoteHost
+from ..common.config import ConfigDict
+from ..common.remote_host import RemoteHost
 from test_lib.fixture_files import FixtureFiles
 
 FIXTURE_FILES = FixtureFiles(dir_name=os.path.dirname(__file__), subdir_name="config_test_control")
@@ -25,7 +26,7 @@ class TestConfigTestControl(unittest.TestCase):
         """
         # Mocking `ConfigDict.assert_valid_ids` because it enforces structural constraints on yaml
         # files that aren't necessary here.
-        with patch("common.config.ConfigDict.assert_valid_ids") as mock_assert_valid_ids:
+        with patch("bin.common.config.ConfigDict.assert_valid_ids") as mock_assert_valid_ids:
             prev_dir = os.getcwd()
             os.chdir(FIXTURE_FILES.fixture_dir_path)
             self.config = ConfigDict("test_control")
@@ -65,7 +66,7 @@ class TestConfigTestControl(unittest.TestCase):
             FIXTURE_FILES.fixture_file_path(test["config_filename"]), test["config_filename"]
         )
 
-    @patch("test_control.open")
+    @patch("bin.test_control.open")
     def test_generate_config_no_config(self, mock_open):
         """
         Test that generate_config_file doesn't create a workload file and logs the correct message
@@ -75,7 +76,7 @@ class TestConfigTestControl(unittest.TestCase):
         mock_host = Mock(spec=RemoteHost)
         with LogCapture(level=logging.WARNING) as warning:
             test_control.generate_config_file(test, FIXTURE_FILES.fixture_dir_path, mock_host)
-        warning.check(("test_control", "WARNING", "No workload config in test control"))
+        warning.check(("bin.test_control", "WARNING", "No workload config in test control"))
         mock_open.assert_not_called()
         mock_host.upload_file.assert_not_called()
 

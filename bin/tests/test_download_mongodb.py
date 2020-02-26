@@ -1,5 +1,6 @@
 """Tests for bin/common/download_mongodb.py"""
 # pylint: disable=protected-access
+from __future__ import absolute_import
 import os
 
 import unittest
@@ -8,8 +9,8 @@ import string
 from mock import patch, Mock
 import mock
 
-from common.download_mongodb import DownloadMongodb, temp_file
-from common.models.host_info import HostInfo
+from ..common.download_mongodb import DownloadMongodb, temp_file
+from ..common.models.host_info import HostInfo
 from six.moves import range
 
 
@@ -57,8 +58,8 @@ class DownloadMongodbTestCase(unittest.TestCase):
         }
         # self.downloader = None
 
-    @patch("common.download_mongodb.host_utils.extract_hosts")
-    @patch("common.download_mongodb.host_factory.make_host")
+    @patch("bin.common.download_mongodb.host_utils.extract_hosts")
+    @patch("bin.common.download_mongodb.host_factory.make_host")
     def test_basic_use(self, mock_remote_host, mock_extract_hosts):
         """
         Init DownloadMongodb with ConfigDict structure with
@@ -74,7 +75,7 @@ class DownloadMongodbTestCase(unittest.TestCase):
         calls = [mock.call(HostInfo(public_ip="dummy_ip", offset=i)) for i in range(10)]
         mock_remote_host.assert_has_calls(calls=calls, any_order=True)
 
-    @patch("common.download_mongodb.host_factory.make_host")
+    @patch("bin.common.download_mongodb.host_factory.make_host")
     def test_mongodb_binary(self, mock_make_host):
         """
         Init DownloadMongodb with ConfigDict structure with
@@ -117,8 +118,8 @@ class DownloadMongodbTestCase(unittest.TestCase):
         path = mongodb_binary_archive + "?test=ing"
         _test_temp_file(self, temp_file(path=path, sanitize=lambda x: x), "foo.tgz?test=ing")
 
-    @patch("common.download_mongodb.temp_file")
-    @patch("common.download_mongodb.host_factory.make_host")
+    @patch("bin.common.download_mongodb.temp_file")
+    @patch("bin.common.download_mongodb.host_factory.make_host")
     def test_remove_temp_file(self, mock_make_host, mock_temp_file):
         """test that mongo_dir and tmp_file removal."""
         # mongodb_binary_archive = self.config['mongodb_setup']['mongodb_binary_archive']

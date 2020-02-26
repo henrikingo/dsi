@@ -1,6 +1,7 @@
 """
 Utilities for running commands on hosts
 """
+from __future__ import absolute_import
 import datetime
 import inspect
 import logging
@@ -13,14 +14,14 @@ from functools import partial
 import structlog
 from dateutil import tz
 
-import common.atlas_setup as atlas_setup
-import common.cedar as cedar
-import common.host_factory as host_factory
-import common.host_utils as host_utils
-import common.utils as utils
-import common.mongodb_setup_helpers as mongodb_setup_helpers
+from . import atlas_setup
+from . import cedar
+from . import host_factory
+from . import host_utils
+from . import utils
+from . import mongodb_setup_helpers
 
-from thread_runner import run_threads
+from .thread_runner import run_threads
 import six
 
 LOG = logging.getLogger(__name__)

@@ -4,6 +4,7 @@ analysis.py plugin: Check exit codes from tests.
 Note: This is the DSI 2.0 version of this file. common/ has the DSI 1.0 version of doing the same.
 """
 
+from __future__ import absolute_import
 import structlog
 
 LOG = structlog.get_logger(__name__)

@@ -2,11 +2,12 @@
 Helper functions related to mongodb_setup.
 """
 
+from __future__ import absolute_import
 from collections import namedtuple
 
 import jinja2
 
-from config import copy_obj
+from .config import copy_obj
 
 MongoDBAuthSettings = namedtuple("MongoDBAuthSettings", ["mongo_user", "mongo_password"])
 MongoDBTLSSettings = namedtuple("MongoDBTLSSettings", ["ca_file", "pem_key_file"])

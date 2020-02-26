@@ -1,9 +1,10 @@
 """Module for interacting with Evergreen."""
 
+from __future__ import absolute_import
 from copy import deepcopy
 import logging
 
-import helpers
+from . import helpers
 
 DEFAULT_EVERGREEN_URL = "https://evergreen.mongodb.com"
 """The default Evergreen URL."""

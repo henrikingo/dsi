@@ -3,6 +3,7 @@
 """
 Provision AWS resources using terraform
 """
+from __future__ import absolute_import
 import argparse
 import datetime
 from functools import partial
@@ -13,17 +14,17 @@ import shutil
 import subprocess
 import structlog
 
-from common.log import setup_logging
-from common.config import ConfigDict
-from common.command_runner import run_pre_post_commands, EXCEPTION_BEHAVIOR
-from common.remote_host import RemoteHost
-from common.terraform_config import TerraformConfiguration
-from common.terraform_output_parser import TerraformOutputParser
-from common.thread_runner import run_threads
-import common.utils as utils
-import common.host_utils as host_utils
-import common.host_factory as host_factory
-from infrastructure_teardown import destroy_resources
+from .common.log import setup_logging
+from .common.config import ConfigDict
+from .common.command_runner import run_pre_post_commands, EXCEPTION_BEHAVIOR
+from .common.remote_host import RemoteHost
+from .common.terraform_config import TerraformConfiguration
+from .common.terraform_output_parser import TerraformOutputParser
+from .common.thread_runner import run_threads
+from .common import utils
+from .common import host_utils
+from .common import host_factory
+from .infrastructure_teardown import destroy_resources
 
 LOG = structlog.get_logger(__name__)
 

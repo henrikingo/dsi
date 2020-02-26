@@ -1,5 +1,6 @@
 """Tests for bin/common/workload_output_parser.py"""
 
+from __future__ import absolute_import
 import logging
 import os
 import unittest
@@ -7,9 +8,9 @@ import unittest
 from mock import patch
 import mock
 
-from test_control import validate_config
+from ..test_control import validate_config
 
-from common.workload_output_parser import parse_test_results, YcsbParser
+from ..common.workload_output_parser import parse_test_results, YcsbParser
 from test_lib.fixture_files import FixtureFiles
 
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
@@ -19,7 +20,7 @@ LOG = logging.getLogger(__name__)
 class CedarTestCase(unittest.TestCase):
     """Unit tests for parsers that report to Cedar"""
 
-    @patch("common.workload_output_parser.Results")
+    @patch("bin.common.workload_output_parser.Results")
     def test_ycsb_parser(self, mock_results):
         """Test that one Cedar Test is added per thread-level"""
         god_config = mock.MagicMock(dict)

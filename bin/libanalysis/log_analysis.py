@@ -2,14 +2,15 @@
 analysis.py plugin: Analyze mongod.log files for suspect messages.
 """
 
+from __future__ import absolute_import
 import os
 import os.path
 import time
 
 import structlog
 
-import rules
-import util
+from . import rules
+from . import util
 
 LOGGER = structlog.get_logger(__name__)
 KEEPALIVE_TIME = time.time()

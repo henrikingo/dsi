@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 """Tests for bin/common/config.py"""
+from __future__ import absolute_import
 import os
 import unittest
 from contextlib import contextmanager
@@ -7,8 +8,8 @@ from contextlib import contextmanager
 import yaml
 from mock import patch
 
-import common.config as config
-from common.config import ConfigDict
+from ..common import config
+from ..common.config import ConfigDict
 from test_lib.fixture_files import FixtureFiles
 from six.moves import range
 from six.moves import zip
@@ -47,7 +48,7 @@ def load_config_dict(module):
 
     :param str module: Name of module for ConfigDict.
     """
-    with patch("common.config.ConfigDict.assert_valid_ids") as mock_assert_valid_ids:
+    with patch("bin.common.config.ConfigDict.assert_valid_ids") as mock_assert_valid_ids:
         conf = ConfigDict(module)
         conf.load()
         mock_assert_valid_ids.assert_called_once()

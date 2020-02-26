@@ -1,10 +1,11 @@
 """Unit tests for `log_analysis.py`."""
 
+from __future__ import absolute_import
 from os import path
 import unittest
 
 from test_lib.fixture_files import FixtureFiles
-import libanalysis.log_analysis as log_analysis
+from ..libanalysis import log_analysis
 
 FIXTURE_FILES = FixtureFiles(path.join(path.dirname(__file__)), "analysis")
 

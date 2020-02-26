@@ -2,6 +2,7 @@
 Unit test for infrastructure_provisioning.py
 """
 
+from __future__ import absolute_import
 from functools import partial
 from subprocess import CalledProcessError
 import copy
@@ -14,10 +15,10 @@ import unittest
 from mock import patch, call, mock_open, MagicMock, ANY
 from testfixtures import LogCapture, log_capture
 
-from common.config import ConfigDict
-import common.utils as utils
-import infrastructure_provisioning as ip
-import test_config
+from ..common.config import ConfigDict
+from ..common import utils
+from .. import infrastructure_provisioning as ip
+from . import test_config
 from test_lib.fixture_files import FixtureFiles
 import test_lib.structlog_for_test as structlog_for_test
 
@@ -37,7 +38,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     """
 
     def setUp(self):
-        self.os_environ_patcher = patch("infrastructure_provisioning.os.environ")
+        self.os_environ_patcher = patch("bin.infrastructure_provisioning.os.environ")
         self.mock_environ = self.os_environ_patcher.start()
         self.dsi_path = os.path.dirname(
             os.path.dirname(os.path.abspath(os.path.join(__file__, "..")))
@@ -120,7 +121,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         """
         # Check that the correct default provisioning log is created
         mock_open_file = mock_open()
-        with patch("infrastructure_provisioning.open", mock_open_file, create=True):
+        with patch("bin.infrastructure_provisioning.open", mock_open_file, create=True):
             ip.Provisioner(self.config)
             mock_open_file.assert_called_with(ip.PROVISION_LOG_PATH, "w")
 
@@ -199,7 +200,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         modules_target = os.path.join(directory, "modules")
 
         # Check files copied correctly
-        with patch("infrastructure_provisioning.os.getcwd", return_value="temp_test"):
+        with patch("bin.infrastructure_provisioning.os.getcwd", return_value="temp_test"):
             provisioner = ip.Provisioner(self.config, provisioning_file=self.provision_log_path)
             provisioner.setup_terraform_tf()
         for filename in glob.glob(os.path.join(cluster_path, "*")):
@@ -214,10 +215,10 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         # Remove temporary directory
         shutil.rmtree(directory)
 
-    @patch("infrastructure_provisioning.shutil.copyfile")
-    @patch("infrastructure_provisioning.subprocess.check_call")
-    @patch("infrastructure_provisioning.os.path.isdir")
-    @patch("infrastructure_provisioning.rmtree_when_present")
+    @patch("bin.infrastructure_provisioning.shutil.copyfile")
+    @patch("bin.infrastructure_provisioning.subprocess.check_call")
+    @patch("bin.infrastructure_provisioning.os.path.isdir")
+    @patch("bin.infrastructure_provisioning.rmtree_when_present")
     def test_check_existing_state(self, mock_rmtree, mock_isdir, mock_check_call, mock_copyfile):
         """
         Test Provisioner.existing_state. First case finds a saved state, second doesn't
@@ -228,7 +229,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         evg_data_dir = config["infrastructure_provisioning"]["evergreen"]["data_dir"]
         mock_isdir.side_effect = lambda evg_dir: evg_dir == evg_data_dir
         # Run check_existing_state when existing state exists
-        with patch("infrastructure_provisioning.os.path.isfile") as mock_isfile:
+        with patch("bin.infrastructure_provisioning.os.path.isfile") as mock_isfile:
             mock_isfile.return_value = True
             provisioner = ip.Provisioner(config, provisioning_file=self.provision_log_path)
             mock_teardown_old_cluster = MagicMock(name="teardown_old_cluster")
@@ -252,8 +253,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             self.assertTrue(provisioner.existing)
             mock_teardown_old_cluster.assert_not_called()
 
-        with patch("infrastructure_provisioning.os.path.isfile") as mock_isfile:
-            with patch("infrastructure_provisioning.check_version") as mock_check_version:
+        with patch("bin.infrastructure_provisioning.os.path.isfile") as mock_isfile:
+            with patch("bin.infrastructure_provisioning.check_version") as mock_check_version:
                 mock_check_version.return_value = False
                 mock_isfile.return_value = True
                 provisioner = ip.Provisioner(config, provisioning_file=self.provision_log_path)
@@ -268,7 +269,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 )
 
         # Run check_existing_state when no existing state exists
-        with patch("infrastructure_provisioning.os.path.isfile") as mock_isfile:
+        with patch("bin.infrastructure_provisioning.os.path.isfile") as mock_isfile:
             mock_isfile.return_value = False
             provisioner = ip.Provisioner(config, provisioning_file=self.provision_log_path)
             provisioner.check_existing_state()
@@ -279,10 +280,10 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             self.assertFalse(provisioner.existing)
         self.reset_mock_objects()
 
-    @patch("infrastructure_provisioning.shutil")
-    @patch("infrastructure_provisioning.subprocess.check_call")
-    @patch("infrastructure_provisioning.os.path.isdir")
-    @patch("infrastructure_provisioning.os.remove")
+    @patch("bin.infrastructure_provisioning.shutil")
+    @patch("bin.infrastructure_provisioning.subprocess.check_call")
+    @patch("bin.infrastructure_provisioning.os.path.isdir")
+    @patch("bin.infrastructure_provisioning.os.remove")
     def test_check_existing_state_initialsync(
         self, mock_remove, mock_isdir, mock_check_call, mock_shutil
     ):
@@ -295,7 +296,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         evg_data_dir = config["infrastructure_provisioning"]["evergreen"]["data_dir"]
         mock_isdir.side_effect = lambda evg_dir: evg_dir == evg_data_dir
         # Run check_existing_state when existing state exists
-        with patch("infrastructure_provisioning.os.path.isfile") as mock_isfile:
+        with patch("bin.infrastructure_provisioning.os.path.isfile") as mock_isfile:
             expected_command = ["python", evg_data_dir + "terraform/infrastructure_teardown.py"]
             # mock_check_call.side_effect = partial(self.check_subprocess_call, expected_command)
             mock_isfile.return_value = True
@@ -319,7 +320,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             self.assertTrue(provisioner.existing)
 
         # Run check_existing_state when no existing state exists
-        with patch("infrastructure_provisioning.os.path.isfile") as mock_isfile:
+        with patch("bin.infrastructure_provisioning.os.path.isfile") as mock_isfile:
             expected_command = [
                 FIXTURE_FILES.fixture_file_path("terraform/infrastructure_teardown.sh")
             ]
@@ -335,10 +336,10 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             self.assertFalse(provisioner.existing)
         self.reset_mock_objects()
 
-    @patch("infrastructure_provisioning.shutil")
-    @patch("infrastructure_provisioning.subprocess.check_call")
-    @patch("infrastructure_provisioning.os.path.isdir")
-    @patch("infrastructure_provisioning.os.remove")
+    @patch("bin.infrastructure_provisioning.shutil")
+    @patch("bin.infrastructure_provisioning.subprocess.check_call")
+    @patch("bin.infrastructure_provisioning.os.path.isdir")
+    @patch("bin.infrastructure_provisioning.os.remove")
     def test_check_existing_state_teardown_fails(
         self, mock_remove, mock_isdir, mock_check_call, mock_shutil
     ):
@@ -351,7 +352,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
 
         evg_data_dir = config["infrastructure_provisioning"]["evergreen"]["data_dir"]
         mock_isdir.side_effect = lambda evg_dir: evg_dir == evg_data_dir
-        with patch("infrastructure_provisioning.os.path.isfile") as mock_isfile:
+        with patch("bin.infrastructure_provisioning.os.path.isfile") as mock_isfile:
             mock_check_call.side_effect = CalledProcessError(1, ["cmd"])
             mock_isfile.return_value = True
             provisioner = ip.Provisioner(config, provisioning_file=self.provision_log_path)
@@ -360,9 +361,9 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 provisioner.check_existing_state()
                 error.check(
                     (
-                        "infrastructure_provisioning",
+                        "bin.infrastructure_provisioning",
                         "ERROR",
-                        "[error    ] Teardown of existing resources failed. Catching exception and continuing. [infrastructure_provisioning] \nCommand '['cmd']' returned non-zero exit status 1",  # pylint: disable=line-too-long
+                        "[error    ] Teardown of existing resources failed. Catching exception and continuing. [bin.infrastructure_provisioning] \nCommand '['cmd']' returned non-zero exit status 1",  # pylint: disable=line-too-long
                     )
                 )
             mock_shutil.rmtree.assert_called_with(evg_data_dir)
@@ -383,16 +384,16 @@ class TestInfrastructureProvisioning(unittest.TestCase):
 
         self.reset_mock_objects()
 
-    @patch("infrastructure_provisioning.shutil")
-    @patch("infrastructure_provisioning.os.listdir")
-    @patch("infrastructure_provisioning.os.path.isdir")
+    @patch("bin.infrastructure_provisioning.shutil")
+    @patch("bin.infrastructure_provisioning.os.listdir")
+    @patch("bin.infrastructure_provisioning.os.path.isdir")
     def test_setup_evg_dir(self, mock_isdir, mock_listdir, mock_shutil):
         """
         Test Provisioner.setup_evg_dir
         """
         evg_data_dir = self.config["infrastructure_provisioning"]["evergreen"]["data_dir"]
         # Test when evergreen data directories do not exist
-        with patch("infrastructure_provisioning.os.makedirs") as mock_makedirs:
+        with patch("bin.infrastructure_provisioning.os.makedirs") as mock_makedirs:
             mock_isdir.return_value = False
             provisioner = ip.Provisioner(self.config, provisioning_file=self.provision_log_path)
             provisioner.bin_dir = "test/bin"
@@ -414,7 +415,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             mock_listdir.assert_has_calls(listdir_calls, any_order=True)
 
         # Test when evergreen data directories do exist
-        with patch("infrastructure_provisioning.os.makedirs") as mock_makedirs:
+        with patch("bin.infrastructure_provisioning.os.makedirs") as mock_makedirs:
             mock_isdir.return_value = True
             provisioner = ip.Provisioner(self.config, provisioning_file=self.provision_log_path)
             provisioner.bin_dir = "test/bin"
@@ -422,15 +423,15 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             self.assertFalse(mock_makedirs.called)
         self.reset_mock_objects()
 
-    @patch("infrastructure_provisioning.run_pre_post_commands")
-    @patch("infrastructure_provisioning.Provisioner.setup_terraform_tf")
-    @patch("infrastructure_provisioning.Provisioner.setup_security_tf")
-    @patch("infrastructure_provisioning.Provisioner.setup_evg_dir")
-    @patch("infrastructure_provisioning.Provisioner.save_terraform_state")
-    @patch("infrastructure_provisioning.TerraformOutputParser")
-    @patch("infrastructure_provisioning.TerraformConfiguration")
-    @patch("infrastructure_provisioning.run_and_save_output")
-    @patch("infrastructure_provisioning.subprocess")
+    @patch("bin.infrastructure_provisioning.run_pre_post_commands")
+    @patch("bin.infrastructure_provisioning.Provisioner.setup_terraform_tf")
+    @patch("bin.infrastructure_provisioning.Provisioner.setup_security_tf")
+    @patch("bin.infrastructure_provisioning.Provisioner.setup_evg_dir")
+    @patch("bin.infrastructure_provisioning.Provisioner.save_terraform_state")
+    @patch("bin.infrastructure_provisioning.TerraformOutputParser")
+    @patch("bin.infrastructure_provisioning.TerraformConfiguration")
+    @patch("bin.infrastructure_provisioning.run_and_save_output")
+    @patch("bin.infrastructure_provisioning.subprocess")
     def test_setup_cluster(
         self,
         mock_subprocess,
@@ -449,7 +450,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         # NOTE: This tests the majority of the functionality of the infrastructure_provisioning.py
         # mock.mock_open is needed to effectively mock out the open() function in python
         mock_open_file = mock_open()
-        with patch("infrastructure_provisioning.open", mock_open_file, create=True):
+        with patch("bin.infrastructure_provisioning.open", mock_open_file, create=True):
             provisioner = ip.Provisioner(self.config, provisioning_file=self.provision_log_path)
             provisioner.cluster = "initialsync-logkeeper"
             provisioner.reuse_cluster = True
@@ -515,12 +516,12 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             mock_pre_post_commands.assert_called()
         self.reset_mock_objects()
 
-    @patch("infrastructure_provisioning.Provisioner.setup_terraform_tf")
-    @patch("infrastructure_provisioning.shutil.rmtree")
-    @patch("infrastructure_provisioning.Provisioner.save_terraform_state")
-    @patch("infrastructure_provisioning.TerraformOutputParser")
-    @patch("infrastructure_provisioning.TerraformConfiguration")
-    @patch("infrastructure_provisioning.subprocess")
+    @patch("bin.infrastructure_provisioning.Provisioner.setup_terraform_tf")
+    @patch("bin.infrastructure_provisioning.shutil.rmtree")
+    @patch("bin.infrastructure_provisioning.Provisioner.save_terraform_state")
+    @patch("bin.infrastructure_provisioning.TerraformOutputParser")
+    @patch("bin.infrastructure_provisioning.TerraformConfiguration")
+    @patch("bin.infrastructure_provisioning.subprocess")
     def test_setup_cluster_failure(
         self,
         mock_subprocess,
@@ -536,8 +537,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         """
         # NOTE: This tests the majority of the functionality of the infrastructure_provisioning.py
         mock_open_file = mock_open()
-        with patch("infrastructure_provisioning.open", mock_open_file, create=True):
-            with patch("infrastructure_provisioning.destroy_resources") as mock_destroy:
+        with patch("bin.infrastructure_provisioning.open", mock_open_file, create=True):
+            with patch("bin.infrastructure_provisioning.destroy_resources") as mock_destroy:
                 provisioner = ip.Provisioner(self.config, provisioning_file=self.provision_log_path)
                 provisioner.reuse_cluster = True
                 mock_subprocess.check_call.side_effect = [1, CalledProcessError(1, ["cmd"]), 1]
@@ -553,11 +554,11 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             )
         self.reset_mock_objects()
 
-    @patch("infrastructure_provisioning.subprocess.check_call")
-    @patch("infrastructure_provisioning.os.remove")
-    @patch("infrastructure_provisioning.os.chdir")
-    @patch("infrastructure_provisioning.os.getcwd")
-    @patch("infrastructure_provisioning.shutil.copyfile")
+    @patch("bin.infrastructure_provisioning.subprocess.check_call")
+    @patch("bin.infrastructure_provisioning.os.remove")
+    @patch("bin.infrastructure_provisioning.os.chdir")
+    @patch("bin.infrastructure_provisioning.os.getcwd")
+    @patch("bin.infrastructure_provisioning.shutil.copyfile")
     def test_save_terraform_state(
         self, mock_copyfile, mock_getcwd, mock_chdir, mock_remove, mock_check_call
     ):
@@ -567,9 +568,9 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         provisioned_files = ["provisioned.single", "provisioned.shard"]
         evg_data_dir = self.config["infrastructure_provisioning"]["evergreen"]["data_dir"]
         terraform_dir = os.path.join(evg_data_dir, "terraform")
-        with patch("infrastructure_provisioning.glob.glob") as mock_glob:
+        with patch("bin.infrastructure_provisioning.glob.glob") as mock_glob:
             mock_open_file = mock_open()
-            with patch("infrastructure_provisioning.open", mock_open_file, create=True):
+            with patch("bin.infrastructure_provisioning.open", mock_open_file, create=True):
                 mock_glob.return_value = provisioned_files
                 mock_getcwd.return_value = "fake/path"
                 provisioner = ip.Provisioner(self.config, provisioning_file=self.provision_log_path)
@@ -599,11 +600,11 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                 mock_open_file.assert_called_with("provisioned.single", "w")
         self.reset_mock_objects()
 
-    @patch("infrastructure_provisioning.subprocess.check_call")
-    @patch("infrastructure_provisioning.os.remove")
-    @patch("infrastructure_provisioning.os.chdir")
-    @patch("infrastructure_provisioning.os.getcwd")
-    @patch("infrastructure_provisioning.shutil.copyfile")
+    @patch("bin.infrastructure_provisioning.subprocess.check_call")
+    @patch("bin.infrastructure_provisioning.os.remove")
+    @patch("bin.infrastructure_provisioning.os.chdir")
+    @patch("bin.infrastructure_provisioning.os.getcwd")
+    @patch("bin.infrastructure_provisioning.shutil.copyfile")
     def test_userexpand(self, mock_copyfile, mock_getcwd, mock_chdir, mock_remove, mock_check_call):
         """
         Test Provisioner.save_terraform_state with ~/.ssh/user_ssh_key.pem
@@ -614,9 +615,9 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         provisioned_files = ["provisioned.single", "provisioned.shard"]
         evg_data_dir = config["infrastructure_provisioning"]["evergreen"]["data_dir"]
         terraform_dir = os.path.join(evg_data_dir, "terraform")
-        with patch("infrastructure_provisioning.glob.glob") as mock_glob:
+        with patch("bin.infrastructure_provisioning.glob.glob") as mock_glob:
             mock_open_file = mock_open()
-            with patch("infrastructure_provisioning.open", mock_open_file, create=True):
+            with patch("bin.infrastructure_provisioning.open", mock_open_file, create=True):
                 mock_glob.return_value = provisioned_files
                 mock_getcwd.return_value = "fake/path"
                 provisioner = ip.Provisioner(config, provisioning_file=self.provision_log_path)
@@ -653,8 +654,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             ip.check_version(evg_data_dir + "terraform/provisioned.initialsync-logkeeper")
         )
 
-    @patch("infrastructure_provisioning.shutil.rmtree")
-    @patch("infrastructure_provisioning.os.path.exists", return_value=False)
+    @patch("bin.infrastructure_provisioning.shutil.rmtree")
+    @patch("bin.infrastructure_provisioning.os.path.exists", return_value=False)
     @log_capture(level=logging.INFO)
     def test_rmtree_when_not_present(self, mock_rmtree, mock_exists, capture):
         """
@@ -665,14 +666,14 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         ip.rmtree_when_present("")
         capture.check(
             (
-                "infrastructure_provisioning",
+                "bin.infrastructure_provisioning",
                 "INFO",
-                u"[info     ] rmtree_when_present: No such path [infrastructure_provisioning] arg=u''",
+                u"[info     ] rmtree_when_present: No such path [bin.infrastructure_provisioning] arg=u''",
             )
         )
 
-    @patch("infrastructure_provisioning.shutil.rmtree")
-    @patch("infrastructure_provisioning.os.path.exists", return_value=True)
+    @patch("bin.infrastructure_provisioning.shutil.rmtree")
+    @patch("bin.infrastructure_provisioning.os.path.exists", return_value=True)
     @log_capture(level=logging.INFO)
     def test_rmtree_when_present(self, mock_rmtree, mock_exists, capture):
         """
@@ -681,7 +682,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         ip.rmtree_when_present("")
         capture.check()
 
-    @patch("infrastructure_provisioning.os.path.exists", return_value=False)
+    @patch("bin.infrastructure_provisioning.os.path.exists", return_value=False)
     @log_capture()
     def test_rmtree_when_present_nopath(self, mock_exists, capture):
         """
@@ -690,19 +691,19 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         ip.rmtree_when_present("")
         capture.check(
             (
-                "infrastructure_provisioning",
+                "bin.infrastructure_provisioning",
                 "DEBUG",
-                u"[debug    ] rmtree_when_present start      [infrastructure_provisioning] arg=u''",
+                u"[debug    ] rmtree_when_present start      [bin.infrastructure_provisioning] arg=u''",
             ),
             (
-                "infrastructure_provisioning",
+                "bin.infrastructure_provisioning",
                 "INFO",
-                u"[info     ] rmtree_when_present: No such path [infrastructure_provisioning] arg=u''",
+                u"[info     ] rmtree_when_present: No such path [bin.infrastructure_provisioning] arg=u''",
             ),
         )  # yapf: disable
 
-    @patch("infrastructure_provisioning.shutil.rmtree", side_effect=OSError)
-    @patch("infrastructure_provisioning.os.path.exists", return_value=True)
+    @patch("bin.infrastructure_provisioning.shutil.rmtree", side_effect=OSError)
+    @patch("bin.infrastructure_provisioning.os.path.exists", return_value=True)
     @log_capture(level=logging.INFO)
     def test_rmtree_when_present_error(self, mock_rmtree, mock_exists, capture):
         """
@@ -724,66 +725,66 @@ class TestInfrastructureProvisioning(unittest.TestCase):
 
         log_output.check(
             (
-                "infrastructure_provisioning",
+                "bin.infrastructure_provisioning",
                 "INFO",
-                u"[info     ] Using terraform binary:        [infrastructure_provisioning] path=u'test/path/terraform'",
+                u"[info     ] Using terraform binary:        [bin.infrastructure_provisioning] path=u'test/path/terraform'",
             ),
             (
-                "infrastructure_provisioning",
+                "bin.infrastructure_provisioning",
                 "INFO",
-                u"[info     ] Redirecting terraform output to file [infrastructure_provisioning] path=u'{}'".format(
+                u"[info     ] Redirecting terraform output to file [bin.infrastructure_provisioning] path=u'{}'".format(
                     FIXTURE_FILES.fixture_file_path("terraform.stdout.log")
                 ),
             ),
             (
-                "infrastructure_provisioning",
+                "bin.infrastructure_provisioning",
                 "ERROR",
-                u"[error    ] 2018-03-05T15:45:36.018+0200 [DEBUG] plugin.terraform-provider-aws_v1.6.0_x4: <Response><Errors><Error><Code>InsufficientInstanceCapacity</Code><Message>Insufficient capacity.</Message></Error></Errors><RequestID>bd5b4071-755d-440e-8381-aa09bad52d69</RequestID></Response> [infrastructure_provisioning] ",
+                u"[error    ] 2018-03-05T15:45:36.018+0200 [DEBUG] plugin.terraform-provider-aws_v1.6.0_x4: <Response><Errors><Error><Code>InsufficientInstanceCapacity</Code><Message>Insufficient capacity.</Message></Error></Errors><RequestID>bd5b4071-755d-440e-8381-aa09bad52d69</RequestID></Response> [bin.infrastructure_provisioning] ",
             ),
             (
-                "infrastructure_provisioning",
+                "bin.infrastructure_provisioning",
                 "ERROR",
-                u"[error    ] 2018-03-05T15:45:36.914+0200 [DEBUG] plugin.terraform-provider-aws_v1.6.0_x4: <Response><Errors><Error><Code>RequestLimitExceeded</Code><Message>Request limit exceeded.</Message></Error></Errors><RequestID>6280e71d-9be4-442c-8ddf-00265efeafe6</RequestID></Response> [infrastructure_provisioning] ",
+                u"[error    ] 2018-03-05T15:45:36.914+0200 [DEBUG] plugin.terraform-provider-aws_v1.6.0_x4: <Response><Errors><Error><Code>RequestLimitExceeded</Code><Message>Request limit exceeded.</Message></Error></Errors><RequestID>6280e71d-9be4-442c-8ddf-00265efeafe6</RequestID></Response> [bin.infrastructure_provisioning] ",
             ),
             (
-                "infrastructure_provisioning",
+                "bin.infrastructure_provisioning",
                 "ERROR",
-                u"[error    ] 2018-03-05T15:48:36.336+0200 [DEBUG] plugin.terraform-provider-aws_v1.6.0_x4: <Response><Errors><Error><Code>InvalidRouteTableID.NotFound</Code><Message>The routeTable ID 'rtb-509f1528' does not exist</Message></Error></Errors><RequestID>54256eb4-d706-4084-86dc-b7f581006f9f</RequestID></Response> [infrastructure_provisioning] ",
+                u"[error    ] 2018-03-05T15:48:36.336+0200 [DEBUG] plugin.terraform-provider-aws_v1.6.0_x4: <Response><Errors><Error><Code>InvalidRouteTableID.NotFound</Code><Message>The routeTable ID 'rtb-509f1528' does not exist</Message></Error></Errors><RequestID>54256eb4-d706-4084-86dc-b7f581006f9f</RequestID></Response> [bin.infrastructure_provisioning] ",
             ),
             (
-                "infrastructure_provisioning",
+                "bin.infrastructure_provisioning",
                 "ERROR",
-                u"[error    ] 2018-03-05T15:48:47.258+0200 [DEBUG] plugin.terraform-provider-aws_v1.6.0_x4: <Response><Errors><Error><Code>DependencyViolation</Code><Message>Network vpc-a9ed8bd0 has some mapped public address(es). Please unmap those public address(es) before detaching the gateway.</Message></Error></Errors><RequestID>cd102bc6-d598-4bae-80f5-25e62103f9a4</RequestID></Response> [infrastructure_provisioning] ",
+                u"[error    ] 2018-03-05T15:48:47.258+0200 [DEBUG] plugin.terraform-provider-aws_v1.6.0_x4: <Response><Errors><Error><Code>DependencyViolation</Code><Message>Network vpc-a9ed8bd0 has some mapped public address(es). Please unmap those public address(es) before detaching the gateway.</Message></Error></Errors><RequestID>cd102bc6-d598-4bae-80f5-25e62103f9a4</RequestID></Response> [bin.infrastructure_provisioning] ",
             ),
             (
-                "infrastructure_provisioning",
+                "bin.infrastructure_provisioning",
                 "ERROR",
-                u"[error    ] 2018-03-05T15:49:29.084+0200 [DEBUG] plugin.terraform-provider-aws_v1.6.0_x4: <Response><Errors><Error><Code>InvalidPlacementGroup.Unknown</Code><Message>The Placement Group 'shard-8665ea69-9e76-483a-937b-af68d41d54dd' is unknown.</Message></Error></Errors><RequestID>4264aef8-ae91-40f0-bc16-d914a8dc2cf8</RequestID></Response> [infrastructure_provisioning] ",
+                u"[error    ] 2018-03-05T15:49:29.084+0200 [DEBUG] plugin.terraform-provider-aws_v1.6.0_x4: <Response><Errors><Error><Code>InvalidPlacementGroup.Unknown</Code><Message>The Placement Group 'shard-8665ea69-9e76-483a-937b-af68d41d54dd' is unknown.</Message></Error></Errors><RequestID>4264aef8-ae91-40f0-bc16-d914a8dc2cf8</RequestID></Response> [bin.infrastructure_provisioning] ",
             ),
             (
-                "infrastructure_provisioning",
+                "bin.infrastructure_provisioning",
                 "ERROR",
-                u"[error    ] For more info, see:            [infrastructure_provisioning] path=u'{}'".format(
+                u"[error    ] For more info, see:            [bin.infrastructure_provisioning] path=u'{}'".format(
                     FIXTURE_FILES.fixture_file_path("terraform.log.short")
                 ),
             ),
             (
-                "infrastructure_provisioning",
+                "bin.infrastructure_provisioning",
                 "ERROR",
-                u"[error    ]                                [infrastructure_provisioning] ",
+                u"[error    ]                                [bin.infrastructure_provisioning] ",
             ),
             (
-                "infrastructure_provisioning",
+                "bin.infrastructure_provisioning",
                 "ERROR",
-                u"[error    ] For more info, see:            [infrastructure_provisioning] path=u'{}'".format(
+                u"[error    ] For more info, see:            [bin.infrastructure_provisioning] path=u'{}'".format(
                     FIXTURE_FILES.fixture_file_path("terraform.stdout.log")
                 ),
             ),
         )  # yapf: disable
 
     @patch("paramiko.SSHClient")
-    @patch("common.remote_ssh_host.RemoteSSHHost.create_file")
-    @patch("common.remote_ssh_host.RemoteSSHHost.exec_command")
+    @patch("bin.common.remote_ssh_host.RemoteSSHHost.create_file")
+    @patch("bin.common.remote_ssh_host.RemoteSSHHost.exec_command")
     def test_setup_hostnames(self, mock_exec_command, mock_create_file, mock_ssh):
         _ = mock_ssh
         config_files = os.path.dirname(os.path.abspath(__file__)) + "/../../docs/config-specs/"

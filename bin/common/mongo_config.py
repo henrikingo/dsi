@@ -2,15 +2,16 @@
 Various classes that parse ConfigDicts and represent them to clusters.
 """
 
+from __future__ import absolute_import
 import os
 import json
 import yaml
 
-import mongodb_setup_helpers
+from . import mongodb_setup_helpers
 
-from common.models.host_info import HostInfo
-from common.host_utils import ssh_user_and_key_file
-from common.config import copy_obj
+from .models.host_info import HostInfo
+from .host_utils import ssh_user_and_key_file
+from .config import copy_obj
 import six
 
 DEFAULT_JOURNAL_DIR = "/media/ephemeral1/journal"

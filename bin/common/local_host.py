@@ -2,14 +2,15 @@
 Provide abstraction over running commands on local machines, extending the base class in host.py
 """
 
+from __future__ import absolute_import
 from datetime import datetime
 import shutil
 import subprocess
 import logging
 
-import common.host_utils as host_utils
-import common.host as host
-from common.log import IOLogAdapter
+from . import host_utils
+from . import host
+from .log import IOLogAdapter
 import six
 
 LOG = logging.getLogger(__name__)

@@ -4,6 +4,7 @@ Module of constants and rules used in our resource sanity checks. Used in post_r
 
 from __future__ import print_function
 
+from __future__ import absolute_import
 from datetime import datetime
 import json
 import logging
@@ -12,8 +13,8 @@ import os
 import re
 from dateutil import parser as date_parser
 
-import readers
-import util
+from . import readers
+from . import util
 import six
 from six.moves import range
 

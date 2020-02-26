@@ -1,5 +1,6 @@
 """Helper functions that don't fit anywhere else"""
 
+from __future__ import absolute_import
 import requests
 
 NETWORK_TIMEOUT_SECS = 120

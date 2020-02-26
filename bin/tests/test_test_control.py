@@ -2,6 +2,7 @@
 Tests for bin/test_control.py
 """
 
+from __future__ import absolute_import
 import logging
 import os
 import re
@@ -13,16 +14,16 @@ import unittest
 from mock import patch, MagicMock, call, Mock
 from testfixtures import LogCapture
 
-import common.host_utils as host_utils
-from common.command_runner import EXCEPTION_BEHAVIOR
-from common.command_runner import print_trace
-from common.command_runner import run_pre_post_commands
-from common.config import ConfigDict
-from common.remote_host import RemoteHost
-from common.utils import mkdir_p
-from test_control import copy_timeseries
-from test_control import run_tests
-from test_control import run_test
+from ..common import host_utils
+from ..common.command_runner import EXCEPTION_BEHAVIOR
+from ..common.command_runner import print_trace
+from ..common.command_runner import run_pre_post_commands
+from ..common.config import ConfigDict
+from ..common.remote_host import RemoteHost
+from ..common.utils import mkdir_p
+from ..test_control import copy_timeseries
+from ..test_control import run_tests
+from ..test_control import run_test
 from test_lib.fixture_files import FixtureFiles
 
 FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
@@ -59,7 +60,7 @@ class RunTestTestCase(unittest.TestCase):
         os.chdir(self.original_cwd)
         shutil.rmtree(self.tempdir)
 
-    @patch("common.command_runner.make_workload_runner_host")
+    @patch("bin.common.command_runner.make_workload_runner_host")
     def test_run_test_success(self, mock_make_host):
         """
         run_test() returns the status of a successful test run.
@@ -72,7 +73,7 @@ class RunTestTestCase(unittest.TestCase):
         res = run_test(self.test_config, self.god_config)
         self.assertEqual(res.status, 0)
 
-    @patch("common.command_runner.make_workload_runner_host")
+    @patch("bin.common.command_runner.make_workload_runner_host")
     def test_run_test_error(self, mock_make_host):
         """
         run_test() throws for a failed test run.
@@ -184,7 +185,7 @@ class RunTestsTestCase(unittest.TestCase):
             os.remove("test_control.out.yml")
 
     @patch("os.walk")
-    @patch("test_control.extract_hosts")
+    @patch("bin.test_control.extract_hosts")
     @patch("shutil.copyfile")
     def test_copy_timeseries(self, mock_copyfile, mock_hosts, mock_walk):
         """ Test run RunTest.copy_timeseries. """
@@ -294,8 +295,8 @@ class RunTestsTestCase(unittest.TestCase):
         list_errors = list(log_capture.actual())
         self.assertEqual(error_msg, list_errors[0][2])
 
-    @patch('paramiko.SSHClient')
-    @patch('common.host_utils.extract_hosts', return_value=(-1, -1))
+    @patch("paramiko.SSHClient")
+    @patch("bin.common.host_utils.extract_hosts", return_value=(-1, -1))
     def help_trace_function(self, mock_function, mock_command_dicts, mock_extract_hosts, mock_ssh):
         """
         Test test_control.print_trace by calling run_pre_post_commands with a 'pre_task' key, with a
@@ -344,7 +345,7 @@ class RunTestsTestCase(unittest.TestCase):
             # disabling yapf here because pylint and yapf disagree on indentation convention
             # yapf: disable
             with patch(
-                'common.host_factory.make_host', return_value=return_value) as mock_make_host:
+                "bin.common.host_factory.make_host", return_value=return_value) as mock_make_host:
                 # yapf: enable
                 mock_function.side_effect = Exception("Mock Exception")
                 with self.assertRaises(SystemExit) as exception:
@@ -366,7 +367,7 @@ class RunTestsTestCase(unittest.TestCase):
         list_errors = list(log_capture.actual())  # Get actual string held by loc_capture object
         self.assertRegexpMatches(list_errors[0][2], error_pattern)
 
-    @patch("common.remote_host.RemoteHost.upload_file")
+    @patch("bin.common.remote_host.RemoteHost.upload_file")
     def test_print_trace_upload_file(self, mock_upload_file):
         """ Test test_control.print_trace with exception in upload_file"""
         mock_command_dicts = [
@@ -386,7 +387,7 @@ class RunTestsTestCase(unittest.TestCase):
         self.help_trace_function(mock_upload_file, mock_command_dicts)
 
     @patch("os.path")
-    @patch("common.remote_host.RemoteHost.retrieve_path")
+    @patch("bin.common.remote_host.RemoteHost.retrieve_path")
     def test_print_trace_retrieve_path(self, mock_retrieve_path, mock_path):
         """ Test test_control.print_trace with exception in retrieve_path"""
         mock_path.return_value.join.return_value = ""
@@ -407,7 +408,7 @@ class RunTestsTestCase(unittest.TestCase):
         ]
         self.help_trace_function(mock_retrieve_path, mock_command_dicts)
 
-    @patch("common.remote_host.RemoteHost.create_file")
+    @patch("bin.common.remote_host.RemoteHost.create_file")
     def test_print_trace_create_file(self, mock_create_file):
         """ Test test_control.print_trace with exception in create_file"""
         mock_command_dicts = [
@@ -417,13 +418,13 @@ class RunTestsTestCase(unittest.TestCase):
         self.help_trace_function(mock_create_file, mock_command_dicts)
 
     # pylint: disable=unused-argument
-    @patch("test_control.run_pre_post_commands")
-    @patch("test_control.run_test")
-    @patch("test_control.parse_test_results", return_value=["status", "CedarTest"])
-    @patch("test_control.prepare_reports_dir")
+    @patch("bin.test_control.run_pre_post_commands")
+    @patch("bin.test_control.run_test")
+    @patch("bin.test_control.parse_test_results", return_value=["status", "CedarTest"])
+    @patch("bin.test_control.prepare_reports_dir")
     @patch("subprocess.check_call")
-    @patch("test_control.print_perf_json")
-    @patch("test_control.cedar")
+    @patch("bin.test_control.print_perf_json")
+    @patch("bin.test_control.cedar")
     def test_pre_post_commands_ordering(
         self,
         mock_cedar,
@@ -456,12 +457,12 @@ class RunTestsTestCase(unittest.TestCase):
         self.assertEqual(expected_args, observed_args)
 
     # pylint: disable=unused-argument
-    @patch("test_control.run_pre_post_commands")
-    @patch("test_control.parse_test_results", return_value=("status", ["CedarTest"]))
-    @patch("test_control.prepare_reports_dir")
+    @patch("bin.test_control.run_pre_post_commands")
+    @patch("bin.test_control.parse_test_results", return_value=("status", ["CedarTest"]))
+    @patch("bin.test_control.prepare_reports_dir")
     @patch("subprocess.check_call")
-    @patch("test_control.print_perf_json")
-    @patch("test_control.cedar")
+    @patch("bin.test_control.print_perf_json")
+    @patch("bin.test_control.cedar")
     def test_run_test_exception(
         self,
         mock_cedar,
@@ -480,25 +481,25 @@ class RunTestsTestCase(unittest.TestCase):
 
         # pylint: disable=bad-continuation
         with patch(
-            "test_control.run_test",
+            "bin.test_control.run_test",
             side_effect=[subprocess.CalledProcessError(99, "failed-cmd"), 0, 0],
         ):
             utter_failure = run_tests(real_config_dict)
             self.assertFalse(utter_failure)
             mock_copy_perf.assert_not_called()
 
-        with patch("test_control.run_test", side_effect=[ValueError(), 0, 0]):
+        with patch("bin.test_control.run_test", side_effect=[ValueError(), 0, 0]):
             utter_failure = run_tests(real_config_dict)
             self.assertTrue(utter_failure)
 
     # pylint: disable=unused-argument
-    @patch("test_control.run_pre_post_commands")
-    @patch("test_control.run_test")
-    @patch("test_control.parse_test_results", return_value=("status", ["CedarTest"]))
-    @patch("test_control.prepare_reports_dir")
+    @patch("bin.test_control.run_pre_post_commands")
+    @patch("bin.test_control.run_test")
+    @patch("bin.test_control.parse_test_results", return_value=("status", ["CedarTest"]))
+    @patch("bin.test_control.prepare_reports_dir")
     @patch("subprocess.check_call")
-    @patch("test_control.print_perf_json")
-    @patch("common.cedar.Report")
+    @patch("bin.test_control.print_perf_json")
+    @patch("bin.common.cedar.Report")
     def test_cedar_report(
         self,
         mock_cedar_report,

@@ -1,11 +1,12 @@
 """
 Generate the right type of host object and return it or run commands against it
 """
+from __future__ import absolute_import
 import logging
 
-from common.local_host import LocalHost
-from common.remote_ssh_host import RemoteSSHHost
-from common.log import IOLogAdapter
+from .local_host import LocalHost
+from .remote_ssh_host import RemoteSSHHost
+from .log import IOLogAdapter
 
 LOG = logging.getLogger(__name__)
 # This stream only log error or above messages

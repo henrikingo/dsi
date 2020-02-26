@@ -1,5 +1,6 @@
 """Tests for bin/remote_host.py"""
 
+from __future__ import absolute_import
 import collections
 import os
 import stat
@@ -9,10 +10,10 @@ import paramiko
 from mock import patch, call, ANY, MagicMock, Mock
 import mock
 
-import common.host_utils as host_utils
-import common.command_runner as command_runner
-import common.remote_host as remote_host
-import common.remote_ssh_host as remote_ssh_host
+from ..common import host_utils
+from ..common import command_runner
+from ..common import remote_host
+from ..common import remote_ssh_host
 
 FakeStat = collections.namedtuple("FakeStat", "st_mode")
 
@@ -20,7 +21,7 @@ FakeStat = collections.namedtuple("FakeStat", "st_mode")
 class RemoteHostTestCase(unittest.TestCase):
     """ Unit Test for RemoteHost library """
 
-    @patch("common.remote_host.RemoteHost.connected_ssh")
+    @patch("bin.common.remote_host.RemoteHost.connected_ssh")
     def test_upload_files_dir(self, mock_connected_ssh):
         """We can upload directories of files"""
 
@@ -53,7 +54,7 @@ class RemoteHostTestCase(unittest.TestCase):
             [call.put(ANY, "/foo/bar.tar"), call.chmod("/foo/bar.tar", ANY)], any_order=False
         )
 
-    @patch("common.remote_host.RemoteHost.connected_ssh")
+    @patch("bin.common.remote_host.RemoteHost.connected_ssh")
     def test_upload_single_file(self, mock_connected_ssh):
         """We can upload a single file"""
         ssh = mock.MagicMock(name="ssh")
