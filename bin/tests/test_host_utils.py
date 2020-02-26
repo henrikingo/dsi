@@ -61,9 +61,7 @@ class HostUtilsTestCase(unittest.TestCase):
     def test_create_timer(self):
         """ test create_timer """
         start = datetime.now()
-        self.assertEqual(
-            host_utils.create_timer(start, None), host_utils.never_timeout
-        )
+        self.assertEqual(host_utils.create_timer(start, None), host_utils.never_timeout)
         with patch("bin.common.host_utils.partial") as mock_partial:
             self.assertTrue(host_utils.create_timer(start, 50))
             mock_partial.assert_called_once_with(host_utils.check_timed_out, start, 50)
@@ -95,20 +93,15 @@ class HostUtilsTestCase(unittest.TestCase):
             customize_host_info("53.1.1.{}".format(i + 100), "mongos", i) for i in range(0, 3)
         ]
         workload_clients = [customize_host_info("53.1.1.101", "workload_client", 0)]
-        localhost = [
-            host_utils.HostInfo(public_ip="localhost", category="localhost", offset=0)
-        ]
+        localhost = [host_utils.HostInfo(public_ip="localhost", category="localhost", offset=0)]
 
         self.assertEqual(host_utils.extract_hosts("localhost", self.config), localhost)
-        self.assertEqual(
-            host_utils.extract_hosts("workload_client", self.config), workload_clients
-        )
+        self.assertEqual(host_utils.extract_hosts("workload_client", self.config), workload_clients)
         self.assertEqual(host_utils.extract_hosts("mongod", self.config), mongods)
         self.assertEqual(host_utils.extract_hosts("mongos", self.config), mongos)
         self.assertEqual(host_utils.extract_hosts("configsvr", self.config), configsvrs)
         self.assertEqual(
-            host_utils.extract_hosts("all_servers", self.config),
-            mongods + mongos + configsvrs,
+            host_utils.extract_hosts("all_servers", self.config), mongods + mongos + configsvrs,
         )
         self.assertEqual(
             host_utils.extract_hosts("all_hosts", self.config),

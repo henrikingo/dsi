@@ -13,7 +13,8 @@ class ContextShelve(object):
     have a context manager in Python 2.7 and because get() needed to take in dumby **kwargs for
     mocking on get_as_json.
     """
-    def __init__(self, filename, flag='c', protocol=None, writeback=False):
+
+    def __init__(self, filename, flag="c", protocol=None, writeback=False):
         """
         Create a new ContextShelve.
         Essentially a copy of shelve.open except it args are saved during construction.

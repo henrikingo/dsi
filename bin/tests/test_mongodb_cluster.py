@@ -172,9 +172,7 @@ class TestMongoNode(unittest.TestCase):
         """Runs _generate_setup_commands with given args
         and asserts the output == expected. If not, prints it out in a form
         that you can copy/paste into an 'expected' var"""
-        actual = mongodb_cluster.MongoNode._generate_setup_commands(
-            generate_setup_commands_args
-        )
+        actual = mongodb_cluster.MongoNode._generate_setup_commands(generate_setup_commands_args)
         self.assertEqual(actual, expected, msg=",\n".join([str(x) for x in actual]))
 
     def test_ssh_key(self):

@@ -145,7 +145,11 @@ class GennyRunner(_BaseRunner):
         """
         See _BaseRunner.get_default_output_files()
         """
-        return ["data/genny/genny-perf.json", "data/genny/genny-perf.csv", "data/genny/genny-cedar-report.json"]
+        return [
+            "data/genny/genny-perf.json",
+            "data/genny/genny-perf.csv",
+            "data/genny/genny-cedar-report.json",
+        ]
 
     def _do_run(self, host, out):
         commands = [
@@ -153,7 +157,7 @@ class GennyRunner(_BaseRunner):
             '{} ./scripts/genny run -u "{}" -m cedar-csv -o ./genny-perf.csv {}'.format(
                 self.numactl_prefix_for_workload_client, self.db_url, self.workload_config
             ),
-            'genny-metrics-legacy-report --report-file genny-perf.json genny-perf.csv'
+            "genny-metrics-legacy-report --report-file genny-perf.json genny-perf.csv",
         ]
 
         if self.is_production:

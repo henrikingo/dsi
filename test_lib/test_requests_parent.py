@@ -21,12 +21,13 @@ class TestRequestsParent(unittest.TestCase):
     """
     Parent Class for tests which do requests. Mocks out requests and uses ContextShelve.
     """
+
     def setUp(self):
         """
         Mocks the connection functions and also opens up the ContextShelve object.
         """
-        #pylint: disable=invalid-name
-        persistent_dict_path = FIXTURE.fixture_file_path('override_responses')
+        # pylint: disable=invalid-name
+        persistent_dict_path = FIXTURE.fixture_file_path("override_responses")
         self.override_responses = ContextShelve(persistent_dict_path)
         self.override_responses.open()
         # Instead of using patch in decorators or as a context manager, the start() and stop()
@@ -35,13 +36,13 @@ class TestRequestsParent(unittest.TestCase):
         # start() begins the actual mock on the function/object; this is when the function or object
         # will now be seen as a mock object by Python
         # end() gives the mocked function/object back its original functionality
-        self.get_full_git_commit_hash_patcher = patch('evergreen.helpers.get_full_git_commit_hash')
-        self.get_as_json_patcher = patch('evergreen.helpers.get_as_json')
+        self.get_full_git_commit_hash_patcher = patch("evergreen.helpers.get_full_git_commit_hash")
+        self.get_as_json_patcher = patch("evergreen.helpers.get_as_json")
         self.mock_get_full_git_commit_hash = self.get_full_git_commit_hash_patcher.start()
         self.mock_get_as_json = self.get_as_json_patcher.start()
-        self.mock_get_full_git_commit_hash.return_value = 'c2af7abae8d09d290d7457ab77f5a7529806b75a'
+        self.mock_get_full_git_commit_hash.return_value = "c2af7abae8d09d290d7457ab77f5a7529806b75a"
         self.mock_get_as_json.side_effect = self.override_responses.get
-        #pylint: enable=invalid-name
+        # pylint: enable=invalid-name
 
     def tearDown(self):
         """

@@ -100,7 +100,9 @@ class GetTestRunnerTestCase(unittest.TestCase):
         output_file_calls = [
             call("data/genny/genny-perf.json", "reports/dummy_test/genny-perf.json"),
             call("data/genny/genny-perf.csv", "reports/dummy_test/genny-perf.csv"),
-            call("data/genny/genny-cedar-report.json", "reports/dummy_test/genny-cedar-report.json")
+            call(
+                "data/genny/genny-cedar-report.json", "reports/dummy_test/genny-cedar-report.json"
+            ),
         ]
         self.call_runner_run(runner, report_str, output_file_calls)
 
@@ -116,7 +118,7 @@ class GetTestRunnerTestCase(unittest.TestCase):
         report_str = "\nexit_status: 0 'GennyCanariesRunner.run()'\n"
         output_file_calls = [
             call("data/nop.csv", "reports/dummy_test/nop.csv"),
-            call("data/ping.csv", "reports/dummy_test/ping.csv")
+            call("data/ping.csv", "reports/dummy_test/ping.csv"),
         ]
         self.call_runner_run(runner, report_str, output_file_calls)
 

@@ -10,12 +10,14 @@ def setup_logging():
     """
     structlog.configure(
         processors=[
-            structlog.stdlib.filter_by_level, structlog.stdlib.add_logger_name,
+            structlog.stdlib.filter_by_level,
+            structlog.stdlib.add_logger_name,
             structlog.stdlib.add_log_level,
             structlog.stdlib.PositionalArgumentsFormatter(),
-            structlog.processors.StackInfoRenderer(), structlog.processors.format_exc_info,
+            structlog.processors.StackInfoRenderer(),
+            structlog.processors.format_exc_info,
             structlog.processors.UnicodeDecoder(),
-            structlog.dev.ConsoleRenderer(colors=False)
+            structlog.dev.ConsoleRenderer(colors=False),
         ],
         context_class=dict,
         logger_factory=structlog.stdlib.LoggerFactory(),

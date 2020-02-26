@@ -9,6 +9,7 @@ class ANY_IN_STRING(str):
     """
     A helper object that provides functionality like mock.ANY but partial matching a string.
     """
+
     def __eq__(self, other):
         """
         Match ANY value contained in another.
@@ -16,4 +17,4 @@ class ANY_IN_STRING(str):
         return self in other
 
     def __repr__(self):
-        return '<ANY_IN>'
+        return "<ANY_IN>"

@@ -88,18 +88,14 @@ class RemoteHostTestCase(unittest.TestCase):
             remote._upload_dir.side_effect = host_utils.HostException("wrapped exception")
 
             remote._upload_single_file = MagicMock(name="_upload_single_file")
-            remote._upload_single_file.side_effect = host_utils.HostException(
-                "wrapped exception"
-            )
+            remote._upload_single_file.side_effect = host_utils.HostException("wrapped exception")
             command_runner._run_host_command_map(remote, command, "test_id", {})
 
     @patch("paramiko.SSHClient")
     def test__upload_files_wrapped_ex(self, ssh_client):
         """ Test run command map exception """
 
-        with self.assertRaisesRegexp(
-            host_utils.HostException, r"'mkdir', '-p', 'remote_path'"
-        ):
+        with self.assertRaisesRegexp(host_utils.HostException, r"'mkdir', '-p', 'remote_path'"):
             remote = remote_ssh_host.RemoteSSHHost("53.1.1.1", "ssh_user", "ssh_key_file")
             command = {"upload_files": [{"target": "remote_path", "source": "."}]}
             remote.exec_command = MagicMock(name="exec_command")

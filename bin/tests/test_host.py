@@ -241,7 +241,9 @@ class HostTestCase(unittest.TestCase):
         command = ["cd", target, "&&", "git", "status"]
         with patch("bin.common.host.os.path.isdir") as mock_isdir, patch(
             "bin.common.host.mkdir_p"
-        ) as mock_mkdir_p, patch("bin.common.local_host.LocalHost.exec_command") as mock_exec_command:
+        ) as mock_mkdir_p, patch(
+            "bin.common.local_host.LocalHost.exec_command"
+        ) as mock_exec_command:
             mock_isdir.return_value = True
             mock_exec_command.return_value = 0
             local.checkout_repos(source, target)

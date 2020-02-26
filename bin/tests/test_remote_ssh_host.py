@@ -315,9 +315,7 @@ class RemoteSSHHostTestCase(unittest.TestCase):
                     float(given["ssh_interrupt_after_ms"]) / 1000, given["with_output"]
                 )
 
-                remote = remote_ssh_host.RemoteSSHHost(
-                    "test_host", "test_user", "test_pem_file"
-                )
+                remote = remote_ssh_host.RemoteSSHHost("test_host", "test_user", "test_pem_file")
                 exit_status = remote._perform_exec(
                     given["command"],
                     stdout,
