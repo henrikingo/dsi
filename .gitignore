@@ -10,8 +10,8 @@ security.tf
 /coverage.xml
 
 # Python Shelve
-bin/tests/unittest-files/override_responses
-bin/tests/unittest-files/override_responses.gz
+dsi/tests/unittest-files/override_responses
+dsi/tests/unittest-files/override_responses.gz
 
 # PyCharm
 .idea

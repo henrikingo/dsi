@@ -39,7 +39,7 @@ functions:
       params:
         working_dir: src
         script: |
-          PYTHONPATH=analysis:bin:. ./run-dsi python testscripts/check_format_python.py
+          ./run-dsi python testscripts/check_format_python.py
 
   lint_python_scripts:
     - command: shell.exec
@@ -88,7 +88,7 @@ functions:
       params:
         working_dir: src
         script: |
-          PYTHONPATH=analysis:bin:. ./run-dsi testscripts/compare_coverage.py
+          ./run-dsi testscripts/compare_coverage.py
 
 #######################################
 #               Tasks                 #

@@ -55,5 +55,14 @@ if [[ "$1" != "setup" ]]; then
     # shellcheck source=/dev/null
     source "${DIR}/dsi_venv/bin/activate"
 
-    /usr/bin/env "$@"
+    # Work around crufty old invocations of run-dsi that don't know about
+    # the goodness of our changed path conventions.
+    set +u
+        if [[ "$1 $2" == "python ../src/dsi/dsi/bin/bootstrap.py" ]]; then
+            # lol this is absurd
+            PYTHONPATH="${DIR}" /usr/bin/env python "../src/dsi/dsi/dsi/bootstrap.py"
+        else
+            PYTHONPATH="${DIR}" /usr/bin/env "$@"
+        fi
+    set -u
 fi

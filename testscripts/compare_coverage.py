@@ -18,7 +18,7 @@ import yaml
 
 import requests
 
-from evergreen import evergreen_client
+from dsi.evergreen import evergreen_client
 
 
 def _does_url_exist(url):

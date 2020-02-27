@@ -27,7 +27,7 @@
 #
 #  $ git clone git@github.com:10gen/dsi.git
 #  $ cd dsi
-#  $ bin/bootstrap.py --directory WORK --bootstrap-file bootstrap.yml
+#  $ dsi/bootstrap.py --directory WORK --bootstrap-file bootstrap.yml
 #  $ cd WORK
 #  $ source dsienv.sh
 #  $ sed 's/sudo fio --filename=/# sudo fio --filename=/'  ../clusters/remote-scripts/system-setup.sh -i.bak # disable the disk warmup or you may have to wait for over 4 hours

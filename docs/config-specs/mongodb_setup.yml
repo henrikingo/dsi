@@ -2,7 +2,7 @@
 # Useful to test multiple versions of MongoDB on same infrastructure (manual runs for analysing
 # build failures).
 # Note: mongo_root is the directory where a mongodb.tar.gz was extracted.
-# <mongo_root>/bin has the binaries.
+# <mongo_root>/dsi has the binaries.
 mongo_dir: mongodb
 # Note: It's also allowed to upload your own binary. You can unset this by setting to the empty
 # string "".

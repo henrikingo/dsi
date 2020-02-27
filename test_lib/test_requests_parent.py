@@ -36,8 +36,8 @@ class TestRequestsParent(unittest.TestCase):
         # start() begins the actual mock on the function/object; this is when the function or object
         # will now be seen as a mock object by Python
         # end() gives the mocked function/object back its original functionality
-        self.get_full_git_commit_hash_patcher = patch("evergreen.helpers.get_full_git_commit_hash")
-        self.get_as_json_patcher = patch("evergreen.helpers.get_as_json")
+        self.get_full_git_commit_hash_patcher = patch("dsi.evergreen.helpers.get_full_git_commit_hash")
+        self.get_as_json_patcher = patch("dsi.evergreen.helpers.get_as_json")
         self.mock_get_full_git_commit_hash = self.get_full_git_commit_hash_patcher.start()
         self.mock_get_as_json = self.get_as_json_patcher.start()
         self.mock_get_full_git_commit_hash.return_value = "c2af7abae8d09d290d7457ab77f5a7529806b75a"

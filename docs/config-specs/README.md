@@ -8,8 +8,8 @@ Distributed Performance 2.0.
 For more context, see https://docs.google.com/document/d/1QdVoSnvoqA1CBQRZNzrDFTJ7REAml3cq4bgWZi9qaPQ/edit#
 These files add more detail to that high level specification.
 
-The python library reading these files is found in [bin/common/config.py](../../bin/common/config.py).
-The unit tests [bin/tests/test_config.py](../../bin/tests/test_config.py) can be a useful read too.
+The python library reading these files is found in [bin/common/config.py](../../dsi/common/config.py).
+The unit tests [bin/tests/test_config.py](../../dsi/tests/test_config.py) can be a useful read too.
 The actual config files we use in production can be found under [clusters/*/*.yml](../../clusters/).
 (These locations are subject to change, sorry if the links are outdated when you read this.)
 
@@ -29,7 +29,7 @@ Conventions
 * Paths (example: ../keys/aws.pem) are relative to a work directory where the user has cd into 
   before executing the DP2.0 modules. These configuration files also reside in that work directory.
 * Values associated with the key 'id' must be unique in a given file, and cannot be equivalent
-  to any reserved strings (enumerated in [bin/common/config.py](../../bin/common/config.py)).
+  to any reserved strings (enumerated in [bin/common/config.py](../../dsi/common/config.py)).
 
 Empty values (python None)
 --------------------------
@@ -65,7 +65,7 @@ Overview of files
   For example: Give me a regular 3-shard cluster, but one shard should use
   inMemory engine.
 
-A common library [bin/common/config.py](../../bin/common/config.py) knows how to read each file in 
+A common library [bin/common/config.py](../../dsi/common/config.py) knows how to read each file in 
 the correct order and how to override values when needed. Modules will simply get/set keys in a 
 dictionary.
 

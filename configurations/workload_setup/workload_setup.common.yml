@@ -102,7 +102,7 @@ fio:
       exec: |
         sudo yum -y -q install fio
       upload_repo_files:
-        - source: bin/fio-test.sh
+        - source: dsi/fio-test.sh
           target: fio-test.sh
 
 
@@ -126,7 +126,7 @@ iperf:
         popd
 
       upload_repo_files:
-        - source: bin/iperf-test.sh
+        - source: dsi/iperf-test.sh
           target: iperf-test.sh
 
 tpcc:

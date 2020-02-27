@@ -14,7 +14,7 @@
 # To run the DSI infrastructure, make a copy of this file, then edit the entries below for your use.
 # Then, run:
 #
-#     $DSI_PATH/bin/bootstrap.py --directory work
+#     $DSI_PATH/dsi/bootstrap.py --directory work
 #                                --bootstrap-file /path/to/your/copy/of/this/file
 #
 # This will make a new directory work, configured with everything you need to run the

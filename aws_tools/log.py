@@ -1,7 +1,7 @@
 """
 Set up logging for DSI scripts.
 
-Note: Copy/subset of bin/common/log.py. Hopefully these can be reunited in the future when
+Note: Copy/subset of dsi/common/log.py. Hopefully these can be reunited in the future when
 everything installs the same way. For now, we can't import from outside aws_tools.
 """
 import logging
