@@ -11,7 +11,7 @@ import subprocess
 import tempfile
 import unittest
 
-from mock import patch, MagicMock, call, Mock
+from mock import patch, Mock
 from testfixtures import LogCapture
 
 from dsi.common import host_utils
@@ -487,7 +487,7 @@ class RunTestsTestCase(unittest.TestCase):
         ):
             utter_failure = run_tests(real_config_dict)
             self.assertFalse(utter_failure)
-            mock_copy_perf.assert_not_called()
+            mock_copy_perf.assert_called()
 
         with patch("dsi.test_control.run_test", side_effect=[ValueError(), 0, 0]):
             utter_failure = run_tests(real_config_dict)
@@ -500,10 +500,10 @@ class RunTestsTestCase(unittest.TestCase):
     @patch("dsi.test_control.prepare_reports_dir")
     @patch("subprocess.check_call")
     @patch("dsi.test_control.print_perf_json")
-    @patch("dsi.common.cedar.Report")
+    @patch("dsi.common.cedar.send")
     def test_cedar_report(
         self,
-        mock_cedar_report,
+        mock_cedar_send,
         mock_copy_perf,
         mock_check_call,
         mock_prep_rep,
@@ -516,16 +516,9 @@ class RunTestsTestCase(unittest.TestCase):
         real_config_dict.raw = self.config
         run_tests(real_config_dict)
 
-        mock_cedar_test = MagicMock()
-        mock_parse_results.return_value = (True, [mock_cedar_test])
-
         run_tests(real_config_dict)
 
-        mock_cedar_report.assert_called()
-        mock_cedar_report().add_test.assert_has_calls(
-            [call(mock_cedar_test), call(mock_cedar_test), call(mock_cedar_test)]
-        )
-        mock_cedar_report().write_report.assert_called()
+        mock_cedar_send.assert_called()
 
 
 if __name__ == "__main__":

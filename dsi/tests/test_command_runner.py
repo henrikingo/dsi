@@ -68,7 +68,7 @@ class CommandRunnerTestCase(unittest.TestCase):
 
             dummy_host_info = HostInfo("host_info")
 
-            command_runner.make_host_runner(dummy_host_info, "command", "test_id", {})
+            command_runner.make_host_runner(dummy_host_info, "command", "test_id")
             mock_make_host.assert_called_once_with(dummy_host_info, None, None)
             mock_target_host.run.assert_called_once_with("command")
             mock_target_host.close.assert_called_once()
@@ -84,13 +84,11 @@ class CommandRunnerTestCase(unittest.TestCase):
 
             dummy_host_info = HostInfo("host_name")
 
-            command_runner.make_host_runner(dummy_host_info, command, "test_id", {})
+            command_runner.make_host_runner(dummy_host_info, command, "test_id")
 
             mock_make_host.assert_called_once_with(dummy_host_info, None, None)
 
-            mock_run_host_command_map.assert_called_once_with(
-                mock_target_host, command, "test_id", {}
-            )
+            mock_run_host_command_map.assert_called_once_with(mock_target_host, command, "test_id")
             mock_target_host.close.assert_called_once()
 
     def test_run_host_commands(self):
@@ -109,7 +107,7 @@ class CommandRunnerTestCase(unittest.TestCase):
         with self.assertRaises(UserWarning):
             with patch("dsi.common.remote_host.RemoteHost") as mongod:
                 command = {"garbage": {"remote_path": "mongos.log"}}
-                command_runner._run_host_command_map(mongod, command, "test_id", {})
+                command_runner._run_host_command_map(mongod, command, "test_id")
 
     def __run_host_command_map_ex(self, command, run_return_value=False, exec_return_value=None):
         with patch("dsi.common.remote_host.RemoteHost") as mongod:
@@ -117,7 +115,7 @@ class CommandRunnerTestCase(unittest.TestCase):
                 mongod.run.return_value = run_return_value
             else:
                 mongod.exec_mongo_command.return_value = exec_return_value
-            command_runner._run_host_command_map(mongod, command, "test_id", {})
+            command_runner._run_host_command_map(mongod, command, "test_id")
 
     def test__exec_ex(self):
         """ Test run command map excpetion """
@@ -146,7 +144,7 @@ class CommandRunnerTestCase(unittest.TestCase):
         # test upload_repo_files
         with patch("dsi.common.remote_host.RemoteHost") as mongod:
             command = {"upload_repo_files": [{"target": "remote_path", "source": "mongos.log"}]}
-            command_runner._run_host_command_map(mongod, command, "test_id", {})
+            command_runner._run_host_command_map(mongod, command, "test_id")
             mongod.upload_file.assert_called_once_with(root + "mongos.log", "remote_path")
 
         with patch("dsi.common.remote_host.RemoteHost") as mongod:
@@ -156,7 +154,7 @@ class CommandRunnerTestCase(unittest.TestCase):
                     {"target": "to", "source": "from"},
                 ]
             }
-            command_runner._run_host_command_map(mongod, command, "test_id", {})
+            command_runner._run_host_command_map(mongod, command, "test_id")
             calls = [mock.call(root + "mongos.log", "remote_path"), mock.call(root + "from", "to")]
             mongod.upload_file.assert_has_calls(calls, any_order=True)
 
@@ -166,7 +164,7 @@ class CommandRunnerTestCase(unittest.TestCase):
         # test upload_files
         with patch("dsi.common.remote_ssh_host.RemoteSSHHost") as mongod:
             command = {"upload_files": [{"target": "remote_path", "source": "mongos.log"}]}
-            command_runner._run_host_command_map(mongod, command, "test_id", {})
+            command_runner._run_host_command_map(mongod, command, "test_id")
             mongod.upload_file.assert_called_once_with("mongos.log", "remote_path")
 
         with patch("dsi.common.remote_ssh_host.RemoteSSHHost") as mongod:
@@ -176,7 +174,7 @@ class CommandRunnerTestCase(unittest.TestCase):
                     {"source": "to", "target": "from"},
                 ]
             }
-            command_runner._run_host_command_map(mongod, command, "test_id", {})
+            command_runner._run_host_command_map(mongod, command, "test_id")
             calls = [mock.call("mongos.log", "remote_path"), mock.call("to", "from")]
             mongod.upload_file.assert_has_calls(calls, any_order=True)
 
@@ -190,7 +188,7 @@ class CommandRunnerTestCase(unittest.TestCase):
 
             command = {"retrieve_files": [{"source": "remote_path", "target": "mongos.log"}]}
             mongod.alias = "host"
-            command_runner._run_host_command_map(mongod, command, "test_id", {})
+            command_runner._run_host_command_map(mongod, command, "test_id")
             mock_retrieve_file.assert_any_call("remote_path", "reports/test_id/host/mongos.log")
 
         # retrieve_files tests
@@ -200,7 +198,7 @@ class CommandRunnerTestCase(unittest.TestCase):
 
             command = {"retrieve_files": [{"source": "remote_path", "target": "mongos.log"}]}
             mongod.alias = "host"
-            command_runner._run_host_command_map(mongod, command, "test_id", {})
+            command_runner._run_host_command_map(mongod, command, "test_id")
             mock_retrieve_file.assert_any_call("remote_path", "reports/test_id/host/mongos.log")
 
         with patch("dsi.common.remote_host.RemoteHost") as mongod:
@@ -209,7 +207,7 @@ class CommandRunnerTestCase(unittest.TestCase):
 
             command = {"retrieve_files": [{"source": "remote_path", "target": "local_path"}]}
             mongod.alias = "host"
-            command_runner._run_host_command_map(mongod, command, "test_id", {})
+            command_runner._run_host_command_map(mongod, command, "test_id")
             mock_retrieve_file.assert_any_call("remote_path", "reports/test_id/host/local_path")
 
         with patch("dsi.common.remote_host.RemoteHost") as mongod:
@@ -217,7 +215,7 @@ class CommandRunnerTestCase(unittest.TestCase):
             mongod.retrieve_path = mock_retrieve_file
 
             mongod.alias = "mongod.0"
-            command_runner._run_host_command_map(mongod, command, "test_id", {})
+            command_runner._run_host_command_map(mongod, command, "test_id")
             mock_retrieve_file.assert_any_call("remote_path", "reports/test_id/mongod.0/local_path")
 
         with patch("dsi.common.remote_host.RemoteHost") as mongod:
@@ -226,7 +224,7 @@ class CommandRunnerTestCase(unittest.TestCase):
 
             command = {"retrieve_files": [{"source": "remote_path", "target": "./local_path"}]}
             mongod.alias = "mongos.0"
-            command_runner._run_host_command_map(mongod, command, "test_id", {})
+            command_runner._run_host_command_map(mongod, command, "test_id")
             mock_retrieve_file.assert_any_call("remote_path", "reports/test_id/mongos.0/local_path")
 
     def test_exec(self):
@@ -236,7 +234,7 @@ class CommandRunnerTestCase(unittest.TestCase):
         with patch("dsi.common.remote_host.RemoteHost") as mongod:
             command = {"exec": "this is a command"}
             mongod.run.return_value = True
-            command_runner._run_host_command_map(mongod, command, "test_id", {})
+            command_runner._run_host_command_map(mongod, command, "test_id")
             mongod.run.assert_called_once_with("this is a command")
 
     def test_exec_mongo_shell(self):
@@ -251,7 +249,7 @@ class CommandRunnerTestCase(unittest.TestCase):
                 }
             }
             mongod.exec_mongo_command.return_value = 0
-            command_runner._run_host_command_map(mongod, command, "test_id", {})
+            command_runner._run_host_command_map(mongod, command, "test_id")
             mongod.exec_mongo_command.assert_called_once_with(
                 "this is a script", connection_string="connection string"
             )
@@ -259,7 +257,7 @@ class CommandRunnerTestCase(unittest.TestCase):
         with patch("dsi.common.remote_host.RemoteHost") as mongod:
             command = {"exec_mongo_shell": {"script": "this is a script"}}
             mongod.exec_mongo_command.return_value = 0
-            command_runner._run_host_command_map(mongod, command, "test_id", {})
+            command_runner._run_host_command_map(mongod, command, "test_id")
             mongod.exec_mongo_command.assert_called_once_with(
                 "this is a script", connection_string=""
             )

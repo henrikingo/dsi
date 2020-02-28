@@ -8,7 +8,11 @@ import logging
 import os
 import signal
 import time
+
+# pylint doesn't know about the `# type:` comments
+import typing as typ  # pylint: disable=unused-import
 import six
+
 
 import pymongo.uri_parser
 
@@ -55,14 +59,15 @@ class Host(object):
     # pylint: disable=too-many-arguments
     def exec_command(
         self,
-        argv,
+        argv,  # type: typ.Union[typ.List[str], str]
         stdout=None,
         stderr=None,
         get_pty=False,
-        max_time_ms=None,
-        no_output_timeout_ms=None,
-        quiet=False,
+        max_time_ms=None,  # type: int
+        no_output_timeout_ms=None,  # type: int
+        quiet=False,  # type: int
     ):
+        # type: (...) -> typ.Optional[int]
         """
         Execute the command and log the output.
 
@@ -90,6 +95,7 @@ class Host(object):
         raise NotImplementedError()
 
     def run(self, argvs, quiet=False):
+        # type: (typ.Union[typ.List[str], str], bool) -> bool
         """
         Runs a command or list of commands.
 

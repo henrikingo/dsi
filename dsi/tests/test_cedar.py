@@ -174,7 +174,7 @@ class TestCedar(unittest.TestCase):
                         ],
                         "sub_tests": [],
                     }
-                ]
+                ],
             }
         )
         self.assertDictEqual(actual, expect)
@@ -201,8 +201,8 @@ class TestRunCuratorAndFriends(unittest.TestCase):
 
     @patch("requests.get")
     def test_calls_correct_url(self, mock_get):
-        retriever = cedar.CertRetriever(TestRunCuratorAndFriends.CONFIG)
-        mock_get().text = "mock_text"
+        retriever = cedar.CedarRetriever(TestRunCuratorAndFriends.CONFIG)
+        mock_get().content = "mock_text"
 
         self.assertEqual(retriever.root_ca(), "cedar.ca.pem")
         self.assertEqual(retriever.user_cert(), "cedar.user.crt")
@@ -239,55 +239,21 @@ class TestRunCuratorAndFriends(unittest.TestCase):
     def test_shell_curator_runner_command_no_bootstrap(self):
         mock_host = MagicMock()
         mock_retriever = MagicMock()
-        config = copy.deepcopy(TestRunCuratorAndFriends.CONFIG)
+        top_config = copy.deepcopy(TestRunCuratorAndFriends.CONFIG)
 
         mock_retriever.user_cert.return_value = "mock-cert"
         mock_retriever.user_key.return_value = "mock-cert"
         mock_retriever.root_ca.return_value = "mock-cert"
+        mock_retriever.fetch_curator.return_value = "./some-fancy-curator"
 
-        runner = cedar.ShellCuratorRunner("normal", mock_host, config, mock_retriever)
+        runner = cedar.CuratorRunner(top_config, mock_host, mock_retriever)
         runner.run_curator()
 
         mock_host.run.assert_has_calls(
             [
                 call(
                     [
-                        "./curator",
-                        "poplar",
-                        "send",
-                        "--service",
-                        "cedar.mongodb.com:7070",
-                        "--cert",
-                        "mock-cert",
-                        "--key",
-                        "mock-cert",
-                        "--ca",
-                        "mock-cert",
-                        "--path",
-                        "cedar_report.json",
-                    ]
-                )
-            ]
-        )
-
-    def test_shell_curator_runner_command_with_bootstrap(self):
-        mock_host = MagicMock()
-        mock_retriever = MagicMock()
-        config = copy.deepcopy(TestRunCuratorAndFriends.CONFIG)
-        config["bootstrap"] = {"curator": "my-custom-curator-path"}
-
-        mock_retriever.user_cert.return_value = "mock-cert"
-        mock_retriever.user_key.return_value = "mock-cert"
-        mock_retriever.root_ca.return_value = "mock-cert"
-
-        runner = cedar.ShellCuratorRunner("normal", mock_host, config, mock_retriever)
-        runner.run_curator()
-
-        mock_host.run.assert_has_calls(
-            [
-                call(
-                    [
-                        "my-custom-curator-path",
+                        "./some-fancy-curator",
                         "poplar",
                         "send",
                         "--service",

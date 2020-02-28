@@ -259,12 +259,10 @@ def run_tests(config):
             config,
             EXCEPTION_BEHAVIOR.CONTINUE,
         )
-
-        if num_tests_failed == 0:
-            # Cedar
-            report.write_report()
-            # Print perf.json to screen
-            print_perf_json(config["test_control"]["perf_json"]["path"])
+        # Print perf.json to screen
+        print_perf_json(config["test_control"]["perf_json"]["path"])
+        # Cedar
+        cedar.send(report, config)
 
     LOG.info("%s of %s tests exited with an error.", num_tests_failed, num_tests_run)
 

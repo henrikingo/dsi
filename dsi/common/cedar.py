@@ -8,8 +8,13 @@ import os
 
 import json
 from datetime import datetime
+import typing as typ  # pylint: disable=unused-import
 import pytz
 import requests
+
+from dsi.common.host import Host  # pylint: disable=unused-import
+from dsi.common import config  # pylint: disable=unused-import
+from dsi.common.local_host import LocalHost
 
 LOG = logging.getLogger(__name__)
 
@@ -61,6 +66,7 @@ class Report(object):
         self.tests.append(test)
 
     def write_report(self):
+        # type: () -> None
         """
         Write to cedar_report.json
         """
@@ -321,36 +327,28 @@ class BucketConfiguration(object):
 #         }
 
 
-def _create_curator_runner(value, host, config):
-    """
-    Nop curator invocations if config['runtime_secret']['perf_jira_user'] not defined.
-
-    :param value: when called from run_curator: X this will be X. For now only support 'normal'
-    :param host: the host.py host to run on
-    :param config: top-level config-dict. used for runtime_secret to get ldap config
-    :return: CuratorRunner
-    """
-    if value != "normal":
-        raise NotImplementedError("Curator of type " + value + " not supported")
-    if "runtime_secret" in config and "perf_jira_user" in config["runtime_secret"]:
-        return ShellCuratorRunner(value, host, config)
-    return NopCuratorRunner(value, host, config)
+def _auth(top_config):
+    if (
+        "runtime_secret" not in top_config
+        or "perf_jira_user" not in top_config["runtime_secret"]
+        or "perf_jira_pw" not in top_config["runtime_secret"]
+    ):
+        return None
+    return {
+        "username": top_config["runtime_secret"]["perf_jira_user"],
+        "password": top_config["runtime_secret"]["perf_jira_pw"],
+    }
 
 
-class CertRetriever(object):
-    """Retrieves certs/keys from the cedar API."""
+class CedarRetriever(object):
+    """Retrieves curator (cedar) binaries and necessary keys."""
 
-    def __init__(self, config):
+    def __init__(self, top_config):
         """
-        :param config: top-level ConfigDict
+        :param top_config: top-level ConfigDict
         """
-        self.config = config
-        self.auth = json.dumps(
-            {
-                "username": self.config["runtime_secret"]["perf_jira_user"],
-                "password": self.config["runtime_secret"]["perf_jira_pw"],
-            }
-        )
+        self.top_config = top_config
+        self.auth = _auth(top_config)
 
     @staticmethod
     def _fetch(url, output, **kwargs):
@@ -367,8 +365,25 @@ class CertRetriever(object):
         resp = requests.get(url, **kwargs)
         resp.raise_for_status()
         with open(output, "w") as pem:
-            pem.write(resp.text)
+            pem.write(resp.content)
         return output
+
+    def fetch_curator(self, runner_host):
+        """
+        :return: the path to the curator binary to run.
+        """
+        # allow ${bootstrap.curator} if running DSI locally
+        if "bootstrap" in self.top_config and "curator" in self.top_config["bootstrap"]:
+            LOG.info(
+                "Using curator path %s from bootstrap", self.top_config["bootstrap"]["curator"]
+            )
+            return self.top_config["bootstrap"]["curator"]
+        url = self.top_config["workload_setup"]["downloads"]["curator"]
+        LOG.info("Downloading and installing curator [%s]", url)
+        self._fetch(url, "./curator.tar.gz")
+        if not os.path.exists("./curator"):
+            runner_host.run(["tar", "-xzf", "./curator.tar.gz"])
+        return "./curator"
 
     def root_ca(self):
         """
@@ -380,79 +395,48 @@ class CertRetriever(object):
         """
         :return: the user-level pem
         """
+        if self.auth is None:
+            return "dummy-cert.crt"
         return self._fetch(
             "https://cedar.mongodb.com/rest/v1/admin/users/certificate",
             "cedar.user.crt",
-            data=self.auth,
+            data=json.dumps(self.auth),
         )
 
     def user_key(self):
         """
         :return: the user-level key
         """
+        if self.auth is None:
+            return "dummy-key.key"
         return self._fetch(
             "https://cedar.mongodb.com/rest/v1/admin/users/certificate/key",
             "cedar.user.key",
-            data=self.auth,
+            data=json.dumps(self.auth),
         )
 
 
-# pylint: disable=too-few-public-methods
 class CuratorRunner(object):
-    """Runs curator via a host.py host"""
+    """Runs curator."""
 
-    def __init__(self, value, host, config):
+    def __init__(self, top_config, runner=None, retriever=None):
+        # type: (typ.Union[config.ConfigDict, dict], Host, CedarRetriever) -> CuratorRunner
         """
-        :param value: the run_curator type
-        :param host: host.py host
-        :param config: top-level config-dict
+        :param runner: host.py host
+        :param top_config: top-level config-dict
+        :param retriever: CedarRetriever to use. Will construct one from given config if None
         """
-        self.value = value
-        self.host = host
-        self.config = config
+        self.top_config = top_config
+        self.retriever = retriever if retriever is not None else CedarRetriever(top_config)
+        self.runner = runner if runner is not None else LocalHost()
+        self.auth = _auth(top_config)
 
     def run_curator(self):
         """
         Do your magic.
         :return: output from host.run_command(the-generated-command)
         """
-        raise NotImplementedError("Must be implemented in subclasses")
-
-
-# pylint: disable=too-few-public-methods
-class NopCuratorRunner(CuratorRunner):
-    """Does nothing. Used when no runtime_secret in config (e..g when running DSI locally)"""
-
-    def run_curator(self):
-        pass
-
-
-# pylint: disable=too-few-public-methods
-class ShellCuratorRunner(CuratorRunner):
-    """Runs curator for realsies."""
-
-    def __init__(self, value, host, config, retriever=None):
-        """
-        :param value: the run_curator type
-        :param host: host.py host
-        :param config: top-level config-dict
-        :param retriever: CertRetriever to use. Will construct one from given config if None
-        """
-        super(ShellCuratorRunner, self).__init__(value, host, config)
-        self.retriever = retriever if retriever is not None else CertRetriever(config)
-
-    def run_curator(self):
-        """
-        Do your magic.
-        :return: output from host.run_command(the-generated-command)
-        """
-        # allow ${bootstrap.curator} if running DSI locally
-        curator = (
-            self.config["bootstrap"]["curator"]
-            if "bootstrap" in self.config and "curator" in self.config["bootstrap"]
-            else "./curator"
-        )
-
+        curator = self.retriever.fetch_curator(self.runner)
         command = [
             curator,
             "poplar",
@@ -468,16 +452,25 @@ class ShellCuratorRunner(CuratorRunner):
             "--path",
             "cedar_report.json",
         ]
-        return self.host.run(command)
+        if self.auth is None:
+            LOG.info("Would run curator command: %s", command)
+            return True
+        else:
+            LOG.info("Running currator command: %s", command)
+        return self.runner.run(command)
 
 
-def run_curator(value, host, config):
+def send(report, top_config, runner_host=None):
+    # type: (Report, config.ConfigDict, Host) -> None
     """
-    Entry-point from test_control. See command_runner.py
-    :param value the type of curator run. For now always 'normal' but additional
-    values may be added in the future
-    :param host the host.py host on which to run the curator and associated shell invocations
-    :param config the top-level ConfigDict
+    :param report: CedarReport
+    :param top_config: ConfigDict top-level config-dict
+    :param runner_host: host.py host to run on
+    :return: nothing
     """
-    runner = _create_curator_runner(value, host, config)
-    return runner.run_curator()
+    if runner_host is None:
+        runner_host = LocalHost()
+
+    report.write_report()
+    runner = CuratorRunner(top_config, runner_host)
+    runner.run_curator()
