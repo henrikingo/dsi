@@ -7,9 +7,7 @@ Note, while this takes as input the serialized file (with --continue), it will n
 write back to that file. This script only prints out a csv file (or optionally writes to file).
 """
 
-from __future__ import print_function
-
-from __future__ import absolute_import
+from __future__ import print_function, absolute_import
 import argparse
 import copy
 import json
@@ -19,10 +17,10 @@ from requests.exceptions import HTTPError
 
 import numpy
 import yaml
+import six
 
 from dsi.common import deep_dict
 from dsi.evergreen import evergreen_client
-import six
 
 
 class OptionError(Exception):

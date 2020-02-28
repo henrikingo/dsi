@@ -58,11 +58,12 @@ def create_cluster(topology, delay_graph, config):
 class MongoCluster(HasDelay):
     """ Abstract base class for mongo clusters """
 
-    def __init__(self, auth_settings):
+    def __init__(self, auth_settings, delay_node):
         """
         :param auth_settings: The username and password needed to connect to this cluster.
 
         """
+        super(MongoCluster, self).__init__(delay_node)
         self.auth_settings = auth_settings
 
     def wait_until_up(self):
@@ -128,7 +129,7 @@ class MongoNode(MongoCluster):
         """
         :param topology: A NodeTopologyConfig object.
         """
-        super(MongoNode, self).__init__(topology.auth_settings)
+        super(MongoNode, self).__init__(topology.auth_settings, topology.delay_node)
 
         self.topology_config = topology
 
@@ -405,7 +406,7 @@ class ReplSet(MongoCluster):
         """
         :param topology: A ReplTopologyConfig object describing this replica set.
         """
-        super(ReplSet, self).__init__(topology.auth_settings)
+        super(ReplSet, self).__init__(topology.auth_settings, None)
 
         self.topology_config = topology
 
@@ -586,7 +587,7 @@ class ShardedCluster(MongoCluster):
         """
         :param topology: A ShardedTopologyConfig object representing this sharded cluster.
         """
-        super(ShardedCluster, self).__init__(topology.auth_settings)
+        super(ShardedCluster, self).__init__(topology.auth_settings, None)
 
         self.sharded_config = topology
 

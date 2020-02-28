@@ -11,10 +11,7 @@ from mock import patch, MagicMock, ANY
 from testfixtures import LogCapture
 
 from dsi.common import atlas_setup
-
-# Note that below functions only work because test_config.py is in the same directory as this file.
-from .test_config import load_config_dict, in_dir
-
+from dsi.tests.test_config import load_config_dict, in_dir
 from test_lib.fixture_files import FixtureFiles
 import test_lib.structlog_for_test as structlog_for_test
 

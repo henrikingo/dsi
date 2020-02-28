@@ -14,14 +14,14 @@ import sys
 import paramiko
 
 from dsi.common import host_utils
-from dsi.common import host
+from dsi.common.host import Host
 
 LOG = logging.getLogger(__name__)
 # This stream only log error or above messages
 ERROR_ONLY = logging.getLogger("error_only")
 
 
-class RemoteHost(host.Host):
+class RemoteHost(Host):
     """
     Represents a remote host
     """

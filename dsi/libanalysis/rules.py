@@ -2,9 +2,7 @@
 Module of constants and rules used in our resource sanity checks. Used in post_run_check.py.
 """
 
-from __future__ import print_function
-
-from __future__ import absolute_import
+from __future__ import print_function, absolute_import
 from datetime import datetime
 import json
 import logging

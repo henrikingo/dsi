@@ -9,9 +9,9 @@ import random
 
 import pymongo
 import structlog
+from six.moves import range
 
 from dsi.common import atlas_client
-from six.moves import range
 
 LOG = structlog.get_logger(__name__)
 

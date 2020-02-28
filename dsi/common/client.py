@@ -46,9 +46,11 @@ class Client(HasDelay):
         """
         :param client_config: The ClientConfig for this client.
         """
+
         self.client_config = client_config
         self._host = None
         self.delay_node = client_config.delay_node
+        super(Client, self).__init__(self.delay_node)
 
     @property
     def host(self):

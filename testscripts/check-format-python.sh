@@ -11,6 +11,6 @@ fi
 
 source python3_venv/bin/activate;
 
-black -l 100 --target-version py27 aws_tools dsi
+black -l 100 --target-version py27 --check aws_tools dsi
 
 deactivate

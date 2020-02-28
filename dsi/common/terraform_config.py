@@ -2,8 +2,7 @@
 Take input from ConfigDict config files, output a terraform json file (cluster.json).
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import print_function, absolute_import
 import json
 import datetime
 import logging

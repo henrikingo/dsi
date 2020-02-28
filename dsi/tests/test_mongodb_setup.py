@@ -5,7 +5,7 @@ import unittest
 
 import mock
 
-from dsi.common import host
+from dsi.common import host as common_host
 from dsi.common import mongodb_cluster
 from dsi import mongodb_setup
 
@@ -65,7 +65,7 @@ class TestMongodbSetup(unittest.TestCase):
         self.assertEqual(setup.shutdown_ms, "shutdown")
         self.assertEqual(setup.sigterm_ms, "sigterm")
 
-    @mock.patch.object(host, "Host", autospec=True)
+    @mock.patch.object(common_host, "Host", autospec=True)
     def test_start1(self, host):
         """Starting ignores shutdown fails """
         setup = mongodb_setup.MongodbSetup(config=self.config)

@@ -58,9 +58,7 @@ Currently, support is not provided for here documents (http://tldp.org/LDP/abs/h
 as command line parameters.
 """
 
-from __future__ import print_function
-
-from __future__ import absolute_import
+from __future__ import print_function, absolute_import
 import argparse
 import logging
 import os
@@ -68,7 +66,6 @@ import sys
 import threading
 
 from dsi import alias
-
 from dsi.common.log import setup_logging
 from dsi.common.config import ConfigDict
 

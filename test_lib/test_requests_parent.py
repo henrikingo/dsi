@@ -11,8 +11,8 @@ import unittest
 
 from mock import patch
 
-from context_shelve import ContextShelve
-from fixture_files import FixtureFiles
+from test_lib.context_shelve import ContextShelve
+from test_lib.fixture_files import FixtureFiles
 
 FIXTURE = FixtureFiles()
 

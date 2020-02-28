@@ -1,8 +1,6 @@
 """Module of utility functions for analysis"""
 
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
+from __future__ import print_function, absolute_import, division
 import datetime
 import doctest
 import json

@@ -18,9 +18,7 @@ from testfixtures import LogCapture, log_capture
 from dsi.common.config import ConfigDict
 from dsi.common import utils
 from dsi import infrastructure_provisioning as ip
-
-from . import test_config
-
+from dsi.tests import test_config
 from test_lib.fixture_files import FixtureFiles
 import test_lib.structlog_for_test as structlog_for_test
 

@@ -2,8 +2,7 @@
 """ConfigDict class reads yaml config files and presents a dict() get/set API to read configs."""
 # pylint: disable=too-many-public-methods
 
-from __future__ import absolute_import
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 import copy
 import logging
 import os.path

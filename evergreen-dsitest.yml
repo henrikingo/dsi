@@ -39,7 +39,7 @@ functions:
       params:
         working_dir: src
         script: |
-          ./run-dsi python testscripts/check_format_python.py
+          ./run-dsi testscripts/check-format-python.sh
 
   lint_python_scripts:
     - command: shell.exec

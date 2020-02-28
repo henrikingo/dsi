@@ -2,9 +2,7 @@
 Test runners for different types of test frameworks.
 """
 
-from __future__ import print_function
-
-from __future__ import absolute_import
+from __future__ import print_function, absolute_import
 import os
 import subprocess
 

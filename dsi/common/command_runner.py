@@ -7,10 +7,11 @@ import inspect
 import logging
 import os
 import sys
-import six
 from collections import MutableMapping
 from enum import Enum
 from functools import partial
+
+import six
 import structlog
 from dateutil import tz
 
@@ -401,7 +402,7 @@ def dispatch_commands(command_key, command_list, config, current_test_id=None):
             elif target.startswith("on_"):
                 run_host_command(target, command, config, prefix)
             elif target == "restart_mongodb":
-                import mongodb_setup
+                from dsi import mongodb_setup
 
                 mongo_controller = mongodb_setup.MongodbSetup(config)
                 clean_db_dir = command["clean_db_dir"]

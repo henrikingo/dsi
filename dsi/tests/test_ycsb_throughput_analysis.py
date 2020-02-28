@@ -2,10 +2,10 @@
 
 from __future__ import absolute_import
 from os import path
+import unittest
+
 from six.moves import range
 from six.moves import zip
-
-import unittest
 
 from test_lib.fixture_files import FixtureFiles
 from dsi.libanalysis import ycsb_throughput_analysis as ycsb_throughput

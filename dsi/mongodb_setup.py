@@ -7,13 +7,12 @@ This file takes as input a YAML configuration of the AWS instances and
 MongoDB cluster topology and brings up a cluster on the remote machines.
 """
 from __future__ import absolute_import
+import argparse
+import logging
 import sys
 from functools import partial
-import logging
+
 from six.moves import range
-
-
-import argparse
 
 from dsi.common import atlas_setup
 from dsi.common import host_utils

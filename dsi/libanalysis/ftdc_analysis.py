@@ -4,8 +4,7 @@ analysis.py plugin: Analyze FTDC diagnostic.data.
 Functions for analyzing `FTDC` diagnostic data. Parse files to do some resource sanity checks.
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import print_function, absolute_import
 import copy
 import inspect
 import os

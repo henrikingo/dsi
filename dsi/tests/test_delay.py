@@ -2,10 +2,10 @@ from __future__ import absolute_import
 
 import os
 import shutil
-from six.moves import range
-
 import unittest
 from contextlib import contextmanager
+
+from six.moves import range
 from mock import MagicMock, call, patch
 
 from dsi.delay import (

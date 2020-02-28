@@ -11,9 +11,7 @@ the tuple key represents a path through a JSON document from root to leaf,
 and the list is a list of values for that path.
 """
 
-from __future__ import print_function
-
-from __future__ import absolute_import
+from __future__ import print_function, absolute_import
 import collections
 import mmap
 import os

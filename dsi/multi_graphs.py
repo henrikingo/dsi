@@ -6,9 +6,7 @@ Create pyplot graphs from data that was output from multi_analysis.py.
 Note: No unit tests for this file, the pyplot module is heavy on dependencies.
 """
 
-from __future__ import print_function
-
-from __future__ import absolute_import
+from __future__ import print_function, absolute_import
 import argparse
 import json
 import os

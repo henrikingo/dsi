@@ -6,6 +6,7 @@ security.tf
 *.pyc
 /venv
 /dsi_venv
+/python3_venv
 /.coverage
 /coverage.xml
 
