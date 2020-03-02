@@ -12,9 +12,10 @@ from nose.tools import nottest
 from dsi.common.config import ConfigDict
 from dsi.common.local_host import LocalHost
 from dsi.common.remote_host import RemoteHost
+from dsi.common import whereami
 from test_lib.fixture_files import FixtureFiles
 
-FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
+FIXTURE_FILES = FixtureFiles()
 
 
 class HostTestCase(unittest.TestCase):
@@ -22,17 +23,14 @@ class HostTestCase(unittest.TestCase):
 
     def _delete_fixtures(self):
         """ delete fixture path and set filename attribute """
-        local_host_path = FIXTURE_FILES.fixture_file_path("fixtures")
+        local_host_path = os.path.join(FIXTURE_FILES.fixture_file_path(), "fixtures")
         self.filename = os.path.join(local_host_path, "file")
         shutil.rmtree(os.path.dirname(self.filename), ignore_errors=True)
 
     def setUp(self):
         """ Init a ConfigDict object and load the configuration files from docs/config-specs/ """
         self.old_dir = os.getcwd()  # Save the old path to restore
-        # Note that this chdir only works without breaking relative imports
-        # because it's at the same directory depth
-        os.chdir(os.path.dirname(os.path.abspath(__file__)) + "/../../docs/config-specs/")
-        self.config = ConfigDict("mongodb_setup")
+        self.config = ConfigDict("mongodb_setup", whereami.dsi_repo_path("docs", "config-specs"))
         self.config.load()
         self.parent_dir = os.path.join(os.path.expanduser("~"), "checkout_repos_test")
 
@@ -52,7 +50,10 @@ class HostTestCase(unittest.TestCase):
         local.run.return_value = False
         self.assertTrue(local.kill_remote_procs("mongo"))
 
-        calls = [call(["pkill", "-9", "mongo"], quiet=True), call(["pgrep", "mongo"], quiet=True)]
+        calls = [
+            call(["pkill", "-9", "mongo"], quiet=True),
+            call(["pgrep", "mongo"], quiet=True),
+        ]
 
         local.run.assert_has_calls(calls)
 

@@ -1,21 +1,21 @@
 # -*- coding: UTF-8 -*-
 """Tests for dsi/common/config.py"""
 from __future__ import absolute_import
+
 import os
 import unittest
-from contextlib import contextmanager
 from six.moves import range
 from six.moves import zip
-
 import yaml
-from mock import patch
 
+import dsi.common.whereami as whereami
 from dsi.common import config
 from dsi.common.config import ConfigDict
 
-from test_lib.fixture_files import FixtureFiles
+from test_lib.fixture_files import FixtureFiles, load_config_dict
+from test_lib.io_utils import in_dir
 
-FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
+FIXTURE_FILES = FixtureFiles()
 
 
 def dirmarker(into):
@@ -33,27 +33,6 @@ def dirmarker(into):
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), into)
     os.chdir(path)
     return lambda: os.chdir(old_dir)
-
-
-@contextmanager
-def in_dir(into):
-    """perform some operation in context of another dir"""
-    marker = dirmarker(into)
-    yield
-    marker()
-
-
-def load_config_dict(module):
-    """
-    Load ConfigDict for the given module with id checks mocked out.
-
-    :param str module: Name of module for ConfigDict.
-    """
-    with patch("dsi.common.config.ConfigDict.assert_valid_ids") as mock_assert_valid_ids:
-        conf = ConfigDict(module)
-        conf.load()
-        mock_assert_valid_ids.assert_called_once()
-        return conf
 
 
 class InvalidConfigDictTestCase(unittest.TestCase):
@@ -83,7 +62,9 @@ class InvalidConfigDictTestCase(unittest.TestCase):
         with in_dir(FIXTURE_FILES.fixture_file_path("nested-config")):
             conf = load_config_dict("mongodb_setup")
             with self.assertRaises(config.InvalidConfigurationException):
-                conf["mongodb_setup"]["out"] = {"okay": [subdict]}
+                conf["mongodb_setup"]["out"] = {
+                    "okay": [subdict],
+                }
 
     def test_assigns_invalid_space_key(self):
         """spaces not allowed"""
@@ -121,7 +102,7 @@ class InvalidConfigDictTestCase(unittest.TestCase):
                             "not okay": "you're killing me, bro!",
                             "seriously, just stop now": "but all the cool kids are doing it",
                         }
-                    ]
+                    ],
                 }
             # we're non-normative on what the actual message is, but we
             # do care that all the errored keys are there
@@ -137,7 +118,9 @@ class InvalidConfigDictTestCase(unittest.TestCase):
         with in_dir(FIXTURE_FILES.fixture_file_path("invalid-ids")):
             conf = load_config_dict("mongodb_setup")
             with self.assertRaises(config.InvalidConfigurationException):
-                conf["mongodb_setup"]["test"] = {"okay": [subdict]}
+                conf["mongodb_setup"]["test"] = {
+                    "okay": [subdict],
+                }
 
     def test_id_is_reserved_word(self):
         """
@@ -204,34 +187,23 @@ class ConfigDictTestCase(unittest.TestCase):
 
     def setUp(self):
         """Init a ConfigDict object and load the configuration files from docs/config-specs/"""
-        self.restore = dirmarker("./../../docs/config-specs/")  # Save the old path to restore Note
-        # that this chdir only works without breaking relative imports
-        # because it's at the same directory depth
-        self.conf = ConfigDict("mongodb_setup")
+        self.conf = ConfigDict("mongodb_setup", whereami.dsi_repo_path("docs", "config-specs"))
         self.conf.load()
         self.assertEqual(self.conf.module, "mongodb_setup")
 
-    def tearDown(self):
-        self.restore()
-
-    @patch("os.path.join")
-    def test_load_new(self, mock_path_join):
+    def test_load_new(self):
         """Test loading ConfigDict with old naming convention .yml files"""
-        os.chdir(
-            os.path.dirname(os.path.abspath(__file__)) + "/../tests/test_config_files/new_format"
+        test_conf = ConfigDict(
+            "bootstrap", whereami.dsi_repo_path("dsi", "tests", "test_config_files", "new_format")
         )
-        mock_path_join.return_value = "./configurations/defaults.yml"
-        test_conf = ConfigDict("bootstrap")
         test_conf.load()
         self.assertFalse("cluster_type" in test_conf.raw["bootstrap"])
         self.assertTrue("infrastructure_provisioning" in test_conf.raw["bootstrap"])
         self.assertFalse("cluster_type" in test_conf.defaults["bootstrap"])
         self.assertTrue("infrastructure_provisioning" in test_conf.defaults["bootstrap"])
-        os.chdir(os.path.dirname(os.path.abspath(__file__)) + "/../../docs/config-specs/")
 
     def test_none_valued_keys(self):
-        config_dict = ConfigDict("test_control")
-        config_dict.load()
+        config_dict = self.conf
         self.assertEqual(config_dict["runtime"]["overridden_none"], "hey there")
         self.assertEqual(config_dict["runtime"]["override_with_none"], None)
         self.assertEqual(config_dict["runtime"]["overridden_dict"], None)
@@ -418,7 +390,7 @@ class ConfigDictTestCase(unittest.TestCase):
                 "replication": {"replSetName": "override-rs"},
                 "systemLog": {"path": "data/logs/mongod.log", "destination": "file"},
                 "setParameter": {"enableTestCommands": True, "foo": True},
-                "net": {"port": 27017, "bindIp": "0.0.0.0"},
+                "net": {"port": 27017, "bindIp": "0.0.0.0",},
                 "processManagement": {"fork": True},
                 "storage": {"engine": "wiredTiger", "dbPath": "data/dbs"},
             },
@@ -429,7 +401,7 @@ class ConfigDictTestCase(unittest.TestCase):
                 "replication": {"replSetName": "override-rs"},
                 "systemLog": {"path": "data/logs/mongod.log", "destination": "file"},
                 "setParameter": {"enableTestCommands": True, "foo": True},
-                "net": {"port": 27017, "bindIp": "0.0.0.0"},
+                "net": {"port": 27017, "bindIp": "0.0.0.0",},
                 "processManagement": {"fork": True},
                 "storage": {"engine": "inMemory", "dbPath": "data/dbs"},
             },
@@ -464,16 +436,16 @@ class ConfigDictTestCase(unittest.TestCase):
                 "replication": {"replSetName": "override-rs"},
                 "systemLog": {"path": "data/logs/mongod.log", "destination": "file"},
                 "setParameter": {"enableTestCommands": True, "foo": True},
-                "net": {"port": 27017, "bindIp": "0.0.0.0"},
+                "net": {"port": 27017, "bindIp": "0.0.0.0",},
                 "processManagement": {"fork": True},
                 "storage": {"engine": "wiredTiger", "dbPath": "data/dbs"},
             },
         )
         # self.keys() should return a 'config_file' key
-        self.assertTrue("config_file" in list(mycluster["shard"][0]["mongod"][0].keys()))
-        self.assertTrue("config_file" in list(mycluster["shard"][2]["mongod"][0].keys()))
-        self.assertTrue("config_file" in list(self.conf["mongodb_setup"]["topology"][2].keys()))
-        self.assertFalse("config_file" in list(self.conf["mongodb_setup"]["topology"][0].keys()))
+        self.assertTrue("config_file" in mycluster["shard"][0]["mongod"][0].keys())
+        self.assertTrue("config_file" in mycluster["shard"][2]["mongod"][0].keys())
+        self.assertTrue("config_file" in self.conf["mongodb_setup"]["topology"][2].keys())
+        self.assertFalse("config_file" in self.conf["mongodb_setup"]["topology"][0].keys())
 
     def test_replset_rs_conf(self):
         """Test magic rs_conf for a replset"""
@@ -486,12 +458,12 @@ class ConfigDictTestCase(unittest.TestCase):
         self.assertEqual(rs_conf["protocolVersion"], 1)
 
         # conf.keys() should return a 'config_file' key for replsets, not otherwise
-        self.assertTrue("rs_conf" in list(mycluster["shard"][0].keys()))
-        self.assertTrue("rs_conf" in list(mycluster["shard"][2].keys()))
-        self.assertTrue("rs_conf" in list(myreplset.keys()))
-        self.assertFalse("rs_conf" in list(mycluster.keys()))
-        self.assertFalse("rs_conf" in list(self.conf["mongodb_setup"]["topology"][2].keys()))
-        self.assertFalse("rs_conf" in list(self.conf["infrastructure_provisioning"].keys()))
+        self.assertTrue("rs_conf" in mycluster["shard"][0].keys())
+        self.assertTrue("rs_conf" in mycluster["shard"][2].keys())
+        self.assertTrue("rs_conf" in myreplset.keys())
+        self.assertFalse("rs_conf" in mycluster.keys())
+        self.assertFalse("rs_conf" in self.conf["mongodb_setup"]["topology"][2].keys())
+        self.assertFalse("rs_conf" in self.conf["infrastructure_provisioning"].keys())
 
     def test_set_some_values(self):
         """Set some values and write out file"""
@@ -505,7 +477,9 @@ class ConfigDictTestCase(unittest.TestCase):
         with self.assertRaises(KeyError):
             self.conf["foo"] = "bar"
         # Write the out file only if it doesn't already exist, and delete it when done
-        file_name = "../../docs/config-specs/mongodb_setup.out.yml"
+        file_name = os.path.join(
+            whereami.dsi_repo_path("docs", "config-specs"), "mongodb_setup.out.yml"
+        )
         if os.path.exists(file_name):
             self.fail(
                 "Cannot test writing docs/config-specs/mongodb_setup.out.yml file, file already exists."
@@ -522,7 +496,7 @@ class ConfigDictTestCase(unittest.TestCase):
         """Test that iterators .keys() and .values() work"""
         mycluster = self.conf["mongodb_setup"]["topology"][0]
         self.assertEqual(
-            list(self.conf.keys()),
+            self.conf.keys(),
             [
                 "test_control",
                 "workload_setup",
@@ -536,11 +510,9 @@ class ConfigDictTestCase(unittest.TestCase):
         )
 
         tfvars_dict = dict(
-            list(
-                zip(
-                    list(self.conf["infrastructure_provisioning"]["tfvars"].keys()),
-                    list(self.conf["infrastructure_provisioning"]["tfvars"].values()),
-                )
+            zip(
+                self.conf["infrastructure_provisioning"]["tfvars"].keys(),
+                self.conf["infrastructure_provisioning"]["tfvars"].values(),
             )
         )
 
@@ -573,7 +545,7 @@ class ConfigDictTestCase(unittest.TestCase):
         )
 
         self.assert_equal_lists(
-            list(mycluster["shard"][2]["mongod"][0].values()),
+            mycluster["shard"][2]["mongod"][0].values(),
             [
                 "53.1.1.7",
                 "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.4.6.tgz",
@@ -581,7 +553,7 @@ class ConfigDictTestCase(unittest.TestCase):
                     "replication": {"replSetName": "override-rs"},
                     "systemLog": {"path": "data/logs/mongod.log", "destination": "file"},
                     "setParameter": {"enableTestCommands": True, "foo": True},
-                    "net": {"port": 27017, "bindIp": "0.0.0.0"},
+                    "net": {"port": 27017, "bindIp": "0.0.0.0",},
                     "processManagement": {"fork": True},
                     "storage": {"engine": "inMemory", "dbPath": "data/dbs"},
                 },

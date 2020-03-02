@@ -12,7 +12,7 @@ import requests
 from dsi.common import atlas_client
 from test_lib.fixture_files import FixtureFiles
 
-FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
+FIXTURE_FILES = FixtureFiles()
 
 
 class TestAtlasClient(unittest.TestCase):

@@ -140,7 +140,7 @@ functions:
         working_dir: work
         script: |
           set -e
-          ../src/run-dsi python ../src/bin/bootstrap.py
+          ../src/run-dsi ../src/dsi/bootstrap.py
     # Different work directory due to historical reasons
     - command: shell.exec
       params:

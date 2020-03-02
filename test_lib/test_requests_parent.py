@@ -7,6 +7,7 @@ For reference on mocking functions in all tests:
 http://www.voidspace.org.uk/python/mock/examples.html#applying-the-same-patch-to-every-test-method
 """
 
+import os
 import unittest
 
 from mock import patch
@@ -27,7 +28,7 @@ class TestRequestsParent(unittest.TestCase):
         Mocks the connection functions and also opens up the ContextShelve object.
         """
         # pylint: disable=invalid-name
-        persistent_dict_path = FIXTURE.fixture_file_path("override_responses")
+        persistent_dict_path = os.path.join(FIXTURE.fixture_file_path(), 'override_responses')
         self.override_responses = ContextShelve(persistent_dict_path)
         self.override_responses.open()
         # Instead of using patch in decorators or as a context manager, the start() and stop()

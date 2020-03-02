@@ -26,8 +26,8 @@ class TestHelperFunctions(unittest.TestCase):
     def test_mongodb_auth_settings_enabled(self):
         config = {
             "mongodb_setup": {
-                "authentication": {"enabled": True, "username": "username", "password": "password"}
-            }
+                "authentication": {"enabled": True, "username": "username", "password": "password",}
+            },
         }
         self.assertEqual(
             mongodb_setup_helpers.mongodb_auth_settings(config),

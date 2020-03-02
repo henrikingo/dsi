@@ -18,6 +18,7 @@ from dsi.delay import (
     str_to_version_flag,
 )
 from dsi.common.config import ConfigDict
+from dsi.common import whereami
 
 BASIC_DELAY_CONFIG = {"default": {"delay_ms": 0, "jitter_ms": 0}}
 
@@ -331,7 +332,11 @@ class DelayNodeTestCase(unittest.TestCase):
 
 class DelayGraphTestCase(unittest.TestCase):
     def test_parse_standalone(self):
-        topology = {"cluster_type": "standalone", "public_ip": "1.2.3.4", "private_ip": "10.2.0.1"}
+        topology = {
+            "cluster_type": "standalone",
+            "public_ip": "1.2.3.4",
+            "private_ip": "10.2.0.1",
+        }
         delay_graph = DelayGraph(topology, BASIC_DELAY_CONFIG)
         expected = ["10.2.0.1", "workload_client"]
         for private_ip in delay_graph.graph:
@@ -394,7 +399,7 @@ class DelayGraphTestCase(unittest.TestCase):
             ],
         }
         delay_graph = DelayGraph(topology, BASIC_DELAY_CONFIG)
-        expected = ["10.2.0.{num}".format(num=i) for i in range(1, 16)]
+        expected = ["10.2.0.{num}".format(num=i) for i in xrange(1, 16)]
         expected.append("workload_client")
         for private_ip in delay_graph.graph:
             self.assertTrue(private_ip in expected)
@@ -606,14 +611,16 @@ class DelayGraphTestCase(unittest.TestCase):
 class ConfigurationTestCase(unittest.TestCase):
     def test_validate_delays(self):
         blacklisted_configs = ["mongodb_setup.atlas.yml"]  # Some configs don't have topologies.
-        directory = os.path.join("configurations", "mongodb_setup")
+        directory = whereami.dsi_repo_path("configurations", "mongodb_setup")
         errors = []
 
         # There are a few files that aren't configuration files.
         names = [name for name in os.listdir(directory) if name.startswith("mongodb_setup")]
 
         # We need references to provisioning output
-        infrastructure_provisioning = "docs/config-specs/infrastructure_provisioning.out.yml"
+        infrastructure_provisioning = whereami.dsi_repo_path(
+            "docs/config-specs/infrastructure_provisioning.out.yml"
+        )
         with copied_file(infrastructure_provisioning, "infrastructure_provisioning.out.yml"):
 
             for conf_name in names:

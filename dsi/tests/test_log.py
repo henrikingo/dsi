@@ -1,5 +1,6 @@
 """Tests for dsi/common/host.py"""
 from __future__ import absolute_import
+
 import unittest
 from StringIO import StringIO
 

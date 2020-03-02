@@ -10,7 +10,7 @@ import unittest
 from test_lib.fixture_files import FixtureFiles
 from dsi.libanalysis import ftdc_analysis
 
-FIXTURE_FILES = FixtureFiles(os.path.join(os.path.dirname(__file__)), "analysis")
+FIXTURE_FILES = FixtureFiles()
 
 
 class TestFtdcAnalysis(unittest.TestCase):
@@ -22,7 +22,7 @@ class TestFtdcAnalysis(unittest.TestCase):
         """
         FTDC resource sanity checks upon successful test run
         """
-        dir_path = FIXTURE_FILES.fixture_file_path("core_workloads_reports")
+        dir_path = FIXTURE_FILES.fixture_file_path("analysis", "core_workloads_reports")
         variant = "linux-standalone"
         constant_values = {"max_thread_level": 64}
         config = {
@@ -118,7 +118,7 @@ class TestFtdcAnalysis(unittest.TestCase):
         ]
         file_rule_failures = {"ftdc_replica_lag_check": rule_info}
 
-        test_dir = FIXTURE_FILES.fixture_file_path("test_repllag")
+        test_dir = FIXTURE_FILES.fixture_file_path("analysis", "test_repllag")
         ok_file = os.path.join(test_dir, "failure_message.txt.ok")
         with open(ok_file) as ok_file_handle:
             expected = ok_file_handle.read()

@@ -9,13 +9,13 @@ import unittest
 from dsi import analysis
 from test_lib.fixture_files import FixtureFiles
 
-FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
+FIXTURE_FILES = FixtureFiles()
 
 
 class TestAnalysis(unittest.TestCase):
     def setUp(self):
         self.results_json = os.path.join(
-            FIXTURE_FILES.fixture_dir_path, "results.test_analysis.json"
+            FIXTURE_FILES.repo_root_file_path(), "results.test_analysis.json"
         )
         self.config = {
             "analysis": {

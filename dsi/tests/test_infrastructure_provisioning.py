@@ -15,16 +15,16 @@ import unittest
 from mock import patch, call, mock_open, MagicMock, ANY
 from testfixtures import LogCapture, log_capture
 
+from dsi.common import whereami
 from dsi.common.config import ConfigDict
 from dsi.common import utils
 from dsi import infrastructure_provisioning as ip
-from dsi.tests import test_config
 from test_lib.fixture_files import FixtureFiles
 import test_lib.structlog_for_test as structlog_for_test
 
 # pylint: disable=too-many-locals
 
-FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
+FIXTURE_FILES = FixtureFiles()
 
 # If VERSION is updated then the following files also need to be modified
 # dsi/tests/unittest-files/terraform/provisioned.initialsync-logkeeper
@@ -40,9 +40,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     def setUp(self):
         self.os_environ_patcher = patch("dsi.infrastructure_provisioning.os.environ")
         self.mock_environ = self.os_environ_patcher.start()
-        self.dsi_path = os.path.dirname(
-            os.path.dirname(os.path.abspath(os.path.join(__file__, "..")))
-        )
+        self.dsi_path = whereami.dsi_repo_path()
         self.reset_mock_objects()
         # pylint: disable=line-too-long
         self.config = {
@@ -55,7 +53,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                     "ssh_key_file": "aws_ssh_key.pem",
                     "ssh_key_name": "serverteam-perf-ssh-key",
                 },
-                "evergreen": {"data_dir": FIXTURE_FILES.fixture_dir_path},
+                "evergreen": {"data_dir": FIXTURE_FILES.fixture_file_path()},
                 "post_provisioning": [
                     {
                         "on_all_hosts": {
@@ -78,7 +76,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         # pylint: enable=line-too-long
         # create a provision log path that can be safely deleted post test
         self.provision_log_path = os.path.join(
-            FIXTURE_FILES.fixture_dir_path, ip.PROVISION_LOG_PATH
+            FIXTURE_FILES.fixture_file_path(), ip.PROVISION_LOG_PATH
         )
 
         # Setup logging so that structlog uses stdlib, and LogCapture works
@@ -100,7 +98,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
 
     def check_subprocess_call(self, command_to_check, command, env=None):
         """
-        Needed to properly check subprocess.check_call since __file__ is used
+        Needed to properly check subprocess.check_call since whereami is used
         to find the path to the file being executed.
         :param command_to_check list that represents the expected command
         :param command is the command subprocess.check_call tries to run. This command is checked
@@ -236,8 +234,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             self.assertEqual(provisioner.evg_data_dir, evg_data_dir)
             provisioner.check_existing_state()
             isfile_calls = [
-                call(evg_data_dir + "terraform/terraform.tfstate"),
-                call(evg_data_dir + "terraform/provisioned.replica"),
+                call(evg_data_dir + "/terraform/terraform.tfstate"),
+                call(evg_data_dir + "/terraform/provisioned.replica"),
             ]
             mock_isfile.assert_has_calls(isfile_calls)
             copyfile_calls = [
@@ -273,7 +271,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             mock_isfile.return_value = False
             provisioner = ip.Provisioner(config, provisioning_file=self.provision_log_path)
             provisioner.check_existing_state()
-            isfile_calls = [call(evg_data_dir + "terraform/terraform.tfstate")]
+            isfile_calls = [call(evg_data_dir + "/terraform/terraform.tfstate")]
             mock_isfile.assert_has_calls(isfile_calls)
             mock_check_call.assert_not_called()
             mock_rmtree.assert_not_called()
@@ -297,7 +295,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         mock_isdir.side_effect = lambda evg_dir: evg_dir == evg_data_dir
         # Run check_existing_state when existing state exists
         with patch("dsi.infrastructure_provisioning.os.path.isfile") as mock_isfile:
-            expected_command = ["python", evg_data_dir + "terraform/infrastructure_teardown.py"]
+            expected_command = ["python", evg_data_dir + "/terraform/infrastructure_teardown.py"]
             # mock_check_call.side_effect = partial(self.check_subprocess_call, expected_command)
             mock_isfile.return_value = True
             provisioner = ip.Provisioner(config, provisioning_file=self.provision_log_path)
@@ -329,7 +327,7 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             provisioner = ip.Provisioner(config, provisioning_file=self.provision_log_path)
             provisioner.check_existing_state()
             mock_shutil.rmtree.assert_called_with(evg_data_dir)
-            isfile_calls = [call(evg_data_dir + "terraform/terraform.tfstate")]
+            isfile_calls = [call(evg_data_dir + "/terraform/terraform.tfstate")]
             mock_isfile.assert_has_calls(isfile_calls)
             remove_calls = [call("cluster.json"), call("terraform.tfstate")]
             mock_remove.assert_has_calls(remove_calls)
@@ -398,14 +396,14 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             provisioner = ip.Provisioner(self.config, provisioning_file=self.provision_log_path)
             provisioner.bin_dir = "test/dsi"
             provisioner.setup_evg_dir()
-            mock_makedirs.assert_called_with(evg_data_dir + "terraform")
-            copytree_calls = [call("modules", evg_data_dir + "terraform/modules")]
+            mock_makedirs.assert_called_with(evg_data_dir + "/terraform")
+            copytree_calls = [call("modules", evg_data_dir + "/terraform/modules")]
             mock_shutil.copytree.assert_has_calls(copytree_calls)
             copy_calls = [
-                call("test/path/terraform", evg_data_dir + "terraform/terraform"),
+                call("test/path/terraform", evg_data_dir + "/terraform/terraform"),
                 call(
                     provisioner.bin_dir + "/infrastructure_teardown.py",
-                    evg_data_dir + "terraform/infrastructure_teardown.py",
+                    evg_data_dir + "/terraform/infrastructure_teardown.py",
                 ),
             ]
             mock_shutil.copy.assert_has_calls(copy_calls)
@@ -556,12 +554,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
 
     @patch("dsi.infrastructure_provisioning.subprocess.check_call")
     @patch("dsi.infrastructure_provisioning.os.remove")
-    @patch("dsi.infrastructure_provisioning.os.chdir")
-    @patch("dsi.infrastructure_provisioning.os.getcwd")
     @patch("dsi.infrastructure_provisioning.shutil.copyfile")
-    def test_save_terraform_state(
-        self, mock_copyfile, mock_getcwd, mock_chdir, mock_remove, mock_check_call
-    ):
+    def test_save_terraform_state(self, mock_copyfile, mock_remove, mock_check_call):
         """
         Test Provisioner.save_terraform_state
         """
@@ -572,7 +566,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             mock_open_file = mock_open()
             with patch("dsi.infrastructure_provisioning.open", mock_open_file, create=True):
                 mock_glob.return_value = provisioned_files
-                mock_getcwd.return_value = "fake/path"
                 provisioner = ip.Provisioner(self.config, provisioning_file=self.provision_log_path)
                 provisioner.production = True
                 provisioner.save_terraform_state()
@@ -588,8 +581,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
                     for file_to_copy in files_to_copy
                 ]
                 mock_copyfile.assert_has_calls(copyfile_calls)
-                chdir_calls = [call(terraform_dir), call(mock_getcwd.return_value)]
-                mock_chdir.assert_has_calls(chdir_calls)
                 mock_check_call.assert_called_with(
                     ["./terraform", "init", "-upgrade"],
                     stdout=provisioner.stdout,
@@ -602,10 +593,8 @@ class TestInfrastructureProvisioning(unittest.TestCase):
 
     @patch("dsi.infrastructure_provisioning.subprocess.check_call")
     @patch("dsi.infrastructure_provisioning.os.remove")
-    @patch("dsi.infrastructure_provisioning.os.chdir")
-    @patch("dsi.infrastructure_provisioning.os.getcwd")
     @patch("dsi.infrastructure_provisioning.shutil.copyfile")
-    def test_userexpand(self, mock_copyfile, mock_getcwd, mock_chdir, mock_remove, mock_check_call):
+    def test_userexpand(self, mock_copyfile, mock_remove, mock_check_call):
         """
         Test Provisioner.save_terraform_state with ~/.ssh/user_ssh_key.pem
         """
@@ -619,7 +608,6 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             mock_open_file = mock_open()
             with patch("dsi.infrastructure_provisioning.open", mock_open_file, create=True):
                 mock_glob.return_value = provisioned_files
-                mock_getcwd.return_value = "fake/path"
                 provisioner = ip.Provisioner(config, provisioning_file=self.provision_log_path)
                 provisioner.production = True
                 provisioner.save_terraform_state()
@@ -638,20 +626,20 @@ class TestInfrastructureProvisioning(unittest.TestCase):
         evg_data_dir = self.config["infrastructure_provisioning"]["evergreen"]["data_dir"]
 
         # provisioned.single should always have an empty version number.
-        self.assertFalse(ip.check_version(evg_data_dir + "terraform/provisioned.single"))
+        self.assertFalse(ip.check_version(evg_data_dir + "/terraform/provisioned.single"))
 
         # provisioned.replica should have a version number equal to the current version in
         # infrastructure_provisioning.py.
-        self.assertTrue(ip.check_version(evg_data_dir + "terraform/provisioned.replica"))
+        self.assertTrue(ip.check_version(evg_data_dir + "/terraform/provisioned.replica"))
 
         # provisioned.shard should have a version number one greater than the current version in
         # infrastructure_provisioning.py.
-        self.assertFalse(ip.check_version(evg_data_dir + "terraform/provisioned.shard"))
+        self.assertFalse(ip.check_version(evg_data_dir + "/terraform/provisioned.shard"))
 
         # provisioned.initialsync-logkeeper should have a version number equal to the current
         # version in infrastructure_provisioning.py.
         self.assertTrue(
-            ip.check_version(evg_data_dir + "terraform/provisioned.initialsync-logkeeper")
+            ip.check_version(evg_data_dir + "/terraform/provisioned.initialsync-logkeeper")
         )
 
     @patch("dsi.infrastructure_provisioning.shutil.rmtree")
@@ -787,21 +775,19 @@ class TestInfrastructureProvisioning(unittest.TestCase):
     @patch("dsi.common.remote_ssh_host.RemoteSSHHost.exec_command")
     def test_setup_hostnames(self, mock_exec_command, mock_create_file, mock_ssh):
         _ = mock_ssh
-        config_files = os.path.dirname(os.path.abspath(__file__)) + "/../../docs/config-specs/"
-        with test_config.in_dir(config_files):
-            real_config_dict = ConfigDict("infrastructure_provisioning")
-            real_config_dict.load()
-            real_config_dict.save = MagicMock(name="save")
+        real_config_dict = ConfigDict(
+            "infrastructure_provisioning", whereami.dsi_repo_path("docs", "config-specs")
+        )
+        real_config_dict.load()
+        real_config_dict.save = MagicMock(name="save")
 
-            provisioner = ip.Provisioner(
-                real_config_dict, provisioning_file=self.provision_log_path
-            )
-            provisioner.setup_hostnames()
-            out = provisioner.config["infrastructure_provisioning"]["out"]
-            self.assertEqual(out["mongod"][0]["private_hostname"], "mongod0.dsitest.dev")
-            self.assertEqual(out["configsvr"][2]["private_hostname"], "configsvr2.dsitest.dev")
-            self.assertEqual(mock_create_file.call_count, 16)
-            self.assertEqual(mock_exec_command.call_count, 16)
+        provisioner = ip.Provisioner(real_config_dict, provisioning_file=self.provision_log_path)
+        provisioner.setup_hostnames()
+        out = provisioner.config["infrastructure_provisioning"]["out"]
+        self.assertEqual(out["mongod"][0]["private_hostname"], "mongod0.dsitest.dev")
+        self.assertEqual(out["configsvr"][2]["private_hostname"], "configsvr2.dsitest.dev")
+        self.assertEqual(mock_create_file.call_count, 16)
+        self.assertEqual(mock_exec_command.call_count, 16)
 
     def test_build_hosts_file(self):
         expected = [
@@ -823,17 +809,15 @@ class TestInfrastructureProvisioning(unittest.TestCase):
             "10.2.1.10\twc wc0 workload_client0 workload_client0.dsitest.dev",
         ]
 
-        config_files = os.path.dirname(os.path.abspath(__file__)) + "/../../docs/config-specs/"
-        with test_config.in_dir(config_files):
-            real_config_dict = ConfigDict("infrastructure_provisioning")
-            real_config_dict.load()
-            real_config_dict.save = MagicMock(name="save")
+        real_config_dict = ConfigDict(
+            "infrastructure_provisioning", whereami.dsi_repo_path("docs", "config-specs")
+        )
+        real_config_dict.load()
+        real_config_dict.save = MagicMock(name="save")
 
-            provisioner = ip.Provisioner(
-                real_config_dict, provisioning_file=self.provision_log_path
-            )
-            hosts_contents = provisioner._build_hosts_file()
-            self.assertEqual(expected, hosts_contents)
+        provisioner = ip.Provisioner(real_config_dict, provisioning_file=self.provision_log_path)
+        hosts_contents = provisioner._build_hosts_file()
+        self.assertEqual(expected, hosts_contents)
 
 
 if __name__ == "__main__":

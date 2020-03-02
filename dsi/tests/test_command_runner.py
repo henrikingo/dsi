@@ -8,7 +8,7 @@ import os
 from mock import patch, Mock
 import mock
 
-from dsi.common import utils
+from dsi.common import whereami
 from dsi.common import host_utils
 from dsi.common import command_runner
 from dsi.common.config import ConfigDict
@@ -23,7 +23,7 @@ from dsi.common.utils import mkdir_p, touch
 
 from test_lib.fixture_files import FixtureFiles
 
-FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
+FIXTURE_FILES = FixtureFiles()
 
 
 class CommandRunnerTestCase(unittest.TestCase):
@@ -31,22 +31,19 @@ class CommandRunnerTestCase(unittest.TestCase):
 
     def _delete_fixtures(self):
         """ delete fixture path and set filename attribute """
-        local_host_path = FIXTURE_FILES.fixture_file_path("fixtures")
+        local_host_path = os.path.join(FIXTURE_FILES.fixture_file_path(), "fixtures")
         self.filename = os.path.join(local_host_path, "file")
         shutil.rmtree(os.path.dirname(self.filename), ignore_errors=True)
 
     def setUp(self):
         """ Init a ConfigDict object and load the configuration files from docs/config-specs/ """
         self.old_dir = os.getcwd()  # Save the old path to restore
-        # Note that this chdir only works without breaking relative imports
-        # because it's at the same directory depth
-        os.chdir(os.path.dirname(os.path.abspath(__file__)) + "/../../docs/config-specs/")
-        self.config = ConfigDict("mongodb_setup")
+        self.config = ConfigDict("mongodb_setup", whereami.dsi_repo_path("docs", "config-specs"))
         self.config.load()
         self.parent_dir = os.path.join(os.path.expanduser("~"), "checkout_repos_test")
 
         self._delete_fixtures()
-        self.reports_container = FIXTURE_FILES.fixture_file_path("container")
+        self.reports_container = os.path.join(FIXTURE_FILES.fixture_file_path(), "container")
         self.reports_path = os.path.join(self.reports_container, "reports_tests")
 
         mkdir_p(self.reports_path)
@@ -75,7 +72,7 @@ class CommandRunnerTestCase(unittest.TestCase):
 
     @patch("dsi.common.command_runner._run_host_command_map")
     def test_make_host_runner_map(self, mock_run_host_command_map):
-        """ Test run Remotecommon.command_runner.make_host_runner with map"""
+        """ Test run Remotecommand_runner.make_host_runner with map"""
 
         with patch("dsi.common.host_factory.make_host") as mock_make_host:
             command = {}
@@ -139,7 +136,7 @@ class CommandRunnerTestCase(unittest.TestCase):
 
     def test_upload_repo_files(self):
         """ Test run command map upload_repo_files """
-        root = utils.get_dsi_path() + os.sep
+        root = whereami.dsi_repo_path() + os.sep
 
         # test upload_repo_files
         with patch("dsi.common.remote_host.RemoteHost") as mongod:

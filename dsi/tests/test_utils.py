@@ -2,11 +2,13 @@
 Unit tests for dsi/common/utils.py
 """
 from __future__ import absolute_import
+
 import os
 import unittest
 from mock import patch
 
-from dsi.common.utils import read_aws_credentials, read_aws_credentials_file, read_env_vars
+from dsi.common import whereami
+from dsi.common import utils
 
 
 class TestUtils(unittest.TestCase):
@@ -15,9 +17,7 @@ class TestUtils(unittest.TestCase):
     """
 
     def setUp(self):
-        self.test_cred_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "test_credentials"
-        )
+        self.test_cred_path = os.path.join(whereami.dsi_repo_path("dsi", "tests"), "creds")
         with open(self.test_cred_path, "w") as test_cred_file:
             test_cred_file.write(
                 "[default]\naws_access_key_id = "
@@ -36,19 +36,19 @@ class TestUtils(unittest.TestCase):
         """
         config = {}
         with self.assertRaises(AssertionError):
-            read_aws_credentials(config)
+            utils.read_aws_credentials(config)
         mock_read_env_vars.assert_called()
         mock_read_aws_credentials_file.assert_called()
-        config = {"runtime_secret": {"aws_access_key": "test_key"}}
-        mock_read_env_vars.assert_called()
-        mock_read_aws_credentials_file.assert_called()
-        with self.assertRaises(AssertionError):
-            read_aws_credentials(config)
-        config = {"runtime_secret": {"aws_secret_key": "test_secret"}}
+        config = {"runtime_secret": {"aws_access_key": "test_key",}}
         mock_read_env_vars.assert_called()
         mock_read_aws_credentials_file.assert_called()
         with self.assertRaises(AssertionError):
-            read_aws_credentials(config)
+            utils.read_aws_credentials(config)
+        config = {"runtime_secret": {"aws_secret_key": "test_secret",}}
+        mock_read_env_vars.assert_called()
+        mock_read_aws_credentials_file.assert_called()
+        with self.assertRaises(AssertionError):
+            utils.read_aws_credentials(config)
 
     @patch("os.path.expanduser")
     def test_read_aws_credentials_runtime_secret(self, mock_expanduser):
@@ -59,7 +59,7 @@ class TestUtils(unittest.TestCase):
         config = {
             "runtime_secret": {"aws_access_key": "test_key2", "aws_secret_key": "test_secret2"}
         }
-        self.assertEqual(read_aws_credentials(config), ("test_key2", "test_secret2"))
+        self.assertEqual(utils.read_aws_credentials(config), ("test_key2", "test_secret2"))
 
     @patch("os.path.expanduser")
     def test_read_aws_credentials_file(self, mock_expanduser):
@@ -68,7 +68,7 @@ class TestUtils(unittest.TestCase):
         """
         mock_expanduser.return_value = self.test_cred_path
         test_config = {}
-        read_aws_credentials_file(test_config)
+        utils.read_aws_credentials_file(test_config)
         expected_config = {
             "aws_access_key": "test_aws_access_key1",
             "aws_secret_key": "test_aws_secret_key1",
@@ -87,8 +87,8 @@ class TestUtils(unittest.TestCase):
         }
         test_config = {}
         with patch.dict("os.environ", test_dict):
-            read_aws_credentials_file(test_config)
-            read_env_vars(test_config)
+            utils.read_aws_credentials_file(test_config)
+            utils.read_env_vars(test_config)
         expected_config = {
             "aws_access_key": "test_aws_access_key2",
             "aws_secret_key": "test_aws_secret_key2",
@@ -109,5 +109,5 @@ class TestUtils(unittest.TestCase):
             "AWS_SECRET_ACCESS_KEY": "test_aws_secret_key",
         }
         with patch.dict("os.environ", test_dict):
-            read_env_vars(test_config)
+            utils.read_env_vars(test_config)
         self.assertEqual(test_config, expected_config)

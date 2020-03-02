@@ -17,6 +17,8 @@ import subprocess
 from subprocess import CalledProcessError
 import sys
 
+import dsi.common.whereami as whereami
+
 LOG = logging.getLogger(__name__)
 
 
@@ -46,7 +48,7 @@ def destroy_resources():
     """
     Destroys AWS resources using terraform.
     """
-    teardown_script_path = os.path.dirname(os.path.abspath(__file__))
+    teardown_script_path = whereami.dsi_repo_path("dsi")
     previous_directory = None
     terraform = None
     if glob.glob(teardown_script_path + "/provisioned.*"):

@@ -9,12 +9,12 @@ from mock import Mock, patch
 from testfixtures import LogCapture
 
 from dsi import test_control
-
 from dsi.common.config import ConfigDict
 from dsi.common.remote_host import RemoteHost
+
 from test_lib.fixture_files import FixtureFiles
 
-FIXTURE_FILES = FixtureFiles(dir_name=os.path.dirname(__file__), subdir_name="config_test_control")
+FIXTURE_FILES = FixtureFiles()
 
 
 class TestConfigTestControl(unittest.TestCase):
@@ -27,12 +27,16 @@ class TestConfigTestControl(unittest.TestCase):
         # Mocking `ConfigDict.assert_valid_ids` because it enforces structural constraints on yaml
         # files that aren't necessary here.
         with patch("dsi.common.config.ConfigDict.assert_valid_ids") as mock_assert_valid_ids:
-            prev_dir = os.getcwd()
-            os.chdir(FIXTURE_FILES.fixture_dir_path)
-            self.config = ConfigDict("test_control")
+            self.config = ConfigDict(
+                "test_control", FIXTURE_FILES.fixture_file_path("config_test_control")
+            )
             self.config.load()
             mock_assert_valid_ids.assert_called_once()
-            os.chdir(prev_dir)
+
+    def tearDown(self):
+        file_name = FIXTURE_FILES.fixture_file_path("workloads.yml")
+        if os.path.exists(file_name):
+            os.remove(file_name)
 
     def test_benchrun_workload_config(self):
         """
@@ -40,10 +44,10 @@ class TestConfigTestControl(unittest.TestCase):
         """
         test = self.config["test_control"]["run"][0]
         mock_host = Mock(spec=RemoteHost)
-        test_control.generate_config_file(test, FIXTURE_FILES.fixture_dir_path, mock_host)
+        test_control.generate_config_file(test, FIXTURE_FILES.fixture_file_path(), mock_host)
         self.assertEqual(
-            FIXTURE_FILES.load_yaml_file("workloads.yml"),
-            FIXTURE_FILES.load_yaml_file("workloads.benchrun.yml.ok"),
+            FIXTURE_FILES.load_yaml_file("config_test_control", "workloads.yml"),
+            FIXTURE_FILES.load_yaml_file("config_test_control", "workloads.benchrun.yml.ok"),
             "workloads.yml doesn't match expected for test_control.yml",
         )
         mock_host.upload_file.assert_called_once_with(
@@ -56,14 +60,17 @@ class TestConfigTestControl(unittest.TestCase):
         """
         test = self.config["test_control"]["run"][1]
         mock_host = Mock(spec=RemoteHost)
-        test_control.generate_config_file(test, FIXTURE_FILES.fixture_dir_path, mock_host)
+        test_control.generate_config_file(
+            test, FIXTURE_FILES.fixture_file_path("config_test_control"), mock_host
+        )
         self.assertEqual(
-            FIXTURE_FILES.load_yaml_file("workloadEvergreen"),
-            FIXTURE_FILES.load_yaml_file("workloadEvergreen.ok"),
+            FIXTURE_FILES.load_yaml_file("config_test_control", "workloadEvergreen"),
+            FIXTURE_FILES.load_yaml_file("config_test_control", "workloadEvergreen.ok"),
             "workloadEvergreen doesn't match expected for test_control.yml",
         )
         mock_host.upload_file.assert_called_once_with(
-            FIXTURE_FILES.fixture_file_path(test["config_filename"]), test["config_filename"]
+            FIXTURE_FILES.fixture_file_path("config_test_control", test["config_filename"]),
+            test["config_filename"],
         )
 
     @patch("dsi.test_control.open")
@@ -75,7 +82,7 @@ class TestConfigTestControl(unittest.TestCase):
         test = self.config["test_control"]["run"][2]
         mock_host = Mock(spec=RemoteHost)
         with LogCapture(level=logging.WARNING) as warning:
-            test_control.generate_config_file(test, FIXTURE_FILES.fixture_dir_path, mock_host)
+            test_control.generate_config_file(test, FIXTURE_FILES.repo_root_file_path(), mock_host)
         warning.check(("dsi.test_control", "WARNING", "No workload config in test control"))
         mock_open.assert_not_called()
         mock_host.upload_file.assert_not_called()

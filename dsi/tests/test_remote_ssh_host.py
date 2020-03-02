@@ -51,7 +51,7 @@ class RemoteSSHHostTestCase(unittest.TestCase):
         out=StringIO(),
         err=StringIO(),
     ):
-        """ test code with """
+        """ test common code with """
         remote = remote_ssh_host.RemoteSSHHost("test_host", "test_user", "test_pem_file")
 
         ssh_instance = mock_ssh.return_value

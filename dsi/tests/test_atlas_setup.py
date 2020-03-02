@@ -11,11 +11,12 @@ from mock import patch, MagicMock, ANY
 from testfixtures import LogCapture
 
 from dsi.common import atlas_setup
-from dsi.tests.test_config import load_config_dict, in_dir
+from dsi.tests.test_config import load_config_dict
 from test_lib.fixture_files import FixtureFiles
 import test_lib.structlog_for_test as structlog_for_test
+from test_lib.io_utils import in_dir
 
-FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
+FIXTURE_FILES = FixtureFiles()
 
 
 class TestAtlasSetup(unittest.TestCase):

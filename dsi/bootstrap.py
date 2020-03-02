@@ -17,6 +17,7 @@ import requests
 import structlog
 import yaml
 
+from dsi.common import whereami as whereami
 from dsi.common.config import ConfigDict
 from dsi.common.log import setup_logging
 from dsi.common import utils
@@ -248,7 +249,7 @@ def symlink_bindir(directory):
 
     :param str directory: The work directory.
     """
-    src = utils.get_dsi_bin_dir()
+    src = whereami.dsi_repo_path("dsi")
     dest = os.path.join(directory, ".bin")
     if os.path.exists(dest):
         LOGGER.warning("Removing old symlink to binaries.", dest=dest)
@@ -266,7 +267,7 @@ def write_dsienv(directory, terraform):
 
     """
     with open(os.path.join(directory, "dsienv.sh"), "w") as dsienv:
-        dsienv.write("export PATH={0}:$PATH\n".format(utils.get_dsi_bin_dir()))
+        dsienv.write("export PATH={0}:$PATH\n".format(whereami.dsi_repo_path("dsi")))
         dsienv.write("export TERRAFORM={0}\n".format(terraform))
         dsienv.write('echo "Tip: Sourcing dsienv.sh is now optional. You can also just execute:"\n')
         dsienv.write('echo "    ./.bin/infrastructure_provisioning.py     # etc..."\n')
@@ -393,7 +394,7 @@ def run_bootstrap(config):
     write_dsienv(directory, config["terraform"])
 
     # copy necessary config files to the current directory
-    copy_config_files(utils.get_dsi_path(), config, directory)
+    copy_config_files(whereami.dsi_repo_path(), config, directory)
 
     # This writes an overrides.yml with the ssh_key_file, ssh_key_name and owner, if given in
     # bootstrap.yml, and with expire-on-delta if running DSI locally.

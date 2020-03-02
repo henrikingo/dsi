@@ -15,6 +15,7 @@ import six
 import structlog
 from dateutil import tz
 
+from dsi.common import whereami
 from dsi.common import atlas_setup
 from dsi.common import host_factory
 from dsi.common import host_utils
@@ -126,7 +127,7 @@ def _run_host_command_map(target_host, command, prefix):
     for key, value in six.iteritems(command):
         if key == "upload_repo_files":
             for paths in value:
-                source = os.path.join(utils.get_dsi_path(), paths["source"])
+                source = os.path.join(whereami.dsi_repo_path(), paths["source"])
                 target = paths["target"]
                 LOG.debug("Uploading file %s to %s", source, target)
                 target_host.upload_file(source, target)
@@ -341,7 +342,6 @@ def run_pre_post_commands(
     SLOG.info("run_pre_post_commands", command_key=command_key, current_test_id=current_test_id)
     for command_dict in command_dicts:
         if command_key in command_dict:
-            SLOG.debug("in loop", command_dict=command_dict, command_key=command_key)
             try:
                 dispatch_commands(command_key, command_dict[command_key], config, current_test_id)
             except Exception as exception:  # pylint: disable=broad-except

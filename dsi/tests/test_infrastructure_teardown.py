@@ -5,9 +5,12 @@ Unit test for infrastructure_teardown.py
 from __future__ import absolute_import
 import unittest
 import logging
+import os
+
 from mock import patch, call, MagicMock
 from testfixtures import LogCapture
 
+from dsi.common import whereami
 from dsi import infrastructure_teardown
 
 
@@ -32,8 +35,8 @@ class TestInfrastructureTeardown(unittest.TestCase):
 
         infrastructure_teardown.destroy_resources()
 
-        mock_glob.assert_called_with("teardown/script/path/provisioned.*")
-        chdir_calls = [call("teardown/script/path"), call("previous/directory")]
+        mock_glob.assert_called_with(os.path.join(whereami.dsi_repo_path("dsi"), "provisioned.*"))
+        chdir_calls = [call(whereami.dsi_repo_path("dsi")), call("previous/directory")]
         mock_os.chdir.assert_has_calls(chdir_calls)
         mock_os.path.isfile.assert_called_with("cluster.json")
         mock_check_call.assert_called_with(
@@ -62,8 +65,8 @@ class TestInfrastructureTeardown(unittest.TestCase):
                     "In infrastructure_teardown.py and cluster.json does not exist. Giving up.",
                 )
             )
-        mock_glob.assert_called_with("teardown/script/path/provisioned.*")
-        chdir_calls = [call("teardown/script/path"), call("previous/directory")]
+        mock_glob.assert_called_with(os.path.join(whereami.dsi_repo_path("dsi"), "provisioned.*"))
+        chdir_calls = [call(whereami.dsi_repo_path("dsi")), call("previous/directory")]
         mock_os.chdir.assert_has_calls(chdir_calls)
         mock_os.path.isfile.assert_called_with("cluster.json")
 

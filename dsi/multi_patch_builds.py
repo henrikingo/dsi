@@ -382,12 +382,12 @@ class MultiEvergreen(object):
                 print("All of the above was saved in '{}.yml'".format(_id))
                 if (not build.get("Canceled")) and (not build.get("Finalized")):
                     print("You can now continue for example with:")
-                    print("    {} --continue {}.yml --finalize".format(__file__, _id))
+                    print("    {} --continue {}.yml --finalize".format(sys.argv[0], _id))
                     print("or")
-                    print("    {} --continue {}.yml --cancel-patch".format(__file__, _id))
+                    print("    {} --continue {}.yml --cancel-patch".format(sys.argv[0], _id))
                 if build.get("Finalized", "No") != "No":
                     print("You can now continue for example with:")
-                    print("    {} --continue {}.yml --analyze-results".format(__file__, _id))
+                    print("    {} --continue {}.yml --analyze-results".format(sys.argv[0], _id))
 
     def _serialize(self, name):
         """Actually serialize self.builds into a yaml file."""

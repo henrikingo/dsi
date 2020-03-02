@@ -11,7 +11,7 @@ from test_lib.fixture_files import FixtureFiles
 from dsi.libanalysis import ycsb_throughput_analysis as ycsb_throughput
 
 
-FIXTURE_FILES = FixtureFiles(path.dirname(__file__))
+FIXTURE_FILES = FixtureFiles()
 
 
 def tuples_to_throughputs(time_ops_tuples):

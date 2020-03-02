@@ -3,6 +3,7 @@ IO utils for testing.
 """
 
 import contextlib
+import os
 import sys
 
 
@@ -23,3 +24,14 @@ def redirect_stdout(file_handle):
     sys.stdout = normal_stdout
     if exception is not None:
         raise exception  # pylint: disable=raising-bad-type
+
+
+@contextlib.contextmanager
+def in_dir(into):
+    """perform some operation in context of another dir"""
+    old_dir = os.getcwd()
+    try:
+        os.chdir(into)
+        yield
+    finally:
+        os.chdir(old_dir)

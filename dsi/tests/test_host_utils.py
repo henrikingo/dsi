@@ -12,11 +12,12 @@ from six.moves import range
 
 from mock import patch, MagicMock, call
 
+from dsi.common import whereami as whereami
 from dsi.common import host_utils
 from dsi.common.config import ConfigDict
 from test_lib.fixture_files import FixtureFiles
 
-FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
+FIXTURE_FILES = FixtureFiles()
 
 
 class HostUtilsTestCase(unittest.TestCase):
@@ -24,26 +25,19 @@ class HostUtilsTestCase(unittest.TestCase):
 
     def _delete_fixtures(self):
         """ delete FIXTURE_FILES path and set filename attribute """
-        local_host_path = FIXTURE_FILES.fixture_file_path("fixtures")
+        local_host_path = os.path.join(FIXTURE_FILES.fixture_file_path(), "fixtures")
         self.filename = os.path.join(local_host_path, "file")
         shutil.rmtree(os.path.dirname(self.filename), ignore_errors=True)
 
     def setUp(self):
         """ Init a ConfigDict object and load the configuration files from docs/config-specs/ """
-        self.old_dir = os.getcwd()  # Save the old path to restore
-        # Note that this chdir only works without breaking relative imports
-        # because it's at the same directory depth
-        os.chdir(os.path.dirname(os.path.abspath(__file__)) + "/../../docs/config-specs/")
-        self.config = ConfigDict("mongodb_setup")
+        self.config = ConfigDict("mongodb_setup", whereami.dsi_repo_path("docs", "config-specs"))
         self.config.load()
         self.parent_dir = os.path.join(os.path.expanduser("~"), "checkout_repos_test")
 
         self._delete_fixtures()
 
     def tearDown(self):
-        """ Restore working directory """
-        os.chdir(self.old_dir)
-
         self._delete_fixtures()
 
     def test_never_timeout(self):
@@ -125,7 +119,10 @@ class HostUtilsTestCase(unittest.TestCase):
         any_lines = host_utils.stream_lines(source, destination)
         self.assertEqual(True, any_lines)
 
-        calls = [call("first"), call("second")]
+        calls = [
+            call("first"),
+            call("second"),
+        ]
 
         destination.write.assert_has_calls(calls)
 

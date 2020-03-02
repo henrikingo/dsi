@@ -1,9 +1,9 @@
 """test file for terraform_env"""
 
+
 from __future__ import print_function, absolute_import
 import datetime
 import logging
-import os
 import unittest
 from mock import patch
 
@@ -11,6 +11,7 @@ import requests
 import requests.exceptions
 from testfixtures import LogCapture
 
+import dsi.common.whereami as whereami
 from dsi.common.config import ConfigDict
 from dsi.common import terraform_config
 
@@ -20,12 +21,9 @@ class TestTerraformConfiguration(unittest.TestCase):
 
     def setUp(self):
         """ Load self.config (ConfigDict) and set some other common values """
-
-        self.old_dir = os.getcwd()  # Save the old path to restore Note
-        # that this chdir only works without breaking relative imports
-        # because it's at the same directory depth
-        os.chdir(os.path.dirname(os.path.abspath(__file__)) + "/../../docs/config-specs/")
-        self.config = ConfigDict("infrastructure_provisioning")
+        self.config = ConfigDict(
+            "infrastructure_provisioning", whereami.dsi_repo_path("docs", "config-specs")
+        )
         self.config.load()
 
         cookiejar = requests.cookies.RequestsCookieJar()
@@ -51,10 +49,6 @@ class TestTerraformConfiguration(unittest.TestCase):
             "reason": "OK",
             "history": [],
         }
-
-    def tearDown(self):
-        """Restore working directory"""
-        os.chdir(self.old_dir)
 
     @patch("socket.gethostname")
     @patch("requests.get")

@@ -12,6 +12,8 @@ import six
 
 import yaml
 
+import dsi.common.whereami as whereami
+
 LOG = logging.getLogger(__name__)
 
 
@@ -45,7 +47,7 @@ class ConfigDict(dict):
         "_internal",
     ]
 
-    def __init__(self, which_module_am_i):
+    def __init__(self, which_module_am_i, config_root=None):
         self.raw = {}
         """The dictionary wrapped by this ConfigDict. When you access["sub"]["keys"], this contains
         the substructure as well."""
@@ -78,6 +80,7 @@ class ConfigDict(dict):
         self.assert_valid_module(which_module_am_i)
         self.module = which_module_am_i
         self.root = self
+        self.config_root = os.getcwd() if config_root is None else config_root
 
     def load(self):
         """
@@ -88,16 +91,14 @@ class ConfigDict(dict):
         """
         loaded_files = []
         # defaults.yml
-        file_name = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "..", "..", "configurations", "defaults.yml"
-        )
+        file_name = whereami.dsi_repo_path("configurations", "defaults.yml")
         with open(file_name) as file_handle:
             self.defaults = _yaml_load(file_handle, file_name)
             loaded_files.append(file_name)
 
         # All module_name.yml and module_name.out.yml
         for module_name in self.modules:
-            file_name = module_name + ".yml"
+            file_name = os.path.join(self.config_root, module_name + ".yml")
             if os.path.isfile(file_name):
                 with open(file_name) as file_handle:
                     self.raw[module_name] = _yaml_load(file_handle, file_name)
@@ -105,7 +106,7 @@ class ConfigDict(dict):
             elif module_name != "_internal":
                 # Allow code to assume that first level of keys always exists
                 self.raw[module_name] = {}
-            file_name = module_name + ".out.yml"
+            file_name = os.path.join(self.config_root, module_name + ".out.yml")
             if os.path.isfile(file_name):
                 with open(file_name) as file_handle:
                     # Note: The .out.yml files will add a single key: ['module_name']['out']
@@ -118,7 +119,7 @@ class ConfigDict(dict):
                             loaded_files.append(file_name)
 
         # overrides.yml
-        file_name = "overrides.yml"
+        file_name = os.path.join(self.config_root, "overrides.yml")
         if os.path.isfile(file_name):
             file_handle = open(file_name)
             self.overrides = _yaml_load(file_handle, file_name)
@@ -132,7 +133,7 @@ class ConfigDict(dict):
 
     def save(self):
         """Write contents of self.raw[self.module]['out'] to module_name.out.yml"""
-        file_name = self.module + ".out.yml"
+        file_name = os.path.join(self.config_root, self.module + ".out.yml")
         file_handle = open(file_name, "w")
         out = {"out": self.raw[self.module]["out"]}
         # yaml.safe_dump() handles unicode strings as if they were normal text. As they are!

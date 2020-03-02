@@ -14,7 +14,7 @@ class JSTestsTestCase(unittest.TestCase):
         """Create a dict that looks like a ConfigDict object """
         self.config = {
             "mongodb_setup": {"validate": {"standalone": ["10.10.10.10:27017"]}},
-            "test_control": {"jstests_dir": "./jstests/hooks", "task_name": "test_config"},
+            "test_control": {"jstests_dir": "./jstests/hooks", "task_name": "test_config",},
         }
 
     @patch("dsi.common.jstests.jstest_one_host")

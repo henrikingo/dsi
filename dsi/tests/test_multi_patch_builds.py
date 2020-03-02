@@ -15,7 +15,7 @@ from test_lib.fixture_files import FixtureFiles
 from test_lib.test_requests_parent import TestRequestsParent
 from dsi.multi_patch_builds import MultiEvergreen
 
-FIXTURE = FixtureFiles(os.path.dirname(__file__))
+FIXTURE = FixtureFiles()
 
 
 class TestMultiEvergreen(TestRequestsParent):

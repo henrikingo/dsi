@@ -27,7 +27,7 @@ from dsi.test_control import run_test
 
 from test_lib.fixture_files import FixtureFiles
 
-FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
+FIXTURE_FILES = FixtureFiles()
 
 
 class RunTestTestCase(unittest.TestCase):
@@ -172,11 +172,13 @@ class RunTestsTestCase(unittest.TestCase):
                         }
                     }
                 ],
-                "out": {"exit_codes": {}},
-            },
-        }  # yapf: disable
-        self.reports_container = FIXTURE_FILES.fixture_file_path("container")
-        self.reports_path = os.path.join(self.reports_container, "reports_tests")
+                'out': {'exit_codes': {}}
+            }
+        } # yapf: disable
+
+        # Do os.path.join here since fixture_file_path barfs if file not found.
+        self.reports_container = os.path.join(FIXTURE_FILES.fixture_file_path(), 'container')
+        self.reports_path = os.path.join(self.reports_container, 'reports_tests')
 
         mkdir_p(self.reports_path)
 

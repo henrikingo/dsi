@@ -8,6 +8,7 @@ from StringIO import StringIO
 
 from mock import MagicMock, ANY
 
+from dsi.common import whereami
 from dsi.common import local_host
 from dsi.common import utils
 from dsi.common.log import TeeStream
@@ -16,7 +17,7 @@ from dsi.common.config import ConfigDict
 from test_lib.fixture_files import FixtureFiles
 from test_lib.comparator_utils import ANY_IN_STRING
 
-FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
+FIXTURE_FILES = FixtureFiles()
 
 
 class LocalHostTestCase(unittest.TestCase):
@@ -30,11 +31,7 @@ class LocalHostTestCase(unittest.TestCase):
 
     def setUp(self):
         """ Init a ConfigDict object and load the configuration files from docs/config-specs/ """
-        self.old_dir = os.getcwd()  # Save the old path to restore
-        # Note that this chdir only works without breaking relative imports
-        # because it's at the same directory depth
-        os.chdir(os.path.dirname(os.path.abspath(__file__)) + "/../../docs/config-specs/")
-        self.config = ConfigDict("mongodb_setup")
+        self.config = ConfigDict("mongodb_setup", whereami.dsi_repo_path("docs", "config-specs"))
         self.config.load()
         self.parent_dir = os.path.join(os.path.expanduser("~"), "checkout_repos_test")
 
@@ -42,8 +39,6 @@ class LocalHostTestCase(unittest.TestCase):
 
     def tearDown(self):
         """ Restore working directory """
-        os.chdir(self.old_dir)
-
         self._delete_fixtures()
 
     def test_local_host_exec_command(self):

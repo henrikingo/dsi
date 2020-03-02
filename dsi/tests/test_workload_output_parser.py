@@ -8,12 +8,14 @@ import unittest
 from mock import patch
 import mock
 
+from dsi.common import whereami
 from dsi.test_control import validate_config
 from dsi.common.workload_output_parser import parse_test_results, YcsbParser
 
+
 from test_lib.fixture_files import FixtureFiles
 
-FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
+FIXTURE_FILES = FixtureFiles()
 LOG = logging.getLogger(__name__)
 
 
@@ -28,7 +30,7 @@ class CedarTestCase(unittest.TestCase):
         timer = {"start": 101, "end": 202}
 
         parser = YcsbParser(god_config, test_config, timer)
-        parser.input_log = os.path.join(
+        parser.input_log = whereami.dsi_repo_path(
             "dsi", "tests", "unittest-files", "ycsb-unittest", "synthetic_output.log"
         )
 
@@ -68,8 +70,12 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
         self.config = {
             "test_control": {
                 "task_name": "parser_unittest",
-                "reports_dir_basename": FIXTURE_FILES.fixture_dir_path,
-                "perf_json": {"path": FIXTURE_FILES.fixture_file_path("perf.unittest-out.json")},
+                "reports_dir_basename": FIXTURE_FILES.fixture_file_path(),
+                "perf_json": {
+                    "path": os.path.join(
+                        FIXTURE_FILES.fixture_file_path(), "perf.unittest-out.json"
+                    )
+                },
                 "output_file": {
                     "mongoshell": "test_output.log",
                     "ycsb": "test_output.log",
@@ -125,7 +131,9 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
         self.config["test_control"]["output_file"]["fio"] = "fio-centos.json"
         parse_test_results(test, self.config, self.timer)
 
-        perf_json_path = FIXTURE_FILES.fixture_file_path("perf.unittest-out-fio-centos.json")
+        perf_json_path = os.path.join(
+            FIXTURE_FILES.fixture_file_path(), "perf.unittest-out-fio-centos.json"
+        )
         FIXTURE_FILES.assert_json_files_equal(
             self, expect="{}.ok".format(perf_json_path), actual=self.perf_json_path
         )
@@ -133,7 +141,7 @@ class WorkloadOutputParserTestCase(unittest.TestCase):
     def test_atlas_perf_json(self):
         """Generates a perf.json file but omitting fio and iperf."""
         self.config["mongodb_setup"]["meta"]["is_atlas"] = True
-        path = FIXTURE_FILES.fixture_file_path("perf.atlas.json")
+        path = os.path.join(FIXTURE_FILES.fixture_file_path(), "perf.atlas.json")
         self.config["test_control"]["perf_json"]["path"] = path
         self.perf_json_path = path
 

@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import structlog
 
+from dsi.common import whereami as whereami
 from dsi.common.log import setup_logging
 from dsi.common.config import ConfigDict
 from dsi.common.command_runner import run_pre_post_commands, EXCEPTION_BEHAVIOR
@@ -97,8 +98,8 @@ class Provisioner(object):
         os.environ["TF_LOG"] = "DEBUG"
         os.environ["TF_LOG_PATH"] = TF_LOG_PATH
 
-        self.dsi_dir = utils.get_dsi_path()
-        self.bin_dir = utils.get_dsi_bin_dir()
+        self.dsi_dir = whereami.dsi_repo_path()
+        self.bin_dir = whereami.dsi_repo_path("dsi")
 
         self.log_file = log_file
         self.verbose = verbose

@@ -2,14 +2,14 @@
 
 from __future__ import print_function, absolute_import
 import unittest
-import os
 import yaml
 
+from dsi.common import whereami as whereami
 from dsi.common.config import ConfigDict
 from dsi.common import terraform_output_parser as tf_output
 from test_lib.fixture_files import FixtureFiles
 
-FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
+FIXTURE_FILES = FixtureFiles()
 
 
 class TestTerraformOutputParser(unittest.TestCase):
@@ -17,16 +17,10 @@ class TestTerraformOutputParser(unittest.TestCase):
 
     def setUp(self):
         """Setup so config dict works properly"""
-        self.old_dir = os.getcwd()  # Save the old path to restore Note
-        # that this chdir only works without breaking relative imports
-        # because it's at the same directory depth
-        os.chdir(os.path.dirname(os.path.abspath(__file__)) + "/../../docs/config-specs/")
-        self.config = ConfigDict("infrastructure_provisioning")
+        self.config = ConfigDict(
+            "infrastructure_provisioning", whereami.dsi_repo_path("docs", "config-specs")
+        )
         self.config.load()
-
-    def tearDown(self):
-        """Restore working directory"""
-        os.chdir(self.old_dir)
 
     def test_single_cluster_value(self):
         """Test parsing single cluster value is correct."""

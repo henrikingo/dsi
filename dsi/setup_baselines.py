@@ -14,6 +14,8 @@ import subprocess
 import sys
 import yaml
 
+import dsi.common.whereami as whereami
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -104,9 +106,7 @@ class BaselineUpdater(object):
 
     def __init__(self):
         """ init """
-        conf_dir = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "configurations"
-        )
+        conf_dir = whereami.dsi_repo_path("configurations")
         with open(os.path.join(conf_dir, "baseline_config.yml")) as config_file:
             self.config = yaml.load(config_file)
 

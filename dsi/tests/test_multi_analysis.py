@@ -8,7 +8,7 @@ from test_lib.fixture_files import FixtureFiles
 from test_lib.test_requests_parent import TestRequestsParent
 from dsi.multi_analysis import MultiEvergreenAnalysis, main
 
-FIXTURE_FILES = FixtureFiles(os.path.dirname(__file__))
+FIXTURE_FILES = FixtureFiles()
 
 
 class TestMultiEvergreenAnalysis(TestRequestsParent):

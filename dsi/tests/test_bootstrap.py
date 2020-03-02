@@ -16,7 +16,7 @@ from testfixtures import LogCapture
 
 from dsi import bootstrap
 from dsi.common.config import ConfigDict
-
+from dsi.common import whereami as whereami
 import test_lib.structlog_for_test as structlog_for_test
 
 
@@ -43,36 +43,29 @@ class TestBootstrap(unittest.TestCase):
         """
         Cleaning up directories and files
         """
-        bootstrap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bootstrap.yml")
-        bootstrap2_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bootstrap2.yml")
-        test_override_path = os.path.dirname(os.path.abspath(__file__))
         paths = [
-            "test_dsipath",
-            "test_directory",
-            "test_credentials",
+            "tests/test_dsipath",
+            "tests/test_directory",
+            "tests/test_credentials",
+            "tests/testdir",
+            "tests/test_old_dir",
+            "tests/test_new_dir",
+            "tests/test_cred_path",
+            "tests/overrides.yml",
+            "bootstrap.yml",
+            "tests/bootstrap.yml",
+            "tests/bootstrap2.yml",
             "testdir",
-            "test_old_dir",
-            "test_new_dir",
-            "test_cred_path",
         ]
         for path in paths:
             try:
-                path = os.path.join(os.path.dirname(os.path.abspath(__file__)), path)
-                shutil.rmtree(path)
+                path = os.path.join(whereami.dsi_repo_path("dsi"), path)
+                if os.path.isdir(path):
+                    shutil.rmtree(path)
+                else:
+                    os.remove(path)
             except OSError:
                 pass
-        try:
-            os.remove(bootstrap_path)
-        except OSError:
-            pass
-        try:
-            os.remove(bootstrap2_path)
-        except OSError:
-            pass
-        try:
-            os.remove(os.path.join(test_override_path, "overrides.yml"))
-        except OSError:
-            pass
 
     def test_parse_command_line_no_args(self):
         """
@@ -138,8 +131,8 @@ class TestBootstrap(unittest.TestCase):
         Testing copy_config_files moves between dummy directories
         """
         test_config = {"symlink": False}
-        test_dsipath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_dsipath")
-        test_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_directory")
+        test_dsipath = os.path.join(whereami.dsi_repo_path("dsi", "tests"), "test_dsipath")
+        test_directory = os.path.join(whereami.dsi_repo_path("dsi", "tests"), "test_directory")
         os.makedirs(os.path.join(test_dsipath, "configurations", "infrastructure_provisioning"))
         os.makedirs(os.path.join(test_dsipath, "configurations", "mongodb_setup"))
         os.makedirs(os.path.join(test_dsipath, "configurations", "test_control"))
@@ -192,12 +185,10 @@ class TestBootstrap(unittest.TestCase):
         test_files = set(os.listdir(test_directory))
         self.assertEqual(test_files, master_files)
 
-    @patch("os.path.exists")
-    def test_setup_overrides_no_file_config_vals(self, mock_path_exists):
+    def test_setup_overrides_no_file_config_vals(self):
         """
         Testing setup_overrides where path = False and config vals given
         """
-        mock_path_exists.return_value = False
         real_configdict = ConfigDict("bootstrap")
         real_configdict.load()
 
@@ -216,7 +207,7 @@ class TestBootstrap(unittest.TestCase):
         real_configdict.raw["bootstrap"] = {}
         real_configdict.raw["bootstrap"]["overrides"] = master_overrides
 
-        test_override_path = os.path.dirname(os.path.abspath(__file__))
+        test_override_path = whereami.dsi_repo_path("dsi", "tests")
         test_override_dict = {}
 
         # Call to setup_overrides creates 'overrides.yml' in current dir
@@ -235,7 +226,7 @@ class TestBootstrap(unittest.TestCase):
         real_configdict = ConfigDict("bootstrap")
         real_configdict.load()
 
-        test_override_path = os.path.dirname(os.path.abspath(__file__))
+        test_override_path = whereami.dsi_repo_path("dsi", "tests")
         master_overrides = {}
         master_overrides.update(
             {
@@ -278,16 +269,14 @@ class TestBootstrap(unittest.TestCase):
         # Removing created file
         os.remove(os.path.join(test_override_path, "overrides.yml"))
 
-    @patch("os.path.exists")
-    def test_setup_overrides_no_file_empty_config(self, mock_path_exists):
+    def test_setup_overrides_no_file_empty_config(self):
         """
         Testing setup_overrides, path = False and config vals not given
         """
-        mock_path_exists.return_value = False
         real_configdict = ConfigDict("bootstrap")
         real_configdict.load()
 
-        test_override_path = os.path.dirname(os.path.abspath(__file__))
+        test_override_path = whereami.dsi_repo_path("dsi", "tests")
 
         # Call to setup_overrides creates 'overrides.yml' in current dir
         bootstrap.setup_overrides(real_configdict, test_override_path)
@@ -301,7 +290,7 @@ class TestBootstrap(unittest.TestCase):
         real_configdict = ConfigDict("bootstrap")
         real_configdict.load()
 
-        test_override_path = os.path.dirname(os.path.abspath(__file__))
+        test_override_path = whereami.dsi_repo_path("dsi", "tests")
         test_override_str = yaml.dump({}, default_flow_style=False)
 
         # Creating 'overrides.yml' in current dir
@@ -331,7 +320,7 @@ class TestBootstrap(unittest.TestCase):
         real_configdict.raw["bootstrap"]["overrides"] = {
             "infrastructure_provisioning": {"tfvars": {"tags": {"owner": "your.username"}}}
         }
-        test_override_path = os.path.dirname(os.path.abspath(__file__))
+        test_override_path = whereami.dsi_repo_path("dsi", "tests")
         with self.assertRaises(AssertionError):
             bootstrap.setup_overrides(real_configdict, test_override_path)
 
@@ -351,7 +340,7 @@ class TestBootstrap(unittest.TestCase):
         real_configdict.raw["bootstrap"]["overrides"] = {
             "infrastructure_provisioning": {"tfvars": {"tags": None}}
         }
-        test_override_path = os.path.dirname(os.path.abspath(__file__))
+        test_override_path = whereami.dsi_repo_path("dsi", "tests")
         bootstrap.setup_overrides(real_configdict, test_override_path)
 
         # Removing created file
@@ -502,16 +491,15 @@ class TestBootstrap(unittest.TestCase):
         bootstrap.validate_terraform(self.directory, config)
         self.assertEqual(config, config)
 
-    @patch("dsi.common.utils.get_dsi_bin_dir")
-    def test_write_dsienv(self, mock_dsi_bin_dir):
+    def test_write_dsienv(self):
         """
         Testing write_dsienv
         """
-        mock_dsi_bin_dir.return_value = "/Users/test_user/dsipath/dsi"
-        directory = os.path.dirname(os.path.abspath(__file__))
+        tests_path = whereami.dsi_repo_path("dsi", "tests")
+        directory = tests_path
         terraform = "/Users/test_user/terraform"
         master_dsienv = (
-            "export PATH=/Users/test_user/dsipath/dsi:$PATH\n"
+            "export PATH=" + whereami.dsi_repo_path("dsi") + ":$PATH\n"
             "export TERRAFORM=/Users/test_user/terraform\n"
         )
         bootstrap.write_dsienv(directory, terraform)
@@ -542,8 +530,8 @@ class TestBootstrap(unittest.TestCase):
         """
         Testing that load_bootstrap works with alternate file names
         """
-        bootstrap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bootstrap2.yml")
-        directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "testdir/")
+        bootstrap_path = os.path.join(whereami.dsi_repo_path("dsi", "tests"), "bootstrap2.yml")
+        directory = os.path.join(whereami.dsi_repo_path("dsi", "tests"), "testdir/")
         config = {"bootstrap_file": bootstrap_path, "production": False}
         with open(bootstrap_path, "w") as bootstrap_file:
             bootstrap_file.write("owner: test_owner")
@@ -554,8 +542,10 @@ class TestBootstrap(unittest.TestCase):
         """
         Testing that load_bootstrap makes nonexistent directory and copies into it
         """
-        bootstrap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bootstrap.yml")
-        directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "testdir/")
+        bootstrap_path = os.path.join(
+            os.path.dirname(whereami.dsi_repo_path("dsi", "tests")), "bootstrap.yml"
+        )
+        directory = os.path.join(whereami.dsi_repo_path("dsi", "tests"), "testdir/")
         config = {"bootstrap_file": bootstrap_path, "production": False}
         with open(bootstrap_path, "w") as bootstrap_file:
             bootstrap_file.write("owner: test_owner")
@@ -569,21 +559,27 @@ class TestBootstrap(unittest.TestCase):
         """
         mock_check_output.return_value = "Terraform v0.12.16"
 
-        bootstrap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bootstrap.yml")
-        directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "testdir/")
+        bootstrap_path = os.path.join(
+            os.path.dirname(whereami.dsi_repo_path("dsi", "tests")), "bootstrap.yml"
+        )
+        directory = os.path.join(
+            os.path.dirname(whereami.dsi_repo_path("dsi", "tests")), "testdir/"
+        )
         expansions_file = os.path.join(directory, "expansions.yml")
 
         os.mkdir(directory)
 
         secret_overrides_path = os.path.join(directory, "overrides.yml")
         with open(secret_overrides_path, "w") as config:
-            config.writelines(["runtime_secret: { aws_access_key: dummy, aws_secret_key: dummy }"])
+            config.writelines(
+                ["runtime_secret: { aws_access_key: dummy, aws_secret_key: dummy }",]
+            )
 
         with open(bootstrap_path, "w") as config:
             config.writelines(
                 [
                     # this is the only entry that's actually needed
-                    "infrastructure_provisioning: single"
+                    "infrastructure_provisioning: single",
                 ]
             )
 
@@ -603,21 +599,23 @@ class TestBootstrap(unittest.TestCase):
         """
         mock_check_output.return_value = "Terraform v0.12.16"
 
-        bootstrap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bootstrap.yml")
-        directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "testdir/")
+        bootstrap_path = os.path.join(whereami.dsi_repo_path("dsi", "tests"), "bootstrap.yml")
+        directory = os.path.join(whereami.dsi_repo_path("dsi", "tests"), "testdir/")
         expansions_file = os.path.join(directory, "expansions.yml")
 
         os.mkdir(directory)
 
         secret_overrides_path = os.path.join(directory, "overrides.yml")
         with open(secret_overrides_path, "w") as config:
-            config.writelines(["runtime_secret: { aws_access_key: dummy, aws_secret_key: dummy }"])
+            config.writelines(
+                ["runtime_secret: { aws_access_key: dummy, aws_secret_key: dummy }",]
+            )
 
         with open(bootstrap_path, "w") as config:
             config.writelines(
                 [
                     # this is the only entry that's actually needed
-                    "infrastructure_provisioning: single"
+                    "infrastructure_provisioning: single",
                 ]
             )
 
@@ -631,15 +629,13 @@ class TestBootstrap(unittest.TestCase):
         """
         Testing that load_bootstrap copies specified file in 'testdir' to local directory
         """
-        bootstrap_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "testdir/bootstrap.yml"
-        )
-        bootstrap_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "testdir/")
+        bootstrap_path = os.path.join(whereami.dsi_repo_path("dsi", "tests"), "bootstrap.yml")
+        bootstrap_directory = os.path.join(whereami.dsi_repo_path("dsi", "tests"), "testdir/")
         os.mkdir(bootstrap_directory)
         config = {"bootstrap_file": bootstrap_path, "production": False}
         with open(bootstrap_path, "w") as bootstrap_file:
             bootstrap_file.write("owner: test_owner")
-        bootstrap.load_bootstrap(config, os.path.dirname(os.path.abspath(__file__)))
+        bootstrap.load_bootstrap(config, whereami.dsi_repo_path("dsi", "tests"))
 
         # confirms that load_bootstrap copies file into working directory correctly
         self.assertEqual(config["owner"], "test_owner")
@@ -650,12 +646,12 @@ class TestBootstrap(unittest.TestCase):
         local directory and fails on collision
         """
         bootstrap_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "testdir/bootstrap.yml"
+            whereami.dsi_repo_path("dsi", "tests"), "testdir/bootstrap.yml"
         )
         wrong_bootstrap_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "./bootstrap.yml"
+            whereami.dsi_repo_path("dsi", "tests"), "./bootstrap.yml"
         )
-        bootstrap_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "testdir/")
+        bootstrap_directory = os.path.join(whereami.dsi_repo_path("dsi", "tests"), "testdir/")
         os.mkdir(bootstrap_directory)
         config = {"bootstrap_file": bootstrap_path, "production": False}
         with open(bootstrap_path, "w") as bootstrap_file:
@@ -663,7 +659,7 @@ class TestBootstrap(unittest.TestCase):
         with open(wrong_bootstrap_path, "w") as wrong_bootstrap_file:
             wrong_bootstrap_file.write("owner: test_owner")
         with self.assertRaises(AssertionError):
-            bootstrap.load_bootstrap(config, os.path.dirname(os.path.abspath(__file__)))
+            bootstrap.load_bootstrap(config, whereami.dsi_repo_path("dsi", "tests"))
 
     def test_load_bootstrap_given_file_and_dir(self):
         """
@@ -671,13 +667,13 @@ class TestBootstrap(unittest.TestCase):
         'test_new_dir' without collisions
         """
         bootstrap_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "test_old_dir/bootstrap.yml"
+            whereami.dsi_repo_path("dsi", "tests"), "test_old_dir/bootstrap.yml"
         )
         bootstrap_new_directory = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "test_new_dir/"
+            whereami.dsi_repo_path("dsi", "tests"), "test_new_dir/"
         )
         bootstrap_old_directory = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "test_old_dir/"
+            whereami.dsi_repo_path("dsi", "tests"), "test_old_dir/"
         )
         os.mkdir(bootstrap_new_directory)
         os.mkdir(bootstrap_old_directory)
@@ -715,8 +711,8 @@ class TestBootstrap(unittest.TestCase):
         """
         Testing that load_bootstrap uses local file if --bootstrap-file flag not used
         """
-        bootstrap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bootstrap.yml")
-        bootstrap_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "testdir/")
+        bootstrap_path = os.path.join(whereami.dsi_repo_path("dsi", "tests"), "bootstrap.yml")
+        bootstrap_directory = os.path.join(whereami.dsi_repo_path("dsi", "tests"), "testdir/")
         os.mkdir(bootstrap_directory)
         config = {"production": False}
         with open(bootstrap_path, "w") as bootstrap_file:

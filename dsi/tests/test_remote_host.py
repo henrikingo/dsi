@@ -10,6 +10,7 @@ import paramiko
 from mock import patch, call, ANY, MagicMock, Mock
 import mock
 
+from dsi.common import whereami
 from dsi.common import host_utils
 from dsi.common import command_runner
 from dsi.common import remote_host
@@ -36,7 +37,7 @@ class RemoteHostTestCase(unittest.TestCase):
         remote._perform_exec = mock.MagicMock(name="_perform_exec")
         remote._perform_exec.return_value = 0
 
-        local_path = os.path.abspath(os.path.dirname(__file__))
+        local_path = whereami.dsi_repo_path()
         remote_path = "/foo/bar"
 
         remote.upload_file(local_path, remote_path)
@@ -63,7 +64,7 @@ class RemoteHostTestCase(unittest.TestCase):
 
         remote = remote_host.RemoteHost(hostname=None, username=None, pem_file=None)
 
-        local_path = os.path.abspath(__file__)
+        local_path = whereami.dsi_repo_path("dsi", "tests", "test_remote_host.py")
         remote_path = "/foo/bar/idk.py"
 
         remote.upload_file(local_path, remote_path)

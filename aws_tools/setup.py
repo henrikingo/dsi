@@ -23,8 +23,7 @@ setup(
     version="1.1",
     description="AWS tools for cleaning up stranded EC2 resources deployed by DSI",
     install_requires=install_requirements,
-    # Cannot zip due to usage of __file__.
-    zip_safe=False,
+    zip_safe=False, # Probably not zip_safe due to whereami's reliance on .repo-root but untested.
     use_2to3=True,
     entry_points={
         "console_scripts": [
