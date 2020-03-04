@@ -130,8 +130,8 @@ class MongodbSetup(object):
         shutdown = self.shutdown(
             self.shutdown_ms, mongodb_setup_helpers.mongodb_auth_configured(self.config)
         )
-        self.destroy(self.sigterm_ms)
-        if not shutdown:
+        destroy = self.destroy(self.sigterm_ms)
+        if not (shutdown or destroy):
             LOG.error("Shutdown failed on restart.")
             return False
 
