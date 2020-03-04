@@ -132,6 +132,7 @@ class TestMongodbSetup(unittest.TestCase):
             setup._start.return_value = "start clusters"
 
             setup.destroy = mock.MagicMock(name="destroy")
+            setup.destroy.return_value = shutdown
             setup.shutdown = mock.MagicMock(name="shutdown")
             setup.shutdown.return_value = shutdown
 
