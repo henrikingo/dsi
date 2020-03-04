@@ -231,6 +231,3 @@ pre_task:
   - on_workload_client:
       exec: ${test_control.start_mongo_cryptd}
 
-post_task:
-  - on_localhost:
-      run_curator: normal

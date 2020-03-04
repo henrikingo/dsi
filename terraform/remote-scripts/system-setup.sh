@@ -154,7 +154,18 @@ install_java() {
     sudo /usr/sbin/alternatives --install /usr/bin/java java /usr/java/jdk1.8.0_162/bin/java 20000
 }
 
+# This is temporary until all of genny's metrics parsing and uploading is moved
+# off of genny itself (in the workload client) and into the DSI runner (evergreen)
+# machine.
+install_curator() {
+    curl -o curator.tar.gz --retry 10 -LsS https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-ac7e518bd8c8d18188330413db79704f9f0eb8a3.tar.gz
+    tar xvf curator.tar.gz
+
+    sudo cp ./curator /usr/local/bin/curator
+    curator --version
+}
 
 install_java
+install_curator
 
 exit 0
