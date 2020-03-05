@@ -381,21 +381,20 @@ class MongoNode(MongoCluster):
         For the max_time_ms parameter, see :method:`Host.exec_command`
         :return: True if shutdownServer command ran successfully.
         """
-        if auth_enabled is not None:
-            self.auth_enabled = auth_enabled
-        for _ in range(retries):
-            try:
+        try:
+            if auth_enabled is not None:
+                self.auth_enabled = auth_enabled
+            for _ in range(retries):
                 self.run_mongo_shell('db.getSiblingDB("admin").shutdownServer({})'.format(
                     self.shutdown_options),
                                      max_time_ms=max_time_ms)
-            except Exception:  # pylint: disable=broad-except
-                LOG.error("Error shutting down MongoNode at %s:%s", self.public_ip, self.port)
-
-            if self.host.run(['pgrep -l', 'mongo']):
-                LOG.warning("Mongo %s:%s did not shutdown yet", self.public_ip, self.port)
-            else:
-                return True
-            time.sleep(1)
+                if self.host.run(['pgrep -l', 'mongo']):
+                    LOG.warning("Mongo %s:%s did not shutdown yet", self.public_ip, self.port)
+                else:
+                    return True
+                time.sleep(1)
+        except Exception:  # pylint: disable=broad-except
+            LOG.error("Error shutting down MongoNode at %s:%s", self.public_ip, self.port)
         return False
 
     def destroy(self, max_time_ms):
@@ -406,22 +405,14 @@ class MongoNode(MongoCluster):
             :method:`Host.exec_command`
         :return: bool True if there are no processes matching 'mongo' on completion.
         """
-        ret = False
         try:
-            ret = self.host.kill_mongo_procs(signal_number='SIGTERM', max_time_ms=max_time_ms)
+            return self.host.kill_mongo_procs(signal_number='SIGTERM', max_time_ms=max_time_ms)
         finally:
-            if not ret:
-                LOG.warning(
-                    "Mongo %s:%s did not shutdown cleanly! Will now SIGKILL and delete lock file.",
-                    self.public_ip,
-                    self.port,
-                )
             # ensure the processes are dead and cleanup
-            ret = self.host.kill_mongo_procs()
+            self.host.kill_mongo_procs()
 
             if self.dbdir:
                 self.host.run(['rm', '-rf', os.path.join(self.dbdir, 'mongod.lock')])
-        return ret
 
     def close(self):
         """Closes SSH connections to remote hosts."""
