@@ -2,7 +2,7 @@
 
 set -eou pipefail
 _pip() {
-    /usr/bin/env pip "$@" --isolated -q -q
+    /usr/bin/env python -m pip "$@" --isolated -q -q
 }
 
 pushd "$(dirname "$0")" >/dev/null
@@ -12,7 +12,7 @@ popd >/dev/null
 
 
 if [[ $# -lt 1 ]]; then
-    echo -e "Usage: \\n\\t$0 setup\\n\\t$0 command-provided-by-setup.py" >/dev/stderr
+    echo -e "Usage: \\n\\t$0 setup\\n\\t$0 command" >/dev/stderr
     exit 5
 fi
 
@@ -49,20 +49,56 @@ if [[ ! -d "${DIR}/dsi_venv" || ! -e "${DIR}/dsi_venv/dsi-setup-done" ]]; then
     popd >/dev/null
 fi
 
-
-if [[ "$1" != "setup" ]]; then
-    export VIRTUAL_ENV_DISABLE_PROMPT=1  # prevent undefined $PS1 variable
-    # shellcheck source=/dev/null
-    source "${DIR}/dsi_venv/bin/activate"
-
-    # Work around crufty old invocations of run-dsi that don't know about
-    # the goodness of our changed path conventions.
-    set +u
-        if [[ "$1 $2" == "python ../src/dsi/dsi/bin/bootstrap.py" ]]; then
-            # lol this is absurd
-            PYTHONPATH="${DIR}" /usr/bin/env python "../src/dsi/dsi/dsi/bootstrap.py"
-        else
-            PYTHONPATH="${DIR}" /usr/bin/env "$@"
-        fi
-    set -u
+if [[ "$1" == "setup" ]]; then
+    exit 0
 fi
+
+function is_evergreen_command() {
+    local command="$1"
+    if [[ "$command" == "analysis"  || \
+          "$command" == "bootstrap" || \
+          "$command" == "infrastructure_provisioning" || \
+          "$command" == "infrastructure_teardown" || \
+          "$command" == "mongodb_setup" || \
+          "$command" == "test_control" || \
+          "$command" == "workload_setup" || \
+          "$command" == "setup" ]]; then
+        echo true
+        return
+    fi
+    echo false
+}
+
+
+# Don't care about invocations that want python.
+if [[ "$1" == "python" ]]; then
+    shift
+fi
+
+declare -a COMMAND
+COMMAND=("$@")
+
+# Work around old invocations that used to assume the paths of various
+# DSI scripts. Just normalize ../foo/whatever..//../analysis.py to just analysis
+if [[ "${COMMAND[0]}" =~ \.py$ ]]; then
+    COMMAND_BASE_NAME="$(basename "${COMMAND[0]}" ".py")"
+    if [[ "$(is_evergreen_command "${COMMAND_BASE_NAME}")" == "true" ]]; then
+        COMMAND=("$COMMAND_BASE_NAME" "${COMMAND[@]:1}")
+    fi
+fi
+
+# If we're a known command:
+if [[ "$(is_evergreen_command "${COMMAND[0]}")" == "true" ]]; then
+    # run known commands as 'python dsi/command.py'
+    COMMAND=("python" "${DIR}/dsi/${COMMAND[0]}.py" "${COMMAND[@]:1}")
+# Else assume we're trying to run a local file (e.g. testscripts). Fail if doesn't exist.
+elif [[ ! -e "${COMMAND[0]}" ]]; then
+    echo "$1 not an evergreen command and file '$PWD/${COMMAND[0]}' does not exist." > /dev/stderr
+    exit 1
+fi
+
+export VIRTUAL_ENV_DISABLE_PROMPT=1  # prevent undefined $PS1 variable
+# shellcheck source=/dev/null
+source "${DIR}/dsi_venv/bin/activate"
+
+PYTHONPATH="${DIR}" /usr/bin/env "${COMMAND[@]}"

@@ -11,5 +11,5 @@ pushd "$MYDIR" >/dev/null
     MYDIR=$(pwd -P)
 popd >/dev/null
 
-PYTHONPATH="$MYDIR/.." "$MYDIR/../dsi/analysis.py" "$@"
+"$MYDIR/../run-dsi" analysis "$@"
 

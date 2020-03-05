@@ -8,7 +8,6 @@ post:
       params:
         working_dir: work
         script: |
-          source ./dsienv.sh
           make_artifact.sh
     - command: s3.put
       params:
@@ -40,9 +39,7 @@ post:
     - command: shell.exec
       params:
         working_dir: work
-        script: |
-          source ./dsienv.sh
-          ../src/run-dsi infrastructure_teardown.py
+        script: ../src/run-dsi infrastructure_teardown
 
 functions:
   "prepare environment":
@@ -138,41 +135,28 @@ functions:
     - command: shell.exec
       params:
         working_dir: work
-        script: |
-          set -e
-          ../src/run-dsi ../src/dsi/bootstrap.py
+        script:  ../src/run-dsi bootstrap
     # Different work directory due to historical reasons
     - command: shell.exec
       params:
-        script: |
-          set -v
-          set -e
-          source work/dsienv.sh
-          setup-dsi-env.sh
-          ls -a work
+        script: ls -a work
 
   "deploy cluster":
     - command: shell.exec
       params:
         working_dir: work
         script: |
-          set -e
-          set -v
-          source ./dsienv.sh
-          ../src/run-dsi infrastructure_provisioning.py
-          ../src/run-dsi workload_setup.py
-          ../src/run-dsi mongodb_setup.py
+          ../src/run-dsi infrastructure_provisioning
+          ../src/run-dsi workload_setup
+          ../src/run-dsi mongodb_setup
 
   "run test":
     - command: shell.exec
       type: test
       params:
         working_dir: work
-        script: |
-          set -e
-          set -v
-          source ./dsienv.sh
-          ../src/run-dsi test_control.py
+        script:
+          ../src/run-dsi test_control
     - command: "json.send"
       params:
          name: "perf"
@@ -184,9 +168,7 @@ functions:
       params:
         working_dir: work
         script: |
-          set -o verbose
-          source ./dsienv.sh
-          ../src/run-dsi analysis.py
+          ../src/run-dsi analysis
           # detect outliers needs to run, so defer the post_run_check exit status to later
           echo $? > post_run_check.status
     - command: shell.exec

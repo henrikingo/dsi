@@ -6,8 +6,6 @@
 # fail whole script for undefined vars or any command failure
 set -eou pipefail
 
-source ./dsienv.sh
-
 # Exclude security-sensitive and unnecessary files
 EXCLUDED_FILES=(
     "aws_ssh_key.pem"
