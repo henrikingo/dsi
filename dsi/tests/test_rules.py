@@ -529,12 +529,28 @@ class TestLogAnalysisRules(unittest.TestCase):
             "2016-07-14T01:00:04.000+0000 L err-type elecTIon suCCEeded",
             "2016-07-14T01:00:04.000+0000 D err-type transition TO PRIMARY",
             "2016-07-14T01:00:04.000+0000 I err-type PosIx_FallocaTE FailEd",
+            # First logv2 message. The message has format param `{rsConfig_getElectionTimeoutPeriod}`
+            # but the attr is `rsConfig_getElectionTimeoutPeriodMillis` (probably a typo).
+            '{"t":{"$date":"2020-03-02T05:37:29.666+0000"},"s":"I", "c":"ELECTION","id":4615652,'
+            '"ctx":"ReplCoord-2","msg":"Starting an election, since we\'ve seen no PRIMARY in the past '
+            '{rsConfig_getElectionTimeoutPeriod}","attr":{"rsConfig_getElectionTimeoutPeriodMillis":10000}}',
+            # Second logv2 message. The `msg` itself is just "{}" but the params indicate failure
+            # because it has "Starting an election" in the attr.
+            '{"t":{"$date":"2020-03-02T06:32:06.307+0000"},"s":"I", "c":"ELECTION","id":0,'
+            '"ctx":"ReplCoord-1","msg":"{}","attr":{"message":"Starting an election"}}',
         ]
 
         good_lines = [
             "2016-07-14T01:00:04.000+0000 L err-type nothing bad here",
             "2016-07-14T01:00:04.000+0000 L err-type or here",
             "2016-07-14T01:00:04.000+0000 E err-type ttl query execution for index",
+            # Example logv2 message. The `msg` itself is just "{}".
+            '{"t":{"$date":"2020-03-02T06:32:06.307+0000"},"s":"I", "c":"ELECTION","id":0,'
+            '"ctx":"ReplCoord-1","msg":"{}","attr":{"message":"VoteRequester(term 1 dry run) '
+            "received a yes vote from 10.2.0.200:27017; response message: { term: 1, voteGranted: true, "
+            'reason: \\"\\", ok: 1.0, $clusterTime: { clusterTime: Timestamp(1583130713, 4), signature: '
+            "{ hash: BinData(0, 0000000000000000000000000000000000000000), keyId: 0 } }, operationTime: "
+            'Timestamp(1583130713, 4) }"}}',
         ]
 
         for line in bad_lines:
