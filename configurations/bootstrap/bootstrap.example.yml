@@ -41,31 +41,31 @@ overrides:
         expire-on-delta: 24  # Set expire-on tag this many hours in the future. (Default is 2.)
 
 
-  # Remaining config is OPTIONAL
+# Remaining config is OPTIONAL
 
-  # Specify the paths for the repos 'workloads' and 'YCSB' & co.
-  # They are available at https://github.com/10gen/workloads.
-  # and https://github.com/mongodb-labs/YCSB, and are required for many of the test configurations.
-  # If omitted, DSI will automatically clone the repo from github as needed.
-  # workload_setup:
-  #   local_repos:
-  #     workloads: ./workloads
-  #     ycsb: ./YCSB
-  #     linkbench: ./linkbench
-  #     tpcc: ./tpcc
-  #     genny: ./data/genny  # Put genny on the large drive to give it more space.
-  # If running on a mac or if you want a custom version of curator, put the url to the tgz here
-  #   For mac, use: https://s3.amazonaws.com/mciuploads/curator/curator_macos_94b7400131699cb79429893d43995b02630c5aa3_19_03_01_22_34_56-macos/curator-dist-94b7400131699cb79429893d43995b02630c5aa3.tar.gz
-  # Find more here: https://evergreen.mongodb.com/waterfall/curator
-  # Select build-variant you want and navigate to 'build' task and grab the url for the dist.tar.gz artifact
-  #  downloads:
-  #    curator: "https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-f78d20b10c7a70783c5ec47cc466bd9933e00212.tar.gz"
+# Specify the paths for the repos 'workloads' and 'YCSB' & co.
+# They are available at https://github.com/10gen/workloads.
+# and https://github.com/mongodb-labs/YCSB, and are required for many of the test configurations.
+# If omitted, DSI will automatically clone the repo from github as needed.
+#  workload_setup:
+#    local_repos:
+#      workloads: ./workloads
+#      ycsb: ./YCSB
+#      linkbench: ./linkbench
+#      tpcc: ./tpcc
+#      genny: ./data/genny  # Put genny on the large drive to give it more space.
+# If running on a mac or if you want a custom version of curator, put the url to the tgz here
+#   For mac, use: https://s3.amazonaws.com/mciuploads/curator/curator_macos_94b7400131699cb79429893d43995b02630c5aa3_19_03_01_22_34_56-macos/curator-dist-94b7400131699cb79429893d43995b02630c5aa3.tar.gz
+# Find more here: https://evergreen.mongodb.com/waterfall/curator
+# Select build-variant you want and navigate to 'build' task and grab the url for the dist.tar.gz artifact
+#    downloads:
+#      curator: "https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-f78d20b10c7a70783c5ec47cc466bd9933e00212.tar.gz"
 
-  # mongodb_setup:
-    ## The MongoDB binary to use.
-    ## Note: It's also allowed to upload your own binary. Set this to the empty string "" to do that.
-    # mongodb_binary_archive: mongodb_binary_archive: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_4.0_caa42a1f75a56c7643d0b68d3880444375ec42e3/caa42a1f75a56c7643d0b68d3880444375ec42e3/linux/mongodb-sys_perf_4.0_caa42a1f75a56c7643d0b68d3880444375ec42e3.tar.gz
-    #
-    # atlas:
-    ## When mongodb_setup = atlas, use this to select the atlas configuration to use.
-    #   setup: M30-like
+#  mongodb_setup:
+#    # The MongoDB binary to use.
+#    # Note: It's also allowed to upload your own binary. Set this to the empty string "" to do that.
+#    mongodb_binary_archive: mongodb_binary_archive: https://s3.amazonaws.com/mciuploads/dsi/sys_perf_4.0_caa42a1f75a56c7643d0b68d3880444375ec42e3/caa42a1f75a56c7643d0b68d3880444375ec42e3/linux/mongodb-sys_perf_4.0_caa42a1f75a56c7643d0b68d3880444375ec42e3.tar.gz
+#
+#    atlas:
+#      # When mongodb_setup = atlas, use this to select the atlas configuration to use.
+#      setup: M30-like
