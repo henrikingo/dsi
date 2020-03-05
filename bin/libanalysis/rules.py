@@ -129,7 +129,15 @@ def is_log_line_bad(log_line, rules, test_times=None, task=None):
             err_type_char = log_json['s']
             log_msg = log_json['msg']
             if 'attr' in log_json:
-                log_msg = log_msg.format(**log_json['attr'])
+                if log_msg == "{}":
+                    log_msg = log_json["attr"]["message"]
+                else:
+                    try:
+                        # Some log messages are inconsistent in their format strings
+                        # versus their "attrs".
+                        log_msg = log_msg.format(**log_json["attr"])
+                    except KeyError:
+                        pass
         except Exception as e:
             error = e
 
