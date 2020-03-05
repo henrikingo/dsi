@@ -98,6 +98,7 @@ class MongoCluster(HasDelay):
         :param str js_string: the javascript to evaluate.
         For the max_time_ms parameter, see
             :method:`Host.exec_command`
+        :param bool dump_on_error: print 100 lines of mongod.log on error
         :return: True if the mongo shell exits successfully
         """
         raise NotImplementedError()
@@ -299,6 +300,7 @@ class MongoNode(MongoCluster):
         :param str js_string: the javascript to evaluate.
         For the max_time_ms parameter, see
             :method:`Host.exec_command`
+        :param bool dump_on_error: print 100 lines of mongod.log on error
         :return: True if the mongo shell exits successfully
         """
         remote_file_name = "/tmp/mongo_port_{0}.js".format(self.net_config.port)
@@ -352,14 +354,14 @@ class MongoNode(MongoCluster):
             self.auth_enabled = auth_enabled
         for i in range(retries):
             # If there's a problem, don't dump 20x100 lines of log
-            dump_on_error = (i < 2)
+            dump_on_error = i < 2
             try:
                 self.run_mongo_shell(
                     'db.getSiblingDB("admin").shutdownServer({})'.format(
                         self.mongo_config.shutdown_options
                     ),
                     max_time_ms=max_time_ms,
-                    dump_on_error=dump_on_error
+                    dump_on_error=dump_on_error,
                 )
             except Exception:  # pylint: disable=broad-except
                 LOG.error(
@@ -387,22 +389,24 @@ class MongoNode(MongoCluster):
             :method:`Host.exec_command`
         :return: bool True if there are no processes matching 'mongo' on completion.
         """
-        ret = False
+        return_value = False
         try:
-            ret = self.host.kill_mongo_procs(signal_number=signal.SIGTERM, max_time_ms=max_time_ms)
+            return_value = self.host.kill_mongo_procs(
+                signal_number=signal.SIGTERM, max_time_ms=max_time_ms
+            )
         finally:
-            if not ret:
+            if not return_value:
                 LOG.warning(
                     "Mongo %s:%s did not shutdown cleanly! Will now SIGKILL and delete lock file.",
                     self.net_config.public_ip,
                     self.net_config.port,
                 )
             # ensure the processes are dead and cleanup
-            ret = self.host.kill_mongo_procs()
+            return_value = self.host.kill_mongo_procs()
 
             if self.mongo_config.dbdir:
                 self.host.run(["rm", "-rf", os.path.join(self.mongo_config.dbdir, "mongod.lock")])
-        return ret
+        return return_value
 
     def close(self):
         """Closes SSH connections to remote hosts."""
@@ -538,6 +542,7 @@ class ReplSet(MongoCluster):
         :param str js_string: the javascript to evaluate.
         For the max_time_ms parameter, see
             :method:`Host.exec_command`
+        :param bool dump_on_error: print 100 lines of mongod.log on error
         :return: True if the mongo shell exits successfully
         """
         primary = self.highest_priority_node()
@@ -731,6 +736,7 @@ class ShardedCluster(MongoCluster):
         :param str js_string: the javascript to evaluate.
         For the max_time_ms parameter, see
             :method:`Host.exec_command`
+        :param bool dump_on_error: print 100 lines of mongod.log on error
         :return: True if the mongo shell exits successfully
         """
         return self.mongoses[0].run_mongo_shell(js_string, max_time_ms, dump_on_error)
