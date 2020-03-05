@@ -1,0 +1,42 @@
+task_name: genny_overhead
+run:
+  - id: GennyOverhead
+    type: genny
+    cmd: |
+      ${test_control.genny.mkdir}
+      ${test_control.genny.exec} ./dist/etc/genny/workloads/selftests/GennyOverhead.yml
+      ${test_control.genny.metrics}
+
+  - id: benchRun
+    type: mongoshell
+    cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
+    config_filename: workloads.yml  # The name used in previous row
+    output_files:
+      - workloads/workload_timestamps.csv
+    workload_config:
+      tests:
+        default:
+          - cpu_noise
+
+      target: ${mongodb_setup.meta.hostname}
+      port: ${mongodb_setup.meta.port}
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
+      shell_ssl_options: ${mongodb_setup.meta.shell_ssl_options}
+
+  - id: fio
+    type: fio
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
+    config_filename: fio.ini
+    output_files:
+      - fio.json
+      - fio_results.tgz
+    workload_config: ${test_control.common_fio_config}
+    skip_validate: true
+
+  - id: iperf
+    type: iperf
+    output_files:
+      - iperf.json
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    skip_validate: true

@@ -1,0 +1,47 @@
+[MESSAGES CONTROL]
+disable=locally-disabled,
+        locally-enabled,
+        fixme,
+        no-name-in-module,
+        duplicate-code,
+        import-error,
+        relative-import,
+        too-few-public-methods,
+        # Added when upgrading to python3 + pylint 2.4.4. Feel free to remove later
+        useless-object-inheritance,
+        unnecessary-pass,
+        consider-using-set-comprehension,
+        no-else-return,
+        import-outside-toplevel,
+        useless-return,
+        no-else-raise,
+        using-constant-test,
+        subprocess-popen-preexec-fn,
+        duplicate-string-formatting-argument
+
+[REPORTS]
+reports=no
+
+[BASIC]
+good-names=runTest,
+           _,
+           e,
+           i,
+           j,
+           k,
+           l,
+           m,
+           n,
+           x,
+           y,
+           z,
+           db,
+           _db
+
+[FORMAT]
+max-line-length=100
+msg-template={abspath}:{line}:{column}: [{msg_id}({symbol}), {obj}] {msg}
+
+[TYPECHECK]
+ignored-modules = numpy
+ignored-classes = numpy

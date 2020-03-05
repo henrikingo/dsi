@@ -1,0 +1,5 @@
+jinja2==2.10
+paramiko==2.6.0
+pymongo==3.7.2
+PyYAML~=5.1
+-r analysis.txt

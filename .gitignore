@@ -1,0 +1,31 @@
+# Paranoia
+*.pem
+security.tf
+
+# Python
+*.pyc
+/venv
+/dsi_venv
+/.coverage
+/coverage.xml
+
+# Python Shelve
+bin/tests/unittest-files/override_responses
+bin/tests/unittest-files/override_responses.gz
+
+# PyCharm
+.idea
+
+# Unit test config file
+/config.yml
+
+# Created by setup.py
+*.egg-info/
+
+# Mac specific
+/tests/.DS_Store
+
+# VS Code
+.vscode
+
+.ipynb_checkpoints/

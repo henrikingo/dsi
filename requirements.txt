@@ -1,0 +1,6 @@
+ruamel.yaml==0.16.5
+six
+pytz==2019.3
+-r requirements/provisioning.txt
+-r requirements/test.txt
+-r requirements/aws_cleanup.txt

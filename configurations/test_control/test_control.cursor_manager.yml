@@ -1,0 +1,46 @@
+task_name: cursor_manager
+run:
+  - id: benchRun
+    type: mongoshell
+
+    # This line to be shortened after the config file is copied from below into the production server.
+    cmd: cd workloads && ${infrastructure_provisioning.numactl_prefix} ./run_workloads.py -c ../workloads.yml
+    config_filename: workloads.yml  # The name used in previous row
+    output_files:
+      - workloads/workload_timestamps.csv
+    workload_config:
+      ########################################################################
+      # Test lists. Command line will indicate which list of tests to execute.
+      # The 'default' list is the default.
+      # When testing new test workloads, please put your tests in the
+      # tests.test list, and remove the existing hello
+      ########################################################################
+      tests:
+        default:
+          - cursor_manager:
+              thread_levels: [32, 64]
+          - cpu_noise
+
+      # These next five lines match existing workloads.yml.
+      target: ${mongodb_setup.meta.hostname}
+      port: ${mongodb_setup.meta.port}
+      # Hard coding for now. These aren't working right now
+      sharded: ${mongodb_setup.meta.is_sharded}
+      replica: ${mongodb_setup.meta.is_replset}
+
+  - id: fio
+    type: fio
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./fio-test.sh ${mongodb_setup.meta.hostname}'
+    config_filename: fio.ini
+    output_files:
+      - fio.json
+      - fio_results.tgz
+    workload_config: ${test_control.common_fio_config}
+    skip_validate: true
+
+  - id: iperf
+    type: iperf
+    output_files:
+      - iperf.json
+    cmd: '${infrastructure_provisioning.numactl_prefix} ./iperf-test.sh ${mongodb_setup.meta.hostname}'
+    skip_validate: true

@@ -1,0 +1,8 @@
+argparse==1.4.0
+python-dateutil~=2.7.0
+PyYAML~=5.1
+requests~=2.22.0
+jira==1.0.15
+structlog~=19.1.0
+colorama==0.4.1
+numpy==1.17.5
