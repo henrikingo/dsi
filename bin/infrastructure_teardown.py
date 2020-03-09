@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Teardown AWS resources using terraform.
 It is important this python file can be used without any dependencies on our own other python files
@@ -34,7 +34,7 @@ def find_terraform(work_directory="."):
     else:
         # Find terraform in path
         try:
-            return subprocess.check_output(['which', 'terraform']).strip()
+            return subprocess.check_output(['which', 'terraform'], encoding='utf-8').strip()
         except:  # pylint: disable=broad-except
             LOG.error("Did not find terraform in PATH nor current directory.")
             raise
