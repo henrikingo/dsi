@@ -40,20 +40,32 @@ def jstest_one_host(config, mongo_uri, reports_dir, current_test_id, name):
     script_path = os.path.join(config['test_control']['jstests_dir'], SCRIPT_NAMES[name])
 
     with open(filename, 'w') as out:
-        if name == 'db-hash-check' and mongodb_tls_configured(config['mongodb_setup']['meta']):
-            script_template = jinja2.Template('''
-                TestData = new Object();
+        script_template = jinja2.Template("""
+            TestData = new Object();
+            TestData.inEvergreen = true;
+            {% if auth %}
                 TestData.clusterAuthMode = "x509";
                 TestData.auth = true;
                 TestData.keyFile = "dummyKeyFile";
                 TestData.authUser = {{user|tojson}};
                 TestData.keyFileData = {{password|tojson}};
                 load({{jstests_script_file|tojson}});
-                ''')
-            jstests_script = script_template.render(
-                user=config['mongodb_setup']['authentication']['username'],
-                password=config['mongodb_setup']['authentication']['password'],
-                jstests_script_file=script_path)
+            {% endif %}
+            load({{jstests_script_file|tojson}});
+            """)
+        if name == "db-hash-check":
+            if mongodb_tls_configured(config["mongodb_setup"]["meta"]):
+                jstests_script = script_template.render(
+                    auth=True,
+                    user=config["mongodb_setup"]["authentication"]["username"],
+                    password=config["mongodb_setup"]["authentication"]["password"],
+                    jstests_script_file=script_path,
+                )
+            else:
+                jstests_script = script_template.render(
+                    auth=False,
+                    jstests_script_file=script_path,
+                )
             error = client_host.exec_mongo_command(script=jstests_script,
                                                    remote_file_name='jstests_script.js',
                                                    connection_string=mongo_uri,
