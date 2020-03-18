@@ -398,7 +398,7 @@ class TestMongoNode(unittest.TestCase):
         self.mongo_node.host.run.return_value = False
         self.assertTrue(self.mongo_node.shutdown(1))
         self.mongo_node.run_mongo_shell.assert_called_once_with(
-            'db.getSiblingDB("admin").shutdownServer({})', max_time_ms=1)
+            'db.getSiblingDB("admin").shutdownServer({})', max_time_ms=1, dump_on_error=True)
         self.mongo_node.host.run.assert_called_once_with(['pgrep -l', 'mongo'])
         mock_logger.assert_not_called()
 
@@ -415,7 +415,9 @@ class TestMongoNode(unittest.TestCase):
         # Use a lower `retry` to speed up the test.
         self.assertFalse(self.mongo_node.shutdown(None, retries=1))
         self.mongo_node.run_mongo_shell.assert_called_with(
-            'db.getSiblingDB("admin").shutdownServer(options)', max_time_ms=None)
+            'db.getSiblingDB("admin").shutdownServer(options)',
+            max_time_ms=None,
+            dump_on_error=True)
         self.mongo_node.host.run.assert_called_with(['pgrep -l', 'mongo'])
         mock_logger.assert_called_with(ANY_IN_STRING('did not shutdown yet'), mock.ANY, mock.ANY)
 
@@ -428,10 +430,9 @@ class TestMongoNode(unittest.TestCase):
         self.mongo_node.run_mongo_shell = mock.MagicMock(name='run_mongo_shell')
         self.mongo_node.host.run = mock.MagicMock(name='run')
         self.mongo_node.run_mongo_shell.side_effect = Exception()
-        self.assertFalse(self.mongo_node.shutdown(None))
-        self.mongo_node.host.run.assert_not_called()
-        mock_logger.assert_called_once_with(ANY_IN_STRING('Error shutting down MongoNode at'),
-                                            mock.ANY, mock.ANY)
+        self.assertFalse(self.mongo_node.shutdown(1))
+        self.assertEqual(self.mongo_node.host.run.call_count, 20)
+        self.assertEqual(mock_logger.call_count, 20)
 
     def test_destroy(self):
         """Test destroy."""
