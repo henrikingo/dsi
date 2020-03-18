@@ -27,7 +27,7 @@ results_json:
 # specific configs should move to their mongodb_setup.yml files and picked up from there.
 rules:
   constants:
-    linux-3-node-replSet-initialsync:
+    replica-2node:
       # from Judah: initial sync uses 16 threads to put data into the database
       max_thread_level: 32.0
 
@@ -36,7 +36,7 @@ rules:
     # default:
     #   - ftdc_replica_lag_check
     default: []
-    linux-3-node-replSet-initialsync: []
+    replica-2node: []
 
   # rules run for every variant
   common:
@@ -49,19 +49,19 @@ rules:
       - below_configured_oplog_size
       - max_connections  # rule not run for 3-shard or shard-lite
       - repl_member_state  # rule not run for initialsync
-    linux-1-node-replSet-fle:
+    single-replica-fle:
       - below_configured_cache_size
       - below_configured_oplog_size
       - repl_member_state
-    linux-3-shard:
+    shard:
       - below_configured_cache_size
       - below_configured_oplog_size
       - repl_member_state
-    linux-shard-lite:
+    shard-lite:
       - below_configured_cache_size
       - below_configured_oplog_size
       - repl_member_state
-    linux-3-node-replSet-initialsync:
+    replica-2-node:
       - below_configured_cache_size
       - below_configured_oplog_size
       - max_connections

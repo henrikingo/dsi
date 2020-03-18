@@ -30,7 +30,7 @@ meta:
   is_sharded: false
   is_replset: true
   secondaries: 2
-  mongodb_setup: replica
+  mongodb_setup: replica-flowcontrol
   # This appends the replicaset information to the end of the default mongodb_url and ends up
   # looking like "mongodb://username:password@10.2.0.200:27017/admin?ssl=false&replicaSet=rs0"
   mongodb_url: ${mongodb_setup.meta.mongodb_url_base}?replicaSet=${mongodb_setup.topology.0.id}

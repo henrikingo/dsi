@@ -53,7 +53,7 @@ meta:
   is_replset: false
   primaries: 2
   secondaries: 1
-  mongodb_setup: shard-lite
+  mongodb_setup: shard-lite-cwrwc
 
 # Set the CWRWC defaults.
 pre_task:

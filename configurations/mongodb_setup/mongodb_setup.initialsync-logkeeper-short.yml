@@ -58,4 +58,4 @@ meta:
   is_sharded: false
   is_replset: true
   secondaries: 1  # Only 1 secondary at start
-  mongodb_setup: replica-2node
+  mongodb_setup: initialsync-logkeeper-short
