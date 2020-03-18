@@ -13,6 +13,8 @@ mongod_config_file:
     enableEncryption: true
     encryptionKeyFile: /tmp/encryptionKey
     encryptionCipherMode: AES256-CBC
+  replication:
+    oplogSizeMB: 153600   # 150GB oplog
 
 topology:
   - cluster_type: replset
