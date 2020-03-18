@@ -4,29 +4,28 @@ variable "amis" {
     default = {
 
         #
-        # AMIs last updated 2018-09-28
+        # AMIs last updated 2020-03-06
         #
-        # "Amazon Linux 2 - 9/25/2018 Update"
+        # "Amazon Linux 2 - 7/18/2019 Update"
         # https://aws.amazon.com/amazon-linux-2/release-notes/
         #
-        # Get updated AMI IDs at the following URLs:
-        #
-        #   us-west-2: https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#LaunchInstanceWizard:
-        #   us-east-1: https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#LaunchInstanceWizard:
-        #   eu-west-1: https://eu-west-1.console.aws.amazon.com/ec2/v2/home?region=eu-west-1#LaunchInstanceWizard:
-        #
-        # Search for "Amazon Linux 2 AMI (HVM), SSD Volume Type"
+        # Get updated AMI IDs at the below URLs.
+        # - Search for "Amazon Linux 2 AMI (HVM), SSD Volume Type"
+        # - Ensure you copy the "64-bit x86" version.
         #
         # Refer to this PR for other things to consider changing:
         # https://github.com/10gen/dsi/pull/189
         #
 
-        "us-west-2-amazon2" = "ami-6cd6f714"
-        "us-west-1-amazon2" = "ami-0799ad445b5727125"
-        "us-east-1-amazon2" = "ami-04681a1dbd79675a5"
-        "eu-west-1-amazon2" = "ami-0bdb1d6c15a40392c"
+        # https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#LaunchInstanceWizard:
+        "us-west-2-amazon2" = "ami-0e8c04af2729ff1bb"
+        # https://us-west-1.console.aws.amazon.com/ec2/v2/home?region=us-west-1#LaunchInstanceWizard:
+        "us-west-1-amazon2" = "ami-01c94064639c71719"
+        # https://us-east-1.console.aws.amazon.com/ec2/v2/home?region=us-east-1#LaunchInstanceWizard:
+        "us-east-1-amazon2" = "ami-0a887e401f7654935"
+        # https://eu-west-1.console.aws.amazon.com/ec2/v2/home?region=eu-west-1#LaunchInstanceWizard:
+        "eu-west-1-amazon2" = "ami-099a8245f5daa82bf"
 
-        #
         # CENTOS AMI from Akshay
         "us-east-1-centos7" = "ami-0af2cea0881faa972"
     }
