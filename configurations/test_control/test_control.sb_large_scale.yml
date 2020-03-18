@@ -10,7 +10,7 @@ sysbench:
 run:
   - id: large_scale_prepare
     type: sysbench
-    cmd: cd benchmarks/sysbench/lua && ./large_scale.lua cleanup && ./large_scale.lua run --parallel-prepare --threads=128 ${test_control.sysbench.opts}
+    cmd: cd benchmarks/sysbench/lua && ./large_scale.lua run --parallel-prepare --threads=128 ${test_control.sysbench.opts}
     output_files:
       - sysbench.csv
     skip_validate: true
@@ -48,6 +48,7 @@ run:
       sharded: ${mongodb_setup.meta.is_sharded}
       replica: ${mongodb_setup.meta.is_replset}
       shell_ssl_options: ${mongodb_setup.meta.shell_ssl_options}
+    skip_validate: true
 
   - id: fio
     type: fio
