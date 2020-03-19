@@ -53,6 +53,6 @@ pre_task:
   - on_workload_client:
       # Drop the database before each run
       exec_mongo_shell:
-        connection_string: "${mongodb_setup.meta.mongodb_url}"
+        connection_string: ${mongodb_setup.meta.mongodb_url}
         script: |
           db.dropDatabase();
