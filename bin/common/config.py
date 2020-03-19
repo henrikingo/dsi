@@ -674,6 +674,14 @@ def validate_id(value, path, ids, errs, src_file):
             'item_type': type(value),
             'path': copy.deepcopy(path)
         })
+    elif not _VALID_KEY_REX.match(value) and not _has_variable_reference(value):
+        errs.append({
+            'err_type': 'Invalid Id Value',
+            'src_file': src_file,
+            'item': value,
+            'item_type': type(value),
+            'path': copy.deepcopy(path)
+        })
     else:
         # check reserved words
         if is_reserved_word(value):
@@ -698,21 +706,35 @@ def validate_id(value, path, ids, errs, src_file):
             ids.add(value)
 
 
+def _has_variable_reference(value):
+    """
+    Return true if value includes a ${variable.reference}.
+
+    When using these functions for linting, the files are just loaded as yaml files to python dicts.
+    In this case it is ok for an id field to still contain ${...} as they haven't been evaluated.
+    When validating a real config dict object, there cannot be any unevaluated ${...} so this will
+    always be false.
+    """
+    rex = re.compile(r'.*\$\{.+\}.*')
+    return bool(rex.match(value))
+
+
 class InvalidConfigurationException(Exception):
     """Indicates invalid configuration either from YAML or from user modifying 'out' config."""
     def __init__(self, errors):
         self.errors = errors
-        key_info = "Keys must be strings and match {}.".format(_VALID_KEY_REX_SRC)
+        key_info = "Keys and Id field values must be strings and match {}.".format(
+            _VALID_KEY_REX_SRC)
         value_info = "Values must be of type {}.".format(
             list((it.__name__ for it in _VALID_SCALAR_TYPES)))
         id_info = "Id fields must be unique in a file and cannot be reserved words."
         errs = ", ".join([
-            u"😱 {} [{}] of type [{}] at path [{}] in file [{}]".format(
+            "😱 {} [{}] of type [{}] at path [{}] in file [{}]".format(
                 err['err_type'], err['item'], err['item_type'].__name__,
                 ".".join(str(p) for p in err['path']), err['src_file']) for err in self.errors
         ])
         message = " ".join([key_info, value_info, id_info, errs])
-        super(InvalidConfigurationException, self).__init__(message.encode('utf-8'))
+        super(InvalidConfigurationException, self).__init__(message)
 
 
 def _yaml_load(handle, path):
