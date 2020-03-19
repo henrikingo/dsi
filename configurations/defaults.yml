@@ -37,9 +37,6 @@ infrastructure_provisioning:
       expire-on-delta: 2     # adjust expire_on to now + expire-on-delta hours
       owner: perf-terraform-alerts@10gen.com
   numactl_prefix: numactl --interleave=all --cpunodebind=1
-  evergreen:
-    reuse_cluster: ${bootstrap.production}
-    data_dir: /data/infrastructure_provisioning
   terraform:
     required_version: Terraform v0.12.16
     aws_required_version: 2.40.0

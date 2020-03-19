@@ -147,7 +147,7 @@ class TerraformConfiguration(object):
     """
     DSI Terraform configuration
     """
-    def __init__(self, config, file_name="cluster.json"):
+    def __init__(self, config):
         """
         Instantiate a TerraformConfiguration object
 
@@ -156,25 +156,12 @@ class TerraformConfiguration(object):
         """
         self.config = config
 
-        # Note: self.tfvars is initialized by self.get_json()
-        if (self.config["infrastructure_provisioning"]["evergreen"]["reuse_cluster"]
-                and self.get_json(file_name)):
-
-            # Note: the new config provided should be identical to what we read from get_json().
-            # (Which is the point of reusing a cluster.) But just in case it isn't, then the new
-            # config should take precedence. Terraform should then magically notice the difference
-            # and take appropriate action.
-            self.set_tfvars()
-
-        else:
-            # Dict to hold output config (use self.to_json() to print)
-            self.tfvars = {}
-            self.set_tfvars()
-            # Since this is a new cluster, generate a unique id for the placement group to be
-            self.tfvars = generate_placement_group(self.tfvars, self.tfvars.get("cluster_name"))
-            # Cluster metadata
-            self.tfvars["runner_hostname"] = generate_runner_hostname()
-
+        self.tfvars = {}
+        self.set_tfvars()
+        # Since this is a new cluster, generate a unique id for the placement group to be
+        self.tfvars = generate_placement_group(self.tfvars, self.tfvars.get("cluster_name"))
+        # Cluster metadata
+        self.tfvars["runner_hostname"] = generate_runner_hostname()
         self.refresh_tfvars()
 
     def set_tfvars(self):

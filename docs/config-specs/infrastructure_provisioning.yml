@@ -37,11 +37,6 @@ tfvars:
 # Prefix to use before starting mongod or a workload client (optional)
 numactl_prefix: numactl --interleave=all --cpunodebind=1
 
-evergreen:
-  # Whether terraform state files should be stored outside the work dir.
-  # Used to reuse clusters during the lifecycle of an evergreen runner.
-  reuse_cluster: ${bootstrap.production}
-  data_dir: /data/infrastructure_provisioning
 terraform:
   # A string, or False
   required_version: Terraform v0.9.11

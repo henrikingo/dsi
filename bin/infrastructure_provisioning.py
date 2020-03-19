@@ -14,7 +14,6 @@ import structlog
 
 from common.log import setup_logging
 from common.config import ConfigDict
-from common.delays import safe_reset_all_delays
 from common.command_runner import run_pre_post_commands, EXCEPTION_BEHAVIOR
 from common.remote_host import RemoteHost
 from common.terraform_config import TerraformConfiguration
@@ -31,25 +30,6 @@ TERRAFORM_PARALLELISM = 20
 TF_LOG_PATH = "terraform.debug.log"
 PROVISION_LOG_PATH = 'terraform.stdout.log'
 CLUSTER_JSON = "cluster.json"
-
-# Increase this to force a teardown of clusters whose evg_data_dir is from a previous version.
-# You will also need to fix the tests (specifically the fixture files listed in
-# test_infrastructure_provisioning.py).
-VERSION = "13"
-
-
-def check_version(file_path):
-    """True, if contents of file_path equals VERSION"""
-    if os.path.isfile(file_path):
-        with open(file_path) as file_handle:
-            content = file_handle.read()
-            LOG.debug("check_version", version=VERSION, file_path=file_path, contents=content)
-            if content == VERSION:
-                return True
-    else:
-        LOG.debug("check_version: No file at file_path", file_path=file_path)
-
-    return False
 
 
 def rmtree_when_present(tree_path):
@@ -77,10 +57,6 @@ class Provisioner(object):
         self.aws_access_key, self.aws_secret_key = common.utils.read_aws_credentials(config)
         self.cluster = config['infrastructure_provisioning']['tfvars'].get(
             'cluster_name', 'missing_cluster_name')
-        self.reuse_cluster = config['infrastructure_provisioning']['evergreen'].get(
-            'reuse_cluster', False)
-        self.evg_data_dir = config['infrastructure_provisioning']['evergreen'].get('data_dir')
-        self.existing = False
         self.var_file = None
         self.parallelism = '-parallelism=' + str(TERRAFORM_PARALLELISM)
         self.terraform = common.utils.find_terraform()
@@ -166,105 +142,7 @@ class Provisioner(object):
         """
         Function used to actually provision the resources
         """
-        if self.reuse_cluster:
-            self.check_existing_state()
         self.setup_cluster()
-
-    def teardown_old_cluster(self):
-        """
-        Force recreation of a new cluster by executing teardown in evg_data_dir and deleting state
-        """
-        try:
-            # Need to unset the TERRAFORM environment variable since infrastructure_teardown.py
-            # needs to use the correct version of terraform which is located in evg_data_dir.
-            # The terraform version matches the version of the terraform state files located
-            # in the same directory. The teardown script in evg_data_dir is used to ensure
-            # the terraform in that directory is used.
-            temp_environ = os.environ.copy()
-            if 'TERRAFORM' in temp_environ:
-                del temp_environ['TERRAFORM']
-
-            teardown_py = os.path.join(self.evg_data_dir, 'terraform/infrastructure_teardown.py')
-            if os.path.isfile(teardown_py):
-                subprocess.check_call(['python', teardown_py],
-                                      env=temp_environ,
-                                      stdout=self.stdout,
-                                      stderr=self.stderr)
-        except subprocess.CalledProcessError as exception:
-            LOG.error("Teardown of existing resources failed. Catching exception and continuing.",
-                      exception=str(exception))
-
-        # Delete all state files so that this looks like a fresh evergreen runner
-        rmtree_when_present(self.evg_data_dir)
-        if os.path.isfile(CLUSTER_JSON):
-            os.remove(CLUSTER_JSON)
-        if os.path.isfile("terraform.tfstate"):
-            os.remove("terraform.tfstate")
-
-    def check_existing_state(self):
-        """
-        If running on evergreen, use an existing terraform state if it exists.
-        Properly sets up the environment on Evergreen to use the existing
-        state files.
-        """
-        if os.path.isdir(self.evg_data_dir) and self.cluster == 'initialsync-logkeeper':
-            LOG.info("Force re-creation of instances by executing teardown now.",
-                     cluster=self.cluster)
-            self.teardown_old_cluster()
-
-        tfstate_path = os.path.join(self.evg_data_dir, 'terraform', 'terraform.tfstate')
-        provision_cluster_path = os.path.join(self.evg_data_dir, 'terraform',
-                                              'provisioned.' + self.cluster)
-        if os.path.isfile(tfstate_path):
-            if check_version(provision_cluster_path):
-                self.existing = True
-                LOG.info("Retrieving terraform state for existing EC2 resources.",
-                         path=tfstate_path)
-                shutil.copyfile(tfstate_path, "terraform.tfstate")
-
-                LOG.info("Retrieving variables for existing EC2 resources.", path=CLUSTER_JSON)
-                from_file = os.path.join(self.evg_data_dir, 'terraform', CLUSTER_JSON)
-                shutil.copyfile(from_file, CLUSTER_JSON)
-            else:
-                LOG.info(
-                    "Existing EC2 resources found, but state files are wrong version. "
-                    "Force re-creation of cluster now...",
-                    path=provision_cluster_path)
-                self.teardown_old_cluster()
-                self.existing = False
-
-        else:
-            self.existing = False
-            LOG.info("No existing EC2 resources found.", path=tfstate_path)
-
-    def setup_evg_dir(self):
-        """
-        Sets up the Evergreen data directories and creates them if they do not exist.
-        Copies over the terraform modules along with the teardown script.
-        data directory.
-        """
-        if not os.path.isdir(self.evg_data_dir):
-            LOG.info("Copying terraform binary to durable data directory on Evergreen host.",
-                     target_path=self.evg_data_dir)
-            os.makedirs(os.path.join(self.evg_data_dir, "terraform"))
-            # For historical reasons, we store a binary called `terraform` in a directory called
-            # `terraform`.
-            shutil.copy(self.terraform, os.path.join(self.evg_data_dir, "terraform", "terraform"))
-            shutil.copytree("modules", os.path.join(self.evg_data_dir, "terraform", "modules"))
-
-            source_path = os.path.join(self.bin_dir, 'infrastructure_teardown.py')
-            target_path = os.path.join(self.evg_data_dir, 'terraform', 'infrastructure_teardown.py')
-            LOG.info("Copying infrastructure_teardown.py to Evergreen host.",
-                     source_path=source_path,
-                     target_path=target_path)
-            shutil.copy(source_path, target_path)
-
-        LOG.info("Contents of Evergreen durable data directory.",
-                 path=self.evg_data_dir,
-                 contents=os.listdir(self.evg_data_dir))
-        LOG.info("Contents of terraform/ sub directory.",
-                 path=os.path.join(self.evg_data_dir, "terraform"),
-                 contents=os.listdir(os.path.join(self.evg_data_dir, "terraform")))
 
     def setup_cluster(self):
         """
@@ -274,8 +152,6 @@ class Provisioner(object):
         # Create and copy needed security.tf and terraform.tf files into current work directory
         self.setup_security_tf()
         self.setup_terraform_tf()
-        if self.reuse_cluster:
-            self.setup_evg_dir()
         LOG.info('terraform: init')
         subprocess.check_call([self.terraform, 'init', '-upgrade'],
                               stdout=self.stdout,
@@ -283,22 +159,19 @@ class Provisioner(object):
         tf_config = TerraformConfiguration(self.config)
         tf_config.to_json(file_name=CLUSTER_JSON)  # pylint: disable=no-member
         self.var_file = '-var-file={}'.format(CLUSTER_JSON)
-        if self.existing:
-            LOG.info('Reusing AWS cluster.', cluster=self.cluster)
-        else:
-            LOG.info('Creating AWS cluster.', cluster=self.cluster)
+        LOG.info('Creating AWS cluster.', cluster=self.cluster)
         LOG.info('terraform: apply')
         terraform_command = [
             self.terraform, 'apply', self.var_file, self.parallelism, '-auto-approve'
         ]
         # Disk warmup for initialsync-logkeeper takes about 4 hours. This will save
         # about $12 by delaying deployment of the two other nodes.
-        if not self.existing and self.cluster == 'initialsync-logkeeper':
+        if self.cluster == 'initialsync-logkeeper':
             terraform_command.extend(
                 ['-var=mongod_ebs_instance_count=0', '-var=workload_instance_count=0'])
         try:
             subprocess.check_call(terraform_command, stdout=self.stdout, stderr=self.stderr)
-            if not self.existing and self.cluster == 'initialsync-logkeeper':
+            if self.cluster == 'initialsync-logkeeper':
                 subprocess.check_call(
                     [self.terraform, 'apply', self.var_file, self.parallelism, '-auto-approve'],
                     stdout=self.stdout,
@@ -317,13 +190,6 @@ class Provisioner(object):
             tf_parser = TerraformOutputParser(config=self.config, terraform_output=terraform_output)
             tf_parser.write_output_files()
 
-            if self.reuse_cluster:
-                self.save_terraform_state()
-
-            if self.existing:
-                # Delays should be unset at the end of each test_control.py run,
-                # but if it didn't complete...
-                safe_reset_all_delays(self.config)
             # Write hostnames to /etc/hosts
             self.setup_hostnames()
             with open('infrastructure_provisioning.out.yml', 'r') as provisioning_out_yaml:
@@ -341,45 +207,7 @@ class Provisioner(object):
             self.print_terraform_errors()
             LOG.error("Releasing any EC2 resources that did deploy.")
             destroy_resources()
-            rmtree_when_present(self.evg_data_dir)
             raise exception
-
-    def save_terraform_state(self):
-        """
-        Saved the terraform state to the Evergreen data directory and also
-        copy over the ssh key.
-        """
-        LOG.info("Will now save terraform state needed for "
-                 "teardown when triggered by the Evergreen runner.")
-        terraform_dir = os.path.join(self.evg_data_dir, 'terraform')
-        files_to_copy = ['terraform.tfstate', 'cluster.tf', 'security.tf', CLUSTER_JSON]
-        LOG.info('Copying files.', files=files_to_copy)
-        for to_copy in files_to_copy:
-            shutil.copyfile(to_copy, os.path.join(terraform_dir, to_copy))
-        # If ssh_key_file is a relative path, copy it too
-        # Important: If you provide an absolute path in the configuration, make sure it doesn't
-        # point to a temporary path! (/tmp, or evergreen runner work dir)
-        if not os.path.isabs(self.ssh_key_file):
-            source_path = self.ssh_key_file
-            target_path = os.path.join(terraform_dir, self.ssh_key_file)
-            LOG.info('Copying:', source_path=source_path, target_path=target_path)
-            shutil.copyfile(source_path, target_path)
-
-        previous_working_directory = os.getcwd()
-        os.chdir(terraform_dir)
-        LOG.info('terraform: init in Evergreen data dir.', path=terraform_dir)
-        subprocess.check_call(['./terraform', 'init', '-upgrade'],
-                              stdout=self.stdout,
-                              stderr=self.stderr)
-        for file_path in glob.glob('provisioned.*'):
-            os.remove(file_path)
-        with open('provisioned.' + self.cluster, 'w') as file_handle:
-            file_handle.write(VERSION)
-            LOG.info('Created version file to denote the version of terraform state files.',
-                     path='provisioned.' + self.cluster,
-                     version=VERSION)
-        os.chdir(previous_working_directory)
-        LOG.info("EC2 provisioning state saved on Evergreen host.")
 
     def print_terraform_errors(self):
         """

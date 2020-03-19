@@ -1,9 +1,6 @@
 # This config file will deploy a single workload client host and no mongod nodes.
 # We use this to benchmark Atlas clusters.
 
-evergreen:
-  reuse_cluster: false
-
 # Unset default. Since Atlas uses all CPUs, we want to do the same on the workload client.
 numactl_prefix: ""
 

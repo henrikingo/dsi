@@ -22,6 +22,3 @@ tfvars:
     expire-on-delta: 48     # adjust expire_on to now + expire-on-delta hours
 
 numactl_prefix: ""
-
-evergreen:
-  reuse_cluster: false
