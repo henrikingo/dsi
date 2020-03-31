@@ -15,6 +15,7 @@ from dateutil import tz
 
 import common.atlas_setup as atlas_setup
 import common.cedar
+from common.config import ConfigDict
 import common.host_factory
 import common.host_utils
 import common.utils
@@ -291,7 +292,8 @@ def print_trace(trace, exception):
     for frame in trace:
         if frame[3] == "run_host_command" and executed_command == {}:
             executed_command = frame[0].f_locals['command']
-        if frame[3] == "_run_host_command_map":
+        # If executed_command is a ConfigDict, you can't set arbitrary keys like this:
+        if frame[3] == "_run_host_command_map" and not isinstance(executed_command, ConfigDict):
             executed_command[frame[0].f_locals['key']] = frame[0].f_locals['value']
     error_msg = "Exception originated in: " + bottom_function_file
     error_msg = error_msg + ":" + bottom_function + ":" + bottom_function_line
