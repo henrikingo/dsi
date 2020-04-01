@@ -16,7 +16,7 @@ for s in \
   infrastructure_teardown \
 ; do
   echo $s at $( date )
-  /usr/bin/time -o time.${s} ./bin/${s}.py $dflags 2>&1 | tee o.${s}
+  /usr/bin/time -o time.${s} ./.bin/${s}.py $dflags 2>&1 | tee o.${s}
   pstat=${PIPESTATUS[0]}
   if [[ $pstat -ne 0 ]]; then
     echo $s failed with status :: $pstat ::
