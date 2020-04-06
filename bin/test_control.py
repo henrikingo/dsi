@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import argparse
 
+import glob
 import logging
 import os
 import shutil
@@ -41,6 +42,19 @@ def print_perf_json(filename='perf.json'):
             for line in perf_file:
                 LOG.info(line.rstrip())
 
+def copy_to_reports(reports_dir='reports', perf_json='perf.json'):
+    """
+    Copy perf.json and all yml files under reports/.
+
+    This is useful when running test_control.py many times with different configurations.
+    You want to save config and results for all of them.
+    """
+    if os.path.isfile(perf_json):
+        LOG.debug("Copying %s to %s", perf_json, reports_dir)
+        shutil.copy(perf_json, reports_dir)
+    for yaml_file in glob.glob('*.yml'):
+        LOG.debug("Copying %s to %s", yaml_file, reports_dir)
+        shutil.copy(yaml_file, reports_dir)
 
 def generate_config_file(test, local_dir, client_host):
     """
@@ -361,8 +375,10 @@ def run_tests(config):
         report.write_report()
         run_pre_post_commands('post_task', [test_control_config, mongodb_setup_config], config,
                               EXCEPTION_BEHAVIOR.CONTINUE)
+        perf_json = config['test_control']['perf_json']['path']
+        copy_to_reports(reports_dir='reports', perf_json=perf_json)
         # Print perf.json to screen
-        print_perf_json(config['test_control']['perf_json']['path'])
+        print_perf_json(filename=perf_json)
 
     LOG.info("%s of %s tests exited with an error.", num_tests_failed, num_tests_run)
 
