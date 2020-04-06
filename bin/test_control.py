@@ -42,6 +42,7 @@ def print_perf_json(filename='perf.json'):
             for line in perf_file:
                 LOG.info(line.rstrip())
 
+
 def copy_to_reports(reports_dir='reports', perf_json='perf.json'):
     """
     Copy perf.json and all yml files under reports/.
@@ -55,6 +56,7 @@ def copy_to_reports(reports_dir='reports', perf_json='perf.json'):
     for yaml_file in glob.glob('*.yml'):
         LOG.debug("Copying %s to %s", yaml_file, reports_dir)
         shutil.copy(yaml_file, reports_dir)
+
 
 def generate_config_file(test, local_dir, client_host):
     """
