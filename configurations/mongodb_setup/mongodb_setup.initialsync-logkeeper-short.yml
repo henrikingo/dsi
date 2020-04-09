@@ -25,11 +25,11 @@ pre_cluster_start:
         host_addr=$(hostname -i)
         if [ "$host_addr" == "${infrastructure_provisioning.out.mongod.0.private_ip}" ]
         then
-           echo "Loading data" "${mongodb_setup.mongodb_dataset}" "on" "$host_addr"
-           cd data && { curl --retry 10 -fsS "${mongodb_setup.mongodb_dataset}" -o logkeeper-slice-data.tgz; cd - || exit 1;}
+           echo "Loading data" ${mongodb_setup.mongodb_dataset} "on" $host_addr
+           cd data && { curl --retry 10 -fsS ${mongodb_setup.mongodb_dataset} -o logkeeper-slice-data.tgz; cd -;}
            db_path=${mongodb_setup.mongod_config_file.storage.dbPath}
-           rm -rf "$db_path"; mkdir -p "$db_path"
-           tar -xf ./data/logkeeper-slice-data.tgz -C "$db_path"
+           rm -rf $db_path; mkdir -p $db_path
+           tar -xf ./data/logkeeper-slice-data.tgz -C $db_path
         fi
 
 topology:

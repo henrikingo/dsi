@@ -36,8 +36,8 @@ genny:
           curl -o mongodbtoolchain.tar.gz --retry 10 -L http://mongodbtoolchain.build.10gen.cc/toolchain/rhel70/x86_64/latest
           mkdir -p /opt/mongodbtoolchain/revisions
           REVISION=$(tar --list -f mongodbtoolchain.tar.gz | head -1 | sed 's/\/$//')
-          tar -C /opt/mongodbtoolchain/revisions -xzvf mongodbtoolchain.tar.gz "$REVISION"
-          /opt/mongodbtoolchain/revisions/"$REVISION"/scripts/install.sh
+          tar -C /opt/mongodbtoolchain/revisions -xzvf mongodbtoolchain.tar.gz $REVISION
+          /opt/mongodbtoolchain/revisions/$REVISION/scripts/install.sh
           sudo yum install -y libicu > ./yum-install-libicu.log 2>&1
         else
         # https://aws.amazon.com/premiumsupport/knowledge-center/ec2-enable-epel/
@@ -45,7 +45,7 @@ genny:
           sudo yum-config-manager --enable epel > ./yum-epel.log 2>&1
           sudo yum install -y gcc gcc-c++ python3 python37 python3-pip python37-pip > ./yum-install.log 2>&1
         fi
-        popd || exit 1
+        popd
   # Get Genny's distribution
   - on_workload_client:
       exec: |
@@ -75,7 +75,7 @@ genny:
   # Build Genny's Python Component
   - on_workload_client:
       exec: |
-        cd ./data/genny/src/python || exit 1
+        cd ./data/genny/src/python
         if [[ -e /opt/mongodbtoolchain/v3/bin/ ]]; then
           PATH=/opt/mongodbtoolchain/v3/bin/:$PATH
         fi
@@ -115,18 +115,18 @@ iperf:
       # Install iperf3. It isn't available in yum on AWS instances
       # TODO: On Amazon2 this could probably be installed from yum, but I didn't try to change it in this commit.
       exec: |
-        mkdir -p data/tmp; pushd data/tmp || exit 1
+        mkdir -p data/tmp; pushd data/tmp
         sudo yum groupinstall -y --quiet "Development tools"
         sudo yum install -y --quiet zlib-devel
         sudo pkill -15 iperf3
         rm -rf iperf
         git clone --quiet https://github.com/esnet/iperf
-        cd iperf/ || exit 1
+        cd iperf/
         git checkout --quiet d06415822a
         ./configure --quiet > ./iperf-config.log
         make --quiet > ./iperf-make.log
         sudo make install > ./iperf-install.log
-        popd || exit 1
+        popd
 
       upload_repo_files:
         - source: bin/iperf-test.sh
@@ -151,14 +151,14 @@ tpcc:
 linkbench:
   - on_workload_client:
       exec: |
-        mkdir -p data/tmp; pushd data/tmp || exit 1
+        mkdir -p data/tmp; pushd data/tmp
         curl --retry 10 http://mirror.cc.columbia.edu/pub/software/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz | sudo tar zx -C /usr/local
-        cd /usr/local || exit 1
+        cd /usr/local
         sudo ln -s apache-maven-* maven
         echo 'export M2_HOME=/usr/local/maven' | sudo tee -a /etc/profile.d/maven.sh
         echo 'export PATH=$M2_HOME/bin:$PATH' | sudo tee -a /etc/profile.d/maven.sh
         rm *.rpm 2&>1 >/dev/null || true
-        popd || exit 1
+        popd
 
 # TODO: EVG-3317  modules can only track branches at the moment
 # but master ==  f9cca9bcc2c45a409d34584dad49a095d7efccef. If we need to track
@@ -179,7 +179,7 @@ linkbench:
   - on_workload_client:
       exec: |
         export JAVA_HOME="/usr/java/jdk1.8.0_162/jre"
-        source /etc/profile.d/maven.sh && cd ~/linkbench || exit 1
+        source /etc/profile.d/maven.sh && cd ~/linkbench
         mvn --quiet clean package -DskipTests
 
 ycsb:
@@ -188,14 +188,14 @@ ycsb:
         ${workload_setup.install_curator}
   - on_workload_client:
       exec: |
-        mkdir -p data/tmp; pushd data/tmp || exit 1
+        mkdir -p data/tmp; pushd data/tmp
         curl --retry 10 http://mirror.cc.columbia.edu/pub/software/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz | sudo tar zx -C /usr/local
-        cd /usr/local || exit 1
+        cd /usr/local
         sudo ln -s apache-maven-* maven
         echo 'export M2_HOME=/usr/local/maven' | sudo tee -a /etc/profile.d/maven.sh
         echo 'export PATH=$M2_HOME/bin:$PATH' | sudo tee -a /etc/profile.d/maven.sh
         rm *.rpm 2&>1 >/dev/null || true
-        popd || exit 1
+        popd
   - on_localhost:
       checkout_repos:
         - source: git@github.com:mongodb-labs/YCSB.git

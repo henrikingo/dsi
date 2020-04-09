@@ -6,8 +6,8 @@ post_test:
         host_addr=$(hostname -i)
         if [ "$host_addr" == "${mongodb_setup.meta.empty_node}" ]
         then
-           echo "Cleaning the temp data directory on " "$host_addr"
-           rm -rf "${mongodb_setup.mongod_config_file.storage.dbPath}-tmp"
+           echo "Cleaning the temp data directory on " $host_addr
+           rm -rf ${mongodb_setup.mongod_config_file.storage.dbPath}-tmp
         fi
 run:
   - id: initialsync_c_1_d_1_w_f

@@ -42,22 +42,22 @@ pre_task:
   - on_workload_client:
       # Preshard the cluster if running on a sharded cluster
       exec_mongo_shell:
-        connection_string: ${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}
+        connection_string: "${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}"
         script: ${test_control.bestbuy_sharding_script}
   - on_workload_client:
       exec: |
         # Download and install the dataset
         # Dataset is from the BestBuy Developer API website: https://bestbuyapis.github.io/api-documentation/#overview
-        cd data || exit 1
+        cd data
         curl -O --retry 10 -fsS https://s3-us-west-2.amazonaws.com/dsi-donot-remove/AggPerformance/bestbuyproducts.bson.gz
-        ~/bin/mongorestore --numInsertionWorkersPerCollection=8 --bypassDocumentValidation --quiet -h "${mongodb_setup.meta.hostname}" --port="${mongodb_setup.meta.port}" --gzip --archive=bestbuyproducts.bson.gz || exit 1 $?
-        ~/bin/mongo --host "${mongodb_setup.meta.hostname}" --port="${mongodb_setup.meta.port}" --eval 'db.getSiblingDB("bestbuy").products.getShardDistribution()'
+        ~/bin/mongorestore --numInsertionWorkersPerCollection=8 --bypassDocumentValidation --quiet -h ${mongodb_setup.meta.hostname} --port=${mongodb_setup.meta.port} --gzip --archive=bestbuyproducts.bson.gz  || exit $?
+        ~/bin/mongo --host ${mongodb_setup.meta.hostname} --port=${mongodb_setup.meta.port} --eval 'db.getSiblingDB("bestbuy").products.getShardDistribution()'
 
 post_task:
   exec: |
     rm data/bestbuy* # Cleanup download files.
   exec_mongo_shell:
-    connection_string: ${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}
+    connection_string: "${mongodb_setup.meta.hostname}:${mongodb_setup.meta.port}"
     script: |
       if ("${mongodb_setup.meta.is_sharded}" == "True") {
         // re-enable the balancer

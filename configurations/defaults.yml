@@ -65,7 +65,7 @@ infrastructure_provisioning:
         # (noatime is set when mounting.)
         for disk in ${infrastructure_provisioning.disks}; do
           if [[ -e $disk ]]; then
-            sudo blockdev --setra "${infrastructure_provisioning.read_ahead}" "$disk";
+            sudo blockdev --setra ${infrastructure_provisioning.read_ahead} $disk;
           fi;
         done;
     set_ulimits:
@@ -85,8 +85,8 @@ infrastructure_provisioning:
       exec: |
         # mongodb production recommended configuration
         # https://docs.mongodb.com/manual/administration/production-notes/#recommended-configuration
-        echo "never" | sudo tee /sys/kernel/mm/transparent_hugepage/enabled > /dev/null
-        echo "never" | sudo tee /sys/kernel/mm/transparent_hugepage/defrag > /dev/null
+        echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/enabled > /dev/null
+        echo 'never' | sudo tee /sys/kernel/mm/transparent_hugepage/defrag > /dev/null
 
   post_provisioning:
     - on_all_hosts: ${infrastructure_provisioning.post_provisioning_steps.set_readahead}
@@ -572,7 +572,7 @@ test_control:
     # Start mongocryptd separately so that it runs on a different cpu
     pwd
     if [ "${mongodb_setup.meta.is_fle}" == "True" ]; then
-      "${mongodb_setup.mongo_dir}/bin/mongocryptd" --logpath "$HOME"/cryptd.log --pidfilepath="$HOME"/mongocryptd.pid --fork
+      ${mongodb_setup.mongo_dir}/bin/mongocryptd --logpath $HOME/cryptd.log --pidfilepath=$HOME/mongocryptd.pid --fork
     fi
 
   # Common genny commands

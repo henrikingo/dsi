@@ -36,11 +36,11 @@ disable_hyperthreading() {
     # to different physical cores. We are turning off all cpus beyond
     # that.
 
-    cores=$(lscpu | grep -E Core | grep -E socket | cut -d : -f 2)
-    sockets=$(lscpu | grep -E Socket |  cut -d : -f 2)
-    cpus=$(lscpu | grep -E "CPU\(s\)" | head -1 | cut -d : -f 2)
-    total_cores=$((cores*sockets))
-    for i in $(seq $total_cores "$cpus"); do echo 0 | sudo tee /sys/devices/system/cpu/cpu"$i"/online; done
+    cores=$(lscpu | egrep Core | egrep socket | cut -d : -f 2)
+    sockets=$(lscpu | egrep Socket |  cut -d : -f 2)
+    cpus=$(lscpu | egrep "CPU\(s\)" | head -1 | cut -d : -f 2)
+    total_cores=$(($cores*$sockets))
+    for i in `seq $total_cores $cpus`; do echo 0 | sudo tee /sys/devices/system/cpu/cpu$i/online; done
 }
 
 prepare_disk() {
@@ -49,16 +49,16 @@ prepare_disk() {
     mount_path=$1; shift;
     format="${1:-yes}"
 
-    sudo mkdir -p "$mount_path"
-    sudo umount "$disk"
+    sudo mkdir -p $mount_path
+    sudo umount $disk
     if [[ "$format" == "yes" ]]; then
-        sudo mkfs.xfs -f "$disk"
+        sudo mkfs.xfs -f $disk
     fi
     # Set noatime, readahead: https://docs.mongodb.com/manual/administration/production-notes/#recommended-configuration
-    sudo mount "$disk" "$mount_path" -o noatime
-    sudo blockdev --setra 32 "$disk"
-    sudo chmod 777 "$mount_path"
-    sudo chown -R ec2-user:ec2-user "$mount_path"
+    sudo mount $disk $mount_path -o noatime
+    sudo blockdev --setra 32 $disk
+    sudo chmod 777 $mount_path
+    sudo chown -R ec2-user:ec2-user $mount_path
 }
 
 create_required_directories() {
