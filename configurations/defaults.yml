@@ -135,6 +135,10 @@ mongodb_setup:
     enabled: true
     username: username
     password: password
+    # Part to use in mongodb_url
+    url:
+      "True": "${mongodb_setup.authentication.username}:${mongodb_setup.authentication.password}@"
+      "False": ""
 
   # Upload SSL keys (not always used but no harm in uploading them)
   pre_cluster_start:
@@ -192,12 +196,12 @@ mongodb_setup:
     # but still keep the base url with authentication etc.
     # This param in general shouldn't be overwritten.
     # This should *not* have any query-string parts in it - downstream is expecting to be the first to add on a ?
-    mongodb_url_base: "mongodb://${mongodb_setup.authentication.username}:${mongodb_setup.authentication.password}@${mongodb_setup.meta.hosts}/admin"
+    mongodb_url_base: "mongodb://${mongodb_setup.authentication.url.${mongodb_setup.authentication.enabled}}${mongodb_setup.meta.hosts}/admin"
     # Most clients will use this to connect to the cluster
     mongodb_url: "${mongodb_setup.meta.mongodb_url_base}?ssl=false"
     # We need to provide a separate variable for the shell, because the shell on 3.4 doesn't
     # support connecting to multiple mongoses and therefore can't use mongodb_url.
-    mongodb_shell_url: "mongodb://${mongodb_setup.authentication.username}:${mongodb_setup.authentication.password}@${mongodb_setup.meta.hostname}:27017/admin?ssl=false"
+    mongodb_shell_url: "mongodb://${mongodb_setup.authentication.url.${mongodb_setup.authentication.enabled}}${mongodb_setup.meta.hostname}:27017/admin?ssl=false"
     # Used in mongoshell workloads (https://github.com/10gen/workloads/blob/23b1c6dd3a8c087b6a2c949147a8aeaba1d1d271/run_workloads.py#L289-L296)
     shell_ssl_options: []
     is_sharded: false
