@@ -41,7 +41,6 @@ class WorkloadSetupRunner(object):
         """
         Perform setup for all the required workload types
         """
-        common.host_utils.setup_ssh_agent(self.config)
         for test_type in self.test_types():
             self.run_setup_for_test_type(test_type)
 

@@ -21,7 +21,7 @@ from common.delays import safe_reset_all_delays
 from common.exit_status import write_exit_status, ExitStatus, EXIT_STATUS_OK
 from common.utils import mkdir_p
 from common.config import ConfigDict
-from common.host_utils import extract_hosts, setup_ssh_agent
+from common.host_utils import extract_hosts
 from common.command_runner import run_pre_post_commands, EXCEPTION_BEHAVIOR, prepare_reports_dir
 from common.host_factory import make_host
 from common.host import INFO_ADAPTER
@@ -276,7 +276,6 @@ def run_tests(config):
     test_control_config = config['test_control']
     mongodb_setup_config = config['mongodb_setup']
 
-    setup_ssh_agent(config)
     prepare_reports_dir()
 
     validate_config(config)

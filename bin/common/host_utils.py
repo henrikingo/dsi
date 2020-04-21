@@ -32,21 +32,6 @@ class HostException(Exception):
     """ Raise for exec command timeouts and use it to wraps ssh exceptions. """
 
 
-def setup_ssh_agent(config):
-    """
-    Setup the ssh-agent, and update our environment for it.
-
-    :param ConfigDict config: The system configuration
-    """
-    ssh_agent_info = subprocess.check_output(['ssh-agent', '-s'], encoding='utf8')
-    # This expansion updates our environment by parsing the info from the previous line. It splits
-    # the data into lines, and then for any line of the form "key=value", adds {key: value} to the
-    # environment.
-    os.environ.update(dict([line.split('=') for line in ssh_agent_info.split(';') if '=' in line]))
-    (_, ssh_key_file) = ssh_user_and_key_file(config)
-    subprocess.check_call(['ssh-add', ssh_key_file])
-
-
 # https://stackoverflow.com/questions/23064636/python-subprocess-popen-blocks-with-shell-and-pipe
 def restore_signals():
     """

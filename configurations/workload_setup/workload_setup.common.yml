@@ -157,7 +157,6 @@ linkbench:
         sudo ln -s apache-maven-* maven
         echo 'export M2_HOME=/usr/local/maven' | sudo tee -a /etc/profile.d/maven.sh
         echo 'export PATH=$M2_HOME/bin:$PATH' | sudo tee -a /etc/profile.d/maven.sh
-        rm *.rpm 2&>1 >/dev/null || true
         popd
 
 # TODO: EVG-3317  modules can only track branches at the moment
@@ -194,7 +193,6 @@ ycsb:
         sudo ln -s apache-maven-* maven
         echo 'export M2_HOME=/usr/local/maven' | sudo tee -a /etc/profile.d/maven.sh
         echo 'export PATH=$M2_HOME/bin:$PATH' | sudo tee -a /etc/profile.d/maven.sh
-        rm *.rpm 2&>1 >/dev/null || true
         popd
   - on_localhost:
       checkout_repos:
