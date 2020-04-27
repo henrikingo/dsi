@@ -55,7 +55,7 @@ def copy_to_reports(reports_dir='reports', perf_json='perf.json'):
         shutil.copy(perf_json, reports_dir)
     for yaml_file in glob.glob('*.yml'):
         LOG.debug("Copying %s to %s", yaml_file, reports_dir)
-        shutil.copy(yaml_file, reports_dir)
+        shutil.copy(yaml_file, os.path.join(reports_dir, yaml_file))
 
 
 def generate_config_file(test, local_dir, client_host):

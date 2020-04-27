@@ -568,6 +568,7 @@ class RunTestsTestCase(unittest.TestCase):
         })
 
     # pylint: disable=unused-argument
+    @patch('test_control.copy_to_reports')
     @patch('test_control.safe_reset_all_delays')
     @patch('test_control.run_pre_post_commands')
     @patch('test_control.run_test')
@@ -578,7 +579,7 @@ class RunTestsTestCase(unittest.TestCase):
     @patch('test_control.cedar')
     def test_pre_post_commands_ordering(self, mock_cedar, mock_copy_perf, mock_check_call,
                                         mock_prep_rep, mock_parse_results, mock_run_test,
-                                        mock_pre_post, mock_delays):
+                                        mock_pre_post, mock_delays, mock_copy_reports):
         """Test that pre and post commands are called in the right order"""
         real_config_dict = ConfigDict('test_control')
         real_config_dict.raw = self.config
@@ -593,6 +594,7 @@ class RunTestsTestCase(unittest.TestCase):
         self.assertEqual(expected_args, observed_args)
 
     # pylint: disable=unused-argument
+    @patch('test_control.copy_to_reports')
     @patch('test_control.safe_reset_all_delays')
     @patch('test_control.run_pre_post_commands')
     @patch('test_control.parse_test_results', return_value=('status', ['CedarTest']))
@@ -601,7 +603,7 @@ class RunTestsTestCase(unittest.TestCase):
     @patch('test_control.print_perf_json')
     @patch('test_control.cedar')
     def test_run_test_exception(self, mock_cedar, mock_copy_perf, mock_check_call, mock_prep_rep,
-                                mock_parse_results, mock_pre_post, mock_delays):
+                                mock_parse_results, mock_pre_post, mock_delays, mock_copy_reports):
         """
         Test CalledProcessErrors with cause run_tests return false but other errors will
         cause it to return true
@@ -620,6 +622,7 @@ class RunTestsTestCase(unittest.TestCase):
             self.assertTrue(utter_failure)
 
     # pylint: disable=unused-argument
+    @patch('test_control.copy_to_reports')
     @patch('test_control.safe_reset_all_delays')
     @patch('test_control.run_pre_post_commands')
     @patch('test_control.run_test')
@@ -629,7 +632,8 @@ class RunTestsTestCase(unittest.TestCase):
     @patch('test_control.print_perf_json')
     @patch('common.cedar.Report')
     def test_cedar_report(self, mock_cedar_report, mock_copy_perf, mock_check_call, mock_prep_rep,
-                          mock_parse_results, mock_run_test, mock_pre_post, mock_delays):
+                          mock_parse_results, mock_run_test, mock_pre_post, mock_delays,
+                          mock_copy_reports):
         """Test that cedar report is called the correct number of times"""
         real_config_dict = ConfigDict('test_control')
         real_config_dict.raw = self.config
