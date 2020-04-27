@@ -31,6 +31,7 @@ class Host(object):
         self.hostname = hostname
         self.mongodb_auth_settings = mongodb_auth_settings
         self.use_tls = use_tls
+        self.dsisocket = None
 
     @property
     def alias(self):
@@ -312,3 +313,12 @@ class Host(object):
         """
         Cleanup any connections
         """
+    def open_reverse_tunnel(self, bind_addr, port):
+        """
+        Open reverse ssh tunnel
+
+        :param str bind_addr: The bind address for the listening port.
+        :param int port: The port to listen to on the remote host.
+        :return: self.dsisocket, whose accept() method caller should use to wait for new connections
+        """
+        raise NotImplementedError()

@@ -48,6 +48,13 @@ class DelaysTestCase(unittest.TestCase):
                         'public_ip': '1.2.3.6'
                     }]
                 }
+            },
+            'test_control': {
+                'dsisocket': {
+                    'enabled': False,
+                    'bind_addr': '127.0.0.1',
+                    'port': 27007
+                }
             }
         }
         self.command = {

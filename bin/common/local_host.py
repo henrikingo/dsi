@@ -4,6 +4,7 @@ Provide abstraction over running commands on local machines, extending the base 
 
 from datetime import datetime
 import shutil
+import socket
 import subprocess
 import logging
 
@@ -26,6 +27,11 @@ class LocalHost(common.host.Host):
     def __init__(self, mongodb_auth_settings=None, use_tls=False):
         super(LocalHost, self).__init__("localhost", mongodb_auth_settings, use_tls)
         self.user = "-"
+        self.dsisocket = None
+
+    def __del__(self):
+        if self.dsisocket is not None:
+            self.dsisocket.close()
 
     # pylint: disable=unused-argument
     # pylint: disable=too-many-arguments
@@ -104,3 +110,15 @@ class LocalHost(common.host.Host):
         if local_path == remote_path:
             LOG.warning('Retrieving file locally to same path. Skipping step')
         shutil.copyfile(remote_path, local_path)
+
+    def open_reverse_tunnel(self, bind_addr, port):
+        """
+        Open reverse ssh tunnel
+
+        On LocalHost there is no tunnel. The calling code will just end up listening to
+        `port` on its own host. But we do open the port as a convenience, so there's that.
+        """
+        self.dsisocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.dsisocket.bind((bind_addr, port))
+        self.dsisocket.listen()
+        return self.dsisocket

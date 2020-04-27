@@ -275,6 +275,12 @@ test_control:
     - restart_mongodb:
         clean_logs: true
         clean_db_dir: true
+  # DSI can listen on a port on the workload_client and receive commands of the same format as in
+  # pre_test, post_test, etc. (In particular, restart_mongodb.)
+  dsisocket:
+    enabled: false
+    bind_addr: 127.0.0.1  # This is local on workload_client, with reverse ssh tunnel back to dsi control host.
+    port: 27007
 
   output_file:
     mongoshell: test_output.log

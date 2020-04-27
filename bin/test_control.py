@@ -29,6 +29,7 @@ from common.jstests import run_validate
 import common.log
 import common.cedar as cedar
 from common.workload_output_parser import parse_test_results, get_supported_parser_types
+import common.dsisocket as dsisocket
 
 LOG = logging.getLogger(__name__)
 
@@ -203,6 +204,7 @@ def run_test(test, config, reports_dir='reports'):
     filename = os.path.join(directory, 'test_output.log')
     mkdir_p(directory)
     client_host = common.command_runner.make_workload_runner_host(config)
+    dsisocket.start(client_host, config)
 
     no_output_timeout_ms = config['test_control']['timeouts']['no_output_ms']
 

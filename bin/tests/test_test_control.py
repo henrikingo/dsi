@@ -136,7 +136,8 @@ class RunTestsTestCase(unittest.TestCase):
                         }
                     }
                 ],
-                'out': {'exit_codes': {}}
+                'out': {'exit_codes': {}},
+                'dsisocket': {'enabled': False, 'bind_addr': '127.0.0.1', 'port': 27007}
             }
         } # yapf: disable
         self.reports_container = FIXTURE_FILES.fixture_file_path('container')
