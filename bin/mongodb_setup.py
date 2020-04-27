@@ -85,9 +85,7 @@ class MongodbSetup(object):
 
     def restart(self, clean_db_dir=None, clean_logs=None):
         """
-        Restart all clusters. Shutdown can fail if there was no mongod process running
-        or if there is no mongo client binary (a clean host). As this is a restart these cases
-        are deemed to be serious failures.
+        Restart all clusters.
 
         :param clean_db_dir Should we clean db dir. If not specified, uses value from ConfigDict.
         :param clean_logs   Should we clean logs and diagnostic data. If not specified, uses value
