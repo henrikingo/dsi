@@ -11,7 +11,8 @@ run_test ${BUILDIR}/lint-python.sh
 run_test ${BUILDIR}/lint-yml.sh
 run_test ${BUILDIR}/run-nosetest.sh
 export PYTHONPATH=bin
-run_test ${BUILDIR}/compare_coverage.py # Depends on run-nosetest.sh
+# Compare coverage doesn't make sense as this repo continues to diverge from mongodb/dsi.
+#run_test ${BUILDIR}/compare_coverage.py # Depends on run-nosetest.sh
 
 if [ $failed -eq 0 ]; then
     echo "All tests passed"

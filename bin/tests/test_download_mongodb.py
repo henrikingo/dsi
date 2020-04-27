@@ -66,6 +66,13 @@ class DownloadMongodbTestCase(unittest.TestCase):
             },
             'mongodb_setup': {
                 'mongodb_binary_archive': 'http://foo.tgz'
+            },
+            'test_control': {
+                'dsisocket': {
+                    'enabled': False,
+                    'bind_addr': '127.0.0.1',
+                    'port': 27007
+                }
             }
         }
         self.config_no_binary = {
@@ -88,6 +95,13 @@ class DownloadMongodbTestCase(unittest.TestCase):
             'runtime': {},
             'mongodb_setup': {
                 'mongo_dir': '/tmp'
+            },
+            'test_control': {
+                'dsisocket': {
+                    'enabled': False,
+                    'bind_addr': '127.0.0.1',
+                    'port': 27007
+                }
             }
         }
         # self.downloader = None

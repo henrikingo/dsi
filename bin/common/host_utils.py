@@ -89,13 +89,16 @@ def _extract_hosts(category, config):
     """
     if category in config['infrastructure_provisioning']['out']:
         ssh_user, ssh_key_file = ssh_user_and_key_file(config)
+        tunnel_bind_addr, tunnel_port = get_dsisocket(config)
         return [
             HostInfo(public_ip=host_info['public_ip'],
                      private_ip=host_info['private_ip'],
                      ssh_user=ssh_user,
                      ssh_key_file=ssh_key_file,
                      category=category,
-                     offset=i)
+                     offset=i,
+                     tunnel_bind_addr=tunnel_bind_addr,
+                     tunnel_port=tunnel_port)
             for i, host_info in enumerate(config['infrastructure_provisioning']['out'][category])
         ]
     return list()
@@ -232,3 +235,18 @@ def ssh_user_and_key_file(config):
     ssh_key_file = config['infrastructure_provisioning']['tfvars']['ssh_key_file']
     ssh_key_file = os.path.expanduser(ssh_key_file)
     return ssh_user, ssh_key_file
+
+
+def get_dsisocket(config):
+    """
+    Get bind_addr and port for dsisocket (reverse ssh tunnel), if enabled.
+
+    :param ConfigDict config: the config dictionary.
+    :return: (bind_addr, port)
+    """
+    if config['test_control']['dsisocket']['enabled']:
+        bind_addr = config['test_control']['dsisocket']['bind_addr']
+        port = config['test_control']['dsisocket']['port']
+        return (bind_addr, port)
+    else:
+        return (None, None)

@@ -1,3 +1,8 @@
+from collections import namedtuple
+
+ReverseTunnel = namedtuple('ReverseTunnel', ['bind_addr', 'port'])
+
+
 class HostInfo:
     def __init__(self,
                  public_ip=None,
@@ -5,13 +10,16 @@ class HostInfo:
                  ssh_user=None,
                  ssh_key_file=None,
                  category=None,
-                 offset=None):
+                 offset=None,
+                 tunnel_bind_addr=None,
+                 tunnel_port=None):
         self.public_ip = public_ip
         self.private_ip = private_ip
         self.ssh_user = ssh_user
         self.ssh_key_file = ssh_key_file
         self.category = category
         self.offset = offset
+        self.tunnel = ReverseTunnel(tunnel_bind_addr, tunnel_port)
 
     def __eq__(self, other):
         if not isinstance(other, HostInfo):
@@ -25,9 +33,10 @@ class HostInfo:
         return not self == other
 
     def __repr__(self):
-        return "HostInfo({}, {}, {}, {}, {}, {})".format(self.public_ip, self.private_ip,
-                                                         self.ssh_user, self.ssh_key_file,
-                                                         self.category, self.offset)
+        return "HostInfo({}, {}, {}, {}, {}, {}, {})".format(self.public_ip, self.private_ip,
+                                                             self.ssh_user, self.ssh_key_file,
+                                                             self.category, self.offset,
+                                                             self.tunnel)
 
     def __hash__(self):
         return hash(self.__repr__())

@@ -41,6 +41,7 @@ class RemoteHost(common.host.Host):
             self.user = username
         except (paramiko.SSHException, socket.error):
             sys.exit(1)
+        self.dsisocket = None
 
     # pylint: disable=too-many-arguments
     def exec_command(self,
@@ -250,3 +251,12 @@ class RemoteHost(common.host.Host):
             LOG.exception('Failed to connect to %s@%s', user, host)
             raise err
         return ssh, ftp
+
+    def open_reverse_tunnel(self, bind_addr, port):
+        """
+        Open reverse ssh tunnel
+        """
+        transport = self._ssh.get_transport()
+        transport.request_port_forward(bind_addr, port)
+        self.dsisocket = transport
+        return self.dsisocket
