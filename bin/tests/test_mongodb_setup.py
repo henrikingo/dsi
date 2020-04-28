@@ -99,8 +99,8 @@ class TestMongodbSetup(unittest.TestCase):
         with mock.patch('mongodb_setup.run_threads') as mock_run_threads:
             mock_run_threads.return_value = [True]
             self.assertTrue(setup.restart())
-            setup.destroy.assert_called_once_with(60000)
-            setup.shutdown.assert_called_once_with(540000, True)
+            setup.destroy.assert_called_once_with(60000, nodes=None)
+            setup.shutdown.assert_called_once_with(540000, True, nodes=None)
             setup.downloader.download_and_extract.assert_not_called()
             mock_run_threads.assert_called_once()
 
@@ -161,10 +161,11 @@ class TestMongodbSetup(unittest.TestCase):
             else:
                 self.assertEqual(setup.restart(), "start clusters")
                 setup._start.assert_called_once_with(is_restart=True,
+                                                     nodes=None,
                                                      restart_clean_db_dir=None,
                                                      restart_clean_logs=None)
-            setup.destroy.assert_called_once_with(60000)
-            setup.shutdown.assert_called_once_with(540000, True)
+            setup.destroy.assert_called_once_with(60000, nodes=None)
+            setup.shutdown.assert_called_once_with(540000, True, nodes=None)
 
         _test_restart()
         _test_restart(shutdown=False)
@@ -179,7 +180,7 @@ class TestMongodbSetup(unittest.TestCase):
         setup.destroy = mock.MagicMock(name='destroy')
         setup.shutdown = mock.MagicMock(name='shutdown')
         setup.restart()
-        setup.shutdown.assert_called_once_with(setup.shutdown_ms, True)
+        setup.shutdown.assert_called_once_with(setup.shutdown_ms, True, nodes=None)
 
     def _test__start(self, run_threads, success=True):
         setup = mongodb_setup.MongodbSetup(config=self.config)
@@ -201,6 +202,7 @@ class TestMongodbSetup(unittest.TestCase):
                 mock.call(setup.start_cluster,
                           cluster=setup.clusters[0],
                           is_restart=False,
+                          nodes=None,
                           restart_clean_db_dir=None,
                           restart_clean_logs=None,
                           enable_auth=False)
@@ -210,9 +212,11 @@ class TestMongodbSetup(unittest.TestCase):
             if success:
                 setup.shutdown.assert_has_calls([mock.call(540000)])  # shutdown for setup
             else:
-                setup.shutdown.assert_has_calls(
-                    [mock.call(540000), mock.call(540000),
-                     mock.call(540000)])
+                setup.shutdown.assert_has_calls([
+                    mock.call(540000, nodes=None),
+                    mock.call(540000),
+                    mock.call(540000, nodes=None)
+                ])
             setup.downloader.download_and_extract.assert_not_called()
             mock_run_threads.assert_has_calls([mock.call(['threads'], daemon=True)])
 
@@ -246,12 +250,14 @@ class TestMongodbSetup(unittest.TestCase):
                 mock.call(setup.start_cluster,
                           cluster=setup.clusters[0],
                           is_restart=False,
+                          nodes=None,
                           restart_clean_db_dir=None,
                           restart_clean_logs=None,
                           enable_auth=False),
                 mock.call(setup.start_cluster,
                           cluster=setup.clusters[0],
                           is_restart=True,
+                          nodes=None,
                           restart_clean_db_dir=False,
                           restart_clean_logs=False,
                           enable_auth=True)
@@ -278,12 +284,14 @@ class TestMongodbSetup(unittest.TestCase):
                 mock.call(setup.start_cluster,
                           cluster=setup.clusters[0],
                           is_restart=True,
+                          nodes=None,
                           restart_clean_db_dir=True,
                           restart_clean_logs=True,
                           enable_auth=False),
                 mock.call(setup.start_cluster,
                           cluster=setup.clusters[0],
                           is_restart=True,
+                          nodes=None,
                           restart_clean_db_dir=False,
                           restart_clean_logs=False,
                           enable_auth=True)
@@ -310,6 +318,7 @@ class TestMongodbSetup(unittest.TestCase):
                 mock.call(setup.start_cluster,
                           cluster=setup.clusters[0],
                           is_restart=True,
+                          nodes=None,
                           restart_clean_db_dir=False,
                           restart_clean_logs=True,
                           enable_auth=True),
@@ -337,6 +346,7 @@ class TestMongodbSetup(unittest.TestCase):
                 mock.call(setup.start_cluster,
                           cluster=setup.clusters[0],
                           is_restart=True,
+                          nodes=None,
                           restart_clean_db_dir=False,
                           restart_clean_logs=True,
                           enable_auth=False),
@@ -368,8 +378,8 @@ class TestMongodbSetup(unittest.TestCase):
             mock_run_threads.return_value = [True]
             self.assertTrue(setup.shutdown(1))
             mock_partial.assert_has_calls([
-                mock.call(mock_cluster1.shutdown, 1, None),
-                mock.call(mock_cluster2.shutdown, 1, None)
+                mock.call(mock_cluster1.shutdown, 1, None, nodes=None),
+                mock.call(mock_cluster2.shutdown, 1, None, nodes=None)
             ])
 
     def test_destroy(self):
@@ -384,9 +394,10 @@ class TestMongodbSetup(unittest.TestCase):
 
             mock_run_threads.return_value = [True]
             self.assertTrue(setup.destroy(1))
-            mock_partial.assert_has_calls(
-                [mock.call(mock_cluster1.destroy, 1),
-                 mock.call(mock_cluster2.destroy, 1)])
+            mock_partial.assert_has_calls([
+                mock.call(mock_cluster1.destroy, 1, None),
+                mock.call(mock_cluster2.destroy, 1, None)
+            ])
 
     def test_start_cluster(self):
         """ test start and correctly handles run on error"""

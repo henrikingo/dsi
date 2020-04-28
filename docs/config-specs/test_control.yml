@@ -148,6 +148,9 @@ between_tests:
   - restart_mongodb:
       clean_logs: true  # Do not keep the logs until the end of the task (clean them)
       clean_db_dir: false  # Keep the data data until the end of the task
+      nodes:  # Optional: Only restart nodes listed here. String should match 'id:' field from mongodb_setup.topology.
+        - my_unique_id  # If nodes: is empty, then the entire topology is listed.
+        - myrs1         # Note: clean_db_dir MUST be false if nodes is used!
 
 # Ordered list of things to do after each test, before post_task
 post_test:
