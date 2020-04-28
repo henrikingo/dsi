@@ -401,7 +401,8 @@ def dispatch_commands(command_key, command_list, config, current_test_id=None):
                 mongo_controller = mongodb_setup.MongodbSetup(config)
                 clean_db_dir = command['clean_db_dir']
                 clean_logs = command['clean_logs']
-                if not mongo_controller.restart(clean_db_dir, clean_logs):
+                nodes = command.get('nodes')
+                if not mongo_controller.restart(clean_db_dir, clean_logs, nodes):
                     raise Exception("Error restarting mongodb")
             elif target == "network_delays":
                 # Repackage so it has same structure as ordinary commands

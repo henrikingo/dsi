@@ -83,28 +83,40 @@ class MongodbSetup(object):
 
         return status
 
-    def restart(self, clean_db_dir=None, clean_logs=None):
+    def restart(self, clean_db_dir=None, clean_logs=None, nodes=None):
         """
         Restart all clusters.
 
-        :param clean_db_dir Should we clean db dir. If not specified, uses value from ConfigDict.
-        :param clean_logs   Should we clean logs and diagnostic data. If not specified, uses value
-        from ConfigDict.
+        :param bool clean_db_dir: Should we clean db dir. If not specified, uses ConfigDict.
+        :param bool clean_logs:   Should we clean logs and diagnostic data. If not specified, uses
+                                  value from ConfigDict.
+        :param list(str) nodes:   List of id's that match 'id:' keys in mongodb_setup.topology.
+                                  If specified, only restart matching nodes, replica sets or
+                                  clusters. If not specified (default), restart everything.
 
           See :method:`start` if this is a clean start.
         """
+        LOG.debug("MongodbSetup.restart(%s, %s, %s)", clean_db_dir, clean_logs, nodes)
+        assert not (clean_db_dir and nodes), "nodes is not supported when clean_db_dir=True"
+
         shutdown = self.shutdown(self.shutdown_ms,
-                                 common.mongodb_setup_helpers.mongodb_auth_configured(self.config))
-        destroy = self.destroy(self.sigterm_ms)
+                                 common.mongodb_setup_helpers.mongodb_auth_configured(self.config),
+                                 nodes=nodes)
+        destroy = self.destroy(self.sigterm_ms, nodes=nodes)
         if not (shutdown or destroy):
             LOG.error("Shutdown failed on restart.")
             return False
 
         return self._start(is_restart=True,
                            restart_clean_db_dir=clean_db_dir,
-                           restart_clean_logs=clean_logs)
+                           restart_clean_logs=clean_logs,
+                           nodes=nodes)
 
-    def _start(self, is_restart=False, restart_clean_db_dir=None, restart_clean_logs=None):
+    def _start(self,
+               is_restart=False,
+               restart_clean_db_dir=None,
+               restart_clean_logs=None,
+               nodes=None):
 
         # For a start or restart with restart_clean_db_dir True, and if Auth is configured, we need
         # to bring the cluster up twice. First without auth, then add user, then with auth
@@ -129,12 +141,15 @@ class MongodbSetup(object):
             is_restart=is_restart,
             restart_clean_db_dir=restart_clean_db_dir,
             restart_clean_logs=restart_clean_logs,
+            nodes=nodes,
             enable_auth=common.mongodb_setup_helpers.mongodb_auth_configured(self.config))
 
+    # pylint: disable=too-many-arguments
     def _start_auth_explicit(self,
                              is_restart=False,
                              restart_clean_db_dir=None,
                              restart_clean_logs=None,
+                             nodes=None,
                              enable_auth=False):
         """ Complete the remaining start (either clean or restart) operations.
             Any Shutdown, destroy or downloading has been handled by the caller(
@@ -153,11 +168,12 @@ class MongodbSetup(object):
                             is_restart=is_restart,
                             restart_clean_db_dir=restart_clean_db_dir,
                             restart_clean_logs=restart_clean_logs,
+                            nodes=nodes,
                             enable_auth=enable_auth) for cluster in self.clusters
                 ],
                             daemon=True)):
             LOG.error("Could not start clusters in _start. Shutting down...")
-            self.shutdown(self.shutdown_ms)
+            self.shutdown(self.shutdown_ms, nodes=nodes)
             return False
         return True
 
@@ -179,6 +195,7 @@ class MongodbSetup(object):
                       is_restart=False,
                       restart_clean_db_dir=None,
                       restart_clean_logs=None,
+                      nodes=None,
                       enable_auth=False):
         """Start cluster
         :param cluster         cluster to start
@@ -187,42 +204,52 @@ class MongodbSetup(object):
         ConfigDict.
         :param restart_clean_logs   Should we clean logs and diagnostic data. If not specified,
         uses value from ConfigDict.
+        For the nodes parameter, see :method:`MongodbSetup.restart`
         """
         LOG.info('-' * 72)
         LOG.info('starting topology: %s', cluster)
         if not cluster.setup_host(restart_clean_db_dir=restart_clean_db_dir,
-                                  restart_clean_logs=restart_clean_logs):
+                                  restart_clean_logs=restart_clean_logs,
+                                  nodes=nodes):
             LOG.error("Could not set up host in start_cluster")
             return False
         # Don't initialize if restarting mongodb and keeping (not cleaning) the db dir
         initialize = not (is_restart and not restart_clean_db_dir)
-        if not cluster.launch(initialize, enable_auth=enable_auth):
+        if not cluster.launch(initialize, enable_auth=enable_auth, nodes=nodes):
             LOG.error("Could not launch cluster in start_cluster")
             return False
         LOG.info('started topology: %s', cluster)
         return True
 
-    def shutdown(self, max_time_ms, auth_enabled=None):
+    def shutdown(self, max_time_ms, auth_enabled=None, nodes=None):
         """Shutdown all launched mongo programs
         For the max_time_ms parameter, see
             :method:`Host.exec_command`
+        For the nodes parameter, see
+            :method:`MongodbSetup.restart`
         """
         LOG.info('Calling shutdown for %s clusters', len(self.clusters))
+        if nodes:
+            LOG.info('...on a subset of nodes only: %s', str(nodes))
         result = all(
-            run_threads(
-                [partial(cluster.shutdown, max_time_ms, auth_enabled) for cluster in self.clusters],
-                daemon=True))
+            run_threads([
+                partial(cluster.shutdown, max_time_ms, auth_enabled, nodes=nodes)
+                for cluster in self.clusters
+            ],
+                        daemon=True))
         LOG.warning('shutdown: %s', 'succeeded' if result else 'failed')
         return result
 
-    def destroy(self, max_time_ms):
+    def destroy(self, max_time_ms, nodes=None):
         """Kill all launched mongo programs
         For the max_time_ms parameter, see
             :method:`Host.exec_command`
+        For the nodes parameter, see
+            :method:`MongodbSetup.restart`
         """
         LOG.info('calling destroy')
         result = all(
-            run_threads([partial(cluster.destroy, max_time_ms) for cluster in self.clusters],
+            run_threads([partial(cluster.destroy, max_time_ms, nodes) for cluster in self.clusters],
                         daemon=True))
         if not result:
             LOG.warning('destroy: failed')

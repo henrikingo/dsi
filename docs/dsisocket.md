@@ -22,9 +22,21 @@ only open a single connection to the port.
 Examples
 --------
 
+Execute some bash:
+
     {"on_workload_client": {"exec": "echo \"HELLO THIS IS HENRIK CAN YOU HEAR ME?????!!!\"\necho \"(Yes, we can)\"\n"}}
-    {"on_workload_client": {"exec": "pkill mongod"}}
+
+Kill mongos processes:
+
+    {"on_mongos": {"exec": "pkill mongos"}}
+
+Restart MongoDB cluster(s):
+
     {"restart_mongodb": {"clean_logs": true, "clean_db_dir": false}}
+
+Restart one mongod node, identified by id from mongodb_setup.topology:
+
+    {"restart_mongodb": {"clean_logs": true, "clean_db_dir": false, "nodes": ["secondary1"] }}
 
 Execute bash commands on workload_client. Successful example followed by a few failed executions.
 
@@ -56,4 +68,5 @@ Restart entire MongoDB cluster(s).
 TODO
 ----
 
-Currently DSI doesn't support executing a command on only a single host. This will be added in subsequent commits.
+Currently DSI doesn't support executing a command on only a single host. So you can execute bash
+'on_mongod' or 'on_mongos' but not on, say, 'on_mongod_1' or 'on_host_15'.

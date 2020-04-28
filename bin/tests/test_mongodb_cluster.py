@@ -493,8 +493,8 @@ class TestReplSet(unittest.TestCase):
             mock_run_threads.return_value = [True]
             self.assertTrue(self.replset.shutdown(1))
             mock_partial.assert_has_calls([
-                mock.call(self.replset.nodes[0].shutdown, 1, None),
-                mock.call(self.replset.nodes[1].shutdown, 1, None)
+                mock.call(self.replset.nodes[0].shutdown, 1, None, 20, None),
+                mock.call(self.replset.nodes[1].shutdown, 1, None, 20, None)
             ])
 
         with mock.patch('common.mongodb_cluster.run_threads') as mock_run_threads, \
@@ -502,8 +502,8 @@ class TestReplSet(unittest.TestCase):
             mock_run_threads.return_value = [True, False]
             self.assertFalse(self.replset.shutdown(2))
             mock_partial.assert_has_calls(
-                [mock.call(mock.ANY, 2, None),
-                 mock.call(mock.ANY, 2, None)])
+                [mock.call(mock.ANY, 2, None, 20, None),
+                 mock.call(mock.ANY, 2, None, 20, None)])
 
     def test_destroy(self):
         """Test destroy."""
@@ -512,15 +512,17 @@ class TestReplSet(unittest.TestCase):
             mock_run_threads.return_value = [True]
             self.replset.destroy(1)
             mock_partial.assert_has_calls([
-                mock.call(self.replset.nodes[0].destroy, 1),
-                mock.call(self.replset.nodes[1].destroy, 1)
+                mock.call(self.replset.nodes[0].destroy, 1, None),
+                mock.call(self.replset.nodes[1].destroy, 1, None)
             ])
 
         with mock.patch('common.mongodb_cluster.run_threads') as mock_run_threads, \
                 mock.patch('common.mongodb_cluster.partial') as mock_partial:
             mock_run_threads.return_value = [True, False]
             self.replset.destroy(2)
-            mock_partial.assert_has_calls([mock.call(mock.ANY, 2), mock.call(mock.ANY, 2)])
+            mock_partial.assert_has_calls(
+                [mock.call(mock.ANY, 2, None),
+                 mock.call(mock.ANY, 2, None)])
 
     def test_highest_priority_node(self):
         """Test priority handling."""
@@ -606,9 +608,9 @@ class TestShardedCluster(unittest.TestCase):
             mock_run_threads.return_value = [True]
             self.assertTrue(self.cluster.shutdown(1))
             mock_partial.assert_has_calls([
-                mock.call(self.cluster.shards[0].shutdown, 1, None),
-                mock.call(self.cluster.config_svr.shutdown, 1, None),
-                mock.call(self.cluster.mongoses[0].shutdown, 1, None),
+                mock.call(self.cluster.shards[0].shutdown, 1, None, 20, None),
+                mock.call(self.cluster.config_svr.shutdown, 1, None, 20, None),
+                mock.call(self.cluster.mongoses[0].shutdown, 1, None, 20, None),
             ])
 
         with mock.patch('common.mongodb_cluster.run_threads') as mock_run_threads, \
@@ -616,9 +618,9 @@ class TestShardedCluster(unittest.TestCase):
             mock_run_threads.return_value = [True, False]
             self.assertFalse(self.cluster.shutdown(2))
             mock_partial.assert_has_calls([
-                mock.call(mock.ANY, 2, None),
-                mock.call(mock.ANY, 2, None),
-                mock.call(mock.ANY, 2, None),
+                mock.call(mock.ANY, 2, None, 20, None),
+                mock.call(mock.ANY, 2, None, 20, None),
+                mock.call(mock.ANY, 2, None, 20, None),
             ])
 
     def test_destroy(self):
@@ -629,11 +631,11 @@ class TestShardedCluster(unittest.TestCase):
             self.cluster.config_svr.destroy = mock.MagicMock(name="config")
             self.cluster.destroy(1)
             mock_partial.assert_has_calls([
-                mock.call(self.cluster.shards[0].destroy, 1),
-                mock.call(self.cluster.mongoses[0].destroy, 1),
+                mock.call(self.cluster.shards[0].destroy, 1, None),
+                mock.call(self.cluster.mongoses[0].destroy, 1, None),
             ],
                                           any_order=True)
-            self.cluster.config_svr.destroy.assert_called_once_with(1)
+            self.cluster.config_svr.destroy.assert_called_once_with(1, None)
 
         with mock.patch('common.mongodb_cluster.run_threads') as mock_run_threads, \
                 mock.patch('common.mongodb_cluster.partial') as mock_partial:
@@ -641,11 +643,11 @@ class TestShardedCluster(unittest.TestCase):
             self.cluster.config_svr.destroy = mock.MagicMock(name="config")
             self.cluster.destroy(2)
             mock_partial.assert_has_calls([
-                mock.call(mock.ANY, 2),
-                mock.call(mock.ANY, 2),
+                mock.call(mock.ANY, 2, None),
+                mock.call(mock.ANY, 2, None),
             ],
                                           any_order=True)
-            self.cluster.config_svr.destroy.assert_called_once_with(2)
+            self.cluster.config_svr.destroy.assert_called_once_with(2, None)
 
     def test_add_default_users(self):
         """

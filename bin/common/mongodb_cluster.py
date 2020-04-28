@@ -46,6 +46,8 @@ def create_cluster(topology, config):
     return sys.exit(1)
 
 
+# I want to use self.id for nodes here.
+# pylint: disable=invalid-name
 class MongoCluster(object):
     """ Abstract base class for mongo clusters """
     def __init__(self, topology, config):
@@ -61,19 +63,19 @@ class MongoCluster(object):
         """ Checks to make sure node is up and accessible"""
         raise NotImplementedError()
 
-    def launch(self, initialize=True, use_numactl=True, enable_auth=False):
+    def launch(self, initialize=True, use_numactl=True, enable_auth=False, nodes=None):
         """ Start the cluster """
         raise NotImplementedError()
 
-    def shutdown(self, max_time_ms, auth_enabled, retries=20):
+    def shutdown(self, max_time_ms, auth_enabled=None, retries=20, nodes=None):
         """ Shutdown the cluster gracefully """
         raise NotImplementedError()
 
-    def destroy(self, max_time_ms):
+    def destroy(self, max_time_ms, nodes=None):
         """ Kill the cluster """
         raise NotImplementedError()
 
-    def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None):
+    def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None, nodes=None):
         """Ensures necessary files are setup
 
         :param restart_clean_db_dir Should we clean db dir on restart. If not specified, uses value
@@ -134,6 +136,7 @@ class MongoNode(MongoCluster):
         """
         super(MongoNode, self).__init__(topology, config)
 
+        self.id = topology.get('id')
         self.is_mongos = topology.get('is_mongos', False)
         self.is_configsvr = topology.get('is_configsvr', False)
         self.mongo_program = 'mongos' if self.is_mongos else 'mongod'
@@ -219,7 +222,11 @@ class MongoNode(MongoCluster):
             return False
         return True
 
-    def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None):
+    def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None, nodes=None):
+        if isinstance(nodes, list) and self.id not in nodes:
+            # Launch request is limited to some nodes, and this node isn't one of them.
+            return True
+
         self.host.kill_mongo_procs()
 
         if restart_clean_db_dir is not None:
@@ -316,11 +323,16 @@ class MongoNode(MongoCluster):
         LOG.debug("cmd is %s", str(cmd))
         return cmd
 
-    def launch(self, initialize=True, use_numactl=True, enable_auth=False):
-        """Starts this node.
+    def launch(self, initialize=True, use_numactl=True, enable_auth=False, nodes=None):
+        """
+        Starts this node.
 
         :param boolean initialize: Initialize the node. This doesn't do anything for the
-                                     base node"""
+                                     base node
+        """
+        if isinstance(nodes, list) and self.id not in nodes:
+            # Launch request is limited to some nodes, and this node isn't one of them.
+            return True
 
         # initialize is explicitly not used for now for a single node. We may want to use it in
         # the future
@@ -378,13 +390,17 @@ class MongoNode(MongoCluster):
 
     connection_string_public = hostport_public
 
-    def shutdown(self, max_time_ms, auth_enabled=None, retries=20):
+    def shutdown(self, max_time_ms, auth_enabled=None, retries=20, nodes=None):
         """
         Shutdown the node gracefully.
 
         For the max_time_ms parameter, see :method:`Host.exec_command`
         :return: True if shutdownServer command ran successfully.
         """
+        if isinstance(nodes, list) and self.id not in nodes:
+            # Shutdown request is limited to some nodes, and this node isn't one of them.
+            return True
+
         if auth_enabled is not None:
             self.auth_enabled = auth_enabled
         for i in range(retries):
@@ -414,7 +430,7 @@ class MongoNode(MongoCluster):
             time.sleep(1)
         return False
 
-    def destroy(self, max_time_ms):
+    def destroy(self, max_time_ms, nodes=None):
         """Kills the remote mongo program. First it sends SIGTERM every second for up to
         max_time_ms. It also always sends a SIGKILL and cleans up dbdir if this attribute is set.
 
@@ -422,6 +438,10 @@ class MongoNode(MongoCluster):
             :method:`Host.exec_command`
         :return: bool True if there are no processes matching 'mongo' on completion.
         """
+        if isinstance(nodes, list) and self.id not in nodes:
+            # Shutdown request is limited to some nodes, and this node isn't one of them.
+            return True
+
         return_value = False
         try:
             return_value = self.host.kill_mongo_procs(signal_number='SIGTERM',
@@ -467,9 +487,9 @@ class ReplSet(MongoCluster):
         """
         super(ReplSet, self).__init__(topology, config)
 
-        self.name = topology.get('id')
-        if not self.name:
-            self.name = 'rs{}'.format(ReplSet.replsets)
+        self.id = topology.get('id')
+        if not self.id:
+            self.id = 'rs{}'.format(ReplSet.replsets)
             ReplSet.replsets += 1
 
         self.rs_conf = topology.get('rs_conf', {})
@@ -483,7 +503,7 @@ class ReplSet(MongoCluster):
             config_file = copy_obj(opt.get('config_file', {}))
             config_file = mongodb_setup_helpers.merge_dicts(
                 config_file, {'replication': {
-                    'replSetName': self.name
+                    'replSetName': self.id
                 }})
 
             mongod_opt = copy_obj(opt)
@@ -544,23 +564,37 @@ class ReplSet(MongoCluster):
                 return False
         return True
 
-    def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None):
+    def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None, nodes=None):
+        if isinstance(nodes, list) and self.id in nodes:
+            # Launch everything in this replset
+            nodes = None
+
         return all(
             run_threads([
                 partial(node.setup_host,
                         restart_clean_db_dir=restart_clean_db_dir,
-                        restart_clean_logs=restart_clean_logs) for node in self.nodes
+                        restart_clean_logs=restart_clean_logs,
+                        nodes=nodes) for node in self.nodes
             ],
                         daemon=True))
 
-    def launch(self, initialize=True, use_numactl=True, enable_auth=False):
-        """Starts the replica set.
-        :param boolean initialize: Initialize the replica set"""
+    def launch(self, initialize=True, use_numactl=True, enable_auth=False, nodes=None):
+        """
+        Starts the replica set.
+
+        :param boolean initialize: Initialize the replica set
+        """
+        if isinstance(nodes, list) and self.id in nodes:
+            # Launch everything in this replset
+            nodes = None
+
         if not all(
                 run_threads([
-                    partial(
-                        node.launch, initialize, use_numactl=use_numactl, enable_auth=enable_auth)
-                    for node in self.nodes
+                    partial(node.launch,
+                            initialize,
+                            use_numactl=use_numactl,
+                            enable_auth=enable_auth,
+                            nodes=nodes) for node in self.nodes
                 ],
                             daemon=True)):
             return False
@@ -583,8 +617,8 @@ class ReplSet(MongoCluster):
 
     def _init_replica_set(self):
         """Return the JavaScript code to configure the replica set."""
-        LOG.info('Configuring replica set: %s', self.name)
-        config = mongodb_setup_helpers.merge_dicts(self.rs_conf, {'_id': self.name, 'members': []})
+        LOG.info('Configuring replica set: %s', self.id)
+        config = mongodb_setup_helpers.merge_dicts(self.rs_conf, {'_id': self.id, 'members': []})
         if self.topology.get('configsvr', False):
             config['configsvr'] = True
         for i, node in enumerate(self.nodes):
@@ -621,21 +655,32 @@ class ReplSet(MongoCluster):
         """
         mongodb_setup_helpers.add_user(self, self.config, write_concern=len(self.nodes))
 
-    def shutdown(self, max_time_ms, auth_enabled=None, retries=20):
+    def shutdown(self, max_time_ms, auth_enabled=None, retries=20, nodes=None):
         """Shutdown gracefully
         For the max_time_ms parameter, see
             :method:`Host.exec_command`
         """
+        if isinstance(nodes, list) and self.id in nodes:
+            # Shutdown everything in this replset
+            nodes = None
+
         return all(
-            run_threads([partial(node.shutdown, max_time_ms, auth_enabled) for node in self.nodes],
+            run_threads([
+                partial(node.shutdown, max_time_ms, auth_enabled, retries, nodes)
+                for node in self.nodes
+            ],
                         daemon=True))
 
-    def destroy(self, max_time_ms):
+    def destroy(self, max_time_ms, nodes=None):
         """Kills the remote replica members.
         For the max_time_ms parameter, see
             :method:`Host.exec_command`
         """
-        run_threads([partial(node.destroy, max_time_ms) for node in self.nodes], daemon=True)
+        if isinstance(nodes, list) and self.id in nodes:
+            # Shutdown everything in this replset
+            nodes = None
+
+        run_threads([partial(node.destroy, max_time_ms, nodes) for node in self.nodes], daemon=True)
 
     def close(self):
         """Closes SSH connections to remote hosts."""
@@ -643,7 +688,7 @@ class ReplSet(MongoCluster):
 
     def connection_string(self, hostport_fn):
         """Returns the connection string using the hostport_fn function"""
-        rs_str = ['{0}/{1}'.format(self.name, hostport_fn(self.nodes[0]))]
+        rs_str = ['{0}/{1}'.format(self.id, hostport_fn(self.nodes[0]))]
         for node in self.nodes[1:]:
             rs_str.append(hostport_fn(node))
         return ','.join(rs_str)
@@ -677,6 +722,7 @@ class ShardedCluster(MongoCluster):
         """
         super(ShardedCluster, self).__init__(topology, config)
 
+        self.id = topology.get('id')
         self.disable_balancer = topology.get('disable_balancer', True)
         self.mongos_opts = topology['mongos']
 
@@ -722,48 +768,62 @@ class ShardedCluster(MongoCluster):
                 return False
         return True
 
-    def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None):
+    def setup_host(self, restart_clean_db_dir=None, restart_clean_logs=None, nodes=None):
+        if isinstance(nodes, list) and self.id in nodes:
+            # Launch everything in this sharded cluster
+            nodes = None
+
         commands = [
             partial(self.config_svr.setup_host,
                     restart_clean_db_dir=restart_clean_db_dir,
-                    restart_clean_logs=restart_clean_logs)
+                    restart_clean_logs=restart_clean_logs,
+                    nodes=nodes)
         ]
         commands.extend(
             partial(
                 shard.setup_host,
                 restart_clean_db_dir=restart_clean_db_dir,
                 restart_clean_logs=restart_clean_logs,
+                nodes=nodes,
             ) for shard in self.shards)
         commands.extend(
             partial(
                 mongos.setup_host,
                 restart_clean_db_dir=restart_clean_db_dir,
                 restart_clean_logs=restart_clean_logs,
+                nodes=nodes,
             ) for mongos in self.mongoses)
         return all(run_threads(commands, daemon=True))
 
-    def launch(self, initialize=True, use_numactl=True, enable_auth=False):
+    def launch(self, initialize=True, use_numactl=True, enable_auth=False, nodes=None):
         """Starts the sharded cluster.
 
         :param boolean initialize: Initialize the cluster
         """
+        if isinstance(nodes, list) and self.id in nodes:
+            # Launch everything in this sharded cluster
+            nodes = None
+
         LOG.info('Launching sharded cluster...')
         commands = [
             partial(self.config_svr.launch,
                     initialize=initialize,
                     use_numactl=False,
-                    enable_auth=enable_auth)
+                    enable_auth=enable_auth,
+                    nodes=nodes)
         ]
         commands.extend(
             partial(shard.launch,
                     initialize=initialize,
                     use_numactl=use_numactl,
-                    enable_auth=enable_auth) for shard in self.shards)
+                    enable_auth=enable_auth,
+                    nodes=nodes) for shard in self.shards)
         commands.extend(
             partial(mongos.launch,
                     initialize=initialize,
                     use_numactl=use_numactl,
-                    enable_auth=enable_auth) for mongos in self.mongoses)
+                    enable_auth=enable_auth,
+                    nodes=nodes) for mongos in self.mongoses)
         if not all(run_threads(commands, daemon=True)):
             return False
         if initialize:
@@ -808,26 +868,40 @@ class ShardedCluster(MongoCluster):
         for shard in self.shards:
             shard.add_default_users()
 
-    def shutdown(self, max_time_ms, auth_enabled=None, retries=20):
+    def shutdown(self, max_time_ms, auth_enabled=None, retries=20, nodes=None):
         """Shutdown the mongodb cluster gracefully.
         For the max_time_ms parameter, see
             :method:`Host.exec_command`
         """
+        if isinstance(nodes, list) and self.id in nodes:
+            # Shutdown everything in this shard
+            nodes = None
+
         commands = []
-        commands.extend(partial(shard.shutdown, max_time_ms, auth_enabled) for shard in self.shards)
-        commands.append(partial(self.config_svr.shutdown, max_time_ms, auth_enabled))
         commands.extend(
-            partial(mongos.shutdown, max_time_ms, auth_enabled) for mongos in self.mongoses)
+            partial(shard.shutdown, max_time_ms, auth_enabled, retries, nodes)
+            for shard in self.shards)
+        commands.append(partial(self.config_svr.shutdown, max_time_ms, auth_enabled, retries,
+                                nodes))
+        commands.extend(
+            partial(mongos.shutdown, max_time_ms, auth_enabled, retries, nodes)
+            for mongos in self.mongoses)
         return all(run_threads(commands, daemon=True))
 
-    def destroy(self, max_time_ms):
+    def destroy(self, max_time_ms, nodes=None):
         """Kills the remote cluster members.
         For the max_time_ms parameter, see
             :method:`Host.exec_command`
         """
-        run_threads([partial(shard.destroy, max_time_ms) for shard in self.shards], daemon=True)
-        self.config_svr.destroy(max_time_ms)
-        run_threads([partial(mongos.destroy, max_time_ms) for mongos in self.mongoses], daemon=True)
+        if isinstance(nodes, list) and self.id in nodes:
+            # Shutdown everything in this shard
+            nodes = None
+
+        run_threads([partial(shard.destroy, max_time_ms, nodes) for shard in self.shards],
+                    daemon=True)
+        self.config_svr.destroy(max_time_ms, nodes)
+        run_threads([partial(mongos.destroy, max_time_ms, nodes) for mongos in self.mongoses],
+                    daemon=True)
 
     def close(self):
         """Closes SSH connections to remote hosts."""
