@@ -204,7 +204,7 @@ def run_test(test, config, reports_dir='reports'):
     filename = os.path.join(directory, 'test_output.log')
     mkdir_p(directory)
     client_host = common.command_runner.make_workload_runner_host(config)
-    dsisocket.start(client_host, config)
+    dsisocket_stop = dsisocket.start(client_host, config)
 
     no_output_timeout_ms = config['test_control']['timeouts']['no_output_ms']
 
@@ -223,6 +223,8 @@ def run_test(test, config, reports_dir='reports'):
             error = ExitStatus(exit_status, test['cmd'])
         except Exception as e:  # pylint: disable=broad-except
             error = get_error_from_exception(e)
+        finally:
+            dsisocket_stop()
 
         # Old analysis/*check.py code picks up exit codes from the test_output.log
         write_exit_status(tee_out, error)
