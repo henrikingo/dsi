@@ -16,6 +16,9 @@ from common.command_runner import run_pre_post_commands, EXCEPTION_BEHAVIOR
 
 LOG = structlog.get_logger(__name__)
 
+# pylint: disable=global-statement
+STOP_THREAD = False
+
 
 def start(host, config, current_test_id=None):
     """
@@ -25,17 +28,30 @@ def start(host, config, current_test_id=None):
     :param ConfigDict config: The DSI configuration dict.
     :param str current_test_id: test_id used as output or file prefix in some commands.
     """
+    global STOP_THREAD
     enabled = config['test_control']['dsisocket']['enabled']
     bind_addr = config['test_control']['dsisocket']['bind_addr']
     port = config['test_control']['dsisocket']['port']
     LOG.debug("dsisocket.start()", enabled=enabled, bind_addr=bind_addr, port=port)
+    thread = None
     if enabled:
+        STOP_THREAD = False
         LOG.info("Listening on dsisocket on workload_client", bind_addr=bind_addr, port=port)
         socket_ish = host.open_reverse_tunnel(bind_addr, port)
         LOG.debug("Opened reverse tunnel.", socket=socket_ish)
         thread = threading.Thread(target=handler, args=(socket_ish, config, current_test_id))
         thread.daemon = True
         thread.start()
+
+    def stop():
+        global STOP_THREAD
+        if thread:
+            LOG.info("Stopping dsisocket thread...")
+            STOP_THREAD = True
+            thread.join()
+            LOG.info("Stopped dsisocket thread.")
+
+    return stop
 
 
 def handler(socket, config, current_test_id):
@@ -47,12 +63,12 @@ def handler(socket, config, current_test_id):
     :param ConfigDict config: The DSI configuration.
     :param str current_test_id: test_id used as output or file prefix in some commands.
     """
-    while True:
-        channel = socket.accept(1000)
+    while not STOP_THREAD:
+        channel = socket.accept(1)
         if channel is None:
             continue
-        while True:
-            read, _, _ = select.select([channel], [], [])
+        while not STOP_THREAD:
+            read, _, _ = select.select([channel], [], [], 5)
             if channel in read:
                 data = channel.recv(1024 * 10)
                 if len(data) == 0:
