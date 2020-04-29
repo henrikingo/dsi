@@ -156,3 +156,19 @@ between_tests:
 post_test:
   - on_mongod: (see above)
   - on_all_hosts: (see above)
+
+# Commands to execute during the test is running.
+# All the same exec, restart_mongodb, etc commands are possible, but an additional top level field `at:` is required.
+# DSI executes these in a separate thread. There is only one thread, so the next command can only start after the
+# previous has finished. If the `at` time has already passed, the next command will still be executed.
+during_test:
+  - at: 01:30  # Format: hh:mm:ss
+    on_mongod:
+      exec: |
+        # Test resiliency by deleting all data.
+        rm -rf ~/data/dbs/*
+  - at: 02:00
+    # Restart mongod with new data dir.
+    restart_mongodb:
+      clean_logs: false
+      clean_db_dir: true

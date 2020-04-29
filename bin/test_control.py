@@ -30,6 +30,7 @@ import common.log
 import common.cedar as cedar
 from common.workload_output_parser import parse_test_results, get_supported_parser_types
 import common.dsisocket as dsisocket
+import common.during_test as during_test
 
 LOG = logging.getLogger(__name__)
 
@@ -205,6 +206,7 @@ def run_test(test, config, reports_dir='reports'):
     mkdir_p(directory)
     client_host = common.command_runner.make_workload_runner_host(config)
     dsisocket_stop = dsisocket.start(client_host, config)
+    during_test_stop = during_test.start(test, config)
 
     no_output_timeout_ms = config['test_control']['timeouts']['no_output_ms']
 
@@ -225,6 +227,7 @@ def run_test(test, config, reports_dir='reports'):
             error = get_error_from_exception(e)
         finally:
             dsisocket_stop()
+            during_test_stop()
 
         # Old analysis/*check.py code picks up exit codes from the test_output.log
         write_exit_status(tee_out, error)
