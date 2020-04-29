@@ -32,11 +32,11 @@ Kill mongos processes:
 
 Restart MongoDB cluster(s):
 
-    {"restart_mongodb": {"clean_logs": true, "clean_db_dir": false}}
+    {"restart_mongodb": {"clean_logs": false, "clean_db_dir": false}}
 
 Restart one mongod node, identified by id from mongodb_setup.topology:
 
-    {"restart_mongodb": {"clean_logs": true, "clean_db_dir": false, "nodes": ["secondary1"] }}
+    {"restart_mongodb": {"clean_logs": false, "clean_db_dir": false, "nodes": ["secondary1"] }}
 
 Execute bash commands on workload_client. Successful example followed by a few failed executions.
 
