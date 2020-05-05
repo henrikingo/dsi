@@ -204,7 +204,7 @@ def unify_chunk_failures(chunk_failure_info):
     for rule_name, failure_info_list in chunk_failure_info.items():
         if 'members' in failure_info_list[0]:
             add_to = failure_info_list[0]['members']
-            for index in xrange(1, len(failure_info_list)):
+            for index in range(1, len(failure_info_list)):
                 current = failure_info_list[index]['members']
                 all_members = set(current.keys()) | set(add_to.keys())
                 for member in all_members:
@@ -218,7 +218,7 @@ def unify_chunk_failures(chunk_failure_info):
             all_failure_instances[rule_name] = {'members': add_to}
         else:
             add_to = failure_info_list[0]
-            for index in xrange(1, len(failure_info_list)):
+            for index in range(1, len(failure_info_list)):
                 current = failure_info_list[index]
                 add_to['times'] += current['times']
                 add_to['compared_values'] += current['compared_values']
