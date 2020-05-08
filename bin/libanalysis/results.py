@@ -72,6 +72,7 @@ class ResultsFile(object):
         self.data['failures'] = num_failures
         return num_failures
 
+    # pylint: disable=too-many-arguments
     def add(self, test_file, status, start=0, end=0, log_raw='', exit_code=0, **kwargs):
         """
         Add one result object.
@@ -86,12 +87,12 @@ class ResultsFile(object):
                 "test_file": "canary_client-cpuloop-1x",
                 "log_raw": "\nTest: canary_client-cpuloop-1x\n   Rule   |  State   |  Compared_to  |
                 Thread |  Target   | Achieved  | delta(%)  |threshold(%)\n----------+----------+----
-                -----------+-------+-----------+-----------+-----------+------------\n Previous |  
-                Passed  |    e2de2b2    |  max  | 1177784.71| 1751880.97|     48.74%|     20.00%|\n 
-                Previous |  Passed  |    e2de2b2    |   1   |  118197.03|  122975.63|      4.04%|   
-                30.00%|\n Previous |  Passed  |    e2de2b2    |   8   |  935427.27|  964329.56|     
-                3.09%|     30.00%|\n Previous |  Passed  |    e2de2b2    |   4   |  471669.61|  
-                484788.52|      2.78%|     30.00%|\n Previous |  Passed  |    e2de2b2    |  16   | 
+                -----------+-------+-----------+-----------+-----------+------------\n Previous |
+                Passed  |    e2de2b2    |  max  | 1177784.71| 1751880.97|     48.74%|     20.00%|\n
+                Previous |  Passed  |    e2de2b2    |   1   |  118197.03|  122975.63|      4.04%|
+                30.00%|\n Previous |  Passed  |    e2de2b2    |   8   |  935427.27|  964329.56|
+                3.09%|     30.00%|\n Previous |  Passed  |    e2de2b2    |   4   |  471669.61|
+                484788.52|      2.78%|     30.00%|\n Previous |  Passed  |    e2de2b2    |  16   |
                 1177784.71| 1751880.97|     48.74%|     30.00%|\n",
                 "exit_code": 0
             }
@@ -127,7 +128,8 @@ class ResultsFile(object):
         """
         Add results to self.data directly.
 
-        Note that DSI 1.0 code writes its own results objects and we just accept them as they are here. Think of this method as:
+        Note that DSI 1.0 code writes its own results objects and we just accept them as they are
+        here. Think of this method as:
 
             self.extend([self.add(), self.add()])
 

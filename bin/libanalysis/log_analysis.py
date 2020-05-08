@@ -26,12 +26,12 @@ def log(config, results):
     reports = config['test_control']['reports_dir_basename']
     perf_json = config['test_control']['perf_json']['path']
     task = config['test_control']['task_name']
-    rules = config['analysis']['rules']
-    new_results, _ = analyze_logs(reports, rules, perf_file_path=perf_json, task=task)
+    rules_config = config['analysis']['rules']
+    new_results, _ = analyze_logs(reports, rules_config, perf_file_path=perf_json, task=task)
     results.extend(new_results)
 
 
-def analyze_logs(reports_dir_path, rules, perf_file_path=None, task=None):
+def analyze_logs(reports_dir_path, rules_config, perf_file_path=None, task=None):
     """
     Analyze all the "mongod.log" logs in the directory tree rooted at `reports_dir_path`,
     and return a list of test-result dictionaries ready to be placed in the report JSON generated
@@ -52,7 +52,7 @@ def analyze_logs(reports_dir_path, rules, perf_file_path=None, task=None):
         except IOError:
             LOGGER.error("Failed to read file", filename=perf_file_path)
 
-    bad_logs = _get_bad_log_lines(reports_dir_path, rules, test_times, task)
+    bad_logs = _get_bad_log_lines(reports_dir_path, rules_config, test_times, task)
 
     for _, (log_path, bad_lines) in enumerate(bad_logs):
         result = {

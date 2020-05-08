@@ -30,7 +30,6 @@ def ftdc(config, results):
     LOGGER.info("Checking FTDC diagnostic.data.")
     reports = config['test_control']['reports_dir_basename']
     perf_json = config['test_control']['perf_json']['path']
-    task = config['test_control']['task_name']
     variant = config['mongodb_setup']['meta']['mongodb_setup']
 
     max_thread_level = util.get_thread_sum(perf_json)
@@ -337,6 +336,8 @@ def _process_ftdc_file(path_to_ftdc_file, config, variant, constant_values):  # 
                 build_args = {'chunk': chunk, 'times': times}
                 if function_name == 'ftdc_replica_lag_check':
                     build_args = {'path_to_ftdc_file': path_to_ftdc_file}
+                # TODO: All of this is legacy code, should use ConfigDict much more directly.
+                # pylint: disable=deprecated-method
                 arguments_needed = inspect.getargspec(chunk_rule).args
                 # gather any missing arguments
                 (build_args,

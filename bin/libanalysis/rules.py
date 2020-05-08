@@ -108,20 +108,21 @@ def is_log_line_bad(log_line, rules, test_times=None, task=None):
     printed during the time a test was run (as specified in `test_times`) are considered, unless
     `test_times` is None.
     """
+    # pylint: disable=too-many-branches
 
     log_line = log_line.strip()
     timestamp = err_type_char = log_msg = error = None
 
     try:
         log_json = json.loads(log_line)
-    # Older versions of MongoDB don't support structured logging; fall back to using legacy log parsing
+    # Older versions of MongoDB don't support structured logging; fall back to legacy log parsing
     except ValueError:
         line_components = log_line.split(" ", 3)
         if len(line_components) != 4:
             error = Exception("Invalid number of components in log")
         else:
             timestamp, err_type_char, _, log_msg = line_components
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-except
         error = e
     else:
         try:
@@ -138,7 +139,7 @@ def is_log_line_bad(log_line, rules, test_times=None, task=None):
                         log_msg = log_msg.format(**log_json["attr"])
                     except KeyError:
                         pass
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-except
             error = e
 
     if error is not None:

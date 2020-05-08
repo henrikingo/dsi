@@ -4,11 +4,7 @@ analysis.py plugin: Dummy plugin.
 Dummy plugin that does nothing. Used for unit testing.
 """
 
-from __future__ import print_function
-
 import structlog
-
-import analysis
 
 LOGGER = structlog.get_logger(__name__)
 

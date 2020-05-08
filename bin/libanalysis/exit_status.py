@@ -15,6 +15,8 @@ EXIT_STATUS_ERR = 1
 """ This code indicates that the command returned an error, although it is not specific """
 
 
+# TODO: This is actually bad...
+# pylint: disable=redefined-builtin, redefined-outer-name
 def exit(config, results):
     """
     analysis.py plugin: Check exit statuses of all test executions.
