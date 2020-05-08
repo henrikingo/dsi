@@ -1,11 +1,5 @@
 # Distributed Systems Infrastructure 2.0
 
-## Python 3
-
-**This version of DSI uses Python 3**
-
-If you have used 10gen/dsi or mongodb/dsi, please use separate virtualenvs for both.
-
 ## Quick Start (Ubuntu)
 
     sudo apt install awscli  # / pip install awscli / brew install awscli
@@ -47,6 +41,8 @@ If you have used 10gen/dsi or mongodb/dsi, please use separate virtualenvs for b
 * The above steps in long form: [Getting Started](docs/GettingStarted.md)
 * [Frequently Asked Questions](docs/FAQ.md)
 * DSI is a complex system with hundreds of configuration options. All of them are documented under [docs/config-specs/](docs/config-specs/).
+* [Our paper](https://arxiv.org/pdf/2004.08425.pdf) from [DBTest.io 2020](http://dbtest.io/) describes how we developed and used DSI to test MongoDB performance.
+  * The branch [mongodb-2020](https://github.com/henrikingo/dsi/tree/mongodb-2020) is a DSI version frozen in time to reflect the state of this project as described in that paper. (I've left MongoDB shortly after and removed some hard dependencies on infrastructure only available to MongoDB employees.)
 
 ## Navigating and using this repo
 
@@ -118,18 +114,6 @@ files is perfectly allowed too. It's up to you!
 
 
 ## Development & Testing
-The repo's tests are all packaged into `/testscripts/runtests.sh`, which must be run from the repo
-root and it requires:
- 
-  - a `~/.dsi_config.yml` file (see `/example_config.yml`), containing...
-    - *Evergreen credentials*: found in your local `~/.evergreen.yml` file. 
-(Instructions [here](http://evergreen.mongodb.com/settings) if you are missing this file.)
-    - *Github authentication token*:
-`curl -i -u <USERNAME> -H 'X-GitHub-OTP: <2FA 6-DIGIT CODE>' -d '{"scopes": ["repo"], "note": 
-"get full git hash"}' https://api.github.com/authorizations`
-    - (You only need `-H 'X-GitHub-OTP: <2FA 6-DIGIT CODE>` if you have 2-factor authentication on.) 
-
-### Testing Examples
 
 Run all validations, linters and tests:
 
@@ -142,67 +126,3 @@ Run all the unit tests:
 Run a specific test:
 
     testscripts/run-nosetest.sh bin/tests/test_bootstrap.py
-
-## Evergreen Patch Test (Sys-perf)
-
-**Info for this fork:**
-
-If you need to run this version of DSI in Evergreen Sys-perf project, you can easily change the dsi
-module to point to this (or any other) repo:
-
-Setup:
-
-    DSI_REPO=$(pwd)
-    ln -s $DSI_REPO/bin/switch_module.py $HOME/bin/switch_module.py
-
-Use this branch for a sys-perf patch test in Evergreen:
-
-    MONGO_REPO=$HOME/repos/mongo
-    cd $MONGO_REPO
-    switch_module.py                  # will edit github url in etc/system_perf.yml
-
-Now [submit Evergreen patch as usual](https://github.com/evergreen-ci/evergreen/wiki/Using-the-Command-Line-Tool).
-
-When done, undo changes:
-
-    cd $MONGO_REPO
-    git checkout etc/system_perf.yml
-
-**Regular README continues...**
-
-
-### Patch-Testing DSI Without Compile
-
-There are two options. Repeating a task with a different DSI module or skipping compile entirely.
-
-**The Easy Way**
-
-You still have to suffer compile once but *only* once.
-
-Create a patch of sys-perf and do the usual `evergreen set-module -m dsi` step. Schedule the tasks you want. You can call `evergreen set-module -m dsi` multiple times on the same patch-build and re-schedule your tasks. The compile task isn't re-run.
-
-```sh
-cd mongo
-evergreen patch -p sys-perf
-cd dsi
-evergreen set-module -m dsi -i <id>
-# ... make changes
-evergreen set-module -m dsi -i <id>
-# reschedule any tasks you want to run again with updated DSI
-```
-
-**The Slightly Harder Way**
-
-Use a hard-coded asset path and remove the compile-task dependency.
-
-Replace [this line](https://github.com/mongodb/mongo/blob/ce3261545db4767f18e390c50d59c6530e948655/etc/system_perf.yml#L231) with a static URL e.g.:
-
-```yaml
-mongodb_binary_archive: "https://s3.amazonaws.com/mciuploads/dsi/5c8685d3850e61268dd41be1/447847d93d6e0a21b018d5df45528e815c7c13d8/linux/mongodb-5c8685d3850e61268dd41be1.tar.gz"
-```
-
-(This is the artifact URL from a previous waterfall run.)
-
-Then remove the `depends_on` blocks for the build-variants you want to run e.g. remove [these lines](https://github.com/mongodb/mongo/blob/ce3261545db4767f18e390c50d59c6530e948655/etc/system_perf.yml#L1007-L10090).
-
-Submit this as your patch-build and then do the usual `set-module` dance. Here too you can use the same patch-build multiple times like the example above.

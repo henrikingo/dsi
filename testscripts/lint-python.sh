@@ -18,7 +18,6 @@ top_paths=(
     aws_tools
     bin
     bin/common
-    bin/evergreen
 )
 
 # this set of directories uses /bin/tests/pylintrc
