@@ -103,8 +103,6 @@ workload_setup:
     tpcc: ./tpcc
     genny: ./data/genny  # Put genny on the large drive to give it more space.
     benchmarks: ./benchmarks  # sysbench
-  downloads:
-    curator: "https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-f78d20b10c7a70783c5ec47cc466bd9933e00212.tar.gz"
 
 
 mongodb_setup:
@@ -295,7 +293,6 @@ test_control:
   reports_dir_basename: reports
   perf_json:
     path: perf.json
-  has_cedar_credentials: ${bootstrap.production}
 
   common_fio_config: |
     [global]
@@ -593,12 +590,6 @@ test_control:
     exec: ${infrastructure_provisioning.numactl_prefix} ./scripts/genny run -u "${mongodb_setup.meta.mongodb_url}" -m cedar-csv -o ./genny-perf.csv
 
     metrics: |
-      # Only generate the cedar report in production. The Cedar certificates are not available elsewhere.
-      true_or_false=$(echo ${test_control.has_cedar_credentials} | tr '[:upper:]' '[:lower:]')
-      if $true_or_false;
-      then
-          genny-metrics-report --expansions-file ../expansions.yml --report-file genny-cedar-report.json genny-perf.csv metrics
-      fi
       genny-metrics-legacy-report --report-file genny-perf.json genny-perf.csv
 
   cwrwc_setup_script: |

@@ -27,7 +27,6 @@ from common.host_factory import make_host
 from common.host import INFO_ADAPTER
 from common.jstests import run_validate
 import common.log
-import common.cedar as cedar
 from common.workload_output_parser import parse_test_results, get_supported_parser_types
 import common.dsisocket as dsisocket
 import common.during_test as during_test
@@ -297,9 +296,6 @@ def run_tests(config):
     num_tests_run = 0
     num_tests_failed = 0
 
-    # cedar reporting
-    report = cedar.Report(config.get('runtime'))
-
     # Default the status to ERROR to catch unexpected failures.
     # If a tests succeeds, the status is explicitly set to SUCCESS.
     cur_test_status = TestStatus.ERROR
@@ -369,18 +365,12 @@ def run_tests(config):
                 break
             else:
                 LOG.info("Successful test run for test %s. Parsing results now", test['id'])
-
-            _, cedar_tests = parse_test_results(test, config, timer)
-            for cedar_test in cedar_tests:
-                report.add_test(cedar_test)
+            parse_test_results(test, config, timer)
     except Exception as e:  # pylint: disable=broad-except
-        LOG.error('Unexcepted exception: %s', repr(e), exc_info=1)
+        LOG.error('Unexpected exception: %s', repr(e), exc_info=1)
     finally:
         # Save exit codes for analysis.py
         config.save()
-        # Cedar
-        # TODO: Encapsulate Cedar into workload_output_parser
-        report.write_report()
         run_pre_post_commands('post_task', [test_control_config, mongodb_setup_config], config,
                               EXCEPTION_BEHAVIOR.CONTINUE)
         perf_json = config['test_control']['perf_json']['path']

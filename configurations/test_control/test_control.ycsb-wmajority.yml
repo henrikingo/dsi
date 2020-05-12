@@ -139,8 +139,3 @@ pre_task:
         connection_string: ${mongodb_setup.meta.mongodb_shell_url}
         # Shard the YCSB cluster if sharding is enabled
         script: ${test_control.ycsb_sharding_script}
-
-post_task:
-  - on_localhost:
-      run_curator: normal
-

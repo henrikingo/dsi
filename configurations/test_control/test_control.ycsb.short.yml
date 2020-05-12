@@ -44,7 +44,3 @@ between_tests:
   - restart_mongodb:
       clean_logs: true
       clean_db_dir: false
-
-post_task:
-  - on_localhost:
-      run_curator: normal

@@ -321,22 +321,6 @@ def _warn_if_overwriting(destination):
         LOGGER.warn("Overwriting existing file.", destination=destination)
 
 
-def ensure_expansions_file(directory):
-    """
-    Create `directory`/expansions.yml if doesn't already exist.
-
-    :param directory: str
-    :return: nothing
-    """
-    expansions_path = os.path.join(directory, 'expansions.yml')
-    if os.path.exists(expansions_path):
-        return
-    with open(expansions_path, 'w') as expansions:
-        expansions.write('curator_mode: skip')
-    LOGGER.info('No existing expansions file so created a default one.',
-                expansions_path=expansions_path)
-
-
 def run_bootstrap(config):
     """
     Main logic.
@@ -379,8 +363,6 @@ def run_bootstrap(config):
     # This writes an overrides.yml with the ssh_key_file, ssh_key_name and owner, if given in
     # bootstrap.yml, and with expire-on-delta if running DSI locally.
     setup_overrides(config_dict, directory)
-
-    ensure_expansions_file(directory)
 
     LOGGER.info("Local environment setup", directory=directory)
 

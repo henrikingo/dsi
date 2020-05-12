@@ -11,7 +11,6 @@ run:
       # but we want to retrieve the .csv for the reports dir.
       - data/genny-perf.json
       - data/genny-perf.csv
-      - data/genny-cedar-report.json
 
 
 

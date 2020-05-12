@@ -10,10 +10,9 @@ import shutil
 import subprocess
 import unittest
 
-from mock import patch, mock_open, MagicMock, Mock, call
+from mock import patch, mock_open, Mock, call
 from testfixtures import LogCapture
 
-import common.cedar
 import common.host_utils
 from common.command_runner import EXCEPTION_BEHAVIOR
 from common.command_runner import print_trace
@@ -573,14 +572,13 @@ class RunTestsTestCase(unittest.TestCase):
     @patch('test_control.safe_reset_all_delays')
     @patch('test_control.run_pre_post_commands')
     @patch('test_control.run_test')
-    @patch('test_control.parse_test_results', return_value=['status', 'CedarTest'])
+    @patch('test_control.parse_test_results', return_value=['status', 'MockParser'])
     @patch('test_control.prepare_reports_dir')
     @patch('subprocess.check_call')
     @patch('test_control.print_perf_json')
-    @patch('test_control.cedar')
-    def test_pre_post_commands_ordering(self, mock_cedar, mock_copy_perf, mock_check_call,
-                                        mock_prep_rep, mock_parse_results, mock_run_test,
-                                        mock_pre_post, mock_delays, mock_copy_reports):
+    def test_pre_post_commands_ordering(self, mock_copy_perf, mock_check_call, mock_prep_rep,
+                                        mock_parse_results, mock_run_test, mock_pre_post,
+                                        mock_delays, mock_copy_reports):
         """Test that pre and post commands are called in the right order"""
         real_config_dict = ConfigDict('test_control')
         real_config_dict.raw = self.config
@@ -598,12 +596,11 @@ class RunTestsTestCase(unittest.TestCase):
     @patch('test_control.copy_to_reports')
     @patch('test_control.safe_reset_all_delays')
     @patch('test_control.run_pre_post_commands')
-    @patch('test_control.parse_test_results', return_value=('status', ['CedarTest']))
+    @patch('test_control.parse_test_results', return_value=('status', ['MockParser']))
     @patch('test_control.prepare_reports_dir')
     @patch('subprocess.check_call')
     @patch('test_control.print_perf_json')
-    @patch('test_control.cedar')
-    def test_run_test_exception(self, mock_cedar, mock_copy_perf, mock_check_call, mock_prep_rep,
+    def test_run_test_exception(self, mock_copy_perf, mock_check_call, mock_prep_rep,
                                 mock_parse_results, mock_pre_post, mock_delays, mock_copy_reports):
         """
         Test CalledProcessErrors with cause run_tests return false but other errors will
@@ -621,37 +618,6 @@ class RunTestsTestCase(unittest.TestCase):
         with patch('test_control.run_test', side_effect=[ValueError(), 0, 0]):
             utter_failure = run_tests(real_config_dict)
             self.assertTrue(utter_failure)
-
-    # pylint: disable=unused-argument
-    @patch('test_control.copy_to_reports')
-    @patch('test_control.safe_reset_all_delays')
-    @patch('test_control.run_pre_post_commands')
-    @patch('test_control.run_test')
-    @patch('test_control.parse_test_results', return_value=('status', ['CedarTest']))
-    @patch('test_control.prepare_reports_dir')
-    @patch('subprocess.check_call')
-    @patch('test_control.print_perf_json')
-    @patch('common.cedar.Report')
-    def test_cedar_report(self, mock_cedar_report, mock_copy_perf, mock_check_call, mock_prep_rep,
-                          mock_parse_results, mock_run_test, mock_pre_post, mock_delays,
-                          mock_copy_reports):
-        """Test that cedar report is called the correct number of times"""
-        real_config_dict = ConfigDict('test_control')
-        real_config_dict.raw = self.config
-        run_tests(real_config_dict)
-
-        mock_cedar_test = MagicMock()
-        mock_parse_results.return_value = (True, [mock_cedar_test])
-
-        run_tests(real_config_dict)
-
-        mock_cedar_report.assert_called()
-        mock_cedar_report().add_test.assert_has_calls([
-            call(mock_cedar_test),
-            call(mock_cedar_test),
-            call(mock_cedar_test),
-        ])
-        mock_cedar_report().write_report.assert_called()
 
 
 if __name__ == '__main__':

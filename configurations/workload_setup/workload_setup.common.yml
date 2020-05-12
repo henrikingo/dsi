@@ -182,9 +182,6 @@ linkbench:
         mvn --quiet clean package -DskipTests
 
 ycsb:
-  - on_localhost:
-      exec: |
-        ${workload_setup.install_curator}
   - on_workload_client:
       exec: |
         mkdir -p data/tmp; pushd data/tmp
@@ -226,15 +223,6 @@ sysbench:
         sudo yum -y groupinstall "Development tools"
         ./benchmarks/sysbench/install.sh
 
-
-# Only install curator for production runs
-# == "True" because production gets serialized as a Python boolean
-install_curator: |
-  if [[ "${bootstrap.production}" == "True" ]]; then
-    curl -o curator.tar.gz --retry 10 -LsS "${workload_setup.downloads.curator}"
-    tar xvf curator.tar.gz
-    ./curator --version
-  fi
 
 install_java: |
     curl -O --retry 10 -fsS \

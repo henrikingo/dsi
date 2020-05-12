@@ -14,7 +14,6 @@ import structlog
 from dateutil import tz
 
 import common.atlas_setup as atlas_setup
-import common.cedar
 from common.config import ConfigDict
 import common.host_factory
 import common.host_utils
@@ -55,7 +54,7 @@ def make_host_runner(host_info, command, prefix, config):
 
     :param host_info HostInfo
     :param command: The command to execute. If str, run that command. If dict, type is one of
-    upload_repo_files, upload_files, retrieve_files, exec, run_curator, or exec_mongo_shell.
+    upload_repo_files, upload_files, retrieve_files, exec, or exec_mongo_shell.
     :type command: str, dict
     :param str prefix: The id for the test related to the current command. If there
     is not a specific test related to the current command, the value of prefix should reflect the
@@ -88,7 +87,7 @@ def _run_host_command(host_list, command, config, prefix):
 
     :param list host_list: List of ip addresses to connect to
     :param command: The command to execute. If str, run that command. If dict, type is one of
-    upload_repo_files, upload_files, retrieve_files, exec, run_curator, or exec_mongo_shell.
+    upload_repo_files, upload_files, retrieve_files, exec, or exec_mongo_shell.
     :type command: str, dict
     :param ConfigDict config: The system configuration
     :param str prefix: The id for the test related to the current command. If there
@@ -148,9 +147,6 @@ def _run_host_command_map(target_host, command, prefix, config):
             LOG.debug('Executing command %s', value)
             success = target_host.run(value)
             common.host_utils.raise_if_not_success(success, value)
-        elif key == "run_curator":
-            LOG.info('Executing curator in %s', os.getcwd())
-            common.cedar.run_curator(value, target_host, config)
         elif key == "exec_mongo_shell":
             LOG.debug('Executing command %s in mongo shell', value)
             connection_string = value.get('connection_string', "")

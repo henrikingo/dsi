@@ -149,14 +149,4 @@ echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCmHUZLsuGvNUlCiaZ83jS9f49S0plAtCH19Z
 # Install programs
 cd ~/data/tmp
 
-install_curator() {
-    curl -o curator.tar.gz --retry 10 -LsS https://s3.amazonaws.com/boxes.10gen.com/build/curator/curator-dist-rhel70-ac7e518bd8c8d18188330413db79704f9f0eb8a3.tar.gz
-    tar xvf curator.tar.gz
-
-    sudo cp ./curator /usr/local/bin/curator
-    curator --version
-}
-
-install_curator
-
 exit 0

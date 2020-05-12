@@ -12,8 +12,6 @@ import re
 
 from nose.tools import nottest
 
-import common.cedar as cedar
-
 LOG = logging.getLogger(__name__)
 
 
@@ -157,18 +155,6 @@ class ResultParser(object):
         self.timer = timer
         self.input_log = None
 
-        self.cedar_tests = []
-
-        # cedar reporting template.
-        self.cedar_test_template = cedar.CedarTest(name=self.test_id,
-                                                   created=self.timer['start'],
-                                                   completed=self.timer['end'])
-
-        # add tags for branch_name and constant 'sys-perf'
-        if 'runtime' in config and 'branch_name' in config['runtime']:
-            self.cedar_test_template.add_tag(config['runtime']['branch_name'])
-        self.cedar_test_template.add_tag('sys-perf')
-
     def load_input_log(self):
         """Load self.input_log and return it"""
         if self.input_log is None:
@@ -182,11 +168,11 @@ class ResultParser(object):
     def parse_and_save(self):
         """Parse self.input_log and merge it into self.perf_json.
 
-        :return: (bool True on success else False, CedarTest)
+        :return: bool True on success else False
         """
         passed = self.parse()
         self.results.save()
-        return passed, self.cedar_tests
+        return passed
 
     def add_result(self, name, result, threads="1", metric_type="ops_per_sec"):
         """
@@ -367,59 +353,35 @@ class YcsbParser(ResultParser):
             -P workloads/workloadEvergreen_50read50update -threads 64 -t
         [OVERALL], Throughput(ops/sec), 47494.99521487923
         """
-        cur_test = None
         for line in self.load_input_log():
             if line.startswith("Command line:"):
-                cur_test = self.cedar_test_template.clone()
-                self.cedar_tests.append(cur_test)
                 parts = line.rstrip().split(" ")
                 for index, part in enumerate(parts):
                     if part == "-threads":
                         self.threads = str(parts[index + 1])  # In perf.json threads is a string
-                        cur_test.set_thread_level(int(self.threads))
             elif line.startswith("[OVERALL], Throughput(ops/sec), "):
                 parts = line.rstrip().split(", ")
                 result = float(parts[2])
                 name = self.test_id
                 self.add_result(name, result, self.threads, "ops_per_sec")
-                cur_test.add_metric(
-                    name="ops_per_sec",
-                    rollup_type='THROUGHPUT',
-                    value=result,
-                )
 
             if line.startswith("[READ], 95thPercentileLatency(us), "):
                 parts = line.rstrip().split(", ")
                 result = float(parts[2])
                 name = self.test_id
                 self.add_result(name, result, self.threads, "95th_read_latency_us")
-                cur_test.add_metric(
-                    name="95th_read_latency_us",
-                    rollup_type='PERCENTILE_95TH',
-                    value=result,
-                )
 
             if line.startswith("[READ], 99thPercentileLatency(us), "):
                 parts = line.rstrip().split(", ")
                 result = float(parts[2])
                 name = self.test_id
                 self.add_result(name, result, self.threads, "99th_read_latency_us")
-                cur_test.add_metric(
-                    name="99th_read_latency_us",
-                    rollup_type='PERCENTILE_99TH',
-                    value=result,
-                )
 
             if line.startswith("[READ], AverageLatency(us), "):
                 parts = line.rstrip().split(", ")
                 result = float(parts[2])
                 name = self.test_id
                 self.add_result(name, result, self.threads, "average_read_latency_us")
-                cur_test.add_metric(
-                    name="average_read_latency_us",
-                    rollup_type='MEAN',
-                    value=result,
-                )
 
 
 class SysbenchResultParser(ResultParser):
@@ -461,26 +423,11 @@ class SysbenchResultParser(ResultParser):
         self.threads = options['threads']
         results = json.loads(results_str)
 
-        cedar_test = self.cedar_test_template.clone()
-
         for name in results.keys():
             sign = -1 if "latency" in name else 1
             # For historical reasons threads is expected to be a string. (It's a key in perf.json)
             self.add_result(self.test_id + "_" + name, sign * float(results[name]),
                             str(self.threads))
-
-            cedar_test.set_thread_level(self.threads)
-            if "latency" in name:
-                cedar_test.add_metric(
-                    name=name,
-                    rollup_type='LATENCY',
-                    value=float(results[name]),
-                )
-            else:
-                cedar_test.add_metric(name=name,
-                                      rollup_type='THROUGHPUT',
-                                      value=float(results[name]))
-        self.cedar_tests.append(cedar_test)
 
 
 class FioParser(ResultParser):

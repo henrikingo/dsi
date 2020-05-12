@@ -9,7 +9,6 @@ run:
     output_files:
       - data/genny-perf.json
       - data/genny-perf.csv
-      - data/genny-cedar-report.json
 
   - id: benchRun
     type: mongoshell
